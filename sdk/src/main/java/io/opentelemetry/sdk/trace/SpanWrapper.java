@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -28,7 +28,6 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -40,7 +39,7 @@ abstract class SpanWrapper implements SpanData {
 
   abstract List<Event> resolvedEvents();
 
-  abstract Map<String, AttributeValue> attributes();
+  abstract ReadableAttributes attributes();
 
   abstract int totalAttributeCount();
 
@@ -56,7 +55,7 @@ abstract class SpanWrapper implements SpanData {
       RecordEventsReadableSpan delegate,
       List<Link> links,
       List<Event> events,
-      Map<String, AttributeValue> attributes,
+      ReadableAttributes attributes,
       int totalAttributeCount,
       int totalRecordedEvents,
       Status status) {
@@ -115,7 +114,7 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public Map<String, AttributeValue> getAttributes() {
+  public ReadableAttributes getAttributes() {
     return attributes();
   }
 

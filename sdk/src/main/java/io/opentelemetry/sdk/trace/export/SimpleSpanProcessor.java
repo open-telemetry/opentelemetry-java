@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -115,9 +114,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
     private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
 
-    private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
+    @VisibleForTesting static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
     private final SpanExporter spanExporter;
-    private boolean sampled = DEFAULT_EXPORT_ONLY_SAMPLED;
+    private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
@@ -134,7 +133,6 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
      */
-    @VisibleForTesting
     @Override
     protected Builder fromConfigMap(
         Map<String, String> configMap, NamingConvention namingConvention) {
@@ -147,48 +145,21 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     }
 
     /**
-     * Sets the configuration values from the given properties object for only the available keys.
-     *
-     * @param properties {@link Properties} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    public Builder readProperties(Properties properties) {
-      return super.readProperties(properties);
-    }
-
-    /**
-     * Sets the configuration values from environment variables for only the available keys.
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readEnvironmentVariables() {
-      return super.readEnvironmentVariables();
-    }
-
-    /**
-     * Sets the configuration values from system properties for only the available keys.
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readSystemProperties() {
-      return super.readSystemProperties();
-    }
-
-    /**
      * Set whether only sampled spans should be exported.
      *
      * <p>Default value is {@code true}.
      *
-     * @see SimpleSpanProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
-     * @param sampled report only sampled spans.
+     * @param exportOnlySampled if {@code true} report only sampled spans.
      * @return this.
      */
-    public Builder setExportOnlySampled(boolean sampled) {
-      this.sampled = sampled;
+    public Builder setExportOnlySampled(boolean exportOnlySampled) {
+      this.exportOnlySampled = exportOnlySampled;
       return this;
+    }
+
+    @VisibleForTesting
+    boolean getExportOnlySampled() {
+      return exportOnlySampled;
     }
 
     // TODO: Add metrics for total exported spans.
@@ -202,7 +173,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
     public SimpleSpanProcessor build() {
-      return new SimpleSpanProcessor(spanExporter, sampled);
+      return new SimpleSpanProcessor(spanExporter, exportOnlySampled);
     }
   }
 }

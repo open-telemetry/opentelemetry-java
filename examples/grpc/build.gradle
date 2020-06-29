@@ -5,8 +5,6 @@ plugins {
 description = 'OpenTelemetry Examples for gRPC'
 ext.moduleName = "io.opentelemetry.examples.grpc"
 
-
-
 dependencies {
     compile "io.opentelemetry:opentelemetry-api:${opentelemetryVersion}"
     compile "io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}"

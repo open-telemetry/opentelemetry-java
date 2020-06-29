@@ -17,13 +17,13 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.log.Fields;
 import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
-import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -187,8 +187,8 @@ final class SpanShim extends BaseShimObject implements Span {
     return DEFAULT_EVENT_NAME;
   }
 
-  static Map<String, AttributeValue> convertToAttributes(Map<String, ?> fields) {
-    Map<String, AttributeValue> attrMap = new HashMap<>();
+  static Attributes convertToAttributes(Map<String, ?> fields) {
+    Attributes.Builder attributesBuilder = Attributes.newBuilder();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
       String key = entry.getKey();
@@ -203,16 +203,18 @@ final class SpanShim extends BaseShimObject implements Span {
           || value instanceof Short
           || value instanceof Integer
           || value instanceof Long) {
-        attrMap.put(key, AttributeValue.longAttributeValue(((Number) value).longValue()));
+        attributesBuilder.setAttribute(
+            key, AttributeValue.longAttributeValue(((Number) value).longValue()));
       } else if (value instanceof Float || value instanceof Double) {
-        attrMap.put(key, AttributeValue.doubleAttributeValue(((Number) value).doubleValue()));
+        attributesBuilder.setAttribute(
+            key, AttributeValue.doubleAttributeValue(((Number) value).doubleValue()));
       } else if (value instanceof Boolean) {
-        attrMap.put(key, AttributeValue.booleanAttributeValue((Boolean) value));
+        attributesBuilder.setAttribute(key, AttributeValue.booleanAttributeValue((Boolean) value));
       } else {
-        attrMap.put(key, AttributeValue.stringAttributeValue(value.toString()));
+        attributesBuilder.setAttribute(key, AttributeValue.stringAttributeValue(value.toString()));
       }
     }
 
-    return attrMap;
+    return attributesBuilder.build();
   }
 }

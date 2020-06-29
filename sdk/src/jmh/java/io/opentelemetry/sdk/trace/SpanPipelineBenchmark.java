@@ -18,9 +18,8 @@ package io.opentelemetry.sdk.trace;
 
 import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
-import static java.util.Collections.singletonMap;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -32,7 +31,6 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -75,7 +73,7 @@ public class SpanPipelineBenchmark {
             .setAttribute("key", "value")
             .addLink(new TestLink())
             .startSpan();
-    span.addEvent("started", singletonMap("operation", stringAttributeValue("some_work")));
+    span.addEvent("started", Attributes.of("operation", stringAttributeValue("some_work")));
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
     span.setAttribute("doubleAttribute", 4844.44d);
@@ -111,8 +109,8 @@ public class SpanPipelineBenchmark {
     }
 
     @Override
-    public Map<String, AttributeValue> getAttributes() {
-      return singletonMap("linkAttr", stringAttributeValue("linkValue"));
+    public Attributes getAttributes() {
+      return Attributes.of("linkAttr", stringAttributeValue("linkValue"));
     }
   }
 
@@ -123,8 +121,8 @@ public class SpanPipelineBenchmark {
     }
 
     @Override
-    public Map<String, AttributeValue> getAttributes() {
-      return singletonMap("finalized", booleanAttributeValue(true));
+    public Attributes getAttributes() {
+      return Attributes.of("finalized", booleanAttributeValue(true));
     }
   }
 }

@@ -19,7 +19,9 @@ package io.opentelemetry.sdk.metrics.export;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -28,28 +30,26 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link IntervalMetricReader}. */
 public class IntervalMetricReaderTest {
   private static final MetricData.Descriptor METRIC_DESCRIPTOR =
       MetricData.Descriptor.create(
-          "my metric",
-          "my metric description",
-          "us",
-          Type.MONOTONIC_LONG,
-          Collections.<String, String>emptyMap());
+          "my metric", "my metric description", "us", Type.MONOTONIC_LONG, Labels.empty());
 
   private static final List<Point> LONG_POINT_LIST =
-      Collections.<Point>singletonList(
-          LongPoint.create(1000, 3000, Collections.<String, String>emptyMap(), 1234567));
+      Collections.singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
       MetricData.create(
@@ -67,8 +67,40 @@ public class IntervalMetricReaderTest {
   }
 
   @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.imr.export.interval", "12");
+    IntervalMetricReader.Builder config = IntervalMetricReader.builder();
+    IntervalMetricReader.Builder spy = Mockito.spy(config);
+    spy.fromConfigMap(options, ConfigTester.getNamingDot());
+    Mockito.verify(spy).setExportIntervalMillis(12);
+  }
+
+  @Test
   public void intervalExport() {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    IntervalMetricReader intervalMetricReader =
+        IntervalMetricReader.builder()
+            .setExportIntervalMillis(100)
+            .setMetricExporter(waitingMetricExporter)
+            .setMetricProducers(Collections.singletonList(metricProducer))
+            .build();
+
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
+          .containsExactly(Collections.singletonList(METRIC_DATA));
+
+      assertThat(waitingMetricExporter.waitForNumberOfExports(2))
+          .containsExactly(
+              Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
+    } finally {
+      intervalMetricReader.shutdown();
+    }
+  }
+
+  @Test(timeout = 2000)
+  public void intervalExport_exporterThrowsException() {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()
             .setExportIntervalMillis(100)
@@ -112,15 +144,27 @@ public class IntervalMetricReaderTest {
 
     private final Object monitor = new Object();
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
+    private final boolean shouldThrow;
 
     @GuardedBy("monitor")
     private List<List<MetricData>> exportedMetrics = new ArrayList<>();
+
+    private WaitingMetricExporter() {
+      this(false);
+    }
+
+    private WaitingMetricExporter(boolean shouldThrow) {
+      this.shouldThrow = shouldThrow;
+    }
 
     @Override
     public ResultCode export(Collection<MetricData> metricList) {
       synchronized (monitor) {
         this.exportedMetrics.add(new ArrayList<>(metricList));
         monitor.notifyAll();
+      }
+      if (shouldThrow) {
+        throw new RuntimeException("Export Failed!");
       }
       return ResultCode.SUCCESS;
     }

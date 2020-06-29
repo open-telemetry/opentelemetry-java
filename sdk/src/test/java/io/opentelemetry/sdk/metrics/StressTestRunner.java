@@ -40,30 +40,24 @@ abstract class StressTestRunner {
     final CountDownLatch countDownLatch = new CountDownLatch(numThreads);
     Thread collectionThread =
         new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                // While workers still work, do collections.
-                while (countDownLatch.getCount() != 0) {
-                  Uninterruptibles.sleepUninterruptibly(
-                      getCollectionIntervalMs(), TimeUnit.MILLISECONDS);
-                }
+            () -> {
+              // While workers still work, do collections.
+              while (countDownLatch.getCount() != 0) {
+                Uninterruptibles.sleepUninterruptibly(
+                    getCollectionIntervalMs(), TimeUnit.MILLISECONDS);
               }
             });
     List<Thread> operationThreads = new ArrayList<>(numThreads);
     for (final Operation operation : operations) {
       operationThreads.add(
           new Thread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  for (int i = 0; i < operation.getNumOperations(); i++) {
-                    operation.getUpdater().update();
-                    Uninterruptibles.sleepUninterruptibly(
-                        operation.getOperationDelayMs(), TimeUnit.MILLISECONDS);
-                  }
-                  countDownLatch.countDown();
+              () -> {
+                for (int i = 0; i < operation.getNumOperations(); i++) {
+                  operation.getUpdater().update();
+                  Uninterruptibles.sleepUninterruptibly(
+                      operation.getOperationDelayMs(), TimeUnit.MILLISECONDS);
                 }
+                countDownLatch.countDown();
               }));
     }
 

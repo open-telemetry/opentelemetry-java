@@ -18,9 +18,7 @@ package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.Entry;
-import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
-import io.opentelemetry.correlationcontext.EntryValue;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
@@ -54,7 +52,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   SpanContextShim newWithKeyValue(String key, String value) {
     CorrelationContext.Builder builder = contextManager().contextBuilder().setParent(distContext);
-    builder.put(EntryKey.create(key), EntryValue.create(value), DEFAULT_ENTRY_METADATA);
+    builder.put(key, value, DEFAULT_ENTRY_METADATA);
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());
   }
@@ -85,8 +83,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   @SuppressWarnings("ReturnMissingNullable")
   String getBaggageItem(String key) {
-    EntryValue value = distContext.getEntryValue(EntryKey.create(key));
-    return value == null ? null : value.asString();
+    return distContext.getEntryValue(key);
   }
 
   static class BaggageIterable implements Iterable<Map.Entry<String, String>> {
@@ -124,12 +121,12 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
     @Override
     public String getKey() {
-      return entry.getKey().getName();
+      return entry.getKey();
     }
 
     @Override
     public String getValue() {
-      return entry.getValue().asString();
+      return entry.getValue();
     }
 
     @Override

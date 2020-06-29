@@ -12,7 +12,7 @@ ext.moduleName = "io.opentelemetry.exporters.jaeger"
 dependencies {
     api project(':opentelemetry-sdk')
 
-    implementation project(':opentelemetry-sdk-contrib-otproto'),
+    implementation project(':opentelemetry-sdk-extension-otproto'),
             project(':opentelemetry-sdk'),
             libraries.grpc_api,
             libraries.grpc_protobuf,

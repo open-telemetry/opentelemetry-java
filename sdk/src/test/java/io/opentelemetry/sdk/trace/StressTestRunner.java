@@ -42,16 +42,13 @@ abstract class StressTestRunner {
     for (final Operation operation : operations) {
       operationThreads.add(
           new Thread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  for (int i = 0; i < operation.getNumOperations(); i++) {
-                    operation.getUpdater().update();
-                    Uninterruptibles.sleepUninterruptibly(
-                        operation.getOperationDelayMs(), TimeUnit.MILLISECONDS);
-                  }
-                  countDownLatch.countDown();
+              () -> {
+                for (int i = 0; i < operation.getNumOperations(); i++) {
+                  operation.getUpdater().update();
+                  Uninterruptibles.sleepUninterruptibly(
+                      operation.getOperationDelayMs(), TimeUnit.MILLISECONDS);
                 }
+                countDownLatch.countDown();
               }));
     }
 

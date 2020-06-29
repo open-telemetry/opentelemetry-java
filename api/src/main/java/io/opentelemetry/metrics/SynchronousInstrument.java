@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.SynchronousInstrument.BoundInstrument;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -38,12 +39,12 @@ public interface SynchronousInstrument<B extends BoundInstrument> extends Instru
    * <p>It is recommended that callers keep a reference to the Bound Instrument instead of always
    * calling this method for every operation.
    *
-   * @param labelKeyValuePairs the set of labels, as key-value pairs.
+   * @param labels the set of labels, as key-value pairs.
    * @return a {@code Bound Instrument}
    * @throws NullPointerException if {@code labelValues} is null.
    * @since 0.1.0
    */
-  B bind(String... labelKeyValuePairs);
+  B bind(Labels labels);
 
   interface BoundInstrument {
     /**

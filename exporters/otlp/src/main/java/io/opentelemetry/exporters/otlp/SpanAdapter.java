@@ -17,6 +17,8 @@
 package io.opentelemetry.exporters.otlp;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -24,7 +26,7 @@ import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.proto.trace.v1.Status.StatusCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -84,7 +86,7 @@ final class SpanAdapter {
   }
 
   static Span toProtoSpan(SpanData spanData) {
-    Span.Builder builder = Span.newBuilder();
+    final Span.Builder builder = Span.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(spanData.getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(spanData.getSpanId()));
     // TODO: Set TraceState;
@@ -95,10 +97,15 @@ final class SpanAdapter {
     builder.setKind(toProtoSpanKind(spanData.getKind()));
     builder.setStartTimeUnixNano(spanData.getStartEpochNanos());
     builder.setEndTimeUnixNano(spanData.getEndEpochNanos());
-    for (Map.Entry<String, AttributeValue> resourceEntry : spanData.getAttributes().entrySet()) {
-      builder.addAttributes(
-          CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
-    }
+    spanData
+        .getAttributes()
+        .forEach(
+            new KeyValueConsumer<AttributeValue>() {
+              @Override
+              public void consume(String key, AttributeValue value) {
+                builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
+              }
+            });
     builder.setDroppedAttributesCount(
         spanData.getTotalAttributeCount() - spanData.getAttributes().size());
     for (Event event : spanData.getEvents()) {
@@ -130,28 +137,37 @@ final class SpanAdapter {
   }
 
   static Span.Event toProtoSpanEvent(Event event) {
-    Span.Event.Builder builder = Span.Event.newBuilder();
+    final Span.Event.Builder builder = Span.Event.newBuilder();
     builder.setName(event.getName());
     builder.setTimeUnixNano(event.getEpochNanos());
-    for (Map.Entry<String, AttributeValue> resourceEntry : event.getAttributes().entrySet()) {
-      builder.addAttributes(
-          CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
-    }
+    event
+        .getAttributes()
+        .forEach(
+            new KeyValueConsumer<AttributeValue>() {
+              @Override
+              public void consume(String key, AttributeValue value) {
+                builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
+              }
+            });
     builder.setDroppedAttributesCount(
         event.getTotalAttributeCount() - event.getAttributes().size());
     return builder.build();
   }
 
   static Span.Link toProtoSpanLink(Link link) {
-    Span.Link.Builder builder = Span.Link.newBuilder();
+    final Span.Link.Builder builder = Span.Link.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanId()));
     // TODO: Set TraceState;
-    for (Map.Entry<String, AttributeValue> resourceEntry : link.getAttributes().entrySet()) {
-      builder.addAttributes(
-          CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
-    }
-    builder.setDroppedAttributesCount(link.getTotalAttributeCount() - link.getAttributes().size());
+    Attributes attributes = link.getAttributes();
+    attributes.forEach(
+        new KeyValueConsumer<AttributeValue>() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
+          }
+        });
+    builder.setDroppedAttributesCount(link.getTotalAttributeCount() - attributes.size());
     return builder.build();
   }
 

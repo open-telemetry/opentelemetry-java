@@ -8,23 +8,24 @@ ext.moduleName = "io.opentelemetry.all"
 def subprojects = [
         project(':opentelemetry-api'),
         project(':opentelemetry-context-prop'),
-        project(':opentelemetry-contrib-runtime-metrics'),
-        project(':opentelemetry-contrib-trace-propagators'),
-        project(':opentelemetry-contrib-trace-utils'),
-        project(':opentelemetry-contrib-auto-annotations'),
+        project(':opentelemetry-extension-runtime-metrics'),
+        project(':opentelemetry-extension-trace-propagators'),
+        project(':opentelemetry-extension-trace-utils'),
+        project(':opentelemetry-extension-auto-annotations'),
         project(':opentelemetry-exporters-logging'),
         project(':opentelemetry-exporters-inmemory'),
         project(':opentelemetry-exporters-jaeger'),
         project(':opentelemetry-exporters-otlp'),
         project(':opentelemetry-exporters-prometheus'),
         project(':opentelemetry-exporters-zipkin'),
+        project(':opentelemetry-integration-tests'),
         project(':opentelemetry-opentracing-shim'),
         project(':opentelemetry-sdk'),
-        project(':opentelemetry-sdk-contrib-async-processor'),
-        project(':opentelemetry-sdk-contrib-auto-config'),
-        project(':opentelemetry-sdk-contrib-otproto'),
-        project(':opentelemetry-sdk-contrib-testbed'),
-        project(':opentelemetry-sdk-contrib-jaeger-remote-sampler'),
+        project(':opentelemetry-sdk-extension-async-processor'),
+        project(':opentelemetry-sdk-extension-auto-config'),
+        project(':opentelemetry-sdk-extension-otproto'),
+        project(':opentelemetry-sdk-extension-testbed'),
+        project(':opentelemetry-sdk-extension-jaeger-remote-sampler'),
 ]
 
 for (subproject in rootProject.subprojects) {
@@ -36,6 +37,7 @@ for (subproject in rootProject.subprojects) {
 
 dependencies {
     compile subprojects
+    testCompile libraries.archunit
 }
 
 task jacocoMerge(type: JacocoMerge) {

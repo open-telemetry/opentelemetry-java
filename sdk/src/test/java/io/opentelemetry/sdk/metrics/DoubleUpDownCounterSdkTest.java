@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleUpDownCounter;
 import io.opentelemetry.metrics.DoubleUpDownCounter.BoundDoubleUpDownCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -29,7 +31,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,8 +46,7 @@ public class DoubleUpDownCounterSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
-          Collections.singletonMap(
-              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
+          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(
           "io.opentelemetry.sdk.metrics.DoubleUpDownCounterSdkTest", null);
@@ -57,11 +57,25 @@ public class DoubleUpDownCounterSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
+  public void add_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build().add(1.0, null);
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build().bind(null);
+  }
+
+  @Test
   public void collectMetrics_NoRecords() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
         testSdk
-            .doubleUpDownCounterBuilder("testCounter")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .doubleUpDownCounterBuilder("testUpDownCounter")
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -71,11 +85,11 @@ public class DoubleUpDownCounterSdkTest {
     assertThat(metricData.getDescriptor())
         .isEqualTo(
             Descriptor.create(
-                "testCounter",
+                "testUpDownCounter",
                 "My very own counter",
                 "ms",
                 Type.NON_MONOTONIC_DOUBLE,
-                Collections.singletonMap("sk1", "sv1")));
+                Labels.of("sk1", "sv1")));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -84,9 +98,9 @@ public class DoubleUpDownCounterSdkTest {
   @Test
   public void collectMetrics_WithOneRecord() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
-    doubleUpDownCounter.add(12.1d);
+    doubleUpDownCounter.add(12.1d, Labels.empty());
     List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
@@ -98,29 +112,24 @@ public class DoubleUpDownCounterSdkTest {
     assertThat(metricData.getPoints())
         .containsExactly(
             DoublePoint.create(
-                testClock.now() - SECOND_NANOS,
-                testClock.now(),
-                Collections.<String, String>emptyMap(),
-                12.1d));
+                testClock.now() - SECOND_NANOS, testClock.now(), Labels.empty(), 12.1d));
   }
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
-    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind("K", "V");
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleUpDownCounter.add(12.1d);
+      doubleUpDownCounter.add(12.1d, Labels.empty());
       boundCounter.add(123.3d);
-      doubleUpDownCounter.add(21.4d);
+      doubleUpDownCounter.add(21.4d, Labels.empty());
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(321.5d);
-      doubleUpDownCounter.add(111.1d, "K", "V");
+      doubleUpDownCounter.add(111.1d, Labels.of("K", "V"));
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
@@ -129,13 +138,13 @@ public class DoubleUpDownCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, firstCollect, labelSet.getLabels(), 555.9d),
-              DoublePoint.create(startTime, firstCollect, emptyLabelSet.getLabels(), 33.5d));
+              DoublePoint.create(startTime, firstCollect, Labels.of("K", "V"), 555.9d),
+              DoublePoint.create(startTime, firstCollect, Labels.empty(), 33.5d));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(222d);
-      doubleUpDownCounter.add(11d);
+      doubleUpDownCounter.add(11d, Labels.empty());
 
       long secondCollect = testClock.now();
       metricDataList = doubleUpDownCounter.collectAll();
@@ -144,8 +153,8 @@ public class DoubleUpDownCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, secondCollect, labelSet.getLabels(), 777.9d),
-              DoublePoint.create(startTime, secondCollect, emptyLabelSet.getLabels(), 44.5d));
+              DoublePoint.create(startTime, secondCollect, Labels.of("K", "V"), 777.9d),
+              DoublePoint.create(startTime, secondCollect, Labels.empty(), 44.5d));
     } finally {
       boundCounter.unbind();
     }
@@ -154,9 +163,9 @@ public class DoubleUpDownCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind("K", "v");
-    BoundDoubleUpDownCounter duplicateBoundCounter = doubleUpDownCounter.bind("K", "v");
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
+    BoundDoubleUpDownCounter duplicateBoundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
     } finally {
@@ -168,11 +177,12 @@ public class DoubleUpDownCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind("K", "v");
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
     try {
       doubleUpDownCounter.collectAll();
-      BoundDoubleUpDownCounter duplicateBoundCounter = doubleUpDownCounter.bind("K", "v");
+      BoundDoubleUpDownCounter duplicateBoundCounter =
+          doubleUpDownCounter.bind(Labels.of("K", "V"));
       try {
         assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
       } finally {
@@ -186,7 +196,7 @@ public class DoubleUpDownCounterSdkTest {
   @Test
   public void stressTest() {
     final DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleUpDownCounter).setCollectionIntervalMs(100);
@@ -197,7 +207,9 @@ public class DoubleUpDownCounterSdkTest {
               1_000, 2, new OperationUpdaterDirectCall(doubleUpDownCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterWithBinding(doubleUpDownCounter.bind("K", "V"))));
+              1_000,
+              2,
+              new OperationUpdaterWithBinding(doubleUpDownCounter.bind(Labels.of("K", "V")))));
     }
 
     stressTestBuilder.build().run();
@@ -205,8 +217,7 @@ public class DoubleUpDownCounterSdkTest {
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
-            DoublePoint.create(
-                testClock.now(), testClock.now(), Collections.singletonMap("K", "V"), 80_000));
+            DoublePoint.create(testClock.now(), testClock.now(), Labels.of("K", "V"), 80_000));
   }
 
   @Test
@@ -214,7 +225,7 @@ public class DoubleUpDownCounterSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleUpDownCounter).setCollectionIntervalMs(100);
@@ -228,7 +239,8 @@ public class DoubleUpDownCounterSdkTest {
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new OperationUpdaterWithBinding(doubleUpDownCounter.bind(keys[i], values[i]))));
+              new OperationUpdaterWithBinding(
+                  doubleUpDownCounter.bind(Labels.of(keys[i], values[i])))));
     }
 
     stressTestBuilder.build().run();
@@ -237,25 +249,13 @@ public class DoubleUpDownCounterSdkTest {
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
             DoublePoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[0], values[0]),
-                40_000),
+                testClock.now(), testClock.now(), Labels.of(keys[0], values[0]), 40_000),
             DoublePoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[1], values[1]),
-                40_000),
+                testClock.now(), testClock.now(), Labels.of(keys[1], values[1]), 40_000),
             DoublePoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[2], values[2]),
-                40_000),
+                testClock.now(), testClock.now(), Labels.of(keys[2], values[2]), 40_000),
             DoublePoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[3], values[3]),
-                40_000));
+                testClock.now(), testClock.now(), Labels.of(keys[3], values[3]), 40_000));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
@@ -291,7 +291,7 @@ public class DoubleUpDownCounterSdkTest {
 
     @Override
     void update() {
-      doubleUpDownCounter.add(11.0, key, value);
+      doubleUpDownCounter.add(11.0, Labels.of(key, value));
     }
 
     @Override

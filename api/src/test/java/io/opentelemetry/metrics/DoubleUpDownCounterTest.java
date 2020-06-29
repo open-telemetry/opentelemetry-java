@@ -17,11 +17,10 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.DoubleUpDownCounter.BoundDoubleUpDownCounter;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,8 +35,7 @@ public class DoubleUpDownCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Map<String, String> CONSTANT_LABELS =
-      Collections.singletonMap("key", "value");
+  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
 
   private final Meter meter = OpenTelemetry.getMeter("DoubleUpDownCounterTest");
 
@@ -94,16 +92,14 @@ public class DoubleUpDownCounterTest {
   }
 
   @Test
-  public void noopBind_WithBadLabelSet() {
-    DoubleUpDownCounter doubleUpDownCounter =
-        meter.doubleUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    doubleUpDownCounter.bind("key");
+  public void add_preventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleUpDownCounterBuilder("metric").build().bind(null);
   }
 
   @Test
-  public void addDoesNotThrow() {
+  public void add_DoesNotThrow() {
     DoubleUpDownCounter doubleUpDownCounter =
         meter
             .doubleUpDownCounterBuilder(NAME)
@@ -111,12 +107,19 @@ public class DoubleUpDownCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    doubleUpDownCounter.add(1.0);
-    doubleUpDownCounter.add(-1.0);
+    doubleUpDownCounter.add(1.0, Labels.empty());
+    doubleUpDownCounter.add(-1.0, Labels.empty());
   }
 
   @Test
-  public void boundDoesNotThrow() {
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleUpDownCounterBuilder("metric").build().bind(null);
+  }
+
+  @Test
+  public void bound_DoesNotThrow() {
     DoubleUpDownCounter doubleUpDownCounter =
         meter
             .doubleUpDownCounterBuilder(NAME)
@@ -124,7 +127,7 @@ public class DoubleUpDownCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind();
+    BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Labels.empty());
     bound.add(1.0);
     bound.add(-1.0);
     bound.unbind();

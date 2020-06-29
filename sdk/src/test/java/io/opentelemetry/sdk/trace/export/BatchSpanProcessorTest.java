@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.trace.export;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.doThrow;
 
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
@@ -29,7 +29,10 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,17 +58,6 @@ public class BatchSpanProcessorTest {
   private final Tracer tracer = tracerSdkFactory.get("BatchSpanProcessorTest");
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
-
-  abstract static class ConfigTest<T> extends ConfigBuilder<T> {
-
-    public static ConfigBuilder.NamingConvention getDot() {
-      return NamingConvention.DOT;
-    }
-
-    public static ConfigBuilder.NamingConvention getEnv() {
-      return NamingConvention.ENV_VAR;
-    }
-  }
 
   @Before
   public void setup() {
@@ -99,6 +91,41 @@ public class BatchSpanProcessorTest {
     TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOff())
         .startSpan()
         .end();
+  }
+
+  @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.bsp.schedule.delay", "12");
+    options.put("otel.bsp.max.queue", "34");
+    options.put("otel.bsp.max.export.batch", "56");
+    options.put("otel.bsp.export.timeout", "78");
+    options.put("otel.bsp.export.sampled", "false");
+    BatchSpanProcessor.Builder config =
+        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0))
+            .fromConfigMap(options, ConfigTester.getNamingDot());
+    assertThat(config.getScheduleDelayMillis()).isEqualTo(12);
+    assertThat(config.getMaxQueueSize()).isEqualTo(34);
+    assertThat(config.getMaxExportBatchSize()).isEqualTo(56);
+    assertThat(config.getExporterTimeoutMillis()).isEqualTo(78);
+    assertThat(config.getExportOnlySampled()).isEqualTo(false);
+  }
+
+  @Test
+  public void configTest_EmptyOptions() {
+    BatchSpanProcessor.Builder config =
+        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0))
+            .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
+    assertThat(config.getScheduleDelayMillis())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_SCHEDULE_DELAY_MILLIS);
+    assertThat(config.getMaxQueueSize())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_MAX_QUEUE_SIZE);
+    assertThat(config.getMaxExportBatchSize())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+    assertThat(config.getExporterTimeoutMillis())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_EXPORT_TIMEOUT_MILLIS);
+    assertThat(config.getExportOnlySampled())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test
@@ -181,8 +208,7 @@ public class BatchSpanProcessorTest {
     WaitingSpanExporter waitingSpanExporter2 = new WaitingSpanExporter(2);
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(
-                MultiSpanExporter.create(
-                    Arrays.<SpanExporter>asList(waitingSpanExporter, waitingSpanExporter2)))
+                MultiSpanExporter.create(Arrays.asList(waitingSpanExporter, waitingSpanExporter2)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
@@ -261,7 +287,7 @@ public class BatchSpanProcessorTest {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockServiceHandler)
-        .export(ArgumentMatchers.<SpanData>anyList());
+        .export(ArgumentMatchers.anyList());
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(mockServiceHandler, waitingSpanExporter)))

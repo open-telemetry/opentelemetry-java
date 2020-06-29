@@ -17,11 +17,10 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,8 +35,7 @@ public class LongCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Map<String, String> CONSTANT_LABELS =
-      Collections.singletonMap("key", "value");
+  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
 
   private final Meter meter = OpenTelemetry.getMeter("LongCounterTest");
 
@@ -94,19 +92,17 @@ public class LongCounterTest {
   }
 
   @Test
-  public void noopBind_WithBadLabelSet() {
-    LongCounter longCounter =
-        meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    longCounter.bind("key");
+  public void add_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.longCounterBuilder("metric").build().add(1, null);
   }
 
   @Test
   public void add_DoesNotThrow() {
     LongCounter longCounter =
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    longCounter.add(1);
+    longCounter.add(1, Labels.empty());
   }
 
   @Test
@@ -115,7 +111,14 @@ public class LongCounterTest {
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Counters can only increase");
-    longCounter.add(-1);
+    longCounter.add(-1, Labels.empty());
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.longCounterBuilder("metric").build().bind(null);
   }
 
   @Test
@@ -127,7 +130,7 @@ public class LongCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundLongCounter bound = longCounter.bind();
+    BoundLongCounter bound = longCounter.bind(Labels.empty());
     bound.add(1);
     bound.unbind();
   }
@@ -141,7 +144,7 @@ public class LongCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundLongCounter bound = longCounter.bind();
+    BoundLongCounter bound = longCounter.bind(Labels.empty());
     try {
       thrown.expect(IllegalArgumentException.class);
       thrown.expectMessage("Counters can only increase");

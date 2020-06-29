@@ -136,9 +136,9 @@ span.addEvent("End");
 ```
 
 ```java
-Map<String, AttributeValue> eventAttributes = new HashMap<>();
-eventAttributes.put("key", AttributeValue.stringAttributeValue("value"));
-eventAttributes.put("result", AttributeValue.longAttributeValue(0L));
+Attributes eventAttributes = Attributes.of(
+    "key", AttributeValue.stringAttributeValue("value"),
+    "result", AttributeValue.longAttributeValue(0L));
 
 span.addEvent("End Computation", eventAttributes);
 ```

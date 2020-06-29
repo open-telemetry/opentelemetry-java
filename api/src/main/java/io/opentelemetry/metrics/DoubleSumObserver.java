@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleSumObserver;
-import java.util.Map;
+import io.opentelemetry.common.Labels;
+import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -46,9 +46,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     cpuObserver.setCallback(
- *         new DoubleSumObserver.Callback<ResultDoubleSumObserver>() {
+ *         new DoubleSumObserver.Callback<DoubleResult>() {
  *          {@literal @}Override
- *           public void update(ResultDoubleSumObserver result) {
+ *           public void update(DoubleResult result) {
  *             // Get system cpu usage
  *             result.observe(cpuIdle, "state", "idle");
  *             result.observe(cpuUser, "state", "user");
@@ -61,9 +61,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleSumObserver extends AsynchronousInstrument<ResultDoubleSumObserver> {
+public interface DoubleSumObserver extends AsynchronousInstrument<DoubleResult> {
   @Override
-  void setCallback(Callback<ResultDoubleSumObserver> callback);
+  void setCallback(Callback<DoubleResult> callback);
 
   /** Builder class for {@link DoubleSumObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {
@@ -74,14 +74,9 @@ public interface DoubleSumObserver extends AsynchronousInstrument<ResultDoubleSu
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Map<String, String> constantLabels);
+    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     DoubleSumObserver build();
-  }
-
-  /** The result for the {@link AsynchronousInstrument.Callback}. */
-  interface ResultDoubleSumObserver {
-    void observe(double sum, String... keyValueLabelPairs);
   }
 }

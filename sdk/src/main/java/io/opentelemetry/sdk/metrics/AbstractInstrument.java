@@ -16,18 +16,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Instrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 abstract class AbstractInstrument implements Instrument {
@@ -99,7 +95,7 @@ abstract class AbstractInstrument implements Instrument {
     private final MeterSharedState meterSharedState;
     private String description = "";
     private String unit = "1";
-    private Map<String, String> constantLabels = Collections.emptyMap();
+    private Labels constantLabels = Labels.empty();
 
     Builder(
         String name,
@@ -127,10 +123,8 @@ abstract class AbstractInstrument implements Instrument {
     }
 
     @Override
-    public final B setConstantLabels(Map<String, String> constantLabels) {
-      Utils.checkMapKeysNotNull(
-          Objects.requireNonNull(constantLabels, "constantLabels"), "constantLabel");
-      this.constantLabels = Collections.unmodifiableMap(new HashMap<>(constantLabels));
+    public final B setConstantLabels(Labels constantLabels) {
+      this.constantLabels = constantLabels;
       return getThis();
     }
 
@@ -152,28 +146,5 @@ abstract class AbstractInstrument implements Instrument {
     final <I extends AbstractInstrument> I register(I instrument) {
       return getMeterSharedState().getInstrumentRegistry().register(instrument);
     }
-  }
-
-  static Descriptor getDefaultMetricDescriptor(
-      InstrumentDescriptor descriptor, Aggregation aggregation) {
-    return Descriptor.create(
-        descriptor.getName(),
-        descriptor.getDescription(),
-        aggregation.getUnit(descriptor.getUnit()),
-        aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
-        descriptor.getConstantLabels());
-  }
-
-  static Batcher getDefaultBatcher(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      Aggregation defaultAggregation) {
-    return Batchers.getCumulativeAllLabels(
-        getDefaultMetricDescriptor(descriptor, defaultAggregation),
-        meterProviderSharedState.getResource(),
-        meterSharedState.getInstrumentationLibraryInfo(),
-        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
-        meterProviderSharedState.getClock());
   }
 }

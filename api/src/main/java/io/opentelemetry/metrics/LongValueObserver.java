@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.LongValueObserver.ResultLongValueObserver;
-import java.util.Map;
+import io.opentelemetry.common.Labels;
+import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -43,9 +43,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     cpuObserver.setCallback(
- *         new LongValueObserver.Callback<ResultLongValueObserver>() {
+ *         new LongValueObserver.Callback<LongResult>() {
  *          {@literal @}Override
- *           public void update(ResultLongValueObserver result) {
+ *           public void update(LongResult result) {
  *             // Get system cpu fan speed
  *             result.observe(cpuFanSpeed);
  *           }
@@ -57,9 +57,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.5.0
  */
 @ThreadSafe
-public interface LongValueObserver extends AsynchronousInstrument<ResultLongValueObserver> {
+public interface LongValueObserver extends AsynchronousInstrument<LongResult> {
   @Override
-  void setCallback(Callback<ResultLongValueObserver> callback);
+  void setCallback(Callback<LongResult> callback);
 
   /** Builder class for {@link LongValueObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {
@@ -70,14 +70,9 @@ public interface LongValueObserver extends AsynchronousInstrument<ResultLongValu
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Map<String, String> constantLabels);
+    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     LongValueObserver build();
-  }
-
-  /** The result for the {@link Callback}. */
-  interface ResultLongValueObserver {
-    void observe(long sum, String... keyValueLabelPairs);
   }
 }

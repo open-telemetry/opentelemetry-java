@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.ReadableAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -27,7 +28,7 @@ import javax.annotation.Nullable;
  * <p>Some APIs may have slightly different behaviors, like `put` which returns null if out of
  * capacity.
  */
-final class AttributesMap extends HashMap<String, AttributeValue> {
+final class AttributesMap extends HashMap<String, AttributeValue> implements ReadableAttributes {
 
   private final long capacity;
   private int totalAddedValues = 0;
@@ -67,20 +68,33 @@ final class AttributesMap extends HashMap<String, AttributeValue> {
 
   @SuppressWarnings("MissingOverride")
   public AttributeValue putIfAbsent(String key, AttributeValue value) {
-    throw new RuntimeException("Do not call methods on the map");
+    throw new UnsupportedOperationException("Do not call methods on the map");
   }
 
   @SuppressWarnings("MissingOverride")
   public AttributeValue replace(String key, AttributeValue value) {
-    throw new RuntimeException("Do not call methods on the map");
+    throw new UnsupportedOperationException("Do not call methods on the map");
   }
 
   @SuppressWarnings("MissingOverride")
   public boolean replace(String key, AttributeValue oldValue, AttributeValue newValue) {
-    throw new RuntimeException("Do not call methods on the map");
+    throw new UnsupportedOperationException("Do not call methods on the map");
   }
 
   int getTotalAddedValues() {
     return totalAddedValues;
+  }
+
+  @Override
+  public void forEach(KeyValueConsumer<AttributeValue> consumer) {
+    for (Entry<String, AttributeValue> entry : entrySet()) {
+      consumer.consume(entry.getKey(), entry.getValue());
+    }
+  }
+
+  @Nullable
+  @Override
+  public AttributeValue get(String key) {
+    return super.get(key);
   }
 }

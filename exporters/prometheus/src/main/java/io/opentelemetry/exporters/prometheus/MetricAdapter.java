@@ -18,6 +18,7 @@ package io.opentelemetry.exporters.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
@@ -33,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Util methods to convert OpenTelemetry Metrics data models to Prometheus data models.
@@ -105,10 +105,7 @@ final class MetricAdapter {
     if (descriptor.getConstantLabels().size() != 0) {
       constLabelNames = new ArrayList<>(descriptor.getConstantLabels().size());
       constLabelValues = new ArrayList<>(descriptor.getConstantLabels().size());
-      for (Map.Entry<String, String> entry : descriptor.getConstantLabels().entrySet()) {
-        constLabelNames.add(toLabelName(entry.getKey()));
-        constLabelValues.add(entry.getValue() == null ? "" : entry.getValue());
-      }
+      descriptor.getConstantLabels().forEach(new Consumer(constLabelNames, constLabelValues));
     }
 
     for (Point point : points) {
@@ -122,12 +119,8 @@ final class MetricAdapter {
             new ArrayList<>(descriptor.getConstantLabels().size() + point.getLabels().size());
         labelValues.addAll(constLabelValues);
 
-        for (Map.Entry<String, String> entry : point.getLabels().entrySet()) {
-          // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
-          // for the same label key.
-          labelNames.add(toLabelName(entry.getKey()));
-          labelValues.add(entry.getValue() == null ? "" : entry.getValue());
-        }
+        // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
+        point.getLabels().forEach(new Consumer(labelNames, labelValues));
       }
 
       switch (descriptor.getType()) {
@@ -152,6 +145,22 @@ final class MetricAdapter {
   // Converts a label keys to a label names. Sanitizes the label keys.
   static String toLabelName(String labelKey) {
     return Collector.sanitizeMetricName(labelKey);
+  }
+
+  private static final class Consumer implements KeyValueConsumer<String> {
+    final List<String> labelNames;
+    final List<String> labelValues;
+
+    private Consumer(List<String> labelNames, List<String> labelValues) {
+      this.labelNames = labelNames;
+      this.labelValues = labelValues;
+    }
+
+    @Override
+    public void consume(String key, String value) {
+      labelNames.add(toLabelName(key));
+      labelValues.add(value == null ? "" : value);
+    }
   }
 
   private static void addSummarySamples(

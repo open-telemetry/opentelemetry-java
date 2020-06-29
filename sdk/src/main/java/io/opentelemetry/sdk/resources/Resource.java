@@ -19,12 +19,11 @@ package io.opentelemetry.sdk.resources;
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -45,7 +44,7 @@ public abstract class Resource {
           + " characters.";
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
-  private static final Resource EMPTY = create(Collections.<String, AttributeValue>emptyMap());
+  private static final Resource EMPTY = create(Attributes.empty());
 
   Resource() {}
 
@@ -65,7 +64,7 @@ public abstract class Resource {
    * @return a map of attributes.
    * @since 0.1.0
    */
-  public abstract Map<String, AttributeValue> getAttributes();
+  public abstract ReadableAttributes getAttributes();
 
   @Memoized
   @Override
@@ -81,9 +80,9 @@ public abstract class Resource {
    *     ASCII string or exceed {@link #MAX_LENGTH} characters.
    * @since 0.1.0
    */
-  public static Resource create(Map<String, AttributeValue> attributes) {
+  public static Resource create(Attributes attributes) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
-    return new AutoValue_Resource(Collections.unmodifiableMap(new LinkedHashMap<>(attributes)));
+    return new AutoValue_Resource(attributes);
   }
 
   /**
@@ -99,20 +98,36 @@ public abstract class Resource {
       return this;
     }
 
-    Map<String, AttributeValue> mergedAttributeMap = new LinkedHashMap<>(other.getAttributes());
-    // Attributes from resource overwrite attributes from otherResource.
-    for (Entry<String, AttributeValue> entry : this.getAttributes().entrySet()) {
-      mergedAttributeMap.put(entry.getKey(), entry.getValue());
-    }
-    return new AutoValue_Resource(Collections.unmodifiableMap(mergedAttributeMap));
+    Attributes.Builder attrBuilder = Attributes.newBuilder();
+    Merger merger = new Merger(attrBuilder);
+    this.getAttributes().forEach(merger);
+    other.getAttributes().forEach(merger);
+    return new AutoValue_Resource(attrBuilder.build());
   }
 
-  private static void checkAttributes(Map<String, AttributeValue> attributes) {
-    for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      Utils.checkArgument(
-          isValidAndNotEmpty(entry.getKey()), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
-      Objects.requireNonNull(entry.getValue(), "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
+  private static final class Merger implements KeyValueConsumer<AttributeValue> {
+    private final Attributes.Builder attrBuilder;
+
+    private Merger(Attributes.Builder attrBuilder) {
+      this.attrBuilder = attrBuilder;
     }
+
+    @Override
+    public void consume(String key, AttributeValue value) {
+      attrBuilder.setAttribute(key, value);
+    }
+  }
+
+  private static void checkAttributes(ReadableAttributes attributes) {
+    attributes.forEach(
+        new KeyValueConsumer<AttributeValue>() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            Utils.checkArgument(
+                isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
+            Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
+          }
+        });
   }
 
   /**

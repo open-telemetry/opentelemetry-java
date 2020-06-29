@@ -60,4 +60,14 @@ public final class DoubleAttributeSetter {
   public void set(Span span, double value) {
     span.setAttribute(key(), value);
   }
+
+  /**
+   * Sets the attribute on the provided span builder.
+   *
+   * @param spanBuilder the span builder to add the attribute to
+   * @param value the value for this attribute
+   */
+  public void set(Span.Builder spanBuilder, double value) {
+    spanBuilder.setAttribute(key(), value);
+  }
 }

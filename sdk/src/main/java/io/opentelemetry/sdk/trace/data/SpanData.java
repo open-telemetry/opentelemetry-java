@@ -17,7 +17,8 @@
 package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -28,10 +29,7 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -125,7 +123,7 @@ public interface SpanData {
    * @return the attributes recorded for this {@code Span}.
    * @since 0.1.0
    */
-  Map<String, AttributeValue> getAttributes();
+  ReadableAttributes getAttributes();
 
   /**
    * Returns the timed events recorded for this {@code Span}.
@@ -213,8 +211,7 @@ public interface SpanData {
   @AutoValue
   abstract class Link implements io.opentelemetry.trace.Link {
 
-    private static final Map<String, AttributeValue> DEFAULT_ATTRIBUTE_COLLECTION =
-        Collections.emptyMap();
+    private static final Attributes DEFAULT_ATTRIBUTE_COLLECTION = Attributes.empty();
     private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
 
     /**
@@ -237,11 +234,8 @@ public interface SpanData {
      * @return a new immutable {@code Event<T>}
      * @since 0.1.0
      */
-    public static Link create(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-      return new AutoValue_SpanData_Link(
-          spanContext,
-          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
-          attributes.size());
+    public static Link create(SpanContext spanContext, Attributes attributes) {
+      return new AutoValue_SpanData_Link(spanContext, attributes, attributes.size());
     }
 
     /**
@@ -254,11 +248,8 @@ public interface SpanData {
      * @since 0.1.0
      */
     public static Link create(
-        SpanContext spanContext, Map<String, AttributeValue> attributes, int totalAttributeCount) {
-      return new AutoValue_SpanData_Link(
-          spanContext,
-          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
-          totalAttributeCount);
+        SpanContext spanContext, Attributes attributes, int totalAttributeCount) {
+      return new AutoValue_SpanData_Link(spanContext, attributes, totalAttributeCount);
     }
 
     /**
@@ -274,55 +265,14 @@ public interface SpanData {
     Link() {}
   }
 
-  /**
-   * An immutable timed event representation. Enhances the core {@link io.opentelemetry.trace.Event}
-   * by adding the time at which the event occurred.
-   *
-   * @since 0.1.0
-   */
-  @Immutable
-  @AutoValue
-  abstract class Event implements io.opentelemetry.trace.Event {
-
-    /**
-     * Returns a new immutable {@code Event}.
-     *
-     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
-     * @param name the name of the {@code Event}.
-     * @param attributes the attributes of the {@code Event}.
-     * @return a new immutable {@code Event<T>}
-     * @since 0.1.0
-     */
-    public static Event create(
-        long epochNanos, String name, Map<String, AttributeValue> attributes) {
-      return new AutoValue_SpanData_Event(name, attributes, epochNanos, attributes.size());
-    }
-
-    /**
-     * Returns a new immutable {@code Event}.
-     *
-     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
-     * @param name the name of the {@code Event}.
-     * @param attributes the attributes of the {@code Event}.
-     * @param totalAttributeCount the total number of attributes for this {@code} Event.
-     * @return a new immutable {@code Event<T>}
-     * @since 0.1.0
-     */
-    public static Event create(
-        long epochNanos,
-        String name,
-        Map<String, AttributeValue> attributes,
-        int totalAttributeCount) {
-      return new AutoValue_SpanData_Event(name, attributes, epochNanos, totalAttributeCount);
-    }
-
+  interface Event extends io.opentelemetry.trace.Event {
     /**
      * Returns the epoch time in nanos of this event.
      *
      * @return the epoch time in nanos of this event.
      * @since 0.1.0
      */
-    public abstract long getEpochNanos();
+    long getEpochNanos();
 
     /**
      * The total number of attributes that were recorded on this Event. This number may be larger
@@ -332,8 +282,6 @@ public interface SpanData {
      *
      * @return The total number of attributes on this event.
      */
-    public abstract int getTotalAttributeCount();
-
-    Event() {}
+    int getTotalAttributeCount();
   }
 }

@@ -20,15 +20,16 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.ByteString;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.proto.trace.v1.Status.StatusCode;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -57,7 +58,7 @@ public class SpanAdapterTest {
   public void toProtoSpan() {
     Span span =
         SpanAdapter.toProtoSpan(
-            SpanDataImpl.newBuilder()
+            TestSpanData.newBuilder()
                 .setHasEnded(true)
                 .setTraceId(TRACE_ID)
                 .setSpanId(SPAN_ID)
@@ -66,13 +67,11 @@ public class SpanAdapterTest {
                 .setKind(Kind.SERVER)
                 .setStartEpochNanos(12345)
                 .setEndEpochNanos(12349)
-                .setAttributes(
-                    Collections.singletonMap("key", AttributeValue.booleanAttributeValue(true)))
+                .setAttributes(Attributes.of("key", AttributeValue.booleanAttributeValue(true)))
                 .setTotalAttributeCount(2)
                 .setEvents(
                     Collections.singletonList(
-                        Event.create(
-                            12347, "my_event", Collections.<String, AttributeValue>emptyMap())))
+                        EventImpl.create(12347, "my_event", Attributes.empty())))
                 .setTotalRecordedEvents(3)
                 .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
@@ -234,10 +233,7 @@ public class SpanAdapterTest {
   public void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                Event.create(
-                    12345,
-                    "test_without_attributes",
-                    Collections.<String, AttributeValue>emptyMap())))
+                EventImpl.create(12345, "test_without_attributes", Attributes.empty())))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -249,11 +245,10 @@ public class SpanAdapterTest {
   public void toProtoSpanEvent_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                Event.create(
+                EventImpl.create(
                     12345,
                     "test_with_attributes",
-                    Collections.singletonMap(
-                        "key_string", AttributeValue.stringAttributeValue("string")),
+                    Attributes.of("key_string", AttributeValue.stringAttributeValue("string")),
                     5)))
         .isEqualTo(
             Span.Event.newBuilder()
@@ -285,8 +280,7 @@ public class SpanAdapterTest {
             SpanAdapter.toProtoSpanLink(
                 Link.create(
                     SPAN_CONTEXT,
-                    Collections.singletonMap(
-                        "key_string", AttributeValue.stringAttributeValue("string")),
+                    Attributes.of("key_string", AttributeValue.stringAttributeValue("string")),
                     5)))
         .isEqualTo(
             Span.Link.newBuilder()

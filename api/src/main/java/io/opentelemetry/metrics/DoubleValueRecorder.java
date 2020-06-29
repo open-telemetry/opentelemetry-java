@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -70,14 +70,14 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
    * labels.
    *
    * @param value the measurement to record.
-   * @param labelKeyValuePairs the set of labels to be associated to this recording
+   * @param labels the set of labels to be associated to this recording
    * @throws IllegalArgumentException if value is negative.
    * @since 0.3.0
    */
-  void record(double value, String... labelKeyValuePairs);
+  void record(double value, Labels labels);
 
   @Override
-  BoundDoubleValueRecorder bind(String... labelKeyValuePairs);
+  BoundDoubleValueRecorder bind(Labels labels);
 
   /**
    * A {@code Bound Instrument} for a {@link DoubleValueRecorder}.
@@ -108,7 +108,7 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Map<String, String> constantLabels);
+    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     DoubleValueRecorder build();

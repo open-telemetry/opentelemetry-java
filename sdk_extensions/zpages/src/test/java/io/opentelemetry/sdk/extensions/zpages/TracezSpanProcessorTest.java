@@ -1,0 +1,131 @@
+/*
+ * Copyright 2019, OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.opentelemetry.sdk.extensions.zpages;
+
+import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.when;
+
+import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
+import java.util.Collection;
+import java.util.Properties;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+/** Unit tests for {@link TracezSpanProcessor}. */
+@RunWith(JUnit4.class)
+public final class TracezSpanProcessorTest {
+  @Mock private ReadableSpan readableSpan;
+  private static final SpanContext SAMPLED_SPAN_CONTEXT =
+      SpanContext.create(
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
+          TraceFlags.builder().setIsSampled(true).build(),
+          TraceState.builder().build());
+  private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
+
+  private static void assertSpanCacheSizes(
+      TracezSpanProcessor spanProcessor, int runningSpanCacheSize, int completedSpanCacheSize) {
+    Collection<ReadableSpan> runningSpans = spanProcessor.getRunningSpans();
+    Collection<ReadableSpan> completedSpans = spanProcessor.getCompletedSpans();
+    assertThat(runningSpans.size()).isEqualTo(runningSpanCacheSize);
+    assertThat(completedSpans.size()).isEqualTo(completedSpanCacheSize);
+  }
+
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+  }
+
+  @Test
+  public void onStart_sampledSpan_inCache() {
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+    /* Return a sampled span, which should be added to the running cache by default */
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onStart(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 1, 0);
+  }
+
+  @Test
+  public void onEnd_sampledSpan_inCache() {
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+    /* Return a sampled span, which should be added to the completed cache upon ending */
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onStart(readableSpan);
+    spanProcessor.onEnd(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 0, 1);
+  }
+
+  @Test
+  public void onStart_notSampledSpan_inCache() {
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+    /* Return a non-sampled span, which should not be added to the running cache by default */
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onStart(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 1, 0);
+  }
+
+  @Test
+  public void onEnd_notSampledSpan_notInCache() {
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+    /* Return a non-sampled span, which should not be added to the running cache by default */
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onStart(readableSpan);
+    spanProcessor.onEnd(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 0, 0);
+  }
+
+  @Test
+  public void build_sampledFlagTrue_notInCache() {
+    /* Initialize a TraceZSpanProcessor that only looks at sampled spans */
+    Properties properties = new Properties();
+    properties.setProperty("otel.ssp.export.sampled", "true");
+    TracezSpanProcessor spanProcessor =
+        TracezSpanProcessor.newBuilder().readProperties(properties).build();
+
+    /* Return a non-sampled span, which should not be added to the completed cache */
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onStart(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 1, 0);
+    spanProcessor.onEnd(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 0, 0);
+  }
+
+  @Test
+  public void build_sampledFlagFalse_inCache() {
+    /* Initialize a TraceZSpanProcessor that looks at all spans */
+    Properties properties = new Properties();
+    properties.setProperty("otel.ssp.export.sampled", "false");
+    TracezSpanProcessor spanProcessor =
+        TracezSpanProcessor.newBuilder().readProperties(properties).build();
+
+    /* Return a non-sampled span, which should be added to the caches */
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onStart(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 1, 0);
+    spanProcessor.onEnd(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 0, 1);
+  }
+}

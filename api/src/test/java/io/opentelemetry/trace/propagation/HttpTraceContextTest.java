@@ -33,7 +33,6 @@ import io.opentelemetry.trace.TracingContextUtils;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -58,21 +57,8 @@ public class HttpTraceContextTest {
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01";
   private static final String TRACEPARENT_HEADER_NOT_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00";
-  private static final Setter<Map<String, String>> setter =
-      new Setter<Map<String, String>>() {
-        @Override
-        public void set(Map<String, String> carrier, String key, String value) {
-          carrier.put(key, value);
-        }
-      };
-  private static final Getter<Map<String, String>> getter =
-      new Getter<Map<String, String>>() {
-        @Nullable
-        @Override
-        public String get(Map<String, String> carrier, String key) {
-          return carrier.get(key);
-        }
-      };
+  private static final Setter<Map<String, String>> setter = Map::put;
+  private static final Getter<Map<String, String>> getter = Map::get;
   // Encoding preserves the order which is the reverse order of adding.
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING = "bar=baz,foo=bar";
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING_WITH_SPACES =
@@ -105,13 +91,24 @@ public class HttpTraceContextTest {
     httpTraceContext.inject(
         context,
         null,
-        new Setter<Map<String, String>>() {
-          @Override
-          public void set(Map<String, String> ignored, String key, String value) {
-            carrier.put(key, value);
-          }
-        });
+        (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
     assertThat(carrier).containsExactly(TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED);
+  }
+
+  @Test
+  public void inject_invalidContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    httpTraceContext.inject(
+        withSpanContext(
+            SpanContext.create(
+                TraceId.getInvalid(),
+                SpanId.getInvalid(),
+                SAMPLED_TRACE_OPTIONS,
+                TraceState.builder().set("foo", "bar").build()),
+            Context.current()),
+        carrier,
+        setter);
+    assertThat(carrier).hasSize(0);
   }
 
   @Test

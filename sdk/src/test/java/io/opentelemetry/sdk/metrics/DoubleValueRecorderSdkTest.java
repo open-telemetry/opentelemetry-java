@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleValueRecorder;
 import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -27,7 +29,6 @@ import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -48,8 +49,7 @@ public class DoubleValueRecorderSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
-          Collections.singletonMap(
-              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
+          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(
           "io.opentelemetry.sdk.metrics.DoubleValueRecorderSdkTest", null);
@@ -60,11 +60,25 @@ public class DoubleValueRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
+  public void record_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.doubleValueRecorderBuilder("testRecorder").build().record(1.0, null);
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.doubleValueRecorderBuilder("testRecorder").build().bind(null);
+  }
+
+  @Test
   public void collectMetrics_NoRecords() {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
-            .doubleValueRecorderBuilder("testMeasure")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .doubleValueRecorderBuilder("testRecorder")
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
@@ -74,35 +88,61 @@ public class DoubleValueRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testMeasure",
+                    "testRecorder",
                     "My very own measure",
                     "ms",
                     Type.SUMMARY,
-                    Collections.singletonMap("sk1", "sv1")),
+                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>emptyList()));
+                Collections.emptyList()));
   }
 
   @Test
-  public void collectMetrics_WithOneRecord() {
+  public void collectMetrics_EmptyCollectionCycle() {
     DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
+        testSdk
+            .doubleValueRecorderBuilder("testRecorder")
+            .setConstantLabels(Labels.of("sk1", "sv1"))
+            .setDescription("My very own measure")
+            .setUnit("ms")
+            .build();
+    doubleMeasure.bind(Labels.of("key", "value"));
     testClock.advanceNanos(SECOND_NANOS);
-    doubleMeasure.record(12.1d);
+
     List<MetricData> metricDataList = doubleMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testMeasure", "", "1", Type.SUMMARY, Collections.<String, String>emptyMap()),
+                    "testRecorder",
+                    "My very own measure",
+                    "ms",
+                    Type.SUMMARY,
+                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.emptyList()));
+  }
+
+  @Test
+  public void collectMetrics_WithOneRecord() {
+    DoubleValueRecorderSdk doubleMeasure =
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    testClock.advanceNanos(SECOND_NANOS);
+    doubleMeasure.record(12.1d, Labels.empty());
+    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    assertThat(metricDataList)
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create("testRecorder", "", "1", Type.SUMMARY, Labels.empty()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
-                        Collections.<String, String>emptyMap(),
+                        Labels.empty(),
                         1,
                         12.1d,
                         valueAtPercentiles(12.1d, 12.1d)))));
@@ -110,21 +150,19 @@ public class DoubleValueRecorderSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
-    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
     DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
-    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind("K", "V");
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleMeasure.record(12.1d);
+      doubleMeasure.record(12.1d, Labels.empty());
       boundMeasure.record(123.3d);
-      doubleMeasure.record(-13.1d);
+      doubleMeasure.record(-13.1d, Labels.empty());
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(321.5d);
-      doubleMeasure.record(-121.5d, "K", "V");
+      doubleMeasure.record(-121.5d, Labels.of("K", "V"));
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = doubleMeasure.collectAll();
@@ -135,14 +173,14 @@ public class DoubleValueRecorderSdkTest {
               SummaryPoint.create(
                   startTime,
                   firstCollect,
-                  emptyLabelSet.getLabels(),
+                  Labels.empty(),
                   2,
                   -1.0d,
                   valueAtPercentiles(-13.1d, 12.1d)),
               SummaryPoint.create(
                   startTime,
                   firstCollect,
-                  labelSet.getLabels(),
+                  Labels.of("K", "V"),
                   3,
                   323.3d,
                   valueAtPercentiles(-121.5d, 321.5d)));
@@ -150,7 +188,7 @@ public class DoubleValueRecorderSdkTest {
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(222d);
-      doubleMeasure.record(17d);
+      doubleMeasure.record(17d, Labels.empty());
 
       long secondCollect = testClock.now();
       metricDataList = doubleMeasure.collectAll();
@@ -161,14 +199,14 @@ public class DoubleValueRecorderSdkTest {
               SummaryPoint.create(
                   startTime,
                   secondCollect,
-                  emptyLabelSet.getLabels(),
+                  Labels.empty(),
                   3,
                   16.0d,
                   valueAtPercentiles(-13.1d, 17d)),
               SummaryPoint.create(
                   startTime,
                   secondCollect,
-                  labelSet.getLabels(),
+                  Labels.of("K", "V"),
                   4,
                   545.3d,
                   valueAtPercentiles(-121.5, 321.5d)));
@@ -180,9 +218,9 @@ public class DoubleValueRecorderSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
-    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind("K", "v");
-    BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind("K", "v");
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
+    BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
     } finally {
@@ -194,11 +232,11 @@ public class DoubleValueRecorderSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
-    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind("K", "v");
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
     try {
       doubleMeasure.collectAll();
-      BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind("K", "v");
+      BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
       try {
         assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
       } finally {
@@ -212,7 +250,7 @@ public class DoubleValueRecorderSdkTest {
   @Test
   public void stressTest() {
     final DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleMeasure).setCollectionIntervalMs(100);
@@ -225,7 +263,7 @@ public class DoubleValueRecorderSdkTest {
               new DoubleValueRecorderSdkTest.OperationUpdaterDirectCall(doubleMeasure, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterWithBinding(doubleMeasure.bind("K", "V"))));
+              1_000, 2, new OperationUpdaterWithBinding(doubleMeasure.bind(Labels.of("K", "V")))));
     }
 
     stressTestBuilder.build().run();
@@ -236,7 +274,7 @@ public class DoubleValueRecorderSdkTest {
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap("K", "V"),
+                Labels.of("K", "V"),
                 8_000,
                 80_000,
                 valueAtPercentiles(9.0, 11.0)));
@@ -247,7 +285,7 @@ public class DoubleValueRecorderSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleMeasure).setCollectionIntervalMs(100);
@@ -262,7 +300,9 @@ public class DoubleValueRecorderSdkTest {
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterWithBinding(doubleMeasure.bind(keys[i], values[i]))));
+              2_000,
+              1,
+              new OperationUpdaterWithBinding(doubleMeasure.bind(Labels.of(keys[i], values[i])))));
     }
 
     stressTestBuilder.build().run();
@@ -273,28 +313,28 @@ public class DoubleValueRecorderSdkTest {
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[0], values[0]),
+                Labels.of(keys[0], values[0]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[1], values[1]),
+                Labels.of(keys[1], values[1]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[2], values[2]),
+                Labels.of(keys[2], values[2]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[3], values[3]),
+                Labels.of(keys[3], values[3]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)));
@@ -332,7 +372,7 @@ public class DoubleValueRecorderSdkTest {
 
     @Override
     void update() {
-      doubleValueRecorder.record(9.0, key, value);
+      doubleValueRecorder.record(9.0, Labels.of(key, value));
     }
 
     @Override

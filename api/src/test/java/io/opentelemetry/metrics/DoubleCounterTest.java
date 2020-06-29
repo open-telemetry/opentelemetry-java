@@ -17,11 +17,10 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,8 +35,7 @@ public class DoubleCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Map<String, String> CONSTANT_LABELS =
-      Collections.singletonMap("key", "value");
+  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
 
   private final Meter meter = OpenTelemetry.getMeter("DoubleCounterTest");
 
@@ -94,19 +92,17 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void noopBind_WithBadLabelSet() {
-    DoubleCounter doubleCounter =
-        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    doubleCounter.bind("key");
+  public void add_preventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleCounterBuilder("metric").build().add(1.0, null);
   }
 
   @Test
   public void add_DoesNotThrow() {
     DoubleCounter doubleCounter =
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    doubleCounter.add(1.0);
+    doubleCounter.add(1.0, Labels.empty());
   }
 
   @Test
@@ -115,7 +111,14 @@ public class DoubleCounterTest {
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Counters can only increase");
-    doubleCounter.add(-1.0);
+    doubleCounter.add(-1.0, Labels.empty());
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleCounterBuilder("metric").build().bind(null);
   }
 
   @Test
@@ -127,7 +130,7 @@ public class DoubleCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundDoubleCounter bound = doubleCounter.bind();
+    BoundDoubleCounter bound = doubleCounter.bind(Labels.empty());
     bound.add(1.0);
     bound.unbind();
   }
@@ -141,7 +144,7 @@ public class DoubleCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundDoubleCounter bound = doubleCounter.bind();
+    BoundDoubleCounter bound = doubleCounter.bind(Labels.empty());
     try {
       thrown.expect(IllegalArgumentException.class);
       thrown.expectMessage("Counters can only increase");

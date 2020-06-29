@@ -18,8 +18,8 @@ package io.opentelemetry.exporters.otlp;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
 import io.opentelemetry.sdk.resources.Resource;
@@ -35,7 +35,7 @@ public class ResourceAdapterTest {
     assertThat(
             ResourceAdapter.toProtoResource(
                     Resource.create(
-                        ImmutableMap.of(
+                        Attributes.of(
                             "key_bool",
                             AttributeValue.booleanAttributeValue(true),
                             "key_string",
