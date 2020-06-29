@@ -27,6 +27,8 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class SpanId {
+  private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
+
   private SpanId() {}
 
   private static final int SIZE = 8;
@@ -70,9 +72,18 @@ public final class SpanId {
 
   /** Converts the long id value into a base-16 representation of it. */
   public static CharSequence fromLong(long id) {
-    char[] chars = new char[BASE16_SIZE];
+    char[] chars = getBuffer();
     BigendianEncoding.longToBase16String(id, chars, 0);
     return new String(chars);
+  }
+
+  private static char[] getBuffer() {
+    char[] chars = charBuffer.get();
+    if (chars == null) {
+      chars = new char[BASE16_SIZE];
+      charBuffer.set(chars);
+    }
+    return chars;
   }
 
   /**

@@ -28,6 +28,8 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class TraceId {
+  private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
+
   private static final int SIZE_IN_BYTES = 16;
   private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
   private static final long INVALID_ID = 0;
@@ -68,11 +70,7 @@ public final class TraceId {
       idHi = random.nextLong();
       idLo = random.nextLong();
     } while (idHi == INVALID_ID && idLo == INVALID_ID);
-
-    byte[] result = new byte[16];
-    BigendianEncoding.longToByteArray(idHi, result, 0);
-    BigendianEncoding.longToByteArray(idLo, result, 8);
-    return toLowerBase16(result);
+    return fromLongs(idHi, idLo);
   }
 
   /**
@@ -91,10 +89,19 @@ public final class TraceId {
    * @since 0.1.0
    */
   public static CharSequence fromLongs(long idHi, long idLo) {
-    char[] chars = new char[BASE16_SIZE];
+    char[] chars = getBuffer();
     BigendianEncoding.longToBase16String(idHi, chars, 0);
     BigendianEncoding.longToBase16String(idLo, chars, 16);
     return new String(chars);
+  }
+
+  private static char[] getBuffer() {
+    char[] chars = charBuffer.get();
+    if (chars == null) {
+      chars = new char[BASE16_SIZE];
+      charBuffer.set(chars);
+    }
+    return chars;
   }
 
   /**
