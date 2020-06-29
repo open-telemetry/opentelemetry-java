@@ -157,6 +157,6 @@ public class ResourceTest {
         .isEqualTo(AttributeValue.stringAttributeValue("opentelemetry"));
     assertThat(attributes.get("telemetry.sdk.language"))
         .isEqualTo(AttributeValue.stringAttributeValue("java"));
-    assertThat(attributes.get("telemetry.sdk.version")).isNotNull();
+    assertThat(attributes.get("telemetry.sdk.version").getStringValue()).isNotNull();
   }
 }

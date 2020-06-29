@@ -63,7 +63,7 @@ public abstract class Resource {
           Resource.class.getResourceAsStream("/io/opentelemetry/sdk/version.properties"));
     } catch (Exception e) {
       // we left the attribute empty
-      return null;
+      return "unknown";
     }
     return properties.getProperty("sdk.version");
   }
