@@ -8,6 +8,7 @@ plugins {
 
 description = 'OpenTelemetry SDK'
 ext.moduleName = "io.opentelemetry.sdk"
+ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk"
 
 dependencies {
     api project(':opentelemetry-api')
@@ -24,9 +25,24 @@ dependencies {
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 
+sourceSets {
+    main {
+        output.dir("build/generated/properties", builtBy: 'generateVersionResource')
+    }
+}
+
 animalsniffer {
     // Don't check sourceSets.jmh and sourceSets.test
     sourceSets = [
             sourceSets.main
     ]
+}
+
+task generateVersionResource {
+    doLast {
+        def folder = file(propertiesDir)
+        folder.mkdirs()
+        def propertiesFile = new File(folder.getAbsolutePath(), "version.properties")
+        propertiesFile.write("sdk.version=${project.version}")
+    }
 }
