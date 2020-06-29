@@ -47,6 +47,11 @@ public final class SemanticAttributes {
   /** Local hostname or similar. */
   public static final StringAttributeSetter NET_HOST_NAME =
       StringAttributeSetter.create("net.host.name");
+
+  /** Logical name of a remote service. */
+  public static final StringAttributeSetter PEER_SERVICE =
+      StringAttributeSetter.create("peer.service");
+
   /**
    * Username or client_id extracted from the access token or Authorization header in the inbound
    * request from outside the system.
