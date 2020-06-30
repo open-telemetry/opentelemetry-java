@@ -34,14 +34,16 @@ class EcsResource extends AwsResource {
   private static final String ECS_METADATA_KEY_V3 = "ECS_CONTAINER_METADATA_URI";
 
   private final Map<String, String> sysEnv;
+  private final DockerHelper dockerHelper;
 
   EcsResource() {
-    this(System.getenv());
+    this(System.getenv(), new DockerHelper());
   }
 
   @VisibleForTesting
-  EcsResource(Map<String, String> sysEnv) {
+  EcsResource(Map<String, String> sysEnv, DockerHelper dockerHelper) {
     this.sysEnv = sysEnv;
+    this.dockerHelper = dockerHelper;
   }
 
   @Override
@@ -54,9 +56,13 @@ class EcsResource extends AwsResource {
     try {
       String hostName = InetAddress.getLocalHost().getHostName();
       attrBuilders.setAttribute(ResourceConstants.CONTAINER_NAME, hostName);
-
     } catch (UnknownHostException e) {
       logger.log(Level.WARNING, "Could not get docker container name from hostname.", e);
+    }
+
+    String containerId = dockerHelper.getContainerId();
+    if (!Strings.isNullOrEmpty(containerId)) {
+      attrBuilders.setAttribute(ResourceConstants.CONTAINER_ID, containerId);
     }
 
     return attrBuilders.build();
