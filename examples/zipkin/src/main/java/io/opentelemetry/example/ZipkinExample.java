@@ -82,6 +82,7 @@ public class ZipkinExample {
     ZipkinExample example = new ZipkinExample(ip, port);
     example.setupZipkinExporter();
     example.myWonderfulUseCase();
+
     // shutdown example
     example.shutdown();
 
