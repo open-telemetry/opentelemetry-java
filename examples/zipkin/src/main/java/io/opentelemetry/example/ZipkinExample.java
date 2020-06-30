@@ -63,6 +63,11 @@ public class ZipkinExample {
     }
   }
 
+  // graceful shutdown
+  public void shutdown() {
+    OpenTelemetrySdk.getTracerProvider().shutdown();
+  }
+
   public static void main(String[] args) {
     // Parsing the input
     if (args.length < 2) {
@@ -77,11 +82,9 @@ public class ZipkinExample {
     ZipkinExample example = new ZipkinExample(ip, port);
     example.setupZipkinExporter();
     example.myWonderfulUseCase();
-    // wait some seconds
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-    }
+    // shutdown example
+    example.shutdown();
+
     System.out.println("Bye");
   }
 }
