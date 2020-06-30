@@ -447,7 +447,9 @@ final class TracezZPageHandler extends ZPageHandler {
     // Link to OpenTelemetry Logo
     out.write(
         "<img style=\"height: 90px;\""
-            + "src=\"https://opentelemetry.io/img/logos/opentelemetry-horizontal-color.png\" />");
+            + "src=\"data:image/png;base64,"
+            + ZPageLogo.logoBase64
+            + "\" />");
     out.write("<h1>TraceZ Summary</h1>");
     Formatter formatter = new Formatter(out, Locale.US);
     emitSummaryTable(out, formatter);
@@ -514,7 +516,9 @@ final class TracezZPageHandler extends ZPageHandler {
     out.write("<head>");
     out.write("<meta charset=\"UTF-8\">");
     out.write(
-        "<link rel=\"shortcut icon\" href=\"https://opentelemetry.io/favicon.png\""
+        "<link rel=\"shortcut icon\" href=\"data:image/png;base64,"
+            + ZPageLogo.faviconBase64
+            + "\""
             + "type=\"image/png\">");
     out.write(
         "<link href=\"https://fonts.googleapis.com/css?family=Open+Sans:300\""
