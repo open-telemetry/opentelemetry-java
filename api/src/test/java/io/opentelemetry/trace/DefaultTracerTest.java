@@ -101,6 +101,12 @@ public class DefaultTracerTest {
   }
 
   @Test
+  public void noSpanContextMakesInvalidSpans() {
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+    assertThat(span.getContext()).isSameInstanceAs(SpanContext.getInvalid());
+  }
+
+  @Test
   public void testSpanContextPropagation_nullContext() {
     thrown.expect(NullPointerException.class);
     defaultTracer.spanBuilder(SPAN_NAME).setParent((Context) null);
