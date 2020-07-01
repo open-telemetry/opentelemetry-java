@@ -20,8 +20,10 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
@@ -38,6 +40,8 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public final class TracezSpanProcessorTest {
   @Mock private ReadableSpan readableSpan;
+  @Mock private SpanData spanData;
+  private static final String SPAN_NAME = "span";
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
           TraceId.getInvalid(),
@@ -45,6 +49,7 @@ public final class TracezSpanProcessorTest {
           TraceFlags.builder().setIsSampled(true).build(),
           TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
+  private static final Status SPAN_STATUS = Status.UNKNOWN;
 
   private static void assertSpanCacheSizes(
       TracezSpanProcessor spanProcessor, int runningSpanCacheSize, int completedSpanCacheSize) {
@@ -74,6 +79,9 @@ public final class TracezSpanProcessorTest {
     /* Return a sampled span, which should be added to the completed cache upon ending */
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readableSpan);
+    when(readableSpan.getName()).thenReturn(SPAN_NAME);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+    when(spanData.getStatus()).thenReturn(SPAN_STATUS);
     spanProcessor.onEnd(readableSpan);
     assertSpanCacheSizes(spanProcessor, 0, 1);
   }
@@ -93,6 +101,7 @@ public final class TracezSpanProcessorTest {
     /* Return a non-sampled span, which should not be added to the running cache by default */
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readableSpan);
+    when(readableSpan.getName()).thenReturn(SPAN_NAME);
     spanProcessor.onEnd(readableSpan);
     assertSpanCacheSizes(spanProcessor, 0, 0);
   }
@@ -109,6 +118,7 @@ public final class TracezSpanProcessorTest {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readableSpan);
     assertSpanCacheSizes(spanProcessor, 1, 0);
+    when(readableSpan.getName()).thenReturn(SPAN_NAME);
     spanProcessor.onEnd(readableSpan);
     assertSpanCacheSizes(spanProcessor, 0, 0);
   }
@@ -125,6 +135,9 @@ public final class TracezSpanProcessorTest {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readableSpan);
     assertSpanCacheSizes(spanProcessor, 1, 0);
+    when(readableSpan.getName()).thenReturn(SPAN_NAME);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+    when(spanData.getStatus()).thenReturn(SPAN_STATUS);
     spanProcessor.onEnd(readableSpan);
     assertSpanCacheSizes(spanProcessor, 0, 1);
   }

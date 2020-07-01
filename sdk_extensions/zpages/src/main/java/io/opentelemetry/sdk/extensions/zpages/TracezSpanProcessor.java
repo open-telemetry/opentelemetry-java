@@ -18,12 +18,15 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator.SpanBuckets;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.trace.SpanId;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -49,8 +52,8 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class TracezSpanProcessor implements SpanProcessor {
-  private final Map<SpanId, ReadableSpan> runningSpanCache;
-  private final Map<SpanId, ReadableSpan> completedSpanCache;
+  private final ConcurrentMap<SpanId, ReadableSpan> runningSpanCache;
+  private final ConcurrentMap<String, SpanBuckets> completedSpanCache;
   private final boolean sampled;
 
   /**
@@ -59,16 +62,14 @@ public final class TracezSpanProcessor implements SpanProcessor {
    * @param sampled report only sampled spans.
    */
   public TracezSpanProcessor(boolean sampled) {
-    runningSpanCache = new HashMap<>();
-    completedSpanCache = new HashMap<>();
+    runningSpanCache = new ConcurrentHashMap<>();
+    completedSpanCache = new ConcurrentHashMap<>();
     this.sampled = sampled;
   }
 
   @Override
   public void onStart(ReadableSpan span) {
-    synchronized (this) {
-      runningSpanCache.put(span.getSpanContext().getSpanId(), span);
-    }
+    runningSpanCache.putIfAbsent(span.getSpanContext().getSpanId(), span);
   }
 
   @Override
@@ -78,11 +79,11 @@ public final class TracezSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    SpanId id = span.getSpanContext().getSpanId();
-    synchronized (this) {
-      runningSpanCache.remove(id);
-      if (!sampled || span.getSpanContext().getTraceFlags().isSampled()) {
-        completedSpanCache.put(id, span);
+    runningSpanCache.remove(span.getSpanContext().getSpanId());
+    if (!sampled || span.getSpanContext().getTraceFlags().isSampled()) {
+      completedSpanCache.putIfAbsent(span.getName(), new SpanBuckets());
+      synchronized (this) {
+        completedSpanCache.get(span.getName()).addToBucket(span);
       }
     }
   }
@@ -109,9 +110,7 @@ public final class TracezSpanProcessor implements SpanProcessor {
    * @return a Collection of {@link io.opentelemetry.sdk.trace.ReadableSpan}.
    */
   public Collection<ReadableSpan> getRunningSpans() {
-    synchronized (this) {
-      return runningSpanCache.values();
-    }
+    return runningSpanCache.values();
   }
 
   /**
@@ -121,8 +120,24 @@ public final class TracezSpanProcessor implements SpanProcessor {
    * @return a Collection of {@link io.opentelemetry.sdk.trace.ReadableSpan}.
    */
   public Collection<ReadableSpan> getCompletedSpans() {
+    Collection<ReadableSpan> completedSpans = new ArrayList<>();
     synchronized (this) {
-      return completedSpanCache.values();
+      for (SpanBuckets buckets : completedSpanCache.values()) {
+        completedSpans.addAll(buckets.getSpans());
+      }
+    }
+    return completedSpans;
+  }
+
+  /**
+   * Returns the completed span cache for {@link
+   * io.opentelemetry.sdk.extensions.zpages.TracezSpanProcessor}.
+   *
+   * @return a Map of String to {@link SpanBuckets}.
+   */
+  public Map<String, SpanBuckets> getCompletedSpanCache() {
+    synchronized (this) {
+      return completedSpanCache;
     }
   }
 

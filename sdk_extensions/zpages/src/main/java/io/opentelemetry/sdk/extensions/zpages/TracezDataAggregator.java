@@ -16,11 +16,14 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
+import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Status.CanonicalCode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -61,10 +64,7 @@ public final class TracezDataAggregator {
     for (ReadableSpan span : allRunningSpans) {
       spanNames.add(span.getName());
     }
-    Collection<ReadableSpan> allCompletedSpans = spanProcessor.getCompletedSpans();
-    for (ReadableSpan span : allCompletedSpans) {
-      spanNames.add(span.getName());
-    }
+    spanNames.addAll(spanProcessor.getCompletedSpanCache().keySet());
     return spanNames;
   }
 
@@ -107,7 +107,7 @@ public final class TracezDataAggregator {
    * io.opentelemetry.trace.Status#OK} are categorized into one of these buckets om the traceZ
    * zPage.
    */
-  public enum LatencyBoundaries {
+  enum LatencyBoundaries {
     /** Stores finished successful requests of duration within the interval [0, 10us). */
     ZERO_MICROSx10(0, TimeUnit.MICROSECONDS.toNanos(10)),
 
@@ -154,7 +154,7 @@ public final class TracezDataAggregator {
      *
      * @return the latency lower bound of the bucket.
      */
-    public long getLatencyLowerBound() {
+    long getLatencyLowerBound() {
       return latencyLowerBound;
     }
 
@@ -163,8 +163,84 @@ public final class TracezDataAggregator {
      *
      * @return the latency upper bound of the bucket.
      */
-    public long getLatencyUpperBound() {
+    long getLatencyUpperBound() {
       return latencyUpperBound;
+    }
+  }
+
+  static final class SpanBuckets {
+    private static final int NUM_SAMPLES_PER_LATENCY_BUCKET = 10;
+    private static final int NUM_SAMPLES_PER_ERROR_BUCKET = 5;
+
+    private final Map<LatencyBoundaries, EvictingQueue<ReadableSpan>> latencyBuckets =
+        new HashMap<>();
+    private final Map<CanonicalCode, EvictingQueue<ReadableSpan>> errorBuckets = new HashMap<>();
+
+    SpanBuckets() {
+      for (LatencyBoundaries bucket : LatencyBoundaries.values()) {
+        latencyBuckets.put(
+            bucket, EvictingQueue.<ReadableSpan>create(NUM_SAMPLES_PER_LATENCY_BUCKET));
+      }
+      for (CanonicalCode code : CanonicalCode.values()) {
+        if (!code.toStatus().isOk()) {
+          errorBuckets.put(code, EvictingQueue.<ReadableSpan>create(NUM_SAMPLES_PER_ERROR_BUCKET));
+        }
+      }
+    }
+
+    void addToBucket(ReadableSpan span) {
+      Status status = span.toSpanData().getStatus();
+      if (status.isOk()) {
+        long latency = span.getLatencyNanos();
+        for (LatencyBoundaries bucket : LatencyBoundaries.values()) {
+          if (latency >= bucket.getLatencyLowerBound() && latency < bucket.getLatencyUpperBound()) {
+            latencyBuckets.get(bucket).add(span);
+            return;
+          }
+        }
+      }
+      errorBuckets.get(status.getCanonicalCode()).add(span);
+    }
+
+    Map<LatencyBoundaries, Integer> getLatencyBoundariesToCountMap() {
+      Map<LatencyBoundaries, Integer> latencyCounts = new EnumMap<>(LatencyBoundaries.class);
+      for (LatencyBoundaries bucket : LatencyBoundaries.values()) {
+        latencyCounts.put(bucket, latencyBuckets.get(bucket).size());
+      }
+      return latencyCounts;
+    }
+
+    Map<CanonicalCode, Integer> getErrorCanonicalCodeToCountMap() {
+      Map<CanonicalCode, Integer> errorCounts = new EnumMap<>(CanonicalCode.class);
+      for (CanonicalCode code : CanonicalCode.values()) {
+        if (!code.toStatus().isOk()) {
+          errorCounts.put(code, errorBuckets.get(code).size());
+        }
+      }
+      return errorCounts;
+    }
+
+    Collection<ReadableSpan> getOkSpans() {
+      Collection<ReadableSpan> okSpans = new ArrayList<>();
+      for (EvictingQueue<ReadableSpan> latencyBucket : latencyBuckets.values()) {
+        okSpans.addAll(new ArrayList<>(latencyBucket));
+      }
+      return okSpans;
+    }
+
+    Collection<ReadableSpan> getErrorSpans() {
+      Collection<ReadableSpan> errorSpans = new ArrayList<>();
+      for (EvictingQueue<ReadableSpan> errorBucket : errorBuckets.values()) {
+        errorSpans.addAll(new ArrayList<>(errorBucket));
+      }
+      return errorSpans;
+    }
+
+    Collection<ReadableSpan> getSpans() {
+      Collection<ReadableSpan> spans = new ArrayList<>();
+      spans.addAll(getOkSpans());
+      spans.addAll(getErrorSpans());
+      return spans;
     }
   }
 
@@ -198,18 +274,10 @@ public final class TracezDataAggregator {
    *     boundaries.
    */
   public Map<String, Map<LatencyBoundaries, Integer>> getSpanLatencyCounts() {
+    Map<String, SpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     Map<String, Map<LatencyBoundaries, Integer>> numSpansPerName = new HashMap<>();
-    for (LatencyBoundaries bucket : LatencyBoundaries.values()) {
-      Map<String, Integer> latencyCounts =
-          getSpanLatencyCounts(bucket.getLatencyLowerBound(), bucket.getLatencyUpperBound());
-      for (Map.Entry<String, Integer> spanNameToCount : latencyCounts.entrySet()) {
-        if (!numSpansPerName.containsKey(spanNameToCount.getKey())) {
-          numSpansPerName.put(
-              spanNameToCount.getKey(),
-              new EnumMap<LatencyBoundaries, Integer>(LatencyBoundaries.class));
-        }
-        numSpansPerName.get(spanNameToCount.getKey()).put(bucket, spanNameToCount.getValue());
-      }
+    for (String name : completedSpanCache.keySet()) {
+      numSpansPerName.put(name, completedSpanCache.get(name).getLatencyBoundariesToCountMap());
     }
     return numSpansPerName;
   }
@@ -225,13 +293,14 @@ public final class TracezDataAggregator {
    * @return a List of {@link io.opentelemetry.sdk.trace.data.SpanData}.
    */
   public List<SpanData> getOkSpans(String spanName, long lowerBound, long upperBound) {
-    Collection<ReadableSpan> allCompletedSpans = spanProcessor.getCompletedSpans();
+    Map<String, SpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
+    Collection<ReadableSpan> allCompletedSpans =
+        completedSpanCache.containsKey(spanName)
+            ? completedSpanCache.get(spanName).getOkSpans()
+            : Collections.<ReadableSpan>emptyList();
     List<SpanData> filteredSpans = new ArrayList<>();
     for (ReadableSpan span : allCompletedSpans) {
-      if (span.toSpanData().getStatus().isOk()
-          && span.getName().equals(spanName)
-          && span.getLatencyNanos() >= lowerBound
-          && span.getLatencyNanos() < upperBound) {
+      if (span.getLatencyNanos() >= lowerBound && span.getLatencyNanos() < upperBound) {
         filteredSpans.add(span.toSpanData());
       }
     }
@@ -245,13 +314,10 @@ public final class TracezDataAggregator {
    * @return a Map of error span counts for each span name.
    */
   public Map<String, Integer> getErrorSpanCounts() {
-    Collection<ReadableSpan> allCompletedSpans = spanProcessor.getCompletedSpans();
+    Map<String, SpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     Map<String, Integer> numErrorsPerName = new HashMap<>();
-    for (ReadableSpan span : allCompletedSpans) {
-      if (!span.toSpanData().getStatus().isOk()) {
-        Integer prevValue = numErrorsPerName.get(span.getName());
-        numErrorsPerName.put(span.getName(), prevValue != null ? prevValue + 1 : 1);
-      }
+    for (String name : completedSpanCache.keySet()) {
+      numErrorsPerName.put(name, completedSpanCache.get(name).getErrorSpans().size());
     }
     return numErrorsPerName;
   }
@@ -264,14 +330,16 @@ public final class TracezDataAggregator {
    * @return a List of {@link io.opentelemetry.sdk.trace.data.SpanData}.
    */
   public List<SpanData> getErrorSpans(String spanName) {
-    Collection<ReadableSpan> allCompletedSpans = spanProcessor.getCompletedSpans();
-    List<SpanData> filteredSpans = new ArrayList<>();
+    Map<String, SpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
+    Collection<ReadableSpan> allCompletedSpans =
+        completedSpanCache.containsKey(spanName)
+            ? completedSpanCache.get(spanName).getErrorSpans()
+            : Collections.<ReadableSpan>emptyList();
+    List<SpanData> errorSpans = new ArrayList<>();
     for (ReadableSpan span : allCompletedSpans) {
-      if (span.getName().equals(spanName) && !span.toSpanData().getStatus().isOk()) {
-        filteredSpans.add(span.toSpanData());
-      }
+      errorSpans.add(span.toSpanData());
     }
-    return filteredSpans;
+    return errorSpans;
   }
 
   /**
