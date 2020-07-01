@@ -180,7 +180,7 @@ public class LongValueRecorderSdkTest {
                   323,
                   valueAtPercentiles(-121, 321)));
 
-      // Repeat to prove we keep previous values.
+      // Repeat to prove we don't keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(222);
       longMeasure.record(17, Labels.empty());
@@ -193,14 +193,19 @@ public class LongValueRecorderSdkTest {
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
-                  startTime, secondCollect, Labels.empty(), 3, 15, valueAtPercentiles(-14, 17)),
+                  startTime + SECOND_NANOS,
+                  secondCollect,
+                  Labels.empty(),
+                  1,
+                  17,
+                  valueAtPercentiles(17, 17)),
               SummaryPoint.create(
-                  startTime,
+                  startTime + SECOND_NANOS,
                   secondCollect,
                   Labels.of("K", "V"),
-                  4,
-                  545,
-                  valueAtPercentiles(-121, 321)));
+                  1,
+                  222,
+                  valueAtPercentiles(222, 222)));
     } finally {
       boundMeasure.unbind();
     }

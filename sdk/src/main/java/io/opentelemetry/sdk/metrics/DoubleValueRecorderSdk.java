@@ -35,7 +35,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
         meterProviderSharedState,
         meterSharedState,
         new ActiveBatcher(
-            Batchers.getCumulativeAllLabels(
+            Batchers.getDeltaAllLabels(
                 descriptor,
                 meterProviderSharedState,
                 meterSharedState,
