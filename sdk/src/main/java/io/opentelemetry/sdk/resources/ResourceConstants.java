@@ -50,6 +50,8 @@ public class ResourceConstants {
   public static final String LIBRARY_VERSION = "library.version";
   /** Container name. */
   public static final String CONTAINER_NAME = "container.name";
+  /** Container id. */
+  public static final String CONTAINER_ID = "container.id";
   /** Name of the image the container was built on. */
   public static final String CONTAINER_IMAGE_NAME = "container.image.name";
   /** Container image tag. */
