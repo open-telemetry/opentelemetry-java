@@ -19,9 +19,9 @@ package io.opentelemetry.exporters.otlp;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.proto.common.v1.AttributeKeyValue;
-import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
+import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,10 +34,9 @@ public class CommonAdapterTest {
   public void toProtoAttribute_Bool() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.booleanAttributeValue(true)))
         .isEqualTo(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key")
-                .setBoolValue(true)
-                .setType(ValueType.BOOL)
+                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
                 .build());
   }
 
@@ -45,10 +44,9 @@ public class CommonAdapterTest {
   public void toProtoAttribute_String() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.stringAttributeValue("string")))
         .isEqualTo(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key")
-                .setStringValue("string")
-                .setType(ValueType.STRING)
+                .setValue(AnyValue.newBuilder().setStringValue("string").build())
                 .build());
   }
 
@@ -56,10 +54,9 @@ public class CommonAdapterTest {
   public void toProtoAttribute_Int() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.longAttributeValue(100)))
         .isEqualTo(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key")
-                .setIntValue(100)
-                .setType(ValueType.INT)
+                .setValue(AnyValue.newBuilder().setIntValue(100).build())
                 .build());
   }
 
@@ -67,12 +64,13 @@ public class CommonAdapterTest {
   public void toProtoAttribute_Double() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.doubleAttributeValue(100.3)))
         .isEqualTo(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key")
-                .setDoubleValue(100.3)
-                .setType(ValueType.DOUBLE)
+                .setValue(AnyValue.newBuilder().setDoubleValue(100.3).build())
                 .build());
   }
+
+  // todo: add tests for the 4 array types.
 
   @Test
   public void toProtoInstrumentationLibrary() {

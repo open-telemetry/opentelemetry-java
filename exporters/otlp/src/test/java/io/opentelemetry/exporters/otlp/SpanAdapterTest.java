@@ -21,8 +21,8 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.protobuf.ByteString;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.proto.common.v1.AttributeKeyValue;
-import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
+import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
@@ -87,10 +87,9 @@ public class SpanAdapterTest {
     assertThat(span.getEndTimeUnixNano()).isEqualTo(12349);
     assertThat(span.getAttributesList())
         .containsExactly(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key")
-                .setBoolValue(true)
-                .setType(ValueType.BOOL)
+                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
                 .build());
     assertThat(span.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(span.getEventsList())
@@ -255,10 +254,9 @@ public class SpanAdapterTest {
                 .setTimeUnixNano(12345)
                 .setName("test_with_attributes")
                 .addAttributes(
-                    AttributeKeyValue.newBuilder()
+                    KeyValue.newBuilder()
                         .setKey("key_string")
-                        .setStringValue("string")
-                        .setType(ValueType.STRING)
+                        .setValue(AnyValue.newBuilder().setStringValue("string").build())
                         .build())
                 .setDroppedAttributesCount(4)
                 .build());
@@ -287,10 +285,9 @@ public class SpanAdapterTest {
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
                 .addAttributes(
-                    AttributeKeyValue.newBuilder()
+                    KeyValue.newBuilder()
                         .setKey("key_string")
-                        .setStringValue("string")
-                        .setType(ValueType.STRING)
+                        .setValue(AnyValue.newBuilder().setStringValue("string").build())
                         .build())
                 .setDroppedAttributesCount(4)
                 .build());
