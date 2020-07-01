@@ -24,6 +24,7 @@ import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Int64DataPoint;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.MetricDescriptor;
+import io.opentelemetry.proto.metrics.v1.MetricDescriptor.Temporality;
 import io.opentelemetry.proto.metrics.v1.MetricDescriptor.Type;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
@@ -100,25 +101,26 @@ final class MetricAdapter {
     if (metricData.getPoints().isEmpty()) {
       return builder.build();
     }
-
     switch (builder.getMetricDescriptor().getType()) {
-      case UNSPECIFIED:
       case UNRECOGNIZED:
+      case INVALID_TYPE:
         break;
-      case GAUGE_INT64:
-      case COUNTER_INT64:
-        builder.addAllInt64DataPoints(toInt64DataPoints(metricData.getPoints()));
+      case MONOTONIC_INT64:
+      case INT64:
+        builder.addAllInt64DataPoints(
+            toInt64DataPoints(metricData.getPoints(), metricData.getDescriptor()));
         break;
-      case GAUGE_DOUBLE:
-      case COUNTER_DOUBLE:
-        builder.addAllDoubleDataPoints(toDoubleDataPoints(metricData.getPoints()));
+      case MONOTONIC_DOUBLE:
+      case DOUBLE:
+        builder.addAllDoubleDataPoints(
+            toDoubleDataPoints(metricData.getPoints(), metricData.getDescriptor()));
         break;
-      case GAUGE_HISTOGRAM:
-      case CUMULATIVE_HISTOGRAM:
+      case HISTOGRAM:
         // TODO: Add support for histogram.
         break;
       case SUMMARY:
-        builder.addAllSummaryDataPoints(toSummaryDataPoints(metricData.getPoints()));
+        builder.addAllSummaryDataPoints(
+            toSummaryDataPoints(metricData.getPoints(), metricData.getDescriptor()));
         break;
     }
     return builder.build();
@@ -130,11 +132,25 @@ final class MetricAdapter {
         .setDescription(descriptor.getDescription())
         .setUnit(descriptor.getUnit())
         .setType(toProtoMetricDescriptorType(descriptor.getType()))
-        .addAllLabels(toProtoLabels(descriptor.getConstantLabels()))
+        .setTemporality(mapToTemporality(descriptor))
         .build();
   }
 
-  static Collection<Int64DataPoint> toInt64DataPoints(Collection<Point> points) {
+  private static Temporality mapToTemporality(Descriptor descriptor) {
+    switch (descriptor.getType()) {
+      case NON_MONOTONIC_LONG:
+      case NON_MONOTONIC_DOUBLE:
+      case MONOTONIC_LONG:
+      case MONOTONIC_DOUBLE:
+        return Temporality.CUMULATIVE;
+      case SUMMARY:
+        return Temporality.DELTA;
+    }
+    return Temporality.UNRECOGNIZED;
+  }
+
+  static Collection<Int64DataPoint> toInt64DataPoints(
+      Collection<Point> points, Descriptor descriptor) {
     List<Int64DataPoint> result = new ArrayList<>(points.size());
     for (Point point : points) {
       LongPoint longPoint = (LongPoint) point;
@@ -144,6 +160,9 @@ final class MetricAdapter {
               .setTimeUnixNano(longPoint.getEpochNanos())
               .setValue(longPoint.getValue());
       // Not calling directly addAllLabels because that generates couple of unnecessary allocations.
+      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
+        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
+      }
       Collection<StringKeyValue> labels = toProtoLabels(longPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -153,7 +172,8 @@ final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<Point> points) {
+  static Collection<DoubleDataPoint> toDoubleDataPoints(
+      Collection<Point> points, Descriptor descriptor) {
     List<DoubleDataPoint> result = new ArrayList<>(points.size());
     for (Point point : points) {
       DoublePoint doublePoint = (DoublePoint) point;
@@ -163,6 +183,9 @@ final class MetricAdapter {
               .setTimeUnixNano(doublePoint.getEpochNanos())
               .setValue(doublePoint.getValue());
       // Not calling directly addAllLabels because that generates couple of unnecessary allocations.
+      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
+        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
+      }
       Collection<StringKeyValue> labels = toProtoLabels(doublePoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -172,7 +195,8 @@ final class MetricAdapter {
     return result;
   }
 
-  static Collection<SummaryDataPoint> toSummaryDataPoints(Collection<Point> points) {
+  static Collection<SummaryDataPoint> toSummaryDataPoints(
+      Collection<Point> points, Descriptor descriptor) {
     List<SummaryDataPoint> result = new ArrayList<>(points.size());
     for (Point point : points) {
       SummaryPoint summaryPoint = (SummaryPoint) point;
@@ -184,6 +208,9 @@ final class MetricAdapter {
               .setSum(summaryPoint.getSum());
       // Not calling directly addAllLabels because that generates couple of unnecessary allocations
       // if empty list.
+      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
+        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
+      }
       Collection<StringKeyValue> labels = toProtoLabels(summaryPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -221,17 +248,17 @@ final class MetricAdapter {
   static MetricDescriptor.Type toProtoMetricDescriptorType(Descriptor.Type descriptorType) {
     switch (descriptorType) {
       case NON_MONOTONIC_LONG:
-        return Type.GAUGE_INT64;
+        return Type.INT64;
       case NON_MONOTONIC_DOUBLE:
-        return Type.GAUGE_DOUBLE;
+        return Type.DOUBLE;
       case MONOTONIC_LONG:
-        return Type.COUNTER_INT64;
+        return Type.MONOTONIC_INT64;
       case MONOTONIC_DOUBLE:
-        return Type.COUNTER_DOUBLE;
+        return Type.MONOTONIC_DOUBLE;
       case SUMMARY:
         return Type.SUMMARY;
     }
-    return Type.UNSPECIFIED;
+    return Type.UNRECOGNIZED;
   }
 
   @SuppressWarnings("MixedMutabilityReturnType")
