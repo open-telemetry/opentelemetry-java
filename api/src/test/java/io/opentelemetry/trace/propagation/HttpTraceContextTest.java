@@ -30,6 +30,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -160,6 +161,15 @@ public class HttpTraceContextTest {
             TRACEPARENT_HEADER_NOT_SAMPLED,
             TRACE_STATE,
             TRACESTATE_NOT_DEFAULT_ENCODING);
+  }
+
+  @Test
+  public void extract_Nothing() {
+    // Context remains untouched.
+    assertThat(
+            httpTraceContext.extract(
+                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+        .isSameInstanceAs(Context.current());
   }
 
   @Test

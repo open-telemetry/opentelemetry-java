@@ -28,6 +28,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -130,6 +131,15 @@ public class B3PropagatorTest {
     assertThat(carrier).containsEntry(B3Propagator.TRACE_ID_HEADER, TRACE_ID_BASE16);
     assertThat(carrier).containsEntry(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
     assertThat(carrier).containsEntry(B3Propagator.SAMPLED_HEADER, "0");
+  }
+
+  @Test
+  public void extract_Nothing() {
+    // Context remains untouched.
+    assertThat(
+            b3Propagator.extract(
+                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+        .isSameInstanceAs(Context.current());
   }
 
   @Test
@@ -294,6 +304,15 @@ public class B3PropagatorTest {
     assertThat(carrier)
         .containsEntry(
             B3Propagator.COMBINED_HEADER, TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-" + "0");
+  }
+
+  @Test
+  public void extract_Nothing_SingleHeader() {
+    // Context remains untouched.
+    assertThat(
+            b3PropagatorSingleHeader.extract(
+                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+        .isSameInstanceAs(Context.current());
   }
 
   @Test
