@@ -18,9 +18,10 @@ package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -38,7 +39,8 @@ public class DockerHelperTest {
   @Test
   public void testContainerIdMissing() throws IOException {
     File file = tempFolder.newFile("no_container_id");
-    FileUtils.writeStringToFile(file, "13:pids:/\n" + "12:hugetlb:/\n" + "11:net_prio:/");
+    String content = "13:pids:/\n" + "12:hugetlb:/\n" + "11:net_prio:/";
+    Files.write(content.getBytes(Charsets.UTF_8), file);
 
     DockerHelper dockerHelper = new DockerHelper(file.getPath());
     assertThat(dockerHelper.getContainerId()).isEmpty();
@@ -48,8 +50,8 @@ public class DockerHelperTest {
   public void testGetContainerId() throws IOException {
     File file = tempFolder.newFile("cgroup");
     String expected = "386a1920640799b5bf5a39bd94e489e5159a88677d96ca822ce7c433ff350163";
-    FileUtils.writeStringToFile(
-        file, "dummy\n11:devices:/ecs/bbc36dd0-5ee0-4007-ba96-c590e0b278d2/" + expected);
+    String content = "dummy\n11:devices:/ecs/bbc36dd0-5ee0-4007-ba96-c590e0b278d2/" + expected;
+    Files.write(content.getBytes(Charsets.UTF_8), file);
 
     DockerHelper dockerHelper = new DockerHelper(file.getPath());
     assertThat(dockerHelper.getContainerId()).isEqualTo(expected);

@@ -44,7 +44,7 @@ class DockerHelper {
   /**
    * Get docker container id from local cgroup file.
    *
-   * @return docker container ID
+   * @return docker container ID. Empty string if it can`t be found.
    */
   @SuppressWarnings("DefaultCharset")
   public String getContainerId() {
