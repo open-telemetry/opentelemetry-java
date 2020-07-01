@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator.LatencyBoundaries;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;

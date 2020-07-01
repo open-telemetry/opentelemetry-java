@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
-import io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator.LatencyBoundaries;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.SpanId;

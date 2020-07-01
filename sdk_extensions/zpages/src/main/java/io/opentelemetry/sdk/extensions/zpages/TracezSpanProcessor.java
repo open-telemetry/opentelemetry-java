@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
-import io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator.SpanBuckets;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.trace.SpanId;
@@ -53,7 +52,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class TracezSpanProcessor implements SpanProcessor {
   private final ConcurrentMap<SpanId, ReadableSpan> runningSpanCache;
-  private final ConcurrentMap<String, SpanBuckets> completedSpanCache;
+  private final ConcurrentMap<String, TracezSpanBuckets> completedSpanCache;
   private final boolean sampled;
 
   /**
@@ -81,7 +80,7 @@ final class TracezSpanProcessor implements SpanProcessor {
   public void onEnd(ReadableSpan span) {
     runningSpanCache.remove(span.getSpanContext().getSpanId());
     if (!sampled || span.getSpanContext().getTraceFlags().isSampled()) {
-      completedSpanCache.putIfAbsent(span.getName(), new SpanBuckets());
+      completedSpanCache.putIfAbsent(span.getName(), new TracezSpanBuckets());
       synchronized (this) {
         completedSpanCache.get(span.getName()).addToBucket(span);
       }
@@ -122,7 +121,7 @@ final class TracezSpanProcessor implements SpanProcessor {
   public Collection<ReadableSpan> getCompletedSpans() {
     Collection<ReadableSpan> completedSpans = new ArrayList<>();
     synchronized (this) {
-      for (SpanBuckets buckets : completedSpanCache.values()) {
+      for (TracezSpanBuckets buckets : completedSpanCache.values()) {
         completedSpans.addAll(buckets.getSpans());
       }
     }
@@ -133,9 +132,9 @@ final class TracezSpanProcessor implements SpanProcessor {
    * Returns the completed span cache for {@link
    * io.opentelemetry.sdk.extensions.zpages.TracezSpanProcessor}.
    *
-   * @return a Map of String to {@link SpanBuckets}.
+   * @return a Map of String to {@link io.opentelemetry.sdk.extensions.zpages.TracezSpanBuckets}.
    */
-  public Map<String, SpanBuckets> getCompletedSpanCache() {
+  public Map<String, TracezSpanBuckets> getCompletedSpanCache() {
     synchronized (this) {
       return completedSpanCache;
     }
