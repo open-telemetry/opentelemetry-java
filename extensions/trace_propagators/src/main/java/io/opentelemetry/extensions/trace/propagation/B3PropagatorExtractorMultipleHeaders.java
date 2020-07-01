@@ -39,6 +39,10 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
     SpanContext spanContext = getSpanContextFromMultipleHeaders(carrier, getter);
+    if (!spanContext.isValid()) {
+      return context;
+    }
+
     return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
   }
 

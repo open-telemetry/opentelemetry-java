@@ -35,6 +35,7 @@ import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -150,6 +151,15 @@ public class JaegerPropagatorTest {
             PROPAGATION_HEADER,
             generateTraceIdHeaderValue(
                 TRACE_ID_BASE16, SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "0"));
+  }
+
+  @Test
+  public void extract_Nothing() {
+    // Context remains untouched.
+    assertThat(
+            jaegerPropagator.extract(
+                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+        .isSameInstanceAs(Context.current());
   }
 
   @Test

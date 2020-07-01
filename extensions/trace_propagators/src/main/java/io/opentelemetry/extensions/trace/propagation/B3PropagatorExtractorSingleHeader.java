@@ -38,6 +38,10 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
     SpanContext spanContext = getSpanContextFromSingleHeader(carrier, getter);
+    if (!spanContext.isValid()) {
+      return context;
+    }
+
     return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
   }
 

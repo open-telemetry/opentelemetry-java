@@ -28,6 +28,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -109,6 +110,15 @@ public class AwsXRayPropagatorTest {
         .containsEntry(
             TRACE_HEADER_KEY,
             "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
+  }
+
+  @Test
+  public void extract_Nothing() {
+    // Context remains untouched.
+    assertThat(
+            xrayPropagator.extract(
+                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+        .isSameInstanceAs(Context.current());
   }
 
   @Test
