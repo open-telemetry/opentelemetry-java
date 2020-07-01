@@ -110,7 +110,7 @@ public final class TracezSpanProcessorTest {
   public void build_sampledFlagTrue_notInCache() {
     /* Initialize a TraceZSpanProcessor that only looks at sampled spans */
     Properties properties = new Properties();
-    properties.setProperty("otel.ssp.export.sampled", "true");
+    properties.setProperty("otel.zpages.export.sampled", "true");
     TracezSpanProcessor spanProcessor =
         TracezSpanProcessor.newBuilder().readProperties(properties).build();
 
@@ -127,7 +127,7 @@ public final class TracezSpanProcessorTest {
   public void build_sampledFlagFalse_inCache() {
     /* Initialize a TraceZSpanProcessor that looks at all spans */
     Properties properties = new Properties();
-    properties.setProperty("otel.ssp.export.sampled", "false");
+    properties.setProperty("otel.zpages.export.sampled", "false");
     TracezSpanProcessor spanProcessor =
         TracezSpanProcessor.newBuilder().readProperties(properties).build();
 

@@ -40,7 +40,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * error spans for the frontend of the zPage.
  */
 @ThreadSafe
-public final class TracezDataAggregator {
+final class TracezDataAggregator {
   private final TracezSpanProcessor spanProcessor;
 
   /**

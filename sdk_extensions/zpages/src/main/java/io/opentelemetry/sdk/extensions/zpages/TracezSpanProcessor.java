@@ -40,18 +40,18 @@ import javax.annotation.concurrent.ThreadSafe;
  * io.opentelemetry.sdk.extensions.zpages.TracezSpanProcessor} will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.ssp.export.sampled}: sets whether only sampled spans should be exported.
+ *   <li>{@code otel.zpages.export.sampled}: sets whether only sampled spans should be exported.
  * </ul>
  *
  * <p>For environment variables, {@link io.opentelemetry.sdk.extensions.zpages.TracezSpanProcessor}
  * will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
+ *   <li>{@code OTEL_ZPAGES_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
  * </ul>
  */
 @ThreadSafe
-public final class TracezSpanProcessor implements SpanProcessor {
+final class TracezSpanProcessor implements SpanProcessor {
   private final ConcurrentMap<SpanId, ReadableSpan> runningSpanCache;
   private final ConcurrentMap<String, SpanBuckets> completedSpanCache;
   private final boolean sampled;
@@ -153,7 +153,7 @@ public final class TracezSpanProcessor implements SpanProcessor {
   /** Builder class for {@link io.opentelemetry.sdk.extensions.zpages.TracezSpanProcessor}. */
   public static final class Builder extends ConfigBuilder<Builder> {
 
-    private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
+    private static final String KEY_SAMPLED = "otel.zpages.export.sampled";
     private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
     private boolean sampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
@@ -164,7 +164,8 @@ public final class TracezSpanProcessor implements SpanProcessor {
      * This method looks for the following keys:
      *
      * <ul>
-     *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be exported.
+     *   <li>{@code otel.zpages.export.sampled}: to set whether only sampled spans should be
+     *       exported.
      * </ul>
      *
      * @param configMap {@link Map} holding the configuration values.

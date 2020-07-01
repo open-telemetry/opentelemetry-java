@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** UNit tests for {@link ZPageServer}. */
+/** Unit tests for {@link ZPageServer}. */
 @RunWith(JUnit4.class)
 public final class ZPageServerTest {
   @Test
