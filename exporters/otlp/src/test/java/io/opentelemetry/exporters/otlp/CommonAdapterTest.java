@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -41,12 +42,49 @@ public class CommonAdapterTest {
   }
 
   @Test
+  public void toProtoAttribute_BoolArray() {
+    assertThat(
+            CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(true, false)))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setBoolValue(true).build())
+                                .addValues(AnyValue.newBuilder().setBoolValue(false).build())
+                                .build())
+                        .build())
+                .build());
+  }
+
+  @Test
   public void toProtoAttribute_String() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.stringAttributeValue("string")))
         .isEqualTo(
             KeyValue.newBuilder()
                 .setKey("key")
                 .setValue(AnyValue.newBuilder().setStringValue("string").build())
+                .build());
+  }
+
+  @Test
+  public void toProtoAttribute_StringArray() {
+    assertThat(
+            CommonAdapter.toProtoAttribute(
+                "key", AttributeValue.arrayAttributeValue("string1", "string2")))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setStringValue("string1").build())
+                                .addValues(AnyValue.newBuilder().setStringValue("string2").build())
+                                .build())
+                        .build())
                 .build());
   }
 
@@ -61,6 +99,24 @@ public class CommonAdapterTest {
   }
 
   @Test
+  public void toProtoAttribute_IntArray() {
+    assertThat(
+            CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(100L, 200L)))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setIntValue(100).build())
+                                .addValues(AnyValue.newBuilder().setIntValue(200).build())
+                                .build())
+                        .build())
+                .build());
+  }
+
+  @Test
   public void toProtoAttribute_Double() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.doubleAttributeValue(100.3)))
         .isEqualTo(
@@ -70,7 +126,23 @@ public class CommonAdapterTest {
                 .build());
   }
 
-  // todo: add tests for the 4 array types.
+  @Test
+  public void toProtoAttribute_DoubleArray() {
+    assertThat(
+            CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(100.3, 200.5)))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setDoubleValue(100.3).build())
+                                .addValues(AnyValue.newBuilder().setDoubleValue(200.5).build())
+                                .build())
+                        .build())
+                .build());
+  }
 
   @Test
   public void toProtoInstrumentationLibrary() {
