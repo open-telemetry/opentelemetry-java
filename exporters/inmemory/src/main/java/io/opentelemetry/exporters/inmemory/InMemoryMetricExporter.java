@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,37 +50,14 @@ import java.util.concurrent.LinkedBlockingQueue;
  *             .build();
  *   }
  *
- *   List&lt;MetricData&gt; readExportedMetrics() {
- *     return exporter.getFinishedMetricItems();
- *   }
- *
- *   void shutdown() {
- *     intervalMetricReader.shutdown();
- *   }
- *
- *   LongCounter generateLongMeter(String name) {
+ *   LongCounter generateLongCounterMeter(String name) {
  *     return meter.longCounterBuilder(name).setDescription("Sample LongCounter").build();
  *   }
  *
- *   DoubleCounter generateDoubleMeter(String name) {
- *     return meter.doubleCounterBuilder(name).setDescription("Sample DoubleCounter").build();
- *   }
- *
- *
  *   public static void main(String[] args) throws InterruptedException {
  *     InMemoryMetricExporterExample example = new InMemoryMetricExporterExample();
- *
  *     example.setup();
- *     example.generateLongMeter("counter-1");
- *     example.generateDoubleMeter("counter-2");
- *     example.generateLongMeter("counter-3");
- *     // Delaying so that IntervalMetricReader could pull Metrics from MetricProducer and push them to
- *     // MetricExporter
- *     Thread.sleep(2000);
- *     List&lt;MetricData&gt; metricDataList = example.readExportedMetrics();
- *     System.out.println(metricDataList);
- *     example.shutdown();
- *     System.out.println("Bye");
+ *     example.generateLongCounterMeter("counter-1");
  *   }
  * }
  * </code></pre>
