@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry - zPages'
-ext.moduleName = "io.opentelemetry.sdk.contrib.zpages"
+ext.moduleName = "io.opentelemetry.sdk.extension.zpages"
 
 dependencies {
     api project(':opentelemetry-api'),
