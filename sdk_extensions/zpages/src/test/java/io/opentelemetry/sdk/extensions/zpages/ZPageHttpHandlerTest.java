@@ -30,14 +30,14 @@ public final class ZPageHttpHandlerTest {
   @Test
   public void parseEmptyQuery() throws URISyntaxException {
     URI uri = new URI("http://localhost:8000/tracez");
-    assertThat(ZPageHttpHandler.queryMapBuilder(uri)).isEmpty();
+    assertThat(ZPageHttpHandler.parseQueryMap(uri)).isEmpty();
   }
 
   @Test
   public void parseNormalQuery() throws URISyntaxException {
     URI uri =
         new URI("http://localhost:8000/tracez/tracez?zspanname=Test&ztype=1&zsubtype=5&noval");
-    assertThat(ZPageHttpHandler.queryMapBuilder(uri))
+    assertThat(ZPageHttpHandler.parseQueryMap(uri))
         .containsExactly("zspanname", "Test", "ztype", "1", "zsubtype", "5", "noval", "");
   }
 }

@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import static com.google.common.html.HtmlEscapers.htmlEscaper;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
@@ -28,10 +27,8 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Status.CanonicalCode;
-import java.io.BufferedWriter;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -48,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 
 final class TracezZPageHandler extends ZPageHandler {
   private enum SampleType {
@@ -98,22 +96,14 @@ final class TracezZPageHandler extends ZPageHandler {
   //   where 0 corresponds to the first boundary
   // * for error based sampled spans [0, 15], 0 means all, otherwise the error code
   private static final String PARAM_SAMPLE_SUB_TYPE = "zsubtype";
-  @javax.annotation.Nullable private final TracezDataAggregator dataAggregator;
   // Map from LatencyBoundaries to human readable string on the UI
   private static final ImmutableMap<LatencyBoundaries, String> LATENCY_BOUNDARIES_STRING_MAP =
       buildLatencyBoundariesStringMap();
+  @Nullable private final TracezDataAggregator dataAggregator;
 
-  private TracezZPageHandler(TracezDataAggregator dataAggregator) {
+  /** Constructs a new {@code TracezZPageHandler}. */
+  TracezZPageHandler(@Nullable TracezDataAggregator dataAggregator) {
     this.dataAggregator = dataAggregator;
-  }
-
-  /**
-   * Constructs a new {@code TracezZPageHandler}.
-   *
-   * @return a new {@code TracezZPageHandler}.
-   */
-  static TracezZPageHandler create(@javax.annotation.Nullable TracezDataAggregator dataAggregator) {
-    return new TracezZPageHandler(dataAggregator);
   }
 
   @Override
@@ -122,51 +112,51 @@ final class TracezZPageHandler extends ZPageHandler {
   }
 
   /**
-   * Emits CSS Styles to the {@link PrintWriter} {@code out}. Content emited by this function should
+   * Emits CSS Styles to the {@link PrintStream} {@code out}. Content emited by this function should
    * be enclosed by <head></head> tag.
    *
-   * @param out The {@link PrintWriter} {@code out}.
+   * @param out The {@link PrintStream} {@code out}.
    */
-  private static void emitHtmlStyle(PrintWriter out) {
-    out.write("<style>");
-    out.write(ZPageStyle.style);
-    out.write("</style>");
+  private static void emitHtmlStyle(PrintStream out) {
+    out.print("<style>");
+    out.print(ZPageStyle.style);
+    out.print("</style>");
   }
 
   /**
-   * Emits the header of the summary table to the {@link PrintWriter} {@code out}.
+   * Emits the header of the summary table to the {@link PrintStream} {@code out}.
    *
-   * @param out The {@link PrintWriter} {@code out}.
+   * @param out The {@link PrintStream} {@code out}.
    * @param formatter A {@link Formatter} for formatting HTML expressions.
    */
-  private static void emitSummaryTableHeader(PrintWriter out, Formatter formatter) {
+  private static void emitSummaryTableHeader(PrintStream out, Formatter formatter) {
     // First row
-    out.write("<tr class=\"bg-color\">");
-    out.write("<th colspan=1 class=\"header-text\"><b>Span Name</b></th>");
-    out.write("<th colspan=1 class=\"header-text border-left-white\"><b>Running</b></th>");
-    out.write("<th colspan=9 class=\"header-text border-left-white\"><b>Latency Samples</b></th>");
-    out.write("<th colspan=1 class=\"header-text border-left-white\"><b>Error Samples</b></th>");
-    out.write("</tr>");
+    out.print("<tr class=\"bg-color\">");
+    out.print("<th colspan=1 class=\"header-text\"><b>Span Name</b></th>");
+    out.print("<th colspan=1 class=\"header-text border-left-white\"><b>Running</b></th>");
+    out.print("<th colspan=9 class=\"header-text border-left-white\"><b>Latency Samples</b></th>");
+    out.print("<th colspan=1 class=\"header-text border-left-white\"><b>Error Samples</b></th>");
+    out.print("</tr>");
 
     // Second row
-    out.write("<tr class=\"bg-color\">");
-    out.write("<th colspan=1></th>");
-    out.write("<th colspan=1 class=\"border-left-white\"></th>");
+    out.print("<tr class=\"bg-color\">");
+    out.print("<th colspan=1></th>");
+    out.print("<th colspan=1 class=\"border-left-white\"></th>");
     for (LatencyBoundaries latencyBoundaries : LatencyBoundaries.values()) {
       formatter.format(
           "<th colspan=1 class=\"border-left-white align-center\""
               + "style=\"color: #fff;\"><b>[%s]</b></th>",
           LATENCY_BOUNDARIES_STRING_MAP.get(latencyBoundaries));
     }
-    out.write("<th colspan=1 class=\"border-left-white\"></th>");
-    out.write("</tr>");
+    out.print("<th colspan=1 class=\"border-left-white\"></th>");
+    out.print("</tr>");
   }
 
   /**
    * Emits a single cell of the summary table depends on the paramters passed in, to the {@link
-   * PrintWriter} {@code out}.
+   * PrintStream} {@code out}.
    *
-   * @param out The {@link PrintWriter} {@code out}.
+   * @param out The {@link PrintStream} {@code out}.
    * @param formatter {@link Formatter} for formatting HTML expressions.
    * @param spanName The name of the corresponding span.
    * @param numOfSamples The number of samples of the corresponding span.
@@ -174,7 +164,7 @@ final class TracezZPageHandler extends ZPageHandler {
    * @param subtype The sub-type of the corresponding span (latency [0, 8], error [0, 15]).
    */
   private static void emitSummaryTableCell(
-      PrintWriter out,
+      PrintStream out,
       Formatter formatter,
       String spanName,
       int numOfSamples,
@@ -194,25 +184,25 @@ final class TracezZPageHandler extends ZPageHandler {
           subtype,
           numOfSamples);
     } else if (numOfSamples < 0) {
-      out.write("<td class=\"align-center border-left-dark\">N/A</td>");
+      out.print("<td class=\"align-center border-left-dark\">N/A</td>");
     } else {
-      out.write("<td class=\"align-center border-left-dark\">0</td>");
+      out.print("<td class=\"align-center border-left-dark\">0</td>");
     }
   }
 
   /**
-   * Emits the summary table of running spans and sampled spans to the {@link PrintWriter} {@code
+   * Emits the summary table of running spans and sampled spans to the {@link PrintStream} {@code
    * out}.
    *
-   * @param out The {@link PrintWriter} {@code out}.
+   * @param out The {@link PrintStream} {@code out}.
    * @param formatter A {@link Formatter} for formatting HTML expressions.
    */
-  private void emitSummaryTable(PrintWriter out, Formatter formatter)
+  private void emitSummaryTable(PrintStream out, Formatter formatter)
       throws UnsupportedEncodingException {
     if (dataAggregator == null) {
       return;
     }
-    out.write("<table style=\"border-spacing: 0; border: 1px solid #363636;\">");
+    out.print("<table style=\"border-spacing: 0; border: 1px solid #363636;\">");
     emitSummaryTableHeader(out, formatter);
 
     Set<String> spanNames = dataAggregator.getSpanNames();
@@ -226,7 +216,7 @@ final class TracezZPageHandler extends ZPageHandler {
       if (zebraStripe) {
         formatter.format("<tr style=\"background-color: %s\">", ZEBRA_STRIPE_COLOR);
       } else {
-        out.write("<tr>");
+        out.print("<tr>");
       }
       zebraStripe = !zebraStripe;
       formatter.format("<td>%s</td>", htmlEscaper().escape(spanName));
@@ -256,7 +246,7 @@ final class TracezZPageHandler extends ZPageHandler {
       // subtype 0 means all errors
       emitSummaryTableCell(out, formatter, spanName, numOfErrorSamples, SampleType.ERROR, 0);
     }
-    out.write("</table>");
+    out.print("</table>");
   }
 
   private static void emitSpanNameAndCount(
@@ -272,25 +262,25 @@ final class TracezZPageHandler extends ZPageHandler {
   }
 
   private static void emitSpanDetails(
-      PrintWriter out, Formatter formatter, Collection<SpanData> spans) {
-    out.write("<table style=\"border-spacing: 0; border: 1px solid #363636;\">");
-    out.write("<tr class=\"bg-color\">");
-    out.write(
+      PrintStream out, Formatter formatter, Collection<SpanData> spans) {
+    out.print("<table style=\"border-spacing: 0; border: 1px solid #363636;\">");
+    out.print("<tr class=\"bg-color\">");
+    out.print(
         "<td style=\"color: #fff;\"><pre class=\"no-margin wrap-text\"><b>When</b></pre></td>");
-    out.write(
+    out.print(
         "<td class=\"border-left-white\" style=\"color: #fff;\">"
             + "<pre class=\"no-margin wrap-text\"><b>Elapsed(s)</b></pre></td>");
-    out.write("<td class=\"border-left-white\"></td>");
-    out.write("</tr>");
+    out.print("<td class=\"border-left-white\"></td>");
+    out.print("</tr>");
     boolean zebraStripe = false;
     for (SpanData span : spans) {
       zebraStripe = emitSingleSpan(out, formatter, span, zebraStripe);
     }
-    out.write("</table>");
+    out.print("</table>");
   }
 
   private static boolean emitSingleSpan(
-      PrintWriter out, Formatter formatter, SpanData span, boolean zebraStripe) {
+      PrintStream out, Formatter formatter, SpanData span, boolean zebraStripe) {
     Calendar calendar = Calendar.getInstance();
     calendar.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(span.getStartEpochNanos()));
     long microsField = TimeUnit.NANOSECONDS.toMicros(span.getStartEpochNanos());
@@ -323,7 +313,7 @@ final class TracezZPageHandler extends ZPageHandler {
         (span.getParentSpanId() == null
             ? SpanId.getInvalid().toLowerBase16()
             : span.getParentSpanId().toLowerBase16()));
-    out.write("</tr>");
+    out.print("</tr>");
     zebraStripe = !zebraStripe;
 
     int lastEntryDayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
@@ -336,7 +326,7 @@ final class TracezZPageHandler extends ZPageHandler {
       formatter.format(
           "<tr style=\"background-color: %s;\">", zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
       emitSingleEvent(out, formatter, event, calendar, lastEntryDayOfYear, lastEpochNanos);
-      out.write("</tr>");
+      out.print("</tr>");
       if (calendar.get(Calendar.DAY_OF_YEAR) != lastEntryDayOfYear) {
         lastEntryDayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
       }
@@ -357,14 +347,14 @@ final class TracezZPageHandler extends ZPageHandler {
   }
 
   private static void emitSingleEvent(
-      PrintWriter out,
+      PrintStream out,
       Formatter formatter,
       Event event,
       Calendar calendar,
       int lastEntryDayOfYear,
       long lastEpochNanos) {
     if (calendar.get(Calendar.DAY_OF_YEAR) == lastEntryDayOfYear) {
-      out.write("<td class=\"align-right\"><pre class=\"no-margin wrap-text\">");
+      out.print("<td class=\"align-right\"><pre class=\"no-margin wrap-text\">");
     } else {
       formatter.format(
           "<td class=\"align-right\"><pre class=\"no-margin wrap-text\">%04d/%02d/%02d-",
@@ -432,24 +422,24 @@ final class TracezZPageHandler extends ZPageHandler {
   }
 
   /**
-   * Emits HTML body content to the {@link PrintWriter} {@code out}. Content emited by this function
+   * Emits HTML body content to the {@link PrintStream} {@code out}. Content emited by this function
    * should be enclosed by <body></body> tag.
    *
-   * @param out The {@link PrintWriter} {@code out}.
+   * @param out The {@link PrintStream} {@code out}.
    */
-  private void emitHtmlBody(Map<String, String> queryMap, PrintWriter out)
+  private void emitHtmlBody(Map<String, String> queryMap, PrintStream out)
       throws UnsupportedEncodingException {
     if (dataAggregator == null) {
-      out.write("OpenTelemetry implementation not available.");
+      out.print("OpenTelemetry implementation not available.");
       return;
     }
     // Link to OpenTelemetry Logo
-    out.write(
+    out.print(
         "<img style=\"height: 90px;\""
             + "src=\"data:image/png;base64,"
             + ZPageLogo.logoBase64
             + "\" />");
-    out.write("<h1>TraceZ Summary</h1>");
+    out.print("<h1>TraceZ Summary</h1>");
     Formatter formatter = new Formatter(out, Locale.US);
     emitSummaryTable(out, formatter);
     // spanName will be null if the query parameter doesn't exist in the URL
@@ -495,7 +485,7 @@ final class TracezZPageHandler extends ZPageHandler {
             }
           }
         }
-        out.write("<h2>Span Details</h2>");
+        out.print("<h2>Span Details</h2>");
         emitSpanNameAndCount(formatter, spanName, spans == null ? 0 : spans.size(), type);
 
         if (spans != null) {
@@ -507,35 +497,36 @@ final class TracezZPageHandler extends ZPageHandler {
 
   @Override
   public void emitHtml(Map<String, String> queryMap, OutputStream outputStream) {
-    // PrintWriter for emiting HTML contents
-    PrintWriter out =
-        new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, Charsets.UTF_8)));
-    out.write("<!DOCTYPE html>");
-    out.write("<html lang=\"en\">");
-    out.write("<head>");
-    out.write("<meta charset=\"UTF-8\">");
-    out.write(
-        "<link rel=\"shortcut icon\" href=\"data:image/png;base64,"
-            + ZPageLogo.faviconBase64
-            + "\""
-            + "type=\"image/png\">");
-    out.write(
-        "<link href=\"https://fonts.googleapis.com/css?family=Open+Sans:300\""
-            + "rel=\"stylesheet\">");
-    out.write(
-        "<link href=\"https://fonts.googleapis.com/css?family=Roboto\"" + "rel=\"stylesheet\">");
-    out.write("<title>TraceZ</title>");
-    emitHtmlStyle(out);
-    out.write("</head>");
-    out.write("<body>");
-    try {
-      emitHtmlBody(queryMap, out);
+    // PrintStream for emiting HTML contents
+    try (PrintStream out = new PrintStream(outputStream, /* autoFlush= */ false, "UTF-8")) {
+      out.print("<!DOCTYPE html>");
+      out.print("<html lang=\"en\">");
+      out.print("<head>");
+      out.print("<meta charset=\"UTF-8\">");
+      out.print(
+          "<link rel=\"shortcut icon\" href=\"data:image/png;base64,"
+              + ZPageLogo.faviconBase64
+              + "\""
+              + "type=\"image/png\">");
+      out.print(
+          "<link href=\"https://fonts.googleapis.com/css?family=Open+Sans:300\""
+              + "rel=\"stylesheet\">");
+      out.print(
+          "<link href=\"https://fonts.googleapis.com/css?family=Roboto\"" + "rel=\"stylesheet\">");
+      out.print("<title>TraceZ</title>");
+      emitHtmlStyle(out);
+      out.print("</head>");
+      out.print("<body>");
+      try {
+        emitHtmlBody(queryMap, out);
+      } catch (Throwable t) {
+        out.print("Error while generating HTML: " + t.toString());
+      }
+      out.print("</body>");
+      out.print("</html>");
     } catch (Throwable t) {
-      out.write("Error while generating HTML: " + t);
+      System.err.print("Error while generating HTML: " + t.toString());
     }
-    out.write("</body>");
-    out.write("</html>");
-    out.close();
   }
 
   private static String latencyBoundariesToString(LatencyBoundaries latencyBoundaries) {

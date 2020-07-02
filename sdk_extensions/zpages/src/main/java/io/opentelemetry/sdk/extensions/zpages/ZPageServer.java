@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
@@ -68,10 +69,10 @@ public final class ZPageServer {
       new TracezDataAggregator(tracezSpanProcessor);
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
-      TracezZPageHandler.create(tracezDataAggregator);
+      new TracezZPageHandler(tracezDataAggregator);
 
   private static final Object mutex = new Object();
-  private static volatile boolean isTracezSpanProcesserAdded = false;
+  private static volatile AtomicBoolean isTracezSpanProcesserAdded = new AtomicBoolean(false);
 
   @GuardedBy("mutex")
   @Nullable
@@ -79,14 +80,10 @@ public final class ZPageServer {
 
   /** Function that adds the {@link TracezSpanProcessor} to the {@link tracerSdkProvider}. */
   private static void addTracezSpanProcessor() {
-    if (!isTracezSpanProcesserAdded) {
+    if (isTracezSpanProcesserAdded.compareAndSet(false, true)) {
       synchronized (mutex) {
-        if (isTracezSpanProcesserAdded) {
-          return;
-        }
         TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
         tracerProvider.addSpanProcessor(tracezSpanProcessor);
-        isTracezSpanProcesserAdded = true;
       }
     }
   }
@@ -100,6 +97,9 @@ public final class ZPageServer {
    *
    * <p>Clicking on a cell in the table with a number that is greater than zero will display
    * detailed information about that span.
+   *
+   * <p>This method will add the TracezSpanProcessor to the tracerProvider, it should only be called
+   * once.
    *
    * @return a {@code ZPageHandler} for tracing debug.
    */
@@ -158,7 +158,7 @@ public final class ZPageServer {
 
   /** For testing purpose only. */
   public static boolean getIsTracezSpanProcesserAdded() {
-    return isTracezSpanProcesserAdded;
+    return isTracezSpanProcesserAdded.get();
   }
 
   private ZPageServer() {}

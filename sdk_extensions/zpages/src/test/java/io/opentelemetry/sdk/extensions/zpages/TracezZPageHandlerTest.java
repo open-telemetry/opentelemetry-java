@@ -73,7 +73,7 @@ public final class TracezZPageHandlerTest {
     errorSpan.setStatus(CanonicalCode.INVALID_ARGUMENT.toStatus());
     errorSpan.end();
 
-    TracezZPageHandler tracezZPageHandler = TracezZPageHandler.create(dataAggregator);
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
@@ -96,7 +96,7 @@ public final class TracezZPageHandlerTest {
     Span finishedSpan = tracer.spanBuilder(FINISHED_SPAN_ONE).startSpan();
     finishedSpan.end();
 
-    TracezZPageHandler tracezZPageHandler = TracezZPageHandler.create(dataAggregator);
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
@@ -115,7 +115,7 @@ public final class TracezZPageHandlerTest {
   @Test
   public void summaryTable_linkForLatencyBasedSpans_NoneForEmptyBoundary() {
     OutputStream output = new ByteArrayOutputStream();
-    TracezZPageHandler tracezZPageHandler = TracezZPageHandler.create(dataAggregator);
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
@@ -188,7 +188,7 @@ public final class TracezZPageHandlerTest {
     EndSpanOptions endOptions8 = EndSpanOptions.builder().setEndTimestamp(100000000002L).build();
     latencySpanSubtype8.end(endOptions8);
 
-    TracezZPageHandler tracezZPageHandler = TracezZPageHandler.create(dataAggregator);
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
@@ -238,7 +238,7 @@ public final class TracezZPageHandlerTest {
     EndSpanOptions endOptions4 = EndSpanOptions.builder().setEndTimestamp(194892582L).build();
     latencySpan100ms4.end(endOptions4);
 
-    TracezZPageHandler tracezZPageHandler = TracezZPageHandler.create(dataAggregator);
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
@@ -262,7 +262,7 @@ public final class TracezZPageHandlerTest {
     errorSpan3.end();
     finishedSpan.end();
 
-    TracezZPageHandler tracezZPageHandler = TracezZPageHandler.create(dataAggregator);
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 

@@ -44,7 +44,7 @@ final class ZPageHttpHandler implements HttpHandler {
    * @return the query map built based on the @{code uri}
    */
   @VisibleForTesting
-  static ImmutableMap<String, String> queryMapBuilder(URI uri) {
+  static ImmutableMap<String, String> parseQueryMap(URI uri) {
     String queryStrings = uri.getQuery();
     if (queryStrings == null) {
       return ImmutableMap.of();
@@ -53,9 +53,9 @@ final class ZPageHttpHandler implements HttpHandler {
     for (String param : Splitter.on("&").split(queryStrings)) {
       List<String> keyValuePair = Splitter.on("=").splitToList(param);
       if (keyValuePair.size() > 1) {
-        queryMap.put(keyValuePair.get(0), keyValuePair.get(1));
+        queryMap.put(keyValuePair.get(0).trim(), keyValuePair.get(1).trim());
       } else {
-        queryMap.put(keyValuePair.get(0), "");
+        queryMap.put(keyValuePair.get(0).trim(), "");
       }
     }
     return ImmutableMap.copyOf(queryMap);
@@ -66,7 +66,7 @@ final class ZPageHttpHandler implements HttpHandler {
     try {
       httpExchange.sendResponseHeaders(200, 0);
       zpageHandler.emitHtml(
-          queryMapBuilder(httpExchange.getRequestURI()), httpExchange.getResponseBody());
+          parseQueryMap(httpExchange.getRequestURI()), httpExchange.getResponseBody());
     } finally {
       httpExchange.close();
     }
