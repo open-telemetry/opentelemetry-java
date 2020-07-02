@@ -99,7 +99,7 @@ public final class ZPageServer {
    * <p>This method will add the TracezSpanProcessor to the tracerProvider, it should only be called
    * once.
    */
-  public static void registerTracezZPageHandler(HttpServer server) {
+  static void registerTracezZPageHandler(HttpServer server) {
     addTracezSpanProcessor();
     server.createContext(tracezZPageHandler.getUrlPath(), new ZPageHttpHandler(tracezZPageHandler));
   }
