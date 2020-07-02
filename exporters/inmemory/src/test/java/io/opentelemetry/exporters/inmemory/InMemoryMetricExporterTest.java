@@ -1,4 +1,22 @@
+/*
+ * Copyright 2019, OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentelemetry.exporters.inmemory;
+
+import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -8,21 +26,29 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import io.opentelemetry.sdk.resources.Resource;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.truth.Truth.assertThat;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link InMemoryMetricExporter}. */
 @RunWith(JUnit4.class)
 public class InMemoryMetricExporterTest {
 
   private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
+
+  private static MetricData generateFakeMetric() {
+    long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+    long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
+    return MetricData.create(
+        Descriptor.create("name", "description", "1", Type.MONOTONIC_LONG, Labels.empty()),
+        Resource.getEmpty(),
+        InstrumentationLibraryInfo.getEmpty(),
+        Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
+  }
 
   @Test
   public void test_getFinishedMetricItems() {
@@ -36,7 +62,6 @@ public class InMemoryMetricExporterTest {
     assertThat(metricItems).isNotNull();
     assertThat(metricItems.size()).isEqualTo(3);
   }
-
 
   @Test
   public void test_reset() {
@@ -85,16 +110,4 @@ public class InMemoryMetricExporterTest {
   public void test_flush() {
     assertThat(exporter.flush()).isEqualTo(ResultCode.SUCCESS);
   }
-
-
-  private static MetricData generateFakeMetric() {
-    long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-    long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
-    return MetricData.create(
-        Descriptor.create("name", "description", "1", Type.MONOTONIC_LONG, Labels.empty()),
-        Resource.getEmpty(),
-        InstrumentationLibraryInfo.getEmpty(),
-        Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
-  }
-
 }
