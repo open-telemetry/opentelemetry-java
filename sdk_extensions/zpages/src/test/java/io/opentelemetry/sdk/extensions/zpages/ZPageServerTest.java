@@ -18,6 +18,9 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -26,14 +29,12 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class ZPageServerTest {
   @Test
-  public void tracezImplemented_tracezSpanProcessorOnlyAddedOnce() {
+  public void tracezSpanProcessorOnlyAddedOnce() throws IOException {
     // tracezSpanProcessor is not added yet
     assertThat(ZPageServer.getIsTracezSpanProcesserAdded()).isFalse();
-    assertThat(ZPageServer.getTracezZPageHandler()).isInstanceOf(TracezZPageHandler.class);
+    HttpServer server = HttpServer.create(new InetSocketAddress(8888), 5);
+    ZPageServer.registerAllPagesToHttpServer(server);
     // tracezSpanProcessor is added
-    assertThat(ZPageServer.getIsTracezSpanProcesserAdded()).isTrue();
-    // this will not re-add tracezSpanProcessor
-    ZPageServer.getTracezZPageHandler();
     assertThat(ZPageServer.getIsTracezSpanProcesserAdded()).isTrue();
   }
 }

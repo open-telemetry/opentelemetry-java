@@ -72,7 +72,7 @@ public final class ZPageServer {
       new TracezZPageHandler(tracezDataAggregator);
 
   private static final Object mutex = new Object();
-  private static volatile AtomicBoolean isTracezSpanProcesserAdded = new AtomicBoolean(false);
+  private static final AtomicBoolean isTracezSpanProcesserAdded = new AtomicBoolean(false);
 
   @GuardedBy("mutex")
   @Nullable
@@ -81,16 +81,14 @@ public final class ZPageServer {
   /** Function that adds the {@link TracezSpanProcessor} to the {@link tracerSdkProvider}. */
   private static void addTracezSpanProcessor() {
     if (isTracezSpanProcesserAdded.compareAndSet(false, true)) {
-      synchronized (mutex) {
-        TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
-        tracerProvider.addSpanProcessor(tracezSpanProcessor);
-      }
+      TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+      tracerProvider.addSpanProcessor(tracezSpanProcessor);
     }
   }
 
   /**
-   * Returns a {@code ZPageHandler} for tracing debug. The page displays information about all
-   * running spans and all sampled spans based on latency and error.
+   * Registers a {@code ZPageHandler} for tracing debug to the server. The page displays information
+   * about all running spans and all sampled spans based on latency and error.
    *
    * <p>It displays a summary table which contains one row for each span name and data about number
    * of running and sampled spans.
@@ -100,12 +98,10 @@ public final class ZPageServer {
    *
    * <p>This method will add the TracezSpanProcessor to the tracerProvider, it should only be called
    * once.
-   *
-   * @return a {@code ZPageHandler} for tracing debug.
    */
-  public static ZPageHandler getTracezZPageHandler() {
+  public static void registerTracezZPageHandler(HttpServer server) {
     addTracezSpanProcessor();
-    return tracezZPageHandler;
+    server.createContext(tracezZPageHandler.getUrlPath(), new ZPageHttpHandler(tracezZPageHandler));
   }
 
   /**
@@ -115,14 +111,15 @@ public final class ZPageServer {
    */
   public static void registerAllPagesToHttpServer(HttpServer server) {
     // For future zPages, register them to the server in here
-    server.createContext(
-        tracezZPageHandler.getUrlPath(), new ZPageHttpHandler(getTracezZPageHandler()));
+    registerTracezZPageHandler(server);
   }
 
   /** Method for stopping the {@link HttpServer} {@code server}. */
   private static void stop() {
     synchronized (mutex) {
-      checkState(server != null, "The HttpServer is already stopped.");
+      if (server == null) {
+        return;
+      }
       server.stop(HTTPSERVER_STOP_DELAY);
       server = null;
     }
