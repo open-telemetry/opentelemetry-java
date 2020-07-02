@@ -266,14 +266,14 @@ LongCounter counter = meter
 
 // It is recommended that the API user keep a reference to a Bound Counter for the entire time or 
 // call unbind when no-longer needed.
-BoundLongCounter someWorkCounter = counter.bind("Key", "SomeWork");
+BoundLongCounter someWorkCounter = counter.bind(Labels.of("Key", "SomeWork"));
 
 // Record data
 someWorkCounter.add(123);
 
 // Alternatively, the user can use the unbounded counter and explicitly
 // specify the labels set at call-time:
-counter.add(123, "Key", "SomeWork");
+counter.add(123, Labels.of("Key", "SomeWork"));
 ```
 
 `Observer` is an additional instrument supporting an asynchronous API and
@@ -294,7 +294,7 @@ observer.setCallback(
           @Override
           public void update(ResultLongObserver result) {
             // long getCpuUsage()
-            result.observe(getCpuUsage(), "Key", "SomeWork");
+            result.observe(getCpuUsage(), Labels.of("Key", "SomeWork"));
           }
         });
 ```
