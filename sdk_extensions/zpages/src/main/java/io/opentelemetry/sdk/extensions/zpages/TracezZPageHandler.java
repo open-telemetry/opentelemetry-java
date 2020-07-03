@@ -112,10 +112,10 @@ final class TracezZPageHandler extends ZPageHandler {
   }
 
   /**
-   * Emits CSS Styles to the {@link PrintStream} {@code out}. Content emited by this function should
-   * be enclosed by <head></head> tag.
+   * Emits CSS Styles to the {@link PrintStream} {@code out}. Content emitted by this function
+   * should be enclosed by <head></head> tag.
    *
-   * @param out The {@link PrintStream} {@code out}.
+   * @param out the {@link PrintStream} {@code out}.
    */
   private static void emitHtmlStyle(PrintStream out) {
     out.print("<style>");
@@ -126,8 +126,8 @@ final class TracezZPageHandler extends ZPageHandler {
   /**
    * Emits the header of the summary table to the {@link PrintStream} {@code out}.
    *
-   * @param out The {@link PrintStream} {@code out}.
-   * @param formatter A {@link Formatter} for formatting HTML expressions.
+   * @param out the {@link PrintStream} {@code out}.
+   * @param formatter a {@link Formatter} for formatting HTML expressions.
    */
   private static void emitSummaryTableHeader(PrintStream out, Formatter formatter) {
     // First row
@@ -156,12 +156,12 @@ final class TracezZPageHandler extends ZPageHandler {
    * Emits a single cell of the summary table depends on the paramters passed in, to the {@link
    * PrintStream} {@code out}.
    *
-   * @param out The {@link PrintStream} {@code out}.
-   * @param formatter {@link Formatter} for formatting HTML expressions.
-   * @param spanName The name of the corresponding span.
-   * @param numOfSamples The number of samples of the corresponding span.
-   * @param type The type of the corresponding span (running, latency, error).
-   * @param subtype The sub-type of the corresponding span (latency [0, 8], error [0, 15]).
+   * @param out the {@link PrintStream} {@code out}.
+   * @param formatter the {@link Formatter} for formatting HTML expressions.
+   * @param spanName the name of the corresponding span.
+   * @param numOfSamples the number of samples of the corresponding span.
+   * @param type the type of the corresponding span (running, latency, error).
+   * @param subtype the sub-type of the corresponding span (latency [0, 8], error [0, 15]).
    */
   private static void emitSummaryTableCell(
       PrintStream out,
@@ -194,8 +194,8 @@ final class TracezZPageHandler extends ZPageHandler {
    * Emits the summary table of running spans and sampled spans to the {@link PrintStream} {@code
    * out}.
    *
-   * @param out The {@link PrintStream} {@code out}.
-   * @param formatter A {@link Formatter} for formatting HTML expressions.
+   * @param out the {@link PrintStream} {@code out}.
+   * @param formatter a {@link Formatter} for formatting HTML expressions.
    */
   private void emitSummaryTable(PrintStream out, Formatter formatter)
       throws UnsupportedEncodingException {
@@ -422,10 +422,11 @@ final class TracezZPageHandler extends ZPageHandler {
   }
 
   /**
-   * Emits HTML body content to the {@link PrintStream} {@code out}. Content emited by this function
-   * should be enclosed by <body></body> tag.
+   * Emits HTML body content to the {@link PrintStream} {@code out}. Content emitted by this
+   * function should be enclosed by <body></body> tag.
    *
-   * @param out The {@link PrintStream} {@code out}.
+   * @param queryMap the map containing URL query parameters.s
+   * @param out the {@link PrintStream} {@code out}.
    */
   private void emitHtmlBody(Map<String, String> queryMap, PrintStream out)
       throws UnsupportedEncodingException {
