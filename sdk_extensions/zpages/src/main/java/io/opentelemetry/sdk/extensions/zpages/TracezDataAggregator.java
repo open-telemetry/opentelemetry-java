@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -55,13 +54,7 @@ final class TracezDataAggregator {
    * @return a Set of {@link String}.
    */
   public Set<String> getSpanNames() {
-    Set<String> spanNames = new TreeSet<>();
-    Collection<ReadableSpan> allRunningSpans = spanProcessor.getRunningSpans();
-    for (ReadableSpan span : allRunningSpans) {
-      spanNames.add(span.getName());
-    }
-    spanNames.addAll(spanProcessor.getCompletedSpanCache().keySet());
-    return spanNames;
+    return spanProcessor.getSpanNames();
   }
 
   /**

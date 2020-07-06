@@ -24,6 +24,8 @@ import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.concurrent.ThreadSafe;
@@ -51,6 +53,7 @@ import javax.annotation.concurrent.ThreadSafe;
 final class TracezSpanProcessor implements SpanProcessor {
   private final ConcurrentMap<SpanId, ReadableSpan> runningSpanCache;
   private final ConcurrentMap<String, TracezSpanBuckets> completedSpanCache;
+  private final Set<String> spanNames;
   private final boolean sampled;
 
   /**
@@ -61,12 +64,16 @@ final class TracezSpanProcessor implements SpanProcessor {
   public TracezSpanProcessor(boolean sampled) {
     runningSpanCache = new ConcurrentHashMap<>();
     completedSpanCache = new ConcurrentHashMap<>();
+    spanNames = new TreeSet<>();
     this.sampled = sampled;
   }
 
   @Override
   public void onStart(ReadableSpan span) {
     runningSpanCache.putIfAbsent(span.getSpanContext().getSpanId(), span);
+    synchronized (this) {
+      spanNames.add(span.getName());
+    }
   }
 
   @Override
@@ -132,6 +139,17 @@ final class TracezSpanProcessor implements SpanProcessor {
   public Map<String, TracezSpanBuckets> getCompletedSpanCache() {
     synchronized (this) {
       return completedSpanCache;
+    }
+  }
+
+  /**
+   * Returns the set of span names for {@link TracezSpanProcessor}.
+   *
+   * @return a Set of {@link String} span names.
+   */
+  public Set<String> getSpanNames() {
+    synchronized (this) {
+      return spanNames;
     }
   }
 
