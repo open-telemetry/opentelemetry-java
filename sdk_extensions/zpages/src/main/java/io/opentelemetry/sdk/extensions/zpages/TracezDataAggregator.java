@@ -50,8 +50,7 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a Set of running and completed span names for {@link
-   * TracezDataAggregator}.
+   * Returns a Set of running and completed span names for {@link TracezDataAggregator}.
    *
    * @return a Set of {@link String}.
    */
@@ -66,8 +65,7 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a Map of the running span counts for {@link
-   * TracezDataAggregator}.
+   * Returns a Map of the running span counts for {@link TracezDataAggregator}.
    *
    * @return a Map of span counts for each span name.
    */
@@ -82,8 +80,7 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a List of all running spans with a given span name for {@link
-   * TracezDataAggregator}.
+   * Returns a List of all running spans with a given span name for {@link TracezDataAggregator}.
    *
    * @param spanName name to filter returned spans.
    * @return a List of {@link SpanData}.
@@ -100,8 +97,8 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a Map of counts for the {@link Status#OK} spans within
-   * [lowerBound, upperBound) {@link TracezDataAggregator}.
+   * Returns a Map of counts for the {@link Status#OK} spans within [lowerBound, upperBound) {@link
+   * TracezDataAggregator}.
    *
    * @param lowerBound latency lower bound (inclusive)
    * @param upperBound latency upper bound (exclusive)
@@ -122,8 +119,8 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a Map of span names to counts for all {@link Status#OK} spans in
-   * {@link TracezDataAggregator}.
+   * Returns a Map of span names to counts for all {@link Status#OK} spans in {@link
+   * TracezDataAggregator}.
    *
    * @return a Map of span names to counts, where the counts are further indexed by the latency
    *     boundaries.
@@ -138,8 +135,8 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a List of all {@link Status#OK} spans with a given span name
-   * between [lowerBound, upperBound) for {@link TracezDataAggregator}.
+   * Returns a List of all {@link Status#OK} spans with a given span name between [lowerBound,
+   * upperBound) for {@link TracezDataAggregator}.
    *
    * @param spanName name to filter returned spans.
    * @param lowerBound latency lower bound (inclusive)
@@ -176,8 +173,7 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a List of error spans with a given span name for {@link
-   * TracezDataAggregator}.
+   * Returns a List of error spans with a given span name for {@link TracezDataAggregator}.
    *
    * @param spanName name to filter returned spans.
    * @return a List of {@link SpanData}.

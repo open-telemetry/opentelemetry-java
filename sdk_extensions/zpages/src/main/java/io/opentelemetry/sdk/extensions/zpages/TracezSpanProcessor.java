@@ -31,19 +31,17 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * A {@link SpanProcessor} implementation for the traceZ zPage.
  *
- * <p>Configuration options for {@link TracezSpanProcessor}
- * can be read from system properties, environment variables, or {@link java.util.Properties}
- * objects.
+ * <p>Configuration options for {@link TracezSpanProcessor} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For system properties and {@link java.util.Properties} objects, {@link
- * TracezSpanProcessor} will look for the following names:
+ * <p>For system properties and {@link java.util.Properties} objects, {@link TracezSpanProcessor}
+ * will look for the following names:
  *
  * <ul>
  *   <li>{@code otel.zpages.export.sampled}: sets whether only sampled spans should be exported.
  * </ul>
  *
- * <p>For environment variables, {@link TracezSpanProcessor}
- * will look for the following names:
+ * <p>For environment variables, {@link TracezSpanProcessor} will look for the following names:
  *
  * <ul>
  *   <li>{@code OTEL_ZPAGES_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
@@ -103,8 +101,7 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   /**
-   * Returns a Collection of all running spans for {@link
-   * TracezSpanProcessor}.
+   * Returns a Collection of all running spans for {@link TracezSpanProcessor}.
    *
    * @return a Collection of {@link ReadableSpan}.
    */
@@ -113,8 +110,7 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   /**
-   * Returns a Collection of all completed spans for {@link
-   * TracezSpanProcessor}.
+   * Returns a Collection of all completed spans for {@link TracezSpanProcessor}.
    *
    * @return a Collection of {@link ReadableSpan}.
    */
@@ -129,8 +125,7 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   /**
-   * Returns the completed span cache for {@link
-   * TracezSpanProcessor}.
+   * Returns the completed span cache for {@link TracezSpanProcessor}.
    *
    * @return a Map of String to {@link TracezSpanBuckets}.
    */
