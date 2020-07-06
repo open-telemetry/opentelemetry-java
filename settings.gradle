@@ -40,7 +40,7 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-extension-auto-config",
         ":opentelemetry-sdk-extension-aws-v1-support",
         ":opentelemetry-sdk-extension-otproto",
-        ":opentelemetry-sdk-contrib-spring-boot2",
+        ":opentelemetry-sdk-extension-spring-boot2",
         ":opentelemetry-sdk-extension-testbed",
         ":opentelemetry-sdk-extension-jaeger-remote-sampler",
         ":opentelemetry-bom"

@@ -30,7 +30,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.MultiSpanExporter;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.TracerProvider;
 import java.beans.PropertyDescriptor;
@@ -259,7 +259,7 @@ public class TracerSdkProviderBean implements FactoryBean<TracerProvider>, Initi
     } else {
       spanExporter = MultiSpanExporter.create(spanExporters);
     }
-    return SimpleSpansProcessor.newBuilder(spanExporter)
+    return SimpleSpanProcessor.newBuilder(spanExporter)
         .setExportOnlySampled(properties.getTracer().isExportSampledOnly())
         .build();
   }

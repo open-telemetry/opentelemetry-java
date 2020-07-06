@@ -16,16 +16,14 @@
 
 package io.opentelemetry.contrib.spring.boot;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Test only. */
@@ -63,10 +61,9 @@ public class TestOnlySampler implements Sampler {
   public Decision shouldSample(
       @Nullable SpanContext parentContext,
       TraceId traceId,
-      SpanId spanId,
       String name,
       Kind spanKind,
-      Map<String, AttributeValue> attributes,
+      ReadableAttributes attributes,
       List<Link> parentLinks) {
     return new TestOnlyDecision();
   }
@@ -84,8 +81,8 @@ public class TestOnlySampler implements Sampler {
     }
 
     @Override
-    public Map<String, AttributeValue> getAttributes() {
-      return Collections.emptyMap();
+    public Attributes getAttributes() {
+      return Attributes.newBuilder().build();
     }
   }
 }

@@ -19,6 +19,7 @@ package io.opentelemetry.contrib.spring.boot;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.util.HashMap;
@@ -59,7 +60,11 @@ class ServiceResourceFactory implements FactoryBean<Resource> {
     populateLabelsFromPropertySourcesIfAvailable(labels);
     populateLabelsWithBuildInfoIfAvailable(labels);
     populateLabelsWithGitInfoIfAvailable(labels);
-    return Resource.create(labels);
+    Attributes.Builder builder = Attributes.newBuilder();
+    for (Map.Entry<String, AttributeValue> entry : labels.entrySet()) {
+      builder.setAttribute(entry.getKey(), entry.getValue().getStringValue());
+    }
+    return Resource.create(builder.build());
   }
 
   @Override
