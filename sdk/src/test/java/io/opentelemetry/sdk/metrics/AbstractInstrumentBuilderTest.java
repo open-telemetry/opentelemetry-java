@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -27,7 +28,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,8 +42,7 @@ public class AbstractInstrumentBuilderTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Map<String, String> CONSTANT_LABELS =
-      Collections.singletonMap("key_2", "value_2");
+  private static final Labels CONSTANT_LABELS = Labels.of("key_2", "value_2");
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final MeterSharedState METER_SHARED_STATE =
@@ -126,7 +125,7 @@ public class AbstractInstrumentBuilderTest {
     assertThat(testInstrument.getDescriptor().getName()).isEqualTo(NAME);
     assertThat(testInstrument.getDescriptor().getDescription()).isEmpty();
     assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo("1");
-    assertThat(testInstrument.getDescriptor().getConstantLabels()).isEmpty();
+    assertThat(testInstrument.getDescriptor().getConstantLabels().isEmpty()).isTrue();
   }
 
   @Test
@@ -146,8 +145,7 @@ public class AbstractInstrumentBuilderTest {
     assertThat(testInstrument.getDescriptor().getDescription()).isEqualTo(DESCRIPTION);
     assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo(UNIT);
     assertThat(testInstrument.getDescriptor().getConstantLabels()).isEqualTo(CONSTANT_LABELS);
-    assertThat(testInstrument.getDescriptor().getType())
-        .isEqualTo(InstrumentType.COUNTER_NON_MONOTONIC);
+    assertThat(testInstrument.getDescriptor().getType()).isEqualTo(InstrumentType.UP_DOWN_COUNTER);
     assertThat(testInstrument.getDescriptor().getValueType()).isEqualTo(InstrumentValueType.LONG);
   }
 
@@ -166,7 +164,7 @@ public class AbstractInstrumentBuilderTest {
     @Override
     public TestInstrument build() {
       return new TestInstrument(
-          getInstrumentDescriptor(InstrumentType.COUNTER_NON_MONOTONIC, InstrumentValueType.LONG),
+          getInstrumentDescriptor(InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
           getMeterProviderSharedState(),
           getMeterSharedState());
     }

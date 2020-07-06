@@ -17,10 +17,13 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.errorprone.annotations.Immutable;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleMeasure;
+import io.opentelemetry.metrics.DoubleValueRecorder;
+import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.metrics.LongValueRecorder;
+import io.opentelemetry.metrics.LongValueRecorder.BoundLongValueRecorder;
 import io.opentelemetry.metrics.Meter;
 
 /**
@@ -37,11 +40,14 @@ public enum MetricsTestOperationBuilder {
           return new Operation() {
             LongCounter metric = meter.longCounterBuilder("long_counter").build();
             LongCounter.BoundLongCounter boundMetric =
-                meter.longCounterBuilder("bound_long_counter").build().bind("KEY", "VALUE");
+                meter
+                    .longCounterBuilder("bound_long_counter")
+                    .build()
+                    .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.add(5L, args);
+            public void perform(Labels labels) {
+              metric.add(5L, labels);
             }
 
             @Override
@@ -58,11 +64,14 @@ public enum MetricsTestOperationBuilder {
           return new Operation() {
             DoubleCounter metric = meter.doubleCounterBuilder("double_counter").build();
             DoubleCounter.BoundDoubleCounter boundMetric =
-                meter.doubleCounterBuilder("bound_double_counter").build().bind("KEY", "VALUE");
+                meter
+                    .doubleCounterBuilder("bound_double_counter")
+                    .build()
+                    .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.add(5.0d, args);
+            public void perform(Labels labels) {
+              metric.add(5.0d, labels);
             }
 
             @Override
@@ -72,18 +81,22 @@ public enum MetricsTestOperationBuilder {
           };
         }
       }),
-  DoubleMeasureRecord(
+  DoubleValueRecorderRecord(
       new OperationBuilder() {
         @Override
         public Operation build(final Meter meter) {
           return new Operation() {
-            DoubleMeasure metric = meter.doubleMeasureBuilder("double_measure").build();
-            DoubleMeasure.BoundDoubleMeasure boundMetric =
-                meter.doubleMeasureBuilder("bound_double_measure").build().bind("KEY", "VALUE");
+            DoubleValueRecorder metric =
+                meter.doubleValueRecorderBuilder("double_value_recorder").build();
+            BoundDoubleValueRecorder boundMetric =
+                meter
+                    .doubleValueRecorderBuilder("bound_double_value_recorder")
+                    .build()
+                    .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.record(5.0d, args);
+            public void perform(Labels labels) {
+              metric.record(5.0d, labels);
             }
 
             @Override
@@ -93,18 +106,22 @@ public enum MetricsTestOperationBuilder {
           };
         }
       }),
-  LongMeasureRecord(
+  LongValueRecorderRecord(
       new OperationBuilder() {
         @Override
         public Operation build(final Meter meter) {
           return new Operation() {
-            LongMeasure metric = meter.longMeasureBuilder("long_measure").build();
-            LongMeasure.BoundLongMeasure boundMetric =
-                meter.longMeasureBuilder("bound_long_measure").build().bind("KEY", "VALUE");
+            LongValueRecorder metric =
+                meter.longValueRecorderBuilder("long_value_recorder").build();
+            BoundLongValueRecorder boundMetric =
+                meter
+                    .longValueRecorderBuilder("bound_long_value_recorder")
+                    .build()
+                    .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.record(5L, args);
+            public void perform(Labels labels) {
+              metric.record(5L, labels);
             }
 
             @Override
@@ -131,7 +148,7 @@ public enum MetricsTestOperationBuilder {
   }
 
   interface Operation {
-    abstract void perform(String... args);
+    abstract void perform(Labels labels);
 
     abstract void performBound();
   }

@@ -27,26 +27,26 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface BatchRecorder {
   /**
-   * Associates the {@link LongMeasure} with the given value. Subsequent updates to the same {@link
-   * LongMeasure} will overwrite the previous value.
+   * Associates the {@link LongValueRecorder} with the given value. Subsequent updates to the same
+   * {@link LongValueRecorder} will overwrite the previous value.
    *
-   * @param measure the {@link LongMeasure}.
-   * @param value the value to be associated with {@code measure}.
+   * @param valueRecorder the {@link LongValueRecorder}.
+   * @param value the value to be associated with {@code valueRecorder}.
    * @return this.
    * @since 0.1.0
    */
-  BatchRecorder put(LongMeasure measure, long value);
+  BatchRecorder put(LongValueRecorder valueRecorder, long value);
 
   /**
-   * Associates the {@link DoubleMeasure} with the given value. Subsequent updates to the same
-   * {@link DoubleMeasure} will overwrite the previous value.
+   * Associates the {@link DoubleValueRecorder} with the given value. Subsequent updates to the same
+   * {@link DoubleValueRecorder} will overwrite the previous value.
    *
-   * @param measure the {@link DoubleMeasure}.
-   * @param value the value to be associated with {@code measure}.
+   * @param valueRecorder the {@link DoubleValueRecorder}.
+   * @param value the value to be associated with {@code valueRecorder}.
    * @return this.
    * @since 0.1.0
    */
-  BatchRecorder put(DoubleMeasure measure, double value);
+  BatchRecorder put(DoubleValueRecorder valueRecorder, double value);
 
   /**
    * Associates the {@link LongCounter} with the given value. Subsequent updates to the same {@link
@@ -93,10 +93,10 @@ public interface BatchRecorder {
   BatchRecorder put(DoubleUpDownCounter upDownCounter, double value);
 
   /**
-   * Records all of the measures at the same time.
+   * Records all of measurements at the same time.
    *
-   * <p>This method records all of the measurements every time it is called, so make sure it is not
-   * called twice if not needed.
+   * <p>This method records all measurements every time it is called, so make sure it is not called
+   * twice if not needed.
    *
    * @since 0.1.0
    */

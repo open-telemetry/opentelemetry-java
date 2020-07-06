@@ -17,7 +17,7 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
-import java.util.Map;
+import io.opentelemetry.common.Attributes;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -163,7 +163,7 @@ public interface Span {
    *     the {@code Span} as for {@code setAttribute()}.
    * @since 0.1.0
    */
-  void addEvent(String name, Map<String, AttributeValue> attributes);
+  void addEvent(String name, Attributes attributes);
 
   /**
    * Adds an event to the {@code Span}.
@@ -179,7 +179,7 @@ public interface Span {
    * @param timestamp the explicit event timestamp in nanos since epoch.
    * @since 0.1.0
    */
-  void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp);
+  void addEvent(String name, Attributes attributes, long timestamp);
 
   /**
    * Adds an event to the {@code Span}.
@@ -192,7 +192,7 @@ public interface Span {
   /**
    * Adds an event to the {@code Span}.
    *
-   * <p>Use this method to specify an explicit event timestamp. If not alled, the implementation
+   * <p>Use this method to specify an explicit event timestamp. If not called, the implementation
    * will use the current timestamp value, which should be the default case.
    *
    * <p>Important: this is NOT equivalent with System.nanoTime().
@@ -439,7 +439,7 @@ public interface Span {
      * @see #addLink(Link)
      * @since 0.1.0
      */
-    Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes);
+    Builder addLink(SpanContext spanContext, Attributes attributes);
 
     /**
      * Adds a {@link Link} to the newly created {@code Span}.
@@ -550,6 +550,9 @@ public interface Span {
      * <p>Users <b>must</b> manually call {@link Span#end()} to end this {@code Span}.
      *
      * <p>Does not install the newly created {@code Span} to the current Context.
+     *
+     * <p>IMPORTANT: This method can be called only once per {@link Builder} instance and as the
+     * last method called. After this method is called calling any method is undefined behavior.
      *
      * <p>Example of usage:
      *

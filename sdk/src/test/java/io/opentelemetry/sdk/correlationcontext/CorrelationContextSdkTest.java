@@ -23,9 +23,7 @@ import com.google.common.testing.EqualsTester;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.Entry;
-import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
-import io.opentelemetry.correlationcontext.EntryValue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,11 +43,11 @@ public class CorrelationContextSdkTest {
   private static final EntryMetadata TMD =
       EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
 
-  private static final EntryKey K1 = EntryKey.create("k1");
-  private static final EntryKey K2 = EntryKey.create("k2");
+  private static final String K1 = "k1";
+  private static final String K2 = "k2";
 
-  private static final EntryValue V1 = EntryValue.create("v1");
-  private static final EntryValue V2 = EntryValue.create("v2");
+  private static final String V1 = "v1";
+  private static final String V2 = "v2";
 
   private static final Entry T1 = Entry.create(K1, V1, TMD);
   private static final Entry T2 = Entry.create(K2, V2, TMD);

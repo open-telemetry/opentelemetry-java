@@ -23,7 +23,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.BatchSpansProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -232,7 +232,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
      * @param tracerSdkProvider tracer SDK provider
      */
     public void install(TracerSdkProvider tracerSdkProvider) {
-      BatchSpansProcessor spansProcessor = BatchSpansProcessor.newBuilder(this.build()).build();
+      BatchSpanProcessor spansProcessor = BatchSpanProcessor.newBuilder(this.build()).build();
       tracerSdkProvider.addSpanProcessor(spansProcessor);
     }
 

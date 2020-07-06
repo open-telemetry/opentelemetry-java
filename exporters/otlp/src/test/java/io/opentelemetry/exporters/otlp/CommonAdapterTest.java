@@ -19,9 +19,10 @@ package io.opentelemetry.exporters.otlp;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.proto.common.v1.AttributeKeyValue;
-import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
+import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,10 +35,27 @@ public class CommonAdapterTest {
   public void toProtoAttribute_Bool() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.booleanAttributeValue(true)))
         .isEqualTo(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key")
-                .setBoolValue(true)
-                .setType(ValueType.BOOL)
+                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
+                .build());
+  }
+
+  @Test
+  public void toProtoAttribute_BoolArray() {
+    assertThat(
+            CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(true, false)))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setBoolValue(true).build())
+                                .addValues(AnyValue.newBuilder().setBoolValue(false).build())
+                                .build())
+                        .build())
                 .build());
   }
 
@@ -45,10 +63,28 @@ public class CommonAdapterTest {
   public void toProtoAttribute_String() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.stringAttributeValue("string")))
         .isEqualTo(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key")
-                .setStringValue("string")
-                .setType(ValueType.STRING)
+                .setValue(AnyValue.newBuilder().setStringValue("string").build())
+                .build());
+  }
+
+  @Test
+  public void toProtoAttribute_StringArray() {
+    assertThat(
+            CommonAdapter.toProtoAttribute(
+                "key", AttributeValue.arrayAttributeValue("string1", "string2")))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setStringValue("string1").build())
+                                .addValues(AnyValue.newBuilder().setStringValue("string2").build())
+                                .build())
+                        .build())
                 .build());
   }
 
@@ -56,10 +92,27 @@ public class CommonAdapterTest {
   public void toProtoAttribute_Int() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.longAttributeValue(100)))
         .isEqualTo(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key")
-                .setIntValue(100)
-                .setType(ValueType.INT)
+                .setValue(AnyValue.newBuilder().setIntValue(100).build())
+                .build());
+  }
+
+  @Test
+  public void toProtoAttribute_IntArray() {
+    assertThat(
+            CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(100L, 200L)))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setIntValue(100).build())
+                                .addValues(AnyValue.newBuilder().setIntValue(200).build())
+                                .build())
+                        .build())
                 .build());
   }
 
@@ -67,10 +120,27 @@ public class CommonAdapterTest {
   public void toProtoAttribute_Double() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.doubleAttributeValue(100.3)))
         .isEqualTo(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key")
-                .setDoubleValue(100.3)
-                .setType(ValueType.DOUBLE)
+                .setValue(AnyValue.newBuilder().setDoubleValue(100.3).build())
+                .build());
+  }
+
+  @Test
+  public void toProtoAttribute_DoubleArray() {
+    assertThat(
+            CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(100.3, 200.5)))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setDoubleValue(100.3).build())
+                                .addValues(AnyValue.newBuilder().setDoubleValue(200.5).build())
+                                .build())
+                        .build())
                 .build());
   }
 

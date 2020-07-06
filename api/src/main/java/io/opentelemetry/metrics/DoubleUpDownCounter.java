@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleUpDownCounter.BoundDoubleUpDownCounter;
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -32,7 +32,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <pre>{@code
  * class YourClass {
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
- *   private static final DoubleUpDownCounter counter =
+ *   private static final DoubleUpDownCounter upDownCounter =
  *       meter.
  *           .doubleUpDownCounterBuilder("resource_usage")
  *           .setDescription("Current resource usage")
@@ -41,7 +41,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   // It is recommended that the API user keep references to a Bound Counters.
  *   private static final BoundDoubleUpDownCounter someWorkBound =
- *       counter.bind(Collections.singletonList("SomeWork"));
+ *       upDownCounter.bind("work_name", "some_work");
  *
  *   void doSomeWork() {
  *      someWorkBound.add(10.2);  // Resources needed for this task.
@@ -62,13 +62,13 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
    * @param increment the value to add.
-   * @param labelKeyValuePairs the labels to be associated to this recording.
+   * @param labels the labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(double increment, String... labelKeyValuePairs);
+  void add(double increment, Labels labels);
 
   @Override
-  BoundDoubleUpDownCounter bind(String... labelKeyValuePairs);
+  BoundDoubleUpDownCounter bind(Labels labels);
 
   /**
    * A {@code Bound Instrument} for a {@link DoubleUpDownCounter}.
@@ -100,7 +100,7 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Map<String, String> constantLabels);
+    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     DoubleUpDownCounter build();

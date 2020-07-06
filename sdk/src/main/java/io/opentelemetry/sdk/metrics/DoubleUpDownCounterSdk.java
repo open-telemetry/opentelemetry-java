@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleUpDownCounter;
 import io.opentelemetry.sdk.metrics.DoubleUpDownCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -34,24 +35,15 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
         meterProviderSharedState,
         meterSharedState,
         new ActiveBatcher(
-            getDefaultBatcher(
+            Batchers.getCumulativeAllLabels(
                 descriptor, meterProviderSharedState, meterSharedState, Aggregations.sum())));
   }
 
   @Override
-  public void add(double increment, String... labelKeyValuePairs) {
-    add(increment, LabelSetSdk.create(labelKeyValuePairs));
-  }
-
-  public void add(double increment, LabelSetSdk labelSetSdk) {
-    BoundInstrument boundInstrument = bind(labelSetSdk);
+  public void add(double increment, Labels labels) {
+    BoundInstrument boundInstrument = bind(labels);
     boundInstrument.add(increment);
     boundInstrument.unbind();
-  }
-
-  @Override
-  public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override
@@ -91,8 +83,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     public DoubleUpDownCounterSdk build() {
       return register(
           new DoubleUpDownCounterSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.COUNTER_NON_MONOTONIC, InstrumentValueType.DOUBLE),
+              getInstrumentDescriptor(InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

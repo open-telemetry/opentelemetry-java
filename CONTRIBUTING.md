@@ -82,6 +82,12 @@ $ git commit -m "Update javadoc for API."
   possible, for any new value classes. Remember to add package-private
   constructors to all AutoValue classes to prevent classes in other packages
   from extending them.
+  
+  
+### Unit Tests
+
+* Unit tests target Java 8, so language features such as lambda and streams can be used in tests.
+
 
 ## Building opentelemetry-java
 

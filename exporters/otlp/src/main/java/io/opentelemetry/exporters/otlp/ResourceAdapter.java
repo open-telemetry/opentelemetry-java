@@ -17,16 +17,21 @@
 package io.opentelemetry.exporters.otlp;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.resource.v1.Resource;
-import java.util.Map;
 
 final class ResourceAdapter {
   static Resource toProtoResource(io.opentelemetry.sdk.resources.Resource resource) {
-    Resource.Builder builder = Resource.newBuilder();
-    for (Map.Entry<String, AttributeValue> resourceEntry : resource.getAttributes().entrySet()) {
-      builder.addAttributes(
-          CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
-    }
+    final Resource.Builder builder = Resource.newBuilder();
+    resource
+        .getAttributes()
+        .forEach(
+            new KeyValueConsumer<AttributeValue>() {
+              @Override
+              public void consume(String key, AttributeValue value) {
+                builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
+              }
+            });
     return builder.build();
   }
 

@@ -17,13 +17,14 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -41,21 +42,19 @@ public interface Sampler {
    *     span.
    * @param traceId the {@link TraceId} for the new {@code Span}. This will be identical to that in
    *     the parentContext, unless this is a root span.
-   * @param spanId the {@link SpanId} for the new {@code Span}.
    * @param name the name of the new {@code Span}.
-   * @param parentLinks the parentLinks associated with the new {@code Span}.
-   * @param spanKind the {@link Span.Kind} of the {@code Span}.
+   * @param spanKind the {@link Kind} of the {@code Span}.
    * @param attributes list of {@link AttributeValue} with their keys.
+   * @param parentLinks the parentLinks associated with the new {@code Span}.
    * @return sampling decision whether span should be sampled or not.
    * @since 0.1.0
    */
   Decision shouldSample(
       @Nullable SpanContext parentContext,
       TraceId traceId,
-      SpanId spanId,
       String name,
-      Span.Kind spanKind,
-      Map<String, AttributeValue> attributes,
+      Kind spanKind,
+      ReadableAttributes attributes,
       List<Link> parentLinks);
 
   /**
@@ -70,8 +69,8 @@ public interface Sampler {
   String getDescription();
 
   /**
-   * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, TraceId, SpanId, String,
-   * Span.Kind, Map, List)}.
+   * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, TraceId, String, Kind,
+   * ReadableAttributes, List)}.
    *
    * @since 0.1.0
    */
@@ -92,6 +91,6 @@ public interface Sampler {
      *     span or when sampling decision {@link #isSampled()} changes from false to true.
      * @since 0.1.0
      */
-    Map<String, AttributeValue> getAttributes();
+    Attributes getAttributes();
   }
 }

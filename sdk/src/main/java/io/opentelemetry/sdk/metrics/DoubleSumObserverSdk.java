@@ -17,47 +17,25 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleSumObserver;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubleAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.Nullable;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
+final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
     implements DoubleSumObserver {
-  @Nullable private volatile Callback<ResultDoubleSumObserver> metricUpdater = null;
-  private final ReentrantLock collectLock = new ReentrantLock();
 
   DoubleSumObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
-    super(descriptor, meterProviderSharedState, meterSharedState);
-  }
-
-  @Override
-  List<MetricData> collectAll() {
-    Callback<ResultDoubleSumObserver> currentMetricUpdater = metricUpdater;
-    if (currentMetricUpdater == null) {
-      return Collections.emptyList();
-    }
-    collectLock.lock();
-    try {
-      final ActiveBatcher activeBatcher = getActiveBatcher();
-      currentMetricUpdater.update(new ResultDoubleSumObserverSdk(activeBatcher));
-      return activeBatcher.completeCollectionCycle();
-    } finally {
-      collectLock.unlock();
-    }
-  }
-
-  @Override
-  public void setCallback(Callback<ResultDoubleSumObserver> metricUpdater) {
-    this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
+    super(
+        descriptor,
+        meterProviderSharedState,
+        meterSharedState,
+        new ActiveBatcher(
+            Batchers.getCumulativeAllLabels(
+                descriptor, meterProviderSharedState, meterSharedState, Aggregations.lastValue())));
   }
 
   static final class Builder
@@ -80,27 +58,9 @@ final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
     public DoubleSumObserverSdk build() {
       return register(
           new DoubleSumObserverSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.OBSERVER_MONOTONIC, InstrumentValueType.DOUBLE),
+              getInstrumentDescriptor(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
-    }
-  }
-
-  private static final class ResultDoubleSumObserverSdk implements ResultDoubleSumObserver {
-
-    private final ActiveBatcher activeBatcher;
-
-    private ResultDoubleSumObserverSdk(ActiveBatcher activeBatcher) {
-      this.activeBatcher = activeBatcher;
-    }
-
-    @Override
-    public void observe(double sum, String... keyValueLabelPairs) {
-      Aggregator aggregator = activeBatcher.getAggregator();
-      aggregator.recordDouble(sum);
-      activeBatcher.batch(
-          LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
     }
   }
 }

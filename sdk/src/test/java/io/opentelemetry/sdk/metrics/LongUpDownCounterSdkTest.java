@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.LongUpDownCounter;
 import io.opentelemetry.metrics.LongUpDownCounter.BoundLongUpDownCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -29,7 +31,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,8 +46,7 @@ public class LongUpDownCounterSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
-          Collections.singletonMap(
-              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
+          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(
           "io.opentelemetry.sdk.metrics.LongUpDownCounterSdkTest", null);
@@ -57,11 +57,25 @@ public class LongUpDownCounterSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
+  public void add_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.longUpDownCounterBuilder("testCounter").build().add(1, null);
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.longUpDownCounterBuilder("testUpDownCounter").build().bind(null);
+  }
+
+  @Test
   public void collectMetrics_NoRecords() {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk
-            .longUpDownCounterBuilder("testCounter")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .longUpDownCounterBuilder("testUpDownCounter")
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -71,11 +85,11 @@ public class LongUpDownCounterSdkTest {
     assertThat(metricData.getDescriptor())
         .isEqualTo(
             Descriptor.create(
-                "testCounter",
+                "testUpDownCounter",
                 "My very own counter",
                 "ms",
                 Type.NON_MONOTONIC_LONG,
-                Collections.singletonMap("sk1", "sv1")));
+                Labels.of("sk1", "sv1")));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -84,9 +98,9 @@ public class LongUpDownCounterSdkTest {
   @Test
   public void collectMetrics_WithOneRecord() {
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
-    longUpDownCounter.add(12);
+    longUpDownCounter.add(12, Labels.empty());
     List<MetricData> metricDataList = longUpDownCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
@@ -95,30 +109,24 @@ public class LongUpDownCounterSdkTest {
     assertThat(metricData.getPoints()).hasSize(1);
     assertThat(metricData.getPoints())
         .containsExactly(
-            LongPoint.create(
-                testClock.now() - SECOND_NANOS,
-                testClock.now(),
-                Collections.<String, String>emptyMap(),
-                12));
+            LongPoint.create(testClock.now() - SECOND_NANOS, testClock.now(), Labels.empty(), 12));
   }
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
-    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind("K", "V");
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
-      longUpDownCounter.add(12, emptyLabelSet);
+      longUpDownCounter.add(12, Labels.empty());
       boundCounter.add(123);
-      longUpDownCounter.add(21, emptyLabelSet);
+      longUpDownCounter.add(21, Labels.empty());
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(321);
-      longUpDownCounter.add(111, labelSet);
+      longUpDownCounter.add(111, Labels.of("K", "V"));
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = longUpDownCounter.collectAll();
@@ -127,13 +135,13 @@ public class LongUpDownCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              LongPoint.create(startTime, firstCollect, labelSet.getLabels(), 555),
-              LongPoint.create(startTime, firstCollect, emptyLabelSet.getLabels(), 33));
+              LongPoint.create(startTime, firstCollect, Labels.of("K", "V"), 555),
+              LongPoint.create(startTime, firstCollect, Labels.empty(), 33));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(222);
-      longUpDownCounter.add(11, emptyLabelSet);
+      longUpDownCounter.add(11, Labels.empty());
 
       long secondCollect = testClock.now();
       metricDataList = longUpDownCounter.collectAll();
@@ -142,8 +150,8 @@ public class LongUpDownCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              LongPoint.create(startTime, secondCollect, labelSet.getLabels(), 777),
-              LongPoint.create(startTime, secondCollect, emptyLabelSet.getLabels(), 44));
+              LongPoint.create(startTime, secondCollect, Labels.of("K", "V"), 777),
+              LongPoint.create(startTime, secondCollect, Labels.empty(), 44));
     } finally {
       boundCounter.unbind();
     }
@@ -152,9 +160,9 @@ public class LongUpDownCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind("K", "v");
-    BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind("K", "v");
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
+    BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
     } finally {
@@ -166,11 +174,11 @@ public class LongUpDownCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind("K", "v");
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
       longUpDownCounter.collectAll();
-      BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind("K", "v");
+      BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
       try {
         assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
       } finally {
@@ -184,7 +192,7 @@ public class LongUpDownCounterSdkTest {
   @Test
   public void stressTest() {
     final LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
@@ -195,7 +203,9 @@ public class LongUpDownCounterSdkTest {
               2_000, 1, new OperationUpdaterDirectCall(longUpDownCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterWithBinding(longUpDownCounter.bind("K", "V"))));
+              2_000,
+              1,
+              new OperationUpdaterWithBinding(longUpDownCounter.bind(Labels.of("K", "V")))));
     }
 
     stressTestBuilder.build().run();
@@ -203,8 +213,7 @@ public class LongUpDownCounterSdkTest {
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
-            LongPoint.create(
-                testClock.now(), testClock.now(), Collections.singletonMap("K", "V"), 160_000));
+            LongPoint.create(testClock.now(), testClock.now(), Labels.of("K", "V"), 160_000));
   }
 
   @Test
@@ -212,7 +221,7 @@ public class LongUpDownCounterSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
@@ -226,7 +235,8 @@ public class LongUpDownCounterSdkTest {
           StressTestRunner.Operation.create(
               1_000,
               2,
-              new OperationUpdaterWithBinding(longUpDownCounter.bind(keys[i], values[i]))));
+              new OperationUpdaterWithBinding(
+                  longUpDownCounter.bind(Labels.of(keys[i], values[i])))));
     }
 
     stressTestBuilder.build().run();
@@ -235,25 +245,13 @@ public class LongUpDownCounterSdkTest {
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
             LongPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[0], values[0]),
-                20_000),
+                testClock.now(), testClock.now(), Labels.of(keys[0], values[0]), 20_000),
             LongPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[1], values[1]),
-                20_000),
+                testClock.now(), testClock.now(), Labels.of(keys[1], values[1]), 20_000),
             LongPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[2], values[2]),
-                20_000),
+                testClock.now(), testClock.now(), Labels.of(keys[2], values[2]), 20_000),
             LongPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[3], values[3]),
-                20_000));
+                testClock.now(), testClock.now(), Labels.of(keys[3], values[3]), 20_000));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
@@ -289,7 +287,7 @@ public class LongUpDownCounterSdkTest {
 
     @Override
     void update() {
-      longUpDownCounter.add(11, key, value);
+      longUpDownCounter.add(11, Labels.of(key, value));
     }
 
     @Override

@@ -17,7 +17,6 @@
 package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
 
 import io.opentelemetry.opentracingshim.testbed.TestUtils;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -39,35 +38,26 @@ final class Client {
   public Future<String> send(final Object message) {
     final Context context = new Context();
     return executor.submit(
-        new Callable<String>() {
-          @Override
-          public String call() throws Exception {
-            logger.info("send {}", message);
-            TestUtils.sleep();
-            executor
-                .submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        TestUtils.sleep();
-                        requestHandler.beforeRequest(message, context);
-                      }
-                    })
-                .get();
+        () -> {
+          logger.info("send {}", message);
+          TestUtils.sleep();
+          executor
+              .submit(
+                  () -> {
+                    TestUtils.sleep();
+                    requestHandler.beforeRequest(message, context);
+                  })
+              .get();
 
-            executor
-                .submit(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        TestUtils.sleep();
-                        requestHandler.afterResponse(message, context);
-                      }
-                    })
-                .get();
+          executor
+              .submit(
+                  () -> {
+                    TestUtils.sleep();
+                    requestHandler.afterResponse(message, context);
+                  })
+              .get();
 
-            return message + ":response";
-          }
+          return message + ":response";
         });
   }
 }

@@ -16,23 +16,20 @@
 
 package io.opentelemetry.sdk.example;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 class ConfigureTraceExample {
 
@@ -41,7 +38,8 @@ class ConfigureTraceExample {
   static Tracer tracer = tracerProvider.get("ConfigureTraceExample");
 
   static {
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(new LoggingSpanExporter()));
+    tracerProvider.addSpanProcessor(
+        SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build());
   }
 
   public static void main(String[] args) {
@@ -114,26 +112,12 @@ class ConfigureTraceExample {
       public Decision shouldSample(
           SpanContext parentContext,
           TraceId traceId,
-          SpanId spanId,
           String name,
           Span.Kind spanKind,
-          Map<String, AttributeValue> attributes,
+          ReadableAttributes attributes,
           List<Link> parentLinks) {
         // We sample only if the Span name contains "SAMPLE"
-        return new Decision() {
-
-          @Override
-          public boolean isSampled() {
-            return name.contains("SAMPLE");
-          }
-
-          @Override
-          public Map<String, AttributeValue> getAttributes() {
-            // This method MUST return an immutable list of Attributes
-            // that will be added to the generated Span.
-            return Collections.emptyMap();
-          }
-        };
+        return Samplers.emptyDecision(name.contains("SAMPLE"));
       }
 
       @Override

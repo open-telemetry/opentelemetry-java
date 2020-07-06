@@ -18,9 +18,9 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -81,11 +81,12 @@ public class DoubleSumAggregatorTest {
   }
 
   private static DoublePoint getPoint(Aggregator aggregator) {
-    Point point = aggregator.toPoint(12345, 12358, Collections.singletonMap("key", "value"));
+    Point point = aggregator.toPoint(12345, 12358, Labels.of("key", "value"));
     assertThat(point).isNotNull();
     assertThat(point.getStartEpochNanos()).isEqualTo(12345);
     assertThat(point.getEpochNanos()).isEqualTo(12358);
-    assertThat(point.getLabels()).containsExactly("key", "value");
+    assertThat(point.getLabels().size()).isEqualTo(1);
+    assertThat(point.getLabels().get("key")).isEqualTo("value");
     assertThat(point).isInstanceOf(DoublePoint.class);
     return (DoublePoint) point;
   }

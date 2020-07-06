@@ -47,6 +47,11 @@ public final class SemanticAttributes {
   /** Local hostname or similar. */
   public static final StringAttributeSetter NET_HOST_NAME =
       StringAttributeSetter.create("net.host.name");
+
+  /** Logical name of a remote service. */
+  public static final StringAttributeSetter PEER_SERVICE =
+      StringAttributeSetter.create("peer.service");
+
   /**
    * Username or client_id extracted from the access token or Authorization header in the inbound
    * request from outside the system.
@@ -98,6 +103,30 @@ public final class SemanticAttributes {
   /** The IP address of the original client behind all proxies, if known. */
   public static final StringAttributeSetter HTTP_CLIENT_IP =
       StringAttributeSetter.create("http.client_ip");
+  /**
+   * The size of the request payload body, in bytes. For payloads using transport encoding, this is
+   * the compressed size.
+   */
+  public static final StringAttributeSetter HTTP_REQUEST_CONTENT_LENGTH =
+      StringAttributeSetter.create("http.request_content_length");
+  /**
+   * The size of the uncompressed request payload body, in bytes. Only set for requests that use
+   * transport encoding.
+   */
+  public static final StringAttributeSetter HTTP_REQUEST_CONTENT_LENGTH_UNCOMPRESSED =
+      StringAttributeSetter.create("http.request_content_length_uncompressed");
+  /**
+   * The size of the response payload body, in bytes. For payloads using transport encoding, this is
+   * the compressed size.
+   */
+  public static final StringAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH =
+      StringAttributeSetter.create("http.response_content_length");
+  /**
+   * The size of the uncompressed response payload body, in bytes. Only set for responses that use
+   * transport encoding.
+   */
+  public static final StringAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH_UNCOMPRESSED =
+      StringAttributeSetter.create("http.response_content_length_uncompressed");
   /** The service name, must be equal to the $service part in the span name. */
   public static final StringAttributeSetter RPC_SERVICE =
       StringAttributeSetter.create("rpc.service");

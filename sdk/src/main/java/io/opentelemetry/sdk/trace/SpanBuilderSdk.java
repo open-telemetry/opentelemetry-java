@@ -18,6 +18,9 @@ package io.opentelemetry.sdk.trace;
 
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -38,7 +41,6 @@ import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -56,12 +58,12 @@ final class SpanBuilderSdk implements Span.Builder {
   private final Resource resource;
   private final IdsGenerator idsGenerator;
   private final Clock clock;
-  private final AttributesMap attributes;
 
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
-  private List<io.opentelemetry.trace.Link> links;
+  @Nullable private AttributesMap attributes;
+  @Nullable private List<io.opentelemetry.trace.Link> links;
   private int totalNumberOfLinksAdded = 0;
   private ParentType parentType = ParentType.CURRENT_CONTEXT;
   private long startEpochNanos = 0;
@@ -79,8 +81,6 @@ final class SpanBuilderSdk implements Span.Builder {
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
-    this.attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
-    this.links = Collections.emptyList();
     this.idsGenerator = idsGenerator;
     this.clock = clock;
   }
@@ -122,8 +122,14 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-    addLink(Link.create(spanContext, attributes));
+  public Span.Builder addLink(SpanContext spanContext, Attributes attributes) {
+    int totalAttributeCount = attributes.size();
+    addLink(
+        Link.create(
+            spanContext,
+            RecordEventsReadableSpan.copyAndLimitAttributes(
+                attributes, traceConfig.getMaxNumberOfAttributesPerLink()),
+            totalAttributeCount));
     return this;
   }
 
@@ -131,14 +137,13 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span.Builder addLink(io.opentelemetry.trace.Link link) {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
+    if (links == null) {
+      links = new ArrayList<>(traceConfig.getMaxNumberOfLinks());
+    }
+
     // don't bother doing anything with any links beyond the max.
     if (links.size() == traceConfig.getMaxNumberOfLinks()) {
       return this;
-    }
-
-    // This is the Collection.emptyList which is immutable.
-    if (links.isEmpty()) {
-      links = new ArrayList<>();
     }
 
     links.add(link);
@@ -170,10 +175,15 @@ final class SpanBuilderSdk implements Span.Builder {
     Objects.requireNonNull(key, "key");
     if (value == null
         || (value.getType() == AttributeValue.Type.STRING && value.getStringValue() == null)) {
-      attributes.remove(key);
-    } else {
-      attributes.put(key, value);
+      if (attributes != null) {
+        attributes.remove(key);
+      }
+      return this;
     }
+    if (attributes == null) {
+      attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
+    }
+    attributes.put(key, value);
     return this;
   }
 
@@ -200,10 +210,19 @@ final class SpanBuilderSdk implements Span.Builder {
       traceId = parentContext.getTraceId();
       traceState = parentContext.getTraceState();
     }
+    List<io.opentelemetry.trace.Link> immutableLinks =
+        links == null
+            ? Collections.<io.opentelemetry.trace.Link>emptyList()
+            : Collections.unmodifiableList(links);
+    // Avoid any possibility to modify the links list by adding links to the Builder after the
+    // startSpan is called. If that happens all the links will be added in a new list.
+    links = null;
+    ReadableAttributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
     Decision samplingDecision =
         traceConfig
             .getSampler()
-            .shouldSample(parentContext, traceId, spanId, spanName, spanKind, attributes, links);
+            .shouldSample(
+                parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
 
     SpanContext spanContext =
         SpanContext.create(
@@ -215,7 +234,24 @@ final class SpanBuilderSdk implements Span.Builder {
     if (!samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
-    attributes.putAll(samplingDecision.getAttributes());
+    ReadableAttributes samplingAttributes = samplingDecision.getAttributes();
+    if (!samplingAttributes.isEmpty()) {
+      if (attributes == null) {
+        attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
+      }
+      samplingAttributes.forEach(
+          new KeyValueConsumer<AttributeValue>() {
+            @Override
+            public void consume(String key, AttributeValue value) {
+              attributes.put(key, value);
+            }
+          });
+    }
+
+    // Avoid any possibility to modify the attributes by adding attributes to the Builder after the
+    // startSpan is called. If that happens all the attributes will be added in a new map.
+    AttributesMap recordedAttributes = attributes;
+    attributes = null;
 
     return RecordEventsReadableSpan.startSpan(
         spanContext,
@@ -228,8 +264,8 @@ final class SpanBuilderSdk implements Span.Builder {
         spanProcessor,
         getClock(parentSpan(parentType, parent), clock),
         resource,
-        attributes,
-        links,
+        recordedAttributes,
+        immutableLinks,
         totalNumberOfLinksAdded,
         startEpochNanos);
   }

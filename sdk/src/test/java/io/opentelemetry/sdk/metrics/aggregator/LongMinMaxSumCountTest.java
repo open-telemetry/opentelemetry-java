@@ -18,11 +18,11 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,40 +34,23 @@ public class LongMinMaxSumCountTest {
   public void testRecordings() {
     Aggregator aggregator = LongMinMaxSumCount.getFactory().getAggregator();
 
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap())).isNull();
+    assertThat(aggregator.toPoint(0, 100, Labels.empty())).isNull();
 
     aggregator.recordLong(100);
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
+    assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
             SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                1,
-                100,
-                createPercentileValues(100L, 100L)));
+                0, 100, Labels.empty(), 1, 100, createPercentileValues(100L, 100L)));
 
     aggregator.recordLong(50);
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
+    assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                2,
-                150,
-                createPercentileValues(50L, 100L)));
+            SummaryPoint.create(0, 100, Labels.empty(), 2, 150, createPercentileValues(50L, 100L)));
 
     aggregator.recordLong(-75);
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
+    assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                3,
-                75,
-                createPercentileValues(-75L, 100L)));
+            SummaryPoint.create(0, 100, Labels.empty(), 3, 75, createPercentileValues(-75L, 100L)));
   }
 
   @Test
@@ -78,17 +61,12 @@ public class LongMinMaxSumCountTest {
     Aggregator mergedToAggregator = LongMinMaxSumCount.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedToAggregator);
 
-    assertThat(mergedToAggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
+    assertThat(mergedToAggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
             SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                1,
-                100,
-                createPercentileValues(100L, 100L)));
+                0, 100, Labels.empty(), 1, 100, createPercentileValues(100L, 100L)));
 
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap())).isNull();
+    assertThat(aggregator.toPoint(0, 100, Labels.empty())).isNull();
   }
 
   @Test
@@ -104,20 +82,17 @@ public class LongMinMaxSumCountTest {
       final int index = i;
       Thread t =
           new Thread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  long update = updates[index];
-                  try {
-                    startingGun.await();
-                  } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                  }
-                  for (int j = 0; j < numberOfUpdates; j++) {
-                    aggregator.recordLong(update);
-                    if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                      aggregator.mergeToAndReset(summarizer);
-                    }
+              () -> {
+                long update = updates[index];
+                try {
+                  startingGun.await();
+                } catch (InterruptedException e) {
+                  throw new RuntimeException(e);
+                }
+                for (int j = 0; j < numberOfUpdates; j++) {
+                  aggregator.recordLong(update);
+                  if (ThreadLocalRandom.current().nextInt(10) == 0) {
+                    aggregator.mergeToAndReset(summarizer);
                   }
                 }
               });
@@ -134,12 +109,12 @@ public class LongMinMaxSumCountTest {
     // make sure everything gets merged when all the aggregation is done.
     aggregator.mergeToAndReset(summarizer);
 
-    assertThat(summarizer.toPoint(0, 100, Collections.<String, String>emptyMap()))
+    assertThat(summarizer.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
             SummaryPoint.create(
                 0,
                 100,
-                Collections.<String, String>emptyMap(),
+                Labels.empty(),
                 numberOfThreads * numberOfUpdates,
                 101000,
                 createPercentileValues(1L, 23L)));

@@ -15,7 +15,9 @@ rootProject.name = "opentelemetry-java-examples"
 include ":opentelemetry-examples-grpc",
         ":opentelemetry-examples-http",
         ":opentelemetry-examples-jaeger",
-        ":opentelemetry-examples-sdk-usage"
+        ":opentelemetry-examples-metrics",
+        ":opentelemetry-examples-sdk-usage",
+        ":opentelemetry-examples-zipkin"
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name

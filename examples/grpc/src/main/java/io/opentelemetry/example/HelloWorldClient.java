@@ -34,7 +34,7 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
@@ -85,7 +85,7 @@ public class HelloWorldClient {
     // Use the OpenTelemetry SDK
     TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Set to process the spans by the log exporter
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(exporter));
+    tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
 
   public void shutdown() throws InterruptedException {

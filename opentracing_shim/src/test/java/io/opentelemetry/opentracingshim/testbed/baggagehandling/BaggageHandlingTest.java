@@ -44,27 +44,24 @@ public final class BaggageHandlingTest {
 
     Future<?> f =
         executor.submit(
-            new Runnable() {
-              @Override
-              public void run() {
-                /* Override the previous value... */
-                span.setBaggageItem("key1", "value2");
+            () -> {
+              /* Override the previous value... */
+              span.setBaggageItem("key1", "value2");
 
-                /* add a new baggage item... */
-                span.setBaggageItem("newkey", "newvalue");
+              /* add a new baggage item... */
+              span.setBaggageItem("newkey", "newvalue");
 
-                /* have a child that updates its own baggage
-                 * (should not be reflected in the original Span). */
-                Span childSpan = tracer.buildSpan("child").start();
-                try {
-                  childSpan.setBaggageItem("key1", "childvalue");
-                } finally {
-                  childSpan.finish();
-                }
-
-                /* and finish the Span. */
-                span.finish();
+              /* have a child that updates its own baggage
+               * (should not be reflected in the original Span). */
+              Span childSpan = tracer.buildSpan("child").start();
+              try {
+                childSpan.setBaggageItem("key1", "childvalue");
+              } finally {
+                childSpan.finish();
               }
+
+              /* and finish the Span. */
+              span.finish();
             });
 
     /* Single call, no need to use await() */

@@ -33,7 +33,7 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
@@ -109,7 +109,7 @@ public class HelloWorldServer {
     // Get the tracer
     TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Set to process the the spans by the LogExporter
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(exporter));
+    tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
 
   /** Await termination on the main thread since the grpc library uses daemon threads. */

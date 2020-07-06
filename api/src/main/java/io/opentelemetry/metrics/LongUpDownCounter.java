@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.LongUpDownCounter.BoundLongUpDownCounter;
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -41,7 +41,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   // It is recommended that the API user keep a reference to a Bound Counter.
  *   private static final BoundLongUpDownCounter someWorkBound =
- *       counter.getBound(Collections.singletonList("SomeWork"));
+ *       upDownCounter.bind("work_name", "some_work");
  *
  *   void doSomeWork() {
  *      someWorkBound.add(1);
@@ -62,13 +62,13 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
    * @param increment the value to add.
-   * @param labelKeyValuePairs the set of labels to be associated to this recording.
+   * @param labels the set of labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(long increment, String... labelKeyValuePairs);
+  void add(long increment, Labels labels);
 
   @Override
-  BoundLongUpDownCounter bind(String... labelKeyValuePairs);
+  BoundLongUpDownCounter bind(Labels labels);
 
   /**
    * A {@code Bound Instrument} for a {@link LongUpDownCounter}.
@@ -101,7 +101,7 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Map<String, String> constantLabels);
+    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     LongUpDownCounter build();

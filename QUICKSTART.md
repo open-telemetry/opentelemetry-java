@@ -136,9 +136,9 @@ span.addEvent("End");
 ```
 
 ```java
-Map<String, AttributeValue> eventAttributes = new HashMap<>();
-eventAttributes.put("key", AttributeValue.stringAttributeValue("value"));
-eventAttributes.put("result", AttributeValue.longAttributeValue(0L));
+Attributes eventAttributes = Attributes.of(
+    "key", AttributeValue.stringAttributeValue("value"),
+    "result", AttributeValue.longAttributeValue(0L));
 
 span.addEvent("End Computation", eventAttributes);
 ```
@@ -266,14 +266,14 @@ LongCounter counter = meter
 
 // It is recommended that the API user keep a reference to a Bound Counter for the entire time or 
 // call unbind when no-longer needed.
-BoundLongCounter someWorkCounter = counter.bind("Key", "SomeWork");
+BoundLongCounter someWorkCounter = counter.bind(Labels.of("Key", "SomeWork"));
 
 // Record data
 someWorkCounter.add(123);
 
 // Alternatively, the user can use the unbounded counter and explicitly
 // specify the labels set at call-time:
-counter.add(123, "Key", "SomeWork");
+counter.add(123, Labels.of("Key", "SomeWork"));
 ```
 
 `Observer` is an additional instrument supporting an asynchronous API and
@@ -294,7 +294,7 @@ observer.setCallback(
           @Override
           public void update(ResultLongObserver result) {
             // long getCpuUsage()
-            result.observe(getCpuUsage(), "Key", "SomeWork");
+            result.observe(getCpuUsage(), Labels.of("Key", "SomeWork"));
           }
         });
 ```
@@ -317,7 +317,7 @@ TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
 
 // Set to export the traces to a logging stream
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(
+    SimpleSpanProcessor.newBuilder(
         new LoggingSpanExporter()
     ).build());
 ```
@@ -355,20 +355,20 @@ tracerProvider.updateActiveTraceConfig(
 ### Span Processor
 
 Different Span processors are offered by OpenTelemetry. The `SimpleSpanProcessor` immediately
-forwards ended spans to the exporter, while the `BatchSpansProcessor` batches them and sends them
+forwards ended spans to the exporter, while the `BatchSpanProcessor` batches them and sends them
 in bulk. Multiple Span processors can be configured to be active at the same time using the
 `MultiSpanProcessor`.
 
 ```java
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build()
+    SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
 );
 tracerProvider.addSpanProcessor(
-    BatchSpansProcessor.newBuilder(new LoggingSpanExporter()).build()
+    BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
 );
 tracerProvider.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
-            SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build(),
-            BatchSpansProcessor.newBuilder(new LoggingSpanExporter()).build()
+            SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build(),
+            BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
 )));
 ```
 
@@ -386,16 +386,16 @@ Other exporters can be found in the [OpenTelemetry Registry].
 
 ```java
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(InMemorySpanExporter.create()).build());
+    SimpleSpanProcessor.newBuilder(InMemorySpanExporter.create()).build());
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build());
+    SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build());
 
 ManagedChannel jaegerChannel =
     ManagedChannelBuilder.forAddress([ip:String], [port:int]).usePlaintext().build();
 JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.newBuilder()
     .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
     .build();
-tracerProvider.addSpanProcessor(BatchSpansProcessor.newBuilder(
+tracerProvider.addSpanProcessor(BatchSpanProcessor.newBuilder(
     jaegerExporter
 ).build());
 ```

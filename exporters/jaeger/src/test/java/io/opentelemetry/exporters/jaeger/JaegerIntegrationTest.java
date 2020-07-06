@@ -22,14 +22,13 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.awaitility.Awaitility;
@@ -71,7 +70,9 @@ public class JaegerIntegrationTest {
     Assume.assumeNotNull(jaegerContainer);
     setupJaegerExporter();
     imitateWork();
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(assertJaegerHaveTrace());
+    Awaitility.await()
+        .atMost(30, TimeUnit.SECONDS)
+        .until(JaegerIntegrationTest::assertJaegerHaveTrace);
   }
 
   private static void setupJaegerExporter() {
@@ -86,7 +87,7 @@ public class JaegerIntegrationTest {
             .setDeadlineMs(30000)
             .build();
     OpenTelemetrySdk.getTracerProvider()
-        .addSpanProcessor(SimpleSpansProcessor.newBuilder(jaegerExporter).build());
+        .addSpanProcessor(SimpleSpanProcessor.newBuilder(jaegerExporter).build());
   }
 
   private void imitateWork() {
@@ -100,31 +101,26 @@ public class JaegerIntegrationTest {
     span.end();
   }
 
-  private static Callable<Boolean> assertJaegerHaveTrace() {
-    return new Callable<Boolean>() {
-      @Override
-      public Boolean call() {
-        try {
-          String url =
-              String.format(
-                  "%s/api/traces?service=%s",
-                  String.format(JAEGER_URL + ":%d", jaegerContainer.getMappedPort(QUERY_PORT)),
-                  SERVICE_NAME);
-          Response response =
-              given()
-                  .headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON)
-                  .when()
-                  .get(url)
-                  .then()
-                  .contentType(ContentType.JSON)
-                  .extract()
-                  .response();
-          Map<String, String> path = response.jsonPath().getMap("data[0]");
-          return path.get("traceID") != null;
-        } catch (Exception e) {
-          return false;
-        }
-      }
-    };
+  private static boolean assertJaegerHaveTrace() {
+    try {
+      String url =
+          String.format(
+              "%s/api/traces?service=%s",
+              String.format(JAEGER_URL + ":%d", jaegerContainer.getMappedPort(QUERY_PORT)),
+              SERVICE_NAME);
+      Response response =
+          given()
+              .headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON)
+              .when()
+              .get(url)
+              .then()
+              .contentType(ContentType.JSON)
+              .extract()
+              .response();
+      Map<String, String> path = response.jsonPath().getMap("data[0]");
+      return path.get("traceID") != null;
+    } catch (Exception e) {
+      return false;
+    }
   }
 }

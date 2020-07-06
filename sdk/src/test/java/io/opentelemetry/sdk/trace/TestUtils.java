@@ -17,9 +17,10 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -27,7 +28,6 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -40,13 +40,12 @@ public final class TestUtils {
   /**
    * Generates some random attributes used for testing.
    *
-   * @return a map of String to AttributeValues
+   * @return some {@link io.opentelemetry.common.Attributes}
    */
-  static Map<String, AttributeValue> generateRandomAttributes() {
-    Map<String, AttributeValue> result = new HashMap<>();
-    AttributeValue attribute = AttributeValue.stringAttributeValue(UUID.randomUUID().toString());
-    result.put(UUID.randomUUID().toString(), attribute);
-    return result;
+  static Attributes generateRandomAttributes() {
+    return Attributes.of(
+        UUID.randomUUID().toString(),
+        AttributeValue.stringAttributeValue(UUID.randomUUID().toString()));
   }
 
   /**
@@ -56,7 +55,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static SpanData makeBasicSpan() {
-    return SpanDataImpl.newBuilder()
+    return TestSpanData.newBuilder()
         .setHasEnded(true)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
@@ -79,11 +78,7 @@ public final class TestUtils {
   public static Span.Builder startSpanWithSampler(
       TracerSdkProvider tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
     return startSpanWithSampler(
-        tracerSdkFactory,
-        tracer,
-        spanName,
-        sampler,
-        Collections.<String, AttributeValue>emptyMap());
+        tracerSdkFactory, tracer, spanName, sampler, Collections.emptyMap());
   }
 
   /**

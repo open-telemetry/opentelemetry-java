@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
@@ -24,6 +25,7 @@ import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,18 +41,31 @@ final class Batchers {
   }
 
   static Batcher getCumulativeAllLabels(
-      Descriptor descriptor,
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      AggregatorFactory aggregatorFactory,
-      Clock clock) {
+      InstrumentDescriptor descriptor,
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      Aggregation defaultAggregation) {
     return new AllLabels(
-        descriptor,
-        resource,
-        instrumentationLibraryInfo,
-        aggregatorFactory,
-        clock,
+        getDefaultMetricDescriptor(descriptor, defaultAggregation),
+        meterProviderSharedState.getResource(),
+        meterSharedState.getInstrumentationLibraryInfo(),
+        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
+        meterProviderSharedState.getClock(),
         /* delta= */ false);
+  }
+
+  static Batcher getDeltaAllLabels(
+      InstrumentDescriptor descriptor,
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      Aggregation defaultAggregation) {
+    return new AllLabels(
+        getDefaultMetricDescriptor(descriptor, defaultAggregation),
+        meterProviderSharedState.getResource(),
+        meterSharedState.getInstrumentationLibraryInfo(),
+        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
+        meterProviderSharedState.getClock(),
+        /* delta= */ true);
   }
 
   private static final class Noop implements Batcher {
@@ -62,7 +77,7 @@ final class Batchers {
     }
 
     @Override
-    public void batch(LabelSetSdk labelSet, Aggregator aggregator, boolean mappedAggregator) {}
+    public void batch(Labels labelSet, Aggregator aggregator, boolean mappedAggregator) {}
 
     @Override
     public List<MetricData> completeCollectionCycle() {
@@ -76,7 +91,7 @@ final class Batchers {
     private final InstrumentationLibraryInfo instrumentationLibraryInfo;
     private final Clock clock;
     private final AggregatorFactory aggregatorFactory;
-    private Map<Map<String, String>, Aggregator> aggregatorMap;
+    private Map<Labels, Aggregator> aggregatorMap;
     private long startEpochNanos;
     private final boolean delta;
 
@@ -103,18 +118,16 @@ final class Batchers {
     }
 
     @Override
-    public final void batch(
-        LabelSetSdk labelSet, Aggregator aggregator, boolean unmappedAggregator) {
-      Map<String, String> labels = labelSet.getLabels();
-      Aggregator currentAggregator = aggregatorMap.get(labels);
+    public final void batch(Labels labelSet, Aggregator aggregator, boolean unmappedAggregator) {
+      Aggregator currentAggregator = aggregatorMap.get(labelSet);
       if (currentAggregator == null) {
         // This aggregator is not mapped, we can use this instance.
         if (unmappedAggregator) {
-          aggregatorMap.put(labels, aggregator);
+          aggregatorMap.put(labelSet, aggregator);
           return;
         }
         currentAggregator = aggregatorFactory.getAggregator();
-        aggregatorMap.put(labels, currentAggregator);
+        aggregatorMap.put(labelSet, currentAggregator);
       }
       aggregator.mergeToAndReset(currentAggregator);
     }
@@ -123,8 +136,11 @@ final class Batchers {
     public final List<MetricData> completeCollectionCycle() {
       List<Point> points = new ArrayList<>(aggregatorMap.size());
       long epochNanos = clock.now();
-      for (Map.Entry<Map<String, String>, Aggregator> entry : aggregatorMap.entrySet()) {
-        points.add(entry.getValue().toPoint(startEpochNanos, epochNanos, entry.getKey()));
+      for (Map.Entry<Labels, Aggregator> entry : aggregatorMap.entrySet()) {
+        Point point = entry.getValue().toPoint(startEpochNanos, epochNanos, entry.getKey());
+        if (point != null) {
+          points.add(point);
+        }
       }
       if (delta) {
         startEpochNanos = epochNanos;
@@ -133,6 +149,16 @@ final class Batchers {
       return Collections.singletonList(
           MetricData.create(descriptor, resource, instrumentationLibraryInfo, points));
     }
+  }
+
+  private static Descriptor getDefaultMetricDescriptor(
+      InstrumentDescriptor descriptor, Aggregation aggregation) {
+    return Descriptor.create(
+        descriptor.getName(),
+        descriptor.getDescription(),
+        aggregation.getUnit(descriptor.getUnit()),
+        aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
+        descriptor.getConstantLabels());
   }
 
   private Batchers() {}

@@ -23,13 +23,13 @@ import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
+import io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporterTest.ConfigBuilderTest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -38,13 +38,16 @@ import io.opentelemetry.trace.TraceId;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mockito;
 
 /** Unit tests for {@link OtlpGrpcSpanExporter}. */
 @RunWith(JUnit4.class)
@@ -58,6 +61,22 @@ public class OtlpGrpcSpanExporterTest {
   private final String serverName = InProcessServerBuilder.generateName();
   private final ManagedChannel inProcessChannel =
       InProcessChannelBuilder.forName(serverName).directExecutor().build();
+
+  @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.otlp.span.timeout", "12");
+    options.put("otel.otlp.endpoint", "http://localhost:6553");
+    options.put("otel.otlp.use.tls", "true");
+    options.put("otel.otlp.metadata", "key=value");
+    OtlpGrpcSpanExporter.Builder config = OtlpGrpcSpanExporter.newBuilder();
+    OtlpGrpcSpanExporter.Builder spy = Mockito.spy(config);
+    spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
+    Mockito.verify(spy).setDeadlineMs(12);
+    Mockito.verify(spy).setEndpoint("http://localhost:6553");
+    Mockito.verify(spy).setUseTls(true);
+    Mockito.verify(spy).addHeader("key", "value");
+  }
 
   @Before
   public void setup() throws IOException {
@@ -206,7 +225,7 @@ public class OtlpGrpcSpanExporterTest {
     long duration = TimeUnit.MILLISECONDS.toNanos(900);
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + duration;
-    return SpanDataImpl.newBuilder()
+    return TestSpanData.newBuilder()
         .setHasEnded(true)
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
@@ -215,7 +234,7 @@ public class OtlpGrpcSpanExporterTest {
         .setEndEpochNanos(endNs)
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)
-        .setLinks(Collections.<Link>emptyList())
+        .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
         .build();
