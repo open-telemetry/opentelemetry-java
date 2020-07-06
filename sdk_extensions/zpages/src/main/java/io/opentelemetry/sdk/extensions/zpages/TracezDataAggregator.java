@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Status.CanonicalCode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,7 +41,7 @@ final class TracezDataAggregator {
   private final TracezSpanProcessor spanProcessor;
 
   /**
-   * Constructor for {@link io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * Constructor for {@link TracezDataAggregator}.
    *
    * @param spanProcessor collects span data.
    */
@@ -50,7 +51,7 @@ final class TracezDataAggregator {
 
   /**
    * Returns a Set of running and completed span names for {@link
-   * io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * TracezDataAggregator}.
    *
    * @return a Set of {@link String}.
    */
@@ -66,7 +67,7 @@ final class TracezDataAggregator {
 
   /**
    * Returns a Map of the running span counts for {@link
-   * io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * TracezDataAggregator}.
    *
    * @return a Map of span counts for each span name.
    */
@@ -82,10 +83,10 @@ final class TracezDataAggregator {
 
   /**
    * Returns a List of all running spans with a given span name for {@link
-   * io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * TracezDataAggregator}.
    *
    * @param spanName name to filter returned spans.
-   * @return a List of {@link io.opentelemetry.sdk.trace.data.SpanData}.
+   * @return a List of {@link SpanData}.
    */
   public List<SpanData> getRunningSpans(String spanName) {
     Collection<ReadableSpan> allRunningSpans = spanProcessor.getRunningSpans();
@@ -99,8 +100,8 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a Map of counts for the {@link io.opentelemetry.trace.Status#OK} spans within
-   * [lowerBound, upperBound) {@link io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * Returns a Map of counts for the {@link Status#OK} spans within
+   * [lowerBound, upperBound) {@link TracezDataAggregator}.
    *
    * @param lowerBound latency lower bound (inclusive)
    * @param upperBound latency upper bound (exclusive)
@@ -121,8 +122,8 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a Map of span names to counts for all {@link io.opentelemetry.trace.Status#OK} spans in
-   * {@link io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * Returns a Map of span names to counts for all {@link Status#OK} spans in
+   * {@link TracezDataAggregator}.
    *
    * @return a Map of span names to counts, where the counts are further indexed by the latency
    *     boundaries.
@@ -137,14 +138,13 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a List of all {@link io.opentelemetry.trace.Status#OK} spans with a given span name
-   * between [lowerBound, upperBound) for {@link
-   * io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * Returns a List of all {@link Status#OK} spans with a given span name
+   * between [lowerBound, upperBound) for {@link TracezDataAggregator}.
    *
    * @param spanName name to filter returned spans.
    * @param lowerBound latency lower bound (inclusive)
    * @param upperBound latency upper bound (exclusive)
-   * @return a List of {@link io.opentelemetry.sdk.trace.data.SpanData}.
+   * @return a List of {@link SpanData}.
    */
   public List<SpanData> getOkSpans(String spanName, long lowerBound, long upperBound) {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
@@ -162,8 +162,7 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a Map of error span counts for {@link
-   * io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * Returns a Map of error span counts for {@link TracezDataAggregator}.
    *
    * @return a Map of error span counts for each span name.
    */
@@ -178,10 +177,10 @@ final class TracezDataAggregator {
 
   /**
    * Returns a List of error spans with a given span name for {@link
-   * io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * TracezDataAggregator}.
    *
    * @param spanName name to filter returned spans.
-   * @return a List of {@link io.opentelemetry.sdk.trace.data.SpanData}.
+   * @return a List of {@link SpanData}.
    */
   public List<SpanData> getErrorSpans(String spanName) {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
@@ -198,11 +197,11 @@ final class TracezDataAggregator {
 
   /**
    * Returns a List of error spans with a given span name and canonical code for {@link
-   * io.opentelemetry.sdk.extensions.zpages.TracezDataAggregator}.
+   * TracezDataAggregator}.
    *
    * @param spanName name to filter returned spans.
    * @param errorCode canonical error code to filter returned spans.
-   * @return a List of {@link io.opentelemetry.sdk.trace.data.SpanData}.
+   * @return a List of {@link SpanData}.
    */
   public List<SpanData> getErrorSpans(String spanName, CanonicalCode errorCode) {
     List<SpanData> allErrorSpans = getErrorSpans(spanName);

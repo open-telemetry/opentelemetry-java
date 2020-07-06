@@ -68,16 +68,6 @@ final class TracezSpanBuckets {
     return latencyCounts;
   }
 
-  public Map<CanonicalCode, Integer> getErrorCanonicalCodeToCountMap() {
-    Map<CanonicalCode, Integer> errorCounts = new EnumMap<>(CanonicalCode.class);
-    for (CanonicalCode code : CanonicalCode.values()) {
-      if (!code.toStatus().isOk()) {
-        errorCounts.put(code, errorBuckets.get(code).size());
-      }
-    }
-    return errorCounts;
-  }
-
   public Collection<ReadableSpan> getOkSpans() {
     Collection<ReadableSpan> okSpans = new ArrayList<>();
     for (EvictingQueue<ReadableSpan> latencyBucket : latencyBuckets.values()) {
