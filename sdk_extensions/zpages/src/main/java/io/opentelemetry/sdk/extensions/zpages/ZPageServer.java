@@ -153,8 +153,12 @@ public final class ZPageServer {
             });
   }
 
-  /** For testing purpose only. */
-  public static boolean getIsTracezSpanProcesserAdded() {
+  /**
+   * Returns the boolean indicating if TracezSpanProcessor is added. For testing purpose only.
+   *
+   * @return the boolean indicating if TracezSpanProcessor is added.
+   */
+  static boolean getIsTracezSpanProcesserAdded() {
     return isTracezSpanProcesserAdded.get();
   }
 
