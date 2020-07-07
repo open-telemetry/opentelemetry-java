@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -158,6 +159,7 @@ public final class ZPageServer {
    *
    * @return the boolean indicating if TracezSpanProcessor is added.
    */
+  @VisibleForTesting
   static boolean getIsTracezSpanProcesserAdded() {
     return isTracezSpanProcesserAdded.get();
   }
