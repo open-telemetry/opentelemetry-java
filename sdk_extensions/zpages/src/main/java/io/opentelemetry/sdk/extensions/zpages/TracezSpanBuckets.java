@@ -52,12 +52,16 @@ final class TracezSpanBuckets {
       long latency = span.getLatencyNanos();
       for (LatencyBoundaries bucket : LatencyBoundaries.values()) {
         if (latency >= bucket.getLatencyLowerBound() && latency < bucket.getLatencyUpperBound()) {
-          latencyBuckets.get(bucket).add(span);
+          synchronized (latencyBuckets) {
+            latencyBuckets.get(bucket).add(span);
+          }
           return;
         }
       }
     }
-    errorBuckets.get(status.getCanonicalCode()).add(span);
+    synchronized (errorBuckets) {
+      errorBuckets.get(status.getCanonicalCode()).add(span);
+    }
   }
 
   public Map<LatencyBoundaries, Integer> getLatencyBoundariesToCountMap() {

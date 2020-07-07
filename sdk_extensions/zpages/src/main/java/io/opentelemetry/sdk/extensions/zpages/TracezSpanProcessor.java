@@ -71,7 +71,7 @@ final class TracezSpanProcessor implements SpanProcessor {
   @Override
   public void onStart(ReadableSpan span) {
     runningSpanCache.putIfAbsent(span.getSpanContext().getSpanId(), span);
-    synchronized (this) {
+    synchronized (spanNames) {
       spanNames.add(span.getName());
     }
   }
@@ -86,9 +86,7 @@ final class TracezSpanProcessor implements SpanProcessor {
     runningSpanCache.remove(span.getSpanContext().getSpanId());
     if (!sampled || span.getSpanContext().getTraceFlags().isSampled()) {
       completedSpanCache.putIfAbsent(span.getName(), new TracezSpanBuckets());
-      synchronized (this) {
-        completedSpanCache.get(span.getName()).addToBucket(span);
-      }
+      completedSpanCache.get(span.getName()).addToBucket(span);
     }
   }
 
@@ -137,9 +135,7 @@ final class TracezSpanProcessor implements SpanProcessor {
    * @return a Map of String to {@link TracezSpanBuckets}.
    */
   public Map<String, TracezSpanBuckets> getCompletedSpanCache() {
-    synchronized (this) {
-      return completedSpanCache;
-    }
+    return completedSpanCache;
   }
 
   /**
@@ -148,9 +144,7 @@ final class TracezSpanProcessor implements SpanProcessor {
    * @return a Set of {@link String} span names.
    */
   public Set<String> getSpanNames() {
-    synchronized (this) {
-      return spanNames;
-    }
+    return spanNames;
   }
 
   /**
