@@ -174,7 +174,7 @@ public final class TracezDataAggregatorTest {
   @Test
   public void getSpanLatencyCounts_noSpans() {
     /* getSpanLatencyCounts should return a an empty map */
-    Map<String, Integer> counts = dataAggregator.getSpanLatencyCounts(0, Long.MAX_VALUE);
+    Map<String, Map<LatencyBoundaries, Integer>> counts = dataAggregator.getSpanLatencyCounts();
     assertThat(counts.size()).isEqualTo(0);
     assertThat(counts.get(SPAN_NAME_ONE)).isNull();
     assertThat(counts.get(SPAN_NAME_TWO)).isNull();
@@ -184,11 +184,10 @@ public final class TracezDataAggregatorTest {
   public void getSpanLatencyCounts_noCompletedSpans() {
     /* getSpanLatencyCounts should return a an empty map */
     Span span = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
-    Map<String, Integer> counts = dataAggregator.getSpanLatencyCounts(0, Long.MAX_VALUE);
+    Map<String, Map<LatencyBoundaries, Integer>> counts = dataAggregator.getSpanLatencyCounts();
     span.end();
     assertThat(counts.size()).isEqualTo(0);
     assertThat(counts.get(SPAN_NAME_ONE)).isNull();
-    assertThat(counts.get(SPAN_NAME_TWO)).isNull();
   }
 
   @Test
@@ -199,33 +198,10 @@ public final class TracezDataAggregatorTest {
       span.end();
     }
     /* getSpanLatencyCounts should return 1 span per latency bucket */
-    Map<String, Map<LatencyBoundaries, Integer>> allCounts = dataAggregator.getSpanLatencyCounts();
+    Map<String, Map<LatencyBoundaries, Integer>> counts = dataAggregator.getSpanLatencyCounts();
     for (LatencyBoundaries bucket : LatencyBoundaries.values()) {
-      Map<String, Integer> counts =
-          dataAggregator.getSpanLatencyCounts(
-              bucket.getLatencyLowerBound(), bucket.getLatencyUpperBound());
-      assertThat(counts.size()).isEqualTo(1);
-      assertThat(counts.get(SPAN_NAME_ONE)).isEqualTo(1);
-      for (Map.Entry<String, Integer> countsEntry : counts.entrySet()) {
-        assertThat(countsEntry.getValue())
-            .isEqualTo(allCounts.get(countsEntry.getKey()).get(bucket));
-      }
+      assertThat(counts.get(SPAN_NAME_ONE).get(bucket)).isEqualTo(1);
     }
-  }
-
-  @Test
-  public void getSpanLatencyCounts_upperBoundEdgeCase() {
-    Span span = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
-    testClock.advanceNanos(1000);
-    span.end();
-    /* getSpanLatencyCounts(0, 1000) should not return the span */
-    Map<String, Integer> counts = dataAggregator.getSpanLatencyCounts(0, 1000);
-    assertThat(counts.size()).isEqualTo(0);
-    assertThat(counts.get(SPAN_NAME_ONE)).isNull();
-    /* getSpanLatencyCounts(1000, Long.MAX_VALUE) should return the span */
-    counts = dataAggregator.getSpanLatencyCounts(1000, Long.MAX_VALUE);
-    assertThat(counts.size()).isEqualTo(1);
-    assertThat(counts.get(SPAN_NAME_ONE)).isEqualTo(1);
   }
 
   @Test
@@ -347,14 +323,6 @@ public final class TracezDataAggregatorTest {
     List<SpanData> errorSpans = dataAggregator.getErrorSpans(SPAN_NAME_ONE);
     assertThat(errorSpans.size()).isEqualTo(2);
     assertThat(errorSpans).contains(((ReadableSpan) span1).toSpanData());
-    assertThat(errorSpans).contains(((ReadableSpan) span2).toSpanData());
-    /* getErrorSpans should return a List with only the first span */
-    errorSpans = dataAggregator.getErrorSpans(SPAN_NAME_ONE, CanonicalCode.UNKNOWN);
-    assertThat(errorSpans.size()).isEqualTo(1);
-    assertThat(errorSpans).contains(((ReadableSpan) span1).toSpanData());
-    /* getOkSpans should return a List with only the second span */
-    errorSpans = dataAggregator.getErrorSpans(SPAN_NAME_ONE, CanonicalCode.ABORTED);
-    assertThat(errorSpans.size()).isEqualTo(1);
     assertThat(errorSpans).contains(((ReadableSpan) span2).toSpanData());
   }
 
