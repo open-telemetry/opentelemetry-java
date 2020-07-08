@@ -32,16 +32,14 @@ import java.util.Properties;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.MockitoRule;
 
 /** Unit tests for {@link TracezSpanProcessor}. */
-@RunWith(JUnit4.class)
+@RunWith(MockitoJUnitRunner.class)
 public final class TracezSpanProcessorTest {
-  @Mock private ReadableSpan readableSpan;
-  @Mock private SpanData spanData;
   private static final String SPAN_NAME = "span";
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
@@ -59,6 +57,9 @@ public final class TracezSpanProcessorTest {
     assertThat(runningSpans.size()).isEqualTo(runningSpanCacheSize);
     assertThat(completedSpans.size()).isEqualTo(completedSpanCacheSize);
   }
+
+  @Mock private ReadableSpan readableSpan;
+  @Mock private SpanData spanData;
 
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
