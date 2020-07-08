@@ -53,7 +53,7 @@ final class TracezDataAggregator {
    *
    * @return a Set of {@link String}.
    */
-  public Set<String> getSpanNames() {
+  Set<String> getSpanNames() {
     Set<String> spanNames = new TreeSet<>();
     Collection<ReadableSpan> allRunningSpans = spanProcessor.getRunningSpans();
     for (ReadableSpan span : allRunningSpans) {
@@ -68,7 +68,7 @@ final class TracezDataAggregator {
    *
    * @return a Map of span counts for each span name.
    */
-  public Map<String, Integer> getRunningSpanCounts() {
+  Map<String, Integer> getRunningSpanCounts() {
     Collection<ReadableSpan> allRunningSpans = spanProcessor.getRunningSpans();
     Map<String, Integer> numSpansPerName = new HashMap<>();
     for (ReadableSpan span : allRunningSpans) {
@@ -84,7 +84,7 @@ final class TracezDataAggregator {
    * @param spanName name to filter returned spans.
    * @return a List of {@link SpanData}.
    */
-  public List<SpanData> getRunningSpans(String spanName) {
+  List<SpanData> getRunningSpans(String spanName) {
     Collection<ReadableSpan> allRunningSpans = spanProcessor.getRunningSpans();
     List<SpanData> filteredSpans = new ArrayList<>();
     for (ReadableSpan span : allRunningSpans) {
@@ -102,7 +102,7 @@ final class TracezDataAggregator {
    * @return a Map of span names to counts, where the counts are further indexed by the latency
    *     boundaries.
    */
-  public Map<String, Map<LatencyBoundary, Integer>> getSpanLatencyCounts() {
+  Map<String, Map<LatencyBoundary, Integer>> getSpanLatencyCounts() {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     Map<String, Map<LatencyBoundary, Integer>> numSpansPerName = new HashMap<>();
     for (Entry<String, TracezSpanBuckets> cacheEntry : completedSpanCache.entrySet()) {
@@ -121,7 +121,7 @@ final class TracezDataAggregator {
    * @param upperBound latency upper bound (exclusive)
    * @return a List of {@link SpanData}.
    */
-  public List<SpanData> getOkSpans(String spanName, long lowerBound, long upperBound) {
+  List<SpanData> getOkSpans(String spanName, long lowerBound, long upperBound) {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     TracezSpanBuckets buckets = completedSpanCache.get(spanName);
     if (buckets == null) {
@@ -142,7 +142,7 @@ final class TracezDataAggregator {
    *
    * @return a Map of error span counts for each span name.
    */
-  public Map<String, Integer> getErrorSpanCounts() {
+  Map<String, Integer> getErrorSpanCounts() {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     Map<String, Integer> numErrorsPerName = new HashMap<>();
     for (Entry<String, TracezSpanBuckets> cacheEntry : completedSpanCache.entrySet()) {
@@ -157,7 +157,7 @@ final class TracezDataAggregator {
    * @param spanName name to filter returned spans.
    * @return a List of {@link SpanData}.
    */
-  public List<SpanData> getErrorSpans(String spanName) {
+  List<SpanData> getErrorSpans(String spanName) {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     TracezSpanBuckets buckets = completedSpanCache.get(spanName);
     if (buckets == null) {

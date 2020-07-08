@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.trace.Status;
@@ -27,45 +26,42 @@ import java.util.List;
 import java.util.Map;
 
 final class TracezSpanBuckets {
-  private static final int NUM_SAMPLES_PER_LATENCY_BUCKET = 10;
-  private static final int NUM_SAMPLES_PER_ERROR_BUCKET = 5;
-
-  private final ImmutableMap<LatencyBoundary, EvictingQueue<ReadableSpan>> latencyBuckets;
-  private final ImmutableMap<CanonicalCode, EvictingQueue<ReadableSpan>> errorBuckets;
+  private final ImmutableMap<LatencyBoundary, SpanBucket> latencyBuckets;
+  private final ImmutableMap<CanonicalCode, SpanBucket> errorBuckets;
 
   TracezSpanBuckets() {
-    ImmutableMap.Builder<LatencyBoundary, EvictingQueue<ReadableSpan>> latencyBucketsBuilder =
+    ImmutableMap.Builder<LatencyBoundary, SpanBucket> latencyBucketsBuilder =
         ImmutableMap.builder();
     for (LatencyBoundary bucket : LatencyBoundary.values()) {
-      latencyBucketsBuilder.put(
-          bucket, EvictingQueue.<ReadableSpan>create(NUM_SAMPLES_PER_LATENCY_BUCKET));
+      latencyBucketsBuilder.put(bucket, new SpanBucket(/* isLatencyBucket= */ true));
     }
     latencyBuckets = latencyBucketsBuilder.build();
-    ImmutableMap.Builder<CanonicalCode, EvictingQueue<ReadableSpan>> errorBucketsBuilder =
-        ImmutableMap.builder();
+    ImmutableMap.Builder<CanonicalCode, SpanBucket> errorBucketsBuilder = ImmutableMap.builder();
     for (CanonicalCode code : CanonicalCode.values()) {
       if (!code.toStatus().isOk()) {
-        errorBucketsBuilder.put(
-            code, EvictingQueue.<ReadableSpan>create(NUM_SAMPLES_PER_ERROR_BUCKET));
+        errorBucketsBuilder.put(code, new SpanBucket(/* isLatencyBucket= */ false));
       }
     }
     errorBuckets = errorBucketsBuilder.build();
   }
 
-  public void addToBucket(ReadableSpan span) {
+  void addToBucket(ReadableSpan span) {
     Status status = span.toSpanData().getStatus();
     if (status.isOk()) {
-      synchronized (latencyBuckets) {
-        latencyBuckets.get(LatencyBoundary.getBoundary(span.getLatencyNanos())).add(span);
+      SpanBucket latencyBucket =
+          latencyBuckets.get(LatencyBoundary.getBoundary(span.getLatencyNanos()));
+      synchronized (latencyBucket) {
+        latencyBucket.add(span);
       }
       return;
     }
-    synchronized (errorBuckets) {
-      errorBuckets.get(status.getCanonicalCode()).add(span);
+    SpanBucket errorBucket = errorBuckets.get(status.getCanonicalCode());
+    synchronized (errorBucket) {
+      errorBucket.add(span);
     }
   }
 
-  public Map<LatencyBoundary, Integer> getLatencyBoundaryToCountMap() {
+  Map<LatencyBoundary, Integer> getLatencyBoundaryToCountMap() {
     Map<LatencyBoundary, Integer> latencyCounts = new EnumMap<>(LatencyBoundary.class);
     for (LatencyBoundary bucket : LatencyBoundary.values()) {
       latencyCounts.put(bucket, latencyBuckets.get(bucket).size());
@@ -73,25 +69,27 @@ final class TracezSpanBuckets {
     return latencyCounts;
   }
 
-  public List<ReadableSpan> getOkSpans() {
+  List<ReadableSpan> getOkSpans() {
     List<ReadableSpan> okSpans = new ArrayList<>();
-    for (EvictingQueue<ReadableSpan> latencyBucket : latencyBuckets.values()) {
+    for (SpanBucket latencyBucket : latencyBuckets.values()) {
       synchronized (latencyBucket) {
-        okSpans.addAll(new ArrayList<>(latencyBucket));
+        latencyBucket.addTo(okSpans);
       }
     }
     return okSpans;
   }
 
-  public List<ReadableSpan> getErrorSpans() {
+  List<ReadableSpan> getErrorSpans() {
     List<ReadableSpan> errorSpans = new ArrayList<>();
-    for (EvictingQueue<ReadableSpan> errorBucket : errorBuckets.values()) {
-      errorSpans.addAll(new ArrayList<>(errorBucket));
+    for (SpanBucket errorBucket : errorBuckets.values()) {
+      synchronized (errorSpans) {
+        errorBucket.addTo(errorSpans);
+      }
     }
     return errorSpans;
   }
 
-  public List<ReadableSpan> getSpans() {
+  List<ReadableSpan> getSpans() {
     List<ReadableSpan> spans = new ArrayList<>();
     spans.addAll(getOkSpans());
     spans.addAll(getErrorSpans());

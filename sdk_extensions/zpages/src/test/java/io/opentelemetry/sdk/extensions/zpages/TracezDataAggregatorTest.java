@@ -58,7 +58,7 @@ public final class TracezDataAggregatorTest {
 
   @Test
   public void getSpanNames_noSpans() {
-    assertThat(dataAggregator.getSpanNames().size()).isEqualTo(0);
+    assertThat(dataAggregator.getSpanNames()).isEmpty();
   }
 
   @Test
@@ -85,9 +85,7 @@ public final class TracezDataAggregatorTest {
   public void getRunningSpanCounts_noSpans() {
     /* getRunningSpanCounts should return a an empty map */
     Map<String, Integer> counts = dataAggregator.getRunningSpanCounts();
-    assertThat(counts.size()).isEqualTo(0);
-    assertThat(counts.get(SPAN_NAME_ONE)).isNull();
-    assertThat(counts.get(SPAN_NAME_TWO)).isNull();
+    assertThat(counts).isEmpty();
   }
 
   @Test
@@ -104,8 +102,7 @@ public final class TracezDataAggregatorTest {
     span3.end();
     /* getRunningSpanCounts should return a map with no span names */
     counts = dataAggregator.getRunningSpanCounts();
-    assertThat(counts.size()).isEqualTo(0);
-    assertThat(counts.get(SPAN_NAME_ONE)).isNull();
+    assertThat(counts).isEmpty();
   }
 
   @Test
@@ -128,16 +125,14 @@ public final class TracezDataAggregatorTest {
     span2.end();
     /* getRunningSpanCounts should return a map with no span names */
     counts = dataAggregator.getRunningSpanCounts();
-    assertThat(counts.size()).isEqualTo(0);
-    assertThat(counts.get(SPAN_NAME_ONE)).isNull();
-    assertThat(counts.get(SPAN_NAME_TWO)).isNull();
+    assertThat(counts).isEmpty();
   }
 
   @Test
   public void getRunningSpans_noSpans() {
     /* getRunningSpans should return an empty List */
-    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_ONE).size()).isEqualTo(0);
-    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_TWO).size()).isEqualTo(0);
+    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_ONE)).isEmpty();
+    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_TWO)).isEmpty();
   }
 
   @Test
@@ -155,7 +150,7 @@ public final class TracezDataAggregatorTest {
     span2.end();
     span3.end();
     /* getRunningSpans should return an empty List */
-    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_ONE).size()).isEqualTo(0);
+    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_ONE)).isEmpty();
   }
 
   @Test
@@ -170,8 +165,8 @@ public final class TracezDataAggregatorTest {
     span1.end();
     span2.end();
     /* getRunningSpans should return an empty List for each span name */
-    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_ONE).size()).isEqualTo(0);
-    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_TWO).size()).isEqualTo(0);
+    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_ONE)).isEmpty();
+    assertThat(dataAggregator.getRunningSpans(SPAN_NAME_TWO)).isEmpty();
   }
 
   @Test
@@ -189,8 +184,7 @@ public final class TracezDataAggregatorTest {
     Span span = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     Map<String, Map<LatencyBoundary, Integer>> counts = dataAggregator.getSpanLatencyCounts();
     span.end();
-    assertThat(counts.size()).isEqualTo(0);
-    assertThat(counts.get(SPAN_NAME_ONE)).isNull();
+    assertThat(counts).isEmpty();
   }
 
   @Test
@@ -210,8 +204,8 @@ public final class TracezDataAggregatorTest {
   @Test
   public void getOkSpans_noSpans() {
     /* getOkSpans should return an empty List */
-    assertThat(dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, Long.MAX_VALUE).size()).isEqualTo(0);
-    assertThat(dataAggregator.getOkSpans(SPAN_NAME_TWO, 0, Long.MAX_VALUE).size()).isEqualTo(0);
+    assertThat(dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, Long.MAX_VALUE)).isEmpty();
+    assertThat(dataAggregator.getOkSpans(SPAN_NAME_TWO, 0, Long.MAX_VALUE)).isEmpty();
   }
 
   @Test
@@ -219,7 +213,7 @@ public final class TracezDataAggregatorTest {
     Span span1 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     Span span2 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     /* getOkSpans should return an empty List */
-    assertThat(dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, Long.MAX_VALUE).size()).isEqualTo(0);
+    assertThat(dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, Long.MAX_VALUE)).isEmpty();
     span1.end();
     testClock.advanceNanos(1000);
     span2.end();
@@ -243,8 +237,8 @@ public final class TracezDataAggregatorTest {
     Span span1 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     Span span2 = tracer.spanBuilder(SPAN_NAME_TWO).startSpan();
     /* getOkSpans should return an empty List for each span name */
-    assertThat(dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, Long.MAX_VALUE).size()).isEqualTo(0);
-    assertThat(dataAggregator.getOkSpans(SPAN_NAME_TWO, 0, Long.MAX_VALUE).size()).isEqualTo(0);
+    assertThat(dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, Long.MAX_VALUE)).isEmpty();
+    assertThat(dataAggregator.getOkSpans(SPAN_NAME_TWO, 0, Long.MAX_VALUE)).isEmpty();
     span1.end();
     span2.end();
     /* getOkSpans should return a List with only the corresponding span */
@@ -257,9 +251,7 @@ public final class TracezDataAggregatorTest {
   @Test
   public void getErrorSpanCounts_noSpans() {
     Map<String, Integer> counts = dataAggregator.getErrorSpanCounts();
-    assertThat(counts.size()).isEqualTo(0);
-    assertThat(counts.get(SPAN_NAME_ONE)).isNull();
-    assertThat(counts.get(SPAN_NAME_TWO)).isNull();
+    assertThat(counts).isEmpty();
   }
 
   @Test
@@ -269,9 +261,7 @@ public final class TracezDataAggregatorTest {
     Map<String, Integer> counts = dataAggregator.getErrorSpanCounts();
     span.setStatus(Status.UNKNOWN);
     span.end();
-    assertThat(counts.size()).isEqualTo(0);
-    assertThat(counts.get(SPAN_NAME_ONE)).isNull();
-    assertThat(counts.get(SPAN_NAME_TWO)).isNull();
+    assertThat(counts).isEmpty();
   }
 
   @Test
@@ -308,8 +298,8 @@ public final class TracezDataAggregatorTest {
   @Test
   public void getErrorSpans_noSpans() {
     /* getErrorSpans should return an empty List */
-    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE).size()).isEqualTo(0);
-    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_TWO).size()).isEqualTo(0);
+    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE)).isEmpty();
+    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_TWO)).isEmpty();
   }
 
   @Test
@@ -317,7 +307,7 @@ public final class TracezDataAggregatorTest {
     Span span1 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     Span span2 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     /* getErrorSpans should return an empty List */
-    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE).size()).isEqualTo(0);
+    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE)).isEmpty();
     span1.setStatus(Status.UNKNOWN);
     span1.end();
     span2.setStatus(Status.ABORTED);
@@ -334,8 +324,8 @@ public final class TracezDataAggregatorTest {
     Span span1 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     Span span2 = tracer.spanBuilder(SPAN_NAME_TWO).startSpan();
     /* getErrorSpans should return an empty List for each span name */
-    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE).size()).isEqualTo(0);
-    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_TWO).size()).isEqualTo(0);
+    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE)).isEmpty();
+    assertThat(dataAggregator.getErrorSpans(SPAN_NAME_TWO)).isEmpty();
     span1.setStatus(Status.UNKNOWN);
     span1.end();
     span2.setStatus(Status.UNKNOWN);

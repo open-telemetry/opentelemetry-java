@@ -103,7 +103,7 @@ final class TracezSpanProcessor implements SpanProcessor {
    *
    * @return a Collection of {@link ReadableSpan}.
    */
-  public Collection<ReadableSpan> getRunningSpans() {
+  Collection<ReadableSpan> getRunningSpans() {
     return runningSpanCache.values();
   }
 
@@ -112,7 +112,7 @@ final class TracezSpanProcessor implements SpanProcessor {
    *
    * @return a Collection of {@link ReadableSpan}.
    */
-  public Collection<ReadableSpan> getCompletedSpans() {
+  Collection<ReadableSpan> getCompletedSpans() {
     Collection<ReadableSpan> completedSpans = new ArrayList<>();
     for (TracezSpanBuckets buckets : completedSpanCache.values()) {
       completedSpans.addAll(buckets.getSpans());
@@ -125,7 +125,7 @@ final class TracezSpanProcessor implements SpanProcessor {
    *
    * @return a Map of String to {@link TracezSpanBuckets}.
    */
-  public Map<String, TracezSpanBuckets> getCompletedSpanCache() {
+  Map<String, TracezSpanBuckets> getCompletedSpanCache() {
     return completedSpanCache;
   }
 
