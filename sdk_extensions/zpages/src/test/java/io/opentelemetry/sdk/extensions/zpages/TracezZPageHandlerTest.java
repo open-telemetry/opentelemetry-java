@@ -26,18 +26,18 @@ import io.opentelemetry.trace.Status.CanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.Collections;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.MockitoRule;
 
 /** Unit tests for {@link TracezZPageHandler}. */
-@RunWith(JUnit4.class)
+@RunWith(MockitoJUnitRunner.class)
 public final class TracezZPageHandlerTest {
   private static final String FINISHED_SPAN_ONE = "FinishedSpanOne";
   private static final String FINISHED_SPAN_TWO = "FinishedSpanTwo";
@@ -50,6 +50,7 @@ public final class TracezZPageHandlerTest {
   private final Tracer tracer = tracerSdkProvider.get("TracezZPageHandlerTest");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
+  @Mock Map<String, String> queryMap;
 
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
@@ -77,7 +78,6 @@ public final class TracezZPageHandlerTest {
     errorSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
     // Emit a row for all types of spans
@@ -100,7 +100,6 @@ public final class TracezZPageHandlerTest {
     finishedSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
     // Link for running span with 3 running
@@ -119,7 +118,6 @@ public final class TracezZPageHandlerTest {
   public void summaryTable_linkForLatencyBasedSpans_NoneForEmptyBoundary() {
     OutputStream output = new ByteArrayOutputStream();
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
     // No link for boundary 0
@@ -192,7 +190,6 @@ public final class TracezZPageHandlerTest {
     latencySpanSubtype8.end(endOptions8);
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
     // Link for boundary 0
@@ -242,7 +239,6 @@ public final class TracezZPageHandlerTest {
     latencySpan100ms4.end(endOptions4);
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
     // Link for boundary 5 with 4 samples
@@ -266,7 +262,6 @@ public final class TracezZPageHandlerTest {
     finishedSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    Map<String, String> queryMap = Collections.emptyMap();
     tracezZPageHandler.emitHtml(queryMap, output);
 
     // Link for error based spans with 3 samples
