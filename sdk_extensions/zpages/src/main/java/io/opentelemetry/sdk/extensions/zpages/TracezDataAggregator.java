@@ -21,11 +21,12 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Status;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -43,7 +44,7 @@ final class TracezDataAggregator {
    *
    * @param spanProcessor collects span data.
    */
-  public TracezDataAggregator(TracezSpanProcessor spanProcessor) {
+  TracezDataAggregator(TracezSpanProcessor spanProcessor) {
     this.spanProcessor = spanProcessor;
   }
 
@@ -53,7 +54,13 @@ final class TracezDataAggregator {
    * @return a Set of {@link String}.
    */
   public Set<String> getSpanNames() {
-    return spanProcessor.getSpanNames();
+    Set<String> spanNames = new TreeSet<>();
+    Collection<ReadableSpan> allRunningSpans = spanProcessor.getRunningSpans();
+    for (ReadableSpan span : allRunningSpans) {
+      spanNames.add(span.getName());
+    }
+    spanNames.addAll(spanProcessor.getCompletedSpanCache().keySet());
+    return spanNames;
   }
 
   /**
@@ -95,11 +102,12 @@ final class TracezDataAggregator {
    * @return a Map of span names to counts, where the counts are further indexed by the latency
    *     boundaries.
    */
-  public Map<String, Map<LatencyBoundaries, Integer>> getSpanLatencyCounts() {
+  public Map<String, Map<LatencyBoundary, Integer>> getSpanLatencyCounts() {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
-    Map<String, Map<LatencyBoundaries, Integer>> numSpansPerName = new HashMap<>();
-    for (String name : completedSpanCache.keySet()) {
-      numSpansPerName.put(name, completedSpanCache.get(name).getLatencyBoundariesToCountMap());
+    Map<String, Map<LatencyBoundary, Integer>> numSpansPerName = new HashMap<>();
+    for (Entry<String, TracezSpanBuckets> cacheEntry : completedSpanCache.entrySet()) {
+      numSpansPerName.put(
+          cacheEntry.getKey(), cacheEntry.getValue().getLatencyBoundaryToCountMap());
     }
     return numSpansPerName;
   }
@@ -115,12 +123,13 @@ final class TracezDataAggregator {
    */
   public List<SpanData> getOkSpans(String spanName, long lowerBound, long upperBound) {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
-    Collection<ReadableSpan> allCompletedSpans =
-        completedSpanCache.containsKey(spanName)
-            ? completedSpanCache.get(spanName).getOkSpans()
-            : Collections.<ReadableSpan>emptyList();
+    TracezSpanBuckets buckets = completedSpanCache.get(spanName);
+    if (buckets == null) {
+      return new ArrayList<>();
+    }
+    Collection<ReadableSpan> allOkSpans = buckets.getOkSpans();
     List<SpanData> filteredSpans = new ArrayList<>();
-    for (ReadableSpan span : allCompletedSpans) {
+    for (ReadableSpan span : allOkSpans) {
       if (span.getLatencyNanos() >= lowerBound && span.getLatencyNanos() < upperBound) {
         filteredSpans.add(span.toSpanData());
       }
@@ -136,8 +145,8 @@ final class TracezDataAggregator {
   public Map<String, Integer> getErrorSpanCounts() {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     Map<String, Integer> numErrorsPerName = new HashMap<>();
-    for (String name : completedSpanCache.keySet()) {
-      numErrorsPerName.put(name, completedSpanCache.get(name).getErrorSpans().size());
+    for (Entry<String, TracezSpanBuckets> cacheEntry : completedSpanCache.entrySet()) {
+      numErrorsPerName.put(cacheEntry.getKey(), cacheEntry.getValue().getErrorSpans().size());
     }
     return numErrorsPerName;
   }
@@ -150,12 +159,13 @@ final class TracezDataAggregator {
    */
   public List<SpanData> getErrorSpans(String spanName) {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
-    Collection<ReadableSpan> allCompletedSpans =
-        completedSpanCache.containsKey(spanName)
-            ? completedSpanCache.get(spanName).getErrorSpans()
-            : Collections.<ReadableSpan>emptyList();
+    TracezSpanBuckets buckets = completedSpanCache.get(spanName);
+    if (buckets == null) {
+      return new ArrayList<>();
+    }
+    Collection<ReadableSpan> allErrorSpans = buckets.getErrorSpans();
     List<SpanData> errorSpans = new ArrayList<>();
-    for (ReadableSpan span : allCompletedSpans) {
+    for (ReadableSpan span : allErrorSpans) {
       errorSpans.add(span.toSpanData());
     }
     return errorSpans;
