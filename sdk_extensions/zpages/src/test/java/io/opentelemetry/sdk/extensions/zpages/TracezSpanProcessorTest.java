@@ -29,12 +29,13 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collection;
 import java.util.Properties;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /** Unit tests for {@link TracezSpanProcessor}. */
 @RunWith(JUnit4.class)
@@ -59,10 +60,7 @@ public final class TracezSpanProcessorTest {
     assertThat(completedSpans.size()).isEqualTo(completedSpanCacheSize);
   }
 
-  @Before
-  public void setUp() {
-    MockitoAnnotations.initMocks(this);
-  }
+  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Test
   public void onStart_sampledSpan_inCache() {

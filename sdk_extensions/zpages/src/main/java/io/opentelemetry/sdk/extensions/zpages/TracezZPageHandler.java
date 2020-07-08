@@ -127,9 +127,8 @@ final class TracezZPageHandler extends ZPageHandler {
    * Emits the header of the summary table to the {@link PrintStream} {@code out}.
    *
    * @param out the {@link PrintStream} {@code out}.
-   * @param formatter a {@link Formatter} for formatting HTML expressions.
    */
-  private static void emitSummaryTableHeader(PrintStream out, Formatter formatter) {
+  private static void emitSummaryTableHeader(PrintStream out) {
     // First row
     out.print("<tr class=\"bg-color\">");
     out.print("<th colspan=1 class=\"header-text\"><b>Span Name</b></th>");
@@ -143,10 +142,11 @@ final class TracezZPageHandler extends ZPageHandler {
     out.print("<th colspan=1></th>");
     out.print("<th colspan=1 class=\"border-left-white\"></th>");
     for (LatencyBoundaries latencyBoundaries : LatencyBoundaries.values()) {
-      formatter.format(
+      out.print(
           "<th colspan=1 class=\"border-left-white align-center\""
-              + "style=\"color: #fff;\"><b>[%s]</b></th>",
-          LATENCY_BOUNDARIES_STRING_MAP.get(latencyBoundaries));
+              + "style=\"color: #fff;\"><b>["
+              + LATENCY_BOUNDARIES_STRING_MAP.get(latencyBoundaries)
+              + "]</b></th>");
     }
     out.print("<th colspan=1 class=\"border-left-white\"></th>");
     out.print("</tr>");
@@ -157,32 +157,22 @@ final class TracezZPageHandler extends ZPageHandler {
    * PrintStream} {@code out}.
    *
    * @param out the {@link PrintStream} {@code out}.
-   * @param formatter the {@link Formatter} for formatting HTML expressions.
    * @param spanName the name of the corresponding span.
    * @param numOfSamples the number of samples of the corresponding span.
    * @param type the type of the corresponding span (running, latency, error).
    * @param subtype the sub-type of the corresponding span (latency [0, 8], error [0, 15]).
    */
   private static void emitSummaryTableCell(
-      PrintStream out,
-      Formatter formatter,
-      String spanName,
-      int numOfSamples,
-      SampleType type,
-      int subtype)
+      PrintStream out, String spanName, int numOfSamples, SampleType type, int subtype)
       throws UnsupportedEncodingException {
     // If numOfSamples is greater than 0, emit a link to see detailed span information
     // If numOfSamples is smaller than 0, print the text "N/A", otherwise print the text "0"
     if (numOfSamples > 0) {
-      formatter.format(
-          "<td class=\"align-center border-left-dark\"><a href=\"?%s=%s&%s=%d&%s=%d\">%d</a></td>",
-          PARAM_SPAN_NAME,
-          URLEncoder.encode(spanName, "UTF-8"),
-          PARAM_SAMPLE_TYPE,
-          type.getValue(),
-          PARAM_SAMPLE_SUB_TYPE,
-          subtype,
-          numOfSamples);
+      out.print("<td class=\"align-center border-left-dark\"><a href=\"?");
+      out.print(PARAM_SPAN_NAME + "=" + URLEncoder.encode(spanName, "UTF-8"));
+      out.print("&" + PARAM_SAMPLE_TYPE + "=" + type.getValue());
+      out.print("&" + PARAM_SAMPLE_SUB_TYPE + "=" + subtype);
+      out.print("\">" + numOfSamples + "</a></td>");
     } else if (numOfSamples < 0) {
       out.print("<td class=\"align-center border-left-dark\">N/A</td>");
     } else {
@@ -195,15 +185,13 @@ final class TracezZPageHandler extends ZPageHandler {
    * out}.
    *
    * @param out the {@link PrintStream} {@code out}.
-   * @param formatter a {@link Formatter} for formatting HTML expressions.
    */
-  private void emitSummaryTable(PrintStream out, Formatter formatter)
-      throws UnsupportedEncodingException {
+  private void emitSummaryTable(PrintStream out) throws UnsupportedEncodingException {
     if (dataAggregator == null) {
       return;
     }
     out.print("<table style=\"border-spacing: 0; border: 1px solid #363636;\">");
-    emitSummaryTableHeader(out, formatter);
+    emitSummaryTableHeader(out);
 
     Set<String> spanNames = dataAggregator.getSpanNames();
     boolean zebraStripe = false;
@@ -214,18 +202,18 @@ final class TracezZPageHandler extends ZPageHandler {
     Map<String, Integer> errorSpanCounts = dataAggregator.getErrorSpanCounts();
     for (String spanName : spanNames) {
       if (zebraStripe) {
-        formatter.format("<tr style=\"background-color: %s\">", ZEBRA_STRIPE_COLOR);
+        out.print("<tr style=\"background-color: " + ZEBRA_STRIPE_COLOR + "\">");
       } else {
         out.print("<tr>");
       }
       zebraStripe = !zebraStripe;
-      formatter.format("<td>%s</td>", htmlEscaper().escape(spanName));
+      out.print("<td>" + htmlEscaper().escape(spanName) + "</td>");
 
       // Running spans column
       int numOfRunningSpans =
           runningSpanCounts.containsKey(spanName) ? runningSpanCounts.get(spanName) : 0;
       // subtype is ignored for running spans
-      emitSummaryTableCell(out, formatter, spanName, numOfRunningSpans, SampleType.RUNNING, 0);
+      emitSummaryTableCell(out, spanName, numOfRunningSpans, SampleType.RUNNING, 0);
 
       // Latency based sampled spans column
       int subtype = 0;
@@ -235,8 +223,7 @@ final class TracezZPageHandler extends ZPageHandler {
                     && latencySpanCounts.get(spanName).containsKey(latencyBoundaries)
                 ? latencySpanCounts.get(spanName).get(latencyBoundaries)
                 : 0;
-        emitSummaryTableCell(
-            out, formatter, spanName, numOfLatencySamples, SampleType.LATENCY, subtype);
+        emitSummaryTableCell(out, spanName, numOfLatencySamples, SampleType.LATENCY, subtype);
         subtype += 1;
       }
 
@@ -244,21 +231,20 @@ final class TracezZPageHandler extends ZPageHandler {
       int numOfErrorSamples =
           errorSpanCounts.containsKey(spanName) ? errorSpanCounts.get(spanName) : 0;
       // subtype 0 means all errors
-      emitSummaryTableCell(out, formatter, spanName, numOfErrorSamples, SampleType.ERROR, 0);
+      emitSummaryTableCell(out, spanName, numOfErrorSamples, SampleType.ERROR, 0);
     }
     out.print("</table>");
   }
 
   private static void emitSpanNameAndCount(
-      Formatter formatter, String spanName, int count, SampleType type) {
-    formatter.format(
-        "<p class=\"align-center\"><b> Span Name: %s </b></p>", htmlEscaper().escape(spanName));
-    formatter.format(
-        "<p class=\"align-center\"><b> Number of %s: %d </b></p>",
+      PrintStream out, String spanName, int count, SampleType type) {
+    out.print(
+        "<p class=\"align-center\"><b> Span Name: " + htmlEscaper().escape(spanName) + " </b></p>");
+    String typeString =
         type == SampleType.RUNNING
             ? "running"
-            : type == SampleType.LATENCY ? "latency samples" : "error samples",
-        count);
+            : type == SampleType.LATENCY ? "latency samples" : "error samples";
+    out.print("<p class=\"align-center\"><b> Number of " + typeString + ": " + count + " </b></p>");
   }
 
   private static void emitSpanDetails(
@@ -404,7 +390,32 @@ final class TracezZPageHandler extends ZPageHandler {
             }
             stringBuilder.append(key);
             stringBuilder.append("=");
-            stringBuilder.append(value.toString());
+            switch (value.getType()) {
+              case STRING:
+                stringBuilder.append(value.getStringValue());
+                break;
+              case BOOLEAN:
+                stringBuilder.append(value.getBooleanValue());
+                break;
+              case LONG:
+                stringBuilder.append(value.getLongValue());
+                break;
+              case DOUBLE:
+                stringBuilder.append(value.getDoubleValue());
+                break;
+              case STRING_ARRAY:
+                stringBuilder.append(value.getStringArrayValue().toString());
+                break;
+              case BOOLEAN_ARRAY:
+                stringBuilder.append(value.getBooleanArrayValue().toString());
+                break;
+              case LONG_ARRAY:
+                stringBuilder.append(value.getLongArrayValue().toString());
+                break;
+              case DOUBLE_ARRAY:
+                stringBuilder.append(value.getDoubleArrayValue().toString());
+                break;
+            }
           }
         });
     stringBuilder.append("}");
@@ -440,8 +451,7 @@ final class TracezZPageHandler extends ZPageHandler {
             + ZPageLogo.logoBase64
             + "\" />");
     out.print("<h1>TraceZ Summary</h1>");
-    Formatter formatter = new Formatter(out, Locale.US);
-    emitSummaryTable(out, formatter);
+    emitSummaryTable(out);
     // spanName will be null if the query parameter doesn't exist in the URL
     String spanName = queryMap.get(PARAM_SPAN_NAME);
     if (spanName != null) {
@@ -488,9 +498,10 @@ final class TracezZPageHandler extends ZPageHandler {
           }
         }
         out.print("<h2>Span Details</h2>");
-        emitSpanNameAndCount(formatter, spanName, spans == null ? 0 : spans.size(), type);
+        emitSpanNameAndCount(out, spanName, spans == null ? 0 : spans.size(), type);
 
         if (spans != null) {
+          Formatter formatter = new Formatter(out, Locale.US);
           emitSpanDetails(out, formatter, spans);
         }
       }

@@ -29,29 +29,32 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /** Unit tests for {@link TracezZPageHandler}. */
 @RunWith(JUnit4.class)
 public final class TracezZPageHandlerTest {
+  private static final String FINISHED_SPAN_ONE = "FinishedSpanOne";
+  private static final String FINISHED_SPAN_TWO = "FinishedSpanTwo";
+  private static final String RUNNING_SPAN = "RunningSpan";
+  private static final String LATENCY_SPAN = "LatencySpan";
+  private static final String ERROR_SPAN = "ErrorSpan";
   private final TestClock testClock = TestClock.create();
   private final TracerSdkProvider tracerSdkProvider =
       TracerSdkProvider.builder().setClock(testClock).build();
   private final Tracer tracer = tracerSdkProvider.get("TracezZPageHandlerTest");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
-  private static final String FINISHED_SPAN_ONE = "FinishedSpanOne";
-  private static final String FINISHED_SPAN_TWO = "FinishedSpanTwo";
-  private static final String RUNNING_SPAN = "RunningSpan";
-  private static final String LATENCY_SPAN = "LatencySpan";
-  private static final String ERROR_SPAN = "ErrorSpan";
+
+  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Before
   public void setup() {
-    MockitoAnnotations.initMocks(this);
     tracerSdkProvider.addSpanProcessor(spanProcessor);
   }
 

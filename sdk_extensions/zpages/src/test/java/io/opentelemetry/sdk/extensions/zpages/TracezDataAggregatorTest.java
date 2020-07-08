@@ -30,10 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /** Unit tests for {@link TracezDataAggregator}. */
 @RunWith(JUnit4.class)
@@ -47,9 +49,10 @@ public final class TracezDataAggregatorTest {
   private static final String SPAN_NAME_ONE = "one";
   private static final String SPAN_NAME_TWO = "two";
 
+  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
+
   @Before
   public void setup() {
-    MockitoAnnotations.initMocks(this);
     tracerSdkProvider.addSpanProcessor(spanProcessor);
   }
 
