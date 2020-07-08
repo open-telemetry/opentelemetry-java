@@ -124,4 +124,14 @@ public class LabelsTest {
                 "key1", "value1",
                 "key2", "value2"));
   }
+
+  @Test
+  public void toBuilder() {
+    Labels initial = Labels.of("one", "a");
+    Labels second = initial.toBuilder().setLabel("two", "b").build();
+    assertThat(initial.size()).isEqualTo(1);
+    assertThat(second.size()).isEqualTo(2);
+    assertThat(initial).isEqualTo(Labels.of("one", "a"));
+    assertThat(second).isEqualTo(Labels.of("one", "a", "two", "b"));
+  }
 }
