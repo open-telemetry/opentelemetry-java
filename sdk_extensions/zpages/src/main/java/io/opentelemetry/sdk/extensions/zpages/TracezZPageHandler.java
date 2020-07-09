@@ -44,7 +44,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 
 final class TracezZPageHandler extends ZPageHandler {
@@ -380,12 +379,15 @@ final class TracezZPageHandler extends ZPageHandler {
   private static String renderAttributes(ReadableAttributes attributes) {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
-    final AtomicBoolean first = new AtomicBoolean(true);
     attributes.forEach(
         new KeyValueConsumer<AttributeValue>() {
+          private boolean first = true;
+
           @Override
           public void consume(String key, AttributeValue value) {
-            if (!first.getAndSet(false)) {
+            if (first) {
+              first = false;
+            } else {
               stringBuilder.append(", ");
             }
             stringBuilder.append(key);
