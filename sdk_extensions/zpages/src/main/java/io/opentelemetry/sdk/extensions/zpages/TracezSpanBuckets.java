@@ -48,17 +48,10 @@ final class TracezSpanBuckets {
   void addToBucket(ReadableSpan span) {
     Status status = span.toSpanData().getStatus();
     if (status.isOk()) {
-      SpanBucket latencyBucket =
-          latencyBuckets.get(LatencyBoundary.getBoundary(span.getLatencyNanos()));
-      synchronized (latencyBucket) {
-        latencyBucket.add(span);
-      }
+      latencyBuckets.get(LatencyBoundary.getBoundary(span.getLatencyNanos())).add(span);
       return;
     }
-    SpanBucket errorBucket = errorBuckets.get(status.getCanonicalCode());
-    synchronized (errorBucket) {
-      errorBucket.add(span);
-    }
+    errorBuckets.get(status.getCanonicalCode()).add(span);
   }
 
   Map<LatencyBoundary, Integer> getLatencyBoundaryToCountMap() {

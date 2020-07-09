@@ -40,14 +40,14 @@ import org.mockito.junit.MockitoRule;
 /** Unit tests for {@link TracezDataAggregator}. */
 @RunWith(JUnit4.class)
 public final class TracezDataAggregatorTest {
+  private static final String SPAN_NAME_ONE = "one";
+  private static final String SPAN_NAME_TWO = "two";
   private final TestClock testClock = TestClock.create();
   private final TracerSdkProvider tracerSdkProvider =
       TracerSdkProvider.builder().setClock(testClock).build();
   private final Tracer tracer = tracerSdkProvider.get("TracezDataAggregatorTest");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
-  private static final String SPAN_NAME_ONE = "one";
-  private static final String SPAN_NAME_TWO = "two";
 
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
@@ -68,17 +68,13 @@ public final class TracezDataAggregatorTest {
     Span span3 = tracer.spanBuilder(SPAN_NAME_TWO).startSpan();
     /* getSpanNames should return a set with 2 span names */
     Set<String> names = dataAggregator.getSpanNames();
-    assertThat(names.size()).isEqualTo(2);
-    assertThat(names).contains(SPAN_NAME_ONE);
-    assertThat(names).contains(SPAN_NAME_TWO);
+    assertThat(names).containsExactly(SPAN_NAME_ONE, SPAN_NAME_TWO);
     span1.end();
     span2.end();
     span3.end();
     /* getSpanNames should still return a set with 2 span names */
     names = dataAggregator.getSpanNames();
-    assertThat(names.size()).isEqualTo(2);
-    assertThat(names).contains(SPAN_NAME_ONE);
-    assertThat(names).contains(SPAN_NAME_TWO);
+    assertThat(names).containsExactly(SPAN_NAME_ONE, SPAN_NAME_TWO);
   }
 
   @Test
@@ -95,7 +91,6 @@ public final class TracezDataAggregatorTest {
     Span span3 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     /* getRunningSpanCounts should return a map with 1 span name */
     Map<String, Integer> counts = dataAggregator.getRunningSpanCounts();
-    assertThat(counts.size()).isEqualTo(1);
     assertThat(counts.get(SPAN_NAME_ONE)).isEqualTo(3);
     span1.end();
     span2.end();
@@ -111,14 +106,12 @@ public final class TracezDataAggregatorTest {
     Span span2 = tracer.spanBuilder(SPAN_NAME_TWO).startSpan();
     /* getRunningSpanCounts should return a map with 2 different span names */
     Map<String, Integer> counts = dataAggregator.getRunningSpanCounts();
-    assertThat(counts.size()).isEqualTo(2);
     assertThat(counts.get(SPAN_NAME_ONE)).isEqualTo(1);
     assertThat(counts.get(SPAN_NAME_TWO)).isEqualTo(1);
 
     span1.end();
     /* getRunningSpanCounts should return a map with 1 unique span name */
     counts = dataAggregator.getRunningSpanCounts();
-    assertThat(counts.size()).isEqualTo(1);
     assertThat(counts.get(SPAN_NAME_ONE)).isNull();
     assertThat(counts.get(SPAN_NAME_TWO)).isEqualTo(1);
 
@@ -142,10 +135,11 @@ public final class TracezDataAggregatorTest {
     Span span3 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     /* getRunningSpans should return a List with all 3 spans */
     List<SpanData> spans = dataAggregator.getRunningSpans(SPAN_NAME_ONE);
-    assertThat(spans.size()).isEqualTo(3);
-    assertThat(spans).contains(((ReadableSpan) span1).toSpanData());
-    assertThat(spans).contains(((ReadableSpan) span2).toSpanData());
-    assertThat(spans).contains(((ReadableSpan) span3).toSpanData());
+    assertThat(spans)
+        .containsExactly(
+            ((ReadableSpan) span1).toSpanData(),
+            ((ReadableSpan) span2).toSpanData(),
+            ((ReadableSpan) span3).toSpanData());
     span1.end();
     span2.end();
     span3.end();
@@ -173,9 +167,7 @@ public final class TracezDataAggregatorTest {
   public void getSpanLatencyCounts_noSpans() {
     /* getSpanLatencyCounts should return a an empty map */
     Map<String, Map<LatencyBoundary, Integer>> counts = dataAggregator.getSpanLatencyCounts();
-    assertThat(counts.size()).isEqualTo(0);
-    assertThat(counts.get(SPAN_NAME_ONE)).isNull();
-    assertThat(counts.get(SPAN_NAME_TWO)).isNull();
+    assertThat(counts).isEmpty();
   }
 
   @Test
@@ -219,17 +211,14 @@ public final class TracezDataAggregatorTest {
     span2.end();
     /* getOkSpans should return a List with both spans */
     List<SpanData> spans = dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, Long.MAX_VALUE);
-    assertThat(spans.size()).isEqualTo(2);
-    assertThat(spans).contains(((ReadableSpan) span1).toSpanData());
-    assertThat(spans).contains(((ReadableSpan) span2).toSpanData());
+    assertThat(spans)
+        .containsExactly(((ReadableSpan) span1).toSpanData(), ((ReadableSpan) span2).toSpanData());
     /* getOkSpans should return a List with only the first span */
     spans = dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, 1000);
-    assertThat(spans.size()).isEqualTo(1);
-    assertThat(spans).contains(((ReadableSpan) span1).toSpanData());
+    assertThat(spans).containsExactly(((ReadableSpan) span1).toSpanData());
     /* getOkSpans should return a List with only the second span */
     spans = dataAggregator.getOkSpans(SPAN_NAME_ONE, 1000, Long.MAX_VALUE);
-    assertThat(spans.size()).isEqualTo(1);
-    assertThat(spans).contains(((ReadableSpan) span2).toSpanData());
+    assertThat(spans).containsExactly(((ReadableSpan) span2).toSpanData());
   }
 
   @Test
@@ -276,7 +265,6 @@ public final class TracezDataAggregatorTest {
     /* getErrorSpanCounts should return a map with CanonicalCode.values().length - 1 spans, as every
     code, expect OK, represents an error */
     Map<String, Integer> errorCounts = dataAggregator.getErrorSpanCounts();
-    assertThat(errorCounts.size()).isEqualTo(1);
     assertThat(errorCounts.get(SPAN_NAME_ONE)).isEqualTo(CanonicalCode.values().length - 1);
   }
 
@@ -290,7 +278,6 @@ public final class TracezDataAggregatorTest {
     span2.end();
     /* getErrorSpanCounts should return a map with 2 different span names */
     Map<String, Integer> errorCounts = dataAggregator.getErrorSpanCounts();
-    assertThat(errorCounts.size()).isEqualTo(2);
     assertThat(errorCounts.get(SPAN_NAME_ONE)).isEqualTo(1);
     assertThat(errorCounts.get(SPAN_NAME_TWO)).isEqualTo(1);
   }
@@ -314,9 +301,8 @@ public final class TracezDataAggregatorTest {
     span2.end();
     /* getErrorSpans should return a List with both spans */
     List<SpanData> errorSpans = dataAggregator.getErrorSpans(SPAN_NAME_ONE);
-    assertThat(errorSpans.size()).isEqualTo(2);
-    assertThat(errorSpans).contains(((ReadableSpan) span1).toSpanData());
-    assertThat(errorSpans).contains(((ReadableSpan) span2).toSpanData());
+    assertThat(errorSpans)
+        .containsExactly(((ReadableSpan) span1).toSpanData(), ((ReadableSpan) span2).toSpanData());
   }
 
   @Test

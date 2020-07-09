@@ -66,7 +66,7 @@ final class TracezSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(ReadableSpan span) {
-    runningSpanCache.putIfAbsent(span.getSpanContext().getSpanId(), span);
+    runningSpanCache.put(span.getSpanContext().getSpanId(), span);
   }
 
   @Override

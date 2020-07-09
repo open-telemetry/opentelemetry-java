@@ -69,7 +69,7 @@ enum LatencyBoundary {
    *
    * @return the latency lower bound of the bucket.
    */
-  public long getLatencyLowerBound() {
+  long getLatencyLowerBound() {
     return latencyLowerBound;
   }
 
@@ -78,7 +78,7 @@ enum LatencyBoundary {
    *
    * @return the latency upper bound of the bucket.
    */
-  public long getLatencyUpperBound() {
+  long getLatencyUpperBound() {
     return latencyUpperBound;
   }
 
@@ -88,7 +88,7 @@ enum LatencyBoundary {
    * @param latencyNanos latency in nanoseconds.
    * @return the LatencyBoundary that latencyNanos falls into.
    */
-  public static LatencyBoundary getBoundary(long latencyNanos) {
+  static LatencyBoundary getBoundary(long latencyNanos) {
     for (LatencyBoundary bucket : LatencyBoundary.values()) {
       if (latencyNanos >= bucket.getLatencyLowerBound()
           && latencyNanos < bucket.getLatencyUpperBound()) {

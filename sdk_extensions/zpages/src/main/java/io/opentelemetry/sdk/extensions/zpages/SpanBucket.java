@@ -28,12 +28,13 @@ final class SpanBucket {
   private static final int ERROR_BUCKET_SIZE = 8;
 
   private final ReadableSpan[] spans;
-  private final AtomicInteger index = new AtomicInteger();
+  private final AtomicInteger index;
   private final int bucketSize;
 
   SpanBucket(boolean isLatencyBucket) {
     bucketSize = isLatencyBucket ? LATENCY_BUCKET_SIZE : ERROR_BUCKET_SIZE;
     spans = new ReadableSpan[bucketSize];
+    index = new AtomicInteger();
   }
 
   void add(ReadableSpan span) {
