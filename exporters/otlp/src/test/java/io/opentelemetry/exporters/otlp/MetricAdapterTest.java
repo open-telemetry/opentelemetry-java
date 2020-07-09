@@ -32,8 +32,6 @@ import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Int64DataPoint;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.MetricDescriptor;
-import io.opentelemetry.proto.metrics.v1.MetricDescriptor.Temporality;
-import io.opentelemetry.proto.metrics.v1.MetricDescriptor.Type;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint.ValueAtPercentile;
@@ -64,15 +62,15 @@ public class MetricAdapterTest {
   @Test
   public void toProtoMetricDescriptorType() {
     assertThat(MetricAdapter.toProtoMetricDescriptorType(Descriptor.Type.NON_MONOTONIC_DOUBLE))
-        .isEqualTo(Type.DOUBLE);
+        .isEqualTo(MetricDescriptor.Type.DOUBLE);
     assertThat(MetricAdapter.toProtoMetricDescriptorType(Descriptor.Type.NON_MONOTONIC_LONG))
-        .isEqualTo(Type.INT64);
+        .isEqualTo(MetricDescriptor.Type.INT64);
     assertThat(MetricAdapter.toProtoMetricDescriptorType(Descriptor.Type.MONOTONIC_DOUBLE))
-        .isEqualTo(Type.MONOTONIC_DOUBLE);
+        .isEqualTo(MetricDescriptor.Type.MONOTONIC_DOUBLE);
     assertThat(MetricAdapter.toProtoMetricDescriptorType(Descriptor.Type.MONOTONIC_LONG))
-        .isEqualTo(Type.MONOTONIC_INT64);
+        .isEqualTo(MetricDescriptor.Type.MONOTONIC_INT64);
     assertThat(MetricAdapter.toProtoMetricDescriptorType(Descriptor.Type.SUMMARY))
-        .isEqualTo(Type.SUMMARY);
+        .isEqualTo(MetricDescriptor.Type.SUMMARY);
   }
 
   @Test
@@ -275,8 +273,8 @@ public class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setType(Type.MONOTONIC_DOUBLE)
-                .setTemporality(Temporality.CUMULATIVE)
+                .setType(MetricDescriptor.Type.MONOTONIC_DOUBLE)
+                .setTemporality(MetricDescriptor.Temporality.CUMULATIVE)
                 .build());
     assertThat(
             MetricAdapter.toProtoMetricDescriptor(
@@ -291,8 +289,8 @@ public class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setType(Type.DOUBLE)
-                .setTemporality(Temporality.CUMULATIVE)
+                .setType(MetricDescriptor.Type.DOUBLE)
+                .setTemporality(MetricDescriptor.Temporality.CUMULATIVE)
                 .build());
     assertThat(
             MetricAdapter.toProtoMetricDescriptor(
@@ -303,8 +301,8 @@ public class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setType(Type.SUMMARY)
-                .setTemporality(Temporality.DELTA)
+                .setType(MetricDescriptor.Type.SUMMARY)
+                .setTemporality(MetricDescriptor.Temporality.DELTA)
                 .build());
   }
 
@@ -329,8 +327,8 @@ public class MetricAdapterTest {
                         .setName("name")
                         .setDescription("description")
                         .setUnit("1")
-                        .setType(Type.MONOTONIC_INT64)
-                        .setTemporality(Temporality.CUMULATIVE)
+                        .setType(MetricDescriptor.Type.MONOTONIC_INT64)
+                        .setTemporality(MetricDescriptor.Temporality.CUMULATIVE)
                         .build())
                 .addAllInt64DataPoints(
                     singletonList(
@@ -364,8 +362,8 @@ public class MetricAdapterTest {
                         .setName("name")
                         .setDescription("description")
                         .setUnit("1")
-                        .setType(Type.MONOTONIC_DOUBLE)
-                        .setTemporality(Temporality.CUMULATIVE)
+                        .setType(MetricDescriptor.Type.MONOTONIC_DOUBLE)
+                        .setTemporality(MetricDescriptor.Temporality.CUMULATIVE)
                         .build())
                 .addAllDoubleDataPoints(
                     singletonList(
@@ -412,8 +410,8 @@ public class MetricAdapterTest {
                     .setName("name")
                     .setDescription("description")
                     .setUnit("1")
-                    .setType(Type.MONOTONIC_DOUBLE)
-                    .setTemporality(Temporality.CUMULATIVE)
+                    .setType(MetricDescriptor.Type.MONOTONIC_DOUBLE)
+                    .setTemporality(MetricDescriptor.Temporality.CUMULATIVE)
                     .build())
             .build();
 

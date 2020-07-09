@@ -22,7 +22,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import io.opentelemetry.sdk.resources.Resource;
@@ -44,7 +43,8 @@ public class InMemoryMetricExporterTest {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.create(
-        Descriptor.create("name", "description", "1", Type.MONOTONIC_LONG, Labels.empty()),
+        Descriptor.create(
+            "name", "description", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
         Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));

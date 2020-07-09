@@ -26,9 +26,9 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
-import io.prometheus.client.Collector.Type;
 import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,14 +41,15 @@ public class MetricAdapterTest {
   @Test
   public void toProtoMetricDescriptorType() {
     assertThat(MetricAdapter.toMetricFamilyType(Descriptor.Type.NON_MONOTONIC_DOUBLE))
-        .isEqualTo(Type.GAUGE);
+        .isEqualTo(Collector.Type.GAUGE);
     assertThat(MetricAdapter.toMetricFamilyType(Descriptor.Type.NON_MONOTONIC_LONG))
-        .isEqualTo(Type.GAUGE);
+        .isEqualTo(Collector.Type.GAUGE);
     assertThat(MetricAdapter.toMetricFamilyType(Descriptor.Type.MONOTONIC_DOUBLE))
-        .isEqualTo(Type.COUNTER);
+        .isEqualTo(Collector.Type.COUNTER);
     assertThat(MetricAdapter.toMetricFamilyType(Descriptor.Type.MONOTONIC_LONG))
-        .isEqualTo(Type.COUNTER);
-    assertThat(MetricAdapter.toMetricFamilyType(Descriptor.Type.SUMMARY)).isEqualTo(Type.SUMMARY);
+        .isEqualTo(Collector.Type.COUNTER);
+    assertThat(MetricAdapter.toMetricFamilyType(Descriptor.Type.SUMMARY))
+        .isEqualTo(Collector.Type.SUMMARY);
   }
 
   @Test
@@ -229,7 +230,7 @@ public class MetricAdapterTest {
         .isEqualTo(
             new MetricFamilySamples(
                 "full_name",
-                Type.COUNTER,
+                Collector.Type.COUNTER,
                 descriptor.getDescription(),
                 ImmutableList.of(
                     new Sample(

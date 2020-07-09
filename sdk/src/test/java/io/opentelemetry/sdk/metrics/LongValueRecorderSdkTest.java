@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -91,7 +90,7 @@ public class LongValueRecorderSdkTest {
                     "testRecorder",
                     "My very own counter",
                     "ms",
-                    Type.SUMMARY,
+                    Descriptor.Type.SUMMARY,
                     Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
@@ -119,7 +118,7 @@ public class LongValueRecorderSdkTest {
                     "testRecorder",
                     "My very own counter",
                     "ms",
-                    Type.SUMMARY,
+                    Descriptor.Type.SUMMARY,
                     Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
@@ -135,7 +134,7 @@ public class LongValueRecorderSdkTest {
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testRecorder", "", "1", Type.SUMMARY, Labels.empty()),
+                Descriptor.create("testRecorder", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

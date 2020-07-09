@@ -19,9 +19,11 @@ package io.opentelemetry.exporters.otlp;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcCleanupRule;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
@@ -32,7 +34,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import io.opentelemetry.sdk.resources.Resource;
@@ -129,7 +130,7 @@ public class OtlpGrpcMetricExporterTest {
 
   @Test
   public void testExport_Cancelled() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.CANCELLED);
+    fakeCollector.setReturnedStatus(Status.CANCELLED);
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -142,7 +143,7 @@ public class OtlpGrpcMetricExporterTest {
 
   @Test
   public void testExport_DeadlineExceeded() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.DEADLINE_EXCEEDED);
+    fakeCollector.setReturnedStatus(Status.DEADLINE_EXCEEDED);
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -155,7 +156,7 @@ public class OtlpGrpcMetricExporterTest {
 
   @Test
   public void testExport_ResourceExhausted() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.RESOURCE_EXHAUSTED);
+    fakeCollector.setReturnedStatus(Status.RESOURCE_EXHAUSTED);
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -168,7 +169,7 @@ public class OtlpGrpcMetricExporterTest {
 
   @Test
   public void testExport_OutOfRange() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.OUT_OF_RANGE);
+    fakeCollector.setReturnedStatus(Status.OUT_OF_RANGE);
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -181,7 +182,7 @@ public class OtlpGrpcMetricExporterTest {
 
   @Test
   public void testExport_Unavailable() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.UNAVAILABLE);
+    fakeCollector.setReturnedStatus(Status.UNAVAILABLE);
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -194,7 +195,7 @@ public class OtlpGrpcMetricExporterTest {
 
   @Test
   public void testExport_DataLoss() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.DATA_LOSS);
+    fakeCollector.setReturnedStatus(Status.DATA_LOSS);
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -207,7 +208,7 @@ public class OtlpGrpcMetricExporterTest {
 
   @Test
   public void testExport_PermissionDenied() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.PERMISSION_DENIED);
+    fakeCollector.setReturnedStatus(Status.PERMISSION_DENIED);
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -233,7 +234,8 @@ public class OtlpGrpcMetricExporterTest {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.create(
-        Descriptor.create("name", "description", "1", Type.MONOTONIC_LONG, Labels.empty()),
+        Descriptor.create(
+            "name", "description", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
         Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
@@ -241,12 +243,12 @@ public class OtlpGrpcMetricExporterTest {
 
   private static final class FakeCollector extends MetricsServiceGrpc.MetricsServiceImplBase {
     private final List<ResourceMetrics> receivedMetrics = new ArrayList<>();
-    private io.grpc.Status returnedStatus = io.grpc.Status.OK;
+    private Status returnedStatus = Status.OK;
 
     @Override
     public void export(
         ExportMetricsServiceRequest request,
-        io.grpc.stub.StreamObserver<ExportMetricsServiceResponse> responseObserver) {
+        StreamObserver<ExportMetricsServiceResponse> responseObserver) {
       receivedMetrics.addAll(request.getResourceMetricsList());
       responseObserver.onNext(ExportMetricsServiceResponse.newBuilder().build());
       if (!returnedStatus.isOk()) {
@@ -264,7 +266,7 @@ public class OtlpGrpcMetricExporterTest {
       return receivedMetrics;
     }
 
-    void setReturnedStatus(io.grpc.Status returnedStatus) {
+    void setReturnedStatus(Status returnedStatus) {
       this.returnedStatus = returnedStatus;
     }
   }

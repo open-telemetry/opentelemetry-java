@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -85,7 +84,7 @@ public class LongSumObserverSdkTest {
                     "testObserver",
                     "My own LongSumObserver",
                     "ms",
-                    Type.MONOTONIC_LONG,
+                    Descriptor.Type.MONOTONIC_LONG,
                     Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
@@ -100,7 +99,8 @@ public class LongSumObserverSdkTest {
     assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create(
+                    "testObserver", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -113,7 +113,8 @@ public class LongSumObserverSdkTest {
     assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create(
+                    "testObserver", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

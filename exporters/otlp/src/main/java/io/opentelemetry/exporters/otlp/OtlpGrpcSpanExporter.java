@@ -22,7 +22,6 @@ import com.google.common.base.Splitter;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
-import io.grpc.Metadata.Key;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
@@ -230,7 +229,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
       if (metadata == null) {
         metadata = new Metadata();
       }
-      metadata.put(Key.of(key, ASCII_STRING_MARSHALLER), value);
+      metadata.put(Metadata.Key.of(key, ASCII_STRING_MARSHALLER), value);
       return this;
     }
 

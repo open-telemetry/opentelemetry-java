@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -87,7 +86,7 @@ public class LongCounterSdkTest {
                 "testCounter",
                 "My very own counter",
                 "ms",
-                Type.MONOTONIC_LONG,
+                Descriptor.Type.MONOTONIC_LONG,
                 Labels.of("sk1", "sv1")));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);

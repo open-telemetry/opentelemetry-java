@@ -96,7 +96,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   @Test
   public void testExportAsThrift() {
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation") // we have to use the deprecated thrift encoding to test it
     ZipkinSpanExporter exporter =
         buildZipkinExporter(
             zipkin.httpUrl() + ENDPOINT_V1_SPANS, Encoding.THRIFT, SpanBytesEncoder.THRIFT);

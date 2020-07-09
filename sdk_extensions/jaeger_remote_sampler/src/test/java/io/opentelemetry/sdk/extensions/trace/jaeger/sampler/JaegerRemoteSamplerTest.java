@@ -24,11 +24,11 @@ import static org.mockito.Mockito.verify;
 import io.grpc.ManagedChannel;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcCleanupRule;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
-import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyResponse;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.sdk.trace.Sampler;
@@ -66,13 +66,11 @@ public class JaegerRemoteSamplerTest {
 
     @Override
     public void getSamplingStrategy(
-        io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters request,
-        io.grpc.stub.StreamObserver<
-                io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyResponse>
-            responseObserver) {
+        Sampling.SamplingStrategyParameters request,
+        StreamObserver<Sampling.SamplingStrategyResponse> responseObserver) {
 
-      SamplingStrategyResponse response =
-          SamplingStrategyResponse.newBuilder()
+      Sampling.SamplingStrategyResponse response =
+          Sampling.SamplingStrategyResponse.newBuilder()
               .setStrategyType(SamplingStrategyType.RATE_LIMITING)
               .setRateLimitingSampling(
                   RateLimitingSamplingStrategy.newBuilder().setMaxTracesPerSecond(RATE).build())

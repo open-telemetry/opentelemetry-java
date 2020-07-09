@@ -17,6 +17,7 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Span;
@@ -176,7 +177,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public Span start() {
-    io.opentelemetry.correlationcontext.CorrelationContext distContext = null;
+    CorrelationContext distContext = null;
     io.opentelemetry.trace.Span.Builder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {

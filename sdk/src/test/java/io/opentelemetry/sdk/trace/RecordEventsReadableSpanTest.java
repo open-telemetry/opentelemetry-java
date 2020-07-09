@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,15 +64,15 @@ public class RecordEventsReadableSpanTest {
   private static final String SPAN_NEW_NAME = "NewName";
   private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
   private static final long MILLIS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
+  private static final boolean EXPECTED_HAS_REMOTE_PARENT = true;
+  private static final long START_EPOCH_NANOS = 1000_123_789_654L;
+
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
   private final TraceId traceId = idsGenerator.generateTraceId();
   private final SpanId spanId = idsGenerator.generateSpanId();
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
-  private final boolean expectedHasRemoteParent = true;
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
-  private final long startEpochNanos = 1000_123_789_654L;
-  private final TestClock testClock = TestClock.create(startEpochNanos);
   private final Resource resource = Resource.getEmpty();
   private final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create("theName", null);
@@ -82,6 +81,8 @@ public class RecordEventsReadableSpanTest {
   private final io.opentelemetry.trace.Link link = Link.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
+
+  private TestClock testClock;
 
   @Before
   public void setUp() {
@@ -95,10 +96,11 @@ public class RecordEventsReadableSpanTest {
             .setAttribute(
                 "MySingleStringAttributeKey",
                 AttributeValue.stringAttributeValue("MySingleStringAttributeValue"));
-    for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
+    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }
     expectedAttributes = builder.build();
+    testClock = TestClock.create(START_EPOCH_NANOS);
   }
 
   @Test
@@ -115,8 +117,8 @@ public class RecordEventsReadableSpanTest {
         Collections.emptyList(),
         Collections.singletonList(link),
         SPAN_NAME,
-        startEpochNanos,
-        startEpochNanos,
+        START_EPOCH_NANOS,
+        START_EPOCH_NANOS,
         Status.OK,
         /*hasEnded=*/ true);
   }
@@ -168,14 +170,14 @@ public class RecordEventsReadableSpanTest {
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
       Event event =
-          TimedEvent.create(startEpochNanos + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+          TimedEvent.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
       verifySpanData(
           spanData,
           expectedAttributes,
           Collections.singletonList(event),
           Collections.singletonList(link),
           SPAN_NEW_NAME,
-          startEpochNanos,
+          START_EPOCH_NANOS,
           0,
           Status.OK,
           /*hasEnded=*/ false);
@@ -197,14 +199,14 @@ public class RecordEventsReadableSpanTest {
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
     Event event =
-        TimedEvent.create(startEpochNanos + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+        TimedEvent.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
     verifySpanData(
         spanData,
         expectedAttributes,
         Collections.singletonList(event),
         Collections.singletonList(link),
         SPAN_NEW_NAME,
-        startEpochNanos,
+        START_EPOCH_NANOS,
         testClock.now(),
         Status.CANCELLED,
         /*hasEnded=*/ true);
@@ -311,10 +313,10 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      long elapsedTimeNanos1 = testClock.now() - startEpochNanos;
+      long elapsedTimeNanos1 = testClock.now() - START_EPOCH_NANOS;
       assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos1);
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      long elapsedTimeNanos2 = testClock.now() - startEpochNanos;
+      long elapsedTimeNanos2 = testClock.now() - START_EPOCH_NANOS;
       assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos2);
     } finally {
       span.end();
@@ -326,7 +328,7 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.end();
-    long elapsedTimeNanos = testClock.now() - startEpochNanos;
+    long elapsedTimeNanos = testClock.now() - START_EPOCH_NANOS;
     assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos);
@@ -537,7 +539,7 @@ public class RecordEventsReadableSpanTest {
       for (int i = 0; i < maxNumberOfEvents; i++) {
         Event expectedEvent =
             TimedEvent.create(
-                startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
+                START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
                 "event2",
                 Attributes.empty(),
                 0);
@@ -552,7 +554,7 @@ public class RecordEventsReadableSpanTest {
     for (int i = 0; i < maxNumberOfEvents; i++) {
       Event expectedEvent =
           TimedEvent.create(
-              startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
+              START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
               "event2",
               Attributes.empty(),
               0);
@@ -644,7 +646,7 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
-    assertThat(spanData.getHasRemoteParent()).isEqualTo(expectedHasRemoteParent);
+    assertThat(spanData.getHasRemoteParent()).isEqualTo(EXPECTED_HAS_REMOTE_PARENT);
     assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
@@ -689,7 +691,7 @@ public class RecordEventsReadableSpanTest {
             instrumentationLibraryInfo,
             kind,
             parentSpanId,
-            /* hasRemoteParent= */ expectedHasRemoteParent,
+            /* hasRemoteParent= */ EXPECTED_HAS_REMOTE_PARENT,
             traceConfig,
             spanProcessor,
             clock,

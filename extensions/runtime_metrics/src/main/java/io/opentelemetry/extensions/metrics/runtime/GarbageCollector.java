@@ -18,7 +18,7 @@ package io.opentelemetry.extensions.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.AsynchronousInstrument;
 import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import io.opentelemetry.metrics.LongSumObserver;
 import io.opentelemetry.metrics.Meter;
@@ -68,7 +68,7 @@ public final class GarbageCollector {
     }
 
     gcMetric.setCallback(
-        new Callback<LongResult>() {
+        new AsynchronousInstrument.Callback<LongResult>() {
           @Override
           public void update(LongResult resultLongObserver) {
             for (int i = 0; i < garbageCollectors.size(); i++) {

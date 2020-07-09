@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -88,7 +87,7 @@ public class LongValueObserverSdkTest {
                     "testObserver",
                     "My own LongValueObserver",
                     "ms",
-                    Type.SUMMARY,
+                    Descriptor.Type.SUMMARY,
                     Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
@@ -104,7 +103,7 @@ public class LongValueObserverSdkTest {
     assertThat(longValueObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Type.SUMMARY, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -119,7 +118,7 @@ public class LongValueObserverSdkTest {
     assertThat(longValueObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Type.SUMMARY, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

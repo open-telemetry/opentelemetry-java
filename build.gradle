@@ -59,12 +59,11 @@ configure(opentelemetryProjects) {
         // but currently uses javax.annotation.concurrent.Immutable
         it.options.errorprone.disable("ImmutableRefactoring") // "-Xep:ImmutableRefactoring:OFF"
 
-        // NullPointerException is experimental and incomplete
-        // (https://github.com/google/error-prone/issues/1253).
-        it.options.errorprone.disable("NullableDereference") // "-Xep:NullableDereference:OFF"
+        // Yep, we're using an obsolete JDK.
+        it.options.errorprone.disable("JdkObsolete")
 
         // We prefer ExpectedException to assertThrows
-        it.options.errorprone.disable("ExpectedExceptionRefactoring")
+        it.options.errorprone.disable("ExpectedExceptionChecker")
         // "-Xep:ExpectedExceptionRefactoring:OFF"
 
         // AutoValueImmutableFields suggests returning Guava types from API methods
@@ -106,11 +105,11 @@ configure(opentelemetryProjects) {
     }
 
     ext {
-        autoValueVersion = '1.6.6'
-        errorProneVersion = '2.3.4'
+        autoValueVersion = '1.7.4'
+        errorProneVersion = '2.4.0'
         errorProneJavacVersion = '9+181-r4173-1'
         findBugsJsr305Version = '3.0.2'
-        grpcVersion = '1.28.0'
+        grpcVersion = '1.30.2'
         guavaVersion = '28.2-android'
         jmhVersion = '1.19'
         opentracingVersion = '0.33.0'

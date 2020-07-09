@@ -25,12 +25,12 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link MonotonicClock}. */
 @RunWith(JUnit4.class)
 public class MonotonicClockTest {
-  private final long epochNanos = 1234_000_005_678L;
-  private final TestClock testClock = TestClock.create(epochNanos);
+  private static final long EPOCH_NANOS = 1234_000_005_678L;
+  private final TestClock testClock = TestClock.create(EPOCH_NANOS);
 
   @Test
   public void nanoTime() {
-    assertThat(testClock.now()).isEqualTo(epochNanos);
+    assertThat(testClock.now()).isEqualTo(EPOCH_NANOS);
     MonotonicClock monotonicClock = MonotonicClock.create(testClock);
     assertThat(monotonicClock.nanoTime()).isEqualTo(testClock.nanoTime());
     testClock.advanceNanos(12345);

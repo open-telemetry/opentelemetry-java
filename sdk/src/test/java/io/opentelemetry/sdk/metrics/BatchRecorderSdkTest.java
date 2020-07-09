@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
@@ -86,7 +85,7 @@ public class BatchRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testDoubleCounter", "", "1", Type.MONOTONIC_DOUBLE, Labels.empty()),
+                    "testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -94,7 +93,8 @@ public class BatchRecorderSdkTest {
     assertThat(longCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create(
+                    "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -103,7 +103,11 @@ public class BatchRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testDoubleUpDownCounter", "", "1", Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
+                    "testDoubleUpDownCounter",
+                    "",
+                    "1",
+                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
+                    Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -112,7 +116,11 @@ public class BatchRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testLongUpDownCounter", "", "1", Type.NON_MONOTONIC_LONG, Labels.empty()),
+                    "testLongUpDownCounter",
+                    "",
+                    "1",
+                    Descriptor.Type.NON_MONOTONIC_LONG,
+                    Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,7 +81,7 @@ public class BatchSpanProcessorTest {
   */
 
   private ReadableSpan createSampledEndedSpan(String spanName) {
-    io.opentelemetry.trace.Span span =
+    Span span =
         TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOn())
             .startSpan();
     span.end();

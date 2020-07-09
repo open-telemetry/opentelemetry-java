@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Adapts OpenTelemetry objects to Jaeger objects. */
@@ -165,8 +164,8 @@ final class Adapter {
    */
   @VisibleForTesting
   static Collection<Model.KeyValue> toKeyValues(Map<String, AttributeValue> attributes) {
-    ArrayList<Model.KeyValue> tags = new ArrayList<>(attributes.size());
-    for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
+    List<Model.KeyValue> tags = new ArrayList<>(attributes.size());
+    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
       tags.add(toKeyValue(entry.getKey(), entry.getValue()));
     }
     return tags;
@@ -181,7 +180,7 @@ final class Adapter {
    */
   @VisibleForTesting
   static Collection<Model.KeyValue> toKeyValues(ReadableAttributes attributes) {
-    final ArrayList<Model.KeyValue> tags = new ArrayList<>(attributes.size());
+    final List<Model.KeyValue> tags = new ArrayList<>(attributes.size());
     attributes.forEach(
         new KeyValueConsumer<AttributeValue>() {
           @Override

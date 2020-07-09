@@ -16,6 +16,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
@@ -33,7 +34,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
     // we need to do an explicit check against DefaultSpan,
     // which is used in OpenTelemetry for this very case.
     io.opentelemetry.trace.Span span = tracer().getCurrentSpan();
-    if (io.opentelemetry.trace.DefaultSpan.getInvalid().equals(span)) {
+    if (DefaultSpan.getInvalid().equals(span)) {
       return null;
     }
 

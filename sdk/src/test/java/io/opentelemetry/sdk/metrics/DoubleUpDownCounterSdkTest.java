@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -88,7 +87,7 @@ public class DoubleUpDownCounterSdkTest {
                 "testUpDownCounter",
                 "My very own counter",
                 "ms",
-                Type.NON_MONOTONIC_DOUBLE,
+                Descriptor.Type.NON_MONOTONIC_DOUBLE,
                 Labels.of("sk1", "sv1")));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
