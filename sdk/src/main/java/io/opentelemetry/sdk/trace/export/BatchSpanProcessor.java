@@ -259,16 +259,16 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private void exportBatches(ArrayList<ReadableSpan> spanList) {
       // TODO: Record a counter for pushed spans.
       for (int i = 0; i < spanList.size(); ) {
-        int batchSizeLimit = Math.min(i + maxExportBatchSize, spanList.size());
-        onBatchExport(createSpanDataForExport(spanList, i, batchSizeLimit));
-        i = batchSizeLimit;
+        int lastIndexToTake = Math.min(i + maxExportBatchSize, spanList.size());
+        onBatchExport(createSpanDataForExport(spanList, i, lastIndexToTake));
+        i = lastIndexToTake;
       }
     }
 
     private static List<SpanData> createSpanDataForExport(
-        List<ReadableSpan> spanList, int startIndex, int numberToTake) {
-      List<SpanData> spanDataBuffer = new ArrayList<>(numberToTake);
-      for (int i = startIndex; i < numberToTake; i++) {
+        List<ReadableSpan> spanList, int startIndex, int endIndex) {
+      List<SpanData> spanDataBuffer = new ArrayList<>(endIndex - startIndex);
+      for (int i = startIndex; i < endIndex; i++) {
         spanDataBuffer.add(spanList.get(i).toSpanData());
         // Remove the reference to the ReadableSpan to allow GC to free the memory.
         spanList.set(i, null);
