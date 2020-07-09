@@ -110,6 +110,13 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
     return new AutoValue_Labels_ArrayBackedLabels(sortAndFilter(data));
   }
 
+  /** Create a {@link Builder} pre-populated with the contents of this Labels instance. */
+  public Builder toBuilder() {
+    Builder builder = new Builder();
+    builder.data.addAll(data());
+    return builder;
+  }
+
   /** Creates a new {@link Builder} instance for creating arbitrary {@link Labels}. */
   public static Builder newBuilder() {
     return new Builder();
