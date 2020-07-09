@@ -136,12 +136,12 @@ abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
         new KeyValueConsumer<V>() {
           @Override
           public void consume(String key, V value) {
-            sb.append(key).append(":").append(value).append(",");
+            sb.append(key).append("=").append(value).append(", ");
           }
         });
     // get rid of that last pesky comma
     if (sb.length() > 1) {
-      sb.deleteCharAt(sb.length() - 1);
+      sb.setLength(sb.length() - 2);
     }
     sb.append("}");
     return sb.toString();

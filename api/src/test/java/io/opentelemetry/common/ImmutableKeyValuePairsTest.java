@@ -18,6 +18,7 @@ package io.opentelemetry.common;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -27,9 +28,11 @@ public class ImmutableKeyValuePairsTest {
   @Test
   public void toStringIsCorrect() {
     assertThat(new TestPairs(Collections.emptyList()).toString()).isEqualTo("{}");
-    assertThat(new TestPairs(Arrays.asList("one", 55)).toString()).isEqualTo("{one:55}");
+    assertThat(new TestPairs(Arrays.asList("one", 55)).toString()).isEqualTo("{one=55}");
     assertThat(new TestPairs(Arrays.asList("one", 55, "two", "b")).toString())
-        .isEqualTo("{one:55,two:b}");
+        .isEqualTo("{one=55, two=b}");
+    assertThat(new TestPairs(Arrays.asList("one", 55, "two", "b")).toString())
+        .isEqualTo(ImmutableMap.of("one", 55, "two", "b").toString());
   }
 
   static class TestPairs extends ImmutableKeyValuePairs<Object> {
