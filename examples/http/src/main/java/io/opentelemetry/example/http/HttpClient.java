@@ -49,7 +49,7 @@ public class HttpClient {
         }
       };
 
-  private void initTracer() {
+  private static void initTracer() {
     // Get the tracer
     TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Show that multiple exporters can be used
@@ -59,8 +59,6 @@ public class HttpClient {
   }
 
   private HttpClient() throws Exception {
-    initTracer();
-
     // Connect to the server locally
     int port = 8080;
     URL url = new URL("http://127.0.0.1:" + port);
@@ -121,6 +119,8 @@ public class HttpClient {
    * @param args It is not required.
    */
   public static void main(String[] args) {
+    initTracer();
+
     // Perform request every 5s
     Thread t =
         new Thread() {
