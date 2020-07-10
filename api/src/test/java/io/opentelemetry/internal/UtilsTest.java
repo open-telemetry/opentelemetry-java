@@ -46,13 +46,6 @@ public final class UtilsTest {
   }
 
   @Test
-  public void checkArgument_NullErrorMessage() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("null");
-    Utils.checkArgument(false, null);
-  }
-
-  @Test
   public void checkArgument_WithSimpleFormat() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(FORMATTED_SIMPLE_TEST_MESSAGE);
@@ -75,25 +68,11 @@ public final class UtilsTest {
   }
 
   @Test
-  public void checkState_NullErrorMessage() {
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("null");
-    Utils.checkState(false, null);
-  }
-
-  @Test
   public void checkNotNull() {
     Utils.checkNotNull(new Object(), TEST_MESSAGE);
     thrown.expect(NullPointerException.class);
     thrown.expectMessage(TEST_MESSAGE);
     Utils.checkNotNull(null, TEST_MESSAGE);
-  }
-
-  @Test
-  public void checkNotNull_NullErrorMessage() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("null");
-    Utils.checkNotNull(null, null);
   }
 
   @Test
