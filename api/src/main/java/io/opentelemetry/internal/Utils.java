@@ -30,13 +30,11 @@ public final class Utils {
    * {@code Preconditions.checkArgument(boolean, Object)} from Guava.
    *
    * @param isValid whether the argument check passed.
-   * @param errorMessage the message to use for the exception. Will be converted to a string using
-   *     {@link String#valueOf(Object)}.
+   * @param errorMessage the message to use for the exception.
    */
-  public static void checkArgument(
-      boolean isValid, @javax.annotation.Nullable Object errorMessage) {
+  public static void checkArgument(boolean isValid, String errorMessage) {
     if (!isValid) {
-      throw new IllegalArgumentException(String.valueOf(errorMessage));
+      throw new IllegalArgumentException(errorMessage);
     }
   }
 
@@ -57,9 +55,7 @@ public final class Utils {
    *     {@code errorMessageArgs} is null (don't let this happen)
    */
   public static void checkArgument(
-      boolean expression,
-      String errorMessageTemplate,
-      @javax.annotation.Nullable Object... errorMessageArgs) {
+      boolean expression, String errorMessageTemplate, Object... errorMessageArgs) {
     if (!expression) {
       throw new IllegalArgumentException(format(errorMessageTemplate, errorMessageArgs));
     }
@@ -70,10 +66,9 @@ public final class Utils {
    * {@code Preconditions.checkState(boolean, Object)} from Guava.
    *
    * @param isValid whether the state check passed.
-   * @param errorMessage the message to use for the exception. Will be converted to a string using
-   *     {@link String#valueOf(Object)}.
+   * @param errorMessage the message to use for the exception.
    */
-  public static void checkState(boolean isValid, @javax.annotation.Nullable Object errorMessage) {
+  public static void checkState(boolean isValid, String errorMessage) {
     if (!isValid) {
       throw new IllegalStateException(String.valueOf(errorMessage));
     }
@@ -102,14 +97,13 @@ public final class Utils {
    * Preconditions.checkNotNull(Object, Object)} from Guava.
    *
    * @param arg the argument to check for null.
-   * @param errorMessage the message to use for the exception. Will be converted to a string using
-   *     {@link String#valueOf(Object)}.
+   * @param errorMessage the message to use for the exception.
    * @param <T> type of an argument to check.
    * @return the argument, if it passes the null check.
    */
-  public static <T> T checkNotNull(T arg, @javax.annotation.Nullable Object errorMessage) {
+  public static <T> T checkNotNull(T arg, String errorMessage) {
     if (arg == null) {
-      throw new NullPointerException(String.valueOf(errorMessage));
+      throw new NullPointerException(errorMessage);
     }
     return arg;
   }
@@ -118,21 +112,19 @@ public final class Utils {
    * Throws a {@link NullPointerException} if any of the map elements is null.
    *
    * @param map the argument map to check for null.
-   * @param errorMessage the message to use for the exception. Will be converted to a string using
-   *     {@link String#valueOf(Object)}.
+   * @param errorMessage the message to use for the exception.
    */
-  public static <K, V> void checkMapKeysNotNull(
-      Map<K, V> map, @javax.annotation.Nullable Object errorMessage) {
+  public static <K, V> void checkMapKeysNotNull(Map<K, V> map, String errorMessage) {
     for (Map.Entry<K, V> entry : map.entrySet()) {
       if (entry.getKey() == null) {
-        throw new NullPointerException(String.valueOf(errorMessage));
+        throw new NullPointerException(errorMessage);
       }
     }
   }
 
   /**
    * Compares two Objects for equality. This functionality is provided by {@code
-   * Objects.equal(Object, Object)} in Java 7.
+   * Objects.equal(Object, Object)} in Java 7 but is not available in Android API level 14.
    *
    * @param x object to compare with.
    * @param y object to compare to.
@@ -156,9 +148,9 @@ public final class Utils {
    *     to strings using {@link String#valueOf(Object)}. Arguments can be null.
    */
   // Note that this is somewhat-improperly used from Verify.java as well.
-  private static String format(String template, @javax.annotation.Nullable Object... args) {
+  private static String format(String template, Object... args) {
     // If no arguments return the template.
-    if (args == null) {
+    if (args.length == 0) {
       return template;
     }
 
