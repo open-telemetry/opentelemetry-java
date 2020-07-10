@@ -63,7 +63,7 @@ public class IntervalMetricReaderTest {
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    when(metricProducer.getAllMetrics()).thenReturn(Collections.singletonList(METRIC_DATA));
+    when(metricProducer.collectAllMetrics()).thenReturn(Collections.singletonList(METRIC_DATA));
   }
 
   @Test

@@ -104,6 +104,10 @@ final class MeterSdk implements Meter {
     return new BatchRecorderSdk(keyValuePairs);
   }
 
+  /**
+   * Collects all the metric recordings that changed since the last {@link MeterSdk#collectAll()}
+   * call.
+   */
   Collection<MetricData> collectAll() {
     InstrumentRegistry instrumentRegistry = meterSharedState.getInstrumentRegistry();
     Collection<AbstractInstrument> instruments = instrumentRegistry.getInstruments();

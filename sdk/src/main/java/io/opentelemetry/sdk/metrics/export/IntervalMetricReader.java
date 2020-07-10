@@ -209,7 +209,7 @@ public final class IntervalMetricReader {
       try {
         List<MetricData> metricsList = new ArrayList<>();
         for (MetricProducer metricProducer : internalState.getMetricProducers()) {
-          metricsList.addAll(metricProducer.getAllMetrics());
+          metricsList.addAll(metricProducer.collectAllMetrics());
         }
         internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
       } catch (Exception e) {
