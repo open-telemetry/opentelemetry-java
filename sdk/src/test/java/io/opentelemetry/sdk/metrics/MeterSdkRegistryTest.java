@@ -102,7 +102,7 @@ public class MeterSdkRegistryTest {
     LongCounterSdk longCounter2 = meterSdk2.longCounterBuilder("testLongCounter").build();
     longCounter2.add(10, Labels.empty());
 
-    assertThat(meterRegistry.getMetricProducer().getAllMetrics())
+    assertThat(meterRegistry.getMetricProducer().collectAllMetrics())
         .containsExactly(
             MetricData.create(
                 Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),

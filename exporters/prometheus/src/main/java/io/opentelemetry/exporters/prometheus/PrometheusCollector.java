@@ -33,7 +33,7 @@ public final class PrometheusCollector extends Collector {
 
   @Override
   public List<MetricFamilySamples> collect() {
-    Collection<MetricData> allMetrics = metricProducer.getAllMetrics();
+    Collection<MetricData> allMetrics = metricProducer.collectAllMetrics();
     List<MetricFamilySamples> allSamples = new ArrayList<>(allMetrics.size());
     for (MetricData metricData : allMetrics) {
       allSamples.add(MetricAdapter.toMetricFamilySamples(metricData));

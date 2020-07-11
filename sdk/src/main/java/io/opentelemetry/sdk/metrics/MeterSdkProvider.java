@@ -146,7 +146,7 @@ public final class MeterSdkProvider implements MeterProvider {
     }
 
     @Override
-    public Collection<MetricData> getAllMetrics() {
+    public Collection<MetricData> collectAllMetrics() {
       Collection<MeterSdk> meters = registry.getComponents();
       List<MetricData> result = new ArrayList<>(meters.size());
       for (MeterSdk meter : meters) {

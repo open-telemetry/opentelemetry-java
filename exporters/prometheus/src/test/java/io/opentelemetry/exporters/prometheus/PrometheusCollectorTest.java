@@ -55,7 +55,7 @@ public class PrometheusCollectorTest {
 
   @Test
   public void registerToDefault() throws IOException {
-    when(metricProducer.getAllMetrics()).thenReturn(generateTestData());
+    when(metricProducer.collectAllMetrics()).thenReturn(generateTestData());
     StringWriter stringWriter = new StringWriter();
     TextFormat.write004(stringWriter, CollectorRegistry.defaultRegistry.metricFamilySamples());
     assertThat(stringWriter.toString())

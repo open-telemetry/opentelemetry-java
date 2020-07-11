@@ -61,6 +61,10 @@ abstract class AbstractInstrument implements Instrument {
     return activeBatcher;
   }
 
+  /**
+   * Collects records from all the entries (labelSet, Bound) that changed since the last {@link
+   * AbstractInstrument#collectAll()} call.
+   */
   abstract List<MetricData> collectAll();
 
   @Override
