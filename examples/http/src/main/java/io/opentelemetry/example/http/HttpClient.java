@@ -49,7 +49,7 @@ public class HttpClient {
         }
       };
 
-  private static void initTracer() {
+  private static void initTracerSdk() {
     // Get the tracer
     TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Show that multiple exporters can be used
@@ -119,7 +119,7 @@ public class HttpClient {
    * @param args It is not required.
    */
   public static void main(String[] args) {
-    initTracer();
+    initTracerSdk();
 
     // Perform request every 5s
     Thread t =
