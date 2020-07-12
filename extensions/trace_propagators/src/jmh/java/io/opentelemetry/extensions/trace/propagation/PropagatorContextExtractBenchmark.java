@@ -17,6 +17,7 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
+import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
@@ -103,8 +104,8 @@ public class PropagatorContextExtractBenchmark {
                 JaegerPropagator.PROPAGATION_HEADER,
                 "68ec932c33b3f2ee68ec932c33b3f2ee:68ec932c33b3f2ee:0:0"));
 
-    private final JaegerPropagator.Getter<Map<String, String>> getter =
-        new JaegerPropagator.Getter<Map<String, String>>() {
+    private final HttpTextFormat.Getter<Map<String, String>> getter =
+        new HttpTextFormat.Getter<Map<String, String>>() {
           @Override
           public String get(Map<String, String> carrier, String key) {
             return carrier.get(key);
@@ -146,8 +147,8 @@ public class PropagatorContextExtractBenchmark {
                 JaegerPropagator.PROPAGATION_HEADER,
                 "68ec932c33b3f2ee68ec932c33b3f2ee%3A68ec932c33b3f2ee%3A0%3A0"));
 
-    private final JaegerPropagator.Getter<Map<String, String>> getter =
-        new JaegerPropagator.Getter<Map<String, String>>() {
+    private final HttpTextFormat.Getter<Map<String, String>> getter =
+        new HttpTextFormat.Getter<Map<String, String>>() {
           @Override
           public String get(Map<String, String> carrier, String key) {
             return carrier.get(key);
@@ -189,8 +190,8 @@ public class PropagatorContextExtractBenchmark {
                 B3Propagator.COMBINED_HEADER,
                 "68ec932c33b3f2ee68ec932c33b3f2ee-68ec932c33b3f2ee-0"));
 
-    private final B3Propagator.Getter<Map<String, String>> getter =
-        new B3Propagator.Getter<Map<String, String>>() {
+    private final HttpTextFormat.Getter<Map<String, String>> getter =
+        new HttpTextFormat.Getter<Map<String, String>>() {
           @Override
           public String get(Map<String, String> carrier, String key) {
             return carrier.get(key);
@@ -235,8 +236,8 @@ public class PropagatorContextExtractBenchmark {
       return headers;
     }
 
-    private final B3Propagator.Getter<Map<String, String>> getter =
-        new B3Propagator.Getter<Map<String, String>>() {
+    private final HttpTextFormat.Getter<Map<String, String>> getter =
+        new HttpTextFormat.Getter<Map<String, String>>() {
           @Override
           public String get(Map<String, String> carrier, String key) {
             return carrier.get(key);

@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import java.util.EnumSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,17 +38,17 @@ public class LastValueAggregationTest {
   public void getDescriptorType_ForSupportedInstruments() {
     Aggregation lastValue = Aggregations.lastValue();
     assertThat(lastValue.getDescriptorType(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE))
-        .isEqualTo(Type.MONOTONIC_DOUBLE);
+        .isEqualTo(Descriptor.Type.MONOTONIC_DOUBLE);
     assertThat(lastValue.getDescriptorType(InstrumentType.SUM_OBSERVER, InstrumentValueType.LONG))
-        .isEqualTo(Type.MONOTONIC_LONG);
+        .isEqualTo(Descriptor.Type.MONOTONIC_LONG);
     assertThat(
             lastValue.getDescriptorType(
                 InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.DOUBLE))
-        .isEqualTo(Type.NON_MONOTONIC_DOUBLE);
+        .isEqualTo(Descriptor.Type.NON_MONOTONIC_DOUBLE);
     assertThat(
             lastValue.getDescriptorType(
                 InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG))
-        .isEqualTo(Type.NON_MONOTONIC_LONG);
+        .isEqualTo(Descriptor.Type.NON_MONOTONIC_LONG);
   }
 
   @Test

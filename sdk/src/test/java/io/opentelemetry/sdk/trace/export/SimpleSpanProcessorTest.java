@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -151,7 +152,7 @@ public class SimpleSpanProcessorTest {
         .startSpan()
         .end();
 
-    io.opentelemetry.trace.Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
     span.end();
 
     // Spans are recorded and exported in the same order as they are ended, we test that a non

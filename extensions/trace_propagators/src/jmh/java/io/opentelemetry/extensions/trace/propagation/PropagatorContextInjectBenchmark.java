@@ -17,6 +17,7 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
+import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -103,8 +104,8 @@ public class PropagatorContextInjectBenchmark {
   public static class JaegerContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
     private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
-    private final JaegerPropagator.Setter<Map<String, String>> setter =
-        new JaegerPropagator.Setter<Map<String, String>>() {
+    private final HttpTextFormat.Setter<Map<String, String>> setter =
+        new HttpTextFormat.Setter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);
@@ -121,8 +122,8 @@ public class PropagatorContextInjectBenchmark {
   public static class B3SingleHeaderContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
     private final B3Propagator b3Propagator = B3Propagator.getSingleHeaderPropagator();
-    private final B3Propagator.Setter<Map<String, String>> setter =
-        new B3Propagator.Setter<Map<String, String>>() {
+    private final HttpTextFormat.Setter<Map<String, String>> setter =
+        new HttpTextFormat.Setter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);
@@ -140,8 +141,8 @@ public class PropagatorContextInjectBenchmark {
       extends AbstractContextInjectBenchmark {
 
     private final B3Propagator b3Propagator = B3Propagator.getMultipleHeaderPropagator();
-    private final B3Propagator.Setter<Map<String, String>> setter =
-        new B3Propagator.Setter<Map<String, String>>() {
+    private final HttpTextFormat.Setter<Map<String, String>> setter =
+        new HttpTextFormat.Setter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);

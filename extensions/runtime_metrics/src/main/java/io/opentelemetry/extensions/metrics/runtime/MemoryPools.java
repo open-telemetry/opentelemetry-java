@@ -18,9 +18,8 @@ package io.opentelemetry.extensions.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.AsynchronousInstrument;
 import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
-import io.opentelemetry.metrics.LongSumObserver;
 import io.opentelemetry.metrics.LongUpDownSumObserver;
 import io.opentelemetry.metrics.Meter;
 import java.lang.management.ManagementFactory;
@@ -84,7 +83,7 @@ public final class MemoryPools {
     final Labels maxHeap = Labels.of(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP);
     final Labels maxNonHeap = Labels.of(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP);
     areaMetric.setCallback(
-        new LongSumObserver.Callback<LongResult>() {
+        new AsynchronousInstrument.Callback<LongResult>() {
           @Override
           public void update(LongResult resultLongObserver) {
             MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
@@ -116,7 +115,7 @@ public final class MemoryPools {
       maxLabelSets.add(Labels.of(TYPE_LABEL_KEY, MAX, POOL_LABEL_KEY, pool.getName()));
     }
     poolMetric.setCallback(
-        new Callback<LongResult>() {
+        new AsynchronousInstrument.Callback<LongResult>() {
           @Override
           public void update(LongResult resultLongObserver) {
             for (int i = 0; i < poolBeans.size(); i++) {

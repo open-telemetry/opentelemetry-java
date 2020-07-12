@@ -29,7 +29,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
-import io.prometheus.client.Collector.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +60,7 @@ final class MetricAdapter {
     String fullName =
         toMetricFullName(
             descriptor.getName(), metricData.getInstrumentationLibraryInfo().getName());
-    Type type = toMetricFamilyType(descriptor.getType());
+    Collector.Type type = toMetricFamilyType(descriptor.getType());
 
     return new MetricFamilySamples(
         fullName,
@@ -81,18 +80,18 @@ final class MetricAdapter {
     return Collector.sanitizeMetricName(instrumentationLibraryName + "_" + descriptorMetricName);
   }
 
-  static Type toMetricFamilyType(MetricData.Descriptor.Type type) {
+  static Collector.Type toMetricFamilyType(MetricData.Descriptor.Type type) {
     switch (type) {
       case NON_MONOTONIC_LONG:
       case NON_MONOTONIC_DOUBLE:
-        return Type.GAUGE;
+        return Collector.Type.GAUGE;
       case MONOTONIC_LONG:
       case MONOTONIC_DOUBLE:
-        return Type.COUNTER;
+        return Collector.Type.COUNTER;
       case SUMMARY:
-        return Type.SUMMARY;
+        return Collector.Type.SUMMARY;
     }
-    return Type.UNTYPED;
+    return Collector.Type.UNTYPED;
   }
 
   // Converts a list of points from MetricData to a list of Prometheus Samples.

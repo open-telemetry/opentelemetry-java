@@ -17,6 +17,7 @@
 package io.opentelemetry.internal;
 
 import java.util.Map;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** General internal utility methods. */
@@ -130,8 +131,7 @@ public final class Utils {
    * @param y object to compare to.
    * @return {@code true} if x is the same as the y; {@code false} otherwise.
    */
-  public static boolean equalsObjects(
-      @javax.annotation.Nullable Object x, @javax.annotation.Nullable Object y) {
+  public static boolean equalsObjects(@Nullable Object x, @Nullable Object y) {
     return x == null ? y == null : x.equals(y);
   }
 

@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -85,7 +84,7 @@ public class DoubleUpDownSumObserverSdkTest {
                     "testObserver",
                     "My own DoubleUpDownSumObserver",
                     "ms",
-                    Type.NON_MONOTONIC_DOUBLE,
+                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
                     Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
@@ -102,7 +101,7 @@ public class DoubleUpDownSumObserverSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testObserver", "", "1", Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
+                    "testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -116,7 +115,7 @@ public class DoubleUpDownSumObserverSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testObserver", "", "1", Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
+                    "testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

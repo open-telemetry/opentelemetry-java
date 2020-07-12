@@ -24,7 +24,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -70,7 +69,7 @@ public class LoggingMetricExporterTest {
                     "measureOne",
                     "A summarized test measure",
                     "ms",
-                    Type.SUMMARY,
+                    Descriptor.Type.SUMMARY,
                     Labels.of("foo", "bar", "baz", "zoom")),
                 resource,
                 instrumentationLibraryInfo,
@@ -89,7 +88,7 @@ public class LoggingMetricExporterTest {
                     "counterOne",
                     "A simple counter",
                     "one",
-                    Type.MONOTONIC_LONG,
+                    Descriptor.Type.MONOTONIC_LONG,
                     Labels.of("alpha", "aleph", "beta", "bet")),
                 resource,
                 instrumentationLibraryInfo,
@@ -101,7 +100,7 @@ public class LoggingMetricExporterTest {
                     "observedValue",
                     "an observer gauge",
                     "kb",
-                    Type.NON_MONOTONIC_DOUBLE,
+                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
                     Labels.of("uno", "eins", "dos", "zwei")),
                 resource,
                 instrumentationLibraryInfo,

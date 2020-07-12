@@ -22,6 +22,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcCleanupRule;
 import io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporterTest.ConfigBuilderTest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
@@ -247,7 +248,7 @@ public class OtlpGrpcSpanExporterTest {
     @Override
     public void export(
         ExportTraceServiceRequest request,
-        io.grpc.stub.StreamObserver<ExportTraceServiceResponse> responseObserver) {
+        StreamObserver<ExportTraceServiceResponse> responseObserver) {
       receivedSpans.addAll(request.getResourceSpansList());
       responseObserver.onNext(ExportTraceServiceResponse.newBuilder().build());
       if (!returnedStatus.isOk()) {

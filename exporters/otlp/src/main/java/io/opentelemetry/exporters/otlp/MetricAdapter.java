@@ -25,7 +25,6 @@ import io.opentelemetry.proto.metrics.v1.Int64DataPoint;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.MetricDescriptor;
 import io.opentelemetry.proto.metrics.v1.MetricDescriptor.Temporality;
-import io.opentelemetry.proto.metrics.v1.MetricDescriptor.Type;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint.ValueAtPercentile;
@@ -248,17 +247,17 @@ final class MetricAdapter {
   static MetricDescriptor.Type toProtoMetricDescriptorType(Descriptor.Type descriptorType) {
     switch (descriptorType) {
       case NON_MONOTONIC_LONG:
-        return Type.INT64;
+        return MetricDescriptor.Type.INT64;
       case NON_MONOTONIC_DOUBLE:
-        return Type.DOUBLE;
+        return MetricDescriptor.Type.DOUBLE;
       case MONOTONIC_LONG:
-        return Type.MONOTONIC_INT64;
+        return MetricDescriptor.Type.MONOTONIC_INT64;
       case MONOTONIC_DOUBLE:
-        return Type.MONOTONIC_DOUBLE;
+        return MetricDescriptor.Type.MONOTONIC_DOUBLE;
       case SUMMARY:
-        return Type.SUMMARY;
+        return MetricDescriptor.Type.SUMMARY;
     }
-    return Type.UNRECOGNIZED;
+    return MetricDescriptor.Type.UNRECOGNIZED;
   }
 
   @SuppressWarnings("MixedMutabilityReturnType")

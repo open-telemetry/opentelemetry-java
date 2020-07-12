@@ -19,7 +19,6 @@ package io.opentelemetry.exporters.zipkin;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -97,9 +96,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
     Endpoint.Builder builder = Endpoint.newBuilder().serviceName(serviceName);
     try {
       Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
-      if (nics == null) {
-        return builder.build();
-      }
       while (nics.hasMoreElements()) {
         NetworkInterface nic = nics.nextElement();
         Enumeration<InetAddress> addresses = nic.getInetAddresses();
@@ -208,7 +204,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   private static String attributeValueToString(AttributeValue attributeValue) {
-    Type type = attributeValue.getType();
+    AttributeValue.Type type = attributeValue.getType();
     switch (type) {
       case STRING:
         return attributeValue.getStringValue();

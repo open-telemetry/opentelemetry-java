@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -332,20 +331,22 @@ public class MeterSdkTest {
     assertThat(testSdk.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create(
+                    "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
                 Descriptor.create(
-                    "testDoubleCounter", "", "1", Type.MONOTONIC_DOUBLE, Labels.empty()),
+                    "testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), Labels.empty(), 10.1))),
             MetricData.create(
-                Descriptor.create("testLongValueRecorder", "", "1", Type.SUMMARY, Labels.empty()),
+                Descriptor.create(
+                    "testLongValueRecorder", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -358,7 +359,8 @@ public class MeterSdkTest {
                         Arrays.asList(
                             ValueAtPercentile.create(0, 10), ValueAtPercentile.create(100, 10))))),
             MetricData.create(
-                Descriptor.create("testDoubleValueRecorder", "", "1", Type.SUMMARY, Labels.empty()),
+                Descriptor.create(
+                    "testDoubleValueRecorder", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

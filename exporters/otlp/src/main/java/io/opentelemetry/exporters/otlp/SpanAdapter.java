@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.trace.Span.Kind;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -120,7 +121,7 @@ final class SpanAdapter {
     return builder.build();
   }
 
-  static Span.SpanKind toProtoSpanKind(io.opentelemetry.trace.Span.Kind kind) {
+  static Span.SpanKind toProtoSpanKind(Kind kind) {
     switch (kind) {
       case INTERNAL:
         return SpanKind.INTERNAL;

@@ -20,6 +20,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
@@ -55,7 +56,7 @@ final class Propagation extends BaseShimObject {
             .getHttpTextFormat()
             .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
 
-    io.opentelemetry.trace.Span span = TracingContextUtils.getSpan(context);
+    Span span = TracingContextUtils.getSpan(context);
     if (!span.getContext().isValid()) {
       return null;
     }

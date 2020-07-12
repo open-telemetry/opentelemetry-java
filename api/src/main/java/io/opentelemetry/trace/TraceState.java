@@ -21,6 +21,7 @@ import io.opentelemetry.internal.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -65,7 +66,7 @@ public abstract class TraceState {
    *     for the key.
    * @since 0.1.0
    */
-  @javax.annotation.Nullable
+  @Nullable
   public String get(String key) {
     for (Entry entry : getEntries()) {
       if (entry.getKey().equals(key)) {
@@ -110,7 +111,7 @@ public abstract class TraceState {
    */
   public static final class Builder {
     private final TraceState parent;
-    @javax.annotation.Nullable private ArrayList<Entry> entries;
+    @Nullable private ArrayList<Entry> entries;
 
     // Needs to be in this class to avoid initialization deadlock because super class depends on
     // subclass (the auto-value generate class).
