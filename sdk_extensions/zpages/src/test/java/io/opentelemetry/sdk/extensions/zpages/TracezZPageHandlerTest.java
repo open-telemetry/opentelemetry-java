@@ -26,6 +26,7 @@ import io.opentelemetry.trace.Status.CanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
@@ -270,5 +271,19 @@ public final class TracezZPageHandlerTest {
     // No link for Status{#OK} spans
     assertThat(output.toString())
         .doesNotContain("href=\"?zspanname=" + FINISHED_SPAN_ONE + "&ztype=2&subtype=0\"");
+  }
+
+  @Test
+  public void spanDetails_emitSpanNameCorrectly() {
+    OutputStream output = new ByteArrayOutputStream();
+    Map<String, String> queryMapWithSpanName = new HashMap<String, String>();
+    queryMapWithSpanName.put("zspanname", FINISHED_SPAN_ONE);
+    queryMapWithSpanName.put("ztype", "1");
+
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
+    tracezZPageHandler.emitHtml(queryMapWithSpanName, output);
+
+    assertThat(output.toString()).contains("<h2>Span Details</h2>");
+    assertThat(output.toString()).contains("<b> Span Name: " + FINISHED_SPAN_ONE + "</b>");
   }
 }

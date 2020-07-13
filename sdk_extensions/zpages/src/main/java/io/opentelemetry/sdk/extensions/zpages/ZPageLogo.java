@@ -37,7 +37,6 @@ final class ZPageLogo {
     } catch (Throwable t) {
       Logger.getLogger(ZPageLogo.class.getName())
           .warning("Error while getting OpenTelemetry Logo: " + t.toString());
-      t.printStackTrace();
       return "";
     }
   }

@@ -239,12 +239,12 @@ final class TracezZPageHandler extends ZPageHandler {
   private static void emitSpanNameAndCount(
       PrintStream out, String spanName, int count, SampleType type) {
     out.print(
-        "<p class=\"align-center\"><b> Span Name: " + htmlEscaper().escape(spanName) + " </b></p>");
+        "<p class=\"align-center\"><b> Span Name: " + htmlEscaper().escape(spanName) + "</b></p>");
     String typeString =
         type == SampleType.RUNNING
             ? "running"
             : type == SampleType.LATENCY ? "latency samples" : "error samples";
-    out.print("<p class=\"align-center\"><b> Number of " + typeString + ": " + count + " </b></p>");
+    out.print("<p class=\"align-center\"><b> Number of " + typeString + ": " + count + "</b></p>");
   }
 
   private static void emitSpanDetails(
@@ -466,7 +466,7 @@ final class TracezZPageHandler extends ZPageHandler {
         List<SpanData> spans = null;
         SampleType type = SampleType.fromString(typeStr);
         if (type == SampleType.UNKNOWN) {
-          // Type of sample is garbage value
+          // Type of unknown is garbage value
           return;
         } else if (type == SampleType.RUNNING) {
           // Display running span
