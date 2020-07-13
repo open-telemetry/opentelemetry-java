@@ -201,6 +201,13 @@ public final class SemanticAttributes {
   /** The compressed size of the message payload in bytes. */
   public static final LongAttributeSetter MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES =
       LongAttributeSetter.create("messaging.message_payload_compressed_size_bytes");
+  /**
+   * A string identifying which part and kind of message consumption this span describes: either
+   * "receive" or "process". If the operation is "send", this attribute must not be set: the
+   * operation can be inferred from the span kind in that case.
+   */
+  public static final StringAttributeSetter MESSAGING_OPERATION =
+      StringAttributeSetter.create("messaging.operation");
 
   private SemanticAttributes() {}
 }
