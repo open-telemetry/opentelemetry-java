@@ -20,7 +20,6 @@ import io.opentelemetry.metrics.LongValueObserver;
 import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
     implements LongValueObserver {
@@ -28,19 +27,9 @@ final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
   LongValueObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        // TODO: Revisit the batcher used here, currently this does not remove duplicate records in
-        //  the same cycle.
-        new ActiveBatcher(
-            Batchers.getDeltaAllLabels(
-                descriptor,
-                meterProviderSharedState,
-                meterSharedState,
-                Aggregations.minMaxSumCount())));
+      MeterSharedState meterSharedState,
+      Batcher batcher) {
+    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
   static final class Builder
@@ -50,8 +39,9 @@ final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+        MeterSharedState meterSharedState,
+        MeterSdk meterSdk) {
+      super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
     @Override
@@ -61,11 +51,14 @@ final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
 
     @Override
     public LongValueObserverSdk build() {
+      InstrumentDescriptor instrumentDescriptor =
+          getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG);
       return register(
           new LongValueObserverSdk(
-              getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG),
+              instrumentDescriptor,
               getMeterProviderSharedState(),
-              getMeterSharedState()));
+              getMeterSharedState(),
+              getBatcher(instrumentDescriptor)));
     }
   }
 }

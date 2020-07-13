@@ -21,6 +21,7 @@ import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.metrics.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 
 public enum TestSdk {
@@ -40,7 +41,8 @@ public enum TestSdk {
           InstrumentationLibraryInfo instrumentationLibraryInfo =
               InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics", null);
 
-          return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo);
+          return new MeterSdk(
+              meterProviderSharedState, instrumentationLibraryInfo, new ViewRegistry());
         }
       });
 

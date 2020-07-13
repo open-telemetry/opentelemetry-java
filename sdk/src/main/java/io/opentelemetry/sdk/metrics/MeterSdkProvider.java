@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -44,7 +45,9 @@ public final class MeterSdkProvider implements MeterProvider {
   private final MetricProducer metricProducer;
 
   private MeterSdkProvider(Clock clock, Resource resource) {
-    this.registry = new MeterSdkComponentRegistry(MeterProviderSharedState.create(clock, resource));
+    this.registry =
+        new MeterSdkComponentRegistry(
+            MeterProviderSharedState.create(clock, resource), new ViewRegistry());
     this.metricProducer = new MetricProducerSdk(this.registry);
   }
 
@@ -127,14 +130,17 @@ public final class MeterSdkProvider implements MeterProvider {
 
   private static final class MeterSdkComponentRegistry extends ComponentRegistry<MeterSdk> {
     private final MeterProviderSharedState meterProviderSharedState;
+    private final ViewRegistry viewRegistry;
 
-    private MeterSdkComponentRegistry(MeterProviderSharedState meterProviderSharedState) {
+    private MeterSdkComponentRegistry(
+        MeterProviderSharedState meterProviderSharedState, ViewRegistry viewRegistry) {
       this.meterProviderSharedState = meterProviderSharedState;
+      this.viewRegistry = viewRegistry;
     }
 
     @Override
     public MeterSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo);
+      return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo, viewRegistry);
     }
   }
 

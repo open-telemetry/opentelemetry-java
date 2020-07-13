@@ -20,7 +20,6 @@ import io.opentelemetry.metrics.DoubleUpDownSumObserver;
 import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubleAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 final class DoubleUpDownSumObserverSdk extends AbstractDoubleAsynchronousInstrument
     implements DoubleUpDownSumObserver {
@@ -28,14 +27,9 @@ final class DoubleUpDownSumObserverSdk extends AbstractDoubleAsynchronousInstrum
   DoubleUpDownSumObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(
-            Batchers.getCumulativeAllLabels(
-                descriptor, meterProviderSharedState, meterSharedState, Aggregations.lastValue())));
+      MeterSharedState meterSharedState,
+      Batcher batcher) {
+    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
   static final class Builder
@@ -45,8 +39,9 @@ final class DoubleUpDownSumObserverSdk extends AbstractDoubleAsynchronousInstrum
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+        MeterSharedState meterSharedState,
+        MeterSdk meterSdk) {
+      super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
     @Override
@@ -56,12 +51,14 @@ final class DoubleUpDownSumObserverSdk extends AbstractDoubleAsynchronousInstrum
 
     @Override
     public DoubleUpDownSumObserverSdk build() {
+      InstrumentDescriptor instrumentDescriptor =
+          getInstrumentDescriptor(InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.DOUBLE);
       return register(
           new DoubleUpDownSumObserverSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.DOUBLE),
+              instrumentDescriptor,
               getMeterProviderSharedState(),
-              getMeterSharedState()));
+              getMeterSharedState(),
+              getBatcher(instrumentDescriptor)));
     }
   }
 }

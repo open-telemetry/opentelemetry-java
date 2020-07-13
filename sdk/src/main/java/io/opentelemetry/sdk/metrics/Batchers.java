@@ -34,36 +34,38 @@ import java.util.List;
 import java.util.Map;
 
 /** A collection of available Batchers. */
-final class Batchers {
+public final class Batchers {
 
-  static Batcher getNoop() {
+  public static Batcher getNoop() {
     return Noop.INSTANCE;
   }
 
-  static Batcher getCumulativeAllLabels(
+  /** TODO: javadoc me. */
+  public static Batcher getCumulativeAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation defaultAggregation) {
+      Aggregation aggregation) {
     return new AllLabels(
-        getDefaultMetricDescriptor(descriptor, defaultAggregation),
+        getDefaultMetricDescriptor(descriptor, aggregation),
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
+        aggregation.getAggregatorFactory(descriptor.getValueType()),
         meterProviderSharedState.getClock(),
         /* delta= */ false);
   }
 
-  static Batcher getDeltaAllLabels(
+  /** TODO: javadoc me. */
+  public static Batcher getDeltaAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation defaultAggregation) {
+      Aggregation aggregation) {
     return new AllLabels(
-        getDefaultMetricDescriptor(descriptor, defaultAggregation),
+        getDefaultMetricDescriptor(descriptor, aggregation),
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
+        aggregation.getAggregatorFactory(descriptor.getValueType()),
         meterProviderSharedState.getClock(),
         /* delta= */ true);
   }
