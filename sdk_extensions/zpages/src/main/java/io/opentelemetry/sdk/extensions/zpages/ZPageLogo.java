@@ -19,9 +19,12 @@ package io.opentelemetry.sdk.extensions.zpages;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
 import java.io.InputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 final class ZPageLogo {
+  private static final Logger logger = Logger.getLogger(ZPageLogo.class.getName());
+
   private ZPageLogo() {}
 
   /**
@@ -35,8 +38,7 @@ final class ZPageLogo {
       byte[] bytes = ByteStreams.toByteArray(in);
       return BaseEncoding.base64().encode(bytes);
     } catch (Throwable t) {
-      Logger.getLogger(ZPageLogo.class.getName())
-          .warning("Error while getting OpenTelemetry Logo: " + t.toString());
+      logger.log(Level.WARNING, "error while getting OpenTelemetry Logo", t);
       return "";
     }
   }
@@ -53,8 +55,7 @@ final class ZPageLogo {
       byte[] bytes = ByteStreams.toByteArray(in);
       return BaseEncoding.base64().encode(bytes);
     } catch (Throwable t) {
-      Logger.getLogger(ZPageLogo.class.getName())
-          .warning("Error while getting OpenTelemetry Logo: " + t.toString());
+      logger.log(Level.WARNING, "error while getting OpenTelemetry Logo", t);
       return "";
     }
   }

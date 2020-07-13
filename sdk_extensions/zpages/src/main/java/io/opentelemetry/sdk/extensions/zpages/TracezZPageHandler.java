@@ -44,6 +44,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -99,6 +100,7 @@ final class TracezZPageHandler extends ZPageHandler {
   // Map from LatencyBoundary to human readable string on the UI
   private static final ImmutableMap<LatencyBoundary, String> LATENCY_BOUNDARIES_STRING_MAP =
       buildLatencyBoundaryStringMap();
+  private static final Logger logger = Logger.getLogger(TracezZPageHandler.class.getName());
   @Nullable private final TracezDataAggregator dataAggregator;
 
   /** Constructs a new {@code TracezZPageHandler}. */
@@ -536,12 +538,12 @@ final class TracezZPageHandler extends ZPageHandler {
         emitHtmlBody(queryMap, out);
       } catch (Throwable t) {
         out.print("Error while generating HTML: " + t.toString());
+        logger.log(Level.WARNING, "error while generating HTML", t);
       }
       out.print("</body>");
       out.print("</html>");
     } catch (Throwable t) {
-      Logger.getLogger(TracezZPageHandler.class.getName())
-          .warning("Error while generating HTML: " + t.toString());
+      logger.log(Level.WARNING, "error while generating HTML", t);
     }
   }
 
