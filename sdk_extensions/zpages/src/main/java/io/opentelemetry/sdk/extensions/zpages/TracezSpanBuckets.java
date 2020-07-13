@@ -65,9 +65,7 @@ final class TracezSpanBuckets {
   List<ReadableSpan> getOkSpans() {
     List<ReadableSpan> okSpans = new ArrayList<>();
     for (SpanBucket latencyBucket : latencyBuckets.values()) {
-      synchronized (latencyBucket) {
-        latencyBucket.addTo(okSpans);
-      }
+      latencyBucket.addTo(okSpans);
     }
     return okSpans;
   }
@@ -75,9 +73,7 @@ final class TracezSpanBuckets {
   List<ReadableSpan> getErrorSpans() {
     List<ReadableSpan> errorSpans = new ArrayList<>();
     for (SpanBucket errorBucket : errorBuckets.values()) {
-      synchronized (errorSpans) {
-        errorBucket.addTo(errorSpans);
-      }
+      errorBucket.addTo(errorSpans);
     }
     return errorSpans;
   }

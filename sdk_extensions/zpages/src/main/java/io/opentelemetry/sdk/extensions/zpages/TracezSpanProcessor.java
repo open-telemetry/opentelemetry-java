@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -159,7 +158,6 @@ final class TracezSpanProcessor implements SpanProcessor {
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
      */
-    @VisibleForTesting
     @Override
     protected Builder fromConfigMap(
         Map<String, String> configMap, NamingConvention namingConvention) {
