@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Status;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +126,7 @@ final class TracezDataAggregator {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     TracezSpanBuckets buckets = completedSpanCache.get(spanName);
     if (buckets == null) {
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
     Collection<ReadableSpan> allOkSpans = buckets.getOkSpans();
     List<SpanData> filteredSpans = new ArrayList<>();
@@ -134,7 +135,7 @@ final class TracezDataAggregator {
         filteredSpans.add(span.toSpanData());
       }
     }
-    return filteredSpans;
+    return Collections.unmodifiableList(filteredSpans);
   }
 
   /**
@@ -161,13 +162,13 @@ final class TracezDataAggregator {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     TracezSpanBuckets buckets = completedSpanCache.get(spanName);
     if (buckets == null) {
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
     Collection<ReadableSpan> allErrorSpans = buckets.getErrorSpans();
     List<SpanData> errorSpans = new ArrayList<>();
     for (ReadableSpan span : allErrorSpans) {
       errorSpans.add(span.toSpanData());
     }
-    return errorSpans;
+    return Collections.unmodifiableList(errorSpans);
   }
 }
