@@ -80,6 +80,11 @@ final class Batchers {
     public List<MetricData> completeCollectionCycle() {
       return Collections.emptyList();
     }
+
+    @Override
+    public boolean generatesDeltas() {
+      return false;
+    }
   }
 
   private static final class AllLabels implements Batcher {
@@ -154,6 +159,11 @@ final class Batchers {
               aggregation.getUnit(descriptor.getUnit()),
               aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
               points));
+    }
+
+    @Override
+    public boolean generatesDeltas() {
+      return delta;
     }
   }
 

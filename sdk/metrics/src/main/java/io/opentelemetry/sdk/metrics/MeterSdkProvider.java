@@ -31,11 +31,12 @@ public final class MeterSdkProvider implements MeterProvider {
 
   private final MeterSdkComponentRegistry registry;
   private final MetricProducer metricProducer;
+  private final ViewRegistry viewRegistry = new ViewRegistry();
 
   private MeterSdkProvider(Clock clock, Resource resource) {
     this.registry =
         new MeterSdkComponentRegistry(
-            MeterProviderSharedState.create(clock, resource), new ViewRegistry());
+            MeterProviderSharedState.create(clock, resource), viewRegistry);
     this.metricProducer = new MetricProducerSdk(this.registry);
   }
 
@@ -133,6 +134,31 @@ public final class MeterSdkProvider implements MeterProvider {
     public MeterSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
       return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo, viewRegistry);
     }
+  }
+
+  /**
+   * Register a view with the given {@link InstrumentSelector}.
+   * <p>
+   * Example on how to register a view:
+   *
+   * <pre>{@code
+   * // get a handle to the MeterSdkProvider
+   * MeterSdkProvider meterProvider = OpenTelemetrySdk.getMeterProvider();
+   *
+   * // create a selector to select which instruments to customize:
+   * InstrumentSelector instrumentSelector = InstrumentSelector.create(InstrumentType.COUNTER);
+   *
+   * // create a specification of how you want the metrics aggregated:
+   * ViewSpecification viewSpecification = ViewSpecification.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
+   *
+   * //register the view with the MeterSdkProvider
+   * meterProvider.registerView(instrumentSelector, viewSpecification);
+   * </pre>
+   *
+   * @see ViewSpecification
+   */
+  public void registerView(InstrumentSelector selector, ViewSpecification specification) {
+    viewRegistry.registerView(selector, specification);
   }
 
   private static final class MetricProducerSdk implements MetricProducer {

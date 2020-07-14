@@ -7,6 +7,9 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
+import io.opentelemetry.sdk.metrics.view.ViewSpecification.Temporality;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 // notes:
 //  specify by pieces of the descriptor.
@@ -27,6 +30,16 @@ import io.opentelemetry.sdk.metrics.view.Aggregations;
  */
 class ViewRegistry {
 
+  public static final ViewSpecification CUMULATIVE_SUM =
+      ViewSpecification.create(Aggregations.sum(), Temporality.CUMULATIVE);
+  public static final ViewSpecification DELTA_SUMMARY =
+      ViewSpecification.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
+  public static final ViewSpecification CUMULATIVE_LAST_VALUE =
+      ViewSpecification.create(Aggregations.lastValue(), Temporality.CUMULATIVE);
+
+  private final Map<InstrumentSelector, ViewSpecification> configuration =
+      new ConcurrentHashMap<>();
+
   /**
    * Create a new {@link io.opentelemetry.sdk.metrics.Batcher} for use in metric recording
    * aggregation.
@@ -36,28 +49,34 @@ class ViewRegistry {
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
 
-    Aggregation aggregation = getRegisteredAggregation(descriptor);
+    ViewSpecification specification = findBestMatch(descriptor);
 
-    // todo: don't just use the defaults!
-    switch (descriptor.getType()) {
-      case COUNTER:
-      case UP_DOWN_COUNTER:
-      case SUM_OBSERVER:
-      case UP_DOWN_SUM_OBSERVER:
-        return Batchers.getCumulativeAllLabels(
-            descriptor, meterProviderSharedState, meterSharedState, aggregation);
-      case VALUE_RECORDER:
-        // TODO: Revisit the batcher used here for value observers,
-        // currently this does not remove duplicate records in the same cycle.
-      case VALUE_OBSERVER:
-        return Batchers.getDeltaAllLabels(
-            descriptor, meterProviderSharedState, meterSharedState, aggregation);
+    Aggregation aggregation = specification.aggregation();
+
+    if (Temporality.CUMULATIVE == specification.temporality()) {
+      return Batchers.getCumulativeAllLabels(
+          descriptor, meterProviderSharedState, meterSharedState, aggregation);
+    } else if (Temporality.DELTA == specification.temporality()) {
+      return Batchers.getDeltaAllLabels(
+          descriptor, meterProviderSharedState, meterSharedState, aggregation);
     }
-    throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());
+    throw new IllegalStateException("unsupported Temporality: " + specification.temporality());
   }
 
-  private static Aggregation getRegisteredAggregation(InstrumentDescriptor descriptor) {
-    // todo look up based on fields of the descriptor.
+  // todo: consider moving this method to its own class, for more targetted testing.
+  private ViewSpecification findBestMatch(InstrumentDescriptor descriptor) {
+    // select based on InstrumentType:
+    for (Map.Entry<InstrumentSelector, ViewSpecification> entry : configuration.entrySet()) {
+      InstrumentSelector registeredSelector = entry.getKey();
+      if (registeredSelector.instrumentType().equals(descriptor.getType())) {
+        return entry.getValue();
+      }
+    }
+    // If none found, use the defaults:
+    return getDefaultSpecification(descriptor);
+  }
+
+  private static ViewSpecification getDefaultSpecification(InstrumentDescriptor descriptor) {
     switch (descriptor.getType()) {
       case COUNTER:
       case UP_DOWN_COUNTER:
@@ -67,8 +86,13 @@ class ViewRegistry {
       case VALUE_OBSERVER:
       case SUM_OBSERVER:
       case UP_DOWN_SUM_OBSERVER:
-        return Aggregations.lastValue();
+        return CUMULATIVE_LAST_VALUE;
     }
     throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());
+  }
+
+  /** todo: javadoc me. */
+  public void registerView(InstrumentSelector selector, ViewSpecification specification) {
+    configuration.put(selector, specification);
   }
 }
