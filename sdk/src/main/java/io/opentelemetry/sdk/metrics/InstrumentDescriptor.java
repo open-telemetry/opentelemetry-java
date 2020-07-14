@@ -25,7 +25,7 @@ import javax.annotation.concurrent.Immutable;
 
 @AutoValue
 @Immutable
-public abstract class InstrumentDescriptor {
+abstract class InstrumentDescriptor {
   static InstrumentDescriptor create(
       String name,
       String description,
@@ -45,7 +45,7 @@ public abstract class InstrumentDescriptor {
 
   abstract Labels getConstantLabels();
 
-  public abstract InstrumentType getType();
+  abstract InstrumentType getType();
 
   abstract InstrumentValueType getValueType();
 

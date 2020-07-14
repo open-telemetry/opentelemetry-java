@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 /** A collection of available Batchers. */
-public final class Batchers {
+final class Batchers {
 
-  public static Batcher getNoop() {
+  static Batcher getNoop() {
     return Noop.INSTANCE;
   }
 
@@ -45,7 +45,7 @@ public final class Batchers {
    * "Cumulative" means that all metrics that are generated will be considered for the lifetime of
    * the Instrument being aggregated.
    */
-  public static Batcher getCumulativeAllLabels(
+  static Batcher getCumulativeAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
@@ -63,7 +63,7 @@ public final class Batchers {
    * Create a Batcher that uses the "delta" Temporality and uses all labels for aggregation. "Delta"
    * means that all metrics that are generated are only for the most recent collection interval.
    */
-  public static Batcher getDeltaAllLabels(
+  static Batcher getDeltaAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,

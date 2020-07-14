@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.view.ViewRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

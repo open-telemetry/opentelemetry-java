@@ -22,7 +22,7 @@ import javax.annotation.concurrent.Immutable;
 
 @AutoValue
 @Immutable
-public abstract class MeterSharedState {
+abstract class MeterSharedState {
   static MeterSharedState create(InstrumentationLibraryInfo instrumentationLibraryInfo) {
     return new AutoValue_MeterSharedState(instrumentationLibraryInfo, new InstrumentRegistry());
   }

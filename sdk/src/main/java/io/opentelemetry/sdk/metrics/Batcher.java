@@ -30,7 +30,7 @@ import java.util.List;
  * cycle must be protected by a lock. A collection cycle is defined by multiple calls to {@link
  * #batch(Labels, Aggregator, boolean)} followed by one {@link #completeCollectionCycle()};
  */
-public interface Batcher {
+interface Batcher {
 
   /**
    * Returns the {@link Aggregator} that should be used by the bindings, or observers.

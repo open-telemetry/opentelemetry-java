@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.Batcher;
-import io.opentelemetry.sdk.metrics.Batchers;
-import io.opentelemetry.sdk.metrics.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.MeterSharedState;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 // notes:
 //  specify by pieces of the descriptor.
@@ -39,10 +36,13 @@ import io.opentelemetry.sdk.metrics.MeterSharedState;
  * Central location for Views to be registered. Registration of a view should eventually be done via
  * the {@link io.opentelemetry.sdk.metrics.MeterSdkProvider}.
  */
-public class ViewRegistry {
+class ViewRegistry {
 
-  /** Create a new {@link Batcher} for use in metric recording aggregation. */
-  public Batcher createBatcher(
+  /**
+   * Create a new {@link io.opentelemetry.sdk.metrics.Batcher} for use in metric recording
+   * aggregation.
+   */
+  Batcher createBatcher(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
