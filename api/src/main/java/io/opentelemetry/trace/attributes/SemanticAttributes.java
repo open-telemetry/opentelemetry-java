@@ -154,5 +154,60 @@ public final class SemanticAttributes {
   /** JDBC substring like "mysql://db.example.com:3306" */
   public static final StringAttributeSetter DB_URL = StringAttributeSetter.create("db.url");
 
+  /** A string identifying the messaging system such as kafka, rabbitmq or activemq. */
+  public static final StringAttributeSetter MESSAGING_SYSTEM =
+      StringAttributeSetter.create("messaging.system");
+  /**
+   * The message destination name, e.g. MyQueue or MyTopic. This might be equal to the span name but
+   * is required nevertheless
+   */
+  public static final StringAttributeSetter MESSAGING_DESTINATION =
+      StringAttributeSetter.create("messaging.destination");
+  /** The kind of message destination. Either queue or topic. */
+  public static final StringAttributeSetter MESSAGING_DESTINATION_KIND =
+      StringAttributeSetter.create("messaging.destination_kind");
+  /** A boolean that is true if the message destination is temporary. */
+  public static final BooleanAttributeSetter MESSAGING_TEMP_DESTINATION =
+      BooleanAttributeSetter.create("messaging.temp_destination");
+  /** The name of the transport protocol such as AMQP or MQTT. */
+  public static final StringAttributeSetter MESSAGING_PROTOCOL =
+      StringAttributeSetter.create("messaging.protocol");
+  /** The version of the transport protocol such as 0.9.1. */
+  public static final StringAttributeSetter MESSAGING_PROTOCOL_VERSION =
+      StringAttributeSetter.create("messaging.protocol_version");
+  /**
+   * Connection string such as tibjmsnaming://localhost:7222 or
+   * https://queue.amazonaws.com/80398EXAMPLE/MyQueue
+   */
+  public static final StringAttributeSetter MESSAGING_URL =
+      StringAttributeSetter.create("messaging.url");
+  /**
+   * A value used by the messaging system as an identifier for the message, represented as a string.
+   */
+  public static final StringAttributeSetter MESSAGING_MESSAGE_ID =
+      StringAttributeSetter.create("messaging.message_id");
+  /**
+   * A value identifying the conversation to which the message belongs, represented as a string.
+   * Sometimes called "Correlation ID".
+   */
+  public static final StringAttributeSetter MESSAGING_CONVERSATION_ID =
+      StringAttributeSetter.create("messaging.conversation_id");
+  /**
+   * The (uncompressed) size of the message payload in bytes. Also use this attribute if it is
+   * unknown whether the compressed or uncompressed payload size is reported.
+   */
+  public static final LongAttributeSetter MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES =
+      LongAttributeSetter.create("messaging.message_payload_size_bytes");
+  /** The compressed size of the message payload in bytes. */
+  public static final LongAttributeSetter MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES =
+      LongAttributeSetter.create("messaging.message_payload_compressed_size_bytes");
+  /**
+   * A string identifying which part and kind of message consumption this span describes: either
+   * "receive" or "process". If the operation is "send", this attribute must not be set: the
+   * operation can be inferred from the span kind in that case.
+   */
+  public static final StringAttributeSetter MESSAGING_OPERATION =
+      StringAttributeSetter.create("messaging.operation");
+
   private SemanticAttributes() {}
 }
