@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.EndSpanOptions;
@@ -32,7 +33,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.MockitoRule;
@@ -51,7 +51,7 @@ public final class TracezZPageHandlerTest {
   private final Tracer tracer = tracerSdkProvider.get("TracezZPageHandlerTest");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
-  @Mock Map<String, String> queryMap;
+  private final Map<String, String> queryMap = ImmutableMap.of();
 
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
@@ -279,11 +279,13 @@ public final class TracezZPageHandlerTest {
     Map<String, String> queryMapWithSpanName = new HashMap<String, String>();
     queryMapWithSpanName.put("zspanname", FINISHED_SPAN_ONE);
     queryMapWithSpanName.put("ztype", "1");
+    queryMapWithSpanName.put("zsubtype", "2");
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     tracezZPageHandler.emitHtml(queryMapWithSpanName, output);
 
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + FINISHED_SPAN_ONE + "</b>");
+    assertThat(output.toString()).contains("<b> Number of latency samples:");
   }
 }
