@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace.export;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
+import io.opentelemetry.errorhandler.OpenTelemetryException;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
@@ -287,7 +288,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
                   try {
                     spanExporter.export(spans);
                   } catch (Throwable t) {
-                    logger.log(Level.WARNING, "Exception thrown by the export.", t);
+                    OpenTelemetry.handleError(
+                        new OpenTelemetryException("Exception thrown by the export.", t));
                   }
                 }
               });

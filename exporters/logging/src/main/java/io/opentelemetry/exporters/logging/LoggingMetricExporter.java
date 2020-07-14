@@ -16,6 +16,8 @@
 
 package io.opentelemetry.exporters.logging;
 
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
@@ -47,6 +49,8 @@ public class LoggingMetricExporter implements MetricExporter {
       try {
         handler.flush();
       } catch (Throwable t) {
+        OpenTelemetry.handleError(
+            new OpenTelemetryException("Error flushing in logging metric exporter", t));
         resultCode = ResultCode.FAILURE;
       }
     }

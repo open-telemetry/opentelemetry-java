@@ -18,6 +18,8 @@ package io.opentelemetry.exporters.jaeger;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.errorhandler.OpenTelemetryException;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
@@ -128,6 +130,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       stub.postSpans(request);
       return ResultCode.SUCCESS;
     } catch (Throwable e) {
+      OpenTelemetry.handleError(new OpenTelemetryException("Error exporting spans.", e));
       return ResultCode.FAILURE;
     }
   }

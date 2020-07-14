@@ -17,6 +17,8 @@
 package io.opentelemetry.exporters.otlp;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.errorhandler.OpenTelemetryException;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -94,7 +96,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
       // noinspection ResultOfMethodCallIgnored
       stub.export(exportMetricsServiceRequest);
       return ResultCode.SUCCESS;
-    } catch (Throwable e) {
+    } catch (Throwable t) {
+      OpenTelemetry.handleError(new OpenTelemetryException("Error exporting metrics", t));
       return ResultCode.FAILURE;
     }
   }

@@ -23,6 +23,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.errorhandler.OpenTelemetryException;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -111,6 +113,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
       stub.export(exportTraceServiceRequest);
       return ResultCode.SUCCESS;
     } catch (Throwable e) {
+      OpenTelemetry.handleError(new OpenTelemetryException("Error exporting spans.", e));
       return ResultCode.FAILURE;
     }
   }

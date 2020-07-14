@@ -16,6 +16,8 @@
 
 package io.opentelemetry.exporters.logging;
 
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -47,6 +49,7 @@ public class LoggingSpanExporter implements SpanExporter {
       try {
         handler.flush();
       } catch (Throwable t) {
+        OpenTelemetry.handleError(new OpenTelemetryException("Error flushing exported spans.", t));
         resultCode = ResultCode.FAILURE;
       }
     }
