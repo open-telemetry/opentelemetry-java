@@ -40,7 +40,11 @@ public final class Batchers {
     return Noop.INSTANCE;
   }
 
-  /** TODO: javadoc me. */
+  /**
+   * Create a Batcher that uses the "cumulative" Temporality and uses all labels for aggregation.
+   * "Cumulative" means that all metrics that are generated will be considered for the lifetime of
+   * the Instrument being aggregated.
+   */
   public static Batcher getCumulativeAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
@@ -55,7 +59,10 @@ public final class Batchers {
         /* delta= */ false);
   }
 
-  /** TODO: javadoc me. */
+  /**
+   * Create a Batcher that uses the "delta" Temporality and uses all labels for aggregation. "Delta"
+   * means that all metrics that are generated are only for the most recent collection interval.
+   */
   public static Batcher getDeltaAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
