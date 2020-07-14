@@ -139,7 +139,8 @@ public class ViewRegistryTest {
 
     InstrumentType instrumentType = InstrumentType.VALUE_RECORDER;
 
-    InstrumentSelector selector = InstrumentSelector.create(instrumentType);
+    InstrumentSelector selector =
+        InstrumentSelector.newBuilder().instrumentType(instrumentType).build();
     ViewSpecification view = ViewSpecification.create(Aggregations.sum(), Temporality.CUMULATIVE);
     viewRegistry.registerView(selector, view);
 
@@ -151,25 +152,97 @@ public class ViewRegistryTest {
         DoubleSumAggregator.class);
   }
 
+  @Test
+  public void selectByInstrumentName() {
+    ViewRegistry viewRegistry = new ViewRegistry();
+
+    InstrumentSelector selector =
+        InstrumentSelector.newBuilder().instrumentNameRegex("http.*duration").build();
+    ViewSpecification view = ViewSpecification.create(Aggregations.sum(), Temporality.CUMULATIVE);
+
+    viewRegistry.registerView(selector, view);
+
+    InstrumentType instrumentType = InstrumentType.VALUE_RECORDER;
+    // this one matches on name
+    verifyCorrect(
+        viewRegistry,
+        createDescriptor(instrumentType, InstrumentValueType.DOUBLE, "http.server.duration"),
+        /* expectedDeltas= */ false,
+        DoubleSumAggregator.class);
+    // this one does not match on name
+    verifyCorrect(
+        viewRegistry,
+        createDescriptor(instrumentType, InstrumentValueType.DOUBLE, "foo.bar.duration"),
+        /* expectedDeltas=*/ true,
+        DoubleMinMaxSumCount.class);
+  }
+
+  @Test
+  public void selectByInstrumentNameAndType() {
+    ViewRegistry viewRegistry = new ViewRegistry();
+
+    InstrumentSelector selector =
+        InstrumentSelector.newBuilder()
+            .instrumentType(InstrumentType.VALUE_RECORDER)
+            .instrumentNameRegex("http.*duration")
+            .build();
+    ViewSpecification view = ViewSpecification.create(Aggregations.sum(), Temporality.CUMULATIVE);
+
+    viewRegistry.registerView(selector, view);
+
+    // this one matches on name
+    verifyCorrect(
+        viewRegistry,
+        createDescriptor(
+            InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE, "http.server.duration"),
+        /* expectedDeltas= */ false,
+        DoubleSumAggregator.class);
+    // this one does not match on name, but does on type, so should get the default
+    verifyCorrect(
+        viewRegistry,
+        createDescriptor(
+            InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE, "foo.bar.duration"),
+        /* expectedDeltas=*/ true,
+        DoubleMinMaxSumCount.class);
+    // this one does not match on type, but does on name, so should get the default
+    verifyCorrect(
+        viewRegistry,
+        createDescriptor(
+            InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE, "http.bar.duration"),
+        /* expectedDeltas=*/ false,
+        DoubleLastValueAggregator.class);
+  }
+
   private void verifyCorrect(
       ViewRegistry viewRegistry,
       InstrumentType instrumentType,
       InstrumentValueType valueType,
       boolean expectedDeltas,
       Class<?> expectedAggregator) {
+    verifyCorrect(
+        viewRegistry,
+        createDescriptor(instrumentType, valueType, "foo"),
+        expectedDeltas,
+        expectedAggregator);
+  }
+
+  private void verifyCorrect(
+      ViewRegistry viewRegistry,
+      InstrumentDescriptor descriptor,
+      boolean expectedDeltas,
+      Class<?> expectedAggregator) {
     Batcher batcher =
-        viewRegistry.createBatcher(
-            meterProviderSharedState,
-            meterSharedState,
-            createDescriptor(instrumentType, valueType));
+        viewRegistry.createBatcher(meterProviderSharedState, meterSharedState, descriptor);
 
     assertThat(batcher.generatesDeltas()).isEqualTo(expectedDeltas);
     assertThat(batcher.getAggregator()).isInstanceOf(expectedAggregator);
   }
 
   private static InstrumentDescriptor createDescriptor(
-      InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      String instrumentName) {
     return InstrumentDescriptor.create(
-        "foo", "foo desc", "ms", Labels.empty(), instrumentType, instrumentValueType);
+        instrumentName, "foo desc", "ms", Labels.empty(), instrumentType, instrumentValueType);
   }
 }

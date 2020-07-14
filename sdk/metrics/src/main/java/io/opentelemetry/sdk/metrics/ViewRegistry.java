@@ -11,20 +11,22 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.ViewSpecification;
 import io.opentelemetry.sdk.metrics.view.ViewSpecification.Temporality;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 // notes:
 //  specify by pieces of the descriptor.
-//    instrument type
-//    instrument value type
-//    instrument name  (wildcards allowed?)
+//    instrument type √
+//    instrument name  (regex) √
+//    instrument value type (?)
 //    constant labels (?)
 //    units (?)
 
 // what you can choose:
-//   aggregation
+//   aggregation √
+//   delta vs. cumulative √
 //   all labels vs. a list of labels
-//   delta vs. cumulative
 
 /**
  * Central location for Views to be registered. Registration of a view should eventually be done via
@@ -67,15 +69,35 @@ class ViewRegistry {
 
   // todo: consider moving this method to its own class, for more targetted testing.
   private ViewSpecification findBestMatch(InstrumentDescriptor descriptor) {
-    // select based on InstrumentType:
+
     for (Map.Entry<InstrumentSelector, ViewSpecification> entry : configuration.entrySet()) {
       InstrumentSelector registeredSelector = entry.getKey();
-      if (registeredSelector.instrumentType().equals(descriptor.getType())) {
+
+      if (matchesOnName(descriptor, registeredSelector)
+          && matchesOnType(descriptor, registeredSelector)) {
         return entry.getValue();
       }
     }
+
     // If none found, use the defaults:
     return getDefaultSpecification(descriptor);
+  }
+
+  private static boolean matchesOnType(
+      InstrumentDescriptor descriptor, InstrumentSelector registeredSelector) {
+    if (registeredSelector.instrumentType() == null) {
+      return true;
+    }
+    return Objects.equals(registeredSelector.instrumentType(), descriptor.getType());
+  }
+
+  private static boolean matchesOnName(
+      InstrumentDescriptor descriptor, InstrumentSelector registeredSelector) {
+    Pattern pattern = registeredSelector.instrumentNamePattern();
+    if (pattern == null) {
+      return true;
+    }
+    return pattern.matcher(descriptor.getName()).matches();
   }
 
   private static ViewSpecification getDefaultSpecification(InstrumentDescriptor descriptor) {
