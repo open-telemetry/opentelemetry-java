@@ -138,8 +138,8 @@ public final class MeterSdkProvider implements MeterProvider {
 
   /**
    * Register a view with the given {@link InstrumentSelector}.
-   * <p>
-   * Example on how to register a view:
+   *
+   * <p>Example on how to register a view:
    *
    * <pre>{@code
    * // get a handle to the MeterSdkProvider
@@ -149,11 +149,12 @@ public final class MeterSdkProvider implements MeterProvider {
    * InstrumentSelector instrumentSelector = InstrumentSelector.create(InstrumentType.COUNTER);
    *
    * // create a specification of how you want the metrics aggregated:
-   * ViewSpecification viewSpecification = ViewSpecification.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
+   * ViewSpecification viewSpecification =
+   *   ViewSpecification.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
    *
    * //register the view with the MeterSdkProvider
    * meterProvider.registerView(instrumentSelector, viewSpecification);
-   * </pre>
+   * }</pre>
    *
    * @see ViewSpecification
    */
