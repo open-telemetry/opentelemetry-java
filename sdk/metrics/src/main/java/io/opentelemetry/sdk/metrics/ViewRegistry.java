@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.ViewSpecification;
 import io.opentelemetry.sdk.metrics.view.ViewSpecification.Temporality;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,11 +32,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 class ViewRegistry {
 
-  public static final ViewSpecification CUMULATIVE_SUM =
+  private static final ViewSpecification CUMULATIVE_SUM =
       ViewSpecification.create(Aggregations.sum(), Temporality.CUMULATIVE);
-  public static final ViewSpecification DELTA_SUMMARY =
+  private static final ViewSpecification DELTA_SUMMARY =
       ViewSpecification.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
-  public static final ViewSpecification CUMULATIVE_LAST_VALUE =
+  private static final ViewSpecification CUMULATIVE_LAST_VALUE =
       ViewSpecification.create(Aggregations.lastValue(), Temporality.CUMULATIVE);
 
   private final Map<InstrumentSelector, ViewSpecification> configuration =
@@ -91,8 +93,7 @@ class ViewRegistry {
     throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());
   }
 
-  /** todo: javadoc me. */
-  public void registerView(InstrumentSelector selector, ViewSpecification specification) {
+  void registerView(InstrumentSelector selector, ViewSpecification specification) {
     configuration.put(selector, specification);
   }
 }
