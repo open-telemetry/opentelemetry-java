@@ -92,6 +92,11 @@ final class Batchers {
     public List<MetricData> completeCollectionCycle() {
       return Collections.emptyList();
     }
+
+    @Override
+    public boolean generatesDeltas() {
+      return false;
+    }
   }
 
   private static final class AllLabels implements Batcher {
@@ -157,6 +162,11 @@ final class Batchers {
       }
       return Collections.singletonList(
           MetricData.create(descriptor, resource, instrumentationLibraryInfo, points));
+    }
+
+    @Override
+    public boolean generatesDeltas() {
+      return delta;
     }
   }
 

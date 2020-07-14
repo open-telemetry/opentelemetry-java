@@ -50,4 +50,9 @@ final class ActiveBatcher implements Batcher {
   public List<MetricData> completeCollectionCycle() {
     return batcher.completeCollectionCycle();
   }
+
+  @Override
+  public boolean generatesDeltas() {
+    return batcher.generatesDeltas();
+  }
 }

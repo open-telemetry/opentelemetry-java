@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.view;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import javax.annotation.concurrent.Immutable;
 
 @AutoValue
 @Immutable
-abstract class MeterProviderSharedState {
-  static MeterProviderSharedState create(Clock clock, Resource resource) {
-    return new AutoValue_MeterProviderSharedState(clock, resource);
+public abstract class InstrumentSelector {
+  public static InstrumentSelector create(InstrumentType instrumentType) {
+    return new AutoValue_InstrumentSelector(instrumentType);
   }
 
-  public abstract Clock getClock();
-
-  abstract Resource getResource();
+  public abstract InstrumentType instrumentType();
 }

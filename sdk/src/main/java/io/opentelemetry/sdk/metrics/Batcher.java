@@ -62,4 +62,7 @@ interface Batcher {
    * @return the list of metrics batched in this Batcher.
    */
   List<MetricData> completeCollectionCycle();
+
+  /** Does this batcher generate "delta" style metrics. The alternative is "cumulative". */
+  boolean generatesDeltas();
 }
