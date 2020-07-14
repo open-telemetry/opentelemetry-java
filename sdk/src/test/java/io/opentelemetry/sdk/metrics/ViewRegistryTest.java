@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.Batcher;
-import io.opentelemetry.sdk.metrics.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.MeterSharedState;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
@@ -33,6 +29,9 @@ import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.ViewSpecification;
 import io.opentelemetry.sdk.metrics.view.ViewSpecification.Temporality;
 import org.junit.Before;
 import org.junit.Test;

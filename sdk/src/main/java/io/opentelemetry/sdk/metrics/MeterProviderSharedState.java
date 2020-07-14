@@ -28,7 +28,7 @@ abstract class MeterProviderSharedState {
     return new AutoValue_MeterProviderSharedState(clock, resource);
   }
 
-  public abstract Clock getClock();
+  abstract Clock getClock();
 
   abstract Resource getResource();
 }
