@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.concurrent.ThreadSafe;
@@ -106,7 +105,7 @@ final class TracezDataAggregator {
   Map<String, Map<LatencyBoundary, Integer>> getSpanLatencyCounts() {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     Map<String, Map<LatencyBoundary, Integer>> numSpansPerName = new HashMap<>();
-    for (Entry<String, TracezSpanBuckets> cacheEntry : completedSpanCache.entrySet()) {
+    for (Map.Entry<String, TracezSpanBuckets> cacheEntry : completedSpanCache.entrySet()) {
       numSpansPerName.put(
           cacheEntry.getKey(), cacheEntry.getValue().getLatencyBoundaryToCountMap());
     }
@@ -146,7 +145,7 @@ final class TracezDataAggregator {
   Map<String, Integer> getErrorSpanCounts() {
     Map<String, TracezSpanBuckets> completedSpanCache = spanProcessor.getCompletedSpanCache();
     Map<String, Integer> numErrorsPerName = new HashMap<>();
-    for (Entry<String, TracezSpanBuckets> cacheEntry : completedSpanCache.entrySet()) {
+    for (Map.Entry<String, TracezSpanBuckets> cacheEntry : completedSpanCache.entrySet()) {
       numErrorsPerName.put(cacheEntry.getKey(), cacheEntry.getValue().getErrorSpans().size());
     }
     return numErrorsPerName;

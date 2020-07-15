@@ -79,7 +79,7 @@ public final class ZPageServer {
   @Nullable
   private static HttpServer server;
 
-  /** Function that adds the {@link TracezSpanProcessor} to the {@link tracerSdkProvider}. */
+  /** Function that adds the {@link TracezSpanProcessor} to the {@link TracerSdkProvider}. */
   private static void addTracezSpanProcessor() {
     if (isTracezSpanProcesserAdded.compareAndSet(false, true)) {
       TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
