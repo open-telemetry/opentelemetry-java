@@ -23,6 +23,10 @@ import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory;
 import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.logs.DefaultLogSinkProvider;
+import io.opentelemetry.logs.LogSink;
+import io.opentelemetry.logs.spi.LogSinkProvider;
+import io.opentelemetry.logs.spi.LogSinkProviderFactory;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
@@ -55,6 +59,7 @@ public final class OpenTelemetry {
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
   private final CorrelationContextManager contextManager;
+  private final LogSinkProvider logSinkProvider;
 
   private volatile ContextPropagators propagators =
       DefaultContextPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build();
@@ -145,6 +150,34 @@ public final class OpenTelemetry {
   }
 
   /**
+   * Returns a singleton {@link LogSinkProvider}.
+   *
+   * @return registered LogSinkProvider or default via {@link DefaultLogSinkProvider#getInstance()}.
+   * @throws IllegalStateException if a specified MeterProvider (via system properties) could not be
+   *     found.
+   * @since 0.1.0
+   */
+  private static LogSinkProvider getLogSinkProvider() {
+    return getInstance().logSinkProvider;
+  }
+
+  /**
+   * Gets or creates a named and versioned log sink instance.
+   *
+   * <p>This is a shortcut method for <code>
+   * getLogSinkProvider().get(instrumentationName, instrumentationVersion)</code>.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @param instrumentationVersion The version of the instrumentation library.
+   * @return a tracer instance.
+   * @since 0.7.0
+   */
+  public static LogSink getLogSink(String instrumentationName, String instrumentationVersion) {
+    return getLogSinkProvider().get(instrumentationName, instrumentationVersion);
+  }
+
+  /**
    * Returns a singleton {@link CorrelationContextManager}.
    *
    * @return registered manager or default via {@link
@@ -210,6 +243,13 @@ public final class OpenTelemetry {
         meterProviderFactory != null
             ? meterProviderFactory.create()
             : DefaultMeterProvider.getInstance();
+
+    LogSinkProviderFactory logProviderFactory = loadSpi(LogSinkProviderFactory.class);
+    this.logSinkProvider =
+        logProviderFactory != null
+            ? logProviderFactory.create()
+            : DefaultLogSinkProvider.getInstance();
+
     CorrelationContextManagerFactory contextManagerProvider =
         loadSpi(CorrelationContextManagerFactory.class);
     contextManager =
