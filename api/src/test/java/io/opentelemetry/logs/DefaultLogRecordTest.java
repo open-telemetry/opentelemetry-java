@@ -18,7 +18,11 @@ package io.opentelemetry.logs;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.AnyValue;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.logs.LogRecord.Severity;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -35,7 +39,10 @@ public class DefaultLogRecordTest {
     Severity testSeverity = Severity.ERROR2;
     String testSeverityText = "severityText";
     String testName = "an event name";
-    Object testBody = "A test body";
+    AnyValue testBody = AnyValue.stringAnyValue("A test body");
+    Map<String, AttributeValue> testAttributes = new HashMap<>();
+    testAttributes.put("one", AttributeValue.stringAttributeValue("test1"));
+    testAttributes.put("two", AttributeValue.longAttributeValue(42L));
 
     LogRecord.Builder builder =
         new DefaultLogRecord.Builder()
@@ -46,6 +53,7 @@ public class DefaultLogRecordTest {
             .withSeverity(testSeverity)
             .withSeverityText(testSeverityText)
             .withName(testName)
+            .withAttributes(testAttributes)
             .withBody(testBody);
     LogRecord record = builder.build();
 
@@ -56,6 +64,7 @@ public class DefaultLogRecordTest {
     assertThat(record.getSeverity()).isEqualTo(testSeverity);
     assertThat(record.getSeverityText()).isEqualTo(testSeverityText);
     assertThat(record.getName()).isEqualTo(testName);
+    assertThat(record.getAttributes()).isEqualTo(testAttributes);
     assertThat(record.getBody()).isEqualTo(testBody);
 
     LogRecord secondRecord = builder.withUnixTimeNano(456L).build();

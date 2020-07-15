@@ -16,6 +16,7 @@
 
 package io.opentelemetry.logs;
 
+import io.opentelemetry.common.AnyValue;
 import io.opentelemetry.common.AttributeValue;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public class DefaultLogRecord implements LogRecord {
   private Severity severity;
   private String severityText;
   private String name;
-  private Object body;
+  private AnyValue body;
   private Map<String, AttributeValue> attributes;
 
   private DefaultLogRecord() {}
@@ -85,7 +86,7 @@ public class DefaultLogRecord implements LogRecord {
   }
 
   @Override
-  public Object getBody() {
+  public AnyValue getBody() {
     return body;
   }
 
@@ -140,7 +141,7 @@ public class DefaultLogRecord implements LogRecord {
     }
 
     @Override
-    public LogRecord.Builder withBody(Object body) {
+    public LogRecord.Builder withBody(AnyValue body) {
       template.body = body;
       return this;
     }

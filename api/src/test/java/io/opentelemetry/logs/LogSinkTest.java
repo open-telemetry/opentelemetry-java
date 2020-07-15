@@ -17,6 +17,7 @@
 package io.opentelemetry.logs;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.AnyValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -30,7 +31,7 @@ public class LogSinkTest {
     LogRecord record =
         new DefaultLogRecord.Builder()
             .withUnixTimeNano(System.nanoTime())
-            .withBody("Test record")
+            .withBody(AnyValue.stringAnyValue("test value"))
             .build();
     sink.offer(record);
   }

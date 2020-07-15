@@ -28,7 +28,7 @@ package io.opentelemetry.logs.spi;
  */
 public interface LogSinkProviderFactory {
   /**
-   * Creates a new {@link LogSinkProvider} interface
+   * Creates a new {@link LogSinkProvider} interface.
    *
    * @return a log sink provider instance
    * @since 0.7.0

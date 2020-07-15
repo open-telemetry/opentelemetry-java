@@ -41,6 +41,11 @@ public class DefaultLogSinkProvider implements LogSinkProvider {
     return sink;
   }
 
+  /**
+   * Returns a shared no-op instance of {@link LogSinkProvider}.
+   *
+   * @return no-op instance
+   */
   public static LogSinkProvider getInstance() {
     if (instance == null) {
       instance = new DefaultLogSinkProvider();

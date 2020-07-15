@@ -16,6 +16,7 @@
 
 package io.opentelemetry.logs;
 
+import io.opentelemetry.common.AnyValue;
 import io.opentelemetry.common.AttributeValue;
 import java.util.Map;
 
@@ -34,7 +35,7 @@ public interface LogRecord {
 
   String getName();
 
-  Object getBody();
+  AnyValue getBody();
 
   Map<String, AttributeValue> getAttributes();
 
@@ -92,7 +93,7 @@ public interface LogRecord {
 
     Builder withName(String name);
 
-    Builder withBody(Object body);
+    Builder withBody(AnyValue body);
 
     Builder withAttributes(Map<String, AttributeValue> attributes);
 
