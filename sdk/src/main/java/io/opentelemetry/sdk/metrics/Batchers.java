@@ -40,30 +40,39 @@ final class Batchers {
     return Noop.INSTANCE;
   }
 
+  /**
+   * Create a Batcher that uses the "cumulative" Temporality and uses all labels for aggregation.
+   * "Cumulative" means that all metrics that are generated will be considered for the lifetime of
+   * the Instrument being aggregated.
+   */
   static Batcher getCumulativeAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation defaultAggregation) {
+      Aggregation aggregation) {
     return new AllLabels(
-        getDefaultMetricDescriptor(descriptor, defaultAggregation),
+        getDefaultMetricDescriptor(descriptor, aggregation),
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
+        aggregation.getAggregatorFactory(descriptor.getValueType()),
         meterProviderSharedState.getClock(),
         /* delta= */ false);
   }
 
+  /**
+   * Create a Batcher that uses the "delta" Temporality and uses all labels for aggregation. "Delta"
+   * means that all metrics that are generated are only for the most recent collection interval.
+   */
   static Batcher getDeltaAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation defaultAggregation) {
+      Aggregation aggregation) {
     return new AllLabels(
-        getDefaultMetricDescriptor(descriptor, defaultAggregation),
+        getDefaultMetricDescriptor(descriptor, aggregation),
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
+        aggregation.getAggregatorFactory(descriptor.getValueType()),
         meterProviderSharedState.getClock(),
         /* delta= */ true);
   }

@@ -153,7 +153,7 @@ public class AbstractInstrumentBuilderTest {
       extends AbstractInstrument.Builder<TestInstrumentBuilder> {
     TestInstrumentBuilder(
         String name, MeterProviderSharedState sharedState, MeterSharedState meterSharedState) {
-      super(name, sharedState, meterSharedState);
+      super(name, sharedState, meterSharedState, null);
     }
 
     @Override

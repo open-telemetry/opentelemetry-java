@@ -97,6 +97,7 @@ abstract class AbstractInstrument implements Instrument {
     private final String name;
     private final MeterProviderSharedState meterProviderSharedState;
     private final MeterSharedState meterSharedState;
+    private final MeterSdk meterSdk;
     private String description = "";
     private String unit = "1";
     private Labels constantLabels = Labels.empty();
@@ -104,7 +105,9 @@ abstract class AbstractInstrument implements Instrument {
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
+        MeterSharedState meterSharedState,
+        MeterSdk meterSdk) {
+      this.meterSdk = meterSdk;
       Objects.requireNonNull(name, "name");
       Utils.checkArgument(
           StringUtils.isValidMetricName(name) && name.length() <= NAME_MAX_LENGTH,
@@ -149,6 +152,10 @@ abstract class AbstractInstrument implements Instrument {
 
     final <I extends AbstractInstrument> I register(I instrument) {
       return getMeterSharedState().getInstrumentRegistry().register(instrument);
+    }
+
+    protected Batcher getBatcher(InstrumentDescriptor descriptor) {
+      return meterSdk.createBatcher(descriptor, meterProviderSharedState, meterSharedState);
     }
   }
 }

@@ -21,7 +21,6 @@ import io.opentelemetry.metrics.DoubleValueRecorder;
 import io.opentelemetry.sdk.metrics.DoubleValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundInstrument>
     implements DoubleValueRecorder {
@@ -29,17 +28,9 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
   private DoubleValueRecorderSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(
-            Batchers.getDeltaAllLabels(
-                descriptor,
-                meterProviderSharedState,
-                meterSharedState,
-                Aggregations.minMaxSumCount())));
+      MeterSharedState meterSharedState,
+      Batcher batcher) {
+    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
   @Override
@@ -73,8 +64,9 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+        MeterSharedState meterSharedState,
+        MeterSdk meterSdk) {
+      super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
     @Override
@@ -84,11 +76,14 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
 
     @Override
     public DoubleValueRecorderSdk build() {
+      InstrumentDescriptor instrumentDescriptor =
+          getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE);
       return register(
           new DoubleValueRecorderSdk(
-              getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE),
+              instrumentDescriptor,
               getMeterProviderSharedState(),
-              getMeterSharedState()));
+              getMeterSharedState(),
+              getBatcher(instrumentDescriptor)));
     }
   }
 }
