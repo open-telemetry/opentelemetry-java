@@ -486,10 +486,11 @@ final class TracezZPageHandler extends ZPageHandler {
               // Display latency based span
               LatencyBoundary latencyBoundary = LatencyBoundary.values()[subtype];
               spans =
-                  dataAggregator.getOkSpans(
-                      spanName,
-                      latencyBoundary.getLatencyLowerBound(),
-                      latencyBoundary.getLatencyUpperBound());
+                  new ArrayList<>(
+                      dataAggregator.getOkSpans(
+                          spanName,
+                          latencyBoundary.getLatencyLowerBound(),
+                          latencyBoundary.getLatencyUpperBound()));
               Collections.sort(spans, new SpanDataComparator(/* incremental= */ false));
             } else {
               if (subtype < 0 || subtype >= CanonicalCode.values().length) {
@@ -497,7 +498,7 @@ final class TracezZPageHandler extends ZPageHandler {
                 return;
               }
               // Display error based span
-              spans = dataAggregator.getErrorSpans(spanName);
+              spans = new ArrayList<>(dataAggregator.getErrorSpans(spanName));
               Collections.sort(spans, new SpanDataComparator(/* incremental= */ false));
             }
           }
