@@ -32,13 +32,13 @@ import java.util.Properties;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.MockitoRule;
 
 /** Unit tests for {@link TracezSpanProcessor}. */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(JUnit4.class)
 public final class TracezSpanProcessorTest {
   private static final String SPAN_NAME = "span";
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
