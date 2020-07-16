@@ -25,7 +25,6 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -79,7 +78,7 @@ public final class SpanBucketTest {
     }
   }
 
-  @Test
+  @Test(timeout = 1000)
   public void verifyThreadSafety() throws InterruptedException {
     int numberOfThreads = 4;
     int numberOfSpans = 4;
@@ -98,7 +97,7 @@ public final class SpanBucketTest {
                   }
                   endSignal.countDown();
                 } catch (InterruptedException e) {
-                  Assert.fail(e.getMessage());
+                  return;
                 }
               })
           .start();
