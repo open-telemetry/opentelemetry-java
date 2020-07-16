@@ -28,7 +28,7 @@ public abstract class ViewSpecification {
     return new AutoValue_ViewSpecification(aggregation, temporality);
   }
 
-  /** Which aggregation should be used for this View. */
+  /** Which {@link Aggregation} should be used for this View. */
   @Nullable
   public abstract Aggregation aggregation();
 
