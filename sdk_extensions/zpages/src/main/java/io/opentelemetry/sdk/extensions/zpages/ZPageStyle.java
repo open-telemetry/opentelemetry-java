@@ -22,11 +22,11 @@ final class ZPageStyle {
 
   /** Style here will be applied to the generated HTML pages for all zPages. */
   static String style =
-      "body{font-family: \"Roboto\", sans-serif; font-size: 14px;"
+      "body{font-family: \"Roboto\", sans-serif; font-size: 16px;"
           + "background-color: #fff;}"
           + "h1{padding: 0 20px; color: #363636; text-align: center; margin-bottom: 20px;}"
           + "h2{padding: 0 20px; color: #363636; text-align: center; margin-bottom: 20px;}"
-          + "p{padding: 0 20px; color: #363636; font-size: 16px;}"
+          + "p{padding: 0 20px; color: #363636;}"
           + "tr.bg-color{background-color: #4b5fab;}"
           + "table{margin: 0 auto;}"
           + "th{padding: 0 1em; line-height: 2.0}"
