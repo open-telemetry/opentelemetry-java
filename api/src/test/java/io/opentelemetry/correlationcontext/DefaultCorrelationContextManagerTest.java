@@ -135,6 +135,12 @@ public final class DefaultCorrelationContextManagerTest {
   }
 
   @Test
+  public void noopContextBuilder_SetParent_fromContext() {
+    CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
+    noopBuilder.setParent(Context.current()); // No error.
+  }
+
+  @Test
   public void noopContextBuilder_Put_DisallowsNullKey() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
