@@ -32,7 +32,7 @@ public abstract class ViewSpecification {
   @Nullable
   public abstract Aggregation aggregation();
 
-  /** What temporality should be used for this View (delta vs. cumulative). */
+  /** What {@link Temporality} should be used for this View (delta vs. cumulative). */
   @Nullable
   public abstract Temporality temporality();
 
