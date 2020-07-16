@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.ViewSpecification;
 import io.opentelemetry.sdk.metrics.view.ViewSpecification.Temporality;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
