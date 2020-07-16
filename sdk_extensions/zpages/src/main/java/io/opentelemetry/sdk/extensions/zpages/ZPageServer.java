@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.extensions.zpages;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -71,6 +72,9 @@ public final class ZPageServer {
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
       new TracezZPageHandler(tracezDataAggregator);
+  // Handler for index page, **please include all available zPages in the constructor**
+  private static final ZPageHandler indexZPageHandler =
+      new IndexZPageHandler(ImmutableList.of(tracezZPageHandler));
 
   private static final Object mutex = new Object();
   private static final AtomicBoolean isTracezSpanProcesserAdded = new AtomicBoolean(false);
@@ -88,7 +92,17 @@ public final class ZPageServer {
   }
 
   /**
-   * Registers a {@code ZPageHandler} for tracing debug to the server. The page displays information
+   * Registers a {@link ZPageHandler} for the index page of zPages. The page displays information
+   * about all available zPages with links to those zPages.
+   *
+   * @param server the {@link HttpServer} for the page to register to.
+   */
+  static void registerIndexZPageHandler(HttpServer server) {
+    server.createContext(indexZPageHandler.getUrlPath(), new ZPageHttpHandler(indexZPageHandler));
+  }
+
+  /**
+   * Registers a {@link ZPageHandler} for tracing debug to the server. The page displays information
    * about all running spans and all sampled spans based on latency and error.
    *
    * <p>It displays a summary table which contains one row for each span name and data about number
@@ -99,6 +113,8 @@ public final class ZPageServer {
    *
    * <p>This method will add the TracezSpanProcessor to the tracerProvider, it should only be called
    * once.
+   *
+   * @param server the {@link HttpServer} for the page to register to.
    */
   static void registerTracezZPageHandler(HttpServer server) {
     addTracezSpanProcessor();
@@ -108,10 +124,11 @@ public final class ZPageServer {
   /**
    * Registers all zPages to the given {@link HttpServer} {@code server}.
    *
-   * @param server the server that exports the zPages.
+   * @param server the {@link HttpServer} for the page to register to.
    */
   public static void registerAllPagesToHttpServer(HttpServer server) {
     // For future zPages, register them to the server in here
+    registerIndexZPageHandler(server);
     registerTracezZPageHandler(server);
   }
 
