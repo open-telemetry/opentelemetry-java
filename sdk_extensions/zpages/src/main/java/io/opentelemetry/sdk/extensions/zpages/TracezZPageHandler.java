@@ -451,7 +451,6 @@ final class TracezZPageHandler extends ZPageHandler {
       out.print("OpenTelemetry implementation not available.");
       return;
     }
-    // Link to OpenTelemetry Logo
     out.print(
         "<img style=\"height: 90px;\" src=\"data:image/png;base64,"
             + ZPageLogo.getLogoBase64()
