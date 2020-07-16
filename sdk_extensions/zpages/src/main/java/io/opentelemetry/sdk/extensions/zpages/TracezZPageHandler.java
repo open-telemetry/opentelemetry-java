@@ -81,6 +81,10 @@ final class TracezZPageHandler extends ZPageHandler {
   }
 
   private static final String TRACEZ_URL = "/tracez";
+  private static final String TRACEZ_NAME = "TraceZ";
+  private static final String TRACEZ_DESCRIPTION =
+      "/tracez displays information about all the running spans"
+          + " and all the sampled spans based on latency and errors";
   // Background color used for zebra striping rows of summary table
   private static final String ZEBRA_STRIPE_COLOR = "#e6e6e6";
   // Color for sampled traceIds
@@ -111,6 +115,16 @@ final class TracezZPageHandler extends ZPageHandler {
   @Override
   public String getUrlPath() {
     return TRACEZ_URL;
+  }
+
+  @Override
+  public String getPageName() {
+    return TRACEZ_NAME;
+  }
+
+  @Override
+  public String getPageDescription() {
+    return TRACEZ_DESCRIPTION;
   }
 
   /**
@@ -450,7 +464,6 @@ final class TracezZPageHandler extends ZPageHandler {
       out.print("OpenTelemetry implementation not available.");
       return;
     }
-    // Link to OpenTelemetry Logo
     out.print(
         "<img style=\"height: 90px;\" src=\"data:image/png;base64,"
             + ZPageLogo.getLogoBase64()
