@@ -95,7 +95,7 @@ public class AbstractBoundInstrumentTest {
   @Test
   public void recordDoubleValue() {
     TestBoundInstrument testBoundInstrument = new TestBoundInstrument(aggregator);
-    Mockito.verifyZeroInteractions(aggregator);
+    Mockito.verifyNoInteractions(aggregator);
     Mockito.doNothing().when(aggregator).recordDouble(Mockito.anyDouble());
     testBoundInstrument.recordDouble(1.2);
     Mockito.verify(aggregator, Mockito.times(1)).recordDouble(1.2);
@@ -104,7 +104,7 @@ public class AbstractBoundInstrumentTest {
   @Test
   public void recordLongValue() {
     TestBoundInstrument testBoundInstrument = new TestBoundInstrument(aggregator);
-    Mockito.verifyZeroInteractions(aggregator);
+    Mockito.verifyNoInteractions(aggregator);
     Mockito.doNothing().when(aggregator).recordLong(Mockito.anyLong());
     testBoundInstrument.recordLong(13);
     Mockito.verify(aggregator, Mockito.times(1)).recordLong(13);

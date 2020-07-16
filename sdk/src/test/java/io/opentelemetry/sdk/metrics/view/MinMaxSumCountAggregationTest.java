@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import org.junit.Test;
 
 public class MinMaxSumCountAggregationTest {
@@ -32,20 +32,20 @@ public class MinMaxSumCountAggregationTest {
     Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
     assertThat(
             minMaxSumCount.getDescriptorType(
-                InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE))
-        .isEqualTo(Type.SUMMARY);
+                InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE))
+        .isEqualTo(Descriptor.Type.SUMMARY);
     assertThat(
             minMaxSumCount.getDescriptorType(
-                InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG))
-        .isEqualTo(Type.SUMMARY);
+                InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG))
+        .isEqualTo(Descriptor.Type.SUMMARY);
     assertThat(
             minMaxSumCount.getDescriptorType(
-                InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.DOUBLE))
-        .isEqualTo(Type.SUMMARY);
+                InstrumentType.VALUE_OBSERVER, InstrumentValueType.DOUBLE))
+        .isEqualTo(Descriptor.Type.SUMMARY);
     assertThat(
             minMaxSumCount.getDescriptorType(
-                InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.LONG))
-        .isEqualTo(Type.SUMMARY);
+                InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG))
+        .isEqualTo(Descriptor.Type.SUMMARY);
   }
 
   @Test
@@ -61,7 +61,7 @@ public class MinMaxSumCountAggregationTest {
   public void availableForInstrument() {
     Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
     for (InstrumentType type : InstrumentType.values()) {
-      if (type == InstrumentType.MEASURE_ABSOLUTE || type == InstrumentType.MEASURE_NON_ABSOLUTE) {
+      if (type == InstrumentType.VALUE_OBSERVER || type == InstrumentType.VALUE_RECORDER) {
         assertThat(minMaxSumCount.availableForInstrument(type)).isTrue();
       } else {
         assertThat(minMaxSumCount.availableForInstrument(type)).isFalse();

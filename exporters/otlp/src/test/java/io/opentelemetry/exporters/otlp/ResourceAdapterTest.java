@@ -18,10 +18,10 @@ package io.opentelemetry.exporters.otlp;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.proto.common.v1.AttributeKeyValue;
-import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +35,7 @@ public class ResourceAdapterTest {
     assertThat(
             ResourceAdapter.toProtoResource(
                     Resource.create(
-                        ImmutableMap.of(
+                        Attributes.of(
                             "key_bool",
                             AttributeValue.booleanAttributeValue(true),
                             "key_string",
@@ -46,25 +46,21 @@ public class ResourceAdapterTest {
                             AttributeValue.doubleAttributeValue(100.3))))
                 .getAttributesList())
         .containsExactly(
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key_bool")
-                .setBoolValue(true)
-                .setType(ValueType.BOOL)
+                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
                 .build(),
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key_string")
-                .setStringValue("string")
-                .setType(ValueType.STRING)
+                .setValue(AnyValue.newBuilder().setStringValue("string").build())
                 .build(),
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key_int")
-                .setIntValue(100)
-                .setType(ValueType.INT)
+                .setValue(AnyValue.newBuilder().setIntValue(100).build())
                 .build(),
-            AttributeKeyValue.newBuilder()
+            KeyValue.newBuilder()
                 .setKey("key_double")
-                .setDoubleValue(100.3)
-                .setType(ValueType.DOUBLE)
+                .setValue(AnyValue.newBuilder().setDoubleValue(100.3).build())
                 .build());
   }
 

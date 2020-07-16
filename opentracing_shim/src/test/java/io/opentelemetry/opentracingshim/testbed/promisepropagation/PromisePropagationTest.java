@@ -71,33 +71,24 @@ public class PromisePropagationTest {
         Promise<String> successPromise = new Promise<>(context, tracer);
 
         successPromise.onSuccess(
-            new Promise.SuccessCallback<String>() {
-              @Override
-              public void accept(String s) {
-                tracer.activeSpan().log("Promised 1 " + s);
-                successResult1.set(s);
-                phaser.arriveAndAwaitAdvance(); // result set
-              }
+            s -> {
+              tracer.activeSpan().log("Promised 1 " + s);
+              successResult1.set(s);
+              phaser.arriveAndAwaitAdvance(); // result set
             });
         successPromise.onSuccess(
-            new Promise.SuccessCallback<String>() {
-              @Override
-              public void accept(String s) {
-                tracer.activeSpan().log("Promised 2 " + s);
-                successResult2.set(s);
-                phaser.arriveAndAwaitAdvance(); // result set
-              }
+            s -> {
+              tracer.activeSpan().log("Promised 2 " + s);
+              successResult2.set(s);
+              phaser.arriveAndAwaitAdvance(); // result set
             });
 
         Promise<String> errorPromise = new Promise<>(context, tracer);
 
         errorPromise.onError(
-            new Promise.ErrorCallback() {
-              @Override
-              public void accept(Throwable t) {
-                errorResult.set(t);
-                phaser.arriveAndAwaitAdvance(); // result set
-              }
+            t -> {
+              errorResult.set(t);
+              phaser.arriveAndAwaitAdvance(); // result set
             });
 
         assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems().size()).isEqualTo(0);

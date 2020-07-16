@@ -16,11 +16,11 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleValueRecorder;
 import io.opentelemetry.sdk.metrics.DoubleValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundInstrument>
     implements DoubleValueRecorder {
@@ -28,33 +28,16 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
   private DoubleValueRecorderSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(
-            getDefaultBatcher(
-                descriptor,
-                meterProviderSharedState,
-                meterSharedState,
-                Aggregations.minMaxSumCount())));
+      MeterSharedState meterSharedState,
+      Batcher batcher) {
+    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
   @Override
-  public void record(double delta, String... labelKeyValuePairs) {
-    record(delta, LabelSetSdk.create(labelKeyValuePairs));
-  }
-
-  void record(double value, LabelSetSdk labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
+  public void record(double value, Labels labels) {
+    BoundInstrument boundInstrument = bind(labels);
     boundInstrument.record(value);
     boundInstrument.unbind();
-  }
-
-  @Override
-  public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override
@@ -81,8 +64,9 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+        MeterSharedState meterSharedState,
+        MeterSdk meterSdk) {
+      super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
     @Override
@@ -92,12 +76,14 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
 
     @Override
     public DoubleValueRecorderSdk build() {
+      InstrumentDescriptor instrumentDescriptor =
+          getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE);
       return register(
           new DoubleValueRecorderSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE),
+              instrumentDescriptor,
               getMeterProviderSharedState(),
-              getMeterSharedState()));
+              getMeterSharedState(),
+              getBatcher(instrumentDescriptor)));
     }
   }
 }

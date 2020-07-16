@@ -16,11 +16,11 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
     implements LongCounter {
@@ -28,33 +28,19 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
   private LongCounterSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(
-            getDefaultBatcher(
-                descriptor, meterProviderSharedState, meterSharedState, Aggregations.sum())));
+      MeterSharedState meterSharedState,
+      Batcher batcher) {
+    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
   @Override
-  public void add(long increment, String... labelKeyValuePairs) {
-    add(increment, LabelSetSdk.create(labelKeyValuePairs));
-  }
-
-  void add(long increment, LabelSetSdk labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
+  public void add(long increment, Labels labels) {
+    BoundInstrument boundInstrument = bind(labels);
     try {
       boundInstrument.add(increment);
     } finally {
       boundInstrument.unbind();
     }
-  }
-
-  @Override
-  public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override
@@ -84,8 +70,9 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+        MeterSharedState meterSharedState,
+        MeterSdk meterSdk) {
+      super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
     @Override
@@ -95,11 +82,14 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
 
     @Override
     public LongCounterSdk build() {
+      InstrumentDescriptor instrumentDescriptor =
+          getInstrumentDescriptor(InstrumentType.COUNTER, InstrumentValueType.LONG);
       return register(
           new LongCounterSdk(
-              getInstrumentDescriptor(InstrumentType.COUNTER_MONOTONIC, InstrumentValueType.LONG),
+              instrumentDescriptor,
               getMeterProviderSharedState(),
-              getMeterSharedState()));
+              getMeterSharedState(),
+              getBatcher(instrumentDescriptor)));
     }
   }
 }

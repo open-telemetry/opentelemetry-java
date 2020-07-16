@@ -20,9 +20,13 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
+import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
 import java.util.List;
@@ -101,14 +105,14 @@ public class InMemorySpanExporterTest {
   }
 
   static SpanData makeBasicSpan() {
-    return SpanDataImpl.newBuilder()
+    return TestSpanData.newBuilder()
         .setHasEnded(true)
-        .setTraceId(io.opentelemetry.trace.TraceId.getInvalid())
-        .setSpanId(io.opentelemetry.trace.SpanId.getInvalid())
+        .setTraceId(TraceId.getInvalid())
+        .setSpanId(SpanId.getInvalid())
         .setName("span")
-        .setKind(io.opentelemetry.trace.Span.Kind.SERVER)
+        .setKind(Kind.SERVER)
         .setStartEpochNanos(100_000_000_100L)
-        .setStatus(io.opentelemetry.trace.Status.OK)
+        .setStatus(Status.OK)
         .setEndEpochNanos(200_000_000_200L)
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)

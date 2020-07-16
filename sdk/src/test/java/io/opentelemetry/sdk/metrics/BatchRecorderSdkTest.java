@@ -19,14 +19,14 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
@@ -41,15 +41,14 @@ public class BatchRecorderSdkTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
   private static final Resource RESOURCE =
       Resource.create(
-          Collections.singletonMap(
-              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
+          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.BatchRecorderSdkTest", null);
   private final TestClock testClock = TestClock.create();
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
   public void batchRecorder_badLabelSet() {
@@ -70,7 +69,7 @@ public class BatchRecorderSdkTest {
         testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     LongValueRecorderSdk longValueRecorder =
         testSdk.longValueRecorderBuilder("testLongValueRecorder").build();
-    LabelSetSdk labelSet = LabelSetSdk.create("key", "value");
+    Labels labelSet = Labels.of("key", "value");
 
     testSdk
         .newBatchRecorder("key", "value")
@@ -86,29 +85,20 @@ public class BatchRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testDoubleCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_DOUBLE,
-                    Collections.<String, String>emptyMap()),
+                    "testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
-                    DoublePoint.create(
-                        testClock.now(), testClock.now(), labelSet.getLabels(), 12.1d))));
+                Collections.singletonList(
+                    DoublePoint.create(testClock.now(), testClock.now(), labelSet, 12.1d))));
     assertThat(longCounter.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testLongCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                    "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
-                    LongPoint.create(testClock.now(), testClock.now(), labelSet.getLabels(), 12))));
+                Collections.singletonList(
+                    LongPoint.create(testClock.now(), testClock.now(), labelSet, 12))));
     assertThat(doubleUpDownCounter.collectAll())
         .containsExactly(
             MetricData.create(
@@ -116,13 +106,12 @@ public class BatchRecorderSdkTest {
                     "testDoubleUpDownCounter",
                     "",
                     "1",
-                    Type.NON_MONOTONIC_DOUBLE,
-                    Collections.<String, String>emptyMap()),
+                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
+                    Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
-                    DoublePoint.create(
-                        testClock.now(), testClock.now(), labelSet.getLabels(), -12.1d))));
+                Collections.singletonList(
+                    DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d))));
     assertThat(longUpDownCounter.collectAll())
         .containsExactly(
             MetricData.create(
@@ -130,12 +119,11 @@ public class BatchRecorderSdkTest {
                     "testLongUpDownCounter",
                     "",
                     "1",
-                    Type.NON_MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                    Descriptor.Type.NON_MONOTONIC_LONG,
+                    Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
-                    LongPoint.create(
-                        testClock.now(), testClock.now(), labelSet.getLabels(), -12))));
+                Collections.singletonList(
+                    LongPoint.create(testClock.now(), testClock.now(), labelSet, -12))));
   }
 }

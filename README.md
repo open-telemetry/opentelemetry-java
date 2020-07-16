@@ -7,6 +7,7 @@
 We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
 
 ## Overview
+
 OpenTelemetry is a working name of a combined OpenCensus and OpenTracing
 project.
 
@@ -17,10 +18,19 @@ This project contains the following top level components:
   * [correlationcontext](/api/src/main/java/io/opentelemetry/correlationcontext): Collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
   * [context](api/src/main/java/io/opentelemetry/context/): In-process and inter-process propagation layer.
   * [metrics](api/src/main/java/io/opentelemetry/metrics/): Metrics layer.
+* [extensions](extensions/): Additional extensions API, which are not part of the core API.
 * [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
+* [sdk_extensions](sdk_extensions/): Additional extensions to SDK.
 * [OpenTracing shim](opentracing_shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
 
 We would love to hear from the larger community: please provide feedback proactively.
+
+### Note about extensions
+
+Both API and SDK extensions consist of various additional components which are excluded from the core artifacts
+to keep them from growing too large.
+We still aim to provide the same level of quality and guarantee for them as for the core components.
+Please don't hesitate to use them if you find them useful. 
 
 ## Project setup and contribute
 
@@ -28,8 +38,32 @@ Please refer to the [contribution guide](CONTRIBUTING.md)
 on how to setup and contribute!
 
 ## Quick Start
+
 Please refer to the [quick start guide](QUICKSTART.md) on how use the OpenTelemetry API.
 
+## Published Releases
+
+Published releases are available on maven central.
+
+### Maven
+
+```xml
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+      <version>0.6.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+```
+
+### Gradle
+
+```groovy
+dependencies {
+	compile('io.opentelemetry:opentelemetry-api:0.6.0')
+}
+```
 
 ## Snapshots
 
@@ -49,7 +83,7 @@ Snapshots based out the `master` branch are available for `opentelemetry-api`, `
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>0.7.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -62,7 +96,7 @@ repositories {
 }
 
 dependencies {
-	compile('io.opentelemetry:opentelemetry-api:0.2.0-SNAPSHOT')
+	compile('io.opentelemetry:opentelemetry-api:0.7.0-SNAPSHOT')
 }
 ```
 
@@ -75,23 +109,23 @@ OpenTelemetry Java is under active development. Releases aren't guaranteed
 to conform to a specific version of the specification. Future releases will
 not attempt to maintain backwards compatibility with previous releases.
 
-The latest version of the libraries were released on March 27th, 2020.
-See the [v0.3.0 alpha release](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v0.3.0).
+The latest version of the libraries were released on July 1st, 2020.
+See the [v0.6.0 beta release](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v0.6.0).
 
 This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Tracing API                 | v0.3.0  |
-| Tracing SDK                 | v0.3.0  |
-| Metrics API                 | v0.3.0  |
-| Metrics SDK                 | v0.3.0  |
-| OTLP Exporter               | v0.3.0  |
-| Jaeger Trace Exporter       | v0.3.0  |
-| Zipkin Trace Exporter       | dev     |
-| Prometheus Metrics Exporter | dev     |
-| Context Propagation         | v0.3.0  |
-| OpenTracing Bridge          | v0.3.0  |
+| Tracing API                 | v0.6.0  |
+| Tracing SDK                 | v0.6.0  |
+| Metrics API                 | v0.6.0  |
+| Metrics SDK                 | v0.6.0  |
+| OTLP Exporter               | v0.6.0  |
+| Jaeger Trace Exporter       | v0.6.0  |
+| Zipkin Trace Exporter       | v0.6.0  |
+| Prometheus Metrics Exporter | v0.6.0  |
+| Context Propagation         | v0.6.0  |
+| OpenTracing Bridge          | v0.6.0  |
 | OpenCensus Bridge           | N/A     |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)

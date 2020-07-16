@@ -18,15 +18,14 @@ package io.opentelemetry.exporters.logging;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -60,7 +59,7 @@ public class LoggingMetricExporterTest {
 
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
     Resource resource =
-        Resource.create(ImmutableMap.of("host", AttributeValue.stringAttributeValue("localhost")));
+        Resource.create(Attributes.of("host", AttributeValue.stringAttributeValue("localhost")));
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
     exporter.export(
@@ -70,15 +69,15 @@ public class LoggingMetricExporterTest {
                     "measureOne",
                     "A summarized test measure",
                     "ms",
-                    Type.SUMMARY,
-                    ImmutableMap.of("foo", "bar", "baz", "zoom")),
+                    Descriptor.Type.SUMMARY,
+                    Labels.of("foo", "bar", "baz", "zoom")),
                 resource,
                 instrumentationLibraryInfo,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     SummaryPoint.create(
                         nowEpochNanos,
                         nowEpochNanos + 245,
-                        ImmutableMap.of("a", "b", "c", "d"),
+                        Labels.of("a", "b", "c", "d"),
                         1010,
                         50000,
                         Arrays.asList(
@@ -89,30 +88,27 @@ public class LoggingMetricExporterTest {
                     "counterOne",
                     "A simple counter",
                     "one",
-                    Type.MONOTONIC_LONG,
-                    ImmutableMap.of("alpha", "aleph", "beta", "bet")),
+                    Descriptor.Type.MONOTONIC_LONG,
+                    Labels.of("alpha", "aleph", "beta", "bet")),
                 resource,
                 instrumentationLibraryInfo,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     LongPoint.create(
-                        nowEpochNanos,
-                        nowEpochNanos + 245,
-                        ImmutableMap.of("z", "y", "x", "w"),
-                        1010))),
+                        nowEpochNanos, nowEpochNanos + 245, Labels.of("z", "y", "x", "w"), 1010))),
             MetricData.create(
                 Descriptor.create(
                     "observedValue",
                     "an observer gauge",
                     "kb",
-                    Type.NON_MONOTONIC_DOUBLE,
-                    ImmutableMap.of("uno", "eins", "dos", "zwei")),
+                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
+                    Labels.of("uno", "eins", "dos", "zwei")),
                 resource,
                 instrumentationLibraryInfo,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     DoublePoint.create(
                         nowEpochNanos,
                         nowEpochNanos + 245,
-                        ImmutableMap.of("1", "2", "3", "4"),
+                        Labels.of("1", "2", "3", "4"),
                         33.7767)))));
   }
 

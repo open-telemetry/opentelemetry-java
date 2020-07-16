@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -26,10 +28,8 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,22 +45,35 @@ public class LongCounterSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
-          Collections.singletonMap(
-              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
+          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.LongCounterSdkTest", null);
   private final TestClock testClock = TestClock.create();
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+
+  @Test
+  public void add_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.longCounterBuilder("testCounter").build().add(1, null);
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.longCounterBuilder("testCounter").build().bind(null);
+  }
 
   @Test
   public void collectMetrics_NoRecords() {
     LongCounterSdk longCounter =
         testSdk
             .longCounterBuilder("testCounter")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -73,8 +86,8 @@ public class LongCounterSdkTest {
                 "testCounter",
                 "My very own counter",
                 "ms",
-                Type.MONOTONIC_LONG,
-                Collections.singletonMap("sk1", "sv1")));
+                Descriptor.Type.MONOTONIC_LONG,
+                Labels.of("sk1", "sv1")));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -84,7 +97,7 @@ public class LongCounterSdkTest {
   public void collectMetrics_WithOneRecord() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
-    longCounter.add(12);
+    longCounter.add(12, Labels.empty());
     List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
@@ -93,29 +106,23 @@ public class LongCounterSdkTest {
     assertThat(metricData.getPoints()).hasSize(1);
     assertThat(metricData.getPoints())
         .containsExactly(
-            LongPoint.create(
-                testClock.now() - SECOND_NANOS,
-                testClock.now(),
-                Collections.<String, String>emptyMap(),
-                12));
+            LongPoint.create(testClock.now() - SECOND_NANOS, testClock.now(), Labels.empty(), 12));
   }
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
-    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind("K", "V");
+    BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
-      longCounter.add(12, emptyLabelSet);
+      longCounter.add(12, Labels.empty());
       boundCounter.add(123);
-      longCounter.add(21, emptyLabelSet);
+      longCounter.add(21, Labels.empty());
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(321);
-      longCounter.add(111, labelSet);
+      longCounter.add(111, Labels.of("K", "V"));
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = longCounter.collectAll();
@@ -124,13 +131,13 @@ public class LongCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              LongPoint.create(startTime, firstCollect, labelSet.getLabels(), 555),
-              LongPoint.create(startTime, firstCollect, emptyLabelSet.getLabels(), 33));
+              LongPoint.create(startTime, firstCollect, Labels.of("K", "V"), 555),
+              LongPoint.create(startTime, firstCollect, Labels.empty(), 33));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(222);
-      longCounter.add(11, emptyLabelSet);
+      longCounter.add(11, Labels.empty());
 
       long secondCollect = testClock.now();
       metricDataList = longCounter.collectAll();
@@ -139,8 +146,8 @@ public class LongCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              LongPoint.create(startTime, secondCollect, labelSet.getLabels(), 777),
-              LongPoint.create(startTime, secondCollect, emptyLabelSet.getLabels(), 44));
+              LongPoint.create(startTime, secondCollect, Labels.of("K", "V"), 777),
+              LongPoint.create(startTime, secondCollect, Labels.empty(), 44));
     } finally {
       boundCounter.unbind();
     }
@@ -149,8 +156,8 @@ public class LongCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind("K", "v");
-    BoundLongCounter duplicateBoundCounter = longCounter.bind("K", "v");
+    BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
+    BoundLongCounter duplicateBoundCounter = longCounter.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
     } finally {
@@ -162,10 +169,10 @@ public class LongCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind("K", "v");
+    BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
     try {
       longCounter.collectAll();
-      BoundLongCounter duplicateBoundCounter = longCounter.bind("K", "v");
+      BoundLongCounter duplicateBoundCounter = longCounter.bind(Labels.of("K", "V"));
       try {
         assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
       } finally {
@@ -181,7 +188,7 @@ public class LongCounterSdkTest {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
     thrown.expect(IllegalArgumentException.class);
-    longCounter.add(-45);
+    longCounter.add(-45, Labels.empty());
   }
 
   @Test
@@ -189,7 +196,7 @@ public class LongCounterSdkTest {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
     thrown.expect(IllegalArgumentException.class);
-    longCounter.bind().add(-9);
+    longCounter.bind(Labels.empty()).add(-9);
   }
 
   @Test
@@ -205,7 +212,7 @@ public class LongCounterSdkTest {
               2_000, 1, new OperationUpdaterDirectCall(longCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterWithBinding(longCounter.bind("K", "V"))));
+              2_000, 1, new OperationUpdaterWithBinding(longCounter.bind(Labels.of("K", "V")))));
     }
 
     stressTestBuilder.build().run();
@@ -213,8 +220,7 @@ public class LongCounterSdkTest {
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
-            LongPoint.create(
-                testClock.now(), testClock.now(), Collections.singletonMap("K", "V"), 160_000));
+            LongPoint.create(testClock.now(), testClock.now(), Labels.of("K", "V"), 160_000));
   }
 
   @Test
@@ -233,7 +239,9 @@ public class LongCounterSdkTest {
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterWithBinding(longCounter.bind(keys[i], values[i]))));
+              1_000,
+              2,
+              new OperationUpdaterWithBinding(longCounter.bind(Labels.of(keys[i], values[i])))));
     }
 
     stressTestBuilder.build().run();
@@ -242,25 +250,13 @@ public class LongCounterSdkTest {
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
             LongPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[0], values[0]),
-                20_000),
+                testClock.now(), testClock.now(), Labels.of(keys[0], values[0]), 20_000),
             LongPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[1], values[1]),
-                20_000),
+                testClock.now(), testClock.now(), Labels.of(keys[1], values[1]), 20_000),
             LongPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[2], values[2]),
-                20_000),
+                testClock.now(), testClock.now(), Labels.of(keys[2], values[2]), 20_000),
             LongPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[3], values[3]),
-                20_000));
+                testClock.now(), testClock.now(), Labels.of(keys[3], values[3]), 20_000));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
@@ -295,7 +291,7 @@ public class LongCounterSdkTest {
 
     @Override
     void update() {
-      longCounter.add(11, key, value);
+      longCounter.add(11, Labels.of(key, value));
     }
 
     @Override

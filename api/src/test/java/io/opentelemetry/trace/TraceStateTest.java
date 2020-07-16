@@ -19,7 +19,6 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.trace.TraceState.Entry;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,12 +53,14 @@ public class TraceStateTest {
 
   @Test
   public void getEntries() {
-    assertThat(firstTraceState.getEntries()).containsExactly(Entry.create(FIRST_KEY, FIRST_VALUE));
+    assertThat(firstTraceState.getEntries())
+        .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
     assertThat(secondTraceState.getEntries())
-        .containsExactly(Entry.create(SECOND_KEY, SECOND_VALUE));
+        .containsExactly(TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
     assertThat(multiValueTraceState.getEntries())
         .containsExactly(
-            Entry.create(FIRST_KEY, FIRST_VALUE), Entry.create(SECOND_KEY, SECOND_VALUE));
+            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE),
+            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
   }
 
   @Test
@@ -198,7 +199,8 @@ public class TraceStateTest {
                 .build()
                 .getEntries())
         .containsExactly(
-            Entry.create(FIRST_KEY, SECOND_VALUE), Entry.create(SECOND_KEY, FIRST_VALUE));
+            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE),
+            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE));
   }
 
   @Test
@@ -210,7 +212,7 @@ public class TraceStateTest {
                 .set(FIRST_KEY, FIRST_VALUE) // add a new entry
                 .build()
                 .getEntries())
-        .containsExactly(Entry.create(FIRST_KEY, FIRST_VALUE));
+        .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test

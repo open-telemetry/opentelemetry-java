@@ -139,4 +139,33 @@ public abstract class ConfigBuilder<T> {
       return null;
     }
   }
+
+  /**
+   * Get a {@link String} property from the map, {@code null} if it cannot be found.
+   *
+   * @param name The property name
+   * @param map The map where to look for the property
+   * @return the {@link String} value of the property, {@code null} if the property cannot be found.
+   */
+  @Nullable
+  protected static String getStringProperty(String name, Map<String, String> map) {
+    return map.get(name);
+  }
+
+  /**
+   * Get a double property from the map, {@code null} if it cannot be found or it has a wrong type.
+   *
+   * @param name The property name
+   * @param map The map where to look for the property
+   * @return the {@link Double} value of the property, {@code null} in case of error or if the
+   *     property cannot be found.
+   */
+  @Nullable
+  protected static Double getDoubleProperty(String name, Map<String, String> map) {
+    try {
+      return Double.parseDouble(map.get(name));
+    } catch (NumberFormatException | NullPointerException ex) {
+      return null;
+    }
+  }
 }

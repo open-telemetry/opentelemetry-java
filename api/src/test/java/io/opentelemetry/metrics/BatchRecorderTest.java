@@ -30,6 +30,13 @@ public class BatchRecorderTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
+  public void testNewBatchRecorder_badLabelSet() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("key/value");
+    meter.newBatchRecorder("key");
+  }
+
+  @Test
   public void preventNull_MeasureLong() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("valueRecorder");
@@ -83,6 +90,7 @@ public class BatchRecorderTest {
     batchRecorder.put(meter.doubleCounterBuilder("doubleCounter").build(), 77.556d);
     batchRecorder.put(meter.longUpDownCounterBuilder("longUpDownCounter").build(), -44L);
     batchRecorder.put(meter.doubleUpDownCounterBuilder("doubleUpDownCounter").build(), -77.556d);
+    batchRecorder.record();
   }
 
   @Test

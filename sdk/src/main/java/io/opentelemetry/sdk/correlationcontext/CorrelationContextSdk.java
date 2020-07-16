@@ -21,9 +21,7 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.correlationcontext.Entry;
-import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
-import io.opentelemetry.correlationcontext.EntryValue;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,7 +37,7 @@ import javax.annotation.concurrent.Immutable;
 class CorrelationContextSdk implements CorrelationContext {
 
   // The types of the EntryKey and Entry must match for each entry.
-  private final Map<EntryKey, Entry> entries;
+  private final Map<String, Entry> entries;
   @Nullable private final CorrelationContext parent;
 
   /**
@@ -48,8 +46,7 @@ class CorrelationContextSdk implements CorrelationContext {
    * @param entries the initial entries for this {@code CorrelationContextSdk}.
    * @param parent providing a default set of entries
    */
-  private CorrelationContextSdk(
-      Map<? extends EntryKey, ? extends Entry> entries, CorrelationContext parent) {
+  private CorrelationContextSdk(Map<String, ? extends Entry> entries, CorrelationContext parent) {
     this.entries =
         Collections.unmodifiableMap(new HashMap<>(Objects.requireNonNull(entries, "entries")));
     this.parent = parent;
@@ -57,7 +54,7 @@ class CorrelationContextSdk implements CorrelationContext {
 
   @Override
   public Collection<Entry> getEntries() {
-    Map<EntryKey, Entry> combined = new HashMap<>(entries);
+    Map<String, Entry> combined = new HashMap<>(entries);
     if (parent != null) {
       for (Entry entry : parent.getEntries()) {
         if (!combined.containsKey(entry.getKey())) {
@@ -77,7 +74,7 @@ class CorrelationContextSdk implements CorrelationContext {
 
   @Nullable
   @Override
-  public EntryValue getEntryValue(EntryKey entryKey) {
+  public String getEntryValue(String entryKey) {
     Entry entry = entries.get(entryKey);
     if (entry != null) {
       return entry.getValue();
@@ -115,7 +112,7 @@ class CorrelationContextSdk implements CorrelationContext {
   static class Builder implements CorrelationContext.Builder {
     @Nullable private CorrelationContext parent;
     private boolean noImplicitParent;
-    private final Map<EntryKey, Entry> entries;
+    private final Map<String, Entry> entries;
 
     /** Create a new empty CorrelationContext builder. */
     Builder() {
@@ -143,8 +140,7 @@ class CorrelationContextSdk implements CorrelationContext {
     }
 
     @Override
-    public CorrelationContext.Builder put(
-        EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
+    public CorrelationContext.Builder put(String key, String value, EntryMetadata entryMetadata) {
       entries.put(
           Objects.requireNonNull(key, "key"),
           Entry.create(
@@ -155,7 +151,7 @@ class CorrelationContextSdk implements CorrelationContext {
     }
 
     @Override
-    public CorrelationContext.Builder remove(EntryKey key) {
+    public CorrelationContext.Builder remove(String key) {
       entries.remove(Objects.requireNonNull(key, "key"));
       if (parent != null && parent.getEntryValue(key) != null) {
         entries.put(key, null);

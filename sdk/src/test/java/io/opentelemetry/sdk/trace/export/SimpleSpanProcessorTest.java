@@ -19,15 +19,17 @@ package io.opentelemetry.sdk.trace.export;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -35,7 +37,10 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,9 +74,28 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.ssp.export.sampled", "false");
+    SimpleSpanProcessor.Builder config =
+        SimpleSpanProcessor.newBuilder(spanExporter)
+            .fromConfigMap(options, ConfigTester.getNamingDot());
+    assertThat(config.getExportOnlySampled()).isEqualTo(false);
+  }
+
+  @Test
+  public void configTest_EmptyOptions() {
+    SimpleSpanProcessor.Builder config =
+        SimpleSpanProcessor.newBuilder(spanExporter)
+            .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
+    assertThat(config.getExportOnlySampled())
+        .isEqualTo(SimpleSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
+  }
+
+  @Test
   public void onStartSync() {
     simpleSampledSpansProcessor.onStart(readableSpan);
-    verifyZeroInteractions(spanExporter);
+    verifyNoInteractions(spanExporter);
   }
 
   @Test
@@ -87,7 +111,7 @@ public class SimpleSpanProcessorTest {
   public void onEndSync_NotSampledSpan() {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     simpleSampledSpansProcessor.onEnd(readableSpan);
-    verifyZeroInteractions(spanExporter);
+    verifyNoInteractions(spanExporter);
   }
 
   @Test
@@ -98,7 +122,7 @@ public class SimpleSpanProcessorTest {
         .thenThrow(new RuntimeException());
     SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
     simpleSpanProcessor.onEnd(readableSpan);
-    verifyZeroInteractions(spanExporter);
+    verifyNoInteractions(spanExporter);
   }
 
   @Test
@@ -128,7 +152,7 @@ public class SimpleSpanProcessorTest {
         .startSpan()
         .end();
 
-    io.opentelemetry.trace.Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
     span.end();
 
     // Spans are recorded and exported in the same order as they are ended, we test that a non
@@ -178,5 +202,43 @@ public class SimpleSpanProcessorTest {
   public void shutdown() {
     simpleSampledSpansProcessor.shutdown();
     verify(spanExporter).shutdown();
+  }
+
+  @Test
+  public void buildFromProperties_defaultSampledFlag() {
+    Properties properties = new Properties();
+    SimpleSpanProcessor spanProcessor =
+        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onEnd(readableSpan);
+    verifyNoInteractions(spanExporter);
+  }
+
+  @Test
+  public void buildFromProperties_onlySampledTrue() {
+    Properties properties = new Properties();
+    properties.setProperty("otel.ssp.export.sampled", "true");
+    SimpleSpanProcessor spanProcessor =
+        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onEnd(readableSpan);
+    verifyNoInteractions(spanExporter);
+  }
+
+  @Test
+  public void buildFromProperties_onlySampledFalse() {
+    Properties properties = new Properties();
+    properties.setProperty("otel.ssp.export.sampled", "false");
+    SimpleSpanProcessor spanProcessor =
+        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+    SpanData spanData = TestUtils.makeBasicSpan();
+
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+
+    spanProcessor.onEnd(readableSpan);
+    verify(spanExporter).export(Collections.singletonList(spanData));
   }
 }

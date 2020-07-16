@@ -78,8 +78,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
     }
 
     @Override
-    public CorrelationContext.Builder put(
-        EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
+    public CorrelationContext.Builder put(String key, String value, EntryMetadata entryMetadata) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
       Utils.checkNotNull(entryMetadata, "entryMetadata");
@@ -87,7 +86,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
     }
 
     @Override
-    public CorrelationContext.Builder remove(EntryKey key) {
+    public CorrelationContext.Builder remove(String key) {
       Utils.checkNotNull(key, "key");
       return this;
     }

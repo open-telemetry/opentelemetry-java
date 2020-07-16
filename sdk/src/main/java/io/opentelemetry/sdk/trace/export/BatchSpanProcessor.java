@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,6 +56,30 @@ import javax.annotation.concurrent.GuardedBy;
  *
  * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
  * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
+ *
+ * <p>Configuration options for {@link BatchSpanProcessor} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For system properties and {@link java.util.Properties} objects, {@link BatchSpanProcessor}
+ * will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.bsp.schedule.delay}: sets the delay interval between two consecutive exports.
+ *   <li>{@code otel.bsp.max.queue}: sets the maximum queue size.
+ *   <li>{@code otel.bsp.max.export.batch}: sets the maximum batch size.
+ *   <li>{@code otel.bsp.export.timeout}: sets the maximum allowed time to export data.
+ *   <li>{@code otel.bsp.export.sampled}: sets whether only sampled spans should be exported.
+ * </ul>
+ *
+ * <p>For environment variables, {@link BatchSpanProcessor} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: sets the delay interval between two consecutive exports.
+ *   <li>{@code OTEL_BSP_MAX_QUEUE}: sets the maximum queue size.
+ *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH}: sets the maximum batch size.
+ *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: sets the maximum allowed time to export data.
+ *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
+ * </ul>
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 
@@ -135,7 +159,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
                   "The number of spans dropped by the BatchSpanProcessor due to high throughput.")
               .build();
       droppedSpans =
-          droppedSpansCounter.bind("spanProcessorType", BatchSpanProcessor.class.getSimpleName());
+          droppedSpansCounter.bind(
+              Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName()));
     }
 
     private static final BoundLongCounter droppedSpans;
@@ -234,16 +259,16 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private void exportBatches(ArrayList<ReadableSpan> spanList) {
       // TODO: Record a counter for pushed spans.
       for (int i = 0; i < spanList.size(); ) {
-        int batchSizeLimit = Math.min(i + maxExportBatchSize, spanList.size());
-        onBatchExport(createSpanDataForExport(spanList, i, batchSizeLimit));
-        i = batchSizeLimit;
+        int lastIndexToTake = Math.min(i + maxExportBatchSize, spanList.size());
+        onBatchExport(createSpanDataForExport(spanList, i, lastIndexToTake));
+        i = lastIndexToTake;
       }
     }
 
     private static List<SpanData> createSpanDataForExport(
-        List<ReadableSpan> spanList, int startIndex, int numberToTake) {
-      List<SpanData> spanDataBuffer = new ArrayList<>(numberToTake);
-      for (int i = startIndex; i < numberToTake; i++) {
+        List<ReadableSpan> spanList, int startIndex, int endIndex) {
+      List<SpanData> spanDataBuffer = new ArrayList<>(endIndex - startIndex);
+      for (int i = startIndex; i < endIndex; i++) {
         spanDataBuffer.add(spanList.get(i).toSpanData());
         // Remove the reference to the ReadableSpan to allow GC to free the memory.
         spanList.set(i, null);
@@ -298,11 +323,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout";
     private static final String KEY_SAMPLED = "otel.bsp.export.sampled";
 
-    private static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
-    private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
-    private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
-    private static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
-    private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
+    @VisibleForTesting static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
+    @VisibleForTesting static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
+    @VisibleForTesting static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
+    @VisibleForTesting static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+    @VisibleForTesting static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
 
     private final SpanExporter spanExporter;
     private long scheduleDelayMillis = DEFAULT_SCHEDULE_DELAY_MILLIS;
@@ -317,21 +342,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     /**
      * Sets the configuration values from the given configuration map for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
-     *       exports.
-     *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
-     *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
-     *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
-     *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be exported.
-     * </ul>
      *
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
      */
-    @VisibleForTesting
     @Override
     protected Builder fromConfigMap(
         Map<String, String> configMap, Builder.NamingConvention namingConvention) {
@@ -359,67 +373,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
-    /**
-     * Sets the configuration values from the given properties object for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
-     *       exports.
-     *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
-     *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
-     *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
-     *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be exported.
-     * </ul>
-     *
-     * @param properties {@link Properties} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    public Builder readProperties(Properties properties) {
-      return super.readProperties(properties);
-    }
-
-    /**
-     * Sets the configuration values from environment variables for only the available keys. This
-     * method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: to set the delay interval between two consecutive
-     *       exports.
-     *   <li>{@code OTEL_BSP_MAX_QUEUE}: to set the maximum queue size.
-     *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH}: to set the maximum batch size.
-     *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: to set the maximum allowed time to export data.
-     *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: to set whether only sampled spans should be exported.
-     * </ul>
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readEnvironmentVariables() {
-      return super.readEnvironmentVariables();
-    }
-
-    /**
-     * Sets the configuration values from system properties for only the available keys. This method
-     * looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
-     *       exports.
-     *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
-     *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
-     *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
-     *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be reported.
-     * </ul>
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readSystemProperties() {
-      return super.readSystemProperties();
-    }
-
     // TODO: Consider to add support for constant Attributes and/or Resource.
 
     /**
@@ -427,13 +380,18 @@ public final class BatchSpanProcessor implements SpanProcessor {
      *
      * <p>Default value is {@code true}.
      *
-     * @param sampled report only sampled spans.
+     * @param exportOnlySampled if {@code true} report only sampled spans.
      * @return this.
      * @see BatchSpanProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
      */
-    public Builder setExportOnlySampled(boolean sampled) {
-      this.exportOnlySampled = sampled;
+    public Builder setExportOnlySampled(boolean exportOnlySampled) {
+      this.exportOnlySampled = exportOnlySampled;
       return this;
+    }
+
+    @VisibleForTesting
+    boolean getExportOnlySampled() {
+      return exportOnlySampled;
     }
 
     /**
@@ -451,6 +409,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
+    @VisibleForTesting
+    long getScheduleDelayMillis() {
+      return scheduleDelayMillis;
+    }
+
     /**
      * Sets the maximum time an exporter will be allowed to run before being cancelled.
      *
@@ -463,6 +426,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
     public Builder setExporterTimeoutMillis(int exporterTimeoutMillis) {
       this.exporterTimeoutMillis = exporterTimeoutMillis;
       return this;
+    }
+
+    @VisibleForTesting
+    int getExporterTimeoutMillis() {
+      return exporterTimeoutMillis;
     }
 
     /**
@@ -483,6 +451,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
+    @VisibleForTesting
+    int getMaxQueueSize() {
+      return maxQueueSize;
+    }
+
     /**
      * Sets the maximum batch size for every export. This must be smaller or equal to {@code
      * maxQueuedSpans}.
@@ -497,6 +470,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
       Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
       this.maxExportBatchSize = maxExportBatchSize;
       return this;
+    }
+
+    @VisibleForTesting
+    int getMaxExportBatchSize() {
+      return maxExportBatchSize;
     }
 
     /**

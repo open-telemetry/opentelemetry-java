@@ -44,7 +44,9 @@ public final class MeterSdkProvider implements MeterProvider {
   private final MetricProducer metricProducer;
 
   private MeterSdkProvider(Clock clock, Resource resource) {
-    this.registry = new MeterSdkComponentRegistry(MeterProviderSharedState.create(clock, resource));
+    this.registry =
+        new MeterSdkComponentRegistry(
+            MeterProviderSharedState.create(clock, resource), new ViewRegistry());
     this.metricProducer = new MetricProducerSdk(this.registry);
   }
 
@@ -87,7 +89,7 @@ public final class MeterSdkProvider implements MeterProvider {
   public static final class Builder {
 
     private Clock clock = MillisClock.getInstance();
-    private Resource resource = EnvVarResource.getResource();
+    private Resource resource = Resource.getTelemetrySdk().merge(EnvVarResource.getResource());
 
     private Builder() {}
 
@@ -127,14 +129,17 @@ public final class MeterSdkProvider implements MeterProvider {
 
   private static final class MeterSdkComponentRegistry extends ComponentRegistry<MeterSdk> {
     private final MeterProviderSharedState meterProviderSharedState;
+    private final ViewRegistry viewRegistry;
 
-    private MeterSdkComponentRegistry(MeterProviderSharedState meterProviderSharedState) {
+    private MeterSdkComponentRegistry(
+        MeterProviderSharedState meterProviderSharedState, ViewRegistry viewRegistry) {
       this.meterProviderSharedState = meterProviderSharedState;
+      this.viewRegistry = viewRegistry;
     }
 
     @Override
     public MeterSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo);
+      return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo, viewRegistry);
     }
   }
 
@@ -146,7 +151,7 @@ public final class MeterSdkProvider implements MeterProvider {
     }
 
     @Override
-    public Collection<MetricData> getAllMetrics() {
+    public Collection<MetricData> collectAllMetrics() {
       Collection<MeterSdk> meters = registry.getComponents();
       List<MetricData> result = new ArrayList<>(meters.size());
       for (MeterSdk meter : meters) {

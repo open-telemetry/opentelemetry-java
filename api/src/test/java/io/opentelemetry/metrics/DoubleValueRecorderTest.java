@@ -16,6 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
 import java.util.Arrays;
 import org.junit.Rule;
@@ -27,8 +29,28 @@ import org.junit.runners.JUnit4;
 /** Tests for {@link DoubleValueRecorder}. */
 @RunWith(JUnit4.class)
 public final class DoubleValueRecorderTest {
-  private static final Meter meter = DefaultMeter.getInstance();
   @Rule public final ExpectedException thrown = ExpectedException.none();
+
+  private static final String NAME = "name";
+  private static final String DESCRIPTION = "description";
+  private static final String UNIT = "1";
+  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
+
+  private final Meter meter = OpenTelemetry.getMeter("DoubleValueRecorderTest");
+
+  @Test
+  public void preventNull_Name() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.doubleValueRecorderBuilder(null);
+  }
+
+  @Test
+  public void preventEmpty_Name() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.doubleValueRecorderBuilder("").build();
+  }
 
   @Test
   public void preventNonPrintableName() {
@@ -69,18 +91,44 @@ public final class DoubleValueRecorderTest {
   }
 
   @Test
-  public void preventNegativeValue() {
-    DoubleValueRecorder doubleValueRecorder = meter.doubleValueRecorderBuilder("MyMeasure").build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Unsupported negative values");
-    doubleValueRecorder.bind().record(-5.0);
+  public void record_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleValueRecorderBuilder("metric").build().record(1.0, null);
   }
 
   @Test
-  public void doesNotThrow() {
-    DoubleValueRecorder doubleValueRecorder = meter.doubleValueRecorderBuilder("MyMeasure").build();
-    BoundDoubleValueRecorder bound = doubleValueRecorder.bind();
+  public void record_DoesNotThrow() {
+    DoubleValueRecorder doubleValueRecorder =
+        meter
+            .doubleValueRecorderBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
+    doubleValueRecorder.record(5.0, Labels.empty());
+    doubleValueRecorder.record(-5.0, Labels.empty());
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleValueRecorderBuilder("metric").build().bind(null);
+  }
+
+  @Test
+  public void bound_DoesNotThrow() {
+    DoubleValueRecorder doubleValueRecorder =
+        meter
+            .doubleValueRecorderBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
+    BoundDoubleValueRecorder bound = doubleValueRecorder.bind(Labels.empty());
     bound.record(5.0);
+    bound.record(-5.0);
     bound.unbind();
   }
 }

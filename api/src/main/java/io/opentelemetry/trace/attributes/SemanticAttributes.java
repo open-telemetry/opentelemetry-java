@@ -47,6 +47,11 @@ public final class SemanticAttributes {
   /** Local hostname or similar. */
   public static final StringAttributeSetter NET_HOST_NAME =
       StringAttributeSetter.create("net.host.name");
+
+  /** Logical name of a remote service. */
+  public static final StringAttributeSetter PEER_SERVICE =
+      StringAttributeSetter.create("peer.service");
+
   /**
    * Username or client_id extracted from the access token or Authorization header in the inbound
    * request from outside the system.
@@ -98,6 +103,30 @@ public final class SemanticAttributes {
   /** The IP address of the original client behind all proxies, if known. */
   public static final StringAttributeSetter HTTP_CLIENT_IP =
       StringAttributeSetter.create("http.client_ip");
+  /**
+   * The size of the request payload body, in bytes. For payloads using transport encoding, this is
+   * the compressed size.
+   */
+  public static final StringAttributeSetter HTTP_REQUEST_CONTENT_LENGTH =
+      StringAttributeSetter.create("http.request_content_length");
+  /**
+   * The size of the uncompressed request payload body, in bytes. Only set for requests that use
+   * transport encoding.
+   */
+  public static final StringAttributeSetter HTTP_REQUEST_CONTENT_LENGTH_UNCOMPRESSED =
+      StringAttributeSetter.create("http.request_content_length_uncompressed");
+  /**
+   * The size of the response payload body, in bytes. For payloads using transport encoding, this is
+   * the compressed size.
+   */
+  public static final StringAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH =
+      StringAttributeSetter.create("http.response_content_length");
+  /**
+   * The size of the uncompressed response payload body, in bytes. Only set for responses that use
+   * transport encoding.
+   */
+  public static final StringAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH_UNCOMPRESSED =
+      StringAttributeSetter.create("http.response_content_length_uncompressed");
   /** The service name, must be equal to the $service part in the span name. */
   public static final StringAttributeSetter RPC_SERVICE =
       StringAttributeSetter.create("rpc.service");
@@ -124,6 +153,61 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter DB_USER = StringAttributeSetter.create("db.user");
   /** JDBC substring like "mysql://db.example.com:3306" */
   public static final StringAttributeSetter DB_URL = StringAttributeSetter.create("db.url");
+
+  /** A string identifying the messaging system such as kafka, rabbitmq or activemq. */
+  public static final StringAttributeSetter MESSAGING_SYSTEM =
+      StringAttributeSetter.create("messaging.system");
+  /**
+   * The message destination name, e.g. MyQueue or MyTopic. This might be equal to the span name but
+   * is required nevertheless
+   */
+  public static final StringAttributeSetter MESSAGING_DESTINATION =
+      StringAttributeSetter.create("messaging.destination");
+  /** The kind of message destination. Either queue or topic. */
+  public static final StringAttributeSetter MESSAGING_DESTINATION_KIND =
+      StringAttributeSetter.create("messaging.destination_kind");
+  /** A boolean that is true if the message destination is temporary. */
+  public static final BooleanAttributeSetter MESSAGING_TEMP_DESTINATION =
+      BooleanAttributeSetter.create("messaging.temp_destination");
+  /** The name of the transport protocol such as AMQP or MQTT. */
+  public static final StringAttributeSetter MESSAGING_PROTOCOL =
+      StringAttributeSetter.create("messaging.protocol");
+  /** The version of the transport protocol such as 0.9.1. */
+  public static final StringAttributeSetter MESSAGING_PROTOCOL_VERSION =
+      StringAttributeSetter.create("messaging.protocol_version");
+  /**
+   * Connection string such as tibjmsnaming://localhost:7222 or
+   * https://queue.amazonaws.com/80398EXAMPLE/MyQueue
+   */
+  public static final StringAttributeSetter MESSAGING_URL =
+      StringAttributeSetter.create("messaging.url");
+  /**
+   * A value used by the messaging system as an identifier for the message, represented as a string.
+   */
+  public static final StringAttributeSetter MESSAGING_MESSAGE_ID =
+      StringAttributeSetter.create("messaging.message_id");
+  /**
+   * A value identifying the conversation to which the message belongs, represented as a string.
+   * Sometimes called "Correlation ID".
+   */
+  public static final StringAttributeSetter MESSAGING_CONVERSATION_ID =
+      StringAttributeSetter.create("messaging.conversation_id");
+  /**
+   * The (uncompressed) size of the message payload in bytes. Also use this attribute if it is
+   * unknown whether the compressed or uncompressed payload size is reported.
+   */
+  public static final LongAttributeSetter MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES =
+      LongAttributeSetter.create("messaging.message_payload_size_bytes");
+  /** The compressed size of the message payload in bytes. */
+  public static final LongAttributeSetter MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES =
+      LongAttributeSetter.create("messaging.message_payload_compressed_size_bytes");
+  /**
+   * A string identifying which part and kind of message consumption this span describes: either
+   * "receive" or "process". If the operation is "send", this attribute must not be set: the
+   * operation can be inferred from the span kind in that case.
+   */
+  public static final StringAttributeSetter MESSAGING_OPERATION =
+      StringAttributeSetter.create("messaging.operation");
 
   private SemanticAttributes() {}
 }

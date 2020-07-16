@@ -23,7 +23,7 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
@@ -49,18 +49,16 @@ public class HttpClient {
         }
       };
 
-  private void initTracer() {
+  private static void initTracerSdk() {
     // Get the tracer
     TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Show that multiple exporters can be used
 
     // Set to export the traces also to a log file
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(loggingExporter).build());
   }
 
   private HttpClient() throws Exception {
-    initTracer();
-
     // Connect to the server locally
     int port = 8080;
     URL url = new URL("http://127.0.0.1:" + port);
@@ -121,6 +119,8 @@ public class HttpClient {
    * @param args It is not required.
    */
   public static void main(String[] args) {
+    initTracerSdk();
+
     // Perform request every 5s
     Thread t =
         new Thread() {

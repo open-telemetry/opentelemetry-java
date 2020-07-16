@@ -18,6 +18,7 @@ package io.opentelemetry.exporters.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
@@ -28,12 +29,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
-import io.prometheus.client.Collector.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Util methods to convert OpenTelemetry Metrics data models to Prometheus data models.
@@ -61,7 +60,7 @@ final class MetricAdapter {
     String fullName =
         toMetricFullName(
             descriptor.getName(), metricData.getInstrumentationLibraryInfo().getName());
-    Type type = toMetricFamilyType(descriptor.getType());
+    Collector.Type type = toMetricFamilyType(descriptor.getType());
 
     return new MetricFamilySamples(
         fullName,
@@ -81,18 +80,18 @@ final class MetricAdapter {
     return Collector.sanitizeMetricName(instrumentationLibraryName + "_" + descriptorMetricName);
   }
 
-  static Type toMetricFamilyType(MetricData.Descriptor.Type type) {
+  static Collector.Type toMetricFamilyType(MetricData.Descriptor.Type type) {
     switch (type) {
       case NON_MONOTONIC_LONG:
       case NON_MONOTONIC_DOUBLE:
-        return Type.GAUGE;
+        return Collector.Type.GAUGE;
       case MONOTONIC_LONG:
       case MONOTONIC_DOUBLE:
-        return Type.COUNTER;
+        return Collector.Type.COUNTER;
       case SUMMARY:
-        return Type.SUMMARY;
+        return Collector.Type.SUMMARY;
     }
-    return Type.UNTYPED;
+    return Collector.Type.UNTYPED;
   }
 
   // Converts a list of points from MetricData to a list of Prometheus Samples.
@@ -105,10 +104,7 @@ final class MetricAdapter {
     if (descriptor.getConstantLabels().size() != 0) {
       constLabelNames = new ArrayList<>(descriptor.getConstantLabels().size());
       constLabelValues = new ArrayList<>(descriptor.getConstantLabels().size());
-      for (Map.Entry<String, String> entry : descriptor.getConstantLabels().entrySet()) {
-        constLabelNames.add(toLabelName(entry.getKey()));
-        constLabelValues.add(entry.getValue() == null ? "" : entry.getValue());
-      }
+      descriptor.getConstantLabels().forEach(new Consumer(constLabelNames, constLabelValues));
     }
 
     for (Point point : points) {
@@ -122,12 +118,8 @@ final class MetricAdapter {
             new ArrayList<>(descriptor.getConstantLabels().size() + point.getLabels().size());
         labelValues.addAll(constLabelValues);
 
-        for (Map.Entry<String, String> entry : point.getLabels().entrySet()) {
-          // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
-          // for the same label key.
-          labelNames.add(toLabelName(entry.getKey()));
-          labelValues.add(entry.getValue() == null ? "" : entry.getValue());
-        }
+        // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
+        point.getLabels().forEach(new Consumer(labelNames, labelValues));
       }
 
       switch (descriptor.getType()) {
@@ -152,6 +144,22 @@ final class MetricAdapter {
   // Converts a label keys to a label names. Sanitizes the label keys.
   static String toLabelName(String labelKey) {
     return Collector.sanitizeMetricName(labelKey);
+  }
+
+  private static final class Consumer implements KeyValueConsumer<String> {
+    final List<String> labelNames;
+    final List<String> labelValues;
+
+    private Consumer(List<String> labelNames, List<String> labelValues) {
+      this.labelNames = labelNames;
+      this.labelValues = labelValues;
+    }
+
+    @Override
+    public void consume(String key, String value) {
+      labelNames.add(toLabelName(key));
+      labelValues.add(value == null ? "" : value);
+    }
   }
 
   private static void addSummarySamples(

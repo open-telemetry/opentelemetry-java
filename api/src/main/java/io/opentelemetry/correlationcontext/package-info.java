@@ -21,10 +21,9 @@
  * to label anything that is associated with a specific operation. For example, the {@code
  * opentelemetry.stats} package labels all stats with the current entries.
  *
- * <p>{@link io.opentelemetry.correlationcontext.Entry Entrys} are key-value pairs. The {@link
- * io.opentelemetry.correlationcontext.EntryKey keys} and {@link
- * io.opentelemetry.correlationcontext.EntryValue values} are wrapped {@code String}s. They are
- * stored as a map in a {@link io.opentelemetry.correlationcontext.CorrelationContext}.
+ * <p>{@link io.opentelemetry.correlationcontext.Entry Entrys} are key-value pairs of {@link
+ * java.lang.String}s. They are stored as a map in a {@link
+ * io.opentelemetry.correlationcontext.CorrelationContext}.
  *
  * <p>Note that entries are independent of the tracing data that is propagated in the {@code
  * io.grpc.Context}, such as trace ID.

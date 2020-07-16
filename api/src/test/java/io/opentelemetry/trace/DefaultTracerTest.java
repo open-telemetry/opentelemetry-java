@@ -54,11 +54,8 @@ public class DefaultTracerTest {
   @Test
   public void getCurrentSpan_WithSpan() {
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Scope ws = defaultTracer.withSpan(DefaultSpan.createRandom());
-    try {
+    try (Scope ws = defaultTracer.withSpan(DefaultSpan.createRandom())) {
       assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    } finally {
-      ws.close();
     }
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -77,19 +74,14 @@ public class DefaultTracerTest {
   @Test
   public void testInProcessContext() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = defaultTracer.withSpan(span);
-    try {
+    try (Scope scope = defaultTracer.withSpan(span)) {
       assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
       Span secondSpan = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-      Scope secondScope = defaultTracer.withSpan(secondSpan);
-      try {
+      try (Scope secondScope = defaultTracer.withSpan(secondSpan)) {
         assertThat(defaultTracer.getCurrentSpan()).isEqualTo(secondSpan);
       } finally {
-        secondScope.close();
         assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
       }
-    } finally {
-      scope.close();
     }
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -125,12 +117,9 @@ public class DefaultTracerTest {
   @Test
   public void testSpanContextPropagationCurrentSpan() {
     DefaultSpan parent = new DefaultSpan(spanContext);
-    Scope scope = defaultTracer.withSpan(parent);
-    try {
+    try (Scope scope = defaultTracer.withSpan(parent)) {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);
-    } finally {
-      scope.close();
     }
   }
 
@@ -138,12 +127,9 @@ public class DefaultTracerTest {
   public void testSpanContextPropagationCurrentSpanContext() {
     Context context =
         TracingContextUtils.withSpan(DefaultSpan.create(spanContext), Context.current());
-    Scope scope = ContextUtils.withScopedContext(context);
-    try {
+    try (Scope scope = ContextUtils.withScopedContext(context)) {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);
-    } finally {
-      scope.close();
     }
   }
 }

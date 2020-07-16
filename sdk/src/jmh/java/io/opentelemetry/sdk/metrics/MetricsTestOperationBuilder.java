@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.errorprone.annotations.Immutable;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleValueRecorder;
 import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
@@ -39,11 +40,14 @@ public enum MetricsTestOperationBuilder {
           return new Operation() {
             LongCounter metric = meter.longCounterBuilder("long_counter").build();
             LongCounter.BoundLongCounter boundMetric =
-                meter.longCounterBuilder("bound_long_counter").build().bind("KEY", "VALUE");
+                meter
+                    .longCounterBuilder("bound_long_counter")
+                    .build()
+                    .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.add(5L, args);
+            public void perform(Labels labels) {
+              metric.add(5L, labels);
             }
 
             @Override
@@ -60,11 +64,14 @@ public enum MetricsTestOperationBuilder {
           return new Operation() {
             DoubleCounter metric = meter.doubleCounterBuilder("double_counter").build();
             DoubleCounter.BoundDoubleCounter boundMetric =
-                meter.doubleCounterBuilder("bound_double_counter").build().bind("KEY", "VALUE");
+                meter
+                    .doubleCounterBuilder("bound_double_counter")
+                    .build()
+                    .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.add(5.0d, args);
+            public void perform(Labels labels) {
+              metric.add(5.0d, labels);
             }
 
             @Override
@@ -85,11 +92,11 @@ public enum MetricsTestOperationBuilder {
                 meter
                     .doubleValueRecorderBuilder("bound_double_value_recorder")
                     .build()
-                    .bind("KEY", "VALUE");
+                    .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.record(5.0d, args);
+            public void perform(Labels labels) {
+              metric.record(5.0d, labels);
             }
 
             @Override
@@ -110,11 +117,11 @@ public enum MetricsTestOperationBuilder {
                 meter
                     .longValueRecorderBuilder("bound_long_value_recorder")
                     .build()
-                    .bind("KEY", "VALUE");
+                    .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.record(5L, args);
+            public void perform(Labels labels) {
+              metric.record(5L, labels);
             }
 
             @Override
@@ -141,7 +148,7 @@ public enum MetricsTestOperationBuilder {
   }
 
   interface Operation {
-    abstract void perform(String... args);
+    abstract void perform(Labels labels);
 
     abstract void performBound();
   }

@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+## 0.6.0 - 2020-07-01
+
+NOTE: This release contains non-backward-compatible breaking API and SDK changes
+
+- Introduction of immutable Attributes for SpansEvents, Links and Resources
+- Introduction of immutable Labels for Metric Instruments and Recordings
+- BUGFIX: make sure null Points are not propagated to metric exporters
+- Added a propagator for AWS X-Ray
+- BUGFIX: IntervalMetricReader now handles exceptions thrown by metric exporters
+- Renamed contrib modules to "extensions" (Note: this changes the published artifact names, as well)
+- Converted CorrelationContext entry keys and values to simple Strings
+- Enhanced OTLP exporter configuration options
+- Added new SDK Telemetry Resource populator
+- Introduced an new MultiTracePropagator to handle multiple propagation formats
+- Added new AWS Resource populators
+- Added an extension to populate span data into log4j2 log formats.
+- Changed the MinMaxSumCount aggregations for ValueRecorders to always aggregate deltas, rather than cumulative
+- Updated the OTLP protobuf and exporter to version 0.4.0 of the OTLP protobufs.
+
+## 0.5.0 - 2020-06-04
+
+TODO: fill this out
+
 - Add helper API to get Tracer/Meter
 
 ## 0.4.0 - 2020-05-04

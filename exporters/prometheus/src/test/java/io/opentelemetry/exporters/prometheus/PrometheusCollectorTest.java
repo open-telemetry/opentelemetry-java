@@ -21,10 +21,11 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.CollectorRegistry;
@@ -54,7 +55,7 @@ public class PrometheusCollectorTest {
 
   @Test
   public void registerToDefault() throws IOException {
-    when(metricProducer.getAllMetrics()).thenReturn(generateTestData());
+    when(metricProducer.collectAllMetrics()).thenReturn(generateTestData());
     StringWriter stringWriter = new StringWriter();
     TextFormat.write004(stringWriter, CollectorRegistry.defaultRegistry.metricFamilySamples());
     assertThat(stringWriter.toString())
@@ -75,24 +76,21 @@ public class PrometheusCollectorTest {
                 "long_description",
                 "1",
                 Descriptor.Type.MONOTONIC_LONG,
-                Collections.singletonMap("kc", "vc")),
-            Resource.create(
-                Collections.singletonMap("kr", AttributeValue.stringAttributeValue("vr"))),
+                Labels.of("kc", "vc")),
+            Resource.create(Attributes.of("kr", AttributeValue.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("grpc", "version"),
-            Collections.<Point>singletonList(
-                MetricData.LongPoint.create(123, 456, Collections.singletonMap("kp", "vp"), 5))),
+            Collections.singletonList(
+                MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
         MetricData.create(
             Descriptor.create(
                 "name",
                 "double_description",
                 "1",
                 Descriptor.Type.MONOTONIC_DOUBLE,
-                Collections.singletonMap("kc", "vc")),
-            Resource.create(
-                Collections.singletonMap("kr", AttributeValue.stringAttributeValue("vr"))),
+                Labels.of("kc", "vc")),
+            Resource.create(Attributes.of("kr", AttributeValue.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("http", "version"),
-            Collections.<Point>singletonList(
-                MetricData.DoublePoint.create(
-                    123, 456, Collections.singletonMap("kp", "vp"), 3.5))));
+            Collections.singletonList(
+                MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5))));
   }
 }

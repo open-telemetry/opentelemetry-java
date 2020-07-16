@@ -21,7 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -34,9 +34,9 @@ public class CountAggregationTest {
     Aggregation count = Aggregations.count();
     for (InstrumentType type : InstrumentType.values()) {
       assertThat(count.getDescriptorType(type, InstrumentValueType.DOUBLE))
-          .isEqualTo(Type.MONOTONIC_LONG);
+          .isEqualTo(Descriptor.Type.MONOTONIC_LONG);
       assertThat(count.getDescriptorType(type, InstrumentValueType.LONG))
-          .isEqualTo(Type.MONOTONIC_LONG);
+          .isEqualTo(Descriptor.Type.MONOTONIC_LONG);
     }
   }
 

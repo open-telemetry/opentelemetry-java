@@ -17,12 +17,17 @@
 package io.opentelemetry.sdk.trace.config;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.opentelemetry.internal.Utils;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
+import java.util.Map;
+import java.util.Properties;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -34,6 +39,44 @@ import javax.annotation.concurrent.Immutable;
  * Builder} instance, then use the {@link
  * io.opentelemetry.sdk.trace.TracerSdkProvider#updateActiveTraceConfig(TraceConfig)} with the
  * resulting TraceConfig instance.
+ *
+ * <p>Configuration options for {@link TraceConfig} can be read from system properties, environment
+ * variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For system properties and {@link java.util.Properties} objects, {@link TraceConfig} will look
+ * for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.config.sampler.probability}: to set the global default sampler which is used
+ *       when constructing a new {@code Span}.
+ *   <li>{@code otel.config.max.attrs}: to set the global default max number of attributes per
+ *       {@link Span}.
+ *   <li>{@code otel.config.max.events}: to set the global default max number of {@link Event}s per
+ *       {@link Span}.
+ *   <li>{@code otel.config.max.links}: to set the global default max number of {@link Link} entries
+ *       per {@link Span}.
+ *   <li>{@code otel.config.max.event.attrs}: to set the global default max number of attributes per
+ *       {@link Event}.
+ *   <li>{@code otel.config.max.link.attrs}: to set the global default max number of attributes per
+ *       {@link Link}.
+ * </ul>
+ *
+ * <p>For environment variables, {@link TraceConfig} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_CONFIG_SAMPLER_PROBABILITY}: to set the global default sampler which is used
+ *       when constructing a new {@code Span}.
+ *   <li>{@code OTEL_CONFIG_MAX_ATTRS}: to set the global default max number of attributes per
+ *       {@link Span}.
+ *   <li>{@code OTEL_CONFIG_MAX_EVENTS}: to set the global default max number of {@link Event}s per
+ *       {@link Span}.
+ *   <li>{@code OTEL_CONFIG_MAX_LINKS}: to set the global default max number of {@link Link} entries
+ *       per {@link Span}.
+ *   <li>{@code OTEL_CONFIG_MAX_EVENT_ATTRS}: to set the global default max number of attributes per
+ *       {@link Event}.
+ *   <li>{@code OTEL_CONFIG_MAX_LINK_ATTRS}: to set the global default max number of attributes per
+ *       {@link Link}.
+ * </ul>
  */
 @AutoValue
 @Immutable
@@ -57,15 +100,7 @@ public abstract class TraceConfig {
     return DEFAULT;
   }
 
-  private static final TraceConfig DEFAULT =
-      TraceConfig.newBuilder()
-          .setSampler(DEFAULT_SAMPLER)
-          .setMaxNumberOfAttributes(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES)
-          .setMaxNumberOfEvents(DEFAULT_SPAN_MAX_NUM_EVENTS)
-          .setMaxNumberOfLinks(DEFAULT_SPAN_MAX_NUM_LINKS)
-          .setMaxNumberOfAttributesPerEvent(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT)
-          .setMaxNumberOfAttributesPerLink(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK)
-          .build();
+  private static final TraceConfig DEFAULT = TraceConfig.newBuilder().build();
 
   /**
    * Returns the global default {@code Sampler} which is used when constructing a new {@code Span}.
@@ -115,7 +150,13 @@ public abstract class TraceConfig {
    * @return a new {@link Builder}.
    */
   private static Builder newBuilder() {
-    return new AutoValue_TraceConfig.Builder();
+    return new AutoValue_TraceConfig.Builder()
+        .setSampler(DEFAULT_SAMPLER)
+        .setMaxNumberOfAttributes(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES)
+        .setMaxNumberOfEvents(DEFAULT_SPAN_MAX_NUM_EVENTS)
+        .setMaxNumberOfLinks(DEFAULT_SPAN_MAX_NUM_LINKS)
+        .setMaxNumberOfAttributesPerEvent(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT)
+        .setMaxNumberOfAttributesPerLink(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK);
   }
 
   /**
@@ -125,9 +166,87 @@ public abstract class TraceConfig {
    */
   public abstract Builder toBuilder();
 
-  /** A {@code Builder} class for {@link TraceConfig}. */
+  /** Builder for {@link TraceConfig}. */
   @AutoValue.Builder
-  public abstract static class Builder {
+  public abstract static class Builder extends ConfigBuilder<Builder> {
+    private static final String KEY_SAMPLER_PROBABILITY = "otel.config.sampler.probability";
+    private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES = "otel.config.max.attrs";
+    private static final String KEY_SPAN_MAX_NUM_EVENTS = "otel.config.max.events";
+    private static final String KEY_SPAN_MAX_NUM_LINKS = "otel.config.max.links";
+    private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT =
+        "otel.config.max.event.attrs";
+    private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = "otel.config.max.link.attrs";
+
+    Builder() {}
+
+    /**
+     * Sets the configuration values from the given configuration map for only the available keys.
+     *
+     * @param configMap {@link Map} holding the configuration values.
+     * @return this
+     */
+    @VisibleForTesting
+    @Override
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, Builder.NamingConvention namingConvention) {
+      configMap = namingConvention.normalize(configMap);
+      Double doubleValue = getDoubleProperty(KEY_SAMPLER_PROBABILITY, configMap);
+      if (doubleValue != null) {
+        this.setSamplerProbability(doubleValue);
+      }
+      Integer intValue = getIntProperty(KEY_SPAN_MAX_NUM_ATTRIBUTES, configMap);
+      if (intValue != null) {
+        this.setMaxNumberOfAttributes(intValue);
+      }
+      intValue = getIntProperty(KEY_SPAN_MAX_NUM_EVENTS, configMap);
+      if (intValue != null) {
+        this.setMaxNumberOfEvents(intValue);
+      }
+      intValue = getIntProperty(KEY_SPAN_MAX_NUM_LINKS, configMap);
+      if (intValue != null) {
+        this.setMaxNumberOfLinks(intValue);
+      }
+      intValue = getIntProperty(KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT, configMap);
+      if (intValue != null) {
+        this.setMaxNumberOfAttributesPerEvent(intValue);
+      }
+      intValue = getIntProperty(KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK, configMap);
+      if (intValue != null) {
+        this.setMaxNumberOfAttributesPerLink(intValue);
+      }
+      return this;
+    }
+
+    /**
+     * * Sets the configuration values from the given properties object for only the available keys.
+     *
+     * @param properties {@link Properties} holding the configuration values.
+     * @return this
+     */
+    @Override
+    public Builder readProperties(Properties properties) {
+      return super.readProperties(properties);
+    }
+
+    /**
+     * * Sets the configuration values from environment variables for only the available keys.
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readEnvironmentVariables() {
+      return super.readEnvironmentVariables();
+    }
+
+    /**
+     * * Sets the configuration values from system properties for only the available keys.
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readSystemProperties() {
+      return super.readSystemProperties();
+    }
 
     /**
      * Sets the global default {@code Sampler}. It must be not {@code null} otherwise {@link
@@ -137,6 +256,29 @@ public abstract class TraceConfig {
      * @return this.
      */
     public abstract Builder setSampler(Sampler sampler);
+
+    /**
+     * Sets the global default {@code Sampler}. It must be not {@code null} otherwise {@link
+     * #build()} will throw an exception.
+     *
+     * @param samplerProbability the global default probability used to make decisions on {@link
+     *     Span} sampling.
+     * @return this.
+     */
+    public Builder setSamplerProbability(double samplerProbability) {
+      Utils.checkArgument(
+          samplerProbability >= 0, "samplerProbability must be greater than or equal to 0.");
+      Utils.checkArgument(
+          samplerProbability <= 1, "samplerProbability must be lesser than or equal to 1.");
+      if (samplerProbability == 1) {
+        setSampler(Samplers.alwaysOn());
+      } else if (samplerProbability == 0) {
+        setSampler(Samplers.alwaysOff());
+      } else {
+        setSampler(Samplers.probability(samplerProbability));
+      }
+      return this;
+    }
 
     /**
      * Sets the global default max number of attributes per {@link Span}.

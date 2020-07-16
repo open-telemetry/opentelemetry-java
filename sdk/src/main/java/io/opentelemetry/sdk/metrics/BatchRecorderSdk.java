@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleUpDownCounter;
@@ -31,10 +32,10 @@ import io.opentelemetry.metrics.LongValueRecorder;
  * <p>TODO: Add an async queue processing to process batch records.
  */
 final class BatchRecorderSdk implements BatchRecorder {
-  private final LabelSetSdk labelSet;
+  private final Labels labelSet;
 
   BatchRecorderSdk(String... keyValuePairs) {
-    this.labelSet = LabelSetSdk.create(keyValuePairs);
+    this.labelSet = Labels.of(keyValuePairs);
   }
 
   @Override

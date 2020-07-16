@@ -25,13 +25,28 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
  * SpanData} and passes it to the configured exporter.
+ *
+ * <p>Configuration options for {@link SimpleSpanProcessor} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For system properties and {@link java.util.Properties} objects, {@link SimpleSpanProcessor}
+ * will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.ssp.export.sampled}: sets whether only sampled spans should be exported.
+ * </ul>
+ *
+ * <p>For environment variables, {@link SimpleSpanProcessor} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
+ * </ul>
  */
 public final class SimpleSpanProcessor implements SpanProcessor {
 
@@ -99,9 +114,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
     private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
 
-    private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
+    @VisibleForTesting static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
     private final SpanExporter spanExporter;
-    private boolean sampled = DEFAULT_EXPORT_ONLY_SAMPLED;
+    private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
@@ -118,62 +133,15 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
      */
-    @VisibleForTesting
     @Override
     protected Builder fromConfigMap(
         Map<String, String> configMap, NamingConvention namingConvention) {
       configMap = namingConvention.normalize(configMap);
       Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
       if (boolValue != null) {
-        this.setExportOnlySampled(boolValue);
+        return this.setExportOnlySampled(boolValue);
       }
       return this;
-    }
-
-    /**
-     * Sets the configuration values from the given properties object for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be exported.
-     * </ul>
-     *
-     * @param properties {@link Properties} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    public Builder readProperties(Properties properties) {
-      return super.readProperties(properties);
-    }
-
-    /**
-     * Sets the configuration values from environment variables for only the available keys. This
-     * method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: to set whether only sampled spans should be exported.
-     * </ul>
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readEnvironmentVariables() {
-      return super.readEnvironmentVariables();
-    }
-
-    /**
-     * Sets the configuration values from system properties for only the available keys. This method
-     * looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be reported.
-     * </ul>
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readSystemProperties() {
-      return super.readSystemProperties();
     }
 
     /**
@@ -181,13 +149,17 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      *
      * <p>Default value is {@code true}.
      *
-     * @see SimpleSpanProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
-     * @param sampled report only sampled spans.
+     * @param exportOnlySampled if {@code true} report only sampled spans.
      * @return this.
      */
-    public Builder setExportOnlySampled(boolean sampled) {
-      this.sampled = sampled;
+    public Builder setExportOnlySampled(boolean exportOnlySampled) {
+      this.exportOnlySampled = exportOnlySampled;
       return this;
+    }
+
+    @VisibleForTesting
+    boolean getExportOnlySampled() {
+      return exportOnlySampled;
     }
 
     // TODO: Add metrics for total exported spans.
@@ -201,7 +173,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
     public SimpleSpanProcessor build() {
-      return new SimpleSpanProcessor(spanExporter, sampled);
+      return new SimpleSpanProcessor(spanExporter, exportOnlySampled);
     }
   }
 }

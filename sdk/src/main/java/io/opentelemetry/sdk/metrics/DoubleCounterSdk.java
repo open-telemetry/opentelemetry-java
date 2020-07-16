@@ -16,11 +16,11 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
     implements DoubleCounter {
@@ -28,33 +28,19 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
   private DoubleCounterSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(
-            getDefaultBatcher(
-                descriptor, meterProviderSharedState, meterSharedState, Aggregations.sum())));
+      MeterSharedState meterSharedState,
+      Batcher batcher) {
+    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
   @Override
-  public void add(double increment, String... labelKeyValuePairs) {
-    add(increment, LabelSetSdk.create(labelKeyValuePairs));
-  }
-
-  void add(double increment, LabelSetSdk labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
+  public void add(double increment, Labels labels) {
+    BoundInstrument boundInstrument = bind(labels);
     try {
       boundInstrument.add(increment);
     } finally {
       boundInstrument.unbind();
     }
-  }
-
-  @Override
-  public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override
@@ -84,8 +70,9 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+        MeterSharedState meterSharedState,
+        MeterSdk meterSdk) {
+      super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
     @Override
@@ -95,11 +82,14 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
 
     @Override
     public DoubleCounterSdk build() {
+      InstrumentDescriptor instrumentDescriptor =
+          getInstrumentDescriptor(InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
       return register(
           new DoubleCounterSdk(
-              getInstrumentDescriptor(InstrumentType.COUNTER_MONOTONIC, InstrumentValueType.DOUBLE),
+              instrumentDescriptor,
               getMeterProviderSharedState(),
-              getMeterSharedState()));
+              getMeterSharedState(),
+              getBatcher(instrumentDescriptor)));
     }
   }
 }

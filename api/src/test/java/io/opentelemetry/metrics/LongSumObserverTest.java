@@ -17,6 +17,7 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import java.util.Arrays;
 import org.junit.Rule;
@@ -30,11 +31,31 @@ import org.junit.runners.JUnit4;
 public class LongSumObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
-  private final Meter meter = OpenTelemetry.getMeter("observer_long_test");
+  private static final String NAME = "name";
+  private static final String DESCRIPTION = "description";
+  private static final String UNIT = "1";
+  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
+
+  private final Meter meter = OpenTelemetry.getMeter("LongSumObserverTest");
+
+  @Test
+  public void preventNull_Name() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.longSumObserverBuilder(null);
+  }
+
+  @Test
+  public void preventEmpty_Name() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.longSumObserverBuilder("").build();
+  }
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
     meter.longSumObserverBuilder("\2").build();
   }
 
@@ -67,5 +88,25 @@ public class LongSumObserverTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
     meter.longSumObserverBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
+  public void preventNull_Callback() {
+    LongSumObserver longSumObserver = meter.longSumObserverBuilder("metric").build();
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("callback");
+    longSumObserver.setCallback(null);
+  }
+
+  @Test
+  public void doesNotThrow() {
+    LongSumObserver longSumObserver =
+        meter
+            .longSumObserverBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
+    longSumObserver.setCallback(result -> {});
   }
 }

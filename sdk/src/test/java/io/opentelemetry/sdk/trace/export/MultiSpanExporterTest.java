@@ -51,8 +51,7 @@ public class MultiSpanExporterTest {
 
   @Test
   public void empty() {
-    SpanExporter multiSpanExporter =
-        MultiSpanExporter.create(Collections.<SpanExporter>emptyList());
+    SpanExporter multiSpanExporter = MultiSpanExporter.create(Collections.emptyList());
     multiSpanExporter.export(SPAN_LIST);
     multiSpanExporter.shutdown();
   }
@@ -61,9 +60,14 @@ public class MultiSpanExporterTest {
   public void oneSpanExporter() {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Collections.singletonList(spanExporter1));
+
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.SUCCESS);
     verify(spanExporter1).export(same(SPAN_LIST));
+
+    when(spanExporter1.flush()).thenReturn(ResultCode.SUCCESS);
+    assertThat(multiSpanExporter.flush()).isEqualTo(ResultCode.SUCCESS);
+    verify(spanExporter1).flush();
 
     multiSpanExporter.shutdown();
     verify(spanExporter1).shutdown();
@@ -73,11 +77,18 @@ public class MultiSpanExporterTest {
   public void twoSpanExporter() {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
+
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.SUCCESS);
     verify(spanExporter1).export(same(SPAN_LIST));
     verify(spanExporter2).export(same(SPAN_LIST));
+
+    when(spanExporter1.flush()).thenReturn(ResultCode.SUCCESS);
+    when(spanExporter2.flush()).thenReturn(ResultCode.SUCCESS);
+    assertThat(multiSpanExporter.flush()).isEqualTo(ResultCode.SUCCESS);
+    verify(spanExporter1).flush();
+    verify(spanExporter2).flush();
 
     multiSpanExporter.shutdown();
     verify(spanExporter1).shutdown();
@@ -88,22 +99,37 @@ public class MultiSpanExporterTest {
   public void twoSpanExporter_OneReturnFailure() {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
+
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.FAILURE);
     assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILURE);
     verify(spanExporter1).export(same(SPAN_LIST));
     verify(spanExporter2).export(same(SPAN_LIST));
+
+    when(spanExporter1.flush()).thenReturn(ResultCode.SUCCESS);
+    when(spanExporter2.flush()).thenReturn(ResultCode.FAILURE);
+    assertThat(multiSpanExporter.flush()).isEqualTo(ResultCode.FAILURE);
+    verify(spanExporter1).flush();
+    verify(spanExporter2).flush();
   }
 
   @Test
   public void twoSpanExporter_FirstThrows() {
-    doThrow(new IllegalArgumentException("No export for you."))
-        .when(spanExporter1)
-        .export(ArgumentMatchers.<SpanData>anyList());
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
+
+    doThrow(new IllegalArgumentException("No export for you."))
+        .when(spanExporter1)
+        .export(ArgumentMatchers.anyList());
+    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILURE);
     verify(spanExporter1).export(same(SPAN_LIST));
     verify(spanExporter2).export(same(SPAN_LIST));
+
+    doThrow(new IllegalArgumentException("No flush for you.")).when(spanExporter1).flush();
+    when(spanExporter2.flush()).thenReturn(ResultCode.SUCCESS);
+    assertThat(multiSpanExporter.flush()).isEqualTo(ResultCode.FAILURE);
+    verify(spanExporter1).flush();
+    verify(spanExporter2).flush();
   }
 }

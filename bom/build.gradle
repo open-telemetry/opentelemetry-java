@@ -1,5 +1,7 @@
-apply plugin: "java-platform"
-apply plugin: "maven-publish"
+plugins {
+    id "java-platform"
+    id "maven-publish"
+}
 
 group = "io.opentelemetry"
 

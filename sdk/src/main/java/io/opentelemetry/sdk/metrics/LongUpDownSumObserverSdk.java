@@ -17,47 +17,18 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LongUpDownSumObserver;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.Nullable;
 
-final class LongUpDownSumObserverSdk extends AbstractAsynchronousInstrument
+final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
     implements LongUpDownSumObserver {
-  @Nullable private volatile Callback<ResultLongUpDownSumObserver> metricUpdater = null;
-  private final ReentrantLock collectLock = new ReentrantLock();
-
   LongUpDownSumObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    super(descriptor, meterProviderSharedState, meterSharedState);
-  }
-
-  @Override
-  List<MetricData> collectAll() {
-    Callback<ResultLongUpDownSumObserver> currentMetricUpdater = metricUpdater;
-    if (currentMetricUpdater == null) {
-      return Collections.emptyList();
-    }
-    collectLock.lock();
-    try {
-      final ActiveBatcher activeBatcher = getActiveBatcher();
-      currentMetricUpdater.update(new ResultObserver(activeBatcher));
-      return activeBatcher.completeCollectionCycle();
-    } finally {
-      collectLock.unlock();
-    }
-  }
-
-  @Override
-  public void setCallback(Callback<ResultLongUpDownSumObserver> metricUpdater) {
-    this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
+      MeterSharedState meterSharedState,
+      Batcher batcher) {
+    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
   static final class Builder
@@ -67,8 +38,9 @@ final class LongUpDownSumObserverSdk extends AbstractAsynchronousInstrument
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+        MeterSharedState meterSharedState,
+        MeterSdk meterSdk) {
+      super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
     @Override
@@ -78,30 +50,14 @@ final class LongUpDownSumObserverSdk extends AbstractAsynchronousInstrument
 
     @Override
     public LongUpDownSumObserverSdk build() {
+      InstrumentDescriptor instrumentDescriptor =
+          getInstrumentDescriptor(InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG);
       return register(
           new LongUpDownSumObserverSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.OBSERVER_NON_MONOTONIC, InstrumentValueType.LONG),
+              instrumentDescriptor,
               getMeterProviderSharedState(),
-              getMeterSharedState()));
-    }
-  }
-
-  private static final class ResultObserver
-      implements LongUpDownSumObserver.ResultLongUpDownSumObserver {
-
-    private final ActiveBatcher activeBatcher;
-
-    private ResultObserver(ActiveBatcher activeBatcher) {
-      this.activeBatcher = activeBatcher;
-    }
-
-    @Override
-    public void observe(long sum, String... keyValueLabelPairs) {
-      Aggregator aggregator = activeBatcher.getAggregator();
-      aggregator.recordLong(sum);
-      activeBatcher.batch(
-          LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
+              getMeterSharedState(),
+              getBatcher(instrumentDescriptor)));
     }
   }
 }

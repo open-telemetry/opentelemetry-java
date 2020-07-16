@@ -18,9 +18,9 @@ package io.opentelemetry.trace;
 
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
-import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -113,8 +113,7 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder addLink(
-        SpanContext spanContext, Map<String, AttributeValue> attributes) {
+    public NoopSpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
       return this;
     }
 
