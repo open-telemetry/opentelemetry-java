@@ -99,7 +99,7 @@ class ViewRegistry {
     if (registeredSelector.instrumentType() == null) {
       return true;
     }
-    return Objects.equals(registeredSelector.instrumentType(), descriptor.getType());
+    return registeredSelector.instrumentType().equals(descriptor.getType());
   }
 
   private static boolean matchesOnName(
