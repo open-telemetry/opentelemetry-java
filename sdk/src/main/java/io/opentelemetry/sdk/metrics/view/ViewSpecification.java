@@ -43,7 +43,7 @@ public abstract class ViewSpecification {
      */
     DELTA,
     /**
-     * CUMULATIVE means that metrics will be aggregated over the lifetime of the associated {@link
+     * Metrics will be aggregated over the lifetime of the associated {@link
      * io.opentelemetry.metrics.Instrument}.
      */
     CUMULATIVE
