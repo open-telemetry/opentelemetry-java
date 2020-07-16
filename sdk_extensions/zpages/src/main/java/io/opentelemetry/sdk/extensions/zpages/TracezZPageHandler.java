@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import static com.google.common.html.HtmlEscapers.htmlEscaper;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
@@ -486,7 +487,6 @@ final class TracezZPageHandler extends ZPageHandler {
         } else if (type == SampleType.RUNNING) {
           // Display running span
           spans = dataAggregator.getRunningSpans(spanName);
-          Collections.sort(spans, new SpanDataComparator(/* incremental= */ true));
         } else {
           String subtypeStr = queryMap.get(PARAM_SAMPLE_SUB_TYPE);
           if (subtypeStr != null) {
@@ -503,7 +503,6 @@ final class TracezZPageHandler extends ZPageHandler {
                       spanName,
                       latencyBoundary.getLatencyLowerBound(),
                       latencyBoundary.getLatencyUpperBound());
-              Collections.sort(spans, new SpanDataComparator(/* incremental= */ false));
             } else {
               if (subtype < 0 || subtype >= CanonicalCode.values().length) {
                 // N/A or out-of-bound cueck for error based subtype, valid values: [0, 15]
@@ -511,7 +510,6 @@ final class TracezZPageHandler extends ZPageHandler {
               }
               // Display error based span
               spans = dataAggregator.getErrorSpans(spanName);
-              Collections.sort(spans, new SpanDataComparator(/* incremental= */ false));
             }
           }
         }
@@ -520,6 +518,8 @@ final class TracezZPageHandler extends ZPageHandler {
 
         if (spans != null) {
           Formatter formatter = new Formatter(out, Locale.US);
+          spans =
+              ImmutableList.sortedCopyOf(new SpanDataComparator(/* incremental= */ true), spans);
           emitSpanDetails(out, formatter, spans);
         }
       }

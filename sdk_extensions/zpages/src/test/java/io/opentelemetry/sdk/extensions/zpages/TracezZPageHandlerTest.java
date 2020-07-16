@@ -27,7 +27,6 @@ import io.opentelemetry.trace.Status.CanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,7 +50,7 @@ public final class TracezZPageHandlerTest {
   private final Tracer tracer = tracerSdkProvider.get("TracezZPageHandlerTest");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
-  private final Map<String, String> queryMap = ImmutableMap.of();
+  private final Map<String, String> emptyQueryMap = ImmutableMap.of();
 
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
@@ -79,7 +78,7 @@ public final class TracezZPageHandlerTest {
     errorSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml(queryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Emit a row for all types of spans
     assertThat(output.toString()).contains(FINISHED_SPAN_ONE);
@@ -101,7 +100,7 @@ public final class TracezZPageHandlerTest {
     finishedSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml(queryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Link for running span with 3 running
     assertThat(output.toString())
@@ -119,7 +118,7 @@ public final class TracezZPageHandlerTest {
   public void summaryTable_linkForLatencyBasedSpans_NoneForEmptyBoundary() {
     OutputStream output = new ByteArrayOutputStream();
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml(queryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // No link for boundary 0
     assertThat(output.toString())
@@ -191,7 +190,7 @@ public final class TracezZPageHandlerTest {
     latencySpanSubtype8.end(endOptions8);
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml(queryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Link for boundary 0
     assertThat(output.toString())
@@ -240,7 +239,7 @@ public final class TracezZPageHandlerTest {
     latencySpan100ms4.end(endOptions4);
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml(queryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Link for boundary 5 with 4 samples
     assertThat(output.toString())
@@ -263,7 +262,7 @@ public final class TracezZPageHandlerTest {
     finishedSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml(queryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Link for error based spans with 3 samples
     assertThat(output.toString())
@@ -274,18 +273,82 @@ public final class TracezZPageHandlerTest {
   }
 
   @Test
-  public void spanDetails_emitSpanNameCorrectly() {
+  public void spanDetails_emitRunningSpanDetailsCorrectly() {
     OutputStream output = new ByteArrayOutputStream();
-    Map<String, String> queryMapWithSpanName = new HashMap<String, String>();
-    queryMapWithSpanName.put("zspanname", FINISHED_SPAN_ONE);
-    queryMapWithSpanName.put("ztype", "1");
-    queryMapWithSpanName.put("zsubtype", "2");
+    Span runningSpan = tracer.spanBuilder(RUNNING_SPAN).startSpan();
+    Map<String, String> queryMap =
+        ImmutableMap.of("zspanname", RUNNING_SPAN, "ztype", "0", "zsubtype", "0");
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml(queryMapWithSpanName, output);
+    tracezZPageHandler.emitHtml(queryMap, output);
 
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
-    assertThat(output.toString()).contains("<b> Span Name: " + FINISHED_SPAN_ONE + "</b>");
-    assertThat(output.toString()).contains("<b> Number of latency samples:");
+    assertThat(output.toString()).contains("<b> Span Name: " + RUNNING_SPAN + "</b>");
+    assertThat(output.toString()).contains("<b> Number of running: 1");
+    assertThat(output.toString()).contains(runningSpan.getContext().getTraceId().toLowerBase16());
+    assertThat(output.toString()).contains(runningSpan.getContext().getSpanId().toLowerBase16());
+
+    runningSpan.end();
+  }
+
+  @Test
+  public void spanDetails_emitLatencySpanDetailsCorrectly() {
+    OutputStream output = new ByteArrayOutputStream();
+    Span latencySpan1 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
+    EndSpanOptions endOptions1 = EndSpanOptions.builder().setEndTimestamp(10002L).build();
+    latencySpan1.end(endOptions1);
+    Span latencySpan2 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
+    EndSpanOptions endOptions2 = EndSpanOptions.builder().setEndTimestamp(10002L).build();
+    latencySpan2.end(endOptions2);
+    Map<String, String> queryMap =
+        ImmutableMap.of("zspanname", LATENCY_SPAN, "ztype", "1", "zsubtype", "1");
+
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
+    tracezZPageHandler.emitHtml(queryMap, output);
+
+    assertThat(output.toString()).contains("<h2>Span Details</h2>");
+    assertThat(output.toString()).contains("<b> Span Name: " + LATENCY_SPAN + "</b>");
+    assertThat(output.toString()).contains("<b> Number of latency samples: 2");
+    assertThat(output.toString()).contains(latencySpan1.getContext().getTraceId().toLowerBase16());
+    assertThat(output.toString()).contains(latencySpan1.getContext().getSpanId().toLowerBase16());
+    assertThat(output.toString()).contains(latencySpan2.getContext().getTraceId().toLowerBase16());
+    assertThat(output.toString()).contains(latencySpan2.getContext().getSpanId().toLowerBase16());
+  }
+
+  @Test
+  public void spanDetails_emitErrorSpanDetailsCorrectly() {
+    OutputStream output = new ByteArrayOutputStream();
+    Span errorSpan1 = tracer.spanBuilder(ERROR_SPAN).startSpan();
+    Span errorSpan2 = tracer.spanBuilder(ERROR_SPAN).startSpan();
+    errorSpan1.setStatus(CanonicalCode.CANCELLED.toStatus());
+    errorSpan2.setStatus(CanonicalCode.ABORTED.toStatus());
+    errorSpan1.end();
+    errorSpan2.end();
+    Map<String, String> queryMap =
+        ImmutableMap.of("zspanname", ERROR_SPAN, "ztype", "2", "zsubtype", "0");
+
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
+    tracezZPageHandler.emitHtml(queryMap, output);
+
+    assertThat(output.toString()).contains("<h2>Span Details</h2>");
+    assertThat(output.toString()).contains("<b> Span Name: " + ERROR_SPAN + "</b>");
+    assertThat(output.toString()).contains("<b> Number of error samples: 2");
+    assertThat(output.toString()).contains(errorSpan1.getContext().getTraceId().toLowerBase16());
+    assertThat(output.toString()).contains(errorSpan1.getContext().getSpanId().toLowerBase16());
+    assertThat(output.toString()).contains(errorSpan2.getContext().getTraceId().toLowerBase16());
+    assertThat(output.toString()).contains(errorSpan2.getContext().getSpanId().toLowerBase16());
+  }
+
+  @Test
+  public void spanDetails_shouldNotBreakOnUnknownType() {
+    OutputStream output = new ByteArrayOutputStream();
+    Map<String, String> queryMap =
+        ImmutableMap.of("zspanname", "Span", "ztype", "-1", "zsubtype", "0");
+
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
+    tracezZPageHandler.emitHtml(queryMap, output);
+
+    assertThat(output.toString()).doesNotContain("<h2>Span Details</h2>");
+    assertThat(output.toString()).doesNotContain("<b> Span Name: Span</b>");
   }
 }
