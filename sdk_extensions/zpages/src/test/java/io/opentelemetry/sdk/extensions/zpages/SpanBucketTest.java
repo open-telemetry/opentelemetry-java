@@ -25,6 +25,7 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -81,30 +82,29 @@ public final class SpanBucketTest {
   @Test
   public void verifyThreadSafety() throws InterruptedException {
     int numberOfThreads = 4;
-    final int numberOfSpans = 4;
+    int numberOfSpans = 4;
     SpanBucket spanBucket = new SpanBucket(true);
-    final CountDownLatch countDownLatch = new CountDownLatch(numberOfThreads);
-    List<Thread> workers = new ArrayList<>();
+    final CountDownLatch startSignal = new CountDownLatch(1);
+    final CountDownLatch endSignal = new CountDownLatch(numberOfThreads);
     for (int i = 0; i < numberOfThreads; i++) {
-      workers.add(
-          new Thread(
+      new Thread(
               () -> {
-                for (int j = 0; j < numberOfSpans; j++) {
-                  Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
-                  spanBucket.add((ReadableSpan) span);
-                  span.end();
+                try {
+                  startSignal.await();
+                  for (int j = 0; j < numberOfSpans; j++) {
+                    Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
+                    spanBucket.add((ReadableSpan) span);
+                    span.end();
+                  }
+                  endSignal.countDown();
+                } catch (InterruptedException e) {
+                  Assert.fail(e.getMessage());
                 }
-              }));
+              })
+          .start();
     }
-    for (Thread worker : workers) {
-      worker.start();
-    }
-    for (int i = 0; i <= numberOfThreads; i++) {
-      countDownLatch.countDown();
-    }
-    for (Thread worker : workers) {
-      worker.join();
-    }
+    startSignal.countDown();
+    endSignal.await();
     /* The SpanBucket should have exactly 16 spans */
     assertThat(spanBucket.size()).isEqualTo(numberOfThreads * numberOfSpans);
   }
