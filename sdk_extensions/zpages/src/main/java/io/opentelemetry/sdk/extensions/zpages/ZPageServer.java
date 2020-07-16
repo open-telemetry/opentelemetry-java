@@ -60,7 +60,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class ZPageServer {
-  // The maximum number of queued incoming connections allowed on the HttpServer listening socket
+  // The maximum number of queued incoming connections allowed on the HttpServer listening socket.
   private static final int HTTPSERVER_BACKLOG = 5;
   // Length of time to wait for the HttpServer to stop
   private static final int HTTPSERVER_STOP_DELAY = 1;

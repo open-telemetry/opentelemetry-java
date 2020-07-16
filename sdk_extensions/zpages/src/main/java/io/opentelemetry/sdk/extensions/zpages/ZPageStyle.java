@@ -26,7 +26,7 @@ final class ZPageStyle {
           + "background-color: #fff;}"
           + "h1{padding: 0 20px; color: #363636; text-align: center; margin-bottom: 20px;}"
           + "h2{padding: 0 20px; color: #363636; text-align: center; margin-bottom: 20px;}"
-          + "p{padding: 0 20px; color: #363636;}"
+          + "p{padding: 0 20px; color: #363636; font-size: 16px;}"
           + "tr.bg-color{background-color: #4b5fab;}"
           + "table{margin: 0 auto;}"
           + "th{padding: 0 1em; line-height: 2.0}"
