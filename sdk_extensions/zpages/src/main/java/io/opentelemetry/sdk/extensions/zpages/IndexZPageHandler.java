@@ -52,7 +52,7 @@ final class IndexZPageHandler extends ZPageHandler {
 
   private static void emitPageLinkAndInfo(PrintStream out, ZPageHandler handler) {
     out.print("<a href=\"" + handler.getUrlPath() + "\">");
-    out.print("<h2 style=\"text-algin: left;\">" + handler.getPageName() + "</h2>");
+    out.print("<h2 style=\"text-align: left;\">" + handler.getPageName() + "</h2>");
     out.print("</a>");
     out.print("<p>" + handler.getPageDescription() + "</p>");
   }

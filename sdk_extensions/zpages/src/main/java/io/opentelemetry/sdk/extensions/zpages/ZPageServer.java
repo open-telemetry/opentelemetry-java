@@ -95,7 +95,7 @@ public final class ZPageServer {
    * Registers a {@link ZPageHandler} for the index page of zPages. The page displays information
    * about all available zPages with links to those zPages.
    *
-   * @param server the server that exports the zPages.
+   * @param server the {@link HttpServer} for the page to register to.
    */
   static void registerIndexZPageHandler(HttpServer server) {
     server.createContext(indexZPageHandler.getUrlPath(), new ZPageHttpHandler(indexZPageHandler));
@@ -114,7 +114,7 @@ public final class ZPageServer {
    * <p>This method will add the TracezSpanProcessor to the tracerProvider, it should only be called
    * once.
    *
-   * @param server the server that exports the zPages.
+   * @param server the {@link HttpServer} for the page to register to.
    */
   static void registerTracezZPageHandler(HttpServer server) {
     addTracezSpanProcessor();
@@ -124,7 +124,7 @@ public final class ZPageServer {
   /**
    * Registers all zPages to the given {@link HttpServer} {@code server}.
    *
-   * @param server the server that exports the zPages.
+   * @param server the {@link HttpServer} for the page to register to.
    */
   public static void registerAllPagesToHttpServer(HttpServer server) {
     // For future zPages, register them to the server in here
