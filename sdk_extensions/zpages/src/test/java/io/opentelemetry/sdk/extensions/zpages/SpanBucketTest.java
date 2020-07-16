@@ -105,6 +105,7 @@ public final class SpanBucketTest {
     for (Thread worker : workers) {
       worker.join();
     }
+    /* The SpanBucket should have exactly 16 spans */
     assertThat(spanBucket.size()).isEqualTo(numberOfThreads * numberOfSpans);
   }
 }
