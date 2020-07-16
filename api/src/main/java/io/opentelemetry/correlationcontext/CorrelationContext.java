@@ -77,10 +77,11 @@ public interface CorrelationContext {
 
     /**
      * Sets the parent {@link CorrelationContext} to use from the specified {@code Context}. If no
-     * parent is provided, the value of {@link CorrelationContextManager#getCurrentContext()} at
-     * {@link #build()} time will be used as parent, unless {@link #setNoParent()} was called.
+     * parent {@link CorrelationContext} is provided, the value of {@link
+     * CorrelationContextManager#getCurrentContext()} at {@link #build()} time will be used as
+     * parent, unless {@link #setNoParent()} was called.
      *
-     * <p>If no {@link CorrelationContext} is available in the specified {@code Context}, the
+     * <p>If no parent {@link CorrelationContext} is available in the specified {@code Context}, the
      * resulting {@link CorrelationContext} will become a root instance, as if {@link
      * #setNoParent()} had been called.
      *
