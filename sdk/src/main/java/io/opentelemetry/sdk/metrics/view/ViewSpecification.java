@@ -38,9 +38,7 @@ public abstract class ViewSpecification {
 
   /** An enumeration which describes the time period over which metrics should be aggregated. */
   public enum Temporality {
-    /**
-     * Metrics will be aggregated only over the most recent collection interval.
-     */
+    /** Metrics will be aggregated only over the most recent collection interval. */
     DELTA,
     /**
      * Metrics will be aggregated over the lifetime of the associated {@link
