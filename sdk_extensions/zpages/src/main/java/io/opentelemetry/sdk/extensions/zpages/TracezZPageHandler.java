@@ -83,7 +83,7 @@ final class TracezZPageHandler extends ZPageHandler {
   private static final String TRACEZ_URL = "/tracez";
   private static final String TRACEZ_NAME = "TraceZ";
   private static final String TRACEZ_DESCRIPTION =
-      "/tracez displays information about all the running spans"
+      "TraceZ displays information about all the running spans"
           + " and all the sampled spans based on latency and errors";
   // Background color used for zebra striping rows of summary table
   private static final String ZEBRA_STRIPE_COLOR = "#e6e6e6";
@@ -465,9 +465,9 @@ final class TracezZPageHandler extends ZPageHandler {
       return;
     }
     out.print(
-        "<img style=\"height: 90px;\" src=\"data:image/png;base64,"
+        "<a href=\"/\"><img style=\"height: 90px;\" src=\"data:image/png;base64,"
             + ZPageLogo.getLogoBase64()
-            + "\" />");
+            + "\" /></a>");
     out.print("<h1>TraceZ Summary</h1>");
     emitSummaryTable(out);
     // spanName will be null if the query parameter doesn't exist in the URL

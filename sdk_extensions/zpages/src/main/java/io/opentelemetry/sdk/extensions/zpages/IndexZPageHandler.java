@@ -52,7 +52,7 @@ final class IndexZPageHandler extends ZPageHandler {
 
   private static void emitPageLinkAndInfo(PrintStream out, ZPageHandler handler) {
     out.print("<a href=" + handler.getUrlPath() + " >");
-    out.print("<h2>" + handler.getPageName() + "</h2>");
+    out.print("<h2 style=\"text-algin: left;\">" + handler.getPageName() + "</h2>");
     out.print("</a>");
     out.print("<p>" + handler.getPageDescription() + "</p>");
   }
@@ -80,11 +80,20 @@ final class IndexZPageHandler extends ZPageHandler {
       out.print("</style>");
       out.print("</head>");
       out.print("<body>");
+      out.print(
+          "<a href=\"/\"><img style=\"height: 90px;\" src=\"data:image/png;base64,"
+              + ZPageLogo.getLogoBase64()
+              + "\" /></a>");
+      out.print("<h1 style=\"text-align: left;\">zPages</h1>");
+      out.print(
+          "<p>OpenTelemetry provides in-process web pages that display collected data from"
+              + " the process that they are attached to. These are called \"zPages\"."
+              + " They are useful for in-process diagnostics without having to depend on"
+              + " any backend to examine traces or metrics.</p>");
 
       out.print(
-          "<img style=\"height: 90px;\" src=\"data:image/png;base64,"
-              + ZPageLogo.getLogoBase64()
-              + "\" />");
+          "<p>zPages can be useful during the development time or "
+              + "when the process to be inspected is known in production.</p>");
       if (this.availableHandlers != null) {
         for (ZPageHandler handler : this.availableHandlers) {
           emitPageLinkAndInfo(out, handler);

@@ -24,9 +24,9 @@ final class ZPageStyle {
   static String style =
       "body{font-family: \"Roboto\", sans-serif; font-size: 14px;"
           + "background-color: #fff;}"
-          + "h1{color: #363636; text-align: center; margin-bottom 20px;}"
-          + "h2{color: #363636; text-align: center; margin-top: 30px;}"
-          + "p{padding: 0 0.5em; color: #363636;}"
+          + "h1{padding: 0 20px; color: #363636; text-align: center; margin-bottom: 20px;}"
+          + "h2{padding: 0 20px; color: #363636; text-align: center; margin-bottom: 20px;}"
+          + "p{padding: 0 20px; color: #363636;}"
           + "tr.bg-color{background-color: #4b5fab;}"
           + "table{margin: 0 auto;}"
           + "th{padding: 0 1em; line-height: 2.0}"
