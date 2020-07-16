@@ -73,13 +73,15 @@ public final class ZPageServer {
   private static final ZPageHandler tracezZPageHandler =
       new TracezZPageHandler(tracezDataAggregator);
   // Handler for index page, **please include all available zPages in the constructor**
-  private static final ZPageHandler indexZPageHandler = new IndexZPageHandler(ImmutableList.of(tracezZPageHandler));
+  private static final ZPageHandler indexZPageHandler =
+      new IndexZPageHandler(ImmutableList.of(tracezZPageHandler));
 
   private static final Object mutex = new Object();
   private static final AtomicBoolean isTracezSpanProcesserAdded = new AtomicBoolean(false);
 
   @GuardedBy("mutex")
-  @Nullable private static HttpServer server;
+  @Nullable
+  private static HttpServer server;
 
   /** Function that adds the {@link TracezSpanProcessor} to the {@link TracerSdkProvider}. */
   private static void addTracezSpanProcessor() {
@@ -92,7 +94,7 @@ public final class ZPageServer {
   /**
    * Registers a {@link ZPageHandler} for the index page of zPages. The page displays information
    * about all available zPages with links to those zPages.
-   * 
+   *
    * @param server the server that exports the zPages.
    */
   static void registerIndexZPageHandler(HttpServer server) {
@@ -111,7 +113,7 @@ public final class ZPageServer {
    *
    * <p>This method will add the TracezSpanProcessor to the tracerProvider, it should only be called
    * once.
-   * 
+   *
    * @param server the server that exports the zPages.
    */
   static void registerTracezZPageHandler(HttpServer server) {
