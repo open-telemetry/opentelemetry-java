@@ -102,6 +102,13 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
+  public Span.Builder setParent(Context context) {
+    Objects.requireNonNull(context, "context");
+    setParent(TracingContextUtils.getSpan(context));
+    return this;
+  }
+
+  @Override
   public Span.Builder setNoParent() {
     this.parentType = ParentType.NO_PARENT;
     this.parent = null;

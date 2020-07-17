@@ -20,8 +20,11 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.correlationcontext.CorrelationContextTestUtil.listToCorrelationContext;
 
 import com.google.common.testing.EqualsTester;
+import io.grpc.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import org.junit.Rule;
@@ -127,7 +130,35 @@ public class CorrelationContextSdkTest {
   public void setParent_nullValue() {
     CorrelationContextSdk parent = listToCorrelationContext(T1);
     thrown.expect(NullPointerException.class);
-    contextManager.contextBuilder().setParent(parent).setParent(null).build();
+    contextManager.contextBuilder().setParent(parent).setParent((CorrelationContext) null).build();
+  }
+
+  @Test
+  public void setParent_nullContext() {
+    thrown.expect(NullPointerException.class);
+    contextManager.contextBuilder().setParent((Context) null);
+  }
+
+  @Test
+  public void setParent_fromContext() {
+    CorrelationContextSdk parent = listToCorrelationContext(T1);
+    Context context =
+        CorrelationsContextUtils.withCorrelationContext(
+            listToCorrelationContext(T2), Context.current());
+    CorrelationContext corrContext =
+        contextManager.contextBuilder().setParent(parent).setParent(context).build();
+    assertThat(corrContext.getEntries()).containsExactly(T2);
+  }
+
+  @Test
+  public void setParent_fromEmptyContext() {
+    Context emptyContext = Context.current();
+    CorrelationContextSdk parent = listToCorrelationContext(T1);
+    try (Scope scope = CorrelationsContextUtils.currentContextWith(parent)) {
+      CorrelationContext corrContext =
+          contextManager.contextBuilder().setParent(emptyContext).build();
+      assertThat(corrContext.getEntries()).isEmpty();
+    }
   }
 
   @Test

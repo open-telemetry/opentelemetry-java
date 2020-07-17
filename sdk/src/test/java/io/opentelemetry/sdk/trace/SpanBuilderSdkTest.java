@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 
+import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
@@ -34,6 +35,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -617,6 +619,49 @@ public class SpanBuilderSdkTest {
       try {
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
         assertThat(span.toSpanData().getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
+      } finally {
+        span.end();
+      }
+    } finally {
+      parent.end();
+    }
+  }
+
+  @Test
+  public void parent_fromContext() {
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+    Context context = TracingContextUtils.withSpan(parent, Context.current());
+    try {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan)
+              tracerSdk.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
+      try {
+        assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+        assertThat(span.toSpanData().getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
+      } finally {
+        span.end();
+      }
+    } finally {
+      parent.end();
+    }
+  }
+
+  @Test
+  public void parent_fromEmptyContext() {
+    Context emptyContext = Context.current();
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+    try {
+      RecordEventsReadableSpan span = null;
+      try (Scope scope = TracingContextUtils.currentContextWith(parent)) {
+        span =
+            (RecordEventsReadableSpan)
+                tracerSdk.spanBuilder(SPAN_NAME).setParent(emptyContext).startSpan();
+      }
+
+      try {
+        assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
+        assertThat(span.toSpanData().getParentSpanId())
+            .isNotEqualTo(parent.getContext().getSpanId());
       } finally {
         span.end();
       }

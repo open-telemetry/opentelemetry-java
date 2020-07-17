@@ -16,8 +16,10 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
+import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import java.util.Collection;
@@ -120,6 +122,13 @@ class CorrelationContextSdk implements CorrelationContext {
     @Override
     public CorrelationContext.Builder setParent(CorrelationContext parent) {
       this.parent = Objects.requireNonNull(parent, "parent");
+      return this;
+    }
+
+    @Override
+    public CorrelationContext.Builder setParent(Context context) {
+      Objects.requireNonNull(context, "context");
+      setParent(CorrelationsContextUtils.getCorrelationContext(context));
       return this;
     }
 

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.correlationcontext;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
@@ -62,6 +63,12 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
     @Override
     public CorrelationContext.Builder setParent(CorrelationContext parent) {
       Utils.checkNotNull(parent, "parent");
+      return this;
+    }
+
+    @Override
+    public CorrelationContext.Builder setParent(Context context) {
+      Utils.checkNotNull(context, "context");
       return this;
     }
 
