@@ -22,16 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 final class IndexZPageHandler extends ZPageHandler {
   private static final String INDEX_URL = "/";
   private static final String INDEX_NAME = "Index";
   private static final String INDEX_DESCRITION = "Index page of zPages";
   private static final Logger logger = Logger.getLogger(IndexZPageHandler.class.getName());
-  @Nullable private final List<ZPageHandler> availableHandlers;
+  private final List<ZPageHandler> availableHandlers;
 
-  IndexZPageHandler(@Nullable List<ZPageHandler> availableHandlers) {
+  IndexZPageHandler(List<ZPageHandler> availableHandlers) {
     this.availableHandlers = availableHandlers;
   }
 
@@ -94,10 +93,8 @@ final class IndexZPageHandler extends ZPageHandler {
       out.print(
           "<p>zPages can be useful during the development time or "
               + "when the process to be inspected is known in production.</p>");
-      if (this.availableHandlers != null) {
-        for (ZPageHandler handler : this.availableHandlers) {
-          emitPageLinkAndInfo(out, handler);
-        }
+      for (ZPageHandler handler : this.availableHandlers) {
+        emitPageLinkAndInfo(out, handler);
       }
       out.print("</body>");
       out.print("</html>");
