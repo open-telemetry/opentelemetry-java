@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 final class IndexZPageHandler extends ZPageHandler {
   private static final String INDEX_URL = "/";
