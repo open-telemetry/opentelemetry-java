@@ -93,10 +93,8 @@ final class IndexZPageHandler extends ZPageHandler {
       out.print(
           "<p>zPages can be useful during the development time or "
               + "when the process to be inspected is known in production.</p>");
-      if (this.availableHandlers != null) {
-        for (ZPageHandler handler : this.availableHandlers) {
-          emitPageLinkAndInfo(out, handler);
-        }
+      for (ZPageHandler handler : this.availableHandlers) {
+        emitPageLinkAndInfo(out, handler);
       }
       out.print("</body>");
       out.print("</html>");
