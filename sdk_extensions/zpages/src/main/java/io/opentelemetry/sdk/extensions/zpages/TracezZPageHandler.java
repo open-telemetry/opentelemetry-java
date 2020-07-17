@@ -31,8 +31,6 @@ import io.opentelemetry.trace.Status.CanonicalCode;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -180,13 +178,12 @@ final class TracezZPageHandler extends ZPageHandler {
    * @param subtype the sub-type of the corresponding span (latency [0, 8], error [0, 15]).
    */
   private static void emitSummaryTableCell(
-      PrintStream out, String spanName, int numOfSamples, SampleType type, int subtype)
-      throws UnsupportedEncodingException {
+      PrintStream out, String spanName, int numOfSamples, SampleType type, int subtype) {
     // If numOfSamples is greater than 0, emit a link to see detailed span information
     // If numOfSamples is smaller than 0, print the text "N/A", otherwise print the text "0"
     if (numOfSamples > 0) {
       out.print("<td class=\"align-center border-left-dark\"><a href=\"?");
-      out.print(PARAM_SPAN_NAME + "=" + URLEncoder.encode(spanName, "UTF-8"));
+      out.print(PARAM_SPAN_NAME + "=" + spanName);
       out.print("&" + PARAM_SAMPLE_TYPE + "=" + type.getValue());
       out.print("&" + PARAM_SAMPLE_SUB_TYPE + "=" + subtype);
       out.print("\">" + numOfSamples + "</a></td>");
@@ -203,7 +200,7 @@ final class TracezZPageHandler extends ZPageHandler {
    *
    * @param out the {@link PrintStream} {@code out}.
    */
-  private void emitSummaryTable(PrintStream out) throws UnsupportedEncodingException {
+  private void emitSummaryTable(PrintStream out) {
     if (dataAggregator == null) {
       return;
     }
@@ -459,8 +456,7 @@ final class TracezZPageHandler extends ZPageHandler {
    * @param queryMap the map containing URL query parameters.s
    * @param out the {@link PrintStream} {@code out}.
    */
-  private void emitHtmlBody(Map<String, String> queryMap, PrintStream out)
-      throws UnsupportedEncodingException {
+  private void emitHtmlBody(Map<String, String> queryMap, PrintStream out) {
     if (dataAggregator == null) {
       out.print("OpenTelemetry implementation not available.");
       return;
@@ -474,8 +470,6 @@ final class TracezZPageHandler extends ZPageHandler {
     // spanName will be null if the query parameter doesn't exist in the URL
     String spanName = queryMap.get(PARAM_SPAN_NAME);
     if (spanName != null) {
-      // Convert spanName with URL encoding
-      spanName = URLEncoder.encode(spanName, "UTF-8");
       // Show detailed information for the corresponding span
       String typeStr = queryMap.get(PARAM_SAMPLE_TYPE);
       if (typeStr != null) {
