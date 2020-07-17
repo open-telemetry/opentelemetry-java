@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.errorhandler;
+package io.opentelemetry.sdk.errorhandler;
 
 /**
  * An {@code OpenTelemetryException} is an error or exception which is deemed irremediable by an

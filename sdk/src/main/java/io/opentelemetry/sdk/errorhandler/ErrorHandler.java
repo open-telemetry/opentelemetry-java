@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.errorhandler;
+package io.opentelemetry.sdk.errorhandler;
 
 /** Handler handles irremediable events. */
 public interface ErrorHandler {

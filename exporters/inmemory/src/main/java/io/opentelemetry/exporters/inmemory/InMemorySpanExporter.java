@@ -16,8 +16,8 @@
 
 package io.opentelemetry.exporters.inmemory;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.errorhandler.OpenTelemetryException;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
@@ -90,7 +90,7 @@ public final class InMemorySpanExporter implements SpanExporter {
   public ResultCode export(Collection<SpanData> spans) {
     synchronized (this) {
       if (isStopped) {
-        OpenTelemetry.handleError(
+        OpenTelemetrySdk.handleError(
             new OpenTelemetryException("Export called on stopped in-memory exporter"));
         return ResultCode.FAILURE;
       }

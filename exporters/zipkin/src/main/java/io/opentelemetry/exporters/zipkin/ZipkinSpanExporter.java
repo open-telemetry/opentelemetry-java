@@ -18,12 +18,12 @@ package io.opentelemetry.exporters.zipkin;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
-import io.opentelemetry.errorhandler.OpenTelemetryException;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -248,7 +248,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     try {
       sender.sendSpans(encodedSpans).execute();
     } catch (IOException e) {
-      OpenTelemetry.handleError(new OpenTelemetryException("Error exporting spans.", e));
+      OpenTelemetrySdk.handleError(new OpenTelemetryException("Error exporting spans.", e));
       return ResultCode.FAILURE;
     }
     return ResultCode.SUCCESS;

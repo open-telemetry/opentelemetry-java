@@ -19,12 +19,29 @@ package io.opentelemetry.sdk;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.sdk.errorhandler.ErrorHandler;
+import io.opentelemetry.sdk.errorhandler.OpenTelemetryException;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class OpenTelemetrySdkTest {
+  @Rule public final ExpectedException thrown = ExpectedException.none();
+
+  @BeforeClass
+  public static void beforeClass() {
+    OpenTelemetrySdk.reset();
+  }
+
+  @After
+  public void after() {
+    OpenTelemetrySdk.reset();
+  }
 
   @Test
   public void testDefault() {
@@ -46,5 +63,26 @@ public class OpenTelemetrySdkTest {
         .isEqualTo(OpenTelemetry.getMeterProvider().get("testMeter1"));
     assertThat(OpenTelemetry.getMeter("testMeter2", "testVersion"))
         .isEqualTo(OpenTelemetry.getMeterProvider().get("testMeter2", "testVersion"));
+  }
+
+  @Test
+  public void testSetErrorHandler() {
+    OpenTelemetrySdk.setErrorHandler(new ThrowErrorHandler());
+    OpenTelemetryException e = new OpenTelemetryException("test exception");
+    thrown.expect(OpenTelemetryException.class);
+    OpenTelemetrySdk.handleError(e);
+  }
+
+  @Test
+  public void testSetNullHandler() {
+    thrown.expect(NullPointerException.class);
+    OpenTelemetrySdk.setErrorHandler(null);
+  }
+
+  public static class ThrowErrorHandler implements ErrorHandler {
+    @Override
+    public void handle(OpenTelemetryException e) {
+      throw e;
+    }
   }
 }

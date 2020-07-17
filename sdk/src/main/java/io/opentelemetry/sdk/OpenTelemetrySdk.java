@@ -18,22 +18,33 @@ package io.opentelemetry.sdk;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Obfuscated;
+import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.errorhandler.DefaultErrorHandler;
+import io.opentelemetry.sdk.errorhandler.ErrorHandler;
+import io.opentelemetry.sdk.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for SDK telemetry objects {@link TracerSdkProvider},
- * {@link MeterSdkProvider} and {@link CorrelationContextManagerSdk}.
+ * {@link MeterSdkProvider} and {@link CorrelationContextManagerSdk}. It serves as a convenience
+ * class getting and casting the telemetry objects from {@link OpenTelemetry}.
  *
- * <p>This is a convenience class getting and casting the telemetry objects from {@link
- * OpenTelemetry}.
+ * <p>This class also provides static methods for accessing and setting a custom global error
+ * handler for the OpenTelemetry SDK.
  *
  * @see OpenTelemetry
  */
 @ThreadSafe
 public final class OpenTelemetrySdk {
+  private static final Object mutex = new Object();
+
+  @Nullable private static volatile OpenTelemetrySdk instance;
+  private volatile ErrorHandler errorHandler;
+
   /**
    * Returns a {@link TracerSdkProvider}.
    *
@@ -64,5 +75,45 @@ public final class OpenTelemetrySdk {
     return (CorrelationContextManagerSdk) OpenTelemetry.getCorrelationContextManager();
   }
 
-  private OpenTelemetrySdk() {}
+  /**
+   * Handles any Opentelemetry errors using the custom specified error handler, or the default error
+   * handler if one has not been set.
+   *
+   * @param e The error to be handled.
+   */
+  public static void handleError(OpenTelemetryException e) {
+    getInstance().errorHandler.handle(e);
+  }
+
+  /**
+   * Registers a global error handler for the OpenTelemetry SDK. The handler's {@code Handle} method
+   * will be called on any future calls to {@code OpenTelemetrySdk.HandleError}.
+   *
+   * @param h The {@link ErrorHandler} to be registered.
+   */
+  public static void setErrorHandler(ErrorHandler h) {
+    Utils.checkNotNull(h, "errorhandler");
+    getInstance().errorHandler = h;
+  }
+
+  /** Lazy loads an instance. */
+  private static OpenTelemetrySdk getInstance() {
+    if (instance == null) {
+      synchronized (mutex) {
+        if (instance == null) {
+          instance = new OpenTelemetrySdk();
+        }
+      }
+    }
+    return instance;
+  }
+
+  // for testing
+  static void reset() {
+    instance = null;
+  }
+
+  private OpenTelemetrySdk() {
+    this.errorHandler = DefaultErrorHandler.getInstance();
+  }
 }

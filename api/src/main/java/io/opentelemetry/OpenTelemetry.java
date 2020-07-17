@@ -21,10 +21,6 @@ import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory;
-import io.opentelemetry.errorhandler.DefaultErrorHandler;
-import io.opentelemetry.errorhandler.ErrorHandler;
-import io.opentelemetry.errorhandler.OpenTelemetryException;
-import io.opentelemetry.errorhandler.spi.ErrorHandlerFactory;
 import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
@@ -42,14 +38,13 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link Meter},
- * {@link CorrelationContextManager}, and {@link ErrorHandler}.
+ * and {@link CorrelationContextManager}.
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
  * @see TracerProvider
  * @see MeterProviderFactory
  * @see CorrelationContextManagerFactory
- * @see ErrorHandlerFactory
  */
 @ThreadSafe
 public final class OpenTelemetry {
@@ -60,7 +55,6 @@ public final class OpenTelemetry {
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
   private final CorrelationContextManager contextManager;
-  private final ErrorHandler errorHandler;
 
   private volatile ContextPropagators propagators =
       DefaultContextPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build();
@@ -178,16 +172,6 @@ public final class OpenTelemetry {
   }
 
   /**
-   * Handles any Opentelemetry errors using the custom specified error handler, or the default error
-   * handler if one has not been set.
-   *
-   * @param e The error to be handled.
-   */
-  public static void handleError(OpenTelemetryException e) {
-    getInstance().errorHandler.handle(e);
-  }
-
-  /**
    * Sets the {@link ContextPropagators} object, which can be used to access the set of registered
    * propagators for each supported format.
    *
@@ -232,11 +216,6 @@ public final class OpenTelemetry {
         contextManagerProvider != null
             ? contextManagerProvider.create()
             : DefaultCorrelationContextManager.getInstance();
-    ErrorHandlerFactory errorHandlerFactory = loadSpi(ErrorHandlerFactory.class);
-    errorHandler =
-        errorHandlerFactory != null
-            ? errorHandlerFactory.create()
-            : DefaultErrorHandler.getInstance();
   }
 
   /**

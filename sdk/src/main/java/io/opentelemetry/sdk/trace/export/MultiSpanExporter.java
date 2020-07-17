@@ -19,8 +19,8 @@ package io.opentelemetry.sdk.trace.export;
 import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILURE;
 import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.SUCCESS;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.errorhandler.OpenTelemetryException;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +53,7 @@ public final class MultiSpanExporter implements SpanExporter {
         currentResultCode = mergeResultCode(currentResultCode, spanExporter.export(spans));
       } catch (Throwable t) {
         // If an exception was thrown by the exporter
-        OpenTelemetry.handleError(new OpenTelemetryException("Error exporting spans.", t));
+        OpenTelemetrySdk.handleError(new OpenTelemetryException("Error exporting spans.", t));
         currentResultCode = FAILURE;
       }
     }
@@ -73,7 +73,8 @@ public final class MultiSpanExporter implements SpanExporter {
         currentResultCode = mergeResultCode(currentResultCode, spanExporter.flush());
       } catch (Throwable t) {
         // If an exception was thrown by the exporter
-        OpenTelemetry.handleError(new OpenTelemetryException("Exception thrown by the export.", t));
+        OpenTelemetrySdk.handleError(
+            new OpenTelemetryException("Exception thrown by the export.", t));
         currentResultCode = FAILURE;
       }
     }

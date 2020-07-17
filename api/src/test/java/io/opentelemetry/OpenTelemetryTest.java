@@ -26,9 +26,6 @@ import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory;
-import io.opentelemetry.errorhandler.ErrorHandler;
-import io.opentelemetry.errorhandler.OpenTelemetryException;
-import io.opentelemetry.errorhandler.spi.ErrorHandlerFactory;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;
@@ -224,27 +221,6 @@ public class OpenTelemetryTest {
     System.setProperty(CorrelationContextManagerFactory.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
     OpenTelemetry.getCorrelationContextManager();
-  }
-
-  @Test
-  public void testErrorHandlerSystemProperty() throws IOException {
-    File serviceFile = createService(ErrorHandlerFactory.class, ThrowErrorHandler.class);
-    System.setProperty(ErrorHandlerFactory.class.getName(), ThrowErrorHandler.class.getName());
-    OpenTelemetryException e = new OpenTelemetryException("test exception");
-    try {
-      OpenTelemetry.handleError(e);
-    } catch (Throwable t) {
-      assertThat(t).isEqualTo(e);
-    } finally {
-      serviceFile.delete();
-    }
-  }
-
-  @Test
-  public void testHandlerNotFound() {
-    System.setProperty(ErrorHandlerFactory.class.getName(), "io.does.not.exists");
-    thrown.expect(IllegalStateException.class);
-    OpenTelemetry.handleError(new OpenTelemetryException("test exception"));
   }
 
   @Test
@@ -471,18 +447,6 @@ public class OpenTelemetryTest {
     @Override
     public Scope withContext(CorrelationContext distContext) {
       return null;
-    }
-  }
-
-  public static class ThrowErrorHandler implements ErrorHandlerFactory, ErrorHandler {
-    @Override
-    public ErrorHandler create() {
-      return new ThrowErrorHandler();
-    }
-
-    @Override
-    public void handle(OpenTelemetryException e) {
-      throw e;
     }
   }
 }

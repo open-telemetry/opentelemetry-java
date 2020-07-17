@@ -19,13 +19,14 @@ package io.opentelemetry.sdk.trace.export;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
-import io.opentelemetry.errorhandler.OpenTelemetryException;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -288,7 +289,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
                   try {
                     spanExporter.export(spans);
                   } catch (Throwable t) {
-                    OpenTelemetry.handleError(
+                    OpenTelemetrySdk.handleError(
                         new OpenTelemetryException("Exception thrown by the export.", t));
                   }
                 }

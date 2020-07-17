@@ -17,11 +17,11 @@
 package io.opentelemetry.exporters.otlp;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.errorhandler.OpenTelemetryException;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
@@ -97,7 +97,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
       stub.export(exportMetricsServiceRequest);
       return ResultCode.SUCCESS;
     } catch (Throwable t) {
-      OpenTelemetry.handleError(new OpenTelemetryException("Error exporting metrics", t));
+      OpenTelemetrySdk.handleError(new OpenTelemetryException("Error exporting metrics", t));
       return ResultCode.FAILURE;
     }
   }

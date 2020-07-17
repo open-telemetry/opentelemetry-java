@@ -17,9 +17,9 @@
 package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.errorhandler.OpenTelemetryException;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -76,7 +76,8 @@ public final class SimpleSpanProcessor implements SpanProcessor {
       List<SpanData> spans = Collections.singletonList(span.toSpanData());
       spanExporter.export(spans);
     } catch (Throwable e) {
-      OpenTelemetry.handleError(new OpenTelemetryException("Exception thrown by the export.", e));
+      OpenTelemetrySdk.handleError(
+          new OpenTelemetryException("Exception thrown by the export.", e));
     }
   }
 

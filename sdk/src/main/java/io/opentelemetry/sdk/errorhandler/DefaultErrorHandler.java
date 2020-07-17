@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.errorhandler;
+package io.opentelemetry.sdk.errorhandler;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
