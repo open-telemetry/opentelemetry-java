@@ -29,9 +29,9 @@ final class IndexZPageHandler extends ZPageHandler {
   private static final String INDEX_NAME = "Index";
   private static final String INDEX_DESCRITION = "Index page of zPages";
   private static final Logger logger = Logger.getLogger(IndexZPageHandler.class.getName());
-  @Nullable private final List<ZPageHandler> availableHandlers;
+  private final List<ZPageHandler> availableHandlers;
 
-  IndexZPageHandler(@Nullable List<ZPageHandler> availableHandlers) {
+  IndexZPageHandler(List<ZPageHandler> availableHandlers) {
     this.availableHandlers = availableHandlers;
   }
 
