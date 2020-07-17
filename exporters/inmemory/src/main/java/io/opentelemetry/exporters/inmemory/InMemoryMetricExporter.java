@@ -16,6 +16,7 @@
 
 package io.opentelemetry.exporters.inmemory;
 
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayList;
@@ -103,12 +104,12 @@ public class InMemoryMetricExporter implements MetricExporter {
    * <p>If this is called after {@code shutdown}, this will return {@code ResultCode.FAILURE}.
    */
   @Override
-  public ResultCode export(Collection<MetricData> metrics) {
+  public CompletableResultCode export(Collection<MetricData> metrics) {
     if (isStopped) {
-      return ResultCode.FAILURE;
+      return CompletableResultCode.ofFailure();
     }
     finishedMetricItems.addAll(metrics);
-    return ResultCode.SUCCESS;
+    return CompletableResultCode.ofSuccess();
   }
 
   /**
@@ -118,8 +119,8 @@ public class InMemoryMetricExporter implements MetricExporter {
    * @return always Success
    */
   @Override
-  public ResultCode flush() {
-    return ResultCode.SUCCESS;
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
   }
 
   /**

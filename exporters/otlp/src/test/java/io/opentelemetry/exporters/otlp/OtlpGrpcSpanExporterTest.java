@@ -32,7 +32,6 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -103,7 +102,7 @@ class OtlpGrpcSpanExporterTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(span))).isEqualTo(ResultCode.SUCCESS);
+      assertThat(exporter.export(Collections.singletonList(span)).isSuccess()).isTrue();
       assertThat(fakeCollector.getReceivedSpans())
           .isEqualTo(SpanAdapter.toProtoResourceSpans(Collections.singletonList(span)));
     } finally {
@@ -120,7 +119,7 @@ class OtlpGrpcSpanExporterTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(spans)).isEqualTo(ResultCode.SUCCESS);
+      assertThat(exporter.export(spans).isSuccess()).isTrue();
       assertThat(fakeCollector.getReceivedSpans())
           .isEqualTo(SpanAdapter.toProtoResourceSpans(spans));
     } finally {
@@ -135,7 +134,7 @@ class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     exporter.shutdown();
     // TODO: This probably should not be retryable because we never restart the channel.
-    assertThat(exporter.export(Collections.singletonList(span))).isEqualTo(ResultCode.FAILURE);
+    assertThat(exporter.export(Collections.singletonList(span)).isSuccess()).isFalse();
   }
 
   @Test
@@ -144,8 +143,8 @@ class OtlpGrpcSpanExporterTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -157,8 +156,8 @@ class OtlpGrpcSpanExporterTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -170,8 +169,8 @@ class OtlpGrpcSpanExporterTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -183,8 +182,8 @@ class OtlpGrpcSpanExporterTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -196,8 +195,8 @@ class OtlpGrpcSpanExporterTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -209,8 +208,8 @@ class OtlpGrpcSpanExporterTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -222,8 +221,8 @@ class OtlpGrpcSpanExporterTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }

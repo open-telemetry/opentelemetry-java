@@ -18,13 +18,10 @@ package io.opentelemetry.sdk.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link MultiSpanExporterTest}. */
@@ -58,16 +56,17 @@ class MultiSpanExporterTest {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Collections.singletonList(spanExporter1));
 
-    when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
-    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.SUCCESS);
-    verify(spanExporter1).export(same(SPAN_LIST));
+    Mockito.when(spanExporter1.export(same(SPAN_LIST)))
+        .thenReturn(CompletableResultCode.ofSuccess());
+    assertThat(multiSpanExporter.export(SPAN_LIST).isSuccess()).isTrue();
+    Mockito.verify(spanExporter1).export(same(SPAN_LIST));
 
-    when(spanExporter1.flush()).thenReturn(ResultCode.SUCCESS);
-    assertThat(multiSpanExporter.flush()).isEqualTo(ResultCode.SUCCESS);
-    verify(spanExporter1).flush();
+    Mockito.when(spanExporter1.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    assertThat(multiSpanExporter.flush().isSuccess()).isTrue();
+    Mockito.verify(spanExporter1).flush();
 
     multiSpanExporter.shutdown();
-    verify(spanExporter1).shutdown();
+    Mockito.verify(spanExporter1).shutdown();
   }
 
   @Test
@@ -75,21 +74,23 @@ class MultiSpanExporterTest {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
 
-    when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
-    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
-    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.SUCCESS);
-    verify(spanExporter1).export(same(SPAN_LIST));
-    verify(spanExporter2).export(same(SPAN_LIST));
+    Mockito.when(spanExporter1.export(same(SPAN_LIST)))
+        .thenReturn(CompletableResultCode.ofSuccess());
+    Mockito.when(spanExporter2.export(same(SPAN_LIST)))
+        .thenReturn(CompletableResultCode.ofSuccess());
+    assertThat(multiSpanExporter.export(SPAN_LIST).isSuccess()).isTrue();
+    Mockito.verify(spanExporter1).export(same(SPAN_LIST));
+    Mockito.verify(spanExporter2).export(same(SPAN_LIST));
 
-    when(spanExporter1.flush()).thenReturn(ResultCode.SUCCESS);
-    when(spanExporter2.flush()).thenReturn(ResultCode.SUCCESS);
-    assertThat(multiSpanExporter.flush()).isEqualTo(ResultCode.SUCCESS);
-    verify(spanExporter1).flush();
-    verify(spanExporter2).flush();
+    Mockito.when(spanExporter1.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    Mockito.when(spanExporter2.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    assertThat(multiSpanExporter.flush().isSuccess()).isTrue();
+    Mockito.verify(spanExporter1).flush();
+    Mockito.verify(spanExporter2).flush();
 
     multiSpanExporter.shutdown();
-    verify(spanExporter1).shutdown();
-    verify(spanExporter2).shutdown();
+    Mockito.verify(spanExporter1).shutdown();
+    Mockito.verify(spanExporter2).shutdown();
   }
 
   @Test
@@ -97,17 +98,19 @@ class MultiSpanExporterTest {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
 
-    when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
-    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.FAILURE);
-    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILURE);
-    verify(spanExporter1).export(same(SPAN_LIST));
-    verify(spanExporter2).export(same(SPAN_LIST));
+    Mockito.when(spanExporter1.export(same(SPAN_LIST)))
+        .thenReturn(CompletableResultCode.ofSuccess());
+    Mockito.when(spanExporter2.export(same(SPAN_LIST)))
+        .thenReturn(CompletableResultCode.ofFailure());
+    assertThat(multiSpanExporter.export(SPAN_LIST).isSuccess()).isFalse();
+    Mockito.verify(spanExporter1).export(same(SPAN_LIST));
+    Mockito.verify(spanExporter2).export(same(SPAN_LIST));
 
-    when(spanExporter1.flush()).thenReturn(ResultCode.SUCCESS);
-    when(spanExporter2.flush()).thenReturn(ResultCode.FAILURE);
-    assertThat(multiSpanExporter.flush()).isEqualTo(ResultCode.FAILURE);
-    verify(spanExporter1).flush();
-    verify(spanExporter2).flush();
+    Mockito.when(spanExporter1.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    Mockito.when(spanExporter2.flush()).thenReturn(CompletableResultCode.ofFailure());
+    assertThat(multiSpanExporter.flush().isSuccess()).isFalse();
+    Mockito.verify(spanExporter1).flush();
+    Mockito.verify(spanExporter2).flush();
   }
 
   @Test
@@ -115,18 +118,19 @@ class MultiSpanExporterTest {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
 
-    doThrow(new IllegalArgumentException("No export for you."))
+    Mockito.doThrow(new IllegalArgumentException("No export for you."))
         .when(spanExporter1)
         .export(ArgumentMatchers.anyList());
-    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
-    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILURE);
-    verify(spanExporter1).export(same(SPAN_LIST));
-    verify(spanExporter2).export(same(SPAN_LIST));
+    Mockito.when(spanExporter2.export(same(SPAN_LIST)))
+        .thenReturn(CompletableResultCode.ofSuccess());
+    assertThat(multiSpanExporter.export(SPAN_LIST).isSuccess()).isFalse();
+    Mockito.verify(spanExporter1).export(same(SPAN_LIST));
+    Mockito.verify(spanExporter2).export(same(SPAN_LIST));
 
-    doThrow(new IllegalArgumentException("No flush for you.")).when(spanExporter1).flush();
-    when(spanExporter2.flush()).thenReturn(ResultCode.SUCCESS);
-    assertThat(multiSpanExporter.flush()).isEqualTo(ResultCode.FAILURE);
-    verify(spanExporter1).flush();
-    verify(spanExporter2).flush();
+    Mockito.doThrow(new IllegalArgumentException("No flush for you.")).when(spanExporter1).flush();
+    Mockito.when(spanExporter2.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    assertThat(multiSpanExporter.flush().isSuccess()).isFalse();
+    Mockito.verify(spanExporter1).flush();
+    Mockito.verify(spanExporter2).flush();
   }
 }

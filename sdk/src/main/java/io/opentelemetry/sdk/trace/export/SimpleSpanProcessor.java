@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -30,7 +31,9 @@ import java.util.logging.Logger;
 
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
- * SpanData} and passes it to the configured exporter.
+ * SpanData} and passes it directly to the configured exporter. This processor should only be used
+ * where the exporter(s) are able to handle multiple exports simultaneously, as there is no back
+ * pressure consideration here.
  *
  * <p>Configuration options for {@link SimpleSpanProcessor} can be read from system properties,
  * environment variables, or {@link java.util.Properties} objects.
@@ -71,15 +74,25 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   }
 
   @Override
+  @SuppressWarnings("BooleanParameter")
   public void onEnd(ReadableSpan span) {
     if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
     }
     try {
       List<SpanData> spans = Collections.singletonList(span.toSpanData());
-      spanExporter.export(spans);
-    } catch (Throwable e) {
-      logger.log(Level.WARNING, "Exception thrown by the export.", e);
+      final CompletableResultCode result = spanExporter.export(spans);
+      result.whenComplete(
+          new Runnable() {
+            @Override
+            public void run() {
+              if (!result.isSuccess()) {
+                logger.log(Level.FINE, "Exporter failed");
+              }
+            }
+          });
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Exporter threw an Exception", e);
     }
   }
 

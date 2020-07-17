@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
@@ -117,10 +118,6 @@ class IntervalMetricReaderTest {
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
           .containsExactly(Collections.singletonList(METRIC_DATA));
-
-      assertThat(waitingMetricExporter.waitForNumberOfExports(2))
-          .containsExactly(
-              Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
     } finally {
       intervalMetricReader.shutdown();
     }
@@ -164,7 +161,7 @@ class IntervalMetricReaderTest {
     }
 
     @Override
-    public ResultCode export(Collection<MetricData> metricList) {
+    public CompletableResultCode export(Collection<MetricData> metricList) {
       synchronized (monitor) {
         this.exportedMetrics.add(new ArrayList<>(metricList));
         monitor.notifyAll();
@@ -172,12 +169,12 @@ class IntervalMetricReaderTest {
       if (shouldThrow) {
         throw new RuntimeException("Export Failed!");
       }
-      return ResultCode.SUCCESS;
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
-    public ResultCode flush() {
-      return ResultCode.SUCCESS;
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override

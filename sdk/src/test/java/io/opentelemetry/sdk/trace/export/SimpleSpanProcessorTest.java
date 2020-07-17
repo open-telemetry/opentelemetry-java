@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
@@ -135,7 +136,8 @@ class SimpleSpanProcessorTest {
 
   @Test
   void tracerSdk_NotSampled_Span() {
-    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
 
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(waitingSpanExporter)

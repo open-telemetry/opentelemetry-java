@@ -16,6 +16,7 @@
 
 package io.opentelemetry.exporters.logging;
 
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
@@ -27,12 +28,12 @@ public class LoggingMetricExporter implements MetricExporter {
   private static final Logger logger = Logger.getLogger(LoggingMetricExporter.class.getName());
 
   @Override
-  public ResultCode export(Collection<MetricData> metrics) {
+  public CompletableResultCode export(Collection<MetricData> metrics) {
     logger.info("Received a collection of " + metrics.size() + " metrics for export.");
     for (MetricData metricData : metrics) {
       logger.log(Level.INFO, "metric: {0}", metricData);
     }
-    return ResultCode.SUCCESS;
+    return CompletableResultCode.ofSuccess();
   }
 
   /**
@@ -41,16 +42,16 @@ public class LoggingMetricExporter implements MetricExporter {
    * @return the result of the operation
    */
   @Override
-  public ResultCode flush() {
-    ResultCode resultCode = ResultCode.SUCCESS;
+  public CompletableResultCode flush() {
+    CompletableResultCode resultCode = new CompletableResultCode();
     for (Handler handler : logger.getHandlers()) {
       try {
         handler.flush();
       } catch (Throwable t) {
-        resultCode = ResultCode.FAILURE;
+        resultCode.fail();
       }
     }
-    return resultCode;
+    return resultCode.succeed();
   }
 
   @Override

@@ -21,6 +21,7 @@ import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -87,13 +88,13 @@ public class SpanPipelineBenchmark {
 
   private static class NoOpSpanExporter implements SpanExporter {
     @Override
-    public ResultCode export(Collection<SpanData> spans) {
-      return ResultCode.SUCCESS;
+    public CompletableResultCode export(Collection<SpanData> spans) {
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
-    public ResultCode flush() {
-      return ResultCode.SUCCESS;
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
