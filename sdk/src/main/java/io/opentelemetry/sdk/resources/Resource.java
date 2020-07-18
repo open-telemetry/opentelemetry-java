@@ -120,7 +120,31 @@ public abstract class Resource {
    */
   public static Resource create(Attributes attributes) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
-    return new AutoValue_Resource(attributes);
+    Attributes.Builder attrBuilder = Attributes.newBuilder();
+    attributes.forEach(new NullRemover(attrBuilder));
+    return new AutoValue_Resource(attrBuilder.build());
+  }
+
+  private static final class NullRemover implements KeyValueConsumer<AttributeValue> {
+    private final Attributes.Builder attrBuilder;
+
+    private NullRemover(Attributes.Builder attrBuilder) {
+      this.attrBuilder = attrBuilder;
+    }
+
+    @Override
+    public void consume(String key, AttributeValue value) {
+      switch (value.getType()) {
+        case STRING:
+          if (value.getStringValue() == null) {
+            return;
+          }
+          break;
+        default:
+          break;
+      }
+      attrBuilder.setAttribute(key, value);
+    }
   }
 
   /**

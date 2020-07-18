@@ -70,6 +70,47 @@ class ResourceTest {
   }
 
   @Test
+  void create_ignoreNull() {
+    Attributes.Builder attributes = Attributes.newBuilder();
+
+    attributes.setAttribute("string", AttributeValue.stringAttributeValue(null));
+    Resource resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(0);
+    attributes.setAttribute("stringArray", AttributeValue.arrayAttributeValue(null, "a"));
+    resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(1);
+
+    attributes.setAttribute("bool", AttributeValue.booleanAttributeValue(true));
+    resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(2);
+    attributes.setAttribute("boolArray", AttributeValue.arrayAttributeValue(null, true));
+    resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(3);
+
+    attributes.setAttribute("long", AttributeValue.longAttributeValue(0L));
+    resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(4);
+    attributes.setAttribute("longArray", AttributeValue.arrayAttributeValue(1L, null));
+    resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(5);
+
+    attributes.setAttribute("double", AttributeValue.doubleAttributeValue(1.1));
+    resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(6);
+    attributes.setAttribute("doubleArray", AttributeValue.arrayAttributeValue(1.1, null));
+    resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(7);
+  }
+
+  @Test
   void testResourceEquals() {
     Attributes attribute1 =
         Attributes.of(
