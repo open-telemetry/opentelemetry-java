@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** An {@link HttpHanlder} that will be used to render HTML pages using any {@code ZPageHandler}. */
+/** An {@link HttpHandler} that will be used to render HTML pages using any {@code ZPageHandler}. */
 final class ZPageHttpHandler implements HttpHandler {
   // Splitter for splitting URL query parameters
   private static final Splitter QUERY_SPLITTER = Splitter.on("&").trimResults();
