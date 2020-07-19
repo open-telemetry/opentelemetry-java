@@ -59,6 +59,7 @@ public class DefaultSpanTest {
     span.setAttribute("NullArrayBoolean", AttributeValue.arrayAttributeValue((Boolean[]) null));
     span.setAttribute("NullArrayLong", AttributeValue.arrayAttributeValue((Long[]) null));
     span.setAttribute("NullArrayDouble", AttributeValue.arrayAttributeValue((Double[]) null));
+    span.setAttribute(null, (String) null);
     span.addEvent("event");
     span.addEvent("event", 0);
     span.addEvent(
@@ -70,22 +71,17 @@ public class DefaultSpanTest {
         0);
     span.addEvent(new TestEvent());
     span.addEvent(new TestEvent(), 0);
+    span.addEvent((Event) null);
     span.setStatus(Status.OK);
     span.end();
     span.end(EndSpanOptions.getDefault());
+    span.end(null);
   }
 
   @Test
   public void defaultSpan_ToString() {
     DefaultSpan span = DefaultSpan.createRandom();
     assertThat(span.toString()).isEqualTo("DefaultSpan");
-  }
-
-  @Test
-  public void defaultSpan_NullEndSpanOptions() {
-    DefaultSpan span = DefaultSpan.getInvalid();
-    thrown.expect(NullPointerException.class);
-    span.end(null);
   }
 
   static final class TestEvent implements Event {

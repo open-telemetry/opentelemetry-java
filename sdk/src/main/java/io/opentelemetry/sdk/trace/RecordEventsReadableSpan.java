@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import static io.opentelemetry.common.AttributeValue.Type.STRING;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -300,7 +299,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void setAttribute(String key, AttributeValue value) {
-    Preconditions.checkNotNull(key, "key");
+    if (key == null) {
+      return;
+    }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
@@ -385,7 +386,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void setStatus(Status status) {
-    Preconditions.checkNotNull(status, "status");
+    if (status == null) {
+      return;
+    }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
@@ -397,7 +400,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void updateName(String name) {
-    Preconditions.checkNotNull(name, "name");
+    if (name == null) {
+      return;
+    }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
@@ -414,7 +419,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void end(EndSpanOptions endOptions) {
-    Preconditions.checkNotNull(endOptions, "endOptions");
+    if (endOptions == null) {
+      end();
+      return;
+    }
     endInternal(endOptions.getEndTimestamp() == 0 ? clock.now() : endOptions.getEndTimestamp());
   }
 
