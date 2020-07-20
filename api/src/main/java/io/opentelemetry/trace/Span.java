@@ -218,6 +218,29 @@ public interface Span {
   void setStatus(Status status);
 
   /**
+   * Records information about the {@link Throwable} to the {@link Span} as an {@link Event} at the
+   * current time.
+   *
+   * @param exception the {@link Throwable} to record.
+   * @since 0.7.0
+   */
+  void recordException(Throwable exception);
+
+  /**
+   * Records information about the {@link Throwable} to the {@link Span} as an {@link Event}.
+   *
+   * <p>Use this method to specify an explicit event timestamp. If not called, the implementation
+   * will use the current timestamp value, which should be the default case.
+   *
+   * <p>Important: this is NOT equivalent with System.nanoTime().
+   *
+   * @param exception the {@link Throwable} to record.
+   * @param timestamp the explicit event timestamp in nanos since epoch.
+   * @since 0.7.0
+   */
+  void recordException(Throwable exception, long timestamp);
+
+  /**
    * Updates the {@code Span} name.
    *
    * <p>If used, this will override the name provided via {@code Span.Builder}.

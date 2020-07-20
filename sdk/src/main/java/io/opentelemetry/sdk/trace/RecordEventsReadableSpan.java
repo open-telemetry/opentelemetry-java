@@ -38,6 +38,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -393,6 +394,26 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
       this.status = status;
     }
+  }
+
+  @Override
+  public void recordException(Throwable exception) {
+    recordException(exception, clock.now());
+  }
+
+  @Override
+  public void recordException(Throwable exception, long timestamp) {
+    Attributes.Builder attributes = Attributes.newBuilder();
+    SemanticAttributes.EXCEPTION_TYPE.set(attributes, exception.getClass().getCanonicalName());
+    if (exception.getMessage() != null) {
+      SemanticAttributes.EXCEPTION_MESSAGE.set(attributes, exception.getMessage());
+    }
+    StringBuilder buffer = new StringBuilder();
+    StringBuilderPrintWriter writer = new StringBuilderPrintWriter(buffer);
+    exception.printStackTrace(writer);
+    SemanticAttributes.EXCEPTION_STACKTRACE.set(attributes, buffer.toString());
+
+    addEvent("exception", attributes.build(), timestamp);
   }
 
   @Override

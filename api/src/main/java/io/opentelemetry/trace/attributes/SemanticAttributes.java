@@ -209,5 +209,18 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter MESSAGING_OPERATION =
       StringAttributeSetter.create("messaging.operation");
 
+  /** The type of the exception, i.e., it's fully qualified name. */
+  public static final StringAttributeSetter EXCEPTION_TYPE =
+      StringAttributeSetter.create("exception.type");
+  /** The exception message. */
+  public static final StringAttributeSetter EXCEPTION_MESSAGE =
+      StringAttributeSetter.create("exception.message");
+  /**
+   * A string representing the stacktrace of an exception, as produced by {@link
+   * Throwable#printStackTrace()}.
+   */
+  public static final StringAttributeSetter EXCEPTION_STACKTRACE =
+      StringAttributeSetter.create("exception.stacktrace");
+
   private SemanticAttributes() {}
 }
