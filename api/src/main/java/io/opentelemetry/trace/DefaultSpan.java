@@ -137,10 +137,15 @@ public final class DefaultSpan implements Span {
   }
 
   @Override
-  public void recordException(Throwable exception) {}
+  public void recordException(Throwable exception) {
+    Utils.checkNotNull(exception, "exception");
+  }
 
   @Override
-  public void recordException(Throwable exception, long timestamp) {}
+  public void recordException(Throwable exception, long timestamp) {
+    Utils.checkNotNull(exception, "exception");
+    Utils.checkArgument(timestamp >= 0, "Negative timestamp");
+  }
 
   @Override
   public void updateName(String name) {
