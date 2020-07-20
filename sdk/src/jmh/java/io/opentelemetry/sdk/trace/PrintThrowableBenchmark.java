@@ -17,8 +17,11 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.common.io.CharStreams;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -84,5 +87,14 @@ public class PrintThrowableBenchmark {
     PrintWriter writer = new StringBuilderPrintWriter(sb);
     THROWABLE.printStackTrace(writer);
     return sb.toString();
+  }
+
+  /** Measures performance of a {@link PrintStream}. */
+  @Benchmark
+  public String printStream() throws Exception {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    PrintStream stream = new PrintStream(bos);
+    THROWABLE.printStackTrace(stream);
+    return bos.toString(StandardCharsets.UTF_8.name());
   }
 }
