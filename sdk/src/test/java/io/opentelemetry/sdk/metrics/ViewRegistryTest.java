@@ -29,10 +29,10 @@ import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration.Temporality;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.ViewSpecification;
-import io.opentelemetry.sdk.metrics.view.ViewSpecification.Temporality;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -141,7 +141,8 @@ public class ViewRegistryTest {
 
     InstrumentSelector selector =
         InstrumentSelector.newBuilder().instrumentType(instrumentType).build();
-    ViewSpecification view = ViewSpecification.create(Aggregations.sum(), Temporality.CUMULATIVE);
+    AggregationConfiguration view =
+        AggregationConfiguration.create(Aggregations.sum(), Temporality.CUMULATIVE);
     viewRegistry.registerView(selector, view);
 
     verifyCorrect(
@@ -158,7 +159,8 @@ public class ViewRegistryTest {
 
     InstrumentSelector selector =
         InstrumentSelector.newBuilder().instrumentNameRegex("http.*duration").build();
-    ViewSpecification view = ViewSpecification.create(Aggregations.sum(), Temporality.CUMULATIVE);
+    AggregationConfiguration view =
+        AggregationConfiguration.create(Aggregations.sum(), Temporality.CUMULATIVE);
 
     viewRegistry.registerView(selector, view);
 
@@ -186,7 +188,8 @@ public class ViewRegistryTest {
             .instrumentType(InstrumentType.VALUE_RECORDER)
             .instrumentNameRegex("http.*duration")
             .build();
-    ViewSpecification view = ViewSpecification.create(Aggregations.sum(), Temporality.CUMULATIVE);
+    AggregationConfiguration view =
+        AggregationConfiguration.create(Aggregations.sum(), Temporality.CUMULATIVE);
 
     viewRegistry.registerView(selector, view);
 

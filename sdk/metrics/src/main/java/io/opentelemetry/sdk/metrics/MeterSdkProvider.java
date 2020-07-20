@@ -151,16 +151,16 @@ public final class MeterSdkProvider implements MeterProvider {
    *   .build();
    *
    * // create a specification of how you want the metrics aggregated:
-   * ViewSpecification viewSpecification =
-   *   ViewSpecification.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
+   * AggregationConfiguration viewSpecification =
+   *   AggregationConfiguration.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
    *
    * //register the view with the MeterSdkProvider
    * meterProvider.registerView(instrumentSelector, viewSpecification);
    * }</pre>
    *
-   * @see ViewSpecification
+   * @see AggregationConfiguration
    */
-  public void registerView(InstrumentSelector selector, ViewSpecification specification) {
+  public void registerView(InstrumentSelector selector, AggregationConfiguration specification) {
     viewRegistry.registerView(selector, specification);
   }
 

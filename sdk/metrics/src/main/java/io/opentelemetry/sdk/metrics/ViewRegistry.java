@@ -6,10 +6,10 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.view.Aggregation;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration.Temporality;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.ViewSpecification;
-import io.opentelemetry.sdk.metrics.view.ViewSpecification.Temporality;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -33,14 +33,14 @@ import java.util.regex.Pattern;
  */
 class ViewRegistry {
 
-  private static final ViewSpecification CUMULATIVE_SUM =
-      ViewSpecification.create(Aggregations.sum(), Temporality.CUMULATIVE);
-  private static final ViewSpecification DELTA_SUMMARY =
-      ViewSpecification.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
-  private static final ViewSpecification CUMULATIVE_LAST_VALUE =
-      ViewSpecification.create(Aggregations.lastValue(), Temporality.CUMULATIVE);
+  private static final AggregationConfiguration CUMULATIVE_SUM =
+      AggregationConfiguration.create(Aggregations.sum(), Temporality.CUMULATIVE);
+  private static final AggregationConfiguration DELTA_SUMMARY =
+      AggregationConfiguration.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
+  private static final AggregationConfiguration CUMULATIVE_LAST_VALUE =
+      AggregationConfiguration.create(Aggregations.lastValue(), Temporality.CUMULATIVE);
 
-  private final Map<InstrumentSelector, ViewSpecification> configuration =
+  private final Map<InstrumentSelector, AggregationConfiguration> configuration =
       new ConcurrentHashMap<>();
 
   /**
@@ -52,7 +52,7 @@ class ViewRegistry {
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
 
-    ViewSpecification specification = findBestMatch(descriptor);
+    AggregationConfiguration specification = findBestMatch(descriptor);
 
     Aggregation aggregation = specification.aggregation();
 
@@ -67,9 +67,9 @@ class ViewRegistry {
   }
 
   // todo: consider moving this method to its own class, for more targetted testing.
-  private ViewSpecification findBestMatch(InstrumentDescriptor descriptor) {
+  private AggregationConfiguration findBestMatch(InstrumentDescriptor descriptor) {
 
-    for (Map.Entry<InstrumentSelector, ViewSpecification> entry : configuration.entrySet()) {
+    for (Map.Entry<InstrumentSelector, AggregationConfiguration> entry : configuration.entrySet()) {
       InstrumentSelector registeredSelector = entry.getKey();
 
       if (matchesOnName(descriptor, registeredSelector)
@@ -99,7 +99,7 @@ class ViewRegistry {
     return pattern.matcher(descriptor.getName()).matches();
   }
 
-  private static ViewSpecification getDefaultSpecification(InstrumentDescriptor descriptor) {
+  private static AggregationConfiguration getDefaultSpecification(InstrumentDescriptor descriptor) {
     switch (descriptor.getType()) {
       case COUNTER:
       case UP_DOWN_COUNTER:
@@ -114,7 +114,7 @@ class ViewRegistry {
     throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());
   }
 
-  void registerView(InstrumentSelector selector, ViewSpecification specification) {
+  void registerView(InstrumentSelector selector, AggregationConfiguration specification) {
     configuration.put(selector, specification);
   }
 }
