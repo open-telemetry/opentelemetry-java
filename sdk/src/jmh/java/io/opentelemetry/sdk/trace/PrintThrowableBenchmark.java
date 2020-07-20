@@ -59,7 +59,7 @@ public class PrintThrowableBenchmark {
     }
   }
 
-  /** Measures performance of {@link StringBuilder} + Guava {@link CharStreams} */
+  /** Measures performance of {@link StringBuilder} + Guava {@link CharStreams}. */
   @Benchmark
   public String normalPrintWriter() {
     StringBuilder sb = new StringBuilder();
@@ -68,7 +68,7 @@ public class PrintThrowableBenchmark {
     return sb.toString();
   }
 
-  /** Measures performance of JDK {@link StringWriter} */
+  /** Measures performance of JDK {@link StringWriter}. */
   @Benchmark
   public String stringWriter() {
     StringWriter sw = new StringWriter();
@@ -77,7 +77,7 @@ public class PrintThrowableBenchmark {
     return sw.toString();
   }
 
-  /** Measures performance of our custom {@link StringBuilderPrintWriter */
+  /** Measures performance of our custom {@link StringBuilderPrintWriter}. */
   @Benchmark
   public String customPrintWriter() {
     StringBuilder sb = new StringBuilder();
