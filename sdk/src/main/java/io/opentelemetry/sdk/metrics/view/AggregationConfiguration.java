@@ -17,15 +17,16 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.metrics.Instrument;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @AutoValue
 @Immutable
-public abstract class ViewSpecification {
+public abstract class AggregationConfiguration {
 
-  public static ViewSpecification create(Aggregation aggregation, Temporality temporality) {
-    return new AutoValue_ViewSpecification(aggregation, temporality);
+  public static AggregationConfiguration create(Aggregation aggregation, Temporality temporality) {
+    return new AutoValue_AggregationConfiguration(aggregation, temporality);
   }
 
   /** Which {@link Aggregation} should be used for this View. */
@@ -41,8 +42,7 @@ public abstract class ViewSpecification {
     /** Metrics will be aggregated only over the most recent collection interval. */
     DELTA,
     /**
-     * Metrics will be aggregated over the lifetime of the associated {@link
-     * io.opentelemetry.metrics.Instrument}.
+     * Metrics will be aggregated over the lifetime of the associated {@link Instrument}.
      */
     CUMULATIVE
   }
