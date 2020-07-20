@@ -41,9 +41,7 @@ public abstract class AggregationConfiguration {
   public enum Temporality {
     /** Metrics will be aggregated only over the most recent collection interval. */
     DELTA,
-    /**
-     * Metrics will be aggregated over the lifetime of the associated {@link Instrument}.
-     */
+    /** Metrics will be aggregated over the lifetime of the associated {@link Instrument}. */
     CUMULATIVE
   }
 }
