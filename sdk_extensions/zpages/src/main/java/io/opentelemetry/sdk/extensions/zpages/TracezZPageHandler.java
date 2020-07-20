@@ -187,7 +187,10 @@ final class TracezZPageHandler extends ZPageHandler {
     // If numOfSamples is smaller than 0, print the text "N/A", otherwise print the text "0"
     if (numOfSamples > 0) {
       out.print("<td class=\"align-center border-left-dark\"><a href=\"?");
-      out.print(PARAM_SPAN_NAME + "=" + URLEncoder.encode(spanName.replace("+", "%2B"), "UTF-8"));
+      out.print(
+          PARAM_SPAN_NAME
+              + "="
+              + URLEncoder.encode(spanName.replace("+", /* Unicode for + */ "%2B"), "UTF-8"));
       out.print("&" + PARAM_SAMPLE_TYPE + "=" + type.getValue());
       out.print("&" + PARAM_SAMPLE_SUB_TYPE + "=" + subtype);
       out.print("\">" + numOfSamples + "</a></td>");
@@ -476,7 +479,7 @@ final class TracezZPageHandler extends ZPageHandler {
     String spanName = queryMap.get(PARAM_SPAN_NAME);
     if (spanName != null) {
       // Convert spanName with URL encoding
-      spanName = URLDecoder.decode(spanName, "UTF-8").replace("%2B", "+");
+      spanName = URLDecoder.decode(spanName, "UTF-8").replace(/* Unicode for + */ "%2B", "+");
       // Show detailed information for the corresponding span
       String typeStr = queryMap.get(PARAM_SAMPLE_TYPE);
       if (typeStr != null) {
