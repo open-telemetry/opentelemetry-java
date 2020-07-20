@@ -27,7 +27,10 @@ import io.opentelemetry.trace.Status.CanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -350,5 +353,99 @@ public final class TracezZPageHandlerTest {
 
     assertThat(output.toString()).doesNotContain("<h2>Span Details</h2>");
     assertThat(output.toString()).doesNotContain("<b> Span Name: Span</b>");
+  }
+
+  public ImmutableMap<String, String> generateQueryMap(String spanName, String type, String subtype)
+      throws UnsupportedEncodingException {
+    return ImmutableMap.of(
+        "zspanname", URLEncoder.encode(spanName, "UTF-8"), "ztype", type, "zsubtype", subtype);
+  }
+
+  @Test
+  public void spanDetails_emitNameWithSpaceCorrectly() {
+    OutputStream output = new ByteArrayOutputStream();
+    String nameWithSpace = "SPAN NAME";
+    Span runningSpan = tracer.spanBuilder(nameWithSpace).startSpan();
+    tracer.spanBuilder(nameWithSpace).startSpan().end();
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
+
+    try {
+      tracezZPageHandler.emitHtml(generateQueryMap(nameWithSpace, "0", "0"), output);
+      assertThat(output.toString()).contains("<b> Span Name: " + nameWithSpace + "</b>");
+      assertThat(output.toString()).contains("<b> Number of running: 1");
+      tracezZPageHandler.emitHtml(generateQueryMap(nameWithSpace, "1", "0"), output);
+      assertThat(output.toString()).contains("<b> Span Name: " + nameWithSpace + "</b>");
+      assertThat(output.toString()).contains("<b> Number of latency samples: 1");
+    } catch (UnsupportedEncodingException e) {
+      Assert.fail(e.getMessage());
+    }
+
+    runningSpan.end();
+  }
+
+  @Test
+  public void spanDetails_emitNameWithPlusCorrectly() {
+    OutputStream output = new ByteArrayOutputStream();
+    String nameWithPlus = "SPAN+NAME";
+    Span runningSpan = tracer.spanBuilder(nameWithPlus).startSpan();
+    tracer.spanBuilder(nameWithPlus).startSpan().end();
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
+
+    try {
+      tracezZPageHandler.emitHtml(generateQueryMap(nameWithPlus, "0", "0"), output);
+      assertThat(output.toString()).contains("<b> Span Name: " + nameWithPlus + "</b>");
+      assertThat(output.toString()).contains("<b> Number of running: 1");
+      tracezZPageHandler.emitHtml(generateQueryMap(nameWithPlus, "1", "0"), output);
+      assertThat(output.toString()).contains("<b> Span Name: " + nameWithPlus + "</b>");
+      assertThat(output.toString()).contains("<b> Number of latency samples: 1");
+    } catch (UnsupportedEncodingException e) {
+      Assert.fail(e.getMessage());
+    }
+
+    runningSpan.end();
+  }
+
+  @Test
+  public void spanDetails_emitNamesWithSpaceAndPlusCorrectly() {
+    OutputStream output = new ByteArrayOutputStream();
+    String nameWithSpaceAndPlus = "SPAN + NAME";
+    Span runningSpan = tracer.spanBuilder(nameWithSpaceAndPlus).startSpan();
+    tracer.spanBuilder(nameWithSpaceAndPlus).startSpan().end();
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
+
+    try {
+      tracezZPageHandler.emitHtml(generateQueryMap(nameWithSpaceAndPlus, "0", "0"), output);
+      assertThat(output.toString()).contains("<b> Span Name: " + nameWithSpaceAndPlus + "</b>");
+      assertThat(output.toString()).contains("<b> Number of running: 1");
+      tracezZPageHandler.emitHtml(generateQueryMap(nameWithSpaceAndPlus, "1", "0"), output);
+      assertThat(output.toString()).contains("<b> Span Name: " + nameWithSpaceAndPlus + "</b>");
+      assertThat(output.toString()).contains("<b> Number of latency samples: 1");
+    } catch (UnsupportedEncodingException e) {
+      Assert.fail(e.getMessage());
+    }
+
+    runningSpan.end();
+  }
+
+  @Test
+  public void spanDetails_emitNamesWithSpecialUrlCharsCorrectly() {
+    OutputStream output = new ByteArrayOutputStream();
+    String nameWithUrlChars = "{SPAN/NAME}";
+    Span runningSpan = tracer.spanBuilder(nameWithUrlChars).startSpan();
+    tracer.spanBuilder(nameWithUrlChars).startSpan().end();
+    TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
+
+    try {
+      tracezZPageHandler.emitHtml(generateQueryMap(nameWithUrlChars, "0", "0"), output);
+      assertThat(output.toString()).contains("<b> Span Name: " + nameWithUrlChars + "</b>");
+      assertThat(output.toString()).contains("<b> Number of running: 1");
+      tracezZPageHandler.emitHtml(generateQueryMap(nameWithUrlChars, "1", "0"), output);
+      assertThat(output.toString()).contains("<b> Span Name: " + nameWithUrlChars + "</b>");
+      assertThat(output.toString()).contains("<b> Number of latency samples: 1");
+    } catch (UnsupportedEncodingException e) {
+      Assert.fail(e.getMessage());
+    }
+
+    runningSpan.end();
   }
 }
