@@ -71,6 +71,8 @@ public class DefaultSpanTest {
     span.addEvent(new TestEvent());
     span.addEvent(new TestEvent(), 0);
     span.setStatus(Status.OK);
+    span.recordException(new IllegalStateException());
+    span.recordException(new IllegalStateException(), 10);
     span.end();
     span.end(EndSpanOptions.getDefault());
   }
