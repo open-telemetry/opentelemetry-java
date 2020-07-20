@@ -78,6 +78,28 @@ public class AttributesTest {
             "key1", stringAttributeValue("value1"));
 
     assertThat(one).isEqualTo(two);
+
+    Attributes three =
+        Attributes.of(
+            "key1", stringAttributeValue("value1"),
+            "key2", stringAttributeValue("value2"),
+            "", stringAttributeValue("empty"),
+            "key3", stringAttributeValue("value3"),
+            "key4", stringAttributeValue("value4"));
+    Attributes four =
+        Attributes.of(
+            null,
+            stringAttributeValue("null"),
+            "key2",
+            stringAttributeValue("value2"),
+            "key1",
+            stringAttributeValue("value1"),
+            "key4",
+            stringAttributeValue("value4"),
+            "key3",
+            stringAttributeValue("value3"));
+
+    assertThat(three).isEqualTo(four);
   }
 
   @Test
@@ -89,6 +111,14 @@ public class AttributesTest {
     Attributes two = Attributes.of("key1", stringAttributeValue("value1"));
 
     assertThat(one).isEqualTo(two);
+  }
+
+  @Test
+  public void emptyAndNullKey() {
+    Attributes noAttributes =
+        Attributes.of("", stringAttributeValue("empty"), null, stringAttributeValue("null"));
+
+    assertThat(noAttributes.size()).isEqualTo(0);
   }
 
   @Test

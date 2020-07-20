@@ -84,11 +84,12 @@ abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
       return;
     }
 
-    String pivotKey = (String) data[rightIndex];
+    String pivotKey = data[rightIndex] == null ? "" : (String) data[rightIndex];
     int counter = leftIndex;
 
     for (int i = leftIndex; i <= rightIndex; i += 2) {
-      if (((String) data[i]).compareTo(pivotKey) <= 0) {
+      String value = data[i] == null ? "" : (String) data[i];
+      if (value.compareTo(pivotKey) <= 0) {
         swap(data, counter, i);
         counter += 2;
       }
@@ -105,8 +106,8 @@ abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
     for (int i = 0; i < data.length; i += 2) {
       Object key = data[i];
       Object value = data[i + 1];
-      if (key == null) {
-        logger.warning("Ignoring null key.");
+      if (key == null || "".equals(key)) {
+        logger.warning("Ignoring null/empty key.");
         continue;
       }
       if (key.equals(previousKey)) {

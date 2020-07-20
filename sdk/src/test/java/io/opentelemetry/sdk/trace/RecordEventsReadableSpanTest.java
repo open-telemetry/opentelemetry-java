@@ -375,6 +375,20 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
+  public void setAttribute_emptyKeys() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    span.setAttribute("", AttributeValue.stringAttributeValue(""));
+    span.setAttribute("", 1000L);
+    span.setAttribute("", 10.0);
+    span.setAttribute("", false);
+    span.setAttribute("", AttributeValue.arrayAttributeValue(new String[0]));
+    span.setAttribute("", AttributeValue.arrayAttributeValue(new Boolean[0]));
+    span.setAttribute("", AttributeValue.arrayAttributeValue(new Long[0]));
+    span.setAttribute("", AttributeValue.arrayAttributeValue(new Double[0]));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
+  }
+
+  @Test
   public void setAttribute_emptyArrayAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
