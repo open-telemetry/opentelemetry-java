@@ -39,5 +39,7 @@ final class ZPageStyle {
           + ".align-right{text-align: right;}"
           + "pre.no-margin{margin: 0;}"
           + "pre.wrap-text{white-space:pre-wrap;}"
-          + "td.bg-white{background-color: #fff;}";
+          + "td.bg-white{background-color: #fff;}"
+          + "button.button{background-color: #fff; margin-top: 15px;}"
+          + "form.form-flex{display: flex; flex-direction: column; align-items: center;}";
 }
