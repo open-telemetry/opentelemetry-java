@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.resources;
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
@@ -121,27 +122,21 @@ public abstract class Resource {
   public static Resource create(Attributes attributes) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
     Attributes.Builder attrBuilder = Attributes.newBuilder();
-    attributes.forEach(new NullRemover(attrBuilder));
+    attributes.forEach(new NullValueFilter(attrBuilder));
     return new AutoValue_Resource(attrBuilder.build());
   }
 
-  private static final class NullRemover implements KeyValueConsumer<AttributeValue> {
+  private static final class NullValueFilter implements KeyValueConsumer<AttributeValue> {
     private final Attributes.Builder attrBuilder;
 
-    private NullRemover(Attributes.Builder attrBuilder) {
+    private NullValueFilter(Attributes.Builder attrBuilder) {
       this.attrBuilder = attrBuilder;
     }
 
     @Override
     public void consume(String key, AttributeValue value) {
-      switch (value.getType()) {
-        case STRING:
-          if (value.getStringValue() == null) {
-            return;
-          }
-          break;
-        default:
-          break;
+      if (value.getType() == Type.STRING && value.getStringValue() == null) {
+        return;
       }
       attrBuilder.setAttribute(key, value);
     }
