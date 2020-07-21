@@ -634,6 +634,7 @@ public class RecordEventsReadableSpanTest {
                 "io.opentelemetry.sdk.trace.RecordEventsReadableSpanTest.InnerClassException"));
   }
 
+  @Test
   public void badArgsIgnored() {
     RecordEventsReadableSpan span = createTestRootSpan();
 

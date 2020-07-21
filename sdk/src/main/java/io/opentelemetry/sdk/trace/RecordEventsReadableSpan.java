@@ -421,14 +421,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void recordException(Throwable exception) {
-    Preconditions.checkNotNull(exception, "exception");
+    if (exception == null) {
+      return;
+    }
     recordException(exception, clock.now());
   }
 
   @Override
   public void recordException(Throwable exception, long timestamp) {
-    Preconditions.checkNotNull(exception, "exception");
-    Preconditions.checkArgument(timestamp >= 0, "Negative timestamp");
+    if (exception == null) {
+      return;
+    }
     Attributes.Builder attributes = Attributes.newBuilder();
     SemanticAttributes.EXCEPTION_TYPE.set(attributes, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
@@ -438,7 +441,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     exception.printStackTrace(new PrintWriter(writer));
     SemanticAttributes.EXCEPTION_STACKTRACE.set(attributes, writer.toString());
 
-    addEvent("exception", attributes.build(), timestamp);
+    addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
   }
 
   @Override

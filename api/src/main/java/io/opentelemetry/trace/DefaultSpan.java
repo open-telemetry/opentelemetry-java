@@ -107,6 +107,7 @@ public final class DefaultSpan implements Span {
   @Override
   public void setStatus(Status status) {}
 
+  @Override
   public void recordException(Throwable exception) {}
 
   @Override
