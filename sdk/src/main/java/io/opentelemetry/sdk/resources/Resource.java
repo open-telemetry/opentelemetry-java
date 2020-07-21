@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.resources;
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
@@ -135,7 +134,7 @@ public abstract class Resource {
 
     @Override
     public void consume(String key, AttributeValue value) {
-      if (value.getType() == Type.STRING && value.getStringValue() == null) {
+      if (value.getType() == AttributeValue.Type.STRING && value.getStringValue() == null) {
         return;
       }
       attrBuilder.setAttribute(key, value);
