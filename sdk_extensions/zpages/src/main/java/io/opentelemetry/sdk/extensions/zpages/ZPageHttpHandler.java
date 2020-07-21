@@ -49,7 +49,7 @@ final class ZPageHttpHandler implements HttpHandler {
    */
   @VisibleForTesting
   static ImmutableMap<String, String> parseQueryMap(URI uri) {
-    String queryStrings = uri.getQuery();
+    String queryStrings = uri.getRawQuery();
     if (queryStrings == null) {
       return ImmutableMap.of();
     }

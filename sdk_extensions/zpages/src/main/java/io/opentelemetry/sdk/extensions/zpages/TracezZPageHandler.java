@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.extensions.zpages;
 
 import static com.google.common.html.HtmlEscapers.htmlEscaper;
+import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -33,7 +34,6 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -181,16 +181,12 @@ final class TracezZPageHandler extends ZPageHandler {
    * @param subtype the sub-type of the corresponding span (latency [0, 8], error [0, 15]).
    */
   private static void emitSummaryTableCell(
-      PrintStream out, String spanName, int numOfSamples, SampleType type, int subtype)
-      throws UnsupportedEncodingException {
+      PrintStream out, String spanName, int numOfSamples, SampleType type, int subtype) {
     // If numOfSamples is greater than 0, emit a link to see detailed span information
     // If numOfSamples is smaller than 0, print the text "N/A", otherwise print the text "0"
     if (numOfSamples > 0) {
       out.print("<td class=\"align-center border-left-dark\"><a href=\"?");
-      out.print(
-          PARAM_SPAN_NAME
-              + "="
-              + URLEncoder.encode(spanName.replace("+", /* Unicode for + */ "%2B"), "UTF-8"));
+      out.print(PARAM_SPAN_NAME + "=" + urlFormParameterEscaper().escape(spanName));
       out.print("&" + PARAM_SAMPLE_TYPE + "=" + type.getValue());
       out.print("&" + PARAM_SAMPLE_SUB_TYPE + "=" + subtype);
       out.print("\">" + numOfSamples + "</a></td>");
@@ -207,7 +203,7 @@ final class TracezZPageHandler extends ZPageHandler {
    *
    * @param out the {@link PrintStream} {@code out}.
    */
-  private void emitSummaryTable(PrintStream out) throws UnsupportedEncodingException {
+  private void emitSummaryTable(PrintStream out) {
     if (dataAggregator == null) {
       return;
     }
@@ -479,7 +475,7 @@ final class TracezZPageHandler extends ZPageHandler {
     String spanName = queryMap.get(PARAM_SPAN_NAME);
     if (spanName != null) {
       // Convert spanName with URL encoding
-      spanName = URLDecoder.decode(spanName, "UTF-8").replace(/* Unicode for + */ "%2B", "+");
+      spanName = URLDecoder.decode(spanName, "UTF-8");
       // Show detailed information for the corresponding span
       String typeStr = queryMap.get(PARAM_SAMPLE_TYPE);
       if (typeStr != null) {
