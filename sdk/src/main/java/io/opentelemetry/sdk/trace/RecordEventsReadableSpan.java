@@ -323,16 +323,25 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name) {
+    if (name == null) {
+      return;
+    }
     addTimedEvent(TimedEvent.create(clock.now(), name, Attributes.empty(), 0));
   }
 
   @Override
   public void addEvent(String name, long timestamp) {
+    if (name == null) {
+      return;
+    }
     addTimedEvent(TimedEvent.create(timestamp, name, Attributes.empty(), 0));
   }
 
   @Override
   public void addEvent(String name, Attributes attributes) {
+    if (name == null) {
+      return;
+    }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         TimedEvent.create(
@@ -344,6 +353,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name, Attributes attributes, long timestamp) {
+    if (name == null) {
+      return;
+    }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         TimedEvent.create(
@@ -355,11 +367,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(io.opentelemetry.trace.Event event) {
+    if (event == null) {
+      return;
+    }
     addTimedEvent(TimedEvent.create(clock.now(), event));
   }
 
   @Override
   public void addEvent(io.opentelemetry.trace.Event event, long timestamp) {
+    if (event == null) {
+      return;
+    }
     addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
