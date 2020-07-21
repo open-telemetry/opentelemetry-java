@@ -18,7 +18,6 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.internal.Utils;
 import java.util.Random;
 import javax.annotation.concurrent.Immutable;
 
@@ -73,92 +72,54 @@ public final class DefaultSpan implements Span {
   }
 
   @Override
-  public void setAttribute(String key, String value) {
-    Utils.checkNotNull(key, "key");
-  }
+  public void setAttribute(String key, String value) {}
 
   @Override
-  public void setAttribute(String key, long value) {
-    Utils.checkNotNull(key, "key");
-  }
+  public void setAttribute(String key, long value) {}
 
   @Override
-  public void setAttribute(String key, double value) {
-    Utils.checkNotNull(key, "key");
-  }
+  public void setAttribute(String key, double value) {}
 
   @Override
-  public void setAttribute(String key, boolean value) {
-    Utils.checkNotNull(key, "key");
-  }
+  public void setAttribute(String key, boolean value) {}
 
   @Override
-  public void setAttribute(String key, AttributeValue value) {
-    Utils.checkNotNull(key, "key");
-    Utils.checkNotNull(value, "value");
-  }
+  public void setAttribute(String key, AttributeValue value) {}
 
   @Override
   public void addEvent(String name) {}
 
   @Override
-  public void addEvent(String name, long timestamp) {
-    Utils.checkNotNull(name, "name");
-    Utils.checkArgument(timestamp >= 0, "Negative timestamp");
-  }
+  public void addEvent(String name, long timestamp) {}
 
   @Override
-  public void addEvent(String name, Attributes attributes) {
-    Utils.checkNotNull(name, "name");
-    Utils.checkNotNull(attributes, "attributes");
-  }
+  public void addEvent(String name, Attributes attributes) {}
 
   @Override
-  public void addEvent(String name, Attributes attributes, long timestamp) {
-    Utils.checkNotNull(name, "name");
-    Utils.checkNotNull(attributes, "attributes");
-    Utils.checkArgument(timestamp >= 0, "Negative timestamp");
-  }
+  public void addEvent(String name, Attributes attributes, long timestamp) {}
 
   @Override
-  public void addEvent(Event event) {
-    Utils.checkNotNull(event, "event");
-  }
+  public void addEvent(Event event) {}
 
   @Override
-  public void addEvent(Event event, long timestamp) {
-    Utils.checkNotNull(event, "event");
-    Utils.checkArgument(timestamp >= 0, "Negative timestamp");
-  }
+  public void addEvent(Event event, long timestamp) {}
 
   @Override
-  public void setStatus(Status status) {
-    Utils.checkNotNull(status, "status");
-  }
+  public void setStatus(Status status) {}
+
+  public void recordException(Throwable exception) {}
 
   @Override
-  public void recordException(Throwable exception) {
-    Utils.checkNotNull(exception, "exception");
-  }
+  public void recordException(Throwable exception, long timestamp) {}
 
   @Override
-  public void recordException(Throwable exception, long timestamp) {
-    Utils.checkNotNull(exception, "exception");
-    Utils.checkArgument(timestamp >= 0, "Negative timestamp");
-  }
-
-  @Override
-  public void updateName(String name) {
-    Utils.checkNotNull(name, "name");
-  }
+  public void updateName(String name) {}
 
   @Override
   public void end() {}
 
   @Override
-  public void end(EndSpanOptions endOptions) {
-    Utils.checkNotNull(endOptions, "endOptions");
-  }
+  public void end(EndSpanOptions endOptions) {}
 
   @Override
   public SpanContext getContext() {

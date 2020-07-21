@@ -21,6 +21,7 @@ import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.internal.TemporaryBuffers;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -89,7 +90,7 @@ public class HttpTraceContext implements HttpTextFormat {
   }
 
   private static <C> void injectImpl(SpanContext spanContext, C carrier, Setter<C> setter) {
-    char[] chars = new char[TRACEPARENT_HEADER_SIZE];
+    char[] chars = TemporaryBuffers.chars(TRACEPARENT_HEADER_SIZE);
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
@@ -98,7 +99,7 @@ public class HttpTraceContext implements HttpTextFormat {
     spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
-    setter.set(carrier, TRACE_PARENT, new String(chars));
+    setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
     List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
     if (entries.isEmpty()) {
       // No need to add an empty "tracestate" header.

@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import static io.opentelemetry.common.AttributeValue.Type.STRING;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -303,7 +302,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void setAttribute(String key, AttributeValue value) {
-    Preconditions.checkNotNull(key, "key");
+    if (key == null) {
+      return;
+    }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
@@ -325,16 +326,25 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name) {
+    if (name == null) {
+      return;
+    }
     addTimedEvent(TimedEvent.create(clock.now(), name, Attributes.empty(), 0));
   }
 
   @Override
   public void addEvent(String name, long timestamp) {
+    if (name == null) {
+      return;
+    }
     addTimedEvent(TimedEvent.create(timestamp, name, Attributes.empty(), 0));
   }
 
   @Override
   public void addEvent(String name, Attributes attributes) {
+    if (name == null) {
+      return;
+    }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         TimedEvent.create(
@@ -346,6 +356,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name, Attributes attributes, long timestamp) {
+    if (name == null) {
+      return;
+    }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         TimedEvent.create(
@@ -357,11 +370,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(io.opentelemetry.trace.Event event) {
+    if (event == null) {
+      return;
+    }
     addTimedEvent(TimedEvent.create(clock.now(), event));
   }
 
   @Override
   public void addEvent(io.opentelemetry.trace.Event event, long timestamp) {
+    if (event == null) {
+      return;
+    }
     addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
@@ -388,7 +407,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void setStatus(Status status) {
-    Preconditions.checkNotNull(status, "status");
+    if (status == null) {
+      return;
+    }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
@@ -422,7 +443,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void updateName(String name) {
-    Preconditions.checkNotNull(name, "name");
+    if (name == null) {
+      return;
+    }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
@@ -439,7 +462,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void end(EndSpanOptions endOptions) {
-    Preconditions.checkNotNull(endOptions, "endOptions");
+    if (endOptions == null) {
+      end();
+      return;
+    }
     endInternal(endOptions.getEndTimestamp() == 0 ? clock.now() : endOptions.getEndTimestamp());
   }
 
