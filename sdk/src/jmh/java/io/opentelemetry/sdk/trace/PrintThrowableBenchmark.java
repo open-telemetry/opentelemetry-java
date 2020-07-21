@@ -80,15 +80,6 @@ public class PrintThrowableBenchmark {
     return sw.toString();
   }
 
-  /** Measures performance of our custom {@link StringBuilderPrintWriter}. */
-  @Benchmark
-  public String customPrintWriter() {
-    StringBuilder sb = new StringBuilder();
-    PrintWriter writer = new StringBuilderPrintWriter(sb);
-    THROWABLE.printStackTrace(writer);
-    return sb.toString();
-  }
-
   /** Measures performance of a {@link PrintStream}. */
   @Benchmark
   public String printStream() throws Exception {
