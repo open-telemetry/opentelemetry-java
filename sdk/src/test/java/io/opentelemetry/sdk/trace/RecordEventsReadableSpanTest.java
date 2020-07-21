@@ -562,6 +562,29 @@ public class RecordEventsReadableSpanTest {
     }
   }
 
+  @Test
+  public void badArgsIgnored() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+
+    // Should be no exceptions
+    span.setAttribute(null, 0);
+    span.setStatus(null);
+    span.updateName(null);
+    span.addEvent((Event) null);
+    span.addEvent((String) null);
+    span.addEvent((Event) null, 0);
+    span.addEvent((String) null, 0);
+    span.addEvent(null, null);
+    span.addEvent(null, null, 0);
+    span.end(null);
+
+    // Ignored the bad calls
+    SpanData data = span.toSpanData();
+    assertThat(data.getAttributes().isEmpty()).isTrue();
+    assertThat(data.getStatus()).isEqualTo(Status.OK);
+    assertThat(data.getName()).isEqualTo(SPAN_NAME);
+  }
+
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<String, AttributeValue> attributes) {
     AttributesMap attributesMap =
