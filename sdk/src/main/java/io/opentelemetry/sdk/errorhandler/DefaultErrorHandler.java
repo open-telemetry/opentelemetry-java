@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * Default implementation of {@link ErrorHandler}. By default, logs the full string of the error
  * with a level of "Warning".
  *
- * @since 0.1.0
+ * @since 0.7.0
  */
 @ThreadSafe
 public final class DefaultErrorHandler implements ErrorHandler {

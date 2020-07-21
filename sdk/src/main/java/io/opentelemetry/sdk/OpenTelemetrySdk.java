@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.errorhandler.ErrorHandler;
 import io.opentelemetry.sdk.errorhandler.OpenTelemetryException;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -40,10 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OpenTelemetrySdk {
-  private static final Object mutex = new Object();
-
-  @Nullable private static volatile OpenTelemetrySdk instance;
-  private volatile ErrorHandler errorHandler;
+  private static volatile ErrorHandler errorHandler = DefaultErrorHandler.getInstance();
 
   /**
    * Returns a {@link TracerSdkProvider}.
@@ -82,7 +78,7 @@ public final class OpenTelemetrySdk {
    * @param e The error to be handled.
    */
   public static void handleError(OpenTelemetryException e) {
-    getInstance().errorHandler.handle(e);
+    errorHandler.handle(e);
   }
 
   /**
@@ -93,27 +89,13 @@ public final class OpenTelemetrySdk {
    */
   public static void setErrorHandler(ErrorHandler h) {
     Utils.checkNotNull(h, "errorhandler");
-    getInstance().errorHandler = h;
-  }
-
-  /** Lazy loads an instance. */
-  private static OpenTelemetrySdk getInstance() {
-    if (instance == null) {
-      synchronized (mutex) {
-        if (instance == null) {
-          instance = new OpenTelemetrySdk();
-        }
-      }
-    }
-    return instance;
+    errorHandler = h;
   }
 
   // for testing
   static void reset() {
-    instance = null;
+    errorHandler = DefaultErrorHandler.getInstance();
   }
 
-  private OpenTelemetrySdk() {
-    this.errorHandler = DefaultErrorHandler.getInstance();
-  }
+  private OpenTelemetrySdk() {}
 }
