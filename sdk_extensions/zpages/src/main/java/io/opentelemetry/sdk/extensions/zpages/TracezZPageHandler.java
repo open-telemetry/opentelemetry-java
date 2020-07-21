@@ -32,8 +32,6 @@ import io.opentelemetry.trace.Status.CanonicalCode;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -459,8 +457,7 @@ final class TracezZPageHandler extends ZPageHandler {
    * @param queryMap the map containing URL query parameters.s
    * @param out the {@link PrintStream} {@code out}.
    */
-  private void emitHtmlBody(Map<String, String> queryMap, PrintStream out)
-      throws UnsupportedEncodingException {
+  private void emitHtmlBody(Map<String, String> queryMap, PrintStream out) {
     if (dataAggregator == null) {
       out.print("OpenTelemetry implementation not available.");
       return;
@@ -474,8 +471,6 @@ final class TracezZPageHandler extends ZPageHandler {
     // spanName will be null if the query parameter doesn't exist in the URL
     String spanName = queryMap.get(PARAM_SPAN_NAME);
     if (spanName != null) {
-      // Convert spanName with URL encoding
-      spanName = URLDecoder.decode(spanName, "UTF-8");
       // Show detailed information for the corresponding span
       String typeStr = queryMap.get(PARAM_SAMPLE_TYPE);
       if (typeStr != null) {
