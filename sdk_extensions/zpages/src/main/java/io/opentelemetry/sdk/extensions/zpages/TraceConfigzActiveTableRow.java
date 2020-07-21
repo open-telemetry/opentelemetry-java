@@ -16,33 +16,15 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
+import com.google.auto.value.AutoValue;
 import java.io.PrintStream;
 
-final class TraceConfigzActiveTableRow {
-  private final PrintStream out;
-  private final String paramName;
-  private final String paramValue;
-  private final String zebraStripeColor;
-  private final boolean zebraStripe;
-
-  private TraceConfigzActiveTableRow(Builder builder) {
-    out = builder.out;
-    paramName = builder.paramName;
-    paramValue = builder.paramValue;
-    zebraStripeColor = builder.zebraStripeColor;
-    zebraStripe = builder.zebraStripe;
-  }
-
-  public static class Builder {
-    private PrintStream out;
-    private String paramName;
-    private String paramValue;
-    private String zebraStripeColor;
-    private boolean zebraStripe;
-
-    public TraceConfigzActiveTableRow build() {
-      return new TraceConfigzActiveTableRow(this);
-    }
+/** Builder pattern class for emiting a single row of the change parameter table. */
+@AutoValue
+abstract class TraceConfigzActiveTableRow {
+  @AutoValue.Builder
+  public abstract static class Builder {
+    abstract TraceConfigzActiveTableRow build();
 
     /**
      * Set the print stream to emit HTML contents.
@@ -50,10 +32,7 @@ final class TraceConfigzActiveTableRow {
      * @param out the {@link PrintStream} {@code out}.
      * @return the {@link Builder}.
      */
-    public Builder setPrintStream(PrintStream out) {
-      this.out = out;
-      return this;
-    }
+    abstract Builder setPrintStream(PrintStream out);
 
     /**
      * Set the parameter name the row corresponds to.
@@ -61,10 +40,7 @@ final class TraceConfigzActiveTableRow {
      * @param paramName the parameter name the row corresponds to.
      * @return the {@link Builder}.
      */
-    public Builder setParamName(String paramName) {
-      this.paramName = paramName;
-      return this;
-    }
+    abstract Builder setParamName(String paramName);
 
     /**
      * Set the parameter value the row corresponds to.
@@ -72,10 +48,7 @@ final class TraceConfigzActiveTableRow {
      * @param paramValue the parameter value the row corresponds to.
      * @return the {@link Builder}.
      */
-    public Builder setParamValue(String paramValue) {
-      this.paramValue = paramValue;
-      return this;
-    }
+    abstract Builder setParamValue(String paramValue);
 
     /**
      * Set the background color for zebraStriping.
@@ -83,10 +56,7 @@ final class TraceConfigzActiveTableRow {
      * @param zebraStripeColor the background color for zebraStriping.
      * @return the {@link Builder}.
      */
-    public Builder setZebraStripeColor(String zebraStripeColor) {
-      this.zebraStripeColor = zebraStripeColor;
-      return this;
-    }
+    abstract Builder setZebraStripeColor(String zebraStripeColor);
 
     /**
      * Set the boolean for zebraStriping the row.
@@ -94,25 +64,34 @@ final class TraceConfigzActiveTableRow {
      * @param zebraStripe the boolean for zebraStriping the row.
      * @return the {@link Builder}.
      */
-    public Builder setZebraStripe(boolean zebraStripe) {
-      this.zebraStripe = zebraStripe;
-      return this;
-    }
+    abstract Builder setZebraStripe(boolean zebraStripe);
+
+    Builder() {}
   }
 
-  public static Builder builder() {
-    return new Builder();
+  static Builder builder() {
+    return new AutoValue_TraceConfigzActiveTableRow.Builder();
   }
+
+  abstract PrintStream printStream();
+
+  abstract String paramName();
+
+  abstract String paramValue();
+
+  abstract String zebraStripeColor();
+
+  abstract boolean zebraStripe();
 
   /** Emit HTML content to the PrintStream. */
   public void emitHtml() {
-    if (zebraStripe) {
-      out.print("<tr style=\"background-color: " + zebraStripeColor + ";\">");
+    if (this.zebraStripe()) {
+      this.printStream().print("<tr style=\"background-color: " + this.zebraStripeColor() + ";\">");
     } else {
-      out.print("<tr>");
+      this.printStream().print("<tr>");
     }
-    out.print("<td>" + paramName + "</td>");
-    out.print("<td class=\"border-left-dark\">" + paramValue + "</td>");
-    out.print("</tr>");
+    this.printStream().print("<td>" + this.paramName() + "</td>");
+    this.printStream().print("<td class=\"border-left-dark\">" + this.paramValue() + "</td>");
+    this.printStream().print("</tr>");
   }
 }

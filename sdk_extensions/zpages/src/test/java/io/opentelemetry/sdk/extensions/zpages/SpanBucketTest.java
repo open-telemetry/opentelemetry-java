@@ -40,7 +40,7 @@ public final class SpanBucketTest {
 
   @Test
   public void verifyLatencyBucketSizeLimit() {
-    SpanBucket latencyBucket = new SpanBucket(true);
+    SpanBucket latencyBucket = new SpanBucket(/* isLatencyBucket= */ true);
     Span[] spans = new Span[LATENCY_BUCKET_SIZE + 1];
     for (int i = 0; i < LATENCY_BUCKET_SIZE + 1; i++) {
       spans[i] = tracer.spanBuilder(SPAN_NAME).startSpan();
@@ -60,7 +60,7 @@ public final class SpanBucketTest {
 
   @Test
   public void verifyErrorBucketSizeLimit() {
-    SpanBucket errorBucket = new SpanBucket(false);
+    SpanBucket errorBucket = new SpanBucket(/* isLatencyBucket= */ false);
     Span[] spans = new Span[ERROR_BUCKET_SIZE + 1];
     for (int i = 0; i < ERROR_BUCKET_SIZE + 1; i++) {
       spans[i] = tracer.spanBuilder(SPAN_NAME).startSpan();
@@ -82,7 +82,7 @@ public final class SpanBucketTest {
   public void verifyThreadSafety() throws InterruptedException {
     int numberOfThreads = 4;
     int numberOfSpans = 4;
-    SpanBucket spanBucket = new SpanBucket(true);
+    SpanBucket spanBucket = new SpanBucket(/* isLatencyBucket= */ true);
     final CountDownLatch startSignal = new CountDownLatch(1);
     final CountDownLatch endSignal = new CountDownLatch(numberOfThreads);
     for (int i = 0; i < numberOfThreads; i++) {

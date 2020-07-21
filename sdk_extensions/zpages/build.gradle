@@ -13,7 +13,12 @@ dependencies {
             project(':opentelemetry-sdk')
 
     implementation libraries.guava
+    
     compileOnly 'com.sun.net.httpserver:http:20070405'
+
+    annotationProcessor libraries.auto_value
+
+    testAnnotationProcessor libraries.auto_value
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
 }

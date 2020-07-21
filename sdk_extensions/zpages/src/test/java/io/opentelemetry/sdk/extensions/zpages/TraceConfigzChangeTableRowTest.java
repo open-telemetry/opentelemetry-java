@@ -39,6 +39,7 @@ public final class TraceConfigzChangeTableRowTest {
         .setPrintStream(new PrintStream(output))
         .setRowName(rowName)
         .setParamName(paramName)
+        .setInputPlaceHolder("")
         .setParamDefaultValue(defaultValue)
         .setZebraStripeColor(zebraStripeColor)
         .setZebraStripe(true)
