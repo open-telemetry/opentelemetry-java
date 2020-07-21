@@ -22,57 +22,6 @@ import java.io.PrintStream;
 /** Builder pattern class for emiting a single row of the change parameter table. */
 @AutoValue
 abstract class TraceConfigzActiveTableRow {
-  @AutoValue.Builder
-  public abstract static class Builder {
-    abstract TraceConfigzActiveTableRow build();
-
-    /**
-     * Set the print stream to emit HTML contents.
-     *
-     * @param out the {@link PrintStream} {@code out}.
-     * @return the {@link Builder}.
-     */
-    abstract Builder setPrintStream(PrintStream out);
-
-    /**
-     * Set the parameter name the row corresponds to.
-     *
-     * @param paramName the parameter name the row corresponds to.
-     * @return the {@link Builder}.
-     */
-    abstract Builder setParamName(String paramName);
-
-    /**
-     * Set the parameter value the row corresponds to.
-     *
-     * @param paramValue the parameter value the row corresponds to.
-     * @return the {@link Builder}.
-     */
-    abstract Builder setParamValue(String paramValue);
-
-    /**
-     * Set the background color for zebraStriping.
-     *
-     * @param zebraStripeColor the background color for zebraStriping.
-     * @return the {@link Builder}.
-     */
-    abstract Builder setZebraStripeColor(String zebraStripeColor);
-
-    /**
-     * Set the boolean for zebraStriping the row.
-     *
-     * @param zebraStripe the boolean for zebraStriping the row.
-     * @return the {@link Builder}.
-     */
-    abstract Builder setZebraStripe(boolean zebraStripe);
-
-    Builder() {}
-  }
-
-  static Builder builder() {
-    return new AutoValue_TraceConfigzActiveTableRow.Builder();
-  }
-
   abstract PrintStream printStream();
 
   abstract String paramName();
@@ -93,5 +42,54 @@ abstract class TraceConfigzActiveTableRow {
     this.printStream().print("<td>" + this.paramName() + "</td>");
     this.printStream().print("<td class=\"border-left-dark\">" + this.paramValue() + "</td>");
     this.printStream().print("</tr>");
+  }
+
+  static Builder builder() {
+    return new AutoValue_TraceConfigzActiveTableRow.Builder();
+  }
+
+  @AutoValue.Builder
+  interface Builder {
+    TraceConfigzActiveTableRow build();
+
+    /**
+     * Set the print stream to emit HTML contents.
+     *
+     * @param out the {@link PrintStream} {@code out}.
+     * @return the {@link Builder}.
+     */
+    Builder setPrintStream(PrintStream out);
+
+    /**
+     * Set the parameter name the row corresponds to.
+     *
+     * @param paramName the parameter name the row corresponds to.
+     * @return the {@link Builder}.
+     */
+    Builder setParamName(String paramName);
+
+    /**
+     * Set the parameter value the row corresponds to.
+     *
+     * @param paramValue the parameter value the row corresponds to.
+     * @return the {@link Builder}.
+     */
+    Builder setParamValue(String paramValue);
+
+    /**
+     * Set the background color for zebraStriping.
+     *
+     * @param zebraStripeColor the background color for zebraStriping.
+     * @return the {@link Builder}.
+     */
+    Builder setZebraStripeColor(String zebraStripeColor);
+
+    /**
+     * Set the boolean for zebraStriping the row.
+     *
+     * @param zebraStripe the boolean for zebraStriping the row.
+     * @return the {@link Builder}.
+     */
+    Builder setZebraStripe(boolean zebraStripe);
   }
 }

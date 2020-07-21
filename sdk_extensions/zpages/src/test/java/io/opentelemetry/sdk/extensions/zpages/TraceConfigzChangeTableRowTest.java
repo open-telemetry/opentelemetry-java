@@ -46,7 +46,7 @@ public final class TraceConfigzChangeTableRowTest {
         .build()
         .emitHtml();
 
-    assertThat(output.toString()).contains(">" + rowName + "<");
+    assertThat(output.toString()).contains(">Update " + rowName + "<");
     assertThat(output.toString()).contains("name=" + paramName);
     assertThat(output.toString()).contains(">(" + defaultValue + ")<");
     assertThat(output.toString()).contains("background-color: " + zebraStripeColor);
