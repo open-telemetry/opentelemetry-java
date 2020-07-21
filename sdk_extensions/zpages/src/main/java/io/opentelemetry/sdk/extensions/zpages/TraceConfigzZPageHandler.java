@@ -284,9 +284,9 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
    */
   private void emitHtmlBody(PrintStream out) {
     out.print(
-        "<img style=\"height: 90px;\" src=\"data:image/png;base64,"
+        "<a href=\"/\"><img style=\"height: 90px;\" src=\"data:image/png;base64,"
             + ZPageLogo.getLogoBase64()
-            + "\" />");
+            + "\" /></a>");
     out.print("<h1>Trace Configuration</h1>");
     out.print("<form class=\"form-flex\" action=\"" + TRACE_CONFIGZ_URL + "\" method=\"get\">");
     out.print(
