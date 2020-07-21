@@ -111,7 +111,7 @@ abstract class TraceConfigzChangeTableRow {
     } else {
       this.printStream().print("<tr>");
     }
-    this.printStream().print("<td>" + this.rowName() + "</td>");
+    this.printStream().print("<td>Update " + this.rowName() + "</td>");
     this.printStream()
         .print(
             "<td class=\"border-left-dark\"><input type=text size=15 name="
