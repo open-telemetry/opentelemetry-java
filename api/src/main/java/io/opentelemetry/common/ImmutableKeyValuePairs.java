@@ -21,7 +21,6 @@ import static io.opentelemetry.internal.Utils.checkArgument;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,13 +28,14 @@ import javax.annotation.concurrent.Immutable;
  * An immutable set of key-value pairs. Keys are only {@link String} typed. Can be iterated over
  * using the {@link #forEach(KeyValueConsumer)} method.
  *
+ * <p>Key-value pairs are dropped for {@code null} or empty keys.
+ *
  * @param <V> The type of the values contained in this.
  * @see Labels
  * @see Attributes
  */
 @Immutable
 abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
-  private static final Logger logger = Logger.getLogger(ImmutableKeyValuePairs.class.getName());
 
   List<Object> data() {
     return Collections.emptyList();
@@ -84,11 +84,12 @@ abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
       return;
     }
 
-    String pivotKey = (String) data[rightIndex];
+    String pivotKey = data[rightIndex] == null ? "" : (String) data[rightIndex];
     int counter = leftIndex;
 
     for (int i = leftIndex; i <= rightIndex; i += 2) {
-      if (((String) data[i]).compareTo(pivotKey) <= 0) {
+      String value = data[i] == null ? "" : (String) data[i];
+      if (value.compareTo(pivotKey) <= 0) {
         swap(data, counter, i);
         counter += 2;
       }
@@ -105,8 +106,7 @@ abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
     for (int i = 0; i < data.length; i += 2) {
       Object key = data[i];
       Object value = data[i + 1];
-      if (key == null) {
-        logger.warning("Ignoring null key.");
+      if (key == null || "".equals(key)) {
         continue;
       }
       if (key.equals(previousKey)) {
