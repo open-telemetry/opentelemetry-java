@@ -86,7 +86,7 @@ public interface Sampler {
   interface SamplingResult {
 
     /**
-     * Return sampling result whether span should be sampled, recorded, both or neither.
+     * Return decision on whether span should be sampled, recorded, both or neither.
      *
      * @return sampling result.
      * @since 0.7.0
