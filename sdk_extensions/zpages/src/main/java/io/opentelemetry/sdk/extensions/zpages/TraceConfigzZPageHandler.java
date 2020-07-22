@@ -36,7 +36,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
   private static final String QUERY_STRING_ACTION_DEFAULT = "default";
   private static final String QUERY_STRING_SAMPLING_PROBABILITY = "samplingprobability";
   private static final String QUERY_STRING_MAX_NUM_OF_ATTRIBUTES = "maxnumofattributes";
-  private static final String QUERY_STRING_MAX_NUM_OF_EVENTS = "maxnumbofevents";
+  private static final String QUERY_STRING_MAX_NUM_OF_EVENTS = "maxnumofevents";
   private static final String QUERY_STRING_MAX_NUM_OF_LINKS = "maxnumoflinks";
   private static final String QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_EVENT =
       "maxnumofattributesperevent";
@@ -79,6 +79,43 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
   }
 
   /**
+   * Emits a row of the change tracing parameter table to the {@link PrintStream} {@code out}. Each
+   * row corresponds to one tracing parameter.
+   *
+   * @param out the {@link PrintStream} {@code out}.
+   * @param rowName the display name of the corresponding tracing parameter.
+   * @param paramName the name of the corresponding tracing parameter (this will be used to
+   *     construct the query parameter in URL).
+   * @param inputPlaceHolder placeholder for the <input> HTML element.
+   * @param paramDefaultValue the default value of the corresponding tracing parameter.
+   * @param zebraStripeColor hex code of the color used for zebra striping rows.
+   * @param zebraStripe boolean indicating if the row is zebra striped.
+   */
+  private static void emitChangeTableRow(
+      PrintStream out,
+      String rowName,
+      String paramName,
+      String inputPlaceHolder,
+      String paramDefaultValue,
+      String zebraStripeColor,
+      boolean zebraStripe) {
+    if (zebraStripe) {
+      out.print("<tr style=\"background-color: " + zebraStripeColor + ";\">");
+    } else {
+      out.print("<tr>");
+    }
+    out.print("<td>Update " + rowName + "</td>");
+    out.print(
+        "<td class=\"border-left-dark\"><input type=text size=15 name="
+            + paramName
+            + " value=\"\" placeholder=\""
+            + inputPlaceHolder
+            + "\" /></td>");
+    out.print("<td class=\"border-left-dark\">(" + paramDefaultValue + ")</td>");
+    out.print("</tr>");
+  }
+
+  /**
    * Emits the change tracing parameter table to the {@link PrintStream} {@code out}.
    *
    * @param out the {@link PrintStream} {@code out}.
@@ -90,69 +127,84 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         "<th colspan=2 style=\"text-align: left;\" class=\"header-text\">"
             + "<b>Update active TraceConfig</b></th>");
     out.print("<th colspan=1 class=\"header-text border-left-white\"><b>Default</b></th>");
-    TraceConfigzChangeTableRow.builder()
-        .setPrintStream(out)
-        .setRowName("SamplingProbability to")
-        .setParamName(QUERY_STRING_SAMPLING_PROBABILITY)
-        .setInputPlaceHolder("[0.0, 1.0]")
-        .setParamDefaultValue(TraceConfig.getDefault().getSampler().getDescription())
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(false)
-        .build()
-        .emitHtml();
-    TraceConfigzChangeTableRow.builder()
-        .setPrintStream(out)
-        .setRowName("MaxNumberOfAttributes to")
-        .setParamName(QUERY_STRING_MAX_NUM_OF_ATTRIBUTES)
-        .setInputPlaceHolder("")
-        .setParamDefaultValue(Integer.toString(TraceConfig.getDefault().getMaxNumberOfAttributes()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(true)
-        .build()
-        .emitHtml();
-    TraceConfigzChangeTableRow.builder()
-        .setPrintStream(out)
-        .setRowName("MaxNumberOfEvents to")
-        .setParamName(QUERY_STRING_MAX_NUM_OF_EVENTS)
-        .setInputPlaceHolder("")
-        .setParamDefaultValue(Integer.toString(TraceConfig.getDefault().getMaxNumberOfEvents()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(false)
-        .build()
-        .emitHtml();
-    TraceConfigzChangeTableRow.builder()
-        .setPrintStream(out)
-        .setRowName("MaxNumberOfLinks to")
-        .setParamName(QUERY_STRING_MAX_NUM_OF_LINKS)
-        .setInputPlaceHolder("")
-        .setParamDefaultValue(Integer.toString(TraceConfig.getDefault().getMaxNumberOfLinks()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(true)
-        .build()
-        .emitHtml();
-    TraceConfigzChangeTableRow.builder()
-        .setPrintStream(out)
-        .setRowName("MaxNumberOfAttributesPerEvent to")
-        .setParamName(QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_EVENT)
-        .setInputPlaceHolder("")
-        .setParamDefaultValue(
-            Integer.toString(TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(false)
-        .build()
-        .emitHtml();
-    TraceConfigzChangeTableRow.builder()
-        .setPrintStream(out)
-        .setRowName("MaxNumberOfAttributesPerLink to")
-        .setParamName(QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_LINK)
-        .setInputPlaceHolder("")
-        .setParamDefaultValue(
-            Integer.toString(TraceConfig.getDefault().getMaxNumberOfAttributesPerLink()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(true)
-        .build()
-        .emitHtml();
+    emitChangeTableRow(
+        /* out= */ out,
+        /* rowName= */ "SamplingProbability to",
+        /* paramName= */ QUERY_STRING_SAMPLING_PROBABILITY,
+        /* inputPlaceHolder= */ "[0.0, 1.0]",
+        /* paramDefaultValue= */ TraceConfig.getDefault().getSampler().getDescription(),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ false);
+    emitChangeTableRow(
+        /* out= */ out,
+        /* rowName= */ "MaxNumberOfAttributes to",
+        /* paramName= */ QUERY_STRING_MAX_NUM_OF_ATTRIBUTES,
+        /* inputPlaceHolder= */ "",
+        /* paramDefaultValue= */ Integer.toString(
+            TraceConfig.getDefault().getMaxNumberOfAttributes()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ true);
+    emitChangeTableRow(
+        /* out= */ out,
+        /* rowName= */ "MaxNumberOfEvents to",
+        /* paramName= */ QUERY_STRING_MAX_NUM_OF_EVENTS,
+        /* inputPlaceHolder= */ "",
+        /* paramDefaultValue= */ Integer.toString(TraceConfig.getDefault().getMaxNumberOfEvents()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ false);
+    emitChangeTableRow(
+        /* out= */ out,
+        /* rowName= */ "MaxNumberOfLinks to",
+        /* paramName= */ QUERY_STRING_MAX_NUM_OF_LINKS,
+        /* inputPlaceHolder= */ "",
+        /* paramDefaultValue= */ Integer.toString(TraceConfig.getDefault().getMaxNumberOfLinks()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ true);
+    emitChangeTableRow(
+        /* out= */ out,
+        /* rowName= */ "MaxNumberOfAttributesPerEvent to",
+        /* paramName= */ QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_EVENT,
+        /* inputPlaceHolder= */ "",
+        /* paramDefaultValue= */ Integer.toString(
+            TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ false);
+    emitChangeTableRow(
+        /* out= */ out,
+        /* rowName= */ "MaxNumberOfAttributesPerLink to",
+        /* paramName= */ QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_LINK,
+        /* inputPlaceHolder= */ "",
+        /* paramDefaultValue= */ Integer.toString(
+            TraceConfig.getDefault().getMaxNumberOfAttributesPerLink()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ true);
     out.print("</table>");
+  }
+
+  /**
+   * Emits a row of the active tracing parameter table to the {@link PrintStream} {@code out}. Each
+   * row corresponds to one tracing parameter.
+   *
+   * @param out the {@link PrintStream} {@code out}.
+   * @param paramName the name of the corresponding tracing parameter.
+   * @param paramValue the value of the corresponding tracing parameter.
+   * @param zebraStripeColor hex code of the color used for zebra striping rows.
+   * @param zebraStripe boolean indicating if the row is zebra striped.
+   */
+  private static void emitActiveTableRow(
+      PrintStream out,
+      String paramName,
+      String paramValue,
+      String zebraStripeColor,
+      boolean zebraStripe) {
+    if (zebraStripe) {
+      out.print("<tr style=\"background-color: " + zebraStripeColor + ";\">");
+    } else {
+      out.print("<tr>");
+    }
+    out.print("<td>" + paramName + "</td>");
+    out.print("<td class=\"border-left-dark\">" + paramValue + "</td>");
+    out.print("</tr>");
   }
 
   /**
@@ -166,61 +218,47 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     out.print("<th class=\"header-text\"><b>Name</b></th>");
     out.print("<th class=\"header-text border-left-white\"><b>Value</b></th>");
     out.print("</tr>");
-    TraceConfigzActiveTableRow.builder()
-        .setPrintStream(out)
-        .setParamName("Sampler")
-        .setParamValue(this.tracerProvider.getActiveTraceConfig().getSampler().getDescription())
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(false)
-        .build()
-        .emitHtml();
-    TraceConfigzActiveTableRow.builder()
-        .setPrintStream(out)
-        .setParamName("MaxNumOfAttributes")
-        .setParamValue(
-            Integer.toString(this.tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributes()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(true)
-        .build()
-        .emitHtml();
-    TraceConfigzActiveTableRow.builder()
-        .setPrintStream(out)
-        .setParamName("MaxNumOfEvents")
-        .setParamValue(
-            Integer.toString(this.tracerProvider.getActiveTraceConfig().getMaxNumberOfEvents()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(false)
-        .build()
-        .emitHtml();
-    TraceConfigzActiveTableRow.builder()
-        .setPrintStream(out)
-        .setParamName("MaxNumOfLinks")
-        .setParamValue(
-            Integer.toString(this.tracerProvider.getActiveTraceConfig().getMaxNumberOfLinks()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(true)
-        .build()
-        .emitHtml();
-    TraceConfigzActiveTableRow.builder()
-        .setPrintStream(out)
-        .setParamName("MaxNumOfAttributesPerEvent")
-        .setParamValue(
-            Integer.toString(
-                this.tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(false)
-        .build()
-        .emitHtml();
-    TraceConfigzActiveTableRow.builder()
-        .setPrintStream(out)
-        .setParamName("MaxNumOfAttributesPerLink")
-        .setParamValue(
-            Integer.toString(
-                this.tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerLink()))
-        .setZebraStripeColor(ZEBRA_STRIPE_COLOR)
-        .setZebraStripe(true)
-        .build()
-        .emitHtml();
+    emitActiveTableRow(
+        /* out= */ out,
+        /* paramName= */ "Sampler",
+        /* paramValue=*/ this.tracerProvider.getActiveTraceConfig().getSampler().getDescription(),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ false);
+    emitActiveTableRow(
+        /* out= */ out,
+        /* paramName= */ "MaxNumOfAttributes",
+        /* paramValue=*/ Integer.toString(
+            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributes()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ true);
+    emitActiveTableRow(
+        /* out= */ out,
+        /* paramName= */ "MaxNumOfEvents",
+        /* paramValue=*/ Integer.toString(
+            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfEvents()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ false);
+    emitActiveTableRow(
+        /* out= */ out,
+        /* paramName= */ "MaxNumOfLinks",
+        /* paramValue=*/ Integer.toString(
+            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfLinks()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ true);
+    emitActiveTableRow(
+        /* out= */ out,
+        /* paramName= */ "MaxNumOfAttributesPerEvent",
+        /* paramValue=*/ Integer.toString(
+            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe= */ false);
+    emitActiveTableRow(
+        /* out= */ out,
+        /* paramName= */ "MaxNumOfAttributesPerLink",
+        /* paramValue=*/ Integer.toString(
+            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerLink()),
+        /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
+        /* zebraStripe=*/ true);
     out.print("</table>");
   }
 
@@ -293,6 +331,8 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
    * Apply updated trace configuration through the tracerProvider based on query parameters.
    *
    * @param queryMap the map containing URL query parameters.
+   * @throws NumberFormatException if one of the {@code double}/{@code integer} valued query string
+   *     does not contain a parsable {@code double}/{@code integer}.
    */
   private void applyTraceConfig(Map<String, String> queryMap) {
     String action = queryMap.get(QUERY_STRING_ACTION);
@@ -302,42 +342,72 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     if (action.equals(QUERY_STRING_ACTION_CHANGE)) {
       TraceConfig.Builder newConfigBuilder = this.tracerProvider.getActiveTraceConfig().toBuilder();
       String samplingProbabilityStr = queryMap.get(QUERY_STRING_SAMPLING_PROBABILITY);
-      if (samplingProbabilityStr != null && !samplingProbabilityStr.isEmpty()) {
-        double samplingProbability = Double.parseDouble(samplingProbabilityStr);
-        if (samplingProbability == 0) {
-          newConfigBuilder.setSampler(Samplers.alwaysOff());
-        } else if (samplingProbability == 1) {
-          newConfigBuilder.setSampler(Samplers.alwaysOn());
-        } else {
-          newConfigBuilder.setSampler(Samplers.probability(samplingProbability));
+      if (samplingProbabilityStr != null) {
+        try {
+          double samplingProbability = Double.parseDouble(samplingProbabilityStr);
+          if (samplingProbability == 0) {
+            newConfigBuilder.setSampler(Samplers.alwaysOff());
+          } else if (samplingProbability == 1) {
+            newConfigBuilder.setSampler(Samplers.alwaysOn());
+          } else {
+            newConfigBuilder.setSampler(Samplers.probability(samplingProbability));
+          }
+        } catch (NumberFormatException e) {
+          throw new NumberFormatException(
+              e.toString() + " SamplingProbability must be of the type double");
         }
       }
       String maxNumOfAttributesStr = queryMap.get(QUERY_STRING_MAX_NUM_OF_ATTRIBUTES);
-      if (maxNumOfAttributesStr != null && !maxNumOfAttributesStr.isEmpty()) {
-        int maxNumOfAttributes = Integer.parseInt(maxNumOfAttributesStr);
-        newConfigBuilder.setMaxNumberOfAttributes(maxNumOfAttributes);
+      if (maxNumOfAttributesStr != null) {
+        try {
+          int maxNumOfAttributes = Integer.parseInt(maxNumOfAttributesStr);
+          newConfigBuilder.setMaxNumberOfAttributes(maxNumOfAttributes);
+        } catch (NumberFormatException e) {
+          throw new NumberFormatException(
+              e.toString() + " MaxNumOfAttributes must be of the type integer");
+        }
       }
       String maxNumOfEventsStr = queryMap.get(QUERY_STRING_MAX_NUM_OF_EVENTS);
-      if (maxNumOfEventsStr != null && !maxNumOfEventsStr.isEmpty()) {
-        int maxNumOfEvents = Integer.parseInt(maxNumOfEventsStr);
-        newConfigBuilder.setMaxNumberOfEvents(maxNumOfEvents);
+      if (maxNumOfEventsStr != null) {
+        try {
+          int maxNumOfEvents = Integer.parseInt(maxNumOfEventsStr);
+          newConfigBuilder.setMaxNumberOfEvents(maxNumOfEvents);
+        } catch (NumberFormatException e) {
+          throw new NumberFormatException(
+              e.toString() + " MaxNumOfEvents must be of the type integer");
+        }
       }
       String maxNumOfLinksStr = queryMap.get(QUERY_STRING_MAX_NUM_OF_LINKS);
-      if (maxNumOfLinksStr != null && !maxNumOfLinksStr.isEmpty()) {
-        int maxNumOfLinks = Integer.parseInt(maxNumOfLinksStr);
-        newConfigBuilder.setMaxNumberOfLinks(maxNumOfLinks);
+      if (maxNumOfLinksStr != null) {
+        try {
+          int maxNumOfLinks = Integer.parseInt(maxNumOfLinksStr);
+          newConfigBuilder.setMaxNumberOfLinks(maxNumOfLinks);
+        } catch (NumberFormatException e) {
+          throw new NumberFormatException(
+              e.toString() + " MaxNumOfLinks must be of the type integer");
+        }
       }
       String maxNumOfAttributesPerEventStr =
           queryMap.get(QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_EVENT);
-      if (maxNumOfAttributesPerEventStr != null && !maxNumOfAttributesPerEventStr.isEmpty()) {
-        int maxNumOfAttributesPerEvent = Integer.parseInt(maxNumOfAttributesPerEventStr);
-        newConfigBuilder.setMaxNumberOfAttributesPerEvent(maxNumOfAttributesPerEvent);
+      if (maxNumOfAttributesPerEventStr != null) {
+        try {
+          int maxNumOfAttributesPerEvent = Integer.parseInt(maxNumOfAttributesPerEventStr);
+          newConfigBuilder.setMaxNumberOfAttributesPerEvent(maxNumOfAttributesPerEvent);
+        } catch (NumberFormatException e) {
+          throw new NumberFormatException(
+              e.toString() + " MaxNumOfAttributesPerEvent must be of the type integer");
+        }
       }
       String maxNumOfAttributesPerLinkStr =
           queryMap.get(QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_EVENT);
-      if (maxNumOfAttributesPerLinkStr != null && !maxNumOfAttributesPerLinkStr.isEmpty()) {
-        int maxNumOfAttributesPerLink = Integer.parseInt(maxNumOfAttributesPerLinkStr);
-        newConfigBuilder.setMaxNumberOfAttributesPerLink(maxNumOfAttributesPerLink);
+      if (maxNumOfAttributesPerLinkStr != null) {
+        try {
+          int maxNumOfAttributesPerLink = Integer.parseInt(maxNumOfAttributesPerLinkStr);
+          newConfigBuilder.setMaxNumberOfAttributesPerLink(maxNumOfAttributesPerLink);
+        } catch (NumberFormatException e) {
+          throw new NumberFormatException(
+              e.toString() + " MaxNumOfAttributesPerLink must be of the type integer");
+        }
       }
       this.tracerProvider.updateActiveTraceConfig(newConfigBuilder.build());
     } else if (action.equals(QUERY_STRING_ACTION_DEFAULT)) {

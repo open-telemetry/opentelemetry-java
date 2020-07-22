@@ -41,7 +41,7 @@ public final class TraceConfigzZPageHandlerTest {
     OutputStream output = new ByteArrayOutputStream();
     String querySamplingProbability = "samplingprobability";
     String queryMaxNumOfAttributes = "maxnumofattributes";
-    String queryMaxNumOfEvents = "maxnumbofevents";
+    String queryMaxNumOfEvents = "maxnumofevents";
     String queryMaxNumOfLinks = "maxnumoflinks";
     String queryMaxNumOfAttributesPerEvent = "maxnumofattributesperevent";
     String queryMaxNumOfAttributesPerLink = "maxnumofattributesperlink";
@@ -133,7 +133,7 @@ public final class TraceConfigzZPageHandlerTest {
     OutputStream output = new ByteArrayOutputStream();
     String querySamplingProbability = "samplingprobability";
     String queryMaxNumOfAttributes = "maxnumofattributes";
-    String queryMaxNumOfEvents = "maxnumbofevents";
+    String queryMaxNumOfEvents = "maxnumofevents";
     String queryMaxNumOfLinks = "maxnumoflinks";
     String queryMaxNumOfAttributesPerEvent = "maxnumofattributesperevent";
     String queryMaxNumOfAttributesPerLink = "maxnumofattributesperlink";
@@ -178,8 +178,7 @@ public final class TraceConfigzZPageHandlerTest {
   public void appliesChangesCorrectly_restoreDefault() {
     OutputStream output = new ByteArrayOutputStream();
 
-    Map<String, String> queryMap =
-        new ImmutableMap.Builder<String, String>().put("action", "default").build();
+    Map<String, String> queryMap = ImmutableMap.of("action", "default");
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
@@ -203,8 +202,7 @@ public final class TraceConfigzZPageHandlerTest {
   public void appliesChangesCorrectly_doNotCrashOnNullParameters() {
     OutputStream output = new ByteArrayOutputStream();
 
-    Map<String, String> queryMap =
-        new ImmutableMap.Builder<String, String>().put("action", "change").build();
+    Map<String, String> queryMap = ImmutableMap.of("action", "change");
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
@@ -222,5 +220,82 @@ public final class TraceConfigzZPageHandlerTest {
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent());
     assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerLink());
+  }
+
+  @Test
+  public void applyChanges_emitErrorOnInvalidInput() {
+    // OutputStream output = new ByteArrayOutputStream();
+    // TraceConfigzZPageHandler traceConfigzZPageHandler =
+    //     new TraceConfigzZPageHandler(tracerProvider);
+    // // Invalid samplingProbability (not type of double)
+    // Map<String, String> queryMap =
+    //     ImmutableMap.of("action", "change", "samplingprobability", "invalid");
+
+    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+
+    // assertThat(output.toString()).contains("Error while generating HTML: ");
+    // assertThat(output.toString()).contains("SamplingProbability must be of the type double");
+
+    // output = new ByteArrayOutputStream();
+    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    // // Invalid samplingProbability (out of bound)
+    // queryMap = ImmutableMap.of("action", "change", "maxnumofattributes", "invalid");
+
+    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+
+    // assertThat(output.toString()).contains("Error while generating HTML: ");
+    // assertThat(output.toString()).contains("MaxNumOfAttributes must be of the type integer");
+
+    // output = new ByteArrayOutputStream();
+    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    // // Invalid maxNumOfAttributes
+    // queryMap = ImmutableMap.of("action", "change", "maxnumofattributes", "invalid");
+
+    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+
+    // assertThat(output.toString()).contains("Error while generating HTML: ");
+    // assertThat(output.toString()).contains("MaxNumOfAttributes must be of the type integer");
+
+    // output = new ByteArrayOutputStream();
+    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    // // Invalid maxNumOfEvents
+    // queryMap = ImmutableMap.of("action", "change", "maxnumbofevents", "invalid");
+
+    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+
+    // assertThat(output.toString()).contains("Error while generating HTML: ");
+    // assertThat(output.toString()).contains("MaxNumOfEvents must be of the type integer");
+
+    // output = new ByteArrayOutputStream();
+    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    // queryMap = ImmutableMap.of("action", "change", "maxnumboflinks", "invalid");
+
+    // // Invalid maxNumLinks
+    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+
+    // assertThat(output.toString()).contains("Error while generating HTML: ");
+    // assertThat(output.toString()).contains("MaxNumOfLinks must be of the type integer");
+
+    // output = new ByteArrayOutputStream();
+    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    // queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperevent", "invalid");
+
+    // // Invalid maxNumLinks
+    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+
+    // assertThat(output.toString()).contains("Error while generating HTML: ");
+    // assertThat(output.toString())
+    //     .contains("MaxNumOfAttributesPerEvent must be of the type integer");
+
+    // output = new ByteArrayOutputStream();
+    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    // queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperlink", "invalid");
+
+    // // Invalid maxNumLinks
+    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+
+    // assertThat(output.toString()).contains("Error while generating HTML: ");
+    // assertThat(output.toString()).contains("MaxNumOfAttributesPerLink must be of the type
+    // integer");
   }
 }
