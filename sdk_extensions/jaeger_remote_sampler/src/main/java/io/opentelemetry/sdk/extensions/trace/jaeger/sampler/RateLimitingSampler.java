@@ -41,8 +41,8 @@ class RateLimitingSampler implements Sampler {
 
   private final double maxTracesPerSecond;
   private final RateLimiter rateLimiter;
-  private final Decision onDecision;
-  private final Decision offDecision;
+  private final SamplingResult onSamplingResult;
+  private final SamplingResult offSamplingResult;
 
   /**
    * Creates rate limiting sampler.
@@ -57,12 +57,12 @@ class RateLimitingSampler implements Sampler {
         Attributes.of(
             SAMPLER_TYPE, AttributeValue.stringAttributeValue(TYPE),
             SAMPLER_PARAM, AttributeValue.doubleAttributeValue(maxTracesPerSecond));
-    this.onDecision = Samplers.decision(true, attributes);
-    this.offDecision = Samplers.decision(false, attributes);
+    this.onSamplingResult = Samplers.samplingResult(Decision.RECORD_AND_SAMPLED, attributes);
+    this.offSamplingResult = Samplers.samplingResult(Decision.NOT_RECORD, attributes);
   }
 
   @Override
-  public Decision shouldSample(
+  public SamplingResult shouldSample(
       @Nullable SpanContext parentContext,
       TraceId traceId,
       String name,
@@ -81,7 +81,7 @@ class RateLimitingSampler implements Sampler {
         }
       }
     }
-    return this.rateLimiter.checkCredit(1.0) ? onDecision : offDecision;
+    return this.rateLimiter.checkCredit(1.0) ? onSamplingResult : offSamplingResult;
   }
 
   @Override

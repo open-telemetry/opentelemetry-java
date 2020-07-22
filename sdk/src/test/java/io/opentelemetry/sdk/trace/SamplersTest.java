@@ -21,7 +21,7 @@ import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.trace.Sampler.Decision;
+import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -43,6 +43,7 @@ public class SamplersTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
+  @Rule public final ExpectedException thrown = ExpectedException.none();
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
   private final TraceId traceId = idsGenerator.generateTraceId();
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
@@ -54,25 +55,31 @@ public class SamplersTest {
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
   private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpanContext);
 
-  @Rule public final ExpectedException thrown = ExpectedException.none();
-
   @Test
   public void emptySamplingDecision() {
-    assertThat(Samplers.emptyDecision(true)).isSameInstanceAs(Samplers.emptyDecision(true));
-    assertThat(Samplers.emptyDecision(false)).isSameInstanceAs(Samplers.emptyDecision(false));
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED))
+        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD))
+        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
 
-    assertThat(Samplers.emptyDecision(true).isSampled()).isTrue();
-    assertThat(Samplers.emptyDecision(true).getAttributes().isEmpty()).isTrue();
-    assertThat(Samplers.emptyDecision(false).isSampled()).isFalse();
-    assertThat(Samplers.emptyDecision(false).getAttributes().isEmpty()).isTrue();
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED).isSampled())
+        .isTrue();
+    assertThat(
+            Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED)
+                .getAttributes()
+                .isEmpty())
+        .isTrue();
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD).isSampled()).isFalse();
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD).getAttributes().isEmpty())
+        .isTrue();
   }
 
   @Test
   public void samplingDecisionEmpty() {
-    assertThat(Samplers.decision(/*isSampled=*/ true, Attributes.empty()))
-        .isSameInstanceAs(Samplers.emptyDecision(true));
-    assertThat(Samplers.decision(/*isSampled=*/ false, Attributes.empty()))
-        .isSameInstanceAs(Samplers.emptyDecision(false));
+    assertThat(Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLED, Attributes.empty()))
+        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
+    assertThat(Samplers.samplingResult(Sampler.Decision.NOT_RECORD, Attributes.empty()))
+        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
   }
 
   @Test
@@ -81,13 +88,15 @@ public class SamplersTest {
         Attributes.of(
             "foo", AttributeValue.longAttributeValue(42),
             "bar", AttributeValue.stringAttributeValue("baz"));
-    final Decision sampledDecision = Samplers.decision(/*isSampled=*/ true, attrs);
-    assertThat(sampledDecision.isSampled()).isTrue();
-    assertThat(sampledDecision.getAttributes()).isEqualTo(attrs);
+    final SamplingResult sampledSamplingResult =
+        Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLED, attrs);
+    assertThat(sampledSamplingResult.isSampled()).isTrue();
+    assertThat(sampledSamplingResult.getAttributes()).isEqualTo(attrs);
 
-    final Decision notSampledDecision = Samplers.decision(/*isSampled=*/ false, attrs);
-    assertThat(notSampledDecision.isSampled()).isFalse();
-    assertThat(notSampledDecision.getAttributes()).isEqualTo(attrs);
+    final SamplingResult notSampledSamplingResult =
+        Samplers.samplingResult(Sampler.Decision.NOT_RECORD, attrs);
+    assertThat(notSampledSamplingResult.isSampled()).isFalse();
+    assertThat(notSampledSamplingResult.getAttributes()).isEqualTo(attrs);
   }
 
   @Test
@@ -311,7 +320,7 @@ public class SamplersTest {
               (byte) 0xFF
             },
             0);
-    Decision decision1 =
+    SamplingResult samplingResult1 =
         defaultProbability.shouldSample(
             null,
             notSampledtraceId,
@@ -319,8 +328,8 @@ public class SamplersTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertThat(decision1.isSampled()).isFalse();
-    assertThat(decision1.getAttributes())
+    assertThat(samplingResult1.isSampled()).isFalse();
+    assertThat(samplingResult1.getAttributes())
         .isEqualTo(
             Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
@@ -346,7 +355,7 @@ public class SamplersTest {
               0
             },
             0);
-    Decision decision2 =
+    SamplingResult samplingResult2 =
         defaultProbability.shouldSample(
             null,
             sampledtraceId,
@@ -354,8 +363,8 @@ public class SamplersTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertThat(decision2.isSampled()).isTrue();
-    assertThat(decision1.getAttributes())
+    assertThat(samplingResult2.isSampled()).isTrue();
+    assertThat(samplingResult1.getAttributes())
         .isEqualTo(
             Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
   }
