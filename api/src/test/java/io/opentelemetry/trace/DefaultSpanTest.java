@@ -33,22 +33,14 @@ public class DefaultSpanTest {
 
   @Test
   public void hasInvalidContextAndDefaultSpanOptions() {
-    SpanContext context = DefaultSpan.createRandom().getContext();
+    SpanContext context = DefaultSpan.getInvalid().getContext();
     assertThat(context.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
     assertThat(context.getTraceState()).isEqualTo(TraceState.getDefault());
   }
 
   @Test
-  public void hasUniqueTraceIdAndSpanId() {
-    DefaultSpan span1 = DefaultSpan.createRandom();
-    DefaultSpan span2 = DefaultSpan.createRandom();
-    assertThat(span1.getContext().getTraceId()).isNotEqualTo(span2.getContext().getTraceId());
-    assertThat(span1.getContext().getSpanId()).isNotEqualTo(span2.getContext().getSpanId());
-  }
-
-  @Test
   public void doNotCrash() {
-    DefaultSpan span = DefaultSpan.createRandom();
+    DefaultSpan span = DefaultSpan.getInvalid();
     span.setAttribute(
         "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
     span.setAttribute("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
@@ -82,7 +74,7 @@ public class DefaultSpanTest {
 
   @Test
   public void defaultSpan_ToString() {
-    DefaultSpan span = DefaultSpan.createRandom();
+    DefaultSpan span = DefaultSpan.getInvalid();
     assertThat(span.toString()).isEqualTo("DefaultSpan");
   }
 
