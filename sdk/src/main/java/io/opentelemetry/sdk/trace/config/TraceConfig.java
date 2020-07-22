@@ -82,7 +82,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class TraceConfig {
   // These values are the default values for all the global parameters.
-  private static final Sampler DEFAULT_SAMPLER = Samplers.followParent();
+  private static final Sampler DEFAULT_SAMPLER = Samplers.parentOrElse(Samplers.alwaysOn());
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
   private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;

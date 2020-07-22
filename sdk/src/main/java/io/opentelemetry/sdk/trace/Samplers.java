@@ -122,15 +122,17 @@ public final class Samplers {
 
   /**
    * Returns a {@link Sampler} that always makes the same decision as the parent {@link Span} to
-   * whether or not to sample. If there is no parent, always makes a "yes" decision on {@code Span}
-   * sampling.
+   * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate to
+   * determine the sampling decision.
    *
-   * @return a {@code Sampler} a sampler that follows its parent span's sampling decisions if the
-   *     parent exists.
+   * @param delegateSampler the {@code Sampler} which is used to make the sampling decisions if the
+   * parent does not exist.
+   * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
+   * following the delegate sampler's decision.
    * @since 0.7.0
    */
-  public static Sampler followParent() {
-    return FollowParentSampler.INSTANCE;
+  public static Sampler parentOrElse(Sampler delegateSampler) {
+    return new ParentOrElse(delegateSampler);
   }
 
   /**
@@ -190,11 +192,15 @@ public final class Samplers {
   }
 
   @Immutable
-  private enum FollowParentSampler implements Sampler {
-    INSTANCE;
+  static class ParentOrElse implements Sampler {
+    private final Sampler delegateSampler;
+
+    ParentOrElse(Sampler delegateSampler) {
+      this.delegateSampler = delegateSampler;
+    }
 
     // If a parent is set, always follows the same sampling decision as the parent.
-    // Otherwise, always makes a "yes" decision on {@link Span} sampling.
+    // Otherwise, uses the delegateSampler provided at initialization to make a decision.
     @Override
     public Decision shouldSample(
         @Nullable SpanContext parentContext,
@@ -203,15 +209,18 @@ public final class Samplers {
         Kind spanKind,
         ReadableAttributes attributes,
         List<Link> parentLinks) {
-      if (parentContext != null && !parentContext.getTraceFlags().isSampled()) {
+      if (parentContext != null) {
+        if (parentContext.getTraceFlags().isSampled()) {
+          return EMPTY_SAMPLED_DECISION;
+        }
         return EMPTY_NOT_SAMPLED_DECISION;
       }
-      return EMPTY_SAMPLED_DECISION;
+      return this.delegateSampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
 
     @Override
     public String getDescription() {
-      return "FollowParentSampler";
+      return String.format("ParentOrElseSampler-%s", this.delegateSampler.getDescription());
     }
   }
 
