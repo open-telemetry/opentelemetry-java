@@ -505,11 +505,6 @@ public class SpanBuilderSdkTest {
                           }
 
                           @Override
-                          public boolean isSampled() {
-                            return true;
-                          }
-
-                          @Override
                           public Attributes getAttributes() {
                             return Attributes.of(
                                 samplerAttributeName, AttributeValue.stringAttributeValue("bar"));

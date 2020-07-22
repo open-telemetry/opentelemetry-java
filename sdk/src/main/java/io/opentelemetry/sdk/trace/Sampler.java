@@ -91,13 +91,12 @@ public interface Sampler {
      */
     Decision getDecision();
 
-    boolean isSampled();
-
     /**
      * Return tags which will be attached to the span.
      *
-     * @return attributes added to span. These attributes should be added to the span only for root
-     *     span or when sampling result {@link #isSampled()} changes from false to true.
+     * @return attributes added to span. These attributes should be added to the span only when
+     *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD} or {@link
+     *     Decision#RECORD_AND_SAMPLED}.
      * @since 0.1.0
      */
     Attributes getAttributes();
