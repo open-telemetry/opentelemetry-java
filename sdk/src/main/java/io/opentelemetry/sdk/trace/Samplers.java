@@ -116,9 +116,9 @@ public final class Samplers {
   }
 
   /**
-   * Returns a {@link Sampler} that always makes a "yes" sampling result on {@link Span} sampling.
+   * Returns a {@link Sampler} that always makes a "yes" {@link SamplingResult} for {@link Span} sampling.
    *
-   * @return a {@code Sampler} that always makes a "yes" sampling result on {@code Span} sampling.
+   * @return a {@code Sampler} that always makes a "yes" {@link SamplingResult} for {@code Span} sampling.
    * @since 0.1.0
    */
   public static Sampler alwaysOn() {
@@ -126,9 +126,9 @@ public final class Samplers {
   }
 
   /**
-   * Returns a {@link Sampler} that always makes a "no" sampling result on {@link Span} sampling.
+   * Returns a {@link Sampler} that always makes a "no" {@link SamplingResult} for {@link Span} sampling.
    *
-   * @return a {@code Sampler} that always makes a "no" sampling result on {@code Span} sampling.
+   * @return a {@code Sampler} that always makes a "no" {@link SamplingResult} for {@code Span} sampling.
    * @since 0.1.0
    */
   public static Sampler alwaysOff() {
@@ -151,7 +151,7 @@ public final class Samplers {
   private enum AlwaysOnSampler implements Sampler {
     INSTANCE;
 
-    // Returns always makes a "yes" samplingResult on {@link Span} sampling.
+    // Returns a "yes" {@link SamplingResult} for {@link Span} sampling.
     @Override
     public SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
@@ -173,7 +173,7 @@ public final class Samplers {
   private enum AlwaysOffSampler implements Sampler {
     INSTANCE;
 
-    // Returns always makes a "no" sampling result on {@link Span} sampling.
+    // Returns a "no" {@link SamplingResult} on {@link Span} sampling.
     @Override
     public SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
