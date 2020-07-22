@@ -185,6 +185,53 @@ public class SamplersTest {
   }
 
   @Test
+  public void followParentSampler() {
+    // Sampled parent.
+    assertThat(
+            Samplers.followParent()
+                .shouldSample(
+                    sampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .isSampled())
+        .isTrue();
+
+    // Not sampled parent.
+    assertThat(
+            Samplers.followParent()
+                .shouldSample(
+                    notSampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .isSampled())
+        .isFalse();
+
+    // Null parent.
+    assertThat(
+            Samplers.followParent()
+                .shouldSample(
+                    null,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .isSampled())
+        .isTrue();
+  }
+
+  @Test
+  public void followParentSampler_GetDescription() {
+    assertThat(Samplers.followParent().getDescription()).isEqualTo("FollowParentSampler");
+  }
+
+  @Test
   public void probabilitySampler_AlwaysSample() {
     Samplers.Probability sampler = Samplers.Probability.create(1);
     assertThat(sampler.getIdUpperBound()).isEqualTo(Long.MAX_VALUE);

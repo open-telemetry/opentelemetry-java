@@ -121,6 +121,19 @@ public final class Samplers {
   }
 
   /**
+   * Returns a {@link Sampler} that always makes the same decision as the parent {@link Span} to
+   * whether or not to sample. If there is no parent, always makes a "yes" decision on {@code Span}
+   * sampling.
+   *
+   * @return a {@code Sampler} a sampler that follows its parent span's sampling decisions if the
+   *     parent exists.
+   * @since 0.7.0
+   */
+  public static Sampler followParent() {
+    return FollowParentSampler.INSTANCE;
+  }
+
+  /**
    * Returns a new Probability {@link Sampler}. The probability of sampling a trace is equal to that
    * of the specified probability.
    *
@@ -173,6 +186,32 @@ public final class Samplers {
     @Override
     public String getDescription() {
       return "AlwaysOffSampler";
+    }
+  }
+
+  @Immutable
+  private enum FollowParentSampler implements Sampler {
+    INSTANCE;
+
+    // If a parent is set, always follows the same sampling decision as the parent.
+    // Otherwise, always makes a "yes" decision on {@link Span} sampling.
+    @Override
+    public Decision shouldSample(
+        @Nullable SpanContext parentContext,
+        TraceId traceId,
+        String name,
+        Kind spanKind,
+        ReadableAttributes attributes,
+        List<Link> parentLinks) {
+      if (parentContext != null && !parentContext.getTraceFlags().isSampled()) {
+        return EMPTY_NOT_SAMPLED_DECISION;
+      }
+      return EMPTY_SAMPLED_DECISION;
+    }
+
+    @Override
+    public String getDescription() {
+      return "FollowParentSampler";
     }
   }
 
