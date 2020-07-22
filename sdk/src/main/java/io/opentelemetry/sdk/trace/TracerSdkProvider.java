@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -38,8 +39,8 @@ import java.util.logging.Logger;
  */
 public class TracerSdkProvider implements TracerProvider {
   private static final Logger logger = Logger.getLogger(TracerProvider.class.getName());
-  private final TracerSharedState sharedState;
   private final TracerSdkComponentRegistry tracerSdkComponentRegistry;
+  @VisibleForTesting final TracerSharedState sharedState;
 
   /**
    * Returns a new {@link Builder} for {@link TracerSdkProvider}.
@@ -87,6 +88,17 @@ public class TracerSdkProvider implements TracerProvider {
    */
   public void updateActiveTraceConfig(TraceConfig traceConfig) {
     sharedState.updateActiveTraceConfig(traceConfig);
+  }
+
+  /**
+   * Updates the {@link Resource} for this {@code TracerSdkProvider}.
+   *
+   * @param resource the new {@code Resource}.
+   * @since 0.7.0
+   */
+  public void updateResource(Resource resource) {
+    Objects.requireNonNull(resource, "resource");
+    sharedState.updateResource(resource);
   }
 
   /**

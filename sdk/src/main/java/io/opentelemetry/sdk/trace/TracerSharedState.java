@@ -28,10 +28,10 @@ final class TracerSharedState {
   private final Object lock = new Object();
   private final Clock clock;
   private final IdsGenerator idsGenerator;
-  private final Resource resource;
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
+  private volatile Resource resource;
   private volatile TraceConfig activeTraceConfig = TraceConfig.getDefault();
   private volatile SpanProcessor activeSpanProcessor = NoopSpanProcessor.getInstance();
   private volatile boolean isStopped = false;
@@ -55,6 +55,16 @@ final class TracerSharedState {
 
   Resource getResource() {
     return resource;
+  }
+
+  /**
+   * Updates the {@link Resource}.
+   *
+   * @param resource the new {@code Resource}.
+   * @since 0.7.0
+   */
+  void updateResource(Resource resource) {
+    this.resource = resource;
   }
 
   /**

@@ -115,6 +115,19 @@ public class TracerSdkProviderTest {
   }
 
   @Test
+  public void updateResource() {
+    tracerFactory.updateResource(Resource.getEmpty());
+    assertThat(tracerFactory.sharedState.getResource()).isSameInstanceAs(Resource.getEmpty());
+  }
+
+  @Test
+  public void updateResource_Null() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("resource");
+    tracerFactory.updateResource(null);
+  }
+
+  @Test
   public void shutdown() {
     tracerFactory.shutdown();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
