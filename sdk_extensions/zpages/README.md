@@ -15,7 +15,7 @@ web pages that display stats and trace data.
 
 ### Add the dependencies to your project
 
-For Maven add to your `pom.xml`:
+For Maven, add the following to your `pom.xml`:
 ```xml
 <dependencies>
   <dependency>
@@ -37,7 +37,7 @@ For Maven add to your `pom.xml`:
 ```
 
 <!--- TODO: Verify gradle configuration -->
-For Gradle add to your dependencies:
+For Gradle, add the following to your dependencies:
 ```groovy
 api 'io.opentelemetry:opentelemetry-api:0.7.0'
 api 'io.opentelemetry:opentelemetry-sdk:0.7.0'
@@ -45,6 +45,9 @@ implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.7.0'
 ```
 
 ### Register the zPages
+
+To set-up the zPages, simply call `ZPageServer.startHttpServerAndRegisterAllPages(int port)` in your
+main function.
 
 ```java
 public class MyMainClass {
@@ -59,14 +62,19 @@ public class MyMainClass {
 
 #### View trace spans on the /tracez zPage
 
-The /tracez zPage displays information on running spans, sample latencies, and sample error spans.
-Example:
+The /tracez zPage displays information on running spans, sample span latencies, and sample error
+spans. The data is aggregated into a summary-level table:
 
-![tracez-example](screenshots/tracez-example.png)
+![tracez-table](img/tracez-table.png)
+
+In addition, you can click on each of the counts in the table cells to access the corresponding span
+details. For example, here are the details of the `ChildSpan` latency sample (row 1, col 4):
+
+![tracez-details](img/tracez-details.png)
 
 #### View and update the tracing configuration on the /traceconfigz zPage
 
-The /traceconfigz zPage displays information about the current active tracing configuration and 
-allows users to change it. Example:
+The /traceconfigz zPage displays information about the currently active tracing configuration and 
+provides an interface for users to modify relevant parameters. Here is what the web page looks like:
 
-![traceconfigz-example](screenshots/traceconfigz-example.png)
+![traceconfigz](img/traceconfigz.png)
