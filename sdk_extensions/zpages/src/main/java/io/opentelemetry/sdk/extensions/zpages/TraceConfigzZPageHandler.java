@@ -399,7 +399,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         }
       }
       String maxNumOfAttributesPerLinkStr =
-          queryMap.get(QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_EVENT);
+          queryMap.get(QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_LINK);
       if (maxNumOfAttributesPerLinkStr != null) {
         try {
           int maxNumOfAttributesPerLink = Integer.parseInt(maxNumOfAttributesPerLinkStr);

@@ -224,78 +224,87 @@ public final class TraceConfigzZPageHandlerTest {
 
   @Test
   public void applyChanges_emitErrorOnInvalidInput() {
-    // OutputStream output = new ByteArrayOutputStream();
-    // TraceConfigzZPageHandler traceConfigzZPageHandler =
-    //     new TraceConfigzZPageHandler(tracerProvider);
-    // // Invalid samplingProbability (not type of double)
-    // Map<String, String> queryMap =
-    //     ImmutableMap.of("action", "change", "samplingprobability", "invalid");
+    // Invalid samplingProbability (not type of double)
+    OutputStream output = new ByteArrayOutputStream();
+    TraceConfigzZPageHandler traceConfigzZPageHandler =
+        new TraceConfigzZPageHandler(tracerProvider);
+    Map<String, String> queryMap =
+        ImmutableMap.of("action", "change", "samplingprobability", "invalid");
 
-    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    // assertThat(output.toString()).contains("Error while generating HTML: ");
-    // assertThat(output.toString()).contains("SamplingProbability must be of the type double");
+    assertThat(output.toString()).contains("Error while generating HTML: ");
+    assertThat(output.toString()).contains("SamplingProbability must be of the type double");
 
-    // output = new ByteArrayOutputStream();
-    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
-    // // Invalid samplingProbability (out of bound)
-    // queryMap = ImmutableMap.of("action", "change", "maxnumofattributes", "invalid");
+    // Invalid samplingProbability (< 0)
+    output = new ByteArrayOutputStream();
+    traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    queryMap = ImmutableMap.of("action", "change", "samplingprobability", "-1");
 
-    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    // assertThat(output.toString()).contains("Error while generating HTML: ");
-    // assertThat(output.toString()).contains("MaxNumOfAttributes must be of the type integer");
+    assertThat(output.toString()).contains("Error while generating HTML: ");
+    assertThat(output.toString()).contains("probability must be in range [0.0, 1.0]");
 
-    // output = new ByteArrayOutputStream();
-    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
-    // // Invalid maxNumOfAttributes
-    // queryMap = ImmutableMap.of("action", "change", "maxnumofattributes", "invalid");
+    // Invalid samplingProbability (> 1)
+    output = new ByteArrayOutputStream();
+    traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    queryMap = ImmutableMap.of("action", "change", "samplingprobability", "1.1");
 
-    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    // assertThat(output.toString()).contains("Error while generating HTML: ");
-    // assertThat(output.toString()).contains("MaxNumOfAttributes must be of the type integer");
+    assertThat(output.toString()).contains("Error while generating HTML: ");
+    assertThat(output.toString()).contains("probability must be in range [0.0, 1.0]");
 
-    // output = new ByteArrayOutputStream();
-    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
-    // // Invalid maxNumOfEvents
-    // queryMap = ImmutableMap.of("action", "change", "maxnumbofevents", "invalid");
+    // Invalid maxNumOfAttributes
+    output = new ByteArrayOutputStream();
+    traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    queryMap = ImmutableMap.of("action", "change", "maxnumofattributes", "invalid");
 
-    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    // assertThat(output.toString()).contains("Error while generating HTML: ");
-    // assertThat(output.toString()).contains("MaxNumOfEvents must be of the type integer");
+    assertThat(output.toString()).contains("Error while generating HTML: ");
+    assertThat(output.toString()).contains("MaxNumOfAttributes must be of the type integer");
 
-    // output = new ByteArrayOutputStream();
-    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
-    // queryMap = ImmutableMap.of("action", "change", "maxnumboflinks", "invalid");
+    // Invalid maxNumOfEvents
+    output = new ByteArrayOutputStream();
+    traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    queryMap = ImmutableMap.of("action", "change", "maxnumofevents", "invalid");
 
-    // // Invalid maxNumLinks
-    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    // assertThat(output.toString()).contains("Error while generating HTML: ");
-    // assertThat(output.toString()).contains("MaxNumOfLinks must be of the type integer");
+    assertThat(output.toString()).contains("Error while generating HTML: ");
+    assertThat(output.toString()).contains("MaxNumOfEvents must be of the type integer");
 
-    // output = new ByteArrayOutputStream();
-    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
-    // queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperevent", "invalid");
+    // Invalid maxNumLinks
+    output = new ByteArrayOutputStream();
+    traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    queryMap = ImmutableMap.of("action", "change", "maxnumoflinks", "invalid");
 
-    // // Invalid maxNumLinks
-    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    // assertThat(output.toString()).contains("Error while generating HTML: ");
-    // assertThat(output.toString())
-    //     .contains("MaxNumOfAttributesPerEvent must be of the type integer");
+    assertThat(output.toString()).contains("Error while generating HTML: ");
+    assertThat(output.toString()).contains("MaxNumOfLinks must be of the type integer");
 
-    // output = new ByteArrayOutputStream();
-    // traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
-    // queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperlink", "invalid");
+    // Invalid maxNumOfAttributesPerEvent
+    output = new ByteArrayOutputStream();
+    traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperevent", "invalid");
 
-    // // Invalid maxNumLinks
-    // traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    // assertThat(output.toString()).contains("Error while generating HTML: ");
-    // assertThat(output.toString()).contains("MaxNumOfAttributesPerLink must be of the type
-    // integer");
+    assertThat(output.toString()).contains("Error while generating HTML: ");
+    assertThat(output.toString())
+        .contains("MaxNumOfAttributesPerEvent must be of the type integer");
+
+    // Invalid maxNumOfAttributesPerLink
+    output = new ByteArrayOutputStream();
+    traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
+    queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperlink", "invalid");
+
+    traceConfigzZPageHandler.emitHtml(queryMap, output);
+
+    assertThat(output.toString()).contains("Error while generating HTML: ");
+    assertThat(output.toString()).contains("MaxNumOfAttributesPerLink must be of the type integer");
   }
 }
