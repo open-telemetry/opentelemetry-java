@@ -201,7 +201,7 @@ public class SamplersTest {
 
     // Not sampled parent.
     assertThat(
-        Samplers.parentOrElse(Samplers.alwaysOn())
+            Samplers.parentOrElse(Samplers.alwaysOn())
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
@@ -214,7 +214,7 @@ public class SamplersTest {
 
     // Null parent.
     assertThat(
-        Samplers.parentOrElse(Samplers.alwaysOn())
+            Samplers.parentOrElse(Samplers.alwaysOn())
                 .shouldSample(
                     null,
                     traceId,
@@ -230,47 +230,48 @@ public class SamplersTest {
   public void parentOrElseSampler_AlwaysOff() {
     // Sampled parent.
     assertThat(
-        Samplers.parentOrElse(Samplers.alwaysOff())
-            .shouldSample(
-                sampledSpanContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                Collections.emptyList())
-            .isSampled())
+            Samplers.parentOrElse(Samplers.alwaysOff())
+                .shouldSample(
+                    sampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .isSampled())
         .isTrue();
 
     // Not sampled parent.
     assertThat(
-        Samplers.parentOrElse(Samplers.alwaysOff())
-            .shouldSample(
-                notSampledSpanContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                Collections.emptyList())
-            .isSampled())
+            Samplers.parentOrElse(Samplers.alwaysOff())
+                .shouldSample(
+                    notSampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .isSampled())
         .isFalse();
 
     // Null parent.
     assertThat(
-        Samplers.parentOrElse(Samplers.alwaysOff())
-            .shouldSample(
-                null,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                Collections.emptyList())
-            .isSampled())
+            Samplers.parentOrElse(Samplers.alwaysOff())
+                .shouldSample(
+                    null,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .isSampled())
         .isFalse();
   }
 
   @Test
   public void parentOrElseSampler_GetDescription() {
-    assertThat(Samplers.parentOrElse(Samplers.alwaysOn()).getDescription()).isEqualTo("ParentOrElseSampler-AlwaysOnSampler");
+    assertThat(Samplers.parentOrElse(Samplers.alwaysOn()).getDescription())
+        .isEqualTo("ParentOrElseSampler-AlwaysOnSampler");
   }
 
   @Test

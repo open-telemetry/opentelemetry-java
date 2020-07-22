@@ -122,13 +122,13 @@ public final class Samplers {
 
   /**
    * Returns a {@link Sampler} that always makes the same decision as the parent {@link Span} to
-   * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate to
-   * determine the sampling decision.
+   * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate
+   * to determine the sampling decision.
    *
    * @param delegateSampler the {@code Sampler} which is used to make the sampling decisions if the
-   * parent does not exist.
+   *     parent does not exist.
    * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
-   * following the delegate sampler's decision.
+   *     following the delegate sampler's decision.
    * @since 0.7.0
    */
   public static Sampler parentOrElse(Sampler delegateSampler) {
@@ -215,7 +215,8 @@ public final class Samplers {
         }
         return EMPTY_NOT_SAMPLED_DECISION;
       }
-      return this.delegateSampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
+      return this.delegateSampler.shouldSample(
+          parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
 
     @Override
