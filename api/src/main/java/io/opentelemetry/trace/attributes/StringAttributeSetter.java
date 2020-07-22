@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace.attributes;
 
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Span;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -70,5 +71,15 @@ public final class StringAttributeSetter {
    */
   public void set(Span.Builder spanBuilder, @Nullable String value) {
     spanBuilder.setAttribute(key(), value);
+  }
+
+  /**
+   * Sets the attribute on the provided {@link Attributes.Builder}.
+   *
+   * @param attributesBuilder the attributes builder to add the attribute to
+   * @param value the value for this attribute
+   */
+  public void set(Attributes.Builder attributesBuilder, @Nullable String value) {
+    attributesBuilder.setAttribute(key(), value);
   }
 }

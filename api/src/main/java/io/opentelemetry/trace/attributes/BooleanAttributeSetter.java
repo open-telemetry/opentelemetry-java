@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace.attributes;
 
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Span;
 import javax.annotation.concurrent.Immutable;
 
@@ -69,5 +70,15 @@ public final class BooleanAttributeSetter {
    */
   public void set(Span.Builder spanBuilder, boolean value) {
     spanBuilder.setAttribute(key(), value);
+  }
+
+  /**
+   * Sets the attribute on the provided {@link Attributes.Builder}.
+   *
+   * @param attributesBuilder the attributes builder to add the attribute to
+   * @param value the value for this attribute
+   */
+  public void set(Attributes.Builder attributesBuilder, boolean value) {
+    attributesBuilder.setAttribute(key(), value);
   }
 }
