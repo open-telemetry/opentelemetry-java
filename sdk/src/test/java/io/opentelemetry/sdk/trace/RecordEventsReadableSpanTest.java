@@ -591,19 +591,6 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void recordException_explicitTimestamp() {
-    IllegalStateException exception = new IllegalStateException("there was an exception");
-    RecordEventsReadableSpan span = createTestRootSpan();
-
-    span.recordException(exception, 123454321);
-
-    List<Event> events = span.toSpanData().getEvents();
-    assertThat(events).hasSize(1);
-    Event event = events.get(0);
-    assertThat(event.getEpochNanos()).isEqualTo(123454321);
-  }
-
-  @Test
   public void recordException_noMessage() {
     IllegalStateException exception = new IllegalStateException();
     RecordEventsReadableSpan span = createTestRootSpan();
@@ -649,7 +636,6 @@ public class RecordEventsReadableSpanTest {
     span.addEvent(null, null);
     span.addEvent(null, null, 0);
     span.recordException(null);
-    span.recordException(null, 0);
     span.end(null);
 
     // Ignored the bad calls

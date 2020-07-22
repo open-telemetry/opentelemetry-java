@@ -100,9 +100,6 @@ public final class DefaultSpan implements Span {
   public void recordException(Throwable exception) {}
 
   @Override
-  public void recordException(Throwable exception, long timestamp) {}
-
-  @Override
   public void updateName(String name) {}
 
   @Override

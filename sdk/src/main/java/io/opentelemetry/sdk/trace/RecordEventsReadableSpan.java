@@ -424,14 +424,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     if (exception == null) {
       return;
     }
-    recordException(exception, clock.now());
-  }
-
-  @Override
-  public void recordException(Throwable exception, long timestamp) {
-    if (exception == null) {
-      return;
-    }
+    long timestamp = clock.now();
     Attributes.Builder attributes = Attributes.newBuilder();
     SemanticAttributes.EXCEPTION_TYPE.set(attributes, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
