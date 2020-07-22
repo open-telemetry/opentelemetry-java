@@ -68,9 +68,7 @@ public interface Sampler {
    */
   String getDescription();
 
-  /**
-   * A decision on whether a span should be recorded, recorded and sampled or not recorded.
-   */
+  /** A decision on whether a span should be recorded, recorded and sampled or not recorded. */
   enum Decision {
     NOT_RECORD,
     RECORD,
@@ -78,8 +76,8 @@ public interface Sampler {
   }
 
   /**
-   * Sampling result returned by {@link Sampler#shouldSample(SpanContext, TraceId, String,
-   * Kind, ReadableAttributes, List)}.
+   * Sampling result returned by {@link Sampler#shouldSample(SpanContext, TraceId, String, Kind,
+   * ReadableAttributes, List)}.
    *
    * @since 0.1.0
    */

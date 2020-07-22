@@ -43,13 +43,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class Samplers {
 
-  private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
-    SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLED);
-  private static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT =
-    SamplingResultImpl.createWithoutAttributes(Decision.NOT_RECORD);
-  private static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
-    SamplingResultImpl.createWithoutAttributes(Decision.RECORD);
-
   /**
    * Probability value used by a probability-based Span sampling strategy.
    *
@@ -61,6 +54,13 @@ public final class Samplers {
   // Visible for tests.
   static final DoubleAttributeSetter SAMPLING_PROBABILITY =
       DoubleAttributeSetter.create("sampling.probability");
+
+  private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLED);
+  private static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT =
+      SamplingResultImpl.createWithoutAttributes(Decision.NOT_RECORD);
+  private static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD);
 
   // No instance of this class.
   private Samplers() {}
@@ -116,9 +116,11 @@ public final class Samplers {
   }
 
   /**
-   * Returns a {@link Sampler} that always makes a "yes" {@link SamplingResult} for {@link Span} sampling.
+   * Returns a {@link Sampler} that always makes a "yes" {@link SamplingResult} for {@link Span}
+   * sampling.
    *
-   * @return a {@code Sampler} that always makes a "yes" {@link SamplingResult} for {@code Span} sampling.
+   * @return a {@code Sampler} that always makes a "yes" {@link SamplingResult} for {@code Span}
+   *     sampling.
    * @since 0.1.0
    */
   public static Sampler alwaysOn() {
@@ -126,9 +128,11 @@ public final class Samplers {
   }
 
   /**
-   * Returns a {@link Sampler} that always makes a "no" {@link SamplingResult} for {@link Span} sampling.
+   * Returns a {@link Sampler} that always makes a "no" {@link SamplingResult} for {@link Span}
+   * sampling.
    *
-   * @return a {@code Sampler} that always makes a "no" {@link SamplingResult} for {@code Span} sampling.
+   * @return a {@code Sampler} that always makes a "no" {@link SamplingResult} for {@code Span}
+   *     sampling.
    * @since 0.1.0
    */
   public static Sampler alwaysOff() {
@@ -173,7 +177,7 @@ public final class Samplers {
   private enum AlwaysOffSampler implements Sampler {
     INSTANCE;
 
-    // Returns a "no" {@link SamplingResult} on {@link Span} sampling.
+    // Returns a "no" {@link SamplingResult}T on {@link Span} sampling.
     @Override
     public SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
