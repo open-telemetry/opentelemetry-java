@@ -299,7 +299,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void setAttribute(String key, AttributeValue value) {
-    if (key == null) {
+    if (key == null || key.length() == 0) {
       return;
     }
     synchronized (lock) {
