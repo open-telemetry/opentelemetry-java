@@ -47,7 +47,7 @@ implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.7.0'
 ### Register the zPages
 
 To set-up the zPages, simply call `ZPageServer.startHttpServerAndRegisterAllPages(int port)` in your
-main function.
+main function:
 
 ```java
 public class MyMainClass {
