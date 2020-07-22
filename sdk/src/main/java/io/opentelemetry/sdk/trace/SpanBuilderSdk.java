@@ -26,7 +26,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.Sampler.Decision;
+import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.DefaultSpan;
@@ -225,7 +225,7 @@ final class SpanBuilderSdk implements Span.Builder {
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
     ReadableAttributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
-    Decision samplingDecision =
+    SamplingResult samplingDecision =
         traceConfig
             .getSampler()
             .shouldSample(

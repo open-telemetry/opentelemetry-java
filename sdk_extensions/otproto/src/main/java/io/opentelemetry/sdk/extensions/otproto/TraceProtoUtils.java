@@ -84,7 +84,7 @@ public final class TraceProtoUtils {
         case ALWAYS_PARENT:
           // TODO: add support.
         case UNRECOGNIZED:
-          throw new IllegalArgumentException("unrecognized constant sampling decision");
+          throw new IllegalArgumentException("unrecognized constant sampling samplingResult");
       }
     }
     if (traceConfigProto.hasProbabilitySampler()) {
