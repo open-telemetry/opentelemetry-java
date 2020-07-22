@@ -21,7 +21,6 @@ import static io.opentelemetry.internal.Utils.checkArgument;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,13 +28,14 @@ import javax.annotation.concurrent.Immutable;
  * An immutable set of key-value pairs. Keys are only {@link String} typed. Can be iterated over
  * using the {@link #forEach(KeyValueConsumer)} method.
  *
+ * <p>Key-value pairs are dropped for {@code null} or empty keys.
+ *
  * @param <V> The type of the values contained in this.
  * @see Labels
  * @see Attributes
  */
 @Immutable
 abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
-  private static final Logger logger = Logger.getLogger(ImmutableKeyValuePairs.class.getName());
 
   List<Object> data() {
     return Collections.emptyList();
@@ -107,7 +107,6 @@ abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
       Object key = data[i];
       Object value = data[i + 1];
       if (key == null || "".equals(key)) {
-        logger.warning("Ignoring null/empty key.");
         continue;
       }
       if (key.equals(previousKey)) {
