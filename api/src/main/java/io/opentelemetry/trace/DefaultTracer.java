@@ -77,7 +77,7 @@ public final class DefaultTracer implements Tracer {
 
       return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
           ? new DefaultSpan(spanContext)
-          : DefaultSpan.createRandom();
+          : DefaultSpan.getInvalid();
     }
 
     @Override

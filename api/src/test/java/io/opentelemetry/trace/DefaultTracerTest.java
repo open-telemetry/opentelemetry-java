@@ -54,7 +54,7 @@ public class DefaultTracerTest {
   @Test
   public void getCurrentSpan_WithSpan() {
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ws = defaultTracer.withSpan(DefaultSpan.createRandom())) {
+    try (Scope ws = defaultTracer.withSpan(DefaultSpan.getInvalid())) {
       assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     }
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
@@ -98,6 +98,12 @@ public class DefaultTracerTest {
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
+  }
+
+  @Test
+  public void noSpanContextMakesInvalidSpans() {
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+    assertThat(span.getContext()).isSameInstanceAs(SpanContext.getInvalid());
   }
 
   @Test
