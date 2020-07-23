@@ -353,8 +353,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
             newConfigBuilder.setSampler(Samplers.probability(samplingProbability));
           }
         } catch (NumberFormatException e) {
-          throw new NumberFormatException(
-              e.toString() + " SamplingProbability must be of the type double");
+          throw new IllegalArgumentException("SamplingProbability must be of the type double", e);
         }
       }
       String maxNumOfAttributesStr = queryMap.get(QUERY_STRING_MAX_NUM_OF_ATTRIBUTES);
@@ -363,8 +362,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
           int maxNumOfAttributes = Integer.parseInt(maxNumOfAttributesStr);
           newConfigBuilder.setMaxNumberOfAttributes(maxNumOfAttributes);
         } catch (NumberFormatException e) {
-          throw new NumberFormatException(
-              e.toString() + " MaxNumOfAttributes must be of the type integer");
+          throw new IllegalArgumentException("MaxNumOfAttributes must be of the type integer", e);
         }
       }
       String maxNumOfEventsStr = queryMap.get(QUERY_STRING_MAX_NUM_OF_EVENTS);
@@ -373,8 +371,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
           int maxNumOfEvents = Integer.parseInt(maxNumOfEventsStr);
           newConfigBuilder.setMaxNumberOfEvents(maxNumOfEvents);
         } catch (NumberFormatException e) {
-          throw new NumberFormatException(
-              e.toString() + " MaxNumOfEvents must be of the type integer");
+          throw new IllegalArgumentException("MaxNumOfEvents must be of the type integer", e);
         }
       }
       String maxNumOfLinksStr = queryMap.get(QUERY_STRING_MAX_NUM_OF_LINKS);
@@ -383,8 +380,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
           int maxNumOfLinks = Integer.parseInt(maxNumOfLinksStr);
           newConfigBuilder.setMaxNumberOfLinks(maxNumOfLinks);
         } catch (NumberFormatException e) {
-          throw new NumberFormatException(
-              e.toString() + " MaxNumOfLinks must be of the type integer");
+          throw new IllegalArgumentException("MaxNumOfLinks must be of the type integer", e);
         }
       }
       String maxNumOfAttributesPerEventStr =
@@ -394,8 +390,8 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
           int maxNumOfAttributesPerEvent = Integer.parseInt(maxNumOfAttributesPerEventStr);
           newConfigBuilder.setMaxNumberOfAttributesPerEvent(maxNumOfAttributesPerEvent);
         } catch (NumberFormatException e) {
-          throw new NumberFormatException(
-              e.toString() + " MaxNumOfAttributesPerEvent must be of the type integer");
+          throw new IllegalArgumentException(
+              "MaxNumOfAttributesPerEvent must be of the type integer", e);
         }
       }
       String maxNumOfAttributesPerLinkStr =
@@ -405,8 +401,8 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
           int maxNumOfAttributesPerLink = Integer.parseInt(maxNumOfAttributesPerLinkStr);
           newConfigBuilder.setMaxNumberOfAttributesPerLink(maxNumOfAttributesPerLink);
         } catch (NumberFormatException e) {
-          throw new NumberFormatException(
-              e.toString() + " MaxNumOfAttributesPerLink must be of the type integer");
+          throw new IllegalArgumentException(
+              "MaxNumOfAttributesPerLink must be of the type integer", e);
         }
       }
       this.tracerProvider.updateActiveTraceConfig(newConfigBuilder.build());
