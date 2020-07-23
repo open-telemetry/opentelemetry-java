@@ -46,7 +46,8 @@ implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.7.0'
 
 ### Register the zPages
 
-\*Note: Package `com.sun.net.httpserver` is required to use zPages. Please make sure your version of JDK includes the package
+**Note:** The package `com.sun.net.httpserver` is required to use zPages. Please make sure your
+version of the JDK includes this package.
 
 To set-up the zPages, simply call `ZPageServer.startHttpServerAndRegisterAllPages(int port)` in your
 main function:
@@ -60,7 +61,8 @@ public class MyMainClass {
 }
 ```
 
-Or call `ZPageServer.registerAllPagesToHttpServer(server)` to register zPages to a shared server:
+Alternatively, you can call `ZPageServer.registerAllPagesToHttpServer(HttpServer server)` to
+register the zPages to a shared server:
 
 ```java
 public class MyMainClass {
