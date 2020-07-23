@@ -142,7 +142,7 @@ managed better. We are open to feedback and suggestions from all of you!
 
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
-- [Anuraag Agrawal](https://github.com/anuraaga), WHAT DO I PUT HERE?
+- [Anuraag Agrawal](https://github.com/anuraaga), AWS
 - [Armin Ruech](https://github.com/arminru), Dynatrace
 - [Pavol Loffay](https://github.com/pavolloffay), RedHat
 - [Tyler Benson](https://github.com/tylerbenson), DataDog
