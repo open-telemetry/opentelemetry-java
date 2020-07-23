@@ -107,26 +107,26 @@ public final class SemanticAttributes {
    * The size of the request payload body, in bytes. For payloads using transport encoding, this is
    * the compressed size.
    */
-  public static final StringAttributeSetter HTTP_REQUEST_CONTENT_LENGTH =
-      StringAttributeSetter.create("http.request_content_length");
+  public static final LongAttributeSetter HTTP_REQUEST_CONTENT_LENGTH =
+      LongAttributeSetter.create("http.request_content_length");
   /**
    * The size of the uncompressed request payload body, in bytes. Only set for requests that use
    * transport encoding.
    */
-  public static final StringAttributeSetter HTTP_REQUEST_CONTENT_LENGTH_UNCOMPRESSED =
-      StringAttributeSetter.create("http.request_content_length_uncompressed");
+  public static final LongAttributeSetter HTTP_REQUEST_CONTENT_LENGTH_UNCOMPRESSED =
+      LongAttributeSetter.create("http.request_content_length_uncompressed");
   /**
    * The size of the response payload body, in bytes. For payloads using transport encoding, this is
    * the compressed size.
    */
-  public static final StringAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH =
-      StringAttributeSetter.create("http.response_content_length");
+  public static final LongAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH =
+      LongAttributeSetter.create("http.response_content_length");
   /**
    * The size of the uncompressed response payload body, in bytes. Only set for responses that use
    * transport encoding.
    */
-  public static final StringAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH_UNCOMPRESSED =
-      StringAttributeSetter.create("http.response_content_length_uncompressed");
+  public static final LongAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH_UNCOMPRESSED =
+      LongAttributeSetter.create("http.response_content_length_uncompressed");
   /** The service name, must be equal to the $service part in the span name. */
   public static final StringAttributeSetter RPC_SERVICE =
       StringAttributeSetter.create("rpc.service");
@@ -208,6 +208,21 @@ public final class SemanticAttributes {
    */
   public static final StringAttributeSetter MESSAGING_OPERATION =
       StringAttributeSetter.create("messaging.operation");
+
+  /** The name of an {@link io.opentelemetry.trace.Event} describing an exception. */
+  public static final String EXCEPTION_EVENT_NAME = "exception";
+  /** The type of the exception, i.e., it's fully qualified name. */
+  public static final StringAttributeSetter EXCEPTION_TYPE =
+      StringAttributeSetter.create("exception.type");
+  /** The exception message. */
+  public static final StringAttributeSetter EXCEPTION_MESSAGE =
+      StringAttributeSetter.create("exception.message");
+  /**
+   * A string representing the stacktrace of an exception, as produced by {@link
+   * Throwable#printStackTrace()}.
+   */
+  public static final StringAttributeSetter EXCEPTION_STACKTRACE =
+      StringAttributeSetter.create("exception.stacktrace");
 
   private SemanticAttributes() {}
 }

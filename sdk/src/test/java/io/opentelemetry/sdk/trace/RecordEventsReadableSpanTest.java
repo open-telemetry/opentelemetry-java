@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -36,6 +37,8 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -87,15 +90,13 @@ public class RecordEventsReadableSpanTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    attributes.put(
-        "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
+    attributes.put("MyStringAttributeKey", stringAttributeValue("MyStringAttributeValue"));
     attributes.put("MyLongAttributeKey", AttributeValue.longAttributeValue(123L));
     attributes.put("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(false));
     Attributes.Builder builder =
         Attributes.newBuilder()
             .setAttribute(
-                "MySingleStringAttributeKey",
-                AttributeValue.stringAttributeValue("MySingleStringAttributeValue"));
+                "MySingleStringAttributeKey", stringAttributeValue("MySingleStringAttributeValue"));
     for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }
@@ -125,7 +126,7 @@ public class RecordEventsReadableSpanTest {
 
   @Test
   public void lazyLinksAreResolved() {
-    final Attributes attributes = Attributes.of("attr", AttributeValue.stringAttributeValue("val"));
+    final Attributes attributes = Attributes.of("attr", stringAttributeValue("val"));
     io.opentelemetry.trace.Link link =
         new io.opentelemetry.trace.Link() {
           @Override
@@ -341,8 +342,8 @@ public class RecordEventsReadableSpanTest {
       span.setAttribute("StringKey", "StringVal");
       span.setAttribute("NullStringKey", (String) null);
       span.setAttribute("EmptyStringKey", "");
-      span.setAttribute("NullStringAttributeValue", AttributeValue.stringAttributeValue(null));
-      span.setAttribute("EmptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
+      span.setAttribute("NullStringAttributeValue", stringAttributeValue(null));
+      span.setAttribute("EmptyStringAttributeValue", stringAttributeValue(""));
       span.setAttribute("LongKey", 1000L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
@@ -375,6 +376,34 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
+  public void setAttribute_emptyKeys() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    span.setAttribute("", AttributeValue.stringAttributeValue(""));
+    span.setAttribute("", 1000L);
+    span.setAttribute("", 10.0);
+    span.setAttribute("", false);
+    span.setAttribute("", AttributeValue.arrayAttributeValue(new String[0]));
+    span.setAttribute("", AttributeValue.arrayAttributeValue(new Boolean[0]));
+    span.setAttribute("", AttributeValue.arrayAttributeValue(new Long[0]));
+    span.setAttribute("", AttributeValue.arrayAttributeValue(new Double[0]));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
+  }
+
+  @Test
+  public void setAttribute_nullKeys() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    span.setAttribute(null, AttributeValue.stringAttributeValue(""));
+    span.setAttribute(null, 1000L);
+    span.setAttribute(null, 10.0);
+    span.setAttribute(null, false);
+    span.setAttribute(null, AttributeValue.arrayAttributeValue(new String[0]));
+    span.setAttribute(null, AttributeValue.arrayAttributeValue(new Boolean[0]));
+    span.setAttribute(null, AttributeValue.arrayAttributeValue(new Long[0]));
+    span.setAttribute(null, AttributeValue.arrayAttributeValue(new Double[0]));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
+  }
+
+  @Test
   public void setAttribute_emptyArrayAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
@@ -389,8 +418,8 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("nullString", (String) null);
     span.setAttribute("emptyString", "");
-    span.setAttribute("nullStringAttributeValue", AttributeValue.stringAttributeValue(null));
-    span.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
+    span.setAttribute("nullStringAttributeValue", stringAttributeValue(null));
+    span.setAttribute("emptyStringAttributeValue", stringAttributeValue(""));
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
     span.setAttribute("emptyString", (String) null);
     span.setAttribute("emptyStringAttributeValue", (String) null);
@@ -402,8 +431,8 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("emptyString", "");
     span.setAttribute("nullString", (AttributeValue) null);
-    span.setAttribute("nullStringAttributeValue", AttributeValue.stringAttributeValue(null));
-    span.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
+    span.setAttribute("nullStringAttributeValue", stringAttributeValue(null));
+    span.setAttribute("emptyStringAttributeValue", stringAttributeValue(""));
     span.setAttribute("longAttribute", 0L);
     span.setAttribute("boolAttribute", false);
     span.setAttribute("doubleAttribute", 0.12345f);
@@ -441,8 +470,7 @@ public class RecordEventsReadableSpanTest {
         };
     try {
       span.addEvent("event1");
-      span.addEvent(
-          "event2", Attributes.of("e1key", AttributeValue.stringAttributeValue("e1Value")));
+      span.addEvent("event2", Attributes.of("e1key", stringAttributeValue("e1Value")));
       span.addEvent(customEvent);
     } finally {
       span.end();
@@ -562,6 +590,89 @@ public class RecordEventsReadableSpanTest {
     }
   }
 
+  @Test
+  public void recordException() {
+    IllegalStateException exception = new IllegalStateException("there was an exception");
+    RecordEventsReadableSpan span = createTestRootSpan();
+
+    StringWriter writer = new StringWriter();
+    exception.printStackTrace(new PrintWriter(writer));
+    String stacktrace = writer.toString();
+
+    testClock.advanceNanos(1000);
+    long timestamp = testClock.now();
+
+    span.recordException(exception);
+
+    List<Event> events = span.toSpanData().getEvents();
+    assertThat(events).hasSize(1);
+    Event event = events.get(0);
+    assertThat(event.getName()).isEqualTo("exception");
+    assertThat(event.getEpochNanos()).isEqualTo(timestamp);
+    assertThat(event.getAttributes())
+        .isEqualTo(
+            Attributes.newBuilder()
+                .setAttribute("exception.type", "java.lang.IllegalStateException")
+                .setAttribute("exception.message", "there was an exception")
+                .setAttribute("exception.stacktrace", stacktrace)
+                .build());
+  }
+
+  @Test
+  public void recordException_noMessage() {
+    IllegalStateException exception = new IllegalStateException();
+    RecordEventsReadableSpan span = createTestRootSpan();
+
+    span.recordException(exception);
+
+    List<Event> events = span.toSpanData().getEvents();
+    assertThat(events).hasSize(1);
+    Event event = events.get(0);
+    assertThat(event.getAttributes().get("exception.message")).isNull();
+  }
+
+  private static class InnerClassException extends Exception {}
+
+  @Test
+  public void recordException_innerClassException() {
+    InnerClassException exception = new InnerClassException();
+    RecordEventsReadableSpan span = createTestRootSpan();
+
+    span.recordException(exception);
+
+    List<Event> events = span.toSpanData().getEvents();
+    assertThat(events).hasSize(1);
+    Event event = events.get(0);
+    assertThat(event.getAttributes().get("exception.type"))
+        .isEqualTo(
+            stringAttributeValue(
+                "io.opentelemetry.sdk.trace.RecordEventsReadableSpanTest.InnerClassException"));
+  }
+
+  @Test
+  public void badArgsIgnored() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+
+    // Should be no exceptions
+    span.setAttribute(null, 0);
+    span.setStatus(null);
+    span.updateName(null);
+    span.addEvent((Event) null);
+    span.addEvent((String) null);
+    span.addEvent((Event) null, 0);
+    span.addEvent((String) null, 0);
+    span.addEvent(null, null);
+    span.addEvent(null, null, 0);
+    span.recordException(null);
+    span.end(null);
+
+    // Ignored the bad calls
+    SpanData data = span.toSpanData();
+    assertThat(data.getAttributes().isEmpty()).isTrue();
+    assertThat(data.getStatus()).isEqualTo(Status.OK);
+    assertThat(data.getName()).isEqualTo(SPAN_NAME);
+  }
+
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<String, AttributeValue> attributes) {
     AttributesMap attributesMap =
@@ -619,8 +730,7 @@ public class RecordEventsReadableSpanTest {
 
   private void spanDoWork(RecordEventsReadableSpan span, @Nullable Status status) {
     span.setAttribute(
-        "MySingleStringAttributeKey",
-        AttributeValue.stringAttributeValue("MySingleStringAttributeValue"));
+        "MySingleStringAttributeKey", stringAttributeValue("MySingleStringAttributeValue"));
     for (Map.Entry<String, AttributeValue> attribute : attributes.entrySet()) {
       span.setAttribute(attribute.getKey(), attribute.getValue());
     }

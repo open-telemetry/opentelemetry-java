@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
+import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -42,11 +43,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class Samplers {
 
-  private static final Decision EMPTY_SAMPLED_DECISION =
-      DecisionImpl.createWithoutAttributes(/* decision= */ true);
-  private static final Decision EMPTY_NOT_SAMPLED_DECISION =
-      DecisionImpl.createWithoutAttributes(/* decision= */ false);
-
   /**
    * Probability value used by a probability-based Span sampling strategy.
    *
@@ -59,51 +55,75 @@ public final class Samplers {
   static final DoubleAttributeSetter SAMPLING_PROBABILITY =
       DoubleAttributeSetter.create("sampling.probability");
 
+  private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLED);
+  private static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT =
+      SamplingResultImpl.createWithoutAttributes(Decision.NOT_RECORD);
+  private static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD);
+
   // No instance of this class.
   private Samplers() {}
 
+  static boolean isRecording(Decision decision) {
+    return Decision.RECORD.equals(decision) || Decision.RECORD_AND_SAMPLED.equals(decision);
+  }
+
+  static boolean isSampled(Decision decision) {
+    return Decision.RECORD_AND_SAMPLED.equals(decision);
+  }
+
   /**
-   * Returns a {@link Decision} with the given {@code attributes} and {@link Decision#isSampled()}
-   * returning {@code isSampled}.
+   * Returns a {@link SamplingResult} with the given {@code attributes} and {@link
+   * SamplingResult#getDecision()} returning {@code decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Using {@link #emptyDecision(boolean)} instead of this method is slightly faster and shorter
-   * if you don't need attributes.
+   * <p>Using {@link #emptySamplingResult(Decision)} instead of this method is slightly faster and
+   * shorter if you don't need attributes.
    *
-   * @param isSampled The value to return from {@link Decision#isSampled()}.
-   * @param attributes The attributes to return from {@link Decision#getAttributes()}. A different
-   *     object instance with the same elements may be returned.
-   * @return A {@link Decision} with the attributes equivalent to {@code attributes} and {@link
-   *     Decision#isSampled()} returning {@code isSampled}.
+   * @param decision The decision made on the span.
+   * @param attributes The attributes to return from {@link SamplingResult#getAttributes()}. A
+   *     different object instance with the same elements may be returned.
+   * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and the
+   *     provided {@code decision}.
    */
-  public static Decision decision(boolean isSampled, Attributes attributes) {
+  public static SamplingResult samplingResult(Decision decision, Attributes attributes) {
     Objects.requireNonNull(attributes, "attributes");
     return attributes.isEmpty()
-        ? emptyDecision(isSampled)
-        : DecisionImpl.create(isSampled, attributes);
+        ? emptySamplingResult(decision)
+        : SamplingResultImpl.create(decision, attributes);
   }
 
   /**
-   * Returns a {@link Decision} with empty attributes and {@link Decision#isSampled()} returning the
-   * {@code isSampled}.
+   * Returns a {@link SamplingResult} with empty attributes and {@link SamplingResult#getDecision()}
+   * returning {@code decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Use {@link #decision(boolean, Attributes)} if you need attributes.
+   * <p>Use {@link #samplingResult(Decision, Attributes)} if you need attributes.
    *
-   * @param isSampled The value to return from {@link Decision#isSampled()}.
-   * @return A {@link Decision} with empty attributes and {@link Decision#isSampled()} returning
-   *     {@code isSampled}.
+   * @param decision The decision made on the span.
+   * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
-  public static Decision emptyDecision(boolean isSampled) {
-    return isSampled ? EMPTY_SAMPLED_DECISION : EMPTY_NOT_SAMPLED_DECISION;
+  public static SamplingResult emptySamplingResult(Decision decision) {
+    switch (decision) {
+      case RECORD_AND_SAMPLED:
+        return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
+      case RECORD:
+        return EMPTY_RECORDED_SAMPLING_RESULT;
+      case NOT_RECORD:
+        return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
+    }
+    throw new AssertionError("unrecognised samplingResult");
   }
 
   /**
-   * Returns a {@link Sampler} that always makes a "yes" decision on {@link Span} sampling.
+   * Returns a {@link Sampler} that always makes a "yes" {@link SamplingResult} for {@link Span}
+   * sampling.
    *
-   * @return a {@code Sampler} that always makes a "yes" decision on {@code Span} sampling.
+   * @return a {@code Sampler} that always makes a "yes" {@link SamplingResult} for {@code Span}
+   *     sampling.
    * @since 0.1.0
    */
   public static Sampler alwaysOn() {
@@ -111,13 +131,30 @@ public final class Samplers {
   }
 
   /**
-   * Returns a {@link Sampler} that always makes a "no" decision on {@link Span} sampling.
+   * Returns a {@link Sampler} that always makes a "no" {@link SamplingResult} for {@link Span}
+   * sampling.
    *
-   * @return a {@code Sampler} that always makes a "no" decision on {@code Span} sampling.
+   * @return a {@code Sampler} that always makes a "no" {@link SamplingResult} for {@code Span}
+   *     sampling.
    * @since 0.1.0
    */
   public static Sampler alwaysOff() {
     return AlwaysOffSampler.INSTANCE;
+  }
+
+  /**
+   * Returns a {@link Sampler} that always makes the same decision as the parent {@link Span} to
+   * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate
+   * to determine the sampling decision.
+   *
+   * @param delegateSampler the {@code Sampler} which is used to make the sampling decisions if the
+   *     parent does not exist.
+   * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
+   *     following the delegate sampler's decision.
+   * @since 0.7.0
+   */
+  public static Sampler parentOrElse(Sampler delegateSampler) {
+    return new ParentOrElse(delegateSampler);
   }
 
   /**
@@ -136,16 +173,16 @@ public final class Samplers {
   private enum AlwaysOnSampler implements Sampler {
     INSTANCE;
 
-    // Returns always makes a "yes" decision on {@link Span} sampling.
+    // Returns a "yes" {@link SamplingResult} for {@link Span} sampling.
     @Override
-    public Decision shouldSample(
+    public SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
         TraceId traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
         List<Link> parentLinks) {
-      return EMPTY_SAMPLED_DECISION;
+      return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
     }
 
     @Override
@@ -158,21 +195,55 @@ public final class Samplers {
   private enum AlwaysOffSampler implements Sampler {
     INSTANCE;
 
-    // Returns always makes a "no" decision on {@link Span} sampling.
+    // Returns a "no" {@link SamplingResult}T on {@link Span} sampling.
     @Override
-    public Decision shouldSample(
+    public SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
         TraceId traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
         List<Link> parentLinks) {
-      return EMPTY_NOT_SAMPLED_DECISION;
+      return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
     }
 
     @Override
     public String getDescription() {
       return "AlwaysOffSampler";
+    }
+  }
+
+  @Immutable
+  static class ParentOrElse implements Sampler {
+    private final Sampler delegateSampler;
+
+    ParentOrElse(Sampler delegateSampler) {
+      this.delegateSampler = delegateSampler;
+    }
+
+    // If a parent is set, always follows the same sampling decision as the parent.
+    // Otherwise, uses the delegateSampler provided at initialization to make a decision.
+    @Override
+    public SamplingResult shouldSample(
+        @Nullable SpanContext parentContext,
+        TraceId traceId,
+        String name,
+        Kind spanKind,
+        ReadableAttributes attributes,
+        List<Link> parentLinks) {
+      if (parentContext != null) {
+        if (parentContext.getTraceFlags().isSampled()) {
+          return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
+        }
+        return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
+      }
+      return this.delegateSampler.shouldSample(
+          parentContext, traceId, name, spanKind, attributes, parentLinks);
+    }
+
+    @Override
+    public String getDescription() {
+      return String.format("ParentOrElseSampler-%s", this.delegateSampler.getDescription());
     }
   }
 
@@ -207,48 +278,49 @@ public final class Samplers {
       return new AutoValue_Samplers_Probability(
           probability,
           idUpperBound,
-          DecisionImpl.createWithProbability(/* decision= */ true, probability),
-          DecisionImpl.createWithProbability(/* decision= */ false, probability));
+          SamplingResultImpl.createWithProbability(Decision.RECORD_AND_SAMPLED, probability),
+          SamplingResultImpl.createWithProbability(Decision.NOT_RECORD, probability));
     }
 
     abstract double getProbability();
 
     abstract long getIdUpperBound();
 
-    abstract Decision getPositiveDecision();
+    abstract SamplingResult getPositiveSamplingResult();
 
-    abstract Decision getNegativeDecision();
+    abstract SamplingResult getNegativeSamplingResult();
 
     @Override
-    public final Decision shouldSample(
+    public final SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
         TraceId traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
         @Nullable List<Link> parentLinks) {
-      // If the parent is sampled keep the sampling decision.
+      // If the parent is sampled keep the sampling samplingResult.
       if (parentContext != null && parentContext.getTraceFlags().isSampled()) {
-        return EMPTY_SAMPLED_DECISION;
+        return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
       }
       if (parentLinks != null) {
-        // If any parent link is sampled keep the sampling decision.
+        // If any parent link is sampled keep the sampling samplingResult.
         for (Link parentLink : parentLinks) {
           if (parentLink.getContext().getTraceFlags().isSampled()) {
-            return EMPTY_SAMPLED_DECISION;
+            return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
           }
         }
       }
       // Always sample if we are within probability range. This is true even for child spans (that
-      // may have had a different sampling decision made) to allow for different sampling policies,
+      // may have had a different sampling samplingResult made) to allow for different sampling
+      // policies,
       // and dynamic increases to sampling probabilities for debugging purposes.
       // Note use of '<' for comparison. This ensures that we never sample for probability == 0.0,
       // while allowing for a (very) small chance of *not* sampling if the id == Long.MAX_VALUE.
       // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
       // code is executed in-line for every Span creation).
       return Math.abs(traceId.getTraceRandomPart()) < getIdUpperBound()
-          ? getPositiveDecision()
-          : getNegativeDecision();
+          ? getPositiveSamplingResult()
+          : getNegativeSamplingResult();
     }
 
     @Override
@@ -259,39 +331,39 @@ public final class Samplers {
 
   @Immutable
   @AutoValue
-  abstract static class DecisionImpl implements Decision {
+  abstract static class SamplingResultImpl implements SamplingResult {
     /**
-     * Creates sampling decision with probability attribute.
+     * Creates sampling result with probability attribute.
      *
-     * @param decision sampling decision
-     * @param probability the probability that was used for the decision.
+     * @param decision the decision on sampling and recording
+     * @param probability the probability that was used for the samplingResult.
      */
-    static Decision createWithProbability(boolean decision, double probability) {
-      return new AutoValue_Samplers_DecisionImpl(
+    static SamplingResult createWithProbability(Decision decision, double probability) {
+      return new AutoValue_Samplers_SamplingResultImpl(
           decision, Attributes.of(SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
     }
 
     /**
-     * Creates sampling decision without attributes.
+     * Creates sampling result without attributes.
      *
-     * @param decision sampling decision
+     * @param decision sampling samplingResult
      */
-    static Decision createWithoutAttributes(boolean decision) {
-      return new AutoValue_Samplers_DecisionImpl(decision, Attributes.empty());
+    static SamplingResult createWithoutAttributes(Decision decision) {
+      return new AutoValue_Samplers_SamplingResultImpl(decision, Attributes.empty());
     }
 
     /**
-     * Creates sampling decision with the given attributes.
+     * Creates sampling result with the given attributes.
      *
-     * @param decision sampling decision
+     * @param decision sampling decisionq
      * @param attributes attributes. Will not be copied, so do not modify afterwards.
      */
-    static Decision create(boolean decision, Attributes attributes) {
-      return new AutoValue_Samplers_DecisionImpl(decision, attributes);
+    static SamplingResult create(Decision decision, Attributes attributes) {
+      return new AutoValue_Samplers_SamplingResultImpl(decision, attributes);
     }
 
     @Override
-    public abstract boolean isSampled();
+    public abstract Decision getDecision();
 
     @Override
     public abstract Attributes getAttributes();

@@ -36,14 +36,14 @@ public class SpanBuilderTest {
   public void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(DefaultSpan.createRandom());
-    spanBuilder.setParent(DefaultSpan.createRandom().getContext());
+    spanBuilder.setParent(DefaultSpan.getInvalid());
+    spanBuilder.setParent(DefaultSpan.getInvalid().getContext());
     spanBuilder.setNoParent();
-    spanBuilder.addLink(DefaultSpan.createRandom().getContext());
-    spanBuilder.addLink(DefaultSpan.createRandom().getContext(), Attributes.empty());
+    spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
+    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
     spanBuilder.addLink(
         new Link() {
-          private final SpanContext spanContext = DefaultSpan.createRandom().getContext();
+          private final SpanContext spanContext = DefaultSpan.getInvalid().getContext();
 
           @Override
           public SpanContext getContext() {

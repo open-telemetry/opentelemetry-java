@@ -491,17 +491,17 @@ public class SpanBuilderSdkTest {
                     SPAN_NAME,
                     new Sampler() {
                       @Override
-                      public Decision shouldSample(
+                      public SamplingResult shouldSample(
                           @Nullable SpanContext parentContext,
                           TraceId traceId,
                           String name,
                           Kind spanKind,
                           ReadableAttributes attributes,
                           List<io.opentelemetry.trace.Link> parentLinks) {
-                        return new Decision() {
+                        return new SamplingResult() {
                           @Override
-                          public boolean isSampled() {
-                            return true;
+                          public Decision getDecision() {
+                            return Decision.RECORD_AND_SAMPLED;
                           }
 
                           @Override
