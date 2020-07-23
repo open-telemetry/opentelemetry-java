@@ -218,6 +218,14 @@ public interface Span {
   void setStatus(Status status);
 
   /**
+   * Records information about the {@link Throwable} to the {@link Span}.
+   *
+   * @param exception the {@link Throwable} to record.
+   * @since 0.7.0
+   */
+  void recordException(Throwable exception);
+
+  /**
    * Updates the {@code Span} name.
    *
    * <p>If used, this will override the name provided via {@code Span.Builder}.
