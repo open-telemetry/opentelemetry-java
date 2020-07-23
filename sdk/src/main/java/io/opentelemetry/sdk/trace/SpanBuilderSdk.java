@@ -225,23 +225,26 @@ final class SpanBuilderSdk implements Span.Builder {
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
     ReadableAttributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
-    SamplingResult samplingDecision =
+    SamplingResult samplingResult =
         traceConfig
             .getSampler()
             .shouldSample(
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
+    Sampler.Decision samplingDecision = samplingResult.getDecision();
 
     SpanContext spanContext =
         SpanContext.create(
             traceId,
             spanId,
-            samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
+            Samplers.isSampled(samplingDecision)
+                ? TRACE_OPTIONS_SAMPLED
+                : TRACE_OPTIONS_NOT_SAMPLED,
             traceState);
 
-    if (!samplingDecision.isSampled()) {
+    if (!Samplers.isRecording(samplingDecision)) {
       return DefaultSpan.create(spanContext);
     }
-    ReadableAttributes samplingAttributes = samplingDecision.getAttributes();
+    ReadableAttributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());

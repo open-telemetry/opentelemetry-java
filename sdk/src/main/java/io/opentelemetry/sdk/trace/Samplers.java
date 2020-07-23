@@ -65,13 +65,17 @@ public final class Samplers {
   // No instance of this class.
   private Samplers() {}
 
-  private static boolean isSampled(Decision decision) {
-    return decision.equals(Decision.RECORD_AND_SAMPLED);
+  static boolean isRecording(Decision decision) {
+    return Decision.RECORD.equals(decision) || Decision.RECORD_AND_SAMPLED.equals(decision);
+  }
+
+  static boolean isSampled(Decision decision) {
+    return Decision.RECORD_AND_SAMPLED.equals(decision);
   }
 
   /**
    * Returns a {@link SamplingResult} with the given {@code attributes} and {@link
-   * SamplingResult#isSampled()} returning {@code isSampled}.
+   * SamplingResult#getDecision()} returning {@code decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
@@ -81,8 +85,8 @@ public final class Samplers {
    * @param decision The decision made on the span.
    * @param attributes The attributes to return from {@link SamplingResult#getAttributes()}. A
    *     different object instance with the same elements may be returned.
-   * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and
-   *     {@link SamplingResult#isSampled()} returning {@code isSampled}.
+   * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and the
+   *     provided {@code decision}.
    */
   public static SamplingResult samplingResult(Decision decision, Attributes attributes) {
     Objects.requireNonNull(attributes, "attributes");
@@ -92,16 +96,15 @@ public final class Samplers {
   }
 
   /**
-   * Returns a {@link SamplingResult} with empty attributes and {@link SamplingResult#isSampled()}
-   * returning the {@code isSampled}.
+   * Returns a {@link SamplingResult} with empty attributes and {@link SamplingResult#getDecision()}
+   * returning {@code decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
    * <p>Use {@link #samplingResult(Decision, Attributes)} if you need attributes.
    *
    * @param decision The decision made on the span.
-   * @return A {@link SamplingResult} with empty attributes and {@link SamplingResult#isSampled()}
-   *     returning {@code isSampled}.
+   * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
   public static SamplingResult emptySamplingResult(Decision decision) {
     switch (decision) {
@@ -221,7 +224,7 @@ public final class Samplers {
     // If a parent is set, always follows the same sampling decision as the parent.
     // Otherwise, uses the delegateSampler provided at initialization to make a decision.
     @Override
-    public Decision shouldSample(
+    public SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
         TraceId traceId,
         String name,
@@ -230,9 +233,9 @@ public final class Samplers {
         List<Link> parentLinks) {
       if (parentContext != null) {
         if (parentContext.getTraceFlags().isSampled()) {
-          return EMPTY_SAMPLED_DECISION;
+          return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
         }
-        return EMPTY_NOT_SAMPLED_DECISION;
+        return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
       }
       return this.delegateSampler.shouldSample(
           parentContext, traceId, name, spanKind, attributes, parentLinks);
@@ -361,11 +364,6 @@ public final class Samplers {
 
     @Override
     public abstract Decision getDecision();
-
-    @Override
-    public boolean isSampled() {
-      return Samplers.isSampled(getDecision());
-    }
 
     @Override
     public abstract Attributes getAttributes();

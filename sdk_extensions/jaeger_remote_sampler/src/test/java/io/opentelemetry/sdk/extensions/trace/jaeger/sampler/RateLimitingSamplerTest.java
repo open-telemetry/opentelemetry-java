@@ -16,12 +16,12 @@
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -51,26 +51,28 @@ public class RateLimitingSamplerTest {
   @Test
   public void alwaysSampleSampledContext() {
     RateLimitingSampler sampler = new RateLimitingSampler(1);
-    assertTrue(
-        sampler
-            .shouldSample(
-                sampledSpanContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                Collections.emptyList())
-            .isSampled());
-    assertTrue(
-        sampler
-            .shouldSample(
-                sampledSpanContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                Collections.emptyList())
-            .isSampled());
+    assertThat(
+            sampler
+                .shouldSample(
+                    sampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+    assertThat(
+            sampler
+                .shouldSample(
+                    sampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.RECORD_AND_SAMPLED);
   }
 
   @Test
@@ -84,17 +86,18 @@ public class RateLimitingSamplerTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertTrue(samplingResult.isSampled());
-    assertFalse(
-        sampler
-            .shouldSample(
-                notSampledSpanContext,
-                traceId,
-                SPAN_NAME,
-                SPAN_KIND,
-                Attributes.empty(),
-                Collections.emptyList())
-            .isSampled());
+    assertThat(samplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLED);
+    assertThat(
+            sampler
+                .shouldSample(
+                    notSampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.NOT_RECORD);
     assertEquals(2, samplingResult.getAttributes().size());
     assertEquals(
         AttributeValue.doubleAttributeValue(1),
