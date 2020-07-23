@@ -64,14 +64,14 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
     }
 
     String traceId = parts[0];
-    if (!Util.isTraceIdValid(traceId)) {
+    if (!Common.isTraceIdValid(traceId)) {
       logger.info(
           "Invalid TraceId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
     String spanId = parts[1];
-    if (!Util.isSpanIdValid(spanId)) {
+    if (!Common.isSpanIdValid(spanId)) {
       logger.info(
           "Invalid SpanId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
       return SpanContext.getInvalid();
@@ -79,6 +79,6 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
 
     String sampled = parts.length >= 3 ? parts[2] : null;
 
-    return Util.buildSpanContext(traceId, spanId, sampled);
+    return Common.buildSpanContext(traceId, spanId, sampled);
   }
 }

@@ -37,8 +37,7 @@ final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector 
     }
 
     SpanContext spanContext = span.getContext();
-    String sampled =
-        spanContext.getTraceFlags().isSampled() ? B3Propagator.TRUE_INT : B3Propagator.FALSE_INT;
+    String sampled = spanContext.getTraceFlags().isSampled() ? Common.TRUE_INT : Common.FALSE_INT;
 
     setter.set(carrier, B3Propagator.TRACE_ID_HEADER, spanContext.getTraceId().toLowerBase16());
     setter.set(carrier, B3Propagator.SPAN_ID_HEADER, spanContext.getSpanId().toLowerBase16());
