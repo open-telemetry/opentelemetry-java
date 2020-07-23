@@ -74,6 +74,8 @@ version of JDK that includes the `HttpServer` class; this requirement will be ad
 Once a request is received by the `HttpServer`, it will invoke the handle function which in turn
 invokes the `emitHtml` function to render the HTML content.
 
+The `HttpServer` class utilizes `com.sun.net.httpserver` to create server, users need to ensure that they are using a version of JDK that comes with the package.
+
 ##### Handling Requests
 
 ![requests-flowchart](img/requests-flowchart.png)

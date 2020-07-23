@@ -46,6 +46,8 @@ implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.7.0'
 
 ### Register the zPages
 
+\*Note: Package `com.sun.net.httpserver` is required to use zPages. Please make sure your version of JDK includes the package
+
 To set-up the zPages, simply call `ZPageServer.startHttpServerAndRegisterAllPages(int port)` in your
 main function:
 
@@ -58,9 +60,26 @@ public class MyMainClass {
 }
 ```
 
+Or call `ZPageServer.registerAllPagesToHttpServer(server)` to register zPages to a shared server:
+
+```java
+public class MyMainClass {
+  public static void main(String[] args) throws Exception {
+    HttpServer server = HttpServer.create(new InetSocketAddress(8000), 10);
+    ZPageServer.registerAllPagesToHttpServer(server);
+    server.start();
+    // ... do work
+  }
+}
+```
+
 ### Access the zPages
 
-#### View trace spans on the /tracez zPage
+#### View all available zPages on the `/` index page
+
+The index page `/` lists all available zPages with a link and description
+
+#### View trace spans on the `/tracez` zPage
 
 The /tracez zPage displays information on running spans, sample span latencies, and sample error
 spans. The data is aggregated into a summary-level table:
@@ -72,7 +91,7 @@ details. For example, here are the details of the `ChildSpan` latency sample (ro
 
 ![tracez-details](img/tracez-details.png)
 
-#### View and update the tracing configuration on the /traceconfigz zPage
+#### View and update the tracing configuration on the `/traceconfigz` zPage
 
 The /traceconfigz zPage displays information about the currently active tracing configuration and 
 provides an interface for users to modify relevant parameters. Here is what the web page looks like:
