@@ -38,6 +38,7 @@ public class B3Propagator implements HttpTextFormat {
   static final String FALSE_INT = "0";
   static final String COMBINED_HEADER = "b3";
   static final String COMBINED_HEADER_DELIMITER = "-";
+  static final int MIN_TRACE_ID_LENGTH = TraceId.getSize();
   static final int MAX_TRACE_ID_LENGTH = 2 * TraceId.getSize();
   static final int MAX_SPAN_ID_LENGTH = 2 * SpanId.getSize();
 

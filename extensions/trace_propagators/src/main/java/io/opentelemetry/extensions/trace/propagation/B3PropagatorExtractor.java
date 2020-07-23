@@ -18,6 +18,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.MAX_SPAN_ID_LENGTH;
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.MAX_TRACE_ID_LENGTH;
+import static io.opentelemetry.extensions.trace.propagation.B3Propagator.MIN_TRACE_ID_LENGTH;
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.TRUE_INT;
 
 import io.grpc.Context;
@@ -27,6 +28,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import java.math.BigInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -63,12 +65,25 @@ interface B3PropagatorExtractor {
       }
     }
 
+    private static boolean isHex(String value) {
+      try {
+        new BigInteger(value, 16);
+        return true;
+      } catch (NumberFormatException e) {
+        return false;
+      }
+    }
+
     static boolean isTraceIdValid(String value) {
-      return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
+      return !(StringUtils.isNullOrEmpty(value)
+          || !isHex(value)
+          || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH));
     }
 
     static boolean isSpanIdValid(String value) {
-      return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
+      return !(StringUtils.isNullOrEmpty(value)
+          || !isHex(value)
+          || value.length() != MAX_SPAN_ID_LENGTH);
     }
   }
 }
