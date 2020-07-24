@@ -141,7 +141,11 @@ public final class SemanticAttributes {
   /** RPC span event attribute for uncompressed size. */
   public static final LongAttributeSetter MESSAGE_UNCOMPRESSED_SIZE =
       LongAttributeSetter.create("message.uncompressed_size");
-  /** Database type. For any SQL database, "sql". For others, the lower-case database category. */
+  /**
+   * An identifier for the database management system (DBMS) product being used. See {@link <a
+   * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/database.md#notes-and-well-known-identifiers-for-dbsystem">A
+   * list of well-known identifiers</a>}
+   */
   public static final StringAttributeSetter DB_SYSTEM = StringAttributeSetter.create("db.system");
   /** Database name. */
   public static final StringAttributeSetter DB_NAME = StringAttributeSetter.create("db.name");
@@ -163,17 +167,18 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter DB_URL = StringAttributeSetter.create("db.url");
 
   /**
-   * Connection-level attributes for specific technologies. The instance name connecting to. This
-   * name is used to determine the port of a named instance.
+   * For db.system == mssql, the instance name connecting to. This name is used to determine the
+   * port of a named instance. When set, {@link #NET_PEER_PORT} is not required, but recommended
+   * when connecting to a non-standard port.
    */
-  public static final StringAttributeSetter MICROSOFT_SQL_SERVER =
+  public static final StringAttributeSetter MSSQL_SQL_SERVER =
       StringAttributeSetter.create("db.mssql.instance_name");
   /**
-   * Connection-level attributes for specific technologies. The fully-qualified class name of the
-   * Java Database Connectivity (JDBC) driver used to connect, e.g. "org.postgresql.Driver" or
+   * For JDBC clients, the fully-qualified class name of the Java Database Connectivity (JDBC)
+   * driver used to connect, e.g. "org.postgresql.Driver" or
    * "com.microsoft.sqlserver.jdbc.SQLServerDriver".
    */
-  public static final StringAttributeSetter JDBC_CLIENTS =
+  public static final StringAttributeSetter JDBC_DRIVER_CLASSNAME =
       StringAttributeSetter.create("db.jdbc.driver_classname");
 
   /**
