@@ -28,7 +28,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import java.math.BigInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -66,24 +65,24 @@ interface B3PropagatorExtractor {
     }
 
     private static boolean isHex(String value) {
-      try {
-        new BigInteger(value, 16);
-        return true;
-      } catch (NumberFormatException e) {
-        return false;
+      for (int i = 0; i < value.length(); i++) {
+        if (Character.digit(value.charAt(i), 16) == -1) {
+          return false;
+        }
       }
+      return true;
     }
 
     static boolean isTraceIdValid(String value) {
       return !(StringUtils.isNullOrEmpty(value)
-          || !isHex(value)
-          || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH));
+          || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH)
+          || !isHex(value));
     }
 
     static boolean isSpanIdValid(String value) {
       return !(StringUtils.isNullOrEmpty(value)
-          || !isHex(value)
-          || value.length() != MAX_SPAN_ID_LENGTH);
+          || value.length() != MAX_SPAN_ID_LENGTH
+          || !isHex(value));
     }
   }
 }
