@@ -167,7 +167,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     private static final String KEY_METADATA = "otel.otlp.metadata";
     private ManagedChannel channel;
     private long deadlineMs = 1_000; // 1 second
-    @Nullable private String endpoint;
+    private String endpoint = "localhost:55680";
     private boolean useTls;
     @Nullable private Metadata metadata;
 
