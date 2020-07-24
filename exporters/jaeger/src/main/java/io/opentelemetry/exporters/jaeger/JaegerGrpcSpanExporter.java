@@ -168,6 +168,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     private static final String KEY_ENDPOINT = "otel.jaeger.endpoint";
 
     private String serviceName = UNKNOWN;
+    private String endpoint = DEFAULT_JAEGER_ENDPOINT;
     private ManagedChannel channel;
     private long deadlineMs = 1_000; // 1 second
 
@@ -183,7 +184,10 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the managed chanel to use when communicating with the backend. Required.
+     * Sets the managed chanel to use when communicating with the backend.
+     *
+     * <p>Should use only one of {@link #setChannel(ManagedChannel)} or {@link
+     * #setEndpoint(String)}.
      *
      * @param channel the channel to use.
      * @return this.
@@ -194,15 +198,17 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the jaeger endpoint. This will use the endpoint to assign a {@link ManagedChannel}
-     * instance to this builder.
+     * Sets the jaeger endpoint.
+     *
+     * <p>Should use only one of {@link #setChannel(ManagedChannel)} or {@link
+     * #setEndpoint(String)}.
      *
      * @param endpoint The Jaeger endpoint URL, ex. "jaegerhost:14250".
      * @return this.
      * @since 0.7.0
      */
     public Builder setEndpoint(String endpoint) {
-      setChannel(createChannel(endpoint));
+      this.endpoint = endpoint;
       return this;
     }
 
@@ -246,13 +252,9 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
      */
     public JaegerGrpcSpanExporter build() {
       if (channel == null) {
-        channel = createChannel(DEFAULT_JAEGER_ENDPOINT);
+        channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
       }
       return new JaegerGrpcSpanExporter(serviceName, channel, deadlineMs);
-    }
-
-    private static ManagedChannel createChannel(String endpoint) {
-      return ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
     }
 
     private Builder() {}
