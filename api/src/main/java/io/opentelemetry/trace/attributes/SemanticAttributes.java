@@ -188,23 +188,21 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter CASSANDRA =
       StringAttributeSetter.create("db.cassandra.keyspace");
   /**
-   * Call-level attributes for specific technologies. The HBase namespace being accessed. To be used
-   * instead of the generic db.name attribute.
-   */
-  public static final StringAttributeSetter HBASE =
-      StringAttributeSetter.create("db.hbase.namespace");
-  /**
-   * Call-level attributes for specific technologies. The index of the database being accessed as
-   * used in the SELECT command, provided as an integer. To be used instead of the generic db.name
+   * For db.system == hbase, the namespace being accessed. To be used instead of the generic db.name
    * attribute.
    */
-  public static final StringAttributeSetter REDIS =
+  public static final StringAttributeSetter HBASE_NAMESPACE =
+      StringAttributeSetter.create("db.hbase.namespace");
+  /**
+   * For db.system == redis, the index of the database being accessed as used in the SELECT command,
+   * provided as an integer. To be used instead of the generic db.name attribute.
+   */
+  public static final StringAttributeSetter REDIS_DATABASE_INDEX =
       StringAttributeSetter.create("db.redis.database_index");
   /**
-   * Call-level attributes for specific technologies. The collection being accessed within the
-   * database stated in db.name
+   * For db.system == mongodb, the collection being accessed within the database stated in db.name
    */
-  public static final StringAttributeSetter MONGODB =
+  public static final StringAttributeSetter MONGODB_COLLECTION =
       StringAttributeSetter.create("db.mongodb.collection");
 
   /** A string identifying the messaging system such as kafka, rabbitmq or activemq. */
