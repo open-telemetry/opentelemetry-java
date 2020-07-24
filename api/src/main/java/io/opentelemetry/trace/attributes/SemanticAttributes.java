@@ -142,9 +142,11 @@ public final class SemanticAttributes {
   public static final LongAttributeSetter MESSAGE_UNCOMPRESSED_SIZE =
       LongAttributeSetter.create("message.uncompressed_size");
   /**
-   * An identifier for the database management system (DBMS) product being used. See {@link <a
-   * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/database.md#notes-and-well-known-identifiers-for-dbsystem">A
-   * list of well-known identifiers</a>}
+   * An identifier for the database management system (DBMS) product being used.
+   *
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/database.md#notes-and-well-known-identifiers-for-dbsystem">A
+   *     list of well-known identifiers</a>
    */
   public static final StringAttributeSetter DB_SYSTEM = StringAttributeSetter.create("db.system");
   /** Database name. */
