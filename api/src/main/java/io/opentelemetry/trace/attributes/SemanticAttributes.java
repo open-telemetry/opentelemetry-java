@@ -142,17 +142,65 @@ public final class SemanticAttributes {
   public static final LongAttributeSetter MESSAGE_UNCOMPRESSED_SIZE =
       LongAttributeSetter.create("message.uncompressed_size");
   /** Database type. For any SQL database, "sql". For others, the lower-case database category. */
-  public static final StringAttributeSetter DB_TYPE = StringAttributeSetter.create("db.type");
-  /** Database instance name. */
-  public static final StringAttributeSetter DB_INSTANCE =
-      StringAttributeSetter.create("db.instance");
+  public static final StringAttributeSetter DB_SYSTEM = StringAttributeSetter.create("db.system");
+  /** Database name. */
+  public static final StringAttributeSetter DB_NAME = StringAttributeSetter.create("db.name");
+  /**
+   * The connection string used to connect to the database. It's recommended to remove embedded
+   * credentials.
+   */
+  public static final StringAttributeSetter DB_CONNECTION_STRING =
+      StringAttributeSetter.create("db.connection_string");
   /** Database statement for the given database type. */
   public static final StringAttributeSetter DB_STATEMENT =
       StringAttributeSetter.create("db.statement");
+  /** Database operation that is being executed. */
+  public static final StringAttributeSetter DB_OPERATION =
+      StringAttributeSetter.create("db.operation");
   /** Username for accessing database. */
   public static final StringAttributeSetter DB_USER = StringAttributeSetter.create("db.user");
   /** JDBC substring like "mysql://db.example.com:3306" */
   public static final StringAttributeSetter DB_URL = StringAttributeSetter.create("db.url");
+
+  /**
+   * Connection-level attributes for specific technologies. The instance name connecting to. This
+   * name is used to determine the port of a named instance.
+   */
+  public static final StringAttributeSetter MICROSOFT_SQL_SERVER =
+      StringAttributeSetter.create("db.mssql.instance_name");
+  /**
+   * Connection-level attributes for specific technologies. The fully-qualified class name of the
+   * Java Database Connectivity (JDBC) driver used to connect, e.g. "org.postgresql.Driver" or
+   * "com.microsoft.sqlserver.jdbc.SQLServerDriver".
+   */
+  public static final StringAttributeSetter JDBC_CLIENTS =
+      StringAttributeSetter.create("db.jdbc.driver_classname");
+
+  /**
+   * Call-level attributes for specific technologies. The name of the keyspace being accessed. To be
+   * used instead of the generic db.name attribute.
+   */
+  public static final StringAttributeSetter CASSANDRA =
+      StringAttributeSetter.create("db.cassandra.keyspace");
+  /**
+   * Call-level attributes for specific technologies. The HBase namespace being accessed. To be used
+   * instead of the generic db.name attribute.
+   */
+  public static final StringAttributeSetter HBASE =
+      StringAttributeSetter.create("db.hbase.namespace");
+  /**
+   * Call-level attributes for specific technologies. The index of the database being accessed as
+   * used in the SELECT command, provided as an integer. To be used instead of the generic db.name
+   * attribute.
+   */
+  public static final StringAttributeSetter REDIS =
+      StringAttributeSetter.create("db.redis.database_index");
+  /**
+   * Call-level attributes for specific technologies. The collection being accessed within the
+   * database stated in db.name
+   */
+  public static final StringAttributeSetter MONGODB =
+      StringAttributeSetter.create("db.mongodb.collection");
 
   /** A string identifying the messaging system such as kafka, rabbitmq or activemq. */
   public static final StringAttributeSetter MESSAGING_SYSTEM =
