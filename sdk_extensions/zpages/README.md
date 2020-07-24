@@ -39,8 +39,8 @@ For Maven, add the following to your `pom.xml`:
 <!--- TODO: Verify gradle configuration -->
 For Gradle, add the following to your dependencies:
 ```groovy
-api 'io.opentelemetry:opentelemetry-api:0.7.0'
-api 'io.opentelemetry:opentelemetry-sdk:0.7.0'
+implementation 'io.opentelemetry:opentelemetry-api:0.7.0'
+implementation 'io.opentelemetry:opentelemetry-sdk:0.7.0'
 implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.7.0'
 ```
 
