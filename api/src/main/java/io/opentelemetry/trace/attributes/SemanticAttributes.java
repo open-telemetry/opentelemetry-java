@@ -182,7 +182,7 @@ public final class SemanticAttributes {
       StringAttributeSetter.create("db.jdbc.driver_classname");
 
   /**
-   * Call-level attributes for specific technologies. The name of the keyspace being accessed. To be
+   * For db.system == cassandra, the name of the keyspace being accessed. To be
    * used instead of the generic db.name attribute.
    */
   public static final StringAttributeSetter CASSANDRA =
