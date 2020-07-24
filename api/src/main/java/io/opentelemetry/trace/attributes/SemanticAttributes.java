@@ -153,7 +153,7 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter DB_NAME = StringAttributeSetter.create("db.name");
   /**
    * The connection string used to connect to the database. It's recommended to remove embedded
-   * credentials.
+   * credentials. This will replace db.url.
    */
   public static final StringAttributeSetter DB_CONNECTION_STRING =
       StringAttributeSetter.create("db.connection_string");
@@ -165,8 +165,6 @@ public final class SemanticAttributes {
       StringAttributeSetter.create("db.operation");
   /** Username for accessing database. */
   public static final StringAttributeSetter DB_USER = StringAttributeSetter.create("db.user");
-  /** JDBC substring like "mysql://db.example.com:3306" */
-  public static final StringAttributeSetter DB_URL = StringAttributeSetter.create("db.url");
 
   /**
    * For db.system == mssql, the instance name connecting to. This name is used to determine the
