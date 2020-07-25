@@ -184,8 +184,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the managed chanel to use when communicating with the backend. Required if {@link
-     * Builder#endpoint} is not set. If {@link Builder#endpoint} is set then build the channel.
+     * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+     * {@link #setEndpoint(String)} if both are called.
      *
      * @param channel the channel to use.
      * @return this.
@@ -246,10 +246,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
      * @return a new exporter's instance.
      */
     public JaegerGrpcSpanExporter build() {
-      if (endpoint != null) {
+      if (channel == null) {
         channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
-      } else if (channel == null) {
-        throw new IllegalStateException("Must set either endpoint or channel");
       }
       return new JaegerGrpcSpanExporter(serviceName, channel, deadlineMs);
     }
