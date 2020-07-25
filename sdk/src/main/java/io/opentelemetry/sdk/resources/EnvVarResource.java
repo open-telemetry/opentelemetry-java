@@ -34,8 +34,10 @@ public final class EnvVarResource {
   private static final String ATTRIBUTE_LIST_SPLITTER = ",";
   private static final String ATTRIBUTE_KEY_VALUE_SPLITTER = "=";
 
-  private static final Resource ENV_VAR_RESOURCE = Resource.create(parseResourceAttributes(
-      new Builder().readEnvironmentVariables().readSystemProperties().getEnvAttributes()));
+  private static final Resource ENV_VAR_RESOURCE =
+      Resource.create(
+          parseResourceAttributes(
+              new Builder().readEnvironmentVariables().readSystemProperties().getEnvAttributes()));
 
   private EnvVarResource() {}
 
@@ -84,8 +86,8 @@ public final class EnvVarResource {
     private String envAttributes;
 
     @Override
-    protected Builder fromConfigMap(Map<String, String> configMap,
-        NamingConvention namingConvention) {
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
       String envAttributesValue = getStringProperty(OTEL_RESOURCE_ATTRIBUTES_ENV, configMap);
       if (envAttributesValue != null) {
         this.setEnvAttributes(envAttributesValue);
