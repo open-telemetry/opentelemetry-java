@@ -6,18 +6,44 @@ This is the OpenTelemetry exporter, sending span data to Jaeger via gRPC.
 
 ## Configuration
 
-Jaeger exporter can be configured by system properties and environmental variables.
-These configuration properties work only for `Jaeger.GrpcSpanExporter.installDefault()`.
+The Jaeger gRPC span exporter can be configured programmatically.
 
-* `JAEGER_ENDPOINT` - agents's gRPC endpoint e.g. `localhost:14250`
-* `JAEGER_SERVICE_NAME` - service name e.g. `my-deployment`
+An example of simple Jaeger gRPC exporter initialization. In this case
+spans will be sent to a Jaeger gRPC endpoint running on `localhost`:
 
-An example of simples Jaeger gRPC exporter initialization. In this case
-spans will be sent to Jaeger agent running on `localhost`:
 ```java
-Builder builder = JaegerGrpcSpanExporter.Builder.fromEnv();
-builder.install(OpenTelemetrySdk.getTracerProvider());
+JaegerGrpcSpanExporter exporter =
+        JaegerGrpcSpanExporter.newBuilder()
+            .setEndpoint("localhost:14250")
+            .setServiceName("my-service")
+            .build();
 ```
+
+Service name and Endpoint can be also configured via environment variables or system properties.
+
+```java
+// Using environment variables
+JaegerGrpcSpanExporter exporter = 
+        JaegerGrpcSpanExporter.newBuilder()
+            .readEnvironmentVariables()
+            .build()
+```
+
+```java
+// Using system properties
+JaegerGrpcSpanExporter exporter = 
+        JaegerGrpcSpanExporter.newBuilder()
+            .readSystemProperties()
+            .build()
+```
+
+The Jaeger gRPC span exporter will look for the following environment variables / system properties:
+* `OTEL_JAEGER_SERVICE_NAME` / `otel.jaeger.service.name`
+* `OTEL_JAEGER_ENDPOINT` / `otel.jaeger.endpoint`
+
+## Compatibility
+
+As with the OpenTelemetry SDK itself, this exporter is compatible with Java 7+ and Android API level 24+.
 
 ## Proto files
 
