@@ -167,13 +167,13 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     private static final String KEY_METADATA = "otel.otlp.metadata";
     private ManagedChannel channel;
     private long deadlineMs = 1_000; // 1 second
-    @Nullable private String endpoint;
+    private String endpoint = "localhost:55680";
     private boolean useTls;
     @Nullable private Metadata metadata;
 
     /**
-     * Sets the managed chanel to use when communicating with the backend. Required if {@link
-     * Builder#endpoint} is not set. If {@link Builder#endpoint} is set then build the channel.
+     * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+     * {@link #setEndpoint(String)} if both are called.
      *
      * @param channel the channel to use
      * @return this builder's instance
@@ -195,7 +195,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the OTLP endpoint to connect to. Optional.
+     * Sets the OTLP endpoint to connect to. Optional, defaults to "localhost:55680".
      *
      * @param endpoint endpoint to connect to
      * @return this builder's instance
@@ -239,7 +239,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
      * @return a new exporter's instance
      */
     public OtlpGrpcSpanExporter build() {
-      if (endpoint != null) {
+      if (channel == null) {
         final ManagedChannelBuilder<?> managedChannelBuilder =
             ManagedChannelBuilder.forTarget(endpoint);
 
