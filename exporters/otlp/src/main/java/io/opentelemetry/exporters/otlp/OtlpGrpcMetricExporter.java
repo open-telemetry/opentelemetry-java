@@ -164,8 +164,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     @Nullable private Metadata metadata;
 
     /**
-     * Sets the managed chanel to use when communicating with the backend. Required if {@link
-     * Builder#endpoint} is not set. If {@link Builder#endpoint} is set then build the channel.
+     * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+     * {@link #setEndpoint(String)} if both are called.
      *
      * @param channel the channel to use
      * @return this builder's instance
@@ -188,6 +188,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
     /**
      * Sets the OTLP endpoint to connect to. Optional.
+     *
+     * <p>Defaults to "localhost:55680".
      *
      * @param endpoint endpoint to connect to
      * @return this builder's instance
@@ -231,7 +233,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
      * @return a new exporter's instance
      */
     public OtlpGrpcMetricExporter build() {
-      if (endpoint != null) {
+      if (channel == null) {
         final ManagedChannelBuilder<?> managedChannelBuilder =
             ManagedChannelBuilder.forTarget(endpoint);
 
