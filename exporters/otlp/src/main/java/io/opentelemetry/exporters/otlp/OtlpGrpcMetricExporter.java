@@ -187,9 +187,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     }
 
     /**
-     * Sets the OTLP endpoint to connect to. Optional.
-     *
-     * <p>Defaults to "localhost:55680".
+     * Sets the OTLP endpoint to connect to. Optional, defaults to "localhost:55680".
      *
      * @param endpoint endpoint to connect to
      * @return this builder's instance
