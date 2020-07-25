@@ -67,4 +67,16 @@ public class EnvVarResourceTest {
     Attributes result = EnvVarResource.parseResourceAttributes("value=\"foo\"");
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
+
+  @Test
+  public void getResourceAttributes_properties() {
+    System.setProperty("otel.resource.attributes", "value = foo");
+    Attributes result = (Attributes) EnvVarResource.getResource().getAttributes();
+    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    System.clearProperty("otel.resource.attributes");
+
+    System.setProperty("OTEL_RESOURCE_ATTRIBUTES", "value = foo");
+    result = (Attributes) EnvVarResource.getResource().getAttributes();
+    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+  }
 }
