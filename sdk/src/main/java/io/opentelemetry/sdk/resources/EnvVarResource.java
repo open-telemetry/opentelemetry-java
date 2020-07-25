@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.resources;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -29,12 +31,11 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class EnvVarResource {
-  private static final String OTEL_RESOURCE_ATTRIBUTES_ENV = "OTEL_RESOURCE_ATTRIBUTES";
   private static final String ATTRIBUTE_LIST_SPLITTER = ",";
   private static final String ATTRIBUTE_KEY_VALUE_SPLITTER = "=";
 
-  private static final Resource ENV_VAR_RESOURCE =
-      Resource.create(parseResourceAttributes(System.getenv(OTEL_RESOURCE_ATTRIBUTES_ENV)));
+  private static final Resource ENV_VAR_RESOURCE = Resource.create(parseResourceAttributes(
+      new Builder().readEnvironmentVariables().readSystemProperties().getEnvAttributes()));
 
   private EnvVarResource() {}
 
@@ -73,6 +74,37 @@ public final class EnvVarResource {
             keyValuePair[0].trim(), keyValuePair[1].trim().replaceAll("^\"|\"$", ""));
       }
       return attrBuilders.build();
+    }
+  }
+
+  /** Builder utility for this EnvVarResource. */
+  public static class Builder extends ConfigBuilder<Builder> {
+    private static final String OTEL_RESOURCE_ATTRIBUTES_ENV = "OTEL_RESOURCE_ATTRIBUTES";
+    private static final String OTEL_RESOURCE_ATTRIBUTES_KEY = "otel.resource.attributes";
+    private String envAttributes;
+
+    @Override
+    protected Builder fromConfigMap(Map<String, String> configMap,
+        NamingConvention namingConvention) {
+      String envAttributesValue = getStringProperty(OTEL_RESOURCE_ATTRIBUTES_ENV, configMap);
+      if (envAttributesValue != null) {
+        this.setEnvAttributes(envAttributesValue);
+      }
+
+      envAttributesValue = getStringProperty(OTEL_RESOURCE_ATTRIBUTES_KEY, configMap);
+      if (envAttributesValue != null) {
+        this.setEnvAttributes(envAttributesValue);
+      }
+      return this;
+    }
+
+    public String getEnvAttributes() {
+      return envAttributes;
+    }
+
+    public Builder setEnvAttributes(String envAttributes) {
+      this.envAttributes = envAttributes;
+      return this;
     }
   }
 }
