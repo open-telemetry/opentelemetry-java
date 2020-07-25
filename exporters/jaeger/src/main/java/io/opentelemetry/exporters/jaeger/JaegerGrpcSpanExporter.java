@@ -196,9 +196,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the Jaeger endpoint to connect to. Optional.
-     *
-     * <p>Defaults to "localhost:14250".
+     * Sets the Jaeger endpoint to connect to. Optional, defaults to "localhost:14250".
      *
      * @param endpoint The Jaeger endpoint URL, ex. "jaegerhost:14250".
      * @return this.
