@@ -18,7 +18,7 @@ spans. The data is aggregated into a summary-level table:
 
 ![tracez-table](img/tracez-table.png)
 
-In addition, you can click on each of the counts in the table cells to access the corresponding span
+You can click on each of the counts in the table cells to access the corresponding span
 details. For example, here are the details of the `ChildSpan` latency sample (row 1, col 4):
 
 ![tracez-details](img/tracez-details.png)
