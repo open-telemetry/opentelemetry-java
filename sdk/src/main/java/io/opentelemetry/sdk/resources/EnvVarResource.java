@@ -78,7 +78,7 @@ public final class EnvVarResource {
   }
 
   /** Builder utility for this EnvVarResource. */
-  private static class Builder extends ConfigBuilder<Builder> {
+  protected static class Builder extends ConfigBuilder<Builder> {
     private static final String OTEL_RESOURCE_ATTRIBUTES_KEY = "otel.resource.attributes";
     private String envAttributes;
 

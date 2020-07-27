@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import io.opentelemetry.common.Attributes;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /** Tests for the {@link EnvVarResource}. */
@@ -69,14 +68,14 @@ public class EnvVarResourceTest {
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 
-  @BeforeClass
-  public static void init() {
-    System.setProperty("otel.resource.attributes", "value = foo");
-  }
-
   @Test
   public void getResourceAttributes_properties() {
-    Attributes result = (Attributes) EnvVarResource.getResource().getAttributes();
+    String key = "otel.resource.attributes";
+    System.setProperty(key, "value = foo");
+    Resource resource =
+        new EnvVarResource.Builder().readEnvironmentVariables().readSystemProperties().build();
+    Attributes result = (Attributes) resource.getAttributes();
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    System.clearProperty(key);
   }
 }
