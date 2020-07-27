@@ -51,7 +51,8 @@ public final class EnvAutodetectResource {
   }
 
   /*
-   * Creates an attribute map from the OTEL_RESOURCE_ATTRIBUTES environment variable or otel.resource.attributes system properties.
+   * Creates an attribute map from the OTEL_RESOURCE_ATTRIBUTES environment variable or
+   * otel.resource.attributes system properties.
    *
    * <p>OTEL_RESOURCE_ATTRIBUTES: A comma-separated list of attributes describing the source in more
    * detail, e.g. “key1=val1,key2=val2”. Domain names and paths are accepted as attribute keys.
