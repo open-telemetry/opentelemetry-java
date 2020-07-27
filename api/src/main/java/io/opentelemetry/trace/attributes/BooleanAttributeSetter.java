@@ -81,4 +81,9 @@ public final class BooleanAttributeSetter {
   public void set(Attributes.Builder attributesBuilder, boolean value) {
     attributesBuilder.setAttribute(key(), value);
   }
+
+  @Override
+  public String toString() {
+    return key();
+  }
 }
