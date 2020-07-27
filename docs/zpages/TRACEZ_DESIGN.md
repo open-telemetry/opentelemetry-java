@@ -6,10 +6,10 @@ This file contains information about the design choices for the OpenTelemetry /t
 ## Introduction
 
 The OpenTelemetry zPages are a set of dynamically generated HTML pages that display trace and
-metrics data for a running process. Within this set, the /tracez zPage is a web page that displays
-trace information about running spans, sample span latencies, and sample error spans. On the other
-hand, the /traceconfigz zPage is a web page that allows the users to change tracing parameters, such
-as sampling probability and max number of attributes.
+metrics data for a running process: the /tracez zPage displays trace information about running
+spans, sample span latencies, and sample error spans, while the /traceconfigz zPage is a web page
+that allows the users to change tracing parameters, such as sampling probability and max number of
+attributes.
 
 ### /tracez zPage
 
@@ -32,17 +32,10 @@ provides an interface for users to modify relevant parameters:
 
 ## Motivation
 
-At the moment, there are no zPages for the Java implementation of OpenTelemetry. The goal of this
-project, as suggested by the title, is to create the TraceZ zPage for the Java SDK. The motivation
-for this stems from the usefulness of zPages. Because of how they aggregate and display data, zPages
-are great development tools for OpenTelemetry instrumentation and lightweight monitoring. In
-addition, the implementation of the Java zPages can pave the way for future implementations in other
-languages, such as Python, which have yet to be built.
+We are building the Java zPages in order to create a lightweight application performance monitoring
+tool that allows users to troubleshoot OpenTelemetry instrumentation.
 
-## Proposed Design
-
-We have divided the implementation of the /tracez and /traceconfigz zPages into two frontend-centric
-and backend-centric components.
+## Design
 
 ### Frontend
 
