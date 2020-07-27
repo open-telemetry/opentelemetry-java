@@ -81,4 +81,9 @@ public final class LongAttributeSetter {
   public void set(Attributes.Builder attributesBuilder, long value) {
     attributesBuilder.setAttribute(key(), value);
   }
+
+  @Override
+  public String toString() {
+    return key();
+  }
 }

@@ -27,6 +27,8 @@ public class LongAttributeSetterTest {
   @Test
   public void attributesBuilder() {
     LongAttributeSetter setter = LongAttributeSetter.create("how much?");
+    assertThat(setter.key()).isEqualTo("how much?");
+    assertThat(setter.toString()).isEqualTo("how much?");
     Attributes.Builder attributes = Attributes.newBuilder();
     setter.set(attributes, 10);
     assertThat(attributes.build().get("how much?")).isEqualTo(longAttributeValue(10));

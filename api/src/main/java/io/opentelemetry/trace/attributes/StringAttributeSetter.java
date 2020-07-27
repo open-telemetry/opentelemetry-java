@@ -82,4 +82,9 @@ public final class StringAttributeSetter {
   public void set(Attributes.Builder attributesBuilder, @Nullable String value) {
     attributesBuilder.setAttribute(key(), value);
   }
+
+  @Override
+  public String toString() {
+    return key();
+  }
 }
