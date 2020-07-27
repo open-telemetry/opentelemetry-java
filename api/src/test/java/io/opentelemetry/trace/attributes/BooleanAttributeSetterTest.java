@@ -27,6 +27,8 @@ public class BooleanAttributeSetterTest {
   @Test
   public void attributesBuilder() {
     BooleanAttributeSetter setter = BooleanAttributeSetter.create("there?");
+    assertThat(setter.key()).isEqualTo("there?");
+    assertThat(setter.toString()).isEqualTo("there?");
     Attributes.Builder attributes = Attributes.newBuilder();
     setter.set(attributes, true);
     assertThat(attributes.build().get("there?")).isEqualTo(booleanAttributeValue(true));
