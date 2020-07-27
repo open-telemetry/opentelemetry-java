@@ -25,23 +25,23 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Provides a framework for detection of resource information from the environment variable
- * "OTEL_RESOURCE_ATTRIBUTES".
+ * "OTEL_RESOURCE_ATTRIBUTES" and system properties "otel.resource.attributes".
  *
  * @since 0.1.0
  */
 @ThreadSafe
-public final class EnvVarResource {
+public final class EnvAutodetectResource {
   private static final String ATTRIBUTE_LIST_SPLITTER = ",";
   private static final String ATTRIBUTE_KEY_VALUE_SPLITTER = "=";
 
   private static final Resource ENV_VAR_RESOURCE =
       new Builder().readEnvironmentVariables().readSystemProperties().build();
 
-  private EnvVarResource() {}
+  private EnvAutodetectResource() {}
 
   /**
    * Returns a {@link Resource}. This resource information is loaded from the
-   * OTEL_RESOURCE_ATTRIBUTES environment variable.
+   * OTEL_RESOURCE_ATTRIBUTES environment variable or otel.resource.attributes system properties.
    *
    * @return a {@code Resource}.
    * @since 0.1.0
@@ -51,7 +51,7 @@ public final class EnvVarResource {
   }
 
   /*
-   * Creates an attribute map from the OTEL_RESOURCE_ATTRIBUTES environment variable.
+   * Creates an attribute map from the OTEL_RESOURCE_ATTRIBUTES environment variable or otel.resource.attributes system properties.
    *
    * <p>OTEL_RESOURCE_ATTRIBUTES: A comma-separated list of attributes describing the source in more
    * detail, e.g. “key1=val1,key2=val2”. Domain names and paths are accepted as attribute keys.
@@ -77,7 +77,7 @@ public final class EnvVarResource {
     }
   }
 
-  /** Builder utility for this EnvVarResource. */
+  /** Builder utility for this EnvAutodetectResource. */
   protected static class Builder extends ConfigBuilder<Builder> {
     private static final String OTEL_RESOURCE_ATTRIBUTES_KEY = "otel.resource.attributes";
     private String envAttributes;

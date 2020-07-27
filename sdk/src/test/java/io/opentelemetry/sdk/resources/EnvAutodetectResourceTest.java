@@ -26,33 +26,33 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for the {@link EnvVarResource}. */
-public class EnvVarResourceTest {
+/** Tests for the {@link EnvAutodetectResource}. */
+public class EnvAutodetectResourceTest {
 
   @Test
   public void parseResourceAttributes_null() {
-    assertThat(EnvVarResource.parseResourceAttributes(null).isEmpty()).isTrue();
+    assertThat(EnvAutodetectResource.parseResourceAttributes(null).isEmpty()).isTrue();
   }
 
   @Test
   public void parseResourceAttributes_empty() {
-    assertThat(EnvVarResource.parseResourceAttributes("").isEmpty()).isTrue();
+    assertThat(EnvAutodetectResource.parseResourceAttributes("").isEmpty()).isTrue();
   }
 
   @Test
   public void parseResourceAttributes_malformed() {
-    assertThat(EnvVarResource.parseResourceAttributes("value/foo").isEmpty()).isTrue();
+    assertThat(EnvAutodetectResource.parseResourceAttributes("value/foo").isEmpty()).isTrue();
   }
 
   @Test
   public void parseResourceAttributes_single() {
-    Attributes result = EnvVarResource.parseResourceAttributes("value=foo");
+    Attributes result = EnvAutodetectResource.parseResourceAttributes("value=foo");
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 
   @Test
   public void parseResourceAttributes_multi() {
-    Attributes result = EnvVarResource.parseResourceAttributes("value=foo, other=bar");
+    Attributes result = EnvAutodetectResource.parseResourceAttributes("value=foo, other=bar");
     assertThat(result)
         .isEqualTo(
             Attributes.of(
@@ -62,13 +62,13 @@ public class EnvVarResourceTest {
 
   @Test
   public void parseResourceAttributes_whitespace() {
-    Attributes result = EnvVarResource.parseResourceAttributes(" value = foo ");
+    Attributes result = EnvAutodetectResource.parseResourceAttributes(" value = foo ");
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 
   @Test
   public void parseResourceAttributes_quotes() {
-    Attributes result = EnvVarResource.parseResourceAttributes("value=\"foo\"");
+    Attributes result = EnvAutodetectResource.parseResourceAttributes("value=\"foo\"");
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 
@@ -77,7 +77,10 @@ public class EnvVarResourceTest {
     String key = "otel.resource.attributes";
     System.setProperty(key, "value = foo");
     Resource resource =
-        new EnvVarResource.Builder().readEnvironmentVariables().readSystemProperties().build();
+        new EnvAutodetectResource.Builder()
+            .readEnvironmentVariables()
+            .readSystemProperties()
+            .build();
     Attributes result = (Attributes) resource.getAttributes();
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
     System.clearProperty(key);
@@ -92,7 +95,10 @@ public class EnvVarResourceTest {
     @Test
     public void getResourceAttributes_envvars() {
       Resource resource =
-          new EnvVarResource.Builder().readEnvironmentVariables().readSystemProperties().build();
+          new EnvAutodetectResource.Builder()
+              .readEnvironmentVariables()
+              .readSystemProperties()
+              .build();
       Attributes result = (Attributes) resource.getAttributes();
       assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
     }
