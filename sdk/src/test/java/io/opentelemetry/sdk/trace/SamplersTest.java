@@ -282,7 +282,7 @@ public class SamplersTest {
   @Test
   public void parentOrElseSampler_GetDescription() {
     assertThat(Samplers.parentOrElse(Samplers.alwaysOn()).getDescription())
-        .isEqualTo("ParentOrElseSampler-AlwaysOnSampler");
+        .isEqualTo("ParentOrElse{AlwaysOnSampler}");
   }
 
   @Test
