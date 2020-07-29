@@ -30,25 +30,11 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public final class EnvAutodetectResource {
+final class EnvAutodetectResource {
   private static final String ATTRIBUTE_LIST_SPLITTER = ",";
   private static final String ATTRIBUTE_KEY_VALUE_SPLITTER = "=";
 
-  private static final Resource ENV_VAR_RESOURCE =
-      new Builder().readEnvironmentVariables().readSystemProperties().build();
-
   private EnvAutodetectResource() {}
-
-  /**
-   * Returns a {@link Resource}. This resource information is loaded from the
-   * OTEL_RESOURCE_ATTRIBUTES environment variable or otel.resource.attributes system properties.
-   *
-   * @return a {@code Resource}.
-   * @since 0.1.0
-   */
-  public static Resource getResource() {
-    return ENV_VAR_RESOURCE;
-  }
 
   /*
    * Creates an attribute map from the OTEL_RESOURCE_ATTRIBUTES environment variable or

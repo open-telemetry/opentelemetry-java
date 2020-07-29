@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.MillisClock;
-import io.opentelemetry.sdk.resources.EnvAutodetectResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
@@ -138,8 +137,7 @@ public class TracerSdkProvider implements TracerProvider {
 
     private Clock clock = MillisClock.getInstance();
     private IdsGenerator idsGenerator = new RandomIdsGenerator();
-    private Resource resource =
-        Resource.getTelemetrySdk().merge(EnvAutodetectResource.getResource());
+    private Resource resource = Resource.getTelemetrySdk().merge(Resource.createDefault());
 
     /**
      * Assign a {@link Clock}.

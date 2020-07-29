@@ -118,6 +118,19 @@ public abstract class Resource {
   }
 
   /**
+   * Returns a {@link Resource}. This resource information is loaded from the
+   * OTEL_RESOURCE_ATTRIBUTES environment variable or otel.resource.attributes system properties.
+   *
+   * @return a {@code Resource}.
+   */
+  public static Resource createDefault() {
+    return new EnvAutodetectResource.Builder()
+        .readEnvironmentVariables()
+        .readSystemProperties()
+        .build();
+  }
+
+  /**
    * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code
    * other} {@code Resource}. In case of a collision, current {@code Resource} takes precedence.
    *
