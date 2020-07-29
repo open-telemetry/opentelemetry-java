@@ -99,3 +99,50 @@ The /traceconfigz zPage displays information about the currently active tracing 
 provides an interface for users to modify relevant parameters. Here is what the web page looks like:
 
 ![traceconfigz](img/traceconfigz.png)
+
+## Benchmark Testing
+
+This module contains a set of benchmark tests for adding spans to an instance of TracezSpanBuckets.
+You can run the tests yourself with the following command:
+
+```
+./gradlew -PjmhIncludeSingleClass=TracezSpanBucketsBenchmark clean :opentelemetry-sdk-extension-zpages:jmh
+```
+
+Below is a summary of the expected results:
+
+```
+Benchmark                                                                       Mode  Cnt      Score     Error   Units
+
+TracezSpanBucketsBenchmark.addToBucket_01Thread                                thrpt   10  17133.815 ± 179.117  ops/ms
+TracezSpanBucketsBenchmark.addToBucket_01Thread:·gc.alloc.rate                 thrpt   10    609.617 ±   6.356  MB/sec
+TracezSpanBucketsBenchmark.addToBucket_01Thread:·gc.alloc.rate.norm            thrpt   10     56.000 ±   0.001    B/op
+TracezSpanBucketsBenchmark.addToBucket_01Thread:·gc.churn.G1_Eden_Space        thrpt   10    630.842 ± 502.667  MB/sec
+TracezSpanBucketsBenchmark.addToBucket_01Thread:·gc.churn.G1_Eden_Space.norm   thrpt   10     57.967 ±  46.195    B/op
+TracezSpanBucketsBenchmark.addToBucket_01Thread:·gc.count                      thrpt   10      8.000            counts
+TracezSpanBucketsBenchmark.addToBucket_01Thread:·gc.time                       thrpt   10     37.000                ms
+
+TracezSpanBucketsBenchmark.addToBucket_05Threads                               thrpt   10   1448.734 ±  59.915  ops/ms
+TracezSpanBucketsBenchmark.addToBucket_05Threads:·gc.alloc.rate                thrpt   10     88.369 ±   3.629  MB/sec
+TracezSpanBucketsBenchmark.addToBucket_05Threads:·gc.alloc.rate.norm           thrpt   10     96.002 ±   0.001    B/op
+TracezSpanBucketsBenchmark.addToBucket_05Threads:·gc.churn.G1_Eden_Space       thrpt   10     78.812 ± 376.794  MB/sec
+TracezSpanBucketsBenchmark.addToBucket_05Threads:·gc.churn.G1_Eden_Space.norm  thrpt   10     85.257 ± 407.608    B/op
+TracezSpanBucketsBenchmark.addToBucket_05Threads:·gc.count                     thrpt   10      1.000            counts
+TracezSpanBucketsBenchmark.addToBucket_05Threads:·gc.time                      thrpt   10      6.000                ms
+
+TracezSpanBucketsBenchmark.addToBucket_10Threads                               thrpt   10   2435.441 ±  49.773  ops/ms
+TracezSpanBucketsBenchmark.addToBucket_10Threads:·gc.alloc.rate                thrpt   10    148.482 ±   3.023  MB/sec
+TracezSpanBucketsBenchmark.addToBucket_10Threads:·gc.alloc.rate.norm           thrpt   10     96.002 ±   0.001    B/op
+TracezSpanBucketsBenchmark.addToBucket_10Threads:·gc.churn.G1_Eden_Space       thrpt   10    157.433 ± 501.783  MB/sec
+TracezSpanBucketsBenchmark.addToBucket_10Threads:·gc.churn.G1_Eden_Space.norm  thrpt   10    102.915 ± 328.063    B/op
+TracezSpanBucketsBenchmark.addToBucket_10Threads:·gc.count                     thrpt   10      2.000            counts
+TracezSpanBucketsBenchmark.addToBucket_10Threads:·gc.time                      thrpt   10     12.000                ms
+
+TracezSpanBucketsBenchmark.addToBucket_20Threads                               thrpt   10   2355.800 ± 140.500  ops/ms
+TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.alloc.rate                thrpt   10    143.503 ±   8.528  MB/sec
+TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.alloc.rate.norm           thrpt   10     96.004 ±   0.001    B/op
+TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.churn.G1_Eden_Space       thrpt   10    157.130 ± 500.816  MB/sec
+TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.churn.G1_Eden_Space.norm  thrpt   10    106.904 ± 340.741    B/op
+TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.count                     thrpt   10      2.000            counts
+TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.time                      thrpt   10     10.000                ms
+```
