@@ -27,6 +27,8 @@ public class DoubleAttributeSetterTest {
   @Test
   public void attributesBuilder() {
     DoubleAttributeSetter setter = DoubleAttributeSetter.create("how much?");
+    assertThat(setter.key()).isEqualTo("how much?");
+    assertThat(setter.toString()).isEqualTo("how much?");
     Attributes.Builder attributes = Attributes.newBuilder();
     setter.set(attributes, 10.0);
     assertThat(attributes.build().get("how much?")).isEqualTo(doubleAttributeValue(10.0));

@@ -47,7 +47,7 @@ class PerOperationSampler implements Sampler {
   }
 
   @Override
-  public Decision shouldSample(
+  public SamplingResult shouldSample(
       @Nullable SpanContext parentContext,
       TraceId traceId,
       String name,

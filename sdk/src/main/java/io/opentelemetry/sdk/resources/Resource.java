@@ -53,6 +53,8 @@ public abstract class Resource {
               .setAttribute("telemetry.sdk.language", "java")
               .setAttribute("telemetry.sdk.version", readVersion())
               .build());
+  private static final Resource DEFAULT =
+      new EnvAutodetectResource.Builder().readEnvironmentVariables().readSystemProperties().build();
 
   @Nullable
   private static String readVersion() {
@@ -115,6 +117,16 @@ public abstract class Resource {
   public static Resource create(Attributes attributes) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
     return new AutoValue_Resource(attributes);
+  }
+
+  /**
+   * Returns a {@link Resource}. This resource information is loaded from the
+   * OTEL_RESOURCE_ATTRIBUTES environment variable or otel.resource.attributes system properties.
+   *
+   * @return a {@code Resource}.
+   */
+  public static Resource getDefault() {
+    return DEFAULT;
   }
 
   /**

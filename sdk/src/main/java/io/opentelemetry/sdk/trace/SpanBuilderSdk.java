@@ -26,7 +26,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.Sampler.Decision;
+import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.DefaultSpan;
@@ -225,23 +225,26 @@ final class SpanBuilderSdk implements Span.Builder {
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
     ReadableAttributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
-    Decision samplingDecision =
+    SamplingResult samplingResult =
         traceConfig
             .getSampler()
             .shouldSample(
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
+    Sampler.Decision samplingDecision = samplingResult.getDecision();
 
     SpanContext spanContext =
         SpanContext.create(
             traceId,
             spanId,
-            samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
+            Samplers.isSampled(samplingDecision)
+                ? TRACE_OPTIONS_SAMPLED
+                : TRACE_OPTIONS_NOT_SAMPLED,
             traceState);
 
-    if (!samplingDecision.isSampled()) {
+    if (!Samplers.isRecording(samplingDecision)) {
       return DefaultSpan.create(spanContext);
     }
-    ReadableAttributes samplingAttributes = samplingDecision.getAttributes();
+    ReadableAttributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
