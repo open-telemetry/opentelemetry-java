@@ -147,7 +147,7 @@ configure(opentelemetryProjects) {
                 protobuf                : "com.google.protobuf:protobuf-java",
                 protobuf_util           : "com.google.protobuf:protobuf-java-util",
                 zipkin_reporter         : "io.zipkin.reporter2:zipkin-reporter",
-                zipkin_urlconnection    : "io.zipkin.reporter2:zipkin-sender-urlconnection",
+                zipkin_okhttp           : "io.zipkin.reporter2:zipkin-sender-okhttp3",
 
                 // Compatibility layer
                 opentracing             : "io.opentracing:opentracing-api:${opentracingVersion}",
