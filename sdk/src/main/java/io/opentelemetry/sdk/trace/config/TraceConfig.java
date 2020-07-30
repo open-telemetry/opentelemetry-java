@@ -150,7 +150,8 @@ public abstract class TraceConfig {
   public abstract int getMaxNumberOfAttributesPerLink();
 
   /**
-   * Returns the global default max length of string attribute value in characters.
+   * Returns the global default max length of string attribute value in characters. Zero means
+   * unlimited.
    *
    * @return the global default max length of string attribute value in characters.
    */

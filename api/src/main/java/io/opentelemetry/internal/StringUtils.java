@@ -18,6 +18,7 @@ package io.opentelemetry.internal;
 
 import io.opentelemetry.common.AttributeValue;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Internal utility methods for working with attribute keys, attribute values, and metric names. */
@@ -88,19 +89,21 @@ public final class StringUtils {
       String[] newStrings = new String[strings.size()];
       for (int i = 0; i < strings.size(); i++) {
         String string = strings.get(i);
-        newStrings[i] = string == null ? null : cutIfNeeded(string, limit);
+        newStrings[i] = cutIfNeeded(string, limit);
       }
 
       return AttributeValue.arrayAttributeValue(newStrings);
     }
 
     String string = value.getStringValue();
-    return string.length() <= limit
+    // Don't allocate new AttributeValue if not needed
+    return (string == null || string.length() <= limit)
         ? value
         : AttributeValue.stringAttributeValue(string.substring(0, limit));
   }
 
-  private static String cutIfNeeded(String s, int limit) {
+  @Nullable
+  private static String cutIfNeeded(@Nullable String s, int limit) {
     if (s == null || s.length() <= limit) {
       return s;
     }
