@@ -254,14 +254,21 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void toSpanData_snapshot() {
+  public void toSpanData_SpanDataDoesNotChangeWhenModifyingSpan() {
+    // Create a span
     RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
+
+    // Convert it to a SpanData object -- this should be an immutable snapshot.
     SpanData spanData = span.toSpanData();
+
+    // Now modify the span after creating the snapshot.
     span.setAttribute("anotherKey", "anotherValue");
     span.updateName("changedName");
     span.addEvent("newEvent");
     span.end();
 
+    // Assert that the snapshot does not reflect the modified state, but the state of the time when
+    // toSpanData was called.
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size());
     assertThat(spanData.getAttributes().get("anotherKey")).isNull();
     assertThat(spanData.getHasEnded()).isFalse();
@@ -269,6 +276,8 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
     assertThat(spanData.getEvents()).isEmpty();
 
+    // Sanity check: Calling toSpanData again after modifying the span should get us the modified
+    // state.
     spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size() + 1);
     assertThat(spanData.getAttributes().get("anotherKey"))
