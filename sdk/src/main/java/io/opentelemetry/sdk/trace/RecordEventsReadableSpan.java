@@ -206,7 +206,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
           getImmutableAttributes(),
           (attributes == null) ? 0 : attributes.getTotalAddedValues(),
           totalRecordedEvents,
-          getStatusWithDefault());
+          getStatusWithDefault(),
+          name,
+          endEpochNanos,
+          hasEnded);
     }
   }
 
