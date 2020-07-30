@@ -246,7 +246,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     try {
       sender.sendSpans(encodedSpans).execute();
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "Failed to export spans", e);
+      logger.log(Level.WARNING, "Failed to export spans", e);
       return ResultCode.FAILURE;
     }
     return ResultCode.SUCCESS;

@@ -103,7 +103,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
       stub.export(exportMetricsServiceRequest);
       return ResultCode.SUCCESS;
     } catch (Throwable e) {
-      logger.log(Level.SEVERE, "Failed to export metrics", e);
+      logger.log(Level.WARNING, "Failed to export metrics", e);
       return ResultCode.FAILURE;
     }
   }
