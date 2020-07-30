@@ -49,8 +49,11 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
   private static <C> SpanContext getSpanContextFromMultipleHeaders(
       C carrier, HttpTextFormat.Getter<C> getter) {
     String traceId = getter.get(carrier, TRACE_ID_HEADER);
+    if (StringUtils.isNullOrEmpty(traceId)) {
+      return SpanContext.getInvalid();
+    }
     if (!Common.isTraceIdValid(traceId)) {
-      logger.info(
+      logger.warning(
           "Invalid TraceId in B3 header: " + traceId + "'. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
