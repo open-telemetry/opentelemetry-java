@@ -17,9 +17,10 @@
 package io.opentelemetry.exporters.jaeger;
 
 import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_DEADLINE_MS;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_HOST_NAME;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_SERVICE_NAME;
 import static io.opentelemetry.sdk.trace.export.ExporterConstants.JAEGER_DEFAULT_ENDPOINT;
 import static io.opentelemetry.sdk.trace.export.ExporterConstants.JAEGER_DEFAULT_IP;
-import static io.opentelemetry.sdk.trace.export.ExporterConstants.UNKNOWN;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -72,7 +73,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       hostname = InetAddress.getLocalHost().getHostName();
       ipv4 = InetAddress.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
-      hostname = UNKNOWN;
+      hostname = DEFAULT_HOST_NAME;
       ipv4 = JAEGER_DEFAULT_IP;
     }
 
@@ -169,7 +170,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     private static final String KEY_SERVICE_NAME = "otel.jaeger.service.name";
     private static final String KEY_ENDPOINT = "otel.jaeger.endpoint";
 
-    private String serviceName = UNKNOWN;
+    private String serviceName = DEFAULT_SERVICE_NAME;
     private String endpoint = JAEGER_DEFAULT_ENDPOINT;
     private ManagedChannel channel;
     private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second

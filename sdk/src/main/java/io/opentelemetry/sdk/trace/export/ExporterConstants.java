@@ -23,21 +23,23 @@ public class ExporterConstants {
 
   private ExporterConstants() {}
 
-  /** common unknown constant. */
-  public static final String UNKNOWN = "unknown";
+  /** Common default host name. */
+  public static final String DEFAULT_HOST_NAME = "unknown";
+  /** Common default service name. */
+  public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
 
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1); // 1 second
 
-  /** default endpoint for otlp. */
+  /** Default endpoint for otlp. */
   public static final String OTLP_DEFAULT_ENDPOINT = "localhost:55680";
-  /** default tls flag for otlp. */
+  /** Default tls flag for otlp. */
   public static final boolean OTLP_DEFAULT_USE_TLS = false;
 
-  /** default endpoint for jaeger. */
+  /** Default endpoint for jaeger. */
   public static final String JAEGER_DEFAULT_ENDPOINT = "localhost:14250";
-  /** default ip for jaeger. */
+  /** Default ip for jaeger. */
   public static final String JAEGER_DEFAULT_IP = "0.0.0.0";
 
-  /** default endpoint for zipkin. */
+  /** Default endpoint for zipkin. */
   public static final String ZIPKIN_DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
 }

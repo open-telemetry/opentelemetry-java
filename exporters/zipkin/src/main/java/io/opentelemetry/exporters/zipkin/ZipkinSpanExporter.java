@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.zipkin;
 
-import static io.opentelemetry.sdk.trace.export.ExporterConstants.UNKNOWN;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_SERVICE_NAME;
 import static io.opentelemetry.sdk.trace.export.ExporterConstants.ZIPKIN_DEFAULT_ENDPOINT;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
@@ -283,7 +283,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     private static final String KEY_ENDPOINT = "otel.zipkin.endpoint";
     private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
     private Sender sender;
-    private String serviceName = UNKNOWN;
+    private String serviceName = DEFAULT_SERVICE_NAME;
     private String endpoint = ZIPKIN_DEFAULT_ENDPOINT;
 
     /**
