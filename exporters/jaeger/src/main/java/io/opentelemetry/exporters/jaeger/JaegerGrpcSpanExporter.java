@@ -16,6 +16,11 @@
 
 package io.opentelemetry.exporters.jaeger;
 
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_DEADLINE_MS;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.JAEGER_DEFAULT_ENDPOINT;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.JAEGER_DEFAULT_IP;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.UNKNOWN;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
@@ -39,11 +44,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
-  private static final String DEFAULT_JAEGER_ENDPOINT = "localhost:14250";
   private static final String HOSTNAME_KEY = "hostname";
-  private static final String UNKNOWN = "unknown";
   private static final String IP_KEY = "ip";
-  private static final String IP_DEFAULT = "0.0.0.0";
 
   private final CollectorServiceGrpc.CollectorServiceBlockingStub blockingStub;
   private final Model.Process process;
@@ -71,7 +73,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       ipv4 = InetAddress.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
       hostname = UNKNOWN;
-      ipv4 = IP_DEFAULT;
+      ipv4 = JAEGER_DEFAULT_IP;
     }
 
     Model.KeyValue clientTag =
@@ -168,9 +170,9 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     private static final String KEY_ENDPOINT = "otel.jaeger.endpoint";
 
     private String serviceName = UNKNOWN;
-    private String endpoint = DEFAULT_JAEGER_ENDPOINT;
+    private String endpoint = JAEGER_DEFAULT_ENDPOINT;
     private ManagedChannel channel;
-    private long deadlineMs = 1_000; // 1 second
+    private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
 
     /**
      * Sets the service name to be used by this exporter. Required.

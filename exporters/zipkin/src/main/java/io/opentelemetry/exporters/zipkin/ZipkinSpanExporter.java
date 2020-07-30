@@ -16,6 +16,8 @@
 
 package io.opentelemetry.exporters.zipkin;
 
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.UNKNOWN;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.ZIPKIN_DEFAULT_ENDPOINT;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.common.AttributeValue;
@@ -279,13 +281,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
   public static final class Builder extends ConfigBuilder<Builder> {
     private static final String KEY_SERVICE_NAME = "otel.zipkin.service.name";
     private static final String KEY_ENDPOINT = "otel.zipkin.endpoint";
-    private static final String DEFAULT_SERVICE_NAME = "unknown";
-    private static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
-
     private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
     private Sender sender;
-    private String serviceName = DEFAULT_SERVICE_NAME;
-    private String endpoint = DEFAULT_ENDPOINT;
+    private String serviceName = UNKNOWN;
+    private String endpoint = ZIPKIN_DEFAULT_ENDPOINT;
 
     /**
      * Label of the remote node in the service graph, such as "favstar". Avoid names with variables

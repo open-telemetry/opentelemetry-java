@@ -17,6 +17,9 @@
 package io.opentelemetry.exporters.otlp;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_DEADLINE_MS;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.OTLP_DEFAULT_ENDPOINT;
+import static io.opentelemetry.sdk.trace.export.ExporterConstants.OTLP_DEFAULT_USE_TLS;
 
 import com.google.common.base.Splitter;
 import io.grpc.ManagedChannel;
@@ -166,9 +169,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     private static final String KEY_USE_TLS = "otel.otlp.use.tls";
     private static final String KEY_METADATA = "otel.otlp.metadata";
     private ManagedChannel channel;
-    private long deadlineMs = 1_000; // 1 second
-    private String endpoint = "localhost:55680";
-    private boolean useTls;
+    private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
+    private String endpoint = OTLP_DEFAULT_ENDPOINT;
+    private boolean useTls = OTLP_DEFAULT_USE_TLS;
     @Nullable private Metadata metadata;
 
     /**
