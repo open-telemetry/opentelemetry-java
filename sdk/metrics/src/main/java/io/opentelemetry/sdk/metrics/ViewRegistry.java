@@ -72,8 +72,8 @@ class ViewRegistry {
     for (Map.Entry<InstrumentSelector, AggregationConfiguration> entry : configuration.entrySet()) {
       InstrumentSelector registeredSelector = entry.getKey();
 
-      if (matchesOnName(descriptor, registeredSelector)
-          && matchesOnType(descriptor, registeredSelector)) {
+      if (matchesOnType(descriptor, registeredSelector)
+          && matchesOnName(descriptor, registeredSelector)) {
         return entry.getValue();
       }
     }
