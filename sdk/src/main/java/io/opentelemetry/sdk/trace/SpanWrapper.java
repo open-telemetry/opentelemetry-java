@@ -33,9 +33,8 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Immutable class that stores {@link SpanData} based on a {@link RecordEventsReadableSpan}.
  *
- * <p>This is a variant of the "flyweight" design pattern, to reduce overhead. We store a reference
- * to a mutable {@link RecordEventsReadableSpan} ({@code delegate}) where we use only the immutable
- * parts from and a copy of all the mutable parts.
+ * <p>This class stores a reference to a mutable {@link RecordEventsReadableSpan} ({@code delegate})
+ * which it uses only the immutable parts from, and a copy of all the mutable parts.
  *
  * <p>When adding a new field to {@link RecordEventsReadableSpan}, store a copy if and only if the
  * field is mutable in the {@link RecordEventsReadableSpan}. Otherwise retrieve it from the
