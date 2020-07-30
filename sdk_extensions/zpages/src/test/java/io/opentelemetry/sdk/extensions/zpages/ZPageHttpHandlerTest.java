@@ -39,6 +39,6 @@ public final class ZPageHttpHandlerTest {
     URI uri =
         new URI("http://localhost:8000/tracez/tracez?zspanname=Test&ztype=1&zsubtype=5&noval");
     assertThat(ZPageHttpHandler.parseQueryMap(uri))
-        .containsExactly("zspanname", "Test", "ztype", "1", "zsubtype", "5", "noval", "");
+        .containsExactly("zspanname", "Test", "ztype", "1", "zsubtype", "5");
   }
 }

@@ -538,7 +538,7 @@ final class TracezZPageHandler extends ZPageHandler {
               + "rel=\"stylesheet\">");
       out.print(
           "<link href=\"https://fonts.googleapis.com/css?family=Roboto\" rel=\"stylesheet\">");
-      out.print("<title>TraceZ</title>");
+      out.print("<title>" + TRACEZ_NAME + "</title>");
       emitHtmlStyle(out);
       out.print("</head>");
       out.print("<body>");
