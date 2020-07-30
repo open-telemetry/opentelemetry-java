@@ -16,6 +16,8 @@
 
 package io.opentelemetry.internal;
 
+import io.opentelemetry.common.AttributeValue;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /** Internal utility methods for working with attribute keys, attribute values, and metric names. */
@@ -55,6 +57,54 @@ public final class StringUtils {
     }
     String pattern = "[aA-zZ][aA-zZ0-9_\\-.]*";
     return metricName.matches(pattern);
+  }
+
+  /**
+   * If given attribute is of type STRING and has more characters than given {@code limit} then
+   * return new AttributeValue with string truncated to {@code limit} characters.
+   *
+   * <p>If given attribute is of type STRING_ARRAY and non-empty then return new AttributeValue with
+   * every element truncated to {@code limit} characters.
+   *
+   * <p>Otherwise return given {@code value}
+   *
+   * @throws IllegalArgumentException if limit is zero or negative
+   */
+  public static AttributeValue cutIfNeeded(AttributeValue value, int limit) {
+    Utils.checkArgument(limit > 0, "attribute value limit cannot be %d", limit);
+
+    if (value == null
+        || (value.getType() != AttributeValue.Type.STRING
+            && value.getType() != AttributeValue.Type.STRING_ARRAY)) {
+      return value;
+    }
+
+    if (value.getType() == AttributeValue.Type.STRING_ARRAY) {
+      List<String> strings = value.getStringArrayValue();
+      if (strings.isEmpty()) {
+        return value;
+      }
+
+      String[] newStrings = new String[strings.size()];
+      for (int i = 0; i < strings.size(); i++) {
+        String string = strings.get(i);
+        newStrings[i] = string == null ? null : cutIfNeeded(string, limit);
+      }
+
+      return AttributeValue.arrayAttributeValue(newStrings);
+    }
+
+    String string = value.getStringValue();
+    return string.length() <= limit
+        ? value
+        : AttributeValue.stringAttributeValue(string.substring(0, limit));
+  }
+
+  private static String cutIfNeeded(String s, int limit) {
+    if (s == null || s.length() <= limit) {
+      return s;
+    }
+    return s.substring(0, limit);
   }
 
   private StringUtils() {}

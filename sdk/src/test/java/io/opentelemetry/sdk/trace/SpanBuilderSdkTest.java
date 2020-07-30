@@ -415,6 +415,64 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
+  public void tooLargeAttributeValuesAreTruncated() {
+    TraceConfig traceConfig =
+        tracerSdkFactory
+            .getActiveTraceConfig()
+            .toBuilder()
+            .setMaxLengthOfAttributeValue(10)
+            .build();
+    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    spanBuilder.setAttribute("builderStringSmall", "small");
+    spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
+    spanBuilder.setAttribute("builderLong", 42L);
+    spanBuilder.setAttribute(
+        "builderStringLargeValue",
+        AttributeValue.stringAttributeValue("very large string that we have to cut"));
+    spanBuilder.setAttribute(
+        "builderStringArray",
+        AttributeValue.arrayAttributeValue("small", null, "very large string that we have to cut"));
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    span.setAttribute("spanStringSmall", "small");
+    span.setAttribute("spanStringLarge", "very large string that we have to cut");
+    span.setAttribute("spanLong", 42L);
+    span.setAttribute(
+        "spanStringLarge",
+        AttributeValue.stringAttributeValue("very large string that we have to cut"));
+    span.setAttribute(
+        "spanStringArray",
+        AttributeValue.arrayAttributeValue("small", null, "very large string that we have to cut"));
+
+    try {
+      ReadableAttributes attrs = span.toSpanData().getAttributes();
+      assertThat(attrs.get("builderStringSmall"))
+          .isEqualTo(AttributeValue.stringAttributeValue("small"));
+      assertThat(attrs.get("builderStringLarge"))
+          .isEqualTo(AttributeValue.stringAttributeValue("very large"));
+      assertThat(attrs.get("builderLong")).isEqualTo(AttributeValue.longAttributeValue(42L));
+      assertThat(attrs.get("builderStringLargeValue"))
+          .isEqualTo(AttributeValue.stringAttributeValue("very large"));
+      assertThat(attrs.get("builderStringArray"))
+          .isEqualTo(AttributeValue.arrayAttributeValue("small", null, "very large"));
+
+      assertThat(attrs.get("spanStringSmall"))
+          .isEqualTo(AttributeValue.stringAttributeValue("small"));
+      assertThat(attrs.get("spanStringLarge"))
+          .isEqualTo(AttributeValue.stringAttributeValue("very large"));
+      assertThat(attrs.get("spanLong")).isEqualTo(AttributeValue.longAttributeValue(42L));
+      assertThat(attrs.get("spanStringLarge"))
+          .isEqualTo(AttributeValue.stringAttributeValue("very large"));
+      assertThat(attrs.get("spanStringArray"))
+          .isEqualTo(AttributeValue.arrayAttributeValue("small", null, "very large"));
+    } finally {
+      span.end();
+      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
+    }
+  }
+
+  @Test
   public void addAttributes_OnlyViaSampler() {
     TraceConfig traceConfig =
         tracerSdkFactory

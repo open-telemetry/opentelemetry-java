@@ -23,6 +23,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -320,6 +321,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
+
+      if (traceConfig.getMaxLengthOfAttributeValue() > 0) {
+        value = StringUtils.cutIfNeeded(value, traceConfig.getMaxLengthOfAttributeValue());
+      }
+
       attributes.put(key, value);
     }
   }

@@ -59,6 +59,8 @@ import javax.annotation.concurrent.Immutable;
  *       {@link Event}.
  *   <li>{@code otel.config.max.link.attrs}: to set the global default max number of attributes per
  *       {@link Link}.
+ *   <li>{@code otel.config.max.attr.length}: to set the global default max length of string
+ *       attribute value in characters.
  * </ul>
  *
  * <p>For environment variables, {@link TraceConfig} will look for the following names:
@@ -76,6 +78,8 @@ import javax.annotation.concurrent.Immutable;
  *       {@link Event}.
  *   <li>{@code OTEL_CONFIG_MAX_LINK_ATTRS}: to set the global default max number of attributes per
  *       {@link Link}.
+ *   <li>{@code OTEL_CONFIG_MAX_ATTR_LENGTH}: to set the global default max length of string
+ *       attribute value in characters.
  * </ul>
  */
 @AutoValue
@@ -89,6 +93,7 @@ public abstract class TraceConfig {
   private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
+  private static final int DEFAULT_KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH = 0;
 
   /**
    * Returns the default {@code TraceConfig}.
@@ -145,6 +150,13 @@ public abstract class TraceConfig {
   public abstract int getMaxNumberOfAttributesPerLink();
 
   /**
+   * Returns the global default max length of string attribute value in characters.
+   *
+   * @return the global default max length of string attribute value in characters.
+   */
+  public abstract int getMaxLengthOfAttributeValue();
+
+  /**
    * Returns a new {@link Builder}.
    *
    * @return a new {@link Builder}.
@@ -156,7 +168,8 @@ public abstract class TraceConfig {
         .setMaxNumberOfEvents(DEFAULT_SPAN_MAX_NUM_EVENTS)
         .setMaxNumberOfLinks(DEFAULT_SPAN_MAX_NUM_LINKS)
         .setMaxNumberOfAttributesPerEvent(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT)
-        .setMaxNumberOfAttributesPerLink(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK);
+        .setMaxNumberOfAttributesPerLink(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK)
+        .setMaxLengthOfAttributeValue(DEFAULT_KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH);
   }
 
   /**
@@ -176,6 +189,7 @@ public abstract class TraceConfig {
     private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT =
         "otel.config.max.event.attrs";
     private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = "otel.config.max.link.attrs";
+    private static final String KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH = "otel.config.max.attr.length";
 
     Builder() {}
 
@@ -213,6 +227,10 @@ public abstract class TraceConfig {
       intValue = getIntProperty(KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK, configMap);
       if (intValue != null) {
         this.setMaxNumberOfAttributesPerLink(intValue);
+      }
+      intValue = getIntProperty(KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH, configMap);
+      if (intValue != null) {
+        this.setMaxLengthOfAttributeValue(intValue);
       }
       return this;
     }
@@ -325,6 +343,16 @@ public abstract class TraceConfig {
      */
     public abstract Builder setMaxNumberOfAttributesPerLink(int maxNumberOfAttributesPerLink);
 
+    /**
+     * Sets the global default max length of string attribute value in characters.
+     *
+     * @param maxLengthOfAttributeValue the global default max length of string attribute value in
+     *     characters. It must be non-negative otherwise {@link #build()} will throw an exception.
+     *     Value of 0 means no limit.
+     * @return this.
+     */
+    public abstract Builder setMaxLengthOfAttributeValue(int maxLengthOfAttributeValue);
+
     abstract TraceConfig autoBuild();
 
     /**
@@ -343,6 +371,8 @@ public abstract class TraceConfig {
           traceConfig.getMaxNumberOfAttributesPerEvent() > 0, "maxNumberOfAttributesPerEvent");
       Preconditions.checkArgument(
           traceConfig.getMaxNumberOfAttributesPerLink() > 0, "maxNumberOfAttributesPerLink");
+      Preconditions.checkArgument(
+          traceConfig.getMaxLengthOfAttributeValue() >= 0, "maxLengthOfAttributeValue");
       return traceConfig;
     }
   }
