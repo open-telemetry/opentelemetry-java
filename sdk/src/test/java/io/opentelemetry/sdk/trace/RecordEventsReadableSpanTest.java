@@ -254,6 +254,32 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
+  public void toSpanData_snapshot() {
+    RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
+    SpanData spanData = span.toSpanData();
+    span.setAttribute("anotherKey", "anotherValue");
+    span.updateName("changedName");
+    span.addEvent("newEvent");
+    span.end();
+
+    assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size());
+    assertThat(spanData.getAttributes().get("anotherKey")).isNull();
+    assertThat(spanData.getHasEnded()).isFalse();
+    assertThat(spanData.getEndEpochNanos()).isEqualTo(0);
+    assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
+    assertThat(spanData.getEvents()).isEmpty();
+
+    spanData = span.toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size() + 1);
+    assertThat(spanData.getAttributes().get("anotherKey"))
+        .isEqualTo(AttributeValue.stringAttributeValue("anotherValue"));
+    assertThat(spanData.getHasEnded()).isTrue();
+    assertThat(spanData.getEndEpochNanos()).isGreaterThan(0);
+    assertThat(spanData.getName()).isEqualTo("changedName");
+    assertThat(spanData.getEvents()).hasSize(1);
+  }
+
+  @Test
   public void setStatus() {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
