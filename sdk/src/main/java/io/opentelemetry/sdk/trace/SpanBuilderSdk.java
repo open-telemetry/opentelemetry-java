@@ -192,8 +192,8 @@ final class SpanBuilderSdk implements Span.Builder {
       attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
     }
 
-    if (traceConfig.getMaxLengthOfAttributeValue() > 0) {
-      value = StringUtils.cutIfNeeded(value, traceConfig.getMaxLengthOfAttributeValue());
+    if (traceConfig.getMaxLengthOfAttributeValues() > 0) {
+      value = StringUtils.truncateToSize(value, traceConfig.getMaxLengthOfAttributeValues());
     }
 
     attributes.put(key, value);

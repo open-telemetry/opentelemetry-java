@@ -71,8 +71,8 @@ public final class StringUtils {
    *
    * @throws IllegalArgumentException if limit is zero or negative
    */
-  public static AttributeValue cutIfNeeded(AttributeValue value, int limit) {
-    Utils.checkArgument(limit > 0, "attribute value limit cannot be %d", limit);
+  public static AttributeValue truncateToSize(AttributeValue value, int limit) {
+    Utils.checkArgument(limit > 0, "attribute value limit must be positive, got %d", limit);
 
     if (value == null
         || (value.getType() != AttributeValue.Type.STRING
@@ -89,7 +89,7 @@ public final class StringUtils {
       String[] newStrings = new String[strings.size()];
       for (int i = 0; i < strings.size(); i++) {
         String string = strings.get(i);
-        newStrings[i] = cutIfNeeded(string, limit);
+        newStrings[i] = truncateToSize(string, limit);
       }
 
       return AttributeValue.arrayAttributeValue(newStrings);
@@ -103,7 +103,7 @@ public final class StringUtils {
   }
 
   @Nullable
-  private static String cutIfNeeded(@Nullable String s, int limit) {
+  private static String truncateToSize(@Nullable String s, int limit) {
     if (s == null || s.length() <= limit) {
       return s;
     }

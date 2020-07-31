@@ -420,7 +420,7 @@ public class SpanBuilderSdkTest {
         tracerSdkFactory
             .getActiveTraceConfig()
             .toBuilder()
-            .setMaxLengthOfAttributeValue(10)
+            .setMaxLengthOfAttributeValues(10)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);

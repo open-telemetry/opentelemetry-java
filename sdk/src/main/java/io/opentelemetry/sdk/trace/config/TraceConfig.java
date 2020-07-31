@@ -155,7 +155,7 @@ public abstract class TraceConfig {
    *
    * @return the global default max length of string attribute value in characters.
    */
-  public abstract int getMaxLengthOfAttributeValue();
+  public abstract int getMaxLengthOfAttributeValues();
 
   /**
    * Returns a new {@link Builder}.
@@ -170,7 +170,7 @@ public abstract class TraceConfig {
         .setMaxNumberOfLinks(DEFAULT_SPAN_MAX_NUM_LINKS)
         .setMaxNumberOfAttributesPerEvent(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT)
         .setMaxNumberOfAttributesPerLink(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK)
-        .setMaxLengthOfAttributeValue(DEFAULT_KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH);
+        .setMaxLengthOfAttributeValues(DEFAULT_KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH);
   }
 
   /**
@@ -231,7 +231,7 @@ public abstract class TraceConfig {
       }
       intValue = getIntProperty(KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH, configMap);
       if (intValue != null) {
-        this.setMaxLengthOfAttributeValue(intValue);
+        this.setMaxLengthOfAttributeValues(intValue);
       }
       return this;
     }
@@ -347,12 +347,12 @@ public abstract class TraceConfig {
     /**
      * Sets the global default max length of string attribute value in characters.
      *
-     * @param maxLengthOfAttributeValue the global default max length of string attribute value in
+     * @param maxLengthOfAttributeValues the global default max length of string attribute value in
      *     characters. It must be non-negative otherwise {@link #build()} will throw an exception.
      *     Value of 0 means no limit.
      * @return this.
      */
-    public abstract Builder setMaxLengthOfAttributeValue(int maxLengthOfAttributeValue);
+    public abstract Builder setMaxLengthOfAttributeValues(int maxLengthOfAttributeValues);
 
     abstract TraceConfig autoBuild();
 
@@ -373,7 +373,7 @@ public abstract class TraceConfig {
       Preconditions.checkArgument(
           traceConfig.getMaxNumberOfAttributesPerLink() > 0, "maxNumberOfAttributesPerLink");
       Preconditions.checkArgument(
-          traceConfig.getMaxLengthOfAttributeValue() >= 0, "maxLengthOfAttributeValue");
+          traceConfig.getMaxLengthOfAttributeValues() >= 0, "maxLengthOfAttributeValues");
       return traceConfig;
     }
   }
