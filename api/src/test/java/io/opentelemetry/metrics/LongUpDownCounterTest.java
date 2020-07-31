@@ -16,21 +16,16 @@
 
 package io.opentelemetry.metrics;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.LongUpDownCounter.BoundLongUpDownCounter;
 import java.util.Arrays;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link LongUpDownCounter}. */
-@RunWith(JUnit4.class)
-public class LongUpDownCounterTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class LongUpDownCounterTest {
 
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
@@ -40,66 +35,71 @@ public class LongUpDownCounterTest {
   private final Meter meter = OpenTelemetry.getMeter("LongUpDownCounterTest");
 
   @Test
-  public void preventNull_Name() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    meter.longUpDownCounterBuilder(null);
+  void preventNull_Name() {
+    assertThrows(NullPointerException.class, () -> meter.longUpDownCounterBuilder(null), "name");
   }
 
   @Test
-  public void preventEmpty_Name() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.longUpDownCounterBuilder("").build();
+  void preventEmpty_Name() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.longUpDownCounterBuilder("").build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventNonPrintableName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.longUpDownCounterBuilder("\2").build();
+  void preventNonPrintableName() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.longUpDownCounterBuilder("\2").build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventTooLongName() {
+  void preventTooLongName() {
     char[] chars = new char[StringUtils.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.longUpDownCounterBuilder(longName).build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.longUpDownCounterBuilder(longName).build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventNull_Description() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("description");
-    meter.longUpDownCounterBuilder("metric").setDescription(null).build();
+  void preventNull_Description() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.longUpDownCounterBuilder("metric").setDescription(null).build(),
+        "description");
   }
 
   @Test
-  public void preventNull_Unit() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("unit");
-    meter.longUpDownCounterBuilder("metric").setUnit(null).build();
+  void preventNull_Unit() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.longUpDownCounterBuilder("metric").setUnit(null).build(),
+        "unit");
   }
 
   @Test
-  public void preventNull_ConstantLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("constantLabels");
-    meter.longUpDownCounterBuilder("metric").setConstantLabels(null).build();
+  void preventNull_ConstantLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.longUpDownCounterBuilder("metric").setConstantLabels(null).build(),
+        "constantLabels");
   }
 
   @Test
-  public void add_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    meter.longUpDownCounterBuilder("metric").build().add(1, null);
+  void add_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.longUpDownCounterBuilder("metric").build().add(1, null),
+        "labels");
   }
 
   @Test
-  public void add_DoesNotThrow() {
+  void add_DoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
         meter
             .longUpDownCounterBuilder(NAME)
@@ -112,14 +112,15 @@ public class LongUpDownCounterTest {
   }
 
   @Test
-  public void bound_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    meter.longUpDownCounterBuilder("metric").build().bind(null);
+  void bound_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.longUpDownCounterBuilder("metric").build().bind(null),
+        "labels");
   }
 
   @Test
-  public void bound_DoesNotThrow() {
+  void bound_DoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
         meter
             .longUpDownCounterBuilder(NAME)

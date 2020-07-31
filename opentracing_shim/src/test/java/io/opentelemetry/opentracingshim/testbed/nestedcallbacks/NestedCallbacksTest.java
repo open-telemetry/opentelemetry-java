@@ -19,8 +19,8 @@ package io.opentelemetry.opentracingshim.testbed.nestedcallbacks;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class NestedCallbacksTest {
@@ -47,7 +47,7 @@ public final class NestedCallbacksTest {
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
-  public void test() {
+  void test() {
 
     Span span = tracer.buildSpan("one").start();
     submitCallbacks(span);

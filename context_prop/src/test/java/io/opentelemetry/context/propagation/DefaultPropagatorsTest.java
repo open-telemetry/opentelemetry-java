@@ -17,32 +17,27 @@
 package io.opentelemetry.context.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DefaultContextPropagators}. */
-@RunWith(JUnit4.class)
-public class DefaultPropagatorsTest {
-
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class DefaultPropagatorsTest {
 
   @Test
-  public void addHttpTextFormatNull() {
-    thrown.expect(NullPointerException.class);
-    DefaultContextPropagators.builder().addHttpTextFormat(null);
+  void addHttpTextFormatNull() {
+    assertThrows(
+        NullPointerException.class,
+        () -> DefaultContextPropagators.builder().addHttpTextFormat(null));
   }
 
   @Test
-  public void testInject() {
+  void testInject() {
     CustomHttpTextFormat propagator1 = new CustomHttpTextFormat("prop1");
     CustomHttpTextFormat propagator2 = new CustomHttpTextFormat("prop2");
     ContextPropagators propagators =
@@ -62,7 +57,7 @@ public class DefaultPropagatorsTest {
   }
 
   @Test
-  public void testExtract() {
+  void testExtract() {
     CustomHttpTextFormat propagator1 = new CustomHttpTextFormat("prop1");
     CustomHttpTextFormat propagator2 = new CustomHttpTextFormat("prop2");
     CustomHttpTextFormat propagator3 = new CustomHttpTextFormat("prop3");
@@ -85,7 +80,7 @@ public class DefaultPropagatorsTest {
   }
 
   @Test
-  public void noopPropagator() {
+  void noopPropagator() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
     Context context = Context.current();

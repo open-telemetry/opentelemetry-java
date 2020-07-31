@@ -24,16 +24,13 @@ import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
 import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryMetadata;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for the methods in {@link CorrelationContextManagerSdk} and {@link
  * CorrelationContextSdk.Builder} that interact with the current {@link CorrelationContextSdk}.
  */
-@RunWith(JUnit4.class)
-public class ScopedCorrelationContextTest {
+class ScopedCorrelationContextTest {
   private static final String KEY_1 = "key 1";
   private static final String KEY_2 = "key 2";
   private static final String KEY_3 = "key 3";
@@ -51,14 +48,14 @@ public class ScopedCorrelationContextTest {
   private final CorrelationContextManager contextManager = new CorrelationContextManagerSdk();
 
   @Test
-  public void emptyCorrelationContext() {
+  void emptyCorrelationContext() {
     CorrelationContext defaultCorrelationContext = contextManager.getCurrentContext();
     assertThat(defaultCorrelationContext.getEntries()).isEmpty();
     assertThat(defaultCorrelationContext).isInstanceOf(EmptyCorrelationContext.class);
   }
 
   @Test
-  public void withContext() {
+  void withContext() {
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
     CorrelationContext scopedEntries =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
@@ -69,7 +66,7 @@ public class ScopedCorrelationContextTest {
   }
 
   @Test
-  public void createBuilderFromCurrentEntries() {
+  void createBuilderFromCurrentEntries() {
     CorrelationContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
@@ -87,7 +84,7 @@ public class ScopedCorrelationContextTest {
   }
 
   @Test
-  public void setCurrentEntriesWithBuilder() {
+  void setCurrentEntriesWithBuilder() {
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
     CorrelationContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
@@ -100,7 +97,7 @@ public class ScopedCorrelationContextTest {
   }
 
   @Test
-  public void addToCurrentEntriesWithBuilder() {
+  void addToCurrentEntriesWithBuilder() {
     CorrelationContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope1 = contextManager.withContext(scopedDistContext)) {
@@ -121,7 +118,7 @@ public class ScopedCorrelationContextTest {
   }
 
   @Test
-  public void multiScopeCorrelationContextWithMetadata() {
+  void multiScopeCorrelationContextWithMetadata() {
     CorrelationContext scopedDistContext =
         contextManager
             .contextBuilder()
@@ -148,7 +145,7 @@ public class ScopedCorrelationContextTest {
   }
 
   @Test
-  public void setNoParent_doesNotInheritContext() {
+  void setNoParent_doesNotInheritContext() {
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
     CorrelationContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();

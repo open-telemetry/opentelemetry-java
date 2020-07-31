@@ -20,15 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class RandomIdsGeneratorTest {
+class RandomIdsGeneratorTest {
 
   @Test
-  public void defaults() {
+  void defaults() {
     RandomIdsGenerator generator = new RandomIdsGenerator();
 
     // Can't assert values but can assert they're valid, try a lot as a sort of fuzz check.

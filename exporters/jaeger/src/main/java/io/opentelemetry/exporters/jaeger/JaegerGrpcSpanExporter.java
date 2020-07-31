@@ -36,15 +36,17 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
 @ThreadSafe
 public final class JaegerGrpcSpanExporter implements SpanExporter {
+  public static final String DEFAULT_HOST_NAME = "unknown";
+  public static final String DEFAULT_ENDPOINT = "localhost:14250";
+  public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+
   private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
-  private static final String DEFAULT_JAEGER_ENDPOINT = "localhost:14250";
   private static final String HOSTNAME_KEY = "hostname";
-  private static final String UNKNOWN = "unknown";
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
-
   private final CollectorServiceGrpc.CollectorServiceBlockingStub blockingStub;
   private final Model.Process process;
   private final ManagedChannel managedChannel;
@@ -70,7 +72,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       hostname = InetAddress.getLocalHost().getHostName();
       ipv4 = InetAddress.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
-      hostname = UNKNOWN;
+      hostname = DEFAULT_HOST_NAME;
       ipv4 = IP_DEFAULT;
     }
 
@@ -126,6 +128,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       stub.postSpans(request);
       return ResultCode.SUCCESS;
     } catch (Throwable e) {
+      logger.log(Level.WARNING, "Failed to export spans", e);
       return ResultCode.FAILURE;
     }
   }
@@ -167,10 +170,10 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     private static final String KEY_SERVICE_NAME = "otel.jaeger.service.name";
     private static final String KEY_ENDPOINT = "otel.jaeger.endpoint";
 
-    private String serviceName = UNKNOWN;
-    private String endpoint = DEFAULT_JAEGER_ENDPOINT;
+    private String serviceName = DEFAULT_SERVICE_NAME;
+    private String endpoint = DEFAULT_ENDPOINT;
     private ManagedChannel channel;
-    private long deadlineMs = 1_000; // 1 second
+    private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
 
     /**
      * Sets the service name to be used by this exporter. Required.

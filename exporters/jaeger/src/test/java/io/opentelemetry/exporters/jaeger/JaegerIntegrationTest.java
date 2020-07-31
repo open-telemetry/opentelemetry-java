@@ -35,12 +35,9 @@ import org.awaitility.Awaitility;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
-@RunWith(JUnit4.class)
 public class JaegerIntegrationTest {
 
   private static final int QUERY_PORT = 16686;

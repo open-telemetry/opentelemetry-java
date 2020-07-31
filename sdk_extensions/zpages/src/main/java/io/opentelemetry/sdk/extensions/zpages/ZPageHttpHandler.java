@@ -32,9 +32,10 @@ import java.util.Map;
 /** An {@link HttpHandler} that will be used to render HTML pages using any {@code ZPageHandler}. */
 final class ZPageHttpHandler implements HttpHandler {
   // Splitter for splitting URL query parameters
-  private static final Splitter QUERY_SPLITTER = Splitter.on("&").trimResults();
+  private static final Splitter QUERY_SPLITTER = Splitter.on("&").trimResults().omitEmptyStrings();
   // Splitter for splitting URL query parameters' key value
-  private static final Splitter QUERY_KEYVAL_SPLITTER = Splitter.on("=").trimResults();
+  private static final Splitter QUERY_KEYVAL_SPLITTER =
+      Splitter.on("=").trimResults().omitEmptyStrings();
   // Query string parameter name for span name
   private static final String PARAM_SPAN_NAME = "zspanname";
   // The corresponding ZPageHandler for the zPage (e.g. TracezZPageHandler)
@@ -66,8 +67,6 @@ final class ZPageHttpHandler implements HttpHandler {
         } else {
           queryMap.put(keyValuePair.get(0), keyValuePair.get(1));
         }
-      } else {
-        queryMap.put(keyValuePair.get(0), "");
       }
     }
     return ImmutableMap.copyOf(queryMap);

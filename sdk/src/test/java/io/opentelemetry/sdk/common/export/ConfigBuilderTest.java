@@ -22,19 +22,16 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder.NamingConvention;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 /** Tests for {@link io.opentelemetry.sdk.common.export.ConfigBuilder}. */
-@RunWith(JUnit4.class)
 public class ConfigBuilderTest {
 
   @Test
-  public void normalize() {
+  void normalize() {
     Map<String, String> dotValues =
         NamingConvention.DOT.normalize(Collections.singletonMap("Test.Config.Key", "value"));
     assertThat(dotValues).containsEntry("test.config.key", "value");
@@ -45,87 +42,87 @@ public class ConfigBuilderTest {
   }
 
   @Test
-  public void booleanProperty() {
+  void booleanProperty() {
     Boolean booleanProperty =
         ConfigBuilder.getBooleanProperty("boolean", Collections.singletonMap("boolean", "true"));
     assertThat(booleanProperty).isTrue();
   }
 
   @Test
-  public void longProperty() {
+  void longProperty() {
     Long longProperty =
         ConfigBuilder.getLongProperty("long", Collections.singletonMap("long", "42343"));
     assertThat(longProperty).isEqualTo(42343);
   }
 
   @Test
-  public void intProperty() {
+  void intProperty() {
     Integer intProperty =
         ConfigBuilder.getIntProperty("int", Collections.singletonMap("int", "43543"));
     assertThat(intProperty).isEqualTo(43543);
   }
 
   @Test
-  public void doubleProperty() {
+  void doubleProperty() {
     Double doubleProperty =
         ConfigBuilder.getDoubleProperty("double", Collections.singletonMap("double", "5.6"));
     assertThat(doubleProperty).isEqualTo(5.6);
   }
 
   @Test
-  public void invalidBooleanProperty() {
+  void invalidBooleanProperty() {
     Boolean booleanProperty =
         ConfigBuilder.getBooleanProperty("boolean", Collections.singletonMap("boolean", "23435"));
     assertThat(booleanProperty).isFalse();
   }
 
   @Test
-  public void invalidLongProperty() {
+  void invalidLongProperty() {
     Long longProperty =
         ConfigBuilder.getLongProperty("long", Collections.singletonMap("long", "45.6"));
     assertThat(longProperty).isNull();
   }
 
   @Test
-  public void invalidIntProperty() {
+  void invalidIntProperty() {
     Integer intProperty =
         ConfigBuilder.getIntProperty("int", Collections.singletonMap("int", "false"));
     assertThat(intProperty).isNull();
   }
 
   @Test
-  public void invalidDoubleProperty() {
+  void invalidDoubleProperty() {
     Double doubleProperty =
         ConfigBuilder.getDoubleProperty("double", Collections.singletonMap("double", "something"));
     assertThat(doubleProperty).isNull();
   }
 
   @Test
-  public void nullValue_BooleanProperty() {
+  void nullValue_BooleanProperty() {
     Boolean booleanProperty = ConfigBuilder.getBooleanProperty("boolean", Collections.emptyMap());
     assertThat(booleanProperty).isNull();
   }
 
   @Test
-  public void nullValue_LongProperty() {
+  void nullValue_LongProperty() {
     Long longProperty = ConfigBuilder.getLongProperty("long", Collections.emptyMap());
     assertThat(longProperty).isNull();
   }
 
   @Test
-  public void nullValue_IntProperty() {
+  void nullValue_IntProperty() {
     Integer intProperty = ConfigBuilder.getIntProperty("int", Collections.emptyMap());
     assertThat(intProperty).isNull();
   }
 
   @Test
-  public void nullValue_DoubleProperty() {
+  void nullValue_DoubleProperty() {
     Double doubleProperty = ConfigBuilder.getDoubleProperty("double", Collections.emptyMap());
     assertThat(doubleProperty).isNull();
   }
 
   @Test
-  public void testNormalize_dot() {
+  void testNormalize_dot() {
     assertThat(NamingConvention.DOT.normalize("lower.case")).isEqualTo("lower.case");
     assertThat(NamingConvention.DOT.normalize("lower_case")).isEqualTo("lower_case");
     assertThat(NamingConvention.DOT.normalize("loWer.cAsE")).isEqualTo("lower.case");
@@ -133,7 +130,7 @@ public class ConfigBuilderTest {
   }
 
   @Test
-  public void testNormalize_env() {
+  void testNormalize_env() {
     assertThat(NamingConvention.ENV_VAR.normalize("lower.case")).isEqualTo("lower.case");
     assertThat(NamingConvention.ENV_VAR.normalize("lower_case")).isEqualTo("lower.case");
     assertThat(NamingConvention.ENV_VAR.normalize("loWer.cAsE")).isEqualTo("lower.case");
@@ -141,7 +138,7 @@ public class ConfigBuilderTest {
   }
 
   @Test
-  public void testNormalize_dotMap() {
+  void testNormalize_dotMap() {
     Map<String, String> map = new HashMap<>();
     map.put("lower.case", "1");
     map.put("lower_case", "2");
@@ -153,7 +150,7 @@ public class ConfigBuilderTest {
   }
 
   @Test
-  public void testNormalize_envMap() {
+  void testNormalize_envMap() {
     Map<String, String> map = new HashMap<>();
     map.put("lower.case", "1");
     map.put("lower_case", "2");
@@ -165,7 +162,7 @@ public class ConfigBuilderTest {
   }
 
   @Test
-  public void testBoolProperty() {
+  void testBoolProperty() {
     Map<String, String> map = new HashMap<>();
     map.put("int", "1");
     map.put("long", "2L");
@@ -181,7 +178,7 @@ public class ConfigBuilderTest {
   }
 
   @Test
-  public void testIntProperty() {
+  void testIntProperty() {
     Map<String, String> map = new HashMap<>();
     map.put("int", "1");
     map.put("long", "2L");
@@ -198,7 +195,7 @@ public class ConfigBuilderTest {
   }
 
   @Test
-  public void testLongProperty() {
+  void testLongProperty() {
     Map<String, String> map = new HashMap<>();
     map.put("int", "1");
     map.put("long", "2L");
@@ -215,7 +212,7 @@ public class ConfigBuilderTest {
   }
 
   @Test
-  public void testStringProperty() {
+  void testStringProperty() {
     Map<String, String> map = new HashMap<>();
     map.put("int", "1");
     map.put("long", "2L");
@@ -243,17 +240,16 @@ public class ConfigBuilderTest {
     }
   }
 
-  @RunWith(JUnit4.class)
-  public static class ConfigurationSystemPropertiesTest {
-    @Rule
-    public final ProvideSystemProperty systemProperties =
-        new ProvideSystemProperty("int", "1")
-            .and("long", "2L")
-            .and("boolt", "true")
-            .and("boolf", "false")
-            .and("string", "random");
+  @Nested
+  @SuppressWarnings("ClassCanBeStatic")
+  class ConfigurationSystemPropertiesTest {
 
     @Test
+    @SetSystemProperty(key = "int", value = "1")
+    @SetSystemProperty(key = "long", value = "2L")
+    @SetSystemProperty(key = "boolt", value = "true")
+    @SetSystemProperty(key = "boolf", value = "false")
+    @SetSystemProperty(key = "string", value = "random")
     public void testSystemProperties() {
       ConfigTester config = new ConfigTester();
       Map<String, String> map = config.readSystemProperties();
@@ -266,18 +262,16 @@ public class ConfigBuilderTest {
     }
   }
 
-  @RunWith(JUnit4.class)
-  public static class ConfigurationEnvVarsTest {
-    @Rule
-    public final EnvironmentVariables environmentVariables =
-        new EnvironmentVariables()
-            .set("int", "1")
-            .set("long", "2L")
-            .set("boolt", "true")
-            .set("boolf", "false")
-            .set("string", "random");
+  @Nested
+  @SuppressWarnings("ClassCanBeStatic")
+  class ConfigurationEnvVarsTest {
 
     @Test
+    @SetEnvironmentVariable(key = "int", value = "1")
+    @SetEnvironmentVariable(key = "long", value = "2L")
+    @SetEnvironmentVariable(key = "boolt", value = "true")
+    @SetEnvironmentVariable(key = "boolf", value = "false")
+    @SetEnvironmentVariable(key = "string", value = "random")
     public void testEnvironmentVariables() {
       ConfigTester config = new ConfigTester();
       Map<String, String> map = config.readEnvironmentVariables();

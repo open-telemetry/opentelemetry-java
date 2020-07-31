@@ -26,12 +26,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DoubleMinMaxSumCountTest {
+class DoubleMinMaxSumCountTest {
 
   @Test
-  public void testRecordings() {
+  void testRecordings() {
     Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
 
     assertThat(aggregator.toPoint(0, 100, Labels.empty())).isNull();
@@ -53,7 +53,7 @@ public class DoubleMinMaxSumCountTest {
   }
 
   @Test
-  public void testMergeAndReset() {
+  void testMergeAndReset() {
     Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
 
     aggregator.recordDouble(100);
@@ -68,7 +68,7 @@ public class DoubleMinMaxSumCountTest {
   }
 
   @Test
-  public void testMultithreadedUpdates() throws Exception {
+  void testMultithreadedUpdates() throws Exception {
     final Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
     final Aggregator summarizer = DoubleMinMaxSumCount.getFactory().getAggregator();
     int numberOfThreads = 10;

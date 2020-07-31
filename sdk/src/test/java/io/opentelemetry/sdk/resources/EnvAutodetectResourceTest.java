@@ -20,38 +20,35 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import io.opentelemetry.common.Attributes;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 /** Tests for the {@link EnvAutodetectResource}. */
-public class EnvAutodetectResourceTest {
+class EnvAutodetectResourceTest {
 
   @Test
-  public void parseResourceAttributes_null() {
+  void parseResourceAttributes_null() {
     assertThat(EnvAutodetectResource.parseResourceAttributes(null).isEmpty()).isTrue();
   }
 
   @Test
-  public void parseResourceAttributes_empty() {
+  void parseResourceAttributes_empty() {
     assertThat(EnvAutodetectResource.parseResourceAttributes("").isEmpty()).isTrue();
   }
 
   @Test
-  public void parseResourceAttributes_malformed() {
+  void parseResourceAttributes_malformed() {
     assertThat(EnvAutodetectResource.parseResourceAttributes("value/foo").isEmpty()).isTrue();
   }
 
   @Test
-  public void parseResourceAttributes_single() {
+  void parseResourceAttributes_single() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes("value=foo");
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 
   @Test
-  public void parseResourceAttributes_multi() {
+  void parseResourceAttributes_multi() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes("value=foo, other=bar");
     assertThat(result)
         .isEqualTo(
@@ -61,19 +58,19 @@ public class EnvAutodetectResourceTest {
   }
 
   @Test
-  public void parseResourceAttributes_whitespace() {
+  void parseResourceAttributes_whitespace() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes(" value = foo ");
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 
   @Test
-  public void parseResourceAttributes_quotes() {
+  void parseResourceAttributes_quotes() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes("value=\"foo\"");
     assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 
   @Test
-  public void getResourceAttributes_properties() {
+  void getResourceAttributes_properties() {
     String key = "otel.resource.attributes";
     System.setProperty(key, "value = foo");
     Resource resource =
@@ -86,13 +83,10 @@ public class EnvAutodetectResourceTest {
     System.clearProperty(key);
   }
 
-  @RunWith(JUnit4.class)
   public static class ResourceAttributesEnvVarsTest {
-    @Rule
-    public final EnvironmentVariables environmentVariables =
-        new EnvironmentVariables().set("OTEL_RESOURCE_ATTRIBUTES", "value = foo");
 
     @Test
+    @SetEnvironmentVariable(key = "OTEL_RESOURCE_ATTRIBUTES", value = "value = foo")
     public void getResourceAttributes_envvars() {
       Resource resource =
           new EnvAutodetectResource.Builder()

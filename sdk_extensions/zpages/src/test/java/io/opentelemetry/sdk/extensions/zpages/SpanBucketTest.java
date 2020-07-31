@@ -25,13 +25,10 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
-/** Unit tests for {@link SpanBucket}. */
-@RunWith(JUnit4.class)
-public final class SpanBucketTest {
+class SpanBucketTest {
   private static final String SPAN_NAME = "span";
   private static final int LATENCY_BUCKET_SIZE = 16;
   private static final int ERROR_BUCKET_SIZE = 8;
@@ -39,8 +36,8 @@ public final class SpanBucketTest {
   private final Tracer tracer = tracerSdkProvider.get("SpanBucketTest");
 
   @Test
-  public void verifyLatencyBucketSizeLimit() {
-    SpanBucket latencyBucket = new SpanBucket(true);
+  void verifyLatencyBucketSizeLimit() {
+    SpanBucket latencyBucket = new SpanBucket(/* isLatencyBucket= */ true);
     Span[] spans = new Span[LATENCY_BUCKET_SIZE + 1];
     for (int i = 0; i < LATENCY_BUCKET_SIZE + 1; i++) {
       spans[i] = tracer.spanBuilder(SPAN_NAME).startSpan();
@@ -59,8 +56,8 @@ public final class SpanBucketTest {
   }
 
   @Test
-  public void verifyErrorBucketSizeLimit() {
-    SpanBucket errorBucket = new SpanBucket(false);
+  void verifyErrorBucketSizeLimit() {
+    SpanBucket errorBucket = new SpanBucket(/* isLatencyBucket= */ false);
     Span[] spans = new Span[ERROR_BUCKET_SIZE + 1];
     for (int i = 0; i < ERROR_BUCKET_SIZE + 1; i++) {
       spans[i] = tracer.spanBuilder(SPAN_NAME).startSpan();
@@ -78,11 +75,11 @@ public final class SpanBucketTest {
     }
   }
 
-  @Test(timeout = 1000)
+  @Timeout(value = 1)
   public void verifyThreadSafety() throws InterruptedException {
     int numberOfThreads = 4;
     int numberOfSpans = 4;
-    SpanBucket spanBucket = new SpanBucket(true);
+    SpanBucket spanBucket = new SpanBucket(/* isLatencyBucket= */ true);
     final CountDownLatch startSignal = new CountDownLatch(1);
     final CountDownLatch endSignal = new CountDownLatch(numberOfThreads);
     for (int i = 0; i < numberOfThreads; i++) {

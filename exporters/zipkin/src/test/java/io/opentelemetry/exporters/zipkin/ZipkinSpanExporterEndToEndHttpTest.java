@@ -34,8 +34,6 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.Encoding;
@@ -47,7 +45,6 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
  * Tests which use Zipkin's {@link ZipkinRule} to verify that the {@link ZipkinSpanExporter} can
  * send spans via HTTP to Zipkin's API using supported encodings.
  */
-@RunWith(JUnit4.class)
 public class ZipkinSpanExporterEndToEndHttpTest {
 
   private static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.baggagehandling;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public final class BaggageHandlingTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
@@ -38,7 +38,7 @@ public final class BaggageHandlingTest {
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
-  public void test_multithreaded() throws Exception {
+  void test_multithreaded() throws Exception {
     final Span span = tracer.buildSpan("one").start();
     span.setBaggageItem("key1", "value1");
 

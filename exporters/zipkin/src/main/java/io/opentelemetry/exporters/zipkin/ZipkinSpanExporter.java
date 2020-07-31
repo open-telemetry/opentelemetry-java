@@ -70,6 +70,8 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
  * </ul>
  */
 public final class ZipkinSpanExporter implements SpanExporter {
+  public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
+  public static final String DEFAULT_SERVICE_NAME = "unknown";
 
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
@@ -246,6 +248,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     try {
       sender.sendSpans(encodedSpans).execute();
     } catch (Exception e) {
+      logger.log(Level.WARNING, "Failed to export spans", e);
       return ResultCode.FAILURE;
     }
     return ResultCode.SUCCESS;
@@ -279,9 +282,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
   public static final class Builder extends ConfigBuilder<Builder> {
     private static final String KEY_SERVICE_NAME = "otel.zipkin.service.name";
     private static final String KEY_ENDPOINT = "otel.zipkin.endpoint";
-    private static final String DEFAULT_SERVICE_NAME = "unknown";
-    private static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
-
     private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
     private Sender sender;
     private String serviceName = DEFAULT_SERVICE_NAME;

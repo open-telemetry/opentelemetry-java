@@ -69,12 +69,16 @@ public final class ZPageServer {
       TracezSpanProcessor.newBuilder().build();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
+  private static final TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
       new TracezZPageHandler(tracezDataAggregator);
-  // Handler for index page, **please include all available zPages in the constructor**
+  // Handler for /traceconfigz page
+  private static final ZPageHandler traceConfigzZPageHandler =
+      new TraceConfigzZPageHandler(tracerProvider);
+  // Handler for index page, **please include all available ZPageHandlers in the constructor**
   private static final ZPageHandler indexZPageHandler =
-      new IndexZPageHandler(ImmutableList.of(tracezZPageHandler));
+      new IndexZPageHandler(ImmutableList.of(tracezZPageHandler, traceConfigzZPageHandler));
 
   private static final Object mutex = new Object();
   private static final AtomicBoolean isTracezSpanProcesserAdded = new AtomicBoolean(false);
@@ -85,8 +89,8 @@ public final class ZPageServer {
 
   /** Function that adds the {@link TracezSpanProcessor} to the {@link TracerSdkProvider}. */
   private static void addTracezSpanProcessor() {
-    if (isTracezSpanProcesserAdded.compareAndSet(false, true)) {
-      TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+    if (isTracezSpanProcesserAdded.compareAndSet(
+        /* expectedValue= */ false, /* newValue= */ true)) {
       tracerProvider.addSpanProcessor(tracezSpanProcessor);
     }
   }
@@ -122,6 +126,23 @@ public final class ZPageServer {
   }
 
   /**
+   * Registers a {@code ZPageHandler} for tracing config. The page displays information about all
+   * active configuration and allow changing the active configuration.
+   *
+   * <p>It displays a change table which allows users to change active configuration.
+   *
+   * <p>It displays an active value table which displays current active configuration.
+   *
+   * <p>Refreshing the page will show the updated active configuration.
+   *
+   * @param server the {@link HttpServer} for the page to register to.
+   */
+  static void registerTraceConfigzZPageHandler(HttpServer server) {
+    server.createContext(
+        traceConfigzZPageHandler.getUrlPath(), new ZPageHttpHandler(traceConfigzZPageHandler));
+  }
+
+  /**
    * Registers all zPages to the given {@link HttpServer} {@code server}.
    *
    * @param server the {@link HttpServer} for the page to register to.
@@ -130,6 +151,7 @@ public final class ZPageServer {
     // For future zPages, register them to the server in here
     registerIndexZPageHandler(server);
     registerTracezZPageHandler(server);
+    registerTraceConfigzZPageHandler(server);
   }
 
   /** Method for stopping the {@link HttpServer} {@code server}. */

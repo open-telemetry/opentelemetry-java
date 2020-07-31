@@ -20,15 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class CorrelationContextManagerFactorySdkTest {
+class CorrelationContextManagerFactorySdkTest {
 
   @Test
-  public void testDefault() {
+  void testDefault() {
     assertThat(OpenTelemetry.getCorrelationContextManager())
         .isInstanceOf(CorrelationContextManagerSdk.class);
   }

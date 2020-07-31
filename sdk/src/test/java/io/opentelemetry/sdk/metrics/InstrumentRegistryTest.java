@@ -17,6 +17,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.sdk.common.InstrumentationLibraryInfo.getEmpty;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -27,15 +29,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link InstrumentRegistry}. */
-@RunWith(JUnit4.class)
-public class InstrumentRegistryTest {
+class InstrumentRegistryTest {
   private static final InstrumentDescriptor INSTRUMENT_DESCRIPTOR =
       InstrumentDescriptor.create(
           "name",
@@ -56,10 +53,8 @@ public class InstrumentRegistryTest {
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final ActiveBatcher ACTIVE_BATCHER = new ActiveBatcher(Batchers.getNoop());
 
-  @Rule public final ExpectedException thrown = ExpectedException.none();
-
   @Test
-  public void register() {
+  void register() {
     MeterSharedState meterSharedState =
         MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
     TestInstrument testInstrument =
@@ -82,47 +77,49 @@ public class InstrumentRegistryTest {
   }
 
   @Test
-  public void register_OtherDescriptor() {
-    MeterSharedState meterSharedState =
-        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
+  void register_OtherDescriptor() {
+    MeterSharedState meterSharedState = MeterSharedState.create(getEmpty());
     TestInstrument testInstrument =
         new TestInstrument(
             INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, ACTIVE_BATCHER);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameInstanceAs(testInstrument);
 
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Instrument with same name and different descriptor already created.");
-    meterSharedState
-        .getInstrumentRegistry()
-        .register(
-            new TestInstrument(
-                OTHER_INSTRUMENT_DESCRIPTOR,
-                METER_PROVIDER_SHARED_STATE,
-                meterSharedState,
-                ACTIVE_BATCHER));
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            meterSharedState
+                .getInstrumentRegistry()
+                .register(
+                    new TestInstrument(
+                        OTHER_INSTRUMENT_DESCRIPTOR,
+                        METER_PROVIDER_SHARED_STATE,
+                        meterSharedState,
+                        ACTIVE_BATCHER)),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
-  public void register_OtherInstance() {
-    MeterSharedState meterSharedState =
-        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
+  void register_OtherInstance() {
+    MeterSharedState meterSharedState = MeterSharedState.create(getEmpty());
     TestInstrument testInstrument =
         new TestInstrument(
             INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, ACTIVE_BATCHER);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameInstanceAs(testInstrument);
 
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Instrument with same name and different descriptor already created.");
-    meterSharedState
-        .getInstrumentRegistry()
-        .register(
-            new OtherTestInstrument(
-                INSTRUMENT_DESCRIPTOR,
-                METER_PROVIDER_SHARED_STATE,
-                meterSharedState,
-                ACTIVE_BATCHER));
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            meterSharedState
+                .getInstrumentRegistry()
+                .register(
+                    new OtherTestInstrument(
+                        INSTRUMENT_DESCRIPTOR,
+                        METER_PROVIDER_SHARED_STATE,
+                        meterSharedState,
+                        ACTIVE_BATCHER)),
+        "Instrument with same name and different descriptor already created.");
   }
 
   private static final class TestInstrument extends AbstractInstrument {

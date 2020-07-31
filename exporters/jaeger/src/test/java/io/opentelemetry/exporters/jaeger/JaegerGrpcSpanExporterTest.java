@@ -46,14 +46,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 /** Unit tests for {@link JaegerGrpcSpanExporter}. */
-@RunWith(JUnit4.class)
 public class JaegerGrpcSpanExporterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";

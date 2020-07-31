@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.statelesscommonrequesthandler;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -27,8 +27,8 @@ import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * There is only one instance of 'RequestHandler' per 'Client'. Methods of 'RequestHandler' are
@@ -42,13 +42,13 @@ public final class HandlerTest {
   private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private final Client client = new Client(new RequestHandler(tracer));
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     inMemoryTracing.getSpanExporter().reset();
   }
 
   @Test
-  public void test_requests() throws Exception {
+  void test_requests() throws Exception {
     Future<String> responseFuture = client.send("message");
     Future<String> responseFuture2 = client.send("message2");
     Future<String> responseFuture3 = client.send("message3");
