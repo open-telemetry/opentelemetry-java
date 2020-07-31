@@ -53,14 +53,14 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       return SpanContext.getInvalid();
     }
     if (!Common.isTraceIdValid(traceId)) {
-      logger.warning(
+      logger.fine(
           "Invalid TraceId in B3 header: " + traceId + "'. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
     String spanId = getter.get(carrier, SPAN_ID_HEADER);
     if (!Common.isSpanIdValid(spanId)) {
-      logger.info("Invalid SpanId in B3 header: " + spanId + "'. Returning INVALID span context.");
+      logger.fine("Invalid SpanId in B3 header: " + spanId + "'. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 

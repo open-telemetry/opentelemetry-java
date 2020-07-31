@@ -157,7 +157,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
       String trimmedPart = part.trim();
       int equalsIndex = trimmedPart.indexOf(KV_DELIMITER);
       if (equalsIndex < 0) {
-        logger.info(
+        logger.fine(
             "Error parsing X-Ray trace header. Invalid key value pair: "
                 + part
                 + " Returning INVALID span context.");
@@ -177,7 +177,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
     }
 
     if (!traceId.isValid()) {
-      logger.info(
+      logger.fine(
           "Invalid TraceId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
               + "' with value "
@@ -187,7 +187,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
     }
 
     if (!spanId.isValid()) {
-      logger.info(
+      logger.fine(
           "Invalid ParentId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
               + "' with value "
@@ -197,7 +197,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
     }
 
     if (traceFlags == null) {
-      logger.info(
+      logger.fine(
           "Invalid Sampling flag in X-Ray trace header: '"
               + TRACE_HEADER_KEY
               + "' with value "

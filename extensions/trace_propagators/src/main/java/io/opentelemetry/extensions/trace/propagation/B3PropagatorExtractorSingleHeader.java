@@ -58,21 +58,21 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
     // NOTE: we do not use parentSpanId
     String[] parts = value.split(COMBINED_HEADER_DELIMITER);
     if (parts.length < 2 || parts.length > 4) {
-      logger.info(
+      logger.fine(
           "Invalid combined header '" + COMBINED_HEADER + ". Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
     String traceId = parts[0];
     if (!Common.isTraceIdValid(traceId)) {
-      logger.info(
+      logger.fine(
           "Invalid TraceId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
     String spanId = parts[1];
     if (!Common.isSpanIdValid(spanId)) {
-      logger.info(
+      logger.fine(
           "Invalid SpanId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
