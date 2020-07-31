@@ -20,12 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 
 import io.opentelemetry.common.Attributes;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BooleanAttributeSetterTest {
+class BooleanAttributeSetterTest {
 
   @Test
-  public void attributesBuilder() {
+  void attributesBuilder() {
     BooleanAttributeSetter setter = BooleanAttributeSetter.create("there?");
     assertThat(setter.key()).isEqualTo("there?");
     assertThat(setter.toString()).isEqualTo("there?");

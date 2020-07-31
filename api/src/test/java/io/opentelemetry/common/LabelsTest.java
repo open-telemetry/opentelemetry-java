@@ -21,16 +21,12 @@ import static com.google.common.truth.Truth.assertThat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link Labels}s. */
-public class LabelsTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class LabelsTest {
 
   @Test
-  public void forEach() {
+  void forEach() {
     final Map<String, String> entriesSeen = new HashMap<>();
 
     Labels labels =
@@ -44,7 +40,7 @@ public class LabelsTest {
   }
 
   @Test
-  public void forEach_singleAttribute() {
+  void forEach_singleAttribute() {
     final Map<String, String> entriesSeen = new HashMap<>();
 
     Labels labels = Labels.of("key", "value");
@@ -54,7 +50,7 @@ public class LabelsTest {
   }
 
   @Test
-  public void forEach_empty() {
+  void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
     Labels emptyLabels = Labels.empty();
     emptyLabels.forEach((key, value) -> sawSomething.set(true));
@@ -62,7 +58,7 @@ public class LabelsTest {
   }
 
   @Test
-  public void orderIndependentEquality() {
+  void orderIndependentEquality() {
     Labels one =
         Labels.of(
             "key3", "value3",
@@ -78,7 +74,7 @@ public class LabelsTest {
   }
 
   @Test
-  public void deduplication() {
+  void deduplication() {
     Labels one =
         Labels.of(
             "key1", "value1",
@@ -89,7 +85,7 @@ public class LabelsTest {
   }
 
   @Test
-  public void threeLabels() {
+  void threeLabels() {
     Labels one =
         Labels.of(
             "key1", "value1",
@@ -99,7 +95,7 @@ public class LabelsTest {
   }
 
   @Test
-  public void fourLabels() {
+  void fourLabels() {
     Labels one =
         Labels.of(
             "key1", "value1",
@@ -110,7 +106,7 @@ public class LabelsTest {
   }
 
   @Test
-  public void builder() {
+  void builder() {
     Labels labels =
         Labels.newBuilder()
             .setLabel("key1", "value1")
@@ -126,7 +122,7 @@ public class LabelsTest {
   }
 
   @Test
-  public void toBuilder() {
+  void toBuilder() {
     Labels initial = Labels.of("one", "a");
     Labels second = initial.toBuilder().setLabel("two", "b").build();
     assertThat(initial.size()).isEqualTo(1);

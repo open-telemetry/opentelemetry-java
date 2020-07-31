@@ -19,15 +19,12 @@ package io.opentelemetry.sdk;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class OpenTelemetrySdkTest {
+class OpenTelemetrySdkTest {
 
   @Test
-  public void testDefault() {
+  void testDefault() {
     assertThat(OpenTelemetrySdk.getTracerProvider().get(""))
         .isSameInstanceAs(OpenTelemetry.getTracerProvider().get(""));
     assertThat(OpenTelemetrySdk.getCorrelationContextManager())
@@ -37,7 +34,7 @@ public class OpenTelemetrySdkTest {
   }
 
   @Test
-  public void testShortcutVersions() {
+  void testShortcutVersions() {
     assertThat(OpenTelemetry.getTracer("testTracer1"))
         .isEqualTo(OpenTelemetry.getTracerProvider().get("testTracer1"));
     assertThat(OpenTelemetry.getTracer("testTracer2", "testVersion"))

@@ -25,20 +25,17 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link CurrentSpanUtils}. */
-@RunWith(JUnit4.class)
-public class CurrentSpanUtilsTest {
+class CurrentSpanUtilsTest {
   @Mock private Span span;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
   }
 
@@ -67,7 +64,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanRunnable() {
+  void withSpanRunnable() {
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Runnable runnable =
         () -> {
@@ -80,7 +77,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanRunnable_EndSpan() {
+  void withSpanRunnable_EndSpan() {
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Runnable runnable =
         () -> {
@@ -93,7 +90,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanRunnable_WithError() {
+  void withSpanRunnable_WithError() {
     final AssertionError error = new AssertionError("MyError");
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Runnable runnable =
@@ -109,7 +106,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanRunnable_WithErrorNoMessage() {
+  void withSpanRunnable_WithErrorNoMessage() {
     final AssertionError error = new AssertionError();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Runnable runnable =
@@ -125,7 +122,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanCallable() throws Exception {
+  void withSpanCallable() throws Exception {
     final Object ret = new Object();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
@@ -140,7 +137,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanCallable_EndSpan() throws Exception {
+  void withSpanCallable_EndSpan() throws Exception {
     final Object ret = new Object();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
@@ -155,7 +152,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanCallable_WithException() {
+  void withSpanCallable_WithException() {
     final Exception exception = new Exception("MyException");
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
@@ -171,7 +168,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanCallable_WithExceptionNoMessage() {
+  void withSpanCallable_WithExceptionNoMessage() {
     final Exception exception = new Exception();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
@@ -187,7 +184,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanCallable_WithError() {
+  void withSpanCallable_WithError() {
     final AssertionError error = new AssertionError("MyError");
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
@@ -203,7 +200,7 @@ public class CurrentSpanUtilsTest {
   }
 
   @Test
-  public void withSpanCallable_WithErrorNoMessage() {
+  void withSpanCallable_WithErrorNoMessage() {
     final AssertionError error = new AssertionError();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =

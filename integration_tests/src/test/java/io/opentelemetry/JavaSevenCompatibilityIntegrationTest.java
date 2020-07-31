@@ -25,8 +25,6 @@ import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
@@ -43,7 +41,6 @@ import org.testcontainers.utility.MountableFile;
  * executable JAR added to it and executed which will send a trace to the Jaeger instance. The test
  * verifies that the trace is received by Jaeger.
  */
-@RunWith(JUnit4.class)
 public class JavaSevenCompatibilityIntegrationTest {
 
   private static final String ARCHIVE_NAME = System.getProperty("archive.name");

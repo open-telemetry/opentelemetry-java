@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -50,19 +51,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link RecordEventsReadableSpan}. */
-@RunWith(JUnit4.class)
-public class RecordEventsReadableSpanTest {
+class RecordEventsReadableSpanTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
   private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
@@ -83,12 +78,11 @@ public class RecordEventsReadableSpanTest {
   private Attributes expectedAttributes;
   private final io.opentelemetry.trace.Link link = Link.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
-  @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private TestClock testClock;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
     attributes.put("MyStringAttributeKey", stringAttributeValue("MyStringAttributeValue"));
     attributes.put("MyLongAttributeKey", AttributeValue.longAttributeValue(123L));
@@ -105,7 +99,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void nothingChangedAfterEnd() {
+  void nothingChangedAfterEnd() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     span.end();
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
@@ -125,7 +119,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void lazyLinksAreResolved() {
+  void lazyLinksAreResolved() {
     final Attributes attributes = Attributes.of("attr", stringAttributeValue("val"));
     io.opentelemetry.trace.Link link =
         new io.opentelemetry.trace.Link() {
@@ -154,7 +148,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void endSpanTwice_DoNotCrash() {
+  void endSpanTwice_DoNotCrash() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     assertThat(span.hasEnded()).isFalse();
     span.end();
@@ -164,7 +158,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void toSpanData_ActiveSpan() {
+  void toSpanData_ActiveSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       assertThat(span.hasEnded()).isFalse();
@@ -190,7 +184,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void toSpanData_EndedSpan() {
+  void toSpanData_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       spanDoWork(span, Status.CANCELLED);
@@ -214,25 +208,27 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void toSpanData_immutableLinks() {
+  void toSpanData_immutableLinks() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     SpanData spanData = span.toSpanData();
 
-    thrown.expect(UnsupportedOperationException.class);
-    spanData.getLinks().add(Link.create(SpanContext.getInvalid()));
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> spanData.getLinks().add(Link.create(SpanContext.getInvalid())));
   }
 
   @Test
-  public void toSpanData_immutableEvents() {
+  void toSpanData_immutableEvents() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     SpanData spanData = span.toSpanData();
 
-    thrown.expect(UnsupportedOperationException.class);
-    spanData.getEvents().add(EventImpl.create(1000, "test", Attributes.empty()));
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> spanData.getEvents().add(EventImpl.create(1000, "test", Attributes.empty())));
   }
 
   @Test
-  public void toSpanData_RootSpan() {
+  void toSpanData_RootSpan() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
       spanDoWork(span, null);
@@ -244,7 +240,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void toSpanData_WithInitialAttributes() {
+  void toSpanData_WithInitialAttributes() {
     RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
     span.setAttribute("anotherKey", "anotherValue");
     span.end();
@@ -254,7 +250,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void toSpanData_SpanDataDoesNotChangeWhenModifyingSpan() {
+  void toSpanData_SpanDataDoesNotChangeWhenModifyingSpan() {
     // Create a span
     RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
 
@@ -289,7 +285,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setStatus() {
+  void setStatus() {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
@@ -303,7 +299,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void getSpanKind() {
+  void getSpanKind() {
     RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
     try {
       assertThat(span.toSpanData().getKind()).isEqualTo(Kind.SERVER);
@@ -313,7 +309,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void getInstrumentationLibraryInfo() {
+  void getInstrumentationLibraryInfo() {
     RecordEventsReadableSpan span = createTestSpan(Kind.CLIENT);
     try {
       assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
@@ -323,7 +319,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void getSpanHasRemoteParent() {
+  void getSpanHasRemoteParent() {
     RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
     try {
       assertThat(span.toSpanData().getHasRemoteParent()).isTrue();
@@ -333,7 +329,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void getAndUpdateSpanName() {
+  void getAndUpdateSpanName() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
       assertThat(span.getName()).isEqualTo(SPAN_NAME);
@@ -345,7 +341,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void getLatencyNs_ActiveSpan() {
+  void getLatencyNs_ActiveSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
@@ -360,7 +356,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void getLatencyNs_EndedSpan() {
+  void getLatencyNs_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.end();
@@ -371,7 +367,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setAttribute() {
+  void setAttribute() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
       span.setAttribute("StringKey", "StringVal");
@@ -411,7 +407,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setAttribute_emptyKeys() {
+  void setAttribute_emptyKeys() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("", AttributeValue.stringAttributeValue(""));
     span.setAttribute("", 1000L);
@@ -425,7 +421,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setAttribute_nullKeys() {
+  void setAttribute_nullKeys() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute(null, AttributeValue.stringAttributeValue(""));
     span.setAttribute(null, 1000L);
@@ -439,7 +435,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setAttribute_emptyArrayAttributeValue() {
+  void setAttribute_emptyArrayAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
     span.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue(new Boolean[0]));
@@ -449,7 +445,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setAttribute_nullStringValue() {
+  void setAttribute_nullStringValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("nullString", (String) null);
     span.setAttribute("emptyString", "");
@@ -462,7 +458,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setAttribute_nullAttributeValue() {
+  void setAttribute_nullAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("emptyString", "");
     span.setAttribute("nullString", (AttributeValue) null);
@@ -489,7 +485,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void addEvent() {
+  void addEvent() {
     RecordEventsReadableSpan span = createTestRootSpan();
     io.opentelemetry.trace.Event customEvent =
         new io.opentelemetry.trace.Event() {
@@ -521,7 +517,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void droppingAttributes() {
+  void droppingAttributes() {
     final int maxNumberOfAttributes = 8;
     TraceConfig traceConfig =
         TraceConfig.getDefault()
@@ -545,7 +541,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void droppingAndAddingAttributes() {
+  void droppingAndAddingAttributes() {
     final int maxNumberOfAttributes = 8;
     TraceConfig traceConfig =
         TraceConfig.getDefault()
@@ -586,7 +582,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void droppingEvents() {
+  void droppingEvents() {
     final int maxNumberOfEvents = 8;
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setMaxNumberOfEvents(maxNumberOfEvents).build();
@@ -626,7 +622,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void recordException() {
+  void recordException() {
     IllegalStateException exception = new IllegalStateException("there was an exception");
     RecordEventsReadableSpan span = createTestRootSpan();
 
@@ -654,7 +650,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void recordException_noMessage() {
+  void recordException_noMessage() {
     IllegalStateException exception = new IllegalStateException();
     RecordEventsReadableSpan span = createTestRootSpan();
 
@@ -669,7 +665,7 @@ public class RecordEventsReadableSpanTest {
   private static class InnerClassException extends Exception {}
 
   @Test
-  public void recordException_innerClassException() {
+  void recordException_innerClassException() {
     InnerClassException exception = new InnerClassException();
     RecordEventsReadableSpan span = createTestRootSpan();
 
@@ -685,7 +681,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void badArgsIgnored() {
+  void badArgsIgnored() {
     RecordEventsReadableSpan span = createTestRootSpan();
 
     // Should be no exceptions
@@ -810,7 +806,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void testAsSpanData() {
+  void testAsSpanData() {
     String name = "GreatSpan";
     Kind kind = Kind.SERVER;
     TraceId traceId = this.traceId;
@@ -880,7 +876,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void testConcurrentModification() throws ExecutionException, InterruptedException {
+  void testConcurrentModification() throws ExecutionException, InterruptedException {
     final RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     ExecutorService es = Executors.newSingleThreadExecutor();
     Future<?> modifierFuture =

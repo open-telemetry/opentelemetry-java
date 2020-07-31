@@ -16,20 +16,15 @@
 
 package io.opentelemetry.metrics;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
 import java.util.Arrays;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Tests for {@link DoubleValueRecorder}. */
-@RunWith(JUnit4.class)
-public final class DoubleValueRecorderTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class DoubleValueRecorderTest {
 
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
@@ -39,66 +34,71 @@ public final class DoubleValueRecorderTest {
   private final Meter meter = OpenTelemetry.getMeter("DoubleValueRecorderTest");
 
   @Test
-  public void preventNull_Name() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    meter.doubleValueRecorderBuilder(null);
+  void preventNull_Name() {
+    assertThrows(NullPointerException.class, () -> meter.doubleValueRecorderBuilder(null), "name");
   }
 
   @Test
-  public void preventEmpty_Name() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleValueRecorderBuilder("").build();
+  void preventEmpty_Name() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.doubleValueRecorderBuilder("").build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventNonPrintableName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleValueRecorderBuilder("\2").build();
+  void preventNonPrintableName() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.doubleValueRecorderBuilder("\2").build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventTooLongName() {
+  void preventTooLongName() {
     char[] chars = new char[256];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleValueRecorderBuilder(longName).build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.doubleValueRecorderBuilder(longName).build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventNull_Description() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("description");
-    meter.doubleValueRecorderBuilder("metric").setDescription(null).build();
+  void preventNull_Description() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleValueRecorderBuilder("metric").setDescription(null).build(),
+        "description");
   }
 
   @Test
-  public void preventNull_Unit() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("unit");
-    meter.doubleValueRecorderBuilder("metric").setUnit(null).build();
+  void preventNull_Unit() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleValueRecorderBuilder("metric").setUnit(null).build(),
+        "unit");
   }
 
   @Test
-  public void preventNull_ConstantLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("constantLabels");
-    meter.doubleValueRecorderBuilder("metric").setConstantLabels(null).build();
+  void preventNull_ConstantLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleValueRecorderBuilder("metric").setConstantLabels(null).build(),
+        "constantLabels");
   }
 
   @Test
-  public void record_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    meter.doubleValueRecorderBuilder("metric").build().record(1.0, null);
+  void record_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleValueRecorderBuilder("metric").build().record(1.0, null),
+        "labels");
   }
 
   @Test
-  public void record_DoesNotThrow() {
+  void record_DoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder =
         meter
             .doubleValueRecorderBuilder(NAME)
@@ -111,14 +111,15 @@ public final class DoubleValueRecorderTest {
   }
 
   @Test
-  public void bound_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    meter.doubleValueRecorderBuilder("metric").build().bind(null);
+  void bound_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleValueRecorderBuilder("metric").build().bind(null),
+        "labels");
   }
 
   @Test
-  public void bound_DoesNotThrow() {
+  void bound_DoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder =
         meter
             .doubleValueRecorderBuilder(NAME)

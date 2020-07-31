@@ -16,10 +16,10 @@
 
 package io.opentelemetry.opentracingshim;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.DefaultSpan;
@@ -31,14 +31,14 @@ import io.opentracing.propagation.TextMapAdapter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TracerShimTest {
+class TracerShimTest {
   TracerShim tracerShim;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     tracerShim =
         new TracerShim(
             new TelemetryInfo(
@@ -48,7 +48,7 @@ public class TracerShimTest {
   }
 
   @Test
-  public void defaultTracer() {
+  void defaultTracer() {
     assertNotNull(tracerShim.buildSpan("one"));
     assertNotNull(tracerShim.scopeManager());
     assertNull(tracerShim.activeSpan());
@@ -56,7 +56,7 @@ public class TracerShimTest {
   }
 
   @Test
-  public void activateSpan() {
+  void activateSpan() {
     Span otSpan = tracerShim.buildSpan("one").start();
     io.opentelemetry.trace.Span span = ((SpanShim) otSpan).getSpan();
 
@@ -75,21 +75,21 @@ public class TracerShimTest {
   }
 
   @Test
-  public void extract_nullContext() {
+  void extract_nullContext() {
     SpanContext result =
         tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(Collections.emptyMap()));
     assertNull(result);
   }
 
   @Test
-  public void inject_nullContext() {
+  void inject_nullContext() {
     Map<String, String> map = new HashMap<>();
     tracerShim.inject(null, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
     assertEquals(0, map.size());
   }
 
   @Test
-  public void close() {
+  void close() {
     tracerShim.close();
     Span otSpan = tracerShim.buildSpan(null).start();
     io.opentelemetry.trace.Span span = ((SpanShim) otSpan).getSpan();

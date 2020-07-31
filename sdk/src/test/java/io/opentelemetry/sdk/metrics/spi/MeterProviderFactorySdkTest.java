@@ -20,15 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link MeterProviderFactorySdk}. */
-@RunWith(JUnit4.class)
-public class MeterProviderFactorySdkTest {
+class MeterProviderFactorySdkTest {
   @Test
-  public void testDefault() {
+  void testDefault() {
     assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
   }
 }

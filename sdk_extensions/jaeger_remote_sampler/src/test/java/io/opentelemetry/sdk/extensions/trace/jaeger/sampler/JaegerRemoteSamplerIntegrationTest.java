@@ -26,13 +26,10 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
-@RunWith(JUnit4.class)
 public class JaegerRemoteSamplerIntegrationTest {
 
   private static final int QUERY_PORT = 16686;

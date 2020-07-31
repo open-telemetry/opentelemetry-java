@@ -20,12 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import io.opentelemetry.common.Attributes;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StringAttributeSetterTest {
+class StringAttributeSetterTest {
 
   @Test
-  public void attributesBuilder() {
+  void attributesBuilder() {
     StringAttributeSetter setter = StringAttributeSetter.create("hello?");
     assertThat(setter.key()).isEqualTo("hello?");
     assertThat(setter.toString()).isEqualTo("hello?");

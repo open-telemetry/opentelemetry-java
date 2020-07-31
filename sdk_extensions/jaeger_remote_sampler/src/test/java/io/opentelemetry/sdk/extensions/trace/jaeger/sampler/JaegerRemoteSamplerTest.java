@@ -40,12 +40,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 
-@RunWith(JUnit4.class)
 public class JaegerRemoteSamplerTest {
 
   private static final String SERVICE_NAME = "my-service";

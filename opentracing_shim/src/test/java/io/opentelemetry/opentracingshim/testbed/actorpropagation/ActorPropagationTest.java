@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * These tests are intended to simulate the kind of async models that are common in java async
@@ -47,20 +47,20 @@ import org.junit.Test;
  * @author tylerbenson
  */
 @SuppressWarnings("FutureReturnValueIgnored")
-public class ActorPropagationTest {
+class ActorPropagationTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private Phaser phaser;
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     phaser = new Phaser();
   }
 
   @Test
-  public void testActorTell() {
+  void testActorTell() {
     try (Actor actor = new Actor(tracer, phaser)) {
       phaser.register();
       Span parent =
@@ -96,7 +96,7 @@ public class ActorPropagationTest {
   }
 
   @Test
-  public void testActorAsk() throws ExecutionException, InterruptedException {
+  void testActorAsk() throws ExecutionException, InterruptedException {
     try (Actor actor = new Actor(tracer, phaser)) {
       phaser.register();
       Future<String> future1;

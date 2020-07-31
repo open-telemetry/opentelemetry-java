@@ -112,6 +112,8 @@ configure(opentelemetryProjects) {
         grpcVersion = '1.30.2'
         guavaVersion = '28.2-android'
         jmhVersion = '1.19'
+        junitVersion = '5.6.2'
+        mockitoVersion = '3.3.3'
         opentracingVersion = '0.33.0'
         prometheusVersion = '0.8.1'
         protobufVersion = '3.11.4'
@@ -122,6 +124,7 @@ configure(opentelemetryProjects) {
         boms = [
                 grpc           : "io.grpc:grpc-bom:${grpcVersion}",
                 guava          : "com.google.guava:guava-bom:${guavaVersion}",
+                junit          : "org.junit:junit-bom:${junitVersion}",
                 protobuf       : "com.google.protobuf:protobuf-bom:${protobufVersion}",
                 zipkin_reporter: "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
         ]
@@ -155,7 +158,12 @@ configure(opentelemetryProjects) {
                 // Test dependencies.
                 guava_testlib           : "com.google.guava:guava-testlib",
                 junit                   : 'junit:junit:4.12',
-                mockito                 : 'org.mockito:mockito-core:3.3.3',
+                junit_pioneer           : 'org.junit-pioneer:junit-pioneer:0.7.0',
+                junit_jupiter_api       : 'org.junit.jupiter:junit-jupiter-api',
+                junit_jupiter_engine    : 'org.junit.jupiter:junit-jupiter-engine',
+                junit_vintage_engine    : 'org.junit.vintage:junit-vintage-engine',
+                mockito                 : "org.mockito:mockito-core:${mockitoVersion}",
+                mockito_junit_jupiter   : "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
                 truth                   : 'com.google.truth:truth:1.0.1',
                 system_rules            : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
                 slf4jsimple             : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
@@ -195,6 +203,7 @@ configure(opentelemetryProjects) {
             if (it.name.endsWith('Classpath')) {
                 add(it.name, enforcedPlatform(boms.grpc))
                 add(it.name, enforcedPlatform(boms.guava))
+                add(it.name, enforcedPlatform(boms.junit))
                 add(it.name, enforcedPlatform(boms.protobuf))
                 add(it.name, enforcedPlatform(boms.zipkin_reporter))
             }
@@ -204,10 +213,14 @@ configure(opentelemetryProjects) {
                 libraries.errorprone_annotation,
                 libraries.jsr305
 
-        testImplementation libraries.junit,
+        testImplementation libraries.junit_jupiter_api,
                 libraries.mockito,
+                libraries.mockito_junit_jupiter,
                 libraries.truth,
                 libraries.guava_testlib
+
+        testRuntimeOnly libraries.junit_jupiter_engine,
+                libraries.junit_vintage_engine
 
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check
@@ -224,6 +237,7 @@ configure(opentelemetryProjects) {
 
         test {
             systemProperties project.properties.subMap(["enable.docker.tests"])
+            useJUnitPlatform()
         }
     }
 
