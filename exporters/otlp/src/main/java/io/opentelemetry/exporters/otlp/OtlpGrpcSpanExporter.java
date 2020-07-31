@@ -111,6 +111,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
       stub.export(exportTraceServiceRequest);
       return ResultCode.SUCCESS;
     } catch (Throwable e) {
+      logger.log(Level.WARNING, "Failed to export spans", e);
       return ResultCode.FAILURE;
     }
   }

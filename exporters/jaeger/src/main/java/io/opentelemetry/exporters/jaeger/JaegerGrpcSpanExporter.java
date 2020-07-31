@@ -126,6 +126,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       stub.postSpans(request);
       return ResultCode.SUCCESS;
     } catch (Throwable e) {
+      logger.log(Level.WARNING, "Failed to export spans", e);
       return ResultCode.FAILURE;
     }
   }
