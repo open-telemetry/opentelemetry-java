@@ -192,7 +192,7 @@ final class SpanBuilderSdk implements Span.Builder {
       attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
     }
 
-    if (traceConfig.getMaxLengthOfAttributeValues() > 0) {
+    if (traceConfig.shouldTruncateStringAttributeValues()) {
       value = StringUtils.truncateToSize(value, traceConfig.getMaxLengthOfAttributeValues());
     }
 

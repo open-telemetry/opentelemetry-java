@@ -93,7 +93,9 @@ public abstract class TraceConfig {
   private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
-  private static final int DEFAULT_KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH = 0;
+
+  private static final int UNLIMITED_ATTRIBUTE_LENGTH = -1;
+  private static final int DEFAULT_MAX_ATTRIBUTE_LENGTH = UNLIMITED_ATTRIBUTE_LENGTH;
 
   /**
    * Returns the default {@code TraceConfig}.
@@ -150,12 +152,16 @@ public abstract class TraceConfig {
   public abstract int getMaxNumberOfAttributesPerLink();
 
   /**
-   * Returns the global default max length of string attribute value in characters. Zero means
-   * unlimited.
+   * Returns the global default max length of string attribute value in characters.
    *
    * @return the global default max length of string attribute value in characters.
+   * @see #shouldTruncateStringAttributeValues()
    */
   public abstract int getMaxLengthOfAttributeValues();
+
+  public boolean shouldTruncateStringAttributeValues(){
+    return getMaxLengthOfAttributeValues() != UNLIMITED_ATTRIBUTE_LENGTH;
+  }
 
   /**
    * Returns a new {@link Builder}.
@@ -170,7 +176,7 @@ public abstract class TraceConfig {
         .setMaxNumberOfLinks(DEFAULT_SPAN_MAX_NUM_LINKS)
         .setMaxNumberOfAttributesPerEvent(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT)
         .setMaxNumberOfAttributesPerLink(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK)
-        .setMaxLengthOfAttributeValues(DEFAULT_KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH);
+        .setMaxLengthOfAttributeValues(DEFAULT_MAX_ATTRIBUTE_LENGTH);
   }
 
   /**
@@ -373,7 +379,7 @@ public abstract class TraceConfig {
       Preconditions.checkArgument(
           traceConfig.getMaxNumberOfAttributesPerLink() > 0, "maxNumberOfAttributesPerLink");
       Preconditions.checkArgument(
-          traceConfig.getMaxLengthOfAttributeValues() >= 0, "maxLengthOfAttributeValues");
+          traceConfig.getMaxLengthOfAttributeValues() >= -1, "maxLengthOfAttributeValues");
       return traceConfig;
     }
   }
