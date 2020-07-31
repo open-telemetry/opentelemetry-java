@@ -703,8 +703,10 @@ class SpanBuilderSdkTest {
           (RecordEventsReadableSpan)
               tracerSdk.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
       try {
-        assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-        assertThat(span.toSpanData().getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
+        assertThat(span.getContext().getTraceId().toString())
+            .isEqualTo(parent.getContext().getTraceId().toString());
+        assertThat(span.toSpanData().getParentSpanId().toString())
+            .isEqualTo(parent.getContext().getSpanId().toString());
       } finally {
         span.end();
       }
@@ -726,9 +728,10 @@ class SpanBuilderSdkTest {
       }
 
       try {
-        assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
-        assertThat(span.toSpanData().getParentSpanId())
-            .isNotEqualTo(parent.getContext().getSpanId());
+        assertThat(span.getContext().getTraceId().toString())
+            .isNotEqualTo(parent.getContext().getTraceId().toString());
+        assertThat(span.toSpanData().getParentSpanId().toString())
+            .isNotEqualTo(parent.getContext().getSpanId().toString());
       } finally {
         span.end();
       }

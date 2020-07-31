@@ -309,11 +309,9 @@ final class TracezZPageHandler extends ZPageHandler {
             + "TraceId: <b style=\"color:%s;\">%s</b> "
             + " | SpanId: %s | ParentSpanId: %s</b></pre></td>",
         span.getTraceFlags().isSampled() ? SAMPLED_TRACE_ID_COLOR : NOT_SAMPLED_TRACE_ID_COLOR,
-        span.getTraceId().toLowerBase16(),
-        span.getSpanId().toLowerBase16(),
-        (span.getParentSpanId() == null
-            ? SpanId.getInvalid().toLowerBase16()
-            : span.getParentSpanId().toLowerBase16()));
+        span.getTraceId(),
+        span.getSpanId(),
+        (span.getParentSpanId() == null ? SpanId.getInvalid() : span.getParentSpanId()));
     out.print("</tr>");
     zebraStripe = !zebraStripe;
 

@@ -40,9 +40,11 @@ class B3PropagatorTest {
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   private static final String TRACE_ID = "ff000000000000000000000000000041";
+  private static final String TRACE_ID_ALL_ZERO = "00000000000000000000000000000000";
   private static final String SHORT_TRACE_ID = "ff00000000000000";
-  private static final String PADDED_SHORT_TRACE_ID = "0000000000000000ff00000000000000";
+  private static final String SHORT_TRACE_ID_FULL = StringUtils.padLeft(SHORT_TRACE_ID, 32);
   private static final String SPAN_ID = "ff00000000000041";
+  private static final String SPAN_ID_ALL_ZERO = "0000000000000000";
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
   private static final TraceFlags SAMPLED_TRACE_OPTIONS =
       TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
@@ -182,7 +184,7 @@ class B3PropagatorTest {
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                PADDED_SHORT_TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -195,7 +197,7 @@ class B3PropagatorTest {
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                PADDED_SHORT_TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -208,14 +210,14 @@ class B3PropagatorTest {
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                PADDED_SHORT_TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+                SHORT_TRACE_ID_FULL, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
   void extract_InvalidTraceId_NotHex() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
-    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, "g" + TRACE_ID_BASE16.substring(1));
-    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
+    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, "g" + TRACE_ID.substring(1));
+    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
@@ -224,7 +226,7 @@ class B3PropagatorTest {
   @Test
   void extract_InvalidTraceId_TooShort() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
-    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID_BASE16.substring(2));
+    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID.substring(2));
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
@@ -245,7 +247,7 @@ class B3PropagatorTest {
   void extract_InvalidTraceId_AllZero() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID_ALL_ZERO);
-    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
+    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
@@ -254,8 +256,8 @@ class B3PropagatorTest {
   @Test
   void extract_InvalidSpanId_NotHex() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
-    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID_BASE16);
-    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, "g" + SPAN_ID_BASE16.substring(1));
+    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
+    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, "g" + SPAN_ID.substring(1));
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
@@ -264,8 +266,8 @@ class B3PropagatorTest {
   @Test
   void extract_InvalidSpanId_TooShort() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
-    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID_BASE16);
-    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16.substring(2));
+    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
+    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID.substring(2));
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
@@ -275,7 +277,7 @@ class B3PropagatorTest {
   void extract_InvalidSpanId_TooLong() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
-    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16 + "00");
+    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID + "00");
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
@@ -347,8 +349,7 @@ class B3PropagatorTest {
   @Test
   void extract_SampledContext_Int_SingleHeader() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(
-        B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT);
+    carrier.put(B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT);
 
     assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -360,8 +361,7 @@ class B3PropagatorTest {
   void extract_SampledContext_DebugFlag_SingleHeader() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        B3Propagator.COMBINED_HEADER,
-        TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT + "-" + "0");
+        B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT + "-" + "0");
 
     assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -394,8 +394,7 @@ class B3PropagatorTest {
   @Test
   void extract_NotSampledContext_SingleHeader() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(
-        B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.FALSE_INT);
+    carrier.put(B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.FALSE_INT);
 
     assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -412,7 +411,7 @@ class B3PropagatorTest {
     assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                PADDED_SHORT_TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -425,7 +424,7 @@ class B3PropagatorTest {
     assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                PADDED_SHORT_TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -436,7 +435,7 @@ class B3PropagatorTest {
     assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                PADDED_SHORT_TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -448,20 +447,19 @@ class B3PropagatorTest {
     assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                PADDED_SHORT_TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
   void extract_NotSampledContext_SingleHeader_Short_TraceId() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
-        B3Propagator.COMBINED_HEADER,
-        SHORT_TRACE_ID + "-" + SPAN_ID + "-" + Common.FALSE_INT);
+        B3Propagator.COMBINED_HEADER, SHORT_TRACE_ID + "-" + SPAN_ID + "-" + Common.FALSE_INT);
 
     assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                PADDED_SHORT_TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+                SHORT_TRACE_ID_FULL, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -516,8 +514,7 @@ class B3PropagatorTest {
   void extract_InvalidSpanId_SingleHeader() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        B3Propagator.COMBINED_HEADER,
-        TRACE_ID + "-" + "abcdefghijklmnop" + "-" + Common.TRUE_INT);
+        B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + "abcdefghijklmnop" + "-" + Common.TRUE_INT);
 
     assertThat(
             getSpanContext(
@@ -549,8 +546,7 @@ class B3PropagatorTest {
   void extract_TooManyParts_SingleHeader() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
-        B3Propagator.COMBINED_HEADER,
-        TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT + "-extra");
+        B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT + "-extra");
 
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());

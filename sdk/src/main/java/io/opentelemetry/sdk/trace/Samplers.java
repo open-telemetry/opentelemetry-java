@@ -226,7 +226,7 @@ public final class Samplers {
     @Override
     public SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
-        TraceId traceId,
+        CharSequence traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,

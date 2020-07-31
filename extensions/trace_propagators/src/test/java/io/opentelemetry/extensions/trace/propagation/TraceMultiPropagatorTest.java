@@ -50,8 +50,8 @@ class TraceMultiPropagatorTest {
   private static final Span SPAN =
       DefaultSpan.create(
           SpanContext.createFromRemoteParent(
-              new TraceId(1245, 67890),
-              new SpanId(12345),
+              TraceId.fromLongs(1245, 67890),
+              SpanId.fromLong(12345),
               TraceFlags.getDefault(),
               TraceState.getDefault()));
 
