@@ -159,7 +159,7 @@ public abstract class TraceConfig {
    */
   public abstract int getMaxLengthOfAttributeValues();
 
-  public boolean shouldTruncateStringAttributeValues(){
+  public boolean shouldTruncateStringAttributeValues() {
     return getMaxLengthOfAttributeValues() != UNLIMITED_ATTRIBUTE_LENGTH;
   }
 
