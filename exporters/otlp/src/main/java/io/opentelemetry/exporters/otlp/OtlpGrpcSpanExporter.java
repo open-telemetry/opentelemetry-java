@@ -68,6 +68,9 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
+  public static final String DEFAULT_ENDPOINT = "localhost:55680";
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
 
   private final TraceServiceGrpc.TraceServiceBlockingStub blockingStub;
@@ -167,8 +170,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     private static final String KEY_USE_TLS = "otel.otlp.use.tls";
     private static final String KEY_METADATA = "otel.otlp.metadata";
     private ManagedChannel channel;
-    private long deadlineMs = 1_000; // 1 second
-    private String endpoint = "localhost:55680";
+    private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
+    private String endpoint = DEFAULT_ENDPOINT;
     private boolean useTls;
     @Nullable private Metadata metadata;
 
