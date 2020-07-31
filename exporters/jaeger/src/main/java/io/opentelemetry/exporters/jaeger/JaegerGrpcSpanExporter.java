@@ -16,12 +16,6 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_DEADLINE_MS;
-import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_HOST_NAME;
-import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_SERVICE_NAME;
-import static io.opentelemetry.sdk.trace.export.ExporterConstants.JAEGER_DEFAULT_ENDPOINT;
-import static io.opentelemetry.sdk.trace.export.ExporterConstants.JAEGER_DEFAULT_IP;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
@@ -45,8 +39,13 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
+  public static final String DEFAULT_ENDPOINT = "localhost:14250";
   private static final String HOSTNAME_KEY = "hostname";
+  private static final String DEFAULT_HOST_NAME = "unknown";
   private static final String IP_KEY = "ip";
+  private static final String IP_DEFAULT = "0.0.0.0";
+  public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1); // 1 second
 
   private final CollectorServiceGrpc.CollectorServiceBlockingStub blockingStub;
   private final Model.Process process;
@@ -74,7 +73,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       ipv4 = InetAddress.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
       hostname = DEFAULT_HOST_NAME;
-      ipv4 = JAEGER_DEFAULT_IP;
+      ipv4 = IP_DEFAULT;
     }
 
     Model.KeyValue clientTag =
@@ -171,7 +170,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     private static final String KEY_ENDPOINT = "otel.jaeger.endpoint";
 
     private String serviceName = DEFAULT_SERVICE_NAME;
-    private String endpoint = JAEGER_DEFAULT_ENDPOINT;
+    private String endpoint = DEFAULT_ENDPOINT;
     private ManagedChannel channel;
     private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
 

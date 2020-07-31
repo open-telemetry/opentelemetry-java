@@ -16,8 +16,6 @@
 
 package io.opentelemetry.exporters.zipkin;
 
-import static io.opentelemetry.sdk.trace.export.ExporterConstants.DEFAULT_SERVICE_NAME;
-import static io.opentelemetry.sdk.trace.export.ExporterConstants.ZIPKIN_DEFAULT_ENDPOINT;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.common.AttributeValue;
@@ -75,6 +73,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
+  public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
+  public static final String DEFAULT_SERVICE_NAME = "unknown";
   // The naming follows Zipkin convention. For http see here:
   // https://github.com/openzipkin/brave/blob/eee993f998ae57b08644cc357a6d478827428710/instrumentation/http/src/main/java/brave/http/HttpTags.java
   // For discussion about GRPC errors/tags, see here:  https://github.com/openzipkin/brave/pull/999
@@ -284,7 +284,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
     private Sender sender;
     private String serviceName = DEFAULT_SERVICE_NAME;
-    private String endpoint = ZIPKIN_DEFAULT_ENDPOINT;
+    private String endpoint = DEFAULT_ENDPOINT;
 
     /**
      * Label of the remote node in the service graph, such as "favstar". Avoid names with variables
