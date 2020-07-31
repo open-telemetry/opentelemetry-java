@@ -19,15 +19,11 @@ package io.opentelemetry.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DefaultMeter}. */
-@RunWith(JUnit4.class)
-public final class DefaultMeterTest {
+class DefaultMeterTest {
   @Test
-  public void expectDefaultMeter() {
+  void expectDefaultMeter() {
     assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
     assertThat(OpenTelemetry.getMeter("test")).isInstanceOf(DefaultMeter.class);
     assertThat(OpenTelemetry.getMeter("test")).isSameInstanceAs(DefaultMeter.getInstance());
@@ -36,7 +32,7 @@ public final class DefaultMeterTest {
   }
 
   @Test
-  public void expectDefaultMeterProvider() {
+  void expectDefaultMeterProvider() {
     assertThat(OpenTelemetry.getMeterProvider())
         .isSameInstanceAs(DefaultMeterProvider.getInstance());
     assertThat(OpenTelemetry.getMeterProvider().get("test")).isInstanceOf(DefaultMeter.class);

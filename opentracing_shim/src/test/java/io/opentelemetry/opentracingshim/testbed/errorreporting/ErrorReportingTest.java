@@ -19,8 +19,8 @@ package io.opentelemetry.opentracingshim.testbed.errorreporting;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class ErrorReportingTest {
@@ -53,7 +53,7 @@ public final class ErrorReportingTest {
 
   /* Very simple error handling **/
   @Test
-  public void testSimpleError() {
+  void testSimpleError() {
     Span span = tracer.buildSpan("one").start();
     try (Scope scope = tracer.activateSpan(span)) {
       throw new RuntimeException("Invalid state");
@@ -72,7 +72,7 @@ public final class ErrorReportingTest {
 
   /* Error handling in a callback capturing/activating the Span */
   @Test
-  public void testCallbackError() {
+  void testCallbackError() {
     final Span span = tracer.buildSpan("one").start();
     executor.submit(
         () -> {
@@ -97,7 +97,7 @@ public final class ErrorReportingTest {
   /* Error handling for a max-retries task (such as url fetching).
    * We log the Exception at each retry. */
   @Test
-  public void testErrorRecovery() {
+  void testErrorRecovery() {
     final int maxRetries = 1;
     int retries = 0;
 
@@ -134,7 +134,7 @@ public final class ErrorReportingTest {
   /* Error handling for a mocked layer automatically capturing/activating
    * the Span for a submitted Runnable. */
   @Test
-  public void testInstrumentationLayer() {
+  void testInstrumentationLayer() {
     Span span = tracer.buildSpan("one").start();
     try (Scope scope = tracer.activateSpan(span)) {
 

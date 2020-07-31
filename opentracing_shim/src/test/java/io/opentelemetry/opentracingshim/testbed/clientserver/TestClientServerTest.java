@@ -20,8 +20,8 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSi
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -33,11 +33,11 @@ import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TestClientServerTest {
+class TestClientServerTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
@@ -46,20 +46,20 @@ public class TestClientServerTest {
   private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(10);
   private Server server;
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     server = new Server(queue, tracer);
     server.start();
   }
 
-  @After
-  public void after() throws InterruptedException {
+  @AfterEach
+  void after() throws InterruptedException {
     server.interrupt();
     server.join(5_000L);
   }
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     Client client = new Client(queue, tracer);
     client.send();
 

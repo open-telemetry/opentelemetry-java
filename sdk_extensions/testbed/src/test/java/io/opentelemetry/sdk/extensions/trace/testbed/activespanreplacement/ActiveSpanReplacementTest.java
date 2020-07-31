@@ -34,10 +34,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
-public class ActiveSpanReplacementTest {
+class ActiveSpanReplacementTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
@@ -46,7 +46,7 @@ public class ActiveSpanReplacementTest {
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
-  public void test() {
+  void test() {
     // Start an isolated task and query for its result in another task/thread
     Span span = tracer.spanBuilder("initial").startSpan();
     try (Scope scope = tracer.withSpan(span)) {

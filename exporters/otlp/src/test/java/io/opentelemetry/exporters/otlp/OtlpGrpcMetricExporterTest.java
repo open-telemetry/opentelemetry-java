@@ -47,12 +47,9 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
 /** Unit tests for {@link OtlpGrpcMetricExporter}. */
-@RunWith(JUnit4.class)
 public class OtlpGrpcMetricExporterTest {
   @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 

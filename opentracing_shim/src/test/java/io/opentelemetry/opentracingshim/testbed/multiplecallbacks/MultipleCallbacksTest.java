@@ -19,8 +19,8 @@ package io.opentelemetry.opentracingshim.testbed.multiplecallbacks;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -33,7 +33,7 @@ import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * These tests are intended to simulate a task with independent, asynchronous callbacks.
@@ -42,14 +42,14 @@ import org.junit.Test;
  * deterministic execution for the tests without sleeps.
  */
 @SuppressWarnings("FutureReturnValueIgnored")
-public class MultipleCallbacksTest {
+class MultipleCallbacksTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
 
   @Test
-  public void test() {
+  void test() {
     CountDownLatch parentDoneLatch = new CountDownLatch(1);
     Client client = new Client(tracer, parentDoneLatch);
 

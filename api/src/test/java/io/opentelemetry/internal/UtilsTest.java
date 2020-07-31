@@ -18,104 +18,102 @@ package io.opentelemetry.internal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Date;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Tests for {@link Utils}. */
-@RunWith(JUnit4.class)
-public final class UtilsTest {
+class UtilsTest {
   private static final String TEST_MESSAGE = "test message";
   private static final String TEST_MESSAGE_TEMPLATE = "I ate %s eggs.";
   private static final int TEST_MESSAGE_VALUE = 2;
   private static final String FORMATTED_SIMPLE_TEST_MESSAGE = "I ate 2 eggs.";
   private static final String FORMATTED_COMPLEX_TEST_MESSAGE = "I ate 2 eggs. [2]";
 
-  @Rule public ExpectedException thrown = ExpectedException.none();
-
   @Test
-  public void checkArgument() {
+  void checkArgument() {
     Utils.checkArgument(true, TEST_MESSAGE);
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(TEST_MESSAGE);
-    Utils.checkArgument(false, TEST_MESSAGE);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> Utils.checkArgument(false, TEST_MESSAGE),
+        TEST_MESSAGE);
   }
 
   @Test
-  public void checkArgument_WithSimpleFormat() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(FORMATTED_SIMPLE_TEST_MESSAGE);
-    Utils.checkArgument(false, TEST_MESSAGE_TEMPLATE, TEST_MESSAGE_VALUE);
+  void checkArgument_WithSimpleFormat() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> Utils.checkArgument(false, TEST_MESSAGE_TEMPLATE, TEST_MESSAGE_VALUE),
+        FORMATTED_SIMPLE_TEST_MESSAGE);
   }
 
   @Test
-  public void checkArgument_WithComplexFormat() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(FORMATTED_COMPLEX_TEST_MESSAGE);
-    Utils.checkArgument(false, TEST_MESSAGE_TEMPLATE, TEST_MESSAGE_VALUE, TEST_MESSAGE_VALUE);
+  void checkArgument_WithComplexFormat() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            Utils.checkArgument(
+                false, TEST_MESSAGE_TEMPLATE, TEST_MESSAGE_VALUE, TEST_MESSAGE_VALUE),
+        FORMATTED_COMPLEX_TEST_MESSAGE);
   }
 
   @Test
-  public void checkState() {
+  void checkState() {
     Utils.checkNotNull(true, TEST_MESSAGE);
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage(TEST_MESSAGE);
-    Utils.checkState(false, TEST_MESSAGE);
+    assertThrows(
+        IllegalStateException.class, () -> Utils.checkState(false, TEST_MESSAGE), TEST_MESSAGE);
   }
 
   @Test
-  public void checkNotNull() {
+  void checkNotNull() {
     Utils.checkNotNull(new Object(), TEST_MESSAGE);
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage(TEST_MESSAGE);
-    Utils.checkNotNull(null, TEST_MESSAGE);
+    assertThrows(
+        NullPointerException.class, () -> Utils.checkNotNull(null, TEST_MESSAGE), TEST_MESSAGE);
   }
 
   @Test
-  public void checkIndex_Valid() {
+  void checkIndex_Valid() {
     Utils.checkIndex(1, 2);
   }
 
   @Test
-  public void checkIndex_NegativeSize() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Negative size: -1");
-    Utils.checkIndex(0, -1);
+  void checkIndex_NegativeSize() {
+    assertThrows(
+        IllegalArgumentException.class, () -> Utils.checkIndex(0, -1), "Negative size: -1");
   }
 
   @Test
-  public void checkIndex_NegativeIndex() {
-    thrown.expect(IndexOutOfBoundsException.class);
-    thrown.expectMessage("Index out of bounds: size=10, index=-2");
-    Utils.checkIndex(-2, 10);
+  void checkIndex_NegativeIndex() {
+    assertThrows(
+        IndexOutOfBoundsException.class,
+        () -> Utils.checkIndex(-2, 10),
+        "Index out of bounds: size=10, index=-2");
   }
 
   @Test
-  public void checkIndex_IndexEqualToSize() {
-    thrown.expect(IndexOutOfBoundsException.class);
-    thrown.expectMessage("Index out of bounds: size=5, index=5");
-    Utils.checkIndex(5, 5);
+  void checkIndex_IndexEqualToSize() {
+    assertThrows(
+        IndexOutOfBoundsException.class,
+        () -> Utils.checkIndex(5, 5),
+        "Index out of bounds: size=5, index=5");
   }
 
   @Test
-  public void checkIndex_IndexGreaterThanSize() {
-    thrown.expect(IndexOutOfBoundsException.class);
-    thrown.expectMessage("Index out of bounds: size=10, index=11");
-    Utils.checkIndex(11, 10);
+  void checkIndex_IndexGreaterThanSize() {
+    assertThrows(
+        IndexOutOfBoundsException.class,
+        () -> Utils.checkIndex(11, 10),
+        "Index out of bounds: size=10, index=11");
   }
 
   @Test
-  public void equalsObjects_Equal() {
+  void equalsObjects_Equal() {
     assertTrue(Utils.equalsObjects(null, null));
     assertTrue(Utils.equalsObjects(new Date(1L), new Date(1L)));
   }
 
   @Test
-  public void equalsObjects_Unequal() {
+  void equalsObjects_Unequal() {
     assertFalse(Utils.equalsObjects(null, new Object()));
     assertFalse(Utils.equalsObjects(new Object(), null));
     assertFalse(Utils.equalsObjects(new Object(), new Object()));

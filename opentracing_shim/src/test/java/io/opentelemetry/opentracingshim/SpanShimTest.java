@@ -17,11 +17,11 @@
 package io.opentelemetry.opentracingshim;
 
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
@@ -29,11 +29,11 @@ import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.Map;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class SpanShimTest {
+class SpanShimTest {
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
@@ -42,18 +42,18 @@ public class SpanShimTest {
 
   private static final String SPAN_NAME = "Span";
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     span = telemetryInfo.tracer().spanBuilder(SPAN_NAME).startSpan();
   }
 
-  @After
-  public void tearDown() {
+  @AfterEach
+  void tearDown() {
     span.end();
   }
 
   @Test
-  public void context_simple() {
+  void context_simple() {
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
 
     SpanContextShim contextShim = (SpanContextShim) spanShim.context();
@@ -65,7 +65,7 @@ public class SpanShimTest {
   }
 
   @Test
-  public void baggage() {
+  void baggage() {
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
 
     spanShim.setBaggageItem("key1", "value1");
@@ -82,7 +82,7 @@ public class SpanShimTest {
   }
 
   @Test
-  public void baggage_replacement() {
+  void baggage_replacement() {
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
     SpanContextShim contextShim1 = (SpanContextShim) spanShim.context();
 
@@ -94,7 +94,7 @@ public class SpanShimTest {
   }
 
   @Test
-  public void baggage_differentShimObjs() {
+  void baggage_differentShimObjs() {
     SpanShim spanShim1 = new SpanShim(telemetryInfo, span);
     spanShim1.setBaggageItem("key1", "value1");
 

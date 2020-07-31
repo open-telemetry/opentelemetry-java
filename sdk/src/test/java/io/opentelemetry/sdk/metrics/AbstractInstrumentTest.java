@@ -27,13 +27,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AbstractInstrument}. */
-@RunWith(JUnit4.class)
-public class AbstractInstrumentTest {
+class AbstractInstrumentTest {
   private static final InstrumentDescriptor INSTRUMENT_DESCRIPTOR =
       InstrumentDescriptor.create(
           "name",
@@ -51,7 +48,7 @@ public class AbstractInstrumentTest {
   private static final ActiveBatcher ACTIVE_BATCHER = new ActiveBatcher(Batchers.getNoop());
 
   @Test
-  public void getValues() {
+  void getValues() {
     TestInstrument testInstrument =
         new TestInstrument(
             INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE, ACTIVE_BATCHER);

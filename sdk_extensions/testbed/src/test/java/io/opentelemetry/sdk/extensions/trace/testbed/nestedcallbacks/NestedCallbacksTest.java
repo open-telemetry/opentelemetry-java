@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class NestedCallbacksTest {
@@ -45,7 +45,7 @@ public final class NestedCallbacksTest {
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
-  public void test() {
+  void test() {
 
     Span span = tracer.spanBuilder("one").startSpan();
     submitCallbacks(span);

@@ -21,27 +21,24 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Aggregator}. */
-@RunWith(JUnit4.class)
-public class DoubleLastValueAggregatorTest {
+class DoubleLastValueAggregatorTest {
   @Test
-  public void factoryAggregation() {
+  void factoryAggregation() {
     AggregatorFactory factory = DoubleLastValueAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(DoubleLastValueAggregator.class);
   }
 
   @Test
-  public void toPoint() {
+  void toPoint() {
     Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     assertNullPoint(aggregator);
   }
 
   @Test
-  public void multipleRecords() {
+  void multipleRecords() {
     Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.1);
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(12.1);
@@ -51,7 +48,7 @@ public class DoubleLastValueAggregatorTest {
   }
 
   @Test
-  public void mergeAndReset() {
+  void mergeAndReset() {
     Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.recordDouble(13.1);
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(13.1);

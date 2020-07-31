@@ -26,18 +26,15 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Map;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceConfigzZPageHandler}. */
-@RunWith(JUnit4.class)
 public final class TraceConfigzZPageHandlerTest {
   private static final TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
   private static final Map<String, String> emptyQueryMap = ImmutableMap.of();
 
   @Test
-  public void changeTable_emitRowsCorrectly() {
+  void changeTable_emitRowsCorrectly() {
     OutputStream output = new ByteArrayOutputStream();
     String querySamplingProbability = "samplingprobability";
     String queryMaxNumOfAttributes = "maxnumofattributes";
@@ -84,7 +81,7 @@ public final class TraceConfigzZPageHandlerTest {
   }
 
   @Test
-  public void activeTable_emitRowsCorrectly() {
+  void activeTable_emitRowsCorrectly() {
     OutputStream output = new ByteArrayOutputStream();
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
@@ -129,7 +126,7 @@ public final class TraceConfigzZPageHandlerTest {
   }
 
   @Test
-  public void appliesChangesCorrectly_formSubmit() {
+  void appliesChangesCorrectly_formSubmit() {
     OutputStream output = new ByteArrayOutputStream();
     String querySamplingProbability = "samplingprobability";
     String queryMaxNumOfAttributes = "maxnumofattributes";
@@ -175,7 +172,7 @@ public final class TraceConfigzZPageHandlerTest {
   }
 
   @Test
-  public void appliesChangesCorrectly_restoreDefault() {
+  void appliesChangesCorrectly_restoreDefault() {
     OutputStream output = new ByteArrayOutputStream();
 
     Map<String, String> queryMap = ImmutableMap.of("action", "default");
@@ -199,7 +196,7 @@ public final class TraceConfigzZPageHandlerTest {
   }
 
   @Test
-  public void appliesChangesCorrectly_doNotCrashOnNullParameters() {
+  void appliesChangesCorrectly_doNotCrashOnNullParameters() {
     OutputStream output = new ByteArrayOutputStream();
 
     Map<String, String> queryMap = ImmutableMap.of("action", "change");
@@ -223,7 +220,7 @@ public final class TraceConfigzZPageHandlerTest {
   }
 
   @Test
-  public void applyChanges_emitErrorOnInvalidInput() {
+  void applyChanges_emitErrorOnInvalidInput() {
     // Invalid samplingProbability (not type of double)
     OutputStream output = new ByteArrayOutputStream();
     TraceConfigzZPageHandler traceConfigzZPageHandler =

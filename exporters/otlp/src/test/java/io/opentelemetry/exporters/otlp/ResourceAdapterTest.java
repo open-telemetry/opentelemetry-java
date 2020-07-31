@@ -23,15 +23,12 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.sdk.resources.Resource;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link ResourceAdapter}. */
-@RunWith(JUnit4.class)
-public class ResourceAdapterTest {
+class ResourceAdapterTest {
   @Test
-  public void toProtoResource() {
+  void toProtoResource() {
     assertThat(
             ResourceAdapter.toProtoResource(
                     Resource.create(
@@ -65,7 +62,7 @@ public class ResourceAdapterTest {
   }
 
   @Test
-  public void toProtoResource_Empty() {
+  void toProtoResource_Empty() {
     assertThat(ResourceAdapter.toProtoResource(Resource.getEmpty()))
         .isEqualTo(io.opentelemetry.proto.resource.v1.Resource.newBuilder().build());
   }

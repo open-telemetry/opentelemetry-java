@@ -21,27 +21,24 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleSumAggregator}. */
-@RunWith(JUnit4.class)
-public class DoubleSumAggregatorTest {
+class DoubleSumAggregatorTest {
   @Test
-  public void factoryAggregation() {
+  void factoryAggregation() {
     AggregatorFactory factory = DoubleSumAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(DoubleSumAggregator.class);
   }
 
   @Test
-  public void toPoint() {
+  void toPoint() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
   }
 
   @Test
-  public void multipleRecords() {
+  void multipleRecords() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
@@ -52,7 +49,7 @@ public class DoubleSumAggregatorTest {
   }
 
   @Test
-  public void multipleRecords_WithNegatives() {
+  void multipleRecords_WithNegatives() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
@@ -64,7 +61,7 @@ public class DoubleSumAggregatorTest {
   }
 
   @Test
-  public void mergeAndReset() {
+  void mergeAndReset() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(13.1);
     aggregator.recordDouble(12.1);

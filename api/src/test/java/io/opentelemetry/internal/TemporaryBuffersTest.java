@@ -18,12 +18,12 @@ package io.opentelemetry.internal;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TemporaryBuffersTest {
+class TemporaryBuffersTest {
 
   @Test
-  public void chars() {
+  void chars() {
     TemporaryBuffers.clearChars();
     char[] buffer10 = TemporaryBuffers.chars(10);
     assertThat(buffer10).hasLength(10);

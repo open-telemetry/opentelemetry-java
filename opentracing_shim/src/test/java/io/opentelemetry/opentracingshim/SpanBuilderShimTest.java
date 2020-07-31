@@ -17,16 +17,16 @@
 package io.opentelemetry.opentracingshim;
 
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.Tracer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SpanBuilderShimTest {
+class SpanBuilderShimTest {
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
@@ -35,7 +35,7 @@ public class SpanBuilderShimTest {
   private static final String SPAN_NAME = "Span";
 
   @Test
-  public void baggage_parent() {
+  void baggage_parent() {
     SpanShim parentSpan = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
     try {
       parentSpan.setBaggageItem("key1", "value1");
@@ -56,7 +56,7 @@ public class SpanBuilderShimTest {
   }
 
   @Test
-  public void baggage_parentContext() {
+  void baggage_parentContext() {
     SpanShim parentSpan = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
     try {
       parentSpan.setBaggageItem("key1", "value1");
@@ -78,7 +78,7 @@ public class SpanBuilderShimTest {
   }
 
   @Test
-  public void parent_NullContextShim() {
+  void parent_NullContextShim() {
     /* SpanContextShim is null until Span.context() or Span.getBaggageItem() are called.
      * Verify a null SpanContextShim in the parent is handled properly. */
     SpanShim parentSpan = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();

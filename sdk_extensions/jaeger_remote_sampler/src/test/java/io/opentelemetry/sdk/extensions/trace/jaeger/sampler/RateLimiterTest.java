@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.sdk.common.Clock;
 import java.util.ArrayList;
@@ -29,16 +29,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * This class was taken from Jaeger java client.
  * https://github.com/jaegertracing/jaeger-client-java/blob/master/jaeger-core/src/test/java/io/jaegertracing/internal/utils/RateLimiterTest.java
  */
-@RunWith(JUnit4.class)
-public class RateLimiterTest {
+class RateLimiterTest {
 
   private static class MockClock implements Clock {
 
@@ -56,7 +53,7 @@ public class RateLimiterTest {
   }
 
   @Test
-  public void testRateLimiterWholeNumber() {
+  void testRateLimiterWholeNumber() {
     MockClock clock = new MockClock();
     RateLimiter limiter = new RateLimiter(2.0, 2.0, clock);
 
@@ -90,7 +87,7 @@ public class RateLimiterTest {
   }
 
   @Test
-  public void testRateLimiterLessThanOne() {
+  void testRateLimiterLessThanOne() {
     MockClock clock = new MockClock();
     RateLimiter limiter = new RateLimiter(0.5, 0.5, clock);
 
@@ -124,7 +121,7 @@ public class RateLimiterTest {
   }
 
   @Test
-  public void testRateLimiterMaxBalance() {
+  void testRateLimiterMaxBalance() {
     MockClock clock = new MockClock();
     RateLimiter limiter = new RateLimiter(0.1, 1.0, clock);
 
@@ -147,7 +144,7 @@ public class RateLimiterTest {
    * ticks.
    */
   @Test
-  public void testRateLimiterInitial() {
+  void testRateLimiterInitial() {
     MockClock clock = new MockClock();
     clock.timeNanos = TimeUnit.MILLISECONDS.toNanos(-1_000_000);
     RateLimiter limiter = new RateLimiter(1000, 100, clock);
@@ -175,7 +172,7 @@ public class RateLimiterTest {
 
   /** Validates concurrent credit check correctness. */
   @Test
-  public void testRateLimiterConcurrency() throws InterruptedException, ExecutionException {
+  void testRateLimiterConcurrency() throws InterruptedException, ExecutionException {
     int numWorkers = 8;
     ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
     final int creditsPerWorker = 1000;
@@ -201,9 +198,9 @@ public class RateLimiterTest {
     executorService.shutdown();
     executorService.awaitTermination(1, TimeUnit.SECONDS);
     assertEquals(
-        "Exactly the allocated number of credits must be consumed",
         numWorkers * creditsPerWorker,
-        count.get());
+        count.get(),
+        "Exactly the allocated number of credits must be consumed");
     assertFalse(limiter.checkCredit(1));
   }
 }
