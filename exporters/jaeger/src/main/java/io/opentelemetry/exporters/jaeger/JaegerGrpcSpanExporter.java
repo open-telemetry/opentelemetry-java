@@ -36,20 +36,21 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
 @ThreadSafe
 public final class JaegerGrpcSpanExporter implements SpanExporter {
+  public static final String DEFAULT_HOST_NAME = "unknown";
+  public static final String DEFAULT_ENDPOINT = "localhost:14250";
+  public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+
   private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
   private static final String HOSTNAME_KEY = "hostname";
-  private static final String DEFAULT_HOST_NAME = "unknown";
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
   private final CollectorServiceGrpc.CollectorServiceBlockingStub blockingStub;
   private final Model.Process process;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
-  public static final String DEFAULT_ENDPOINT = "localhost:14250";
-  public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
 
   /**
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.

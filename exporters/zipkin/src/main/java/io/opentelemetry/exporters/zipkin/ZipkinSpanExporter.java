@@ -70,11 +70,11 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
  * </ul>
  */
 public final class ZipkinSpanExporter implements SpanExporter {
+  public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
+  public static final String DEFAULT_SERVICE_NAME = "unknown";
 
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
-  public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
-  public static final String DEFAULT_SERVICE_NAME = "unknown";
   // The naming follows Zipkin convention. For http see here:
   // https://github.com/openzipkin/brave/blob/eee993f998ae57b08644cc357a6d478827428710/instrumentation/http/src/main/java/brave/http/HttpTags.java
   // For discussion about GRPC errors/tags, see here:  https://github.com/openzipkin/brave/pull/999

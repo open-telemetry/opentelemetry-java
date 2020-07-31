@@ -68,13 +68,14 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
+  public static final String DEFAULT_ENDPOINT = "localhost:55680";
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
 
   private final TraceServiceGrpc.TraceServiceBlockingStub blockingStub;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
-  public static final String DEFAULT_ENDPOINT = "localhost:55680";
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
 
   /**
    * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.
