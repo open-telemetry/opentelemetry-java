@@ -49,7 +49,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private final long deadlineMs;
   public static final String DEFAULT_ENDPOINT = "localhost:14250";
   public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1); // 1 second
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
 
   /**
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
