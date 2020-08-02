@@ -94,7 +94,7 @@ public abstract class TraceConfig {
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
 
-  private static final int UNLIMITED_ATTRIBUTE_LENGTH = -1;
+  public static final int UNLIMITED_ATTRIBUTE_LENGTH = -1;
   private static final int DEFAULT_MAX_ATTRIBUTE_LENGTH = UNLIMITED_ATTRIBUTE_LENGTH;
 
   /**
@@ -354,8 +354,8 @@ public abstract class TraceConfig {
      * Sets the global default max length of string attribute value in characters.
      *
      * @param maxLengthOfAttributeValues the global default max length of string attribute value in
-     *     characters. It must be non-negative otherwise {@link #build()} will throw an exception.
-     *     Value of 0 means no limit.
+     *     characters. It must be non-negative (or {@link #UNLIMITED_ATTRIBUTE_LENGTH}) otherwise
+     *     {@link #build()} will throw an exception.
      * @return this.
      */
     public abstract Builder setMaxLengthOfAttributeValues(int maxLengthOfAttributeValues);
