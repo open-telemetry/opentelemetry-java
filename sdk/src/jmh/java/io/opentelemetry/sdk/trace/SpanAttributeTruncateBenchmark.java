@@ -69,6 +69,7 @@ public class SpanAttributeTruncateBenchmark {
     veryLongValue = longString.toString();
   }
 
+  /** attributes that don't require any truncation. */
   @Benchmark
   @Threads(value = 1)
   @Fork(1)
@@ -83,6 +84,7 @@ public class SpanAttributeTruncateBenchmark {
     return span;
   }
 
+  /** even if we truncate, result is short. */
   @Benchmark
   @Threads(value = 1)
   @Fork(1)
@@ -97,6 +99,7 @@ public class SpanAttributeTruncateBenchmark {
     return span;
   }
 
+  /** have to copy very long strings. */
   @Benchmark
   @Threads(value = 1)
   @Fork(1)
