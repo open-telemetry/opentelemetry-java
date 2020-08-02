@@ -47,9 +47,12 @@ public class SpanAttributeTruncateBenchmark {
 
   @Setup(Level.Trial)
   public final void setup() {
-    TraceConfig config = OpenTelemetrySdk.getTracerProvider().getActiveTraceConfig().toBuilder()
-        .setMaxLengthOfAttributeValues(maxLength)
-        .build();
+    TraceConfig config =
+        OpenTelemetrySdk.getTracerProvider()
+            .getActiveTraceConfig()
+            .toBuilder()
+            .setMaxLengthOfAttributeValues(maxLength)
+            .build();
     OpenTelemetrySdk.getTracerProvider().updateActiveTraceConfig(config);
     spanBuilderSdk =
         (SpanBuilderSdk)
@@ -73,8 +76,7 @@ public class SpanAttributeTruncateBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public RecordEventsReadableSpan shortAttributes() {
-    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilderSdk
-        .startSpan();
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilderSdk.startSpan();
     for (int i = 0; i < 10; i++) {
       span.setAttribute(String.valueOf(i), shortValue);
     }
@@ -88,8 +90,7 @@ public class SpanAttributeTruncateBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public RecordEventsReadableSpan longAttributes() {
-    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilderSdk
-        .startSpan();
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilderSdk.startSpan();
     for (int i = 0; i < 10; i++) {
       span.setAttribute(String.valueOf(i), longValue);
     }
@@ -103,12 +104,10 @@ public class SpanAttributeTruncateBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public RecordEventsReadableSpan veryLongAttributes() {
-    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilderSdk
-        .startSpan();
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilderSdk.startSpan();
     for (int i = 0; i < 10; i++) {
       span.setAttribute(String.valueOf(i), veryLongValue);
     }
     return span;
   }
-
 }
