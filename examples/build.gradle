@@ -14,7 +14,7 @@ subprojects {
     version = "0.1.0-SNAPSHOT"
 
     ext {
-        opentelemetryVersion = "0.7.0-SNAPSHOT"
+        opentelemetryVersion = "0.8.0-SNAPSHOT"
         grpcVersion = '1.28.0'
         protobufVersion = '3.11.4'
         protocVersion = protobufVersion
