@@ -13,7 +13,7 @@ ext {
 
 subprojects {
     group = "io.opentelemetry"
-    version = "0.7.0" // CURRENT_OPEN_TELEMETRY_VERSION
+    version = "0.7.1-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
 }
 
 configure(opentelemetryProjects) {
