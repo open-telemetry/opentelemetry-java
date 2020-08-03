@@ -247,6 +247,14 @@ configure(opentelemetryProjects) {
         links 'https://docs.oracle.com/javase/8/docs/api/'
     }
 
+    if (JavaVersion.current().isJava8Compatible()) {
+        allprojects {
+            tasks.withType(Javadoc) {
+                options.addStringOption('Xdoclint:none', '-quiet')
+            }
+        }
+    }
+
     afterEvaluate {  // Allow subproject to add more source sets.
         tasks.googleJavaFormat {
             source = sourceSets*.allJava
