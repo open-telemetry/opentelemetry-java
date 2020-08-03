@@ -18,6 +18,7 @@ dependencies {
     annotationProcessor libraries.auto_value
 
     testAnnotationProcessor libraries.auto_value
+    testCompileOnly libraries.auto_value_annotation
 
     testImplementation libraries.junit_pioneer
 

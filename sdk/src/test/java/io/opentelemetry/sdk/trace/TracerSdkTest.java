@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
@@ -76,7 +76,7 @@ class TracerSdkTest {
     Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
     // Make sure context is detached even if test fails.
     try {
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
+      assertThat(tracer.getCurrentSpan()).isSameAs(span);
     } finally {
       Context.current().detach(origContext);
     }
@@ -96,7 +96,7 @@ class TracerSdkTest {
   void getCurrentSpan_WithSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     try (Scope ignored = tracer.withSpan(span)) {
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
+      assertThat(tracer.getCurrentSpan()).isSameAs(span);
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }

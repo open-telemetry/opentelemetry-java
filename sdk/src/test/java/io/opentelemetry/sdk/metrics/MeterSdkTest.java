@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
@@ -67,7 +67,7 @@ class MeterSdkTest {
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(longCounter);
+        .isSameAs(longCounter);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -93,7 +93,7 @@ class MeterSdkTest {
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(longUpDownCounter);
+        .isSameAs(longUpDownCounter);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -119,7 +119,7 @@ class MeterSdkTest {
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(longValueRecorder);
+        .isSameAs(longValueRecorder);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -145,7 +145,7 @@ class MeterSdkTest {
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(longObserver);
+        .isSameAs(longObserver);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -171,7 +171,7 @@ class MeterSdkTest {
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(longObserver);
+        .isSameAs(longObserver);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -197,7 +197,7 @@ class MeterSdkTest {
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(doubleCounter);
+        .isSameAs(doubleCounter);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -223,7 +223,7 @@ class MeterSdkTest {
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(doubleUpDownCounter);
+        .isSameAs(doubleUpDownCounter);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -249,7 +249,7 @@ class MeterSdkTest {
                 .setDescription("My very own ValueRecorder")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(doubleValueRecorder);
+        .isSameAs(doubleValueRecorder);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -275,7 +275,7 @@ class MeterSdkTest {
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(doubleObserver);
+        .isSameAs(doubleObserver);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -301,7 +301,7 @@ class MeterSdkTest {
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
-        .isSameInstanceAs(doubleObserver);
+        .isSameAs(doubleObserver);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -333,7 +333,7 @@ class MeterSdkTest {
     // testSdk.doubleSumObserverBuilder("testDoubleSumObserver").build();
 
     assertThat(testSdk.collectAll())
-        .containsExactly(
+        .containsExactlyInAnyOrder(
             MetricData.create(
                 Descriptor.create(
                     "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),

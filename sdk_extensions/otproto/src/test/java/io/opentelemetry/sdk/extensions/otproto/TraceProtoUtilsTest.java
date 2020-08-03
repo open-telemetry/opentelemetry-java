@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.otproto;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.ByteString;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;

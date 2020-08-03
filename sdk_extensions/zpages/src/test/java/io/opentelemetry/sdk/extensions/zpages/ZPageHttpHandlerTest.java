@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -36,6 +37,6 @@ public final class ZPageHttpHandlerTest {
     URI uri =
         new URI("http://localhost:8000/tracez/tracez?zspanname=Test&ztype=1&zsubtype=5&noval");
     assertThat(ZPageHttpHandler.parseQueryMap(uri))
-        .containsExactly("zspanname", "Test", "ztype", "1", "zsubtype", "5");
+        .containsOnly(entry("zspanname", "Test"), entry("ztype", "1"), entry("zsubtype", "5"));
   }
 }

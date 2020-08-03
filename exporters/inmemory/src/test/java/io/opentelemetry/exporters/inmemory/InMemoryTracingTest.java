@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.inmemory;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.sdk.trace.Samplers;
@@ -36,7 +36,7 @@ class InMemoryTracingTest {
 
   @Test
   void defaultInstance() {
-    assertThat(tracing.getTracerProvider()).isSameInstanceAs(tracerSdkProvider);
+    assertThat(tracing.getTracerProvider()).isSameAs(tracerSdkProvider);
     assertThat(tracing.getSpanExporter().getFinishedSpanItems()).hasSize(0);
   }
 

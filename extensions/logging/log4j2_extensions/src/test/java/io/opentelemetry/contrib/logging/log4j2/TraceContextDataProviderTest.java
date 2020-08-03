@@ -16,7 +16,7 @@
 
 package io.opentelemetry.contrib.logging.log4j2;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.gson.Gson;
 import io.opentelemetry.OpenTelemetry;
@@ -88,7 +88,8 @@ public class TraceContextDataProviderTest {
     String withTrace = events.get(0);
 
     Gson gson = new Gson();
-    Map<?, ?> parsed = gson.fromJson(withTrace, Map.class);
+    @SuppressWarnings("unchecked")
+    Map<String, String> parsed = (Map<String, String>) gson.fromJson(withTrace, Map.class);
     assertThat(parsed).containsEntry("traceid", traceId);
     assertThat(parsed).containsEntry("spanid", spanId);
     assertThat(parsed).containsEntry("traceflags", "01");

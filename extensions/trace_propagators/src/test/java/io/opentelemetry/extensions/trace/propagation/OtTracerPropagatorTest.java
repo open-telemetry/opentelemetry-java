@@ -16,7 +16,7 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
@@ -122,7 +122,7 @@ class OtTracerPropagatorTest {
     // Context remains untouched.
     assertThat(
             propagator.extract(Context.current(), Collections.<String, String>emptyMap(), Map::get))
-        .isSameInstanceAs(Context.current());
+        .isSameAs(Context.current());
   }
 
   @Test
@@ -210,7 +210,7 @@ class OtTracerPropagatorTest {
     invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
     invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -220,7 +220,7 @@ class OtTracerPropagatorTest {
     invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
     invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -230,7 +230,7 @@ class OtTracerPropagatorTest {
     invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, "abcdefghijklmnop");
     invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -240,7 +240,7 @@ class OtTracerPropagatorTest {
     invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, "abcdefghijklmnop" + "00");
     invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test

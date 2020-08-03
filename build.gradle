@@ -156,6 +156,7 @@ configure(opentelemetryProjects) {
                 opentracing             : "io.opentracing:opentracing-api:${opentracingVersion}",
 
                 // Test dependencies.
+                assertj                 : "org.assertj:assertj-core:3.16.1",
                 guava_testlib           : "com.google.guava:guava-testlib",
                 junit                   : 'junit:junit:4.12',
                 junit_pioneer           : 'org.junit-pioneer:junit-pioneer:0.7.0',
@@ -164,7 +165,6 @@ configure(opentelemetryProjects) {
                 junit_vintage_engine    : 'org.junit.vintage:junit-vintage-engine',
                 mockito                 : "org.mockito:mockito-core:${mockitoVersion}",
                 mockito_junit_jupiter   : "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
-                truth                   : 'com.google.truth:truth:1.0.1',
                 system_rules            : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
                 slf4jsimple             : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
                 awaitility              : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
@@ -216,7 +216,7 @@ configure(opentelemetryProjects) {
         testImplementation libraries.junit_jupiter_api,
                 libraries.mockito,
                 libraries.mockito_junit_jupiter,
-                libraries.truth,
+                libraries.assertj,
                 libraries.guava_testlib
 
         testRuntimeOnly libraries.junit_jupiter_engine,

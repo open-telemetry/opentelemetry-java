@@ -16,7 +16,7 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
@@ -135,7 +135,7 @@ class B3PropagatorTest {
     assertThat(
             b3Propagator.extract(
                 Context.current(), Collections.<String, String>emptyMap(), Map::get))
-        .isSameInstanceAs(Context.current());
+        .isSameAs(Context.current());
   }
 
   @Test
@@ -223,7 +223,7 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -233,7 +233,7 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -243,7 +243,7 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -253,7 +253,7 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -263,7 +263,7 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, "g" + SPAN_ID_BASE16.substring(1));
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -273,7 +273,7 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16.substring(2));
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -283,7 +283,7 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16 + "00");
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -293,7 +293,7 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_ALL_ZERO);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -348,7 +348,7 @@ class B3PropagatorTest {
     assertThat(
             b3PropagatorSingleHeader.extract(
                 Context.current(), Collections.<String, String>emptyMap(), Map::get))
-        .isSameInstanceAs(Context.current());
+        .isSameAs(Context.current());
   }
 
   @Test
@@ -487,7 +487,7 @@ class B3PropagatorTest {
     assertThat(
             getSpanContext(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -498,7 +498,7 @@ class B3PropagatorTest {
     assertThat(
             getSpanContext(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -511,7 +511,7 @@ class B3PropagatorTest {
     assertThat(
             getSpanContext(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -524,7 +524,7 @@ class B3PropagatorTest {
     assertThat(
             getSpanContext(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -537,7 +537,7 @@ class B3PropagatorTest {
     assertThat(
             getSpanContext(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -548,7 +548,7 @@ class B3PropagatorTest {
         TRACE_ID_BASE16 + "-" + "abcdefghijklmnop" + "00" + "-" + Common.TRUE_INT);
 
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -557,7 +557,7 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.COMBINED_HEADER, TRACE_ID_BASE16);
 
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -568,7 +568,7 @@ class B3PropagatorTest {
         TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-" + Common.TRUE_INT + "-extra");
 
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test

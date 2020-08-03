@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
@@ -66,14 +66,13 @@ class MeterSdkRegistryTest {
 
   @Test
   void getSameInstanceForSameName_WithoutVersion() {
-    assertThat(meterRegistry.get("test")).isSameInstanceAs(meterRegistry.get("test"));
-    assertThat(meterRegistry.get("test")).isSameInstanceAs(meterRegistry.get("test", null));
+    assertThat(meterRegistry.get("test")).isSameAs(meterRegistry.get("test"));
+    assertThat(meterRegistry.get("test")).isSameAs(meterRegistry.get("test", null));
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
-    assertThat(meterRegistry.get("test", "version"))
-        .isSameInstanceAs(meterRegistry.get("test", "version"));
+    assertThat(meterRegistry.get("test", "version")).isSameAs(meterRegistry.get("test", "version"));
   }
 
   @Test
@@ -94,7 +93,7 @@ class MeterSdkRegistryTest {
     longCounter2.add(10, Labels.empty());
 
     assertThat(meterRegistry.getMetricProducer().collectAllMetrics())
-        .containsExactly(
+        .containsExactlyInAnyOrder(
             MetricData.create(
                 Descriptor.create(
                     "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),

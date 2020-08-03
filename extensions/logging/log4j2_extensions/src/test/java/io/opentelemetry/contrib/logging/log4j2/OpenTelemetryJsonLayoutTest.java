@@ -16,7 +16,7 @@
 
 package io.opentelemetry.contrib.logging.log4j2;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.gson.Gson;
 import io.opentelemetry.OpenTelemetry;
@@ -58,9 +58,9 @@ public class OpenTelemetryJsonLayoutTest {
     assertThat(data.get("name")).isEqualTo("DefaultJsonLogger");
     Map<?, ?> time = (Map<?, ?>) data.get("timestamp");
     double eventTime = (Double) time.get("millis");
-    assertThat(eventTime - logTime).isAtMost(100);
+    assertThat(eventTime - logTime).isLessThanOrEqualTo(100);
     assertThat(data.get("severitytext")).isEqualTo("WARN");
-    assertThat(data.get("severitynumber")).isEqualTo(13);
+    assertThat(data.get("severitynumber")).isEqualTo(13.0);
 
     assertThat(data.get("traceid")).isNull();
 

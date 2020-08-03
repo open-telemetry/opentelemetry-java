@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.extensions.zpages;
 
 import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.internal.TestClock;

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.common.AttributeValue;

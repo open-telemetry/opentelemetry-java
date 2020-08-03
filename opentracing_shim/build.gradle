@@ -13,7 +13,7 @@ dependencies {
     testImplementation project(':opentelemetry-sdk'),
             project(':opentelemetry-exporters-inmemory'),
             libraries.junit,
-            libraries.truth,
+            libraries.assertj,
             libraries.slf4jsimple,
             libraries.awaitility
 }

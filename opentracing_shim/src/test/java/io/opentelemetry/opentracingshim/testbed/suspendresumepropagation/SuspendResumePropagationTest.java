@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.suspendresumepropagation;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;

@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.correlationcontext.CorrelationContextTestUtil.listToCorrelationContext;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;

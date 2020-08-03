@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
@@ -60,7 +60,7 @@ class ScopedCorrelationContextTest {
     CorrelationContext scopedEntries =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedEntries)) {
-      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedEntries);
+      assertThat(contextManager.getCurrentContext()).isSameAs(scopedEntries);
     }
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
   }
@@ -76,10 +76,10 @@ class ScopedCorrelationContextTest {
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
       assertThat(newEntries.getEntries())
-          .containsExactly(
+          .containsExactlyInAnyOrder(
               Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
               Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
-      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
+      assertThat(contextManager.getCurrentContext()).isSameAs(scopedDistContext);
     }
   }
 
@@ -91,7 +91,7 @@ class ScopedCorrelationContextTest {
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
       assertThat(contextManager.getCurrentContext().getEntries())
           .containsExactly(Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION));
-      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
+      assertThat(contextManager.getCurrentContext()).isSameAs(scopedDistContext);
     }
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
   }
@@ -108,12 +108,12 @@ class ScopedCorrelationContextTest {
               .build();
       try (Scope scope2 = contextManager.withContext(innerDistContext)) {
         assertThat(contextManager.getCurrentContext().getEntries())
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
                 Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
-        assertThat(contextManager.getCurrentContext()).isSameInstanceAs(innerDistContext);
+        assertThat(contextManager.getCurrentContext()).isSameAs(innerDistContext);
       }
-      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
+      assertThat(contextManager.getCurrentContext()).isSameAs(scopedDistContext);
     }
   }
 
@@ -134,13 +134,13 @@ class ScopedCorrelationContextTest {
               .build();
       try (Scope scope2 = contextManager.withContext(innerDistContext)) {
         assertThat(contextManager.getCurrentContext().getEntries())
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
                 Entry.create(KEY_2, VALUE_4, METADATA_NO_PROPAGATION),
                 Entry.create(KEY_3, VALUE_3, METADATA_NO_PROPAGATION));
-        assertThat(contextManager.getCurrentContext()).isSameInstanceAs(innerDistContext);
+        assertThat(contextManager.getCurrentContext()).isSameAs(innerDistContext);
       }
-      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
+      assertThat(contextManager.getCurrentContext()).isSameAs(scopedDistContext);
     }
   }
 

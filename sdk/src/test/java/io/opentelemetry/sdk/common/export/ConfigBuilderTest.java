@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.common.export;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.sdk.common.export.ConfigBuilder.NamingConvention;
 import java.util.Collections;
@@ -146,7 +147,7 @@ public class ConfigBuilderTest {
     map.put("loWer_cAsE", "4");
     Map<String, String> normalized = NamingConvention.DOT.normalize(map);
     assertThat(normalized.size()).isEqualTo(2);
-    assertThat(normalized).containsExactly("lower.case", "3", "lower_case", "4");
+    assertThat(normalized).containsOnly(entry("lower.case", "3"), entry("lower_case", "4"));
   }
 
   @Test
@@ -158,7 +159,7 @@ public class ConfigBuilderTest {
     map.put("loWer_cAsE", "4");
     Map<String, String> normalized = NamingConvention.ENV_VAR.normalize(map);
     assertThat(normalized.size()).isEqualTo(1);
-    assertThat(normalized).containsExactly("lower.case", "3");
+    assertThat(normalized).containsExactly(entry("lower.case", "3"));
   }
 
   @Test

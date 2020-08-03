@@ -16,8 +16,8 @@
 
 package io.opentelemetry.exporters.logging;
 
-import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;

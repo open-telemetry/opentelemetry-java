@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
@@ -143,7 +143,7 @@ class RecordEventsReadableSpanTest {
 
     Link resultingLink = span.toSpanData().getLinks().get(0);
     assertThat(resultingLink.getTotalAttributeCount()).isEqualTo(1);
-    assertThat(resultingLink.getContext()).isSameInstanceAs(spanContext);
+    assertThat(resultingLink.getContext()).isSameAs(spanContext);
     assertThat(resultingLink.getAttributes()).isEqualTo(attributes);
   }
 

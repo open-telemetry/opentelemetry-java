@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -49,9 +49,9 @@ class SpanBucketTest {
     /* The latency SpanBucket should have the most recent LATENCY_BUCKET_SIZE spans */
     assertThat(latencyBucket.size()).isEqualTo(LATENCY_BUCKET_SIZE);
     assertThat(bucketSpans.size()).isEqualTo(LATENCY_BUCKET_SIZE);
-    assertThat(bucketSpans).doesNotContain(spans[0]);
+    assertThat(bucketSpans).doesNotContain((ReadableSpan) spans[0]);
     for (int i = 1; i < LATENCY_BUCKET_SIZE + 1; i++) {
-      assertThat(bucketSpans).contains(spans[i]);
+      assertThat(bucketSpans).contains((ReadableSpan) spans[i]);
     }
   }
 
@@ -69,9 +69,9 @@ class SpanBucketTest {
     /* The error SpanBucket should have the most recent ERROR_BUCKET_SIZE spans */
     assertThat(errorBucket.size()).isEqualTo(ERROR_BUCKET_SIZE);
     assertThat(bucketSpans.size()).isEqualTo(ERROR_BUCKET_SIZE);
-    assertThat(bucketSpans).doesNotContain(spans[0]);
+    assertThat(bucketSpans).doesNotContain((ReadableSpan) spans[0]);
     for (int i = 1; i < ERROR_BUCKET_SIZE + 1; i++) {
-      assertThat(bucketSpans).contains(spans[i]);
+      assertThat(bucketSpans).contains((ReadableSpan) spans[i]);
     }
   }
 
