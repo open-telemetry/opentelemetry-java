@@ -194,9 +194,9 @@ class TraceStateTest {
                 .set(SECOND_KEY, FIRST_VALUE) // add a new entry
                 .build()
                 .getEntries())
-        .containsExactlyInAnyOrder(
-            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE),
-            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE));
+        .containsExactly(
+            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE),
+            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE));
   }
 
   @Test
