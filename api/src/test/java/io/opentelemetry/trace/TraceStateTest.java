@@ -51,10 +51,11 @@ class TraceStateTest {
         .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
     assertThat(secondTraceState.getEntries())
         .containsExactly(TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
+    // Reverse order of input.
     assertThat(multiValueTraceState.getEntries())
-        .containsExactlyInAnyOrder(
-            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE),
-            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
+        .containsExactly(
+            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE),
+            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test
