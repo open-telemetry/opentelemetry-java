@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
@@ -109,15 +110,16 @@ class ConfigureTraceExample {
     class MySampler implements Sampler {
 
       @Override
-      public Decision shouldSample(
+      public SamplingResult shouldSample(
           SpanContext parentContext,
           TraceId traceId,
           String name,
-          Span.Kind spanKind,
+          Kind spanKind,
           ReadableAttributes attributes,
           List<Link> parentLinks) {
         // We sample only if the Span name contains "SAMPLE"
-        return Samplers.emptyDecision(name.contains("SAMPLE"));
+        return Samplers.emptySamplingResult(
+            name.contains("SAMPLE") ? Decision.RECORD_AND_SAMPLED : Decision.NOT_RECORD);
       }
 
       @Override
