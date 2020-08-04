@@ -414,7 +414,7 @@ tracerProvider.addSpanProcessor(BatchSpanProcessor.newBuilder(
 
 ## Logging and Error Handling 
 
-OpenTelemetry uses [java.util.logging](https://docs.oracle.com/javase/8/docs/api/java/util/logging/package-summary.html)
+OpenTelemetry uses [java.util.logging](https://docs.oracle.com/javase/7/docs/api/java/util/logging/package-summary.html)
 to log information about OpenTelemetry, including errors and warnings about misconfigurations or failures exporting 
 data. 
 
