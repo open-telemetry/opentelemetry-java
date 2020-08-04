@@ -92,6 +92,11 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
+  public SpanData.Builder toBuilder() {
+    return SpanDataImpl.newBuilder(this);
+  }
+
+  @Override
   public TraceId getTraceId() {
     return delegate().getContext().getTraceId();
   }

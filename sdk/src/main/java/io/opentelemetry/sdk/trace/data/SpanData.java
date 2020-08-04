@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -201,6 +202,195 @@ public interface SpanData {
    * @return The total number of attributes on this span.
    */
   int getTotalAttributeCount();
+
+  /**
+   * Returns a {@link Builder} populated with the information of this {@link SpanData}. This can be
+   * used to apply modifications to {@link SpanData} during export, e.g., by calculating derived
+   * attributes.
+   *
+   * @since 0.8.0
+   */
+  Builder toBuilder();
+
+  /**
+   * A builder of {@link SpanData}.
+   *
+   * @since 0.8.0
+   */
+  interface Builder {
+
+    /**
+     * Set the trace id on this builder.
+     *
+     * @param traceId the trace id.
+     * @return this builder (for chaining).
+     */
+    Builder setTraceId(TraceId traceId);
+
+    /**
+     * Set the span id on this builder.
+     *
+     * @param spanId the span id.
+     * @return this builder (for chaining).
+     */
+    Builder setSpanId(SpanId spanId);
+
+    /**
+     * Set the {@link TraceFlags} on this builder.
+     *
+     * @param traceFlags the trace flags.
+     * @return this.
+     */
+    Builder setTraceFlags(TraceFlags traceFlags);
+
+    /**
+     * Set the {@link TraceState} on this builder.
+     *
+     * @param traceState the {@code TraceState}.
+     * @return this.
+     */
+    Builder setTraceState(TraceState traceState);
+
+    /**
+     * The parent span id associated for this span, which may be null.
+     *
+     * @param parentSpanId the SpanId of the parent
+     * @return this.
+     */
+    Builder setParentSpanId(SpanId parentSpanId);
+
+    /**
+     * Set the {@link Resource} associated with this span. Must not be null.
+     *
+     * @param resource the Resource that generated this span.
+     * @return this
+     */
+    Builder setResource(Resource resource);
+
+    /**
+     * Sets the instrumentation library of the tracer which created this span. Must not be null.
+     *
+     * @param instrumentationLibraryInfo the instrumentation library of the tracer which created
+     *     this span.
+     * @return this
+     */
+    Builder setInstrumentationLibraryInfo(InstrumentationLibraryInfo instrumentationLibraryInfo);
+
+    /**
+     * Set the name of the span. Must not be null.
+     *
+     * @param name the name.
+     * @return this
+     */
+    Builder setName(String name);
+
+    /**
+     * Set the start timestamp of the span.
+     *
+     * @param epochNanos the start epoch timestamp in nanos.
+     * @return this
+     */
+    Builder setStartEpochNanos(long epochNanos);
+
+    /**
+     * Set the end timestamp of the span.
+     *
+     * @param epochNanos the end epoch timestamp in nanos.
+     * @return this
+     */
+    Builder setEndEpochNanos(long epochNanos);
+
+    /**
+     * Set the attributes that are associated with this span, as a Map of String keys to
+     * AttributeValue instances. Must not be null, may be empty.
+     *
+     * @param attributes a Map&lt;String, AttributeValue&gt; of attributes.
+     * @return this
+     * @see AttributeValue
+     */
+    Builder setAttributes(ReadableAttributes attributes);
+
+    /**
+     * Set timed events that are associated with this span. Must not be null, may be empty.
+     *
+     * @param events A List&lt;Event&gt; of events associated with this span.
+     * @return this
+     * @see Event
+     */
+    Builder setEvents(List<Event> events);
+
+    /**
+     * Set the status for this span. Must not be null.
+     *
+     * @param status The Status of this span.
+     * @return this
+     */
+    Builder setStatus(Status status);
+
+    /**
+     * Set the kind of span. Must not be null.
+     *
+     * @param kind The Kind of span.
+     * @return this
+     */
+    Builder setKind(Kind kind);
+
+    /**
+     * Set the links associated with this span. Must not be null, may be empty.
+     *
+     * @param links A List&lt;Link&gt;
+     * @return this
+     * @see io.opentelemetry.trace.Link
+     */
+    Builder setLinks(List<Link> links);
+
+    /**
+     * Sets to true if the span has a parent on a different process.
+     *
+     * @param hasRemoteParent A boolean indicating if the span has a remote parent.
+     * @return this
+     */
+    Builder setHasRemoteParent(boolean hasRemoteParent);
+
+    /**
+     * Sets to true if the span has been ended.
+     *
+     * @param hasEnded A boolean indicating if the span has been ended.
+     * @return this
+     */
+    Builder setHasEnded(boolean hasEnded);
+
+    /**
+     * Set the total number of events recorded on this span.
+     *
+     * @param totalRecordedEvents The total number of events recorded.
+     * @return this
+     */
+    Builder setTotalRecordedEvents(int totalRecordedEvents);
+
+    /**
+     * Set the total number of links recorded on this span.
+     *
+     * @param totalRecordedLinks The total number of links recorded.
+     * @return this
+     */
+    Builder setTotalRecordedLinks(int totalRecordedLinks);
+
+    /**
+     * Set the total number of attributes recorded on this span.
+     *
+     * @param totalAttributeCount The total number of attributes recorded.
+     * @return this
+     */
+    Builder setTotalAttributeCount(int totalAttributeCount);
+
+    /**
+     * Create a new SpanData instance from the data in this {@link SpanData.Builder}.
+     *
+     * @return a new SpanData instance
+     */
+    SpanData build();
+  }
 
   /**
    * An immutable implementation of {@link io.opentelemetry.trace.Link}.
