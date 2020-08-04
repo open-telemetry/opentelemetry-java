@@ -213,10 +213,6 @@ configure(opentelemetryProjects) {
                 libraries.errorprone_annotation,
                 libraries.jsr305
 
-        if (name != 'opentelemetry-testing-internal') {
-            testImplementation project(':opentelemetry-testing-internal')
-        }
-
         testImplementation libraries.junit_jupiter_api,
                 libraries.mockito,
                 libraries.mockito_junit_jupiter,

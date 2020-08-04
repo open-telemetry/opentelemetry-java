@@ -20,6 +20,8 @@ dependencies {
             libraries.protobuf,
             libraries.protobuf_util
 
+    testImplementation project(':opentelemetry-testing-internal')
+
     testImplementation "io.grpc:grpc-testing:${grpcVersion}",
             libraries.testcontainers,
             libraries.awaitility,
