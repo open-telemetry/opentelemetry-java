@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.internal;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -50,28 +50,27 @@ class ComponentRegistryTest {
 
   @Test
   void getSameInstanceForSameName_WithoutVersion() {
+    assertThat(registry.get(INSTRUMENTATION_NAME)).isSameAs(registry.get(INSTRUMENTATION_NAME));
     assertThat(registry.get(INSTRUMENTATION_NAME))
-        .isSameInstanceAs(registry.get(INSTRUMENTATION_NAME));
-    assertThat(registry.get(INSTRUMENTATION_NAME))
-        .isSameInstanceAs(registry.get(INSTRUMENTATION_NAME, null));
+        .isSameAs(registry.get(INSTRUMENTATION_NAME, null));
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
     assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
-        .isSameInstanceAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION));
+        .isSameAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION));
   }
 
   @Test
   void getDifferentInstancesForDifferentNames() {
     assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
-        .isNotSameInstanceAs(registry.get(INSTRUMENTATION_NAME + "_2", INSTRUMENTATION_VERSION));
+        .isNotSameAs(registry.get(INSTRUMENTATION_NAME + "_2", INSTRUMENTATION_VERSION));
   }
 
   @Test
   void getDifferentInstancesForDifferentVersions() {
     assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
-        .isNotSameInstanceAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION + "_1"));
+        .isNotSameAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION + "_1"));
   }
 
   private static final class TestComponent {

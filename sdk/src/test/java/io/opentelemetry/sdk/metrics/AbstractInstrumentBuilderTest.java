@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.ERROR_MESSAGE_INVALID_NAME;
 import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.NAME_MAX_LENGTH;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Labels;
@@ -152,8 +152,8 @@ class AbstractInstrumentBuilderTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS);
     assertThat(testInstrumentBuilder.getMeterProviderSharedState())
-        .isSameInstanceAs(METER_PROVIDER_SHARED_STATE);
-    assertThat(testInstrumentBuilder.getMeterSharedState()).isSameInstanceAs(METER_SHARED_STATE);
+        .isSameAs(METER_PROVIDER_SHARED_STATE);
+    assertThat(testInstrumentBuilder.getMeterSharedState()).isSameAs(METER_SHARED_STATE);
 
     TestInstrument testInstrument = testInstrumentBuilder.build();
     assertThat(testInstrument).isInstanceOf(TestInstrument.class);

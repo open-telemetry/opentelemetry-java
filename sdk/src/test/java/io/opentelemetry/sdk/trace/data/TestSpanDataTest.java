@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.trace.data;
 
-import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Attributes;
@@ -48,7 +48,7 @@ class TestSpanDataTest {
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
     assertThat(spanData.getInstrumentationLibraryInfo())
-        .isSameInstanceAs(InstrumentationLibraryInfo.getEmpty());
+        .isSameAs(InstrumentationLibraryInfo.getEmpty());
     assertThat(spanData.getHasRemoteParent()).isFalse();
   }
 

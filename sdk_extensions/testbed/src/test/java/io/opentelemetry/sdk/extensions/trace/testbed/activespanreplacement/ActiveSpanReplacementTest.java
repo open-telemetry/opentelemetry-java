@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.activespanreplacement;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.extensions.trace.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.sdk.extensions.trace.testbed.TestUtils.sleep;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -72,7 +72,7 @@ class ActiveSpanReplacementTest {
     assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
     assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
   }
 
   private void submitAnotherTask(final Span initialSpan) {

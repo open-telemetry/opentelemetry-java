@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -52,11 +52,10 @@ class AbstractInstrumentTest {
     TestInstrument testInstrument =
         new TestInstrument(
             INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE, ACTIVE_BATCHER);
-    assertThat(testInstrument.getDescriptor()).isSameInstanceAs(INSTRUMENT_DESCRIPTOR);
-    assertThat(testInstrument.getMeterProviderSharedState())
-        .isSameInstanceAs(METER_PROVIDER_SHARED_STATE);
-    assertThat(testInstrument.getMeterSharedState()).isSameInstanceAs(METER_SHARED_STATE);
-    assertThat(testInstrument.getActiveBatcher()).isSameInstanceAs(ACTIVE_BATCHER);
+    assertThat(testInstrument.getDescriptor()).isSameAs(INSTRUMENT_DESCRIPTOR);
+    assertThat(testInstrument.getMeterProviderSharedState()).isSameAs(METER_PROVIDER_SHARED_STATE);
+    assertThat(testInstrument.getMeterSharedState()).isSameAs(METER_SHARED_STATE);
+    assertThat(testInstrument.getActiveBatcher()).isSameAs(ACTIVE_BATCHER);
   }
 
   private static final class TestInstrument extends AbstractInstrument {

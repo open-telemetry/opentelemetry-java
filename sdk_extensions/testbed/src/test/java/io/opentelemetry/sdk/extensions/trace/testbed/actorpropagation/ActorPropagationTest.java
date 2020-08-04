@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.actorpropagation;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
@@ -84,7 +84,7 @@ class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+      assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
     }
   }
 
@@ -125,7 +125,7 @@ class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+      assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
     }
   }
 }

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.context.propagation;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
@@ -89,7 +89,7 @@ class DefaultPropagatorsTest {
     assertThat(map).isEmpty();
 
     assertThat(propagators.getHttpTextFormat().extract(context, map, MapGetter.INSTANCE))
-        .isSameInstanceAs(context);
+        .isSameAs(context);
   }
 
   private static class CustomHttpTextFormat implements HttpTextFormat {

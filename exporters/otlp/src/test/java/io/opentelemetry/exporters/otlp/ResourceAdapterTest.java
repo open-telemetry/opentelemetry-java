@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -42,7 +42,7 @@ class ResourceAdapterTest {
                             "key_double",
                             AttributeValue.doubleAttributeValue(100.3))))
                 .getAttributesList())
-        .containsExactly(
+        .containsExactlyInAnyOrder(
             KeyValue.newBuilder()
                 .setKey("key_bool")
                 .setValue(AnyValue.newBuilder().setBoolValue(true).build())

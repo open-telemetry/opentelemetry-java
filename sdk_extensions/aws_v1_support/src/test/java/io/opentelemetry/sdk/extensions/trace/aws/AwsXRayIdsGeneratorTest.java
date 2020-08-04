@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.trace.IdsGenerator;
 import io.opentelemetry.trace.SpanId;
@@ -51,7 +51,7 @@ class AwsXRayIdsGeneratorTest {
       long unixSeconds = Long.valueOf(traceId.toLowerBase16().substring(0, 8), 16);
       long ts = unixSeconds * 1000L;
       long currentTs = System.currentTimeMillis();
-      assertThat(ts).isAtMost(currentTs);
+      assertThat(ts).isLessThanOrEqualTo(currentTs);
       long month = 86400000L * 30L;
       assertThat(ts).isGreaterThan(currentTs - month);
     }

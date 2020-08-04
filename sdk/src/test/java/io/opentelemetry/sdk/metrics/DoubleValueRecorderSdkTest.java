@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
@@ -164,7 +164,7 @@ class DoubleValueRecorderSdkTest {
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
       assertThat(metricData.getPoints())
-          .containsExactly(
+          .containsExactlyInAnyOrder(
               SummaryPoint.create(
                   startTime,
                   firstCollect,
@@ -190,7 +190,7 @@ class DoubleValueRecorderSdkTest {
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
       assertThat(metricData.getPoints())
-          .containsExactly(
+          .containsExactlyInAnyOrder(
               SummaryPoint.create(
                   startTime + SECOND_NANOS,
                   secondCollect,

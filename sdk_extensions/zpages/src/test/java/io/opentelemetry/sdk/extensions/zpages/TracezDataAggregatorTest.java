@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -128,7 +128,7 @@ public final class TracezDataAggregatorTest {
     /* getRunningSpans should return a List with all 3 spans */
     List<SpanData> spans = dataAggregator.getRunningSpans(SPAN_NAME_ONE);
     assertThat(spans)
-        .containsExactly(
+        .containsExactlyInAnyOrder(
             ((ReadableSpan) span1).toSpanData(),
             ((ReadableSpan) span2).toSpanData(),
             ((ReadableSpan) span3).toSpanData());

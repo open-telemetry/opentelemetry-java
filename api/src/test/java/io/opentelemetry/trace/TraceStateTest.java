@@ -16,7 +16,7 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
@@ -51,10 +51,11 @@ class TraceStateTest {
         .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
     assertThat(secondTraceState.getEntries())
         .containsExactly(TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
+    // Reverse order of input.
     assertThat(multiValueTraceState.getEntries())
         .containsExactly(
-            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE),
-            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
+            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE),
+            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test
@@ -194,8 +195,8 @@ class TraceStateTest {
                 .build()
                 .getEntries())
         .containsExactly(
-            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE),
-            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE));
+            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE),
+            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE));
   }
 
   @Test

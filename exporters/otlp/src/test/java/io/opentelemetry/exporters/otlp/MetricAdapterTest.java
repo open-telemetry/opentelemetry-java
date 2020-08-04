@@ -16,8 +16,8 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
@@ -429,7 +429,7 @@ class MetricAdapterTest {
                         Resource.getEmpty(),
                         InstrumentationLibraryInfo.getEmpty(),
                         Collections.emptyList()))))
-        .containsExactly(
+        .containsExactlyInAnyOrder(
             ResourceMetrics.newBuilder()
                 .setResource(resourceProto)
                 .addAllInstrumentationLibraryMetrics(

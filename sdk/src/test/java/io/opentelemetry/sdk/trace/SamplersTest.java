@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
@@ -54,9 +54,9 @@ class SamplersTest {
   @Test
   void emptySamplingDecision() {
     assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED))
-        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
     assertThat(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD))
-        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
 
     assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED).getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -74,9 +74,9 @@ class SamplersTest {
   @Test
   void samplingDecisionEmpty() {
     assertThat(Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLED, Attributes.empty()))
-        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
     assertThat(Samplers.samplingResult(Sampler.Decision.NOT_RECORD, Attributes.empty()))
-        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
   }
 
   @Test

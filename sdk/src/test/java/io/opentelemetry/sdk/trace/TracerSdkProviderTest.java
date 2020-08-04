@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
@@ -83,14 +83,13 @@ class TracerSdkProviderTest {
 
   @Test
   void getSameInstanceForSameName_WithoutVersion() {
-    assertThat(tracerFactory.get("test")).isSameInstanceAs(tracerFactory.get("test"));
-    assertThat(tracerFactory.get("test")).isSameInstanceAs(tracerFactory.get("test", null));
+    assertThat(tracerFactory.get("test")).isSameAs(tracerFactory.get("test"));
+    assertThat(tracerFactory.get("test")).isSameAs(tracerFactory.get("test", null));
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
-    assertThat(tracerFactory.get("test", "version"))
-        .isSameInstanceAs(tracerFactory.get("test", "version"));
+    assertThat(tracerFactory.get("test", "version")).isSameAs(tracerFactory.get("test", "version"));
   }
 
   @Test

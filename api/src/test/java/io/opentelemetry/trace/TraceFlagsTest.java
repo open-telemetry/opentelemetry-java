@@ -16,7 +16,7 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import org.junit.jupiter.api.Test;
@@ -29,14 +29,14 @@ class TraceFlagsTest {
 
   @Test
   void getByte() {
-    assertThat(TraceFlags.getDefault().getByte()).isEqualTo(0);
-    assertThat(TraceFlags.builder().setIsSampled(false).build().getByte()).isEqualTo(0);
-    assertThat(TraceFlags.builder().setIsSampled(true).build().getByte()).isEqualTo(1);
+    assertThat(TraceFlags.getDefault().getByte()).isZero();
+    assertThat(TraceFlags.builder().setIsSampled(false).build().getByte()).isZero();
+    assertThat(TraceFlags.builder().setIsSampled(true).build().getByte()).isOne();
     assertThat(TraceFlags.builder().setIsSampled(true).setIsSampled(false).build().getByte())
-        .isEqualTo(0);
-    assertThat(TraceFlags.fromByte(FIRST_BYTE).getByte()).isEqualTo(-1);
-    assertThat(TraceFlags.fromByte(SECOND_BYTE).getByte()).isEqualTo(1);
-    assertThat(TraceFlags.fromByte(THIRD_BYTE).getByte()).isEqualTo(6);
+        .isZero();
+    assertThat(TraceFlags.fromByte(FIRST_BYTE).getByte()).isEqualTo((byte) -1);
+    assertThat(TraceFlags.fromByte(SECOND_BYTE).getByte()).isOne();
+    assertThat(TraceFlags.fromByte(THIRD_BYTE).getByte()).isEqualTo((byte) 6);
   }
 
   @Test
@@ -66,7 +66,7 @@ class TraceFlagsTest {
                 .setIsSampled(true)
                 .build()
                 .getByte())
-        .isEqualTo(6 | 1);
+        .isEqualTo((byte) (6 | 1));
   }
 
   @Test

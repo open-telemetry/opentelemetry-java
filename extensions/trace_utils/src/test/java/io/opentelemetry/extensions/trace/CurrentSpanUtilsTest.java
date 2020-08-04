@@ -16,7 +16,7 @@
 
 package io.opentelemetry.extensions.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -69,7 +69,7 @@ class CurrentSpanUtilsTest {
     Runnable runnable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
         };
     CurrentSpanUtils.withSpan(span, false, runnable).run();
     verifyNoInteractions(span);
@@ -82,7 +82,7 @@ class CurrentSpanUtilsTest {
     Runnable runnable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
         };
     CurrentSpanUtils.withSpan(span, true, runnable).run();
     verify(span).end();
@@ -96,7 +96,7 @@ class CurrentSpanUtilsTest {
     Runnable runnable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
           throw error;
         };
     executeRunnableAndExpectError(runnable, error);
@@ -112,7 +112,7 @@ class CurrentSpanUtilsTest {
     Runnable runnable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
           throw error;
         };
     executeRunnableAndExpectError(runnable, error);
@@ -128,7 +128,7 @@ class CurrentSpanUtilsTest {
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
           return ret;
         };
     assertThat(CurrentSpanUtils.withSpan(span, false, callable).call()).isEqualTo(ret);
@@ -143,7 +143,7 @@ class CurrentSpanUtilsTest {
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
           return ret;
         };
     assertThat(CurrentSpanUtils.withSpan(span, true, callable).call()).isEqualTo(ret);
@@ -158,7 +158,7 @@ class CurrentSpanUtilsTest {
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
           throw exception;
         };
     executeCallableAndExpectError(callable, exception);
@@ -174,7 +174,7 @@ class CurrentSpanUtilsTest {
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
           throw exception;
         };
     executeCallableAndExpectError(callable, exception);
@@ -190,7 +190,7 @@ class CurrentSpanUtilsTest {
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
           throw error;
         };
     executeCallableAndExpectError(callable, error);
@@ -206,7 +206,7 @@ class CurrentSpanUtilsTest {
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
-          assertThat(getCurrentSpan()).isSameInstanceAs(span);
+          assertThat(getCurrentSpan()).isSameAs(span);
           throw error;
         };
     executeCallableAndExpectError(callable, error);

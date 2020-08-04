@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics.spi;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;

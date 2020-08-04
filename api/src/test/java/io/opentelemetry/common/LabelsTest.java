@@ -16,7 +16,8 @@
 
 package io.opentelemetry.common;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +37,7 @@ class LabelsTest {
 
     labels.forEach(entriesSeen::put);
 
-    assertThat(entriesSeen).containsExactly("key1", "value1", "key2", "value2");
+    assertThat(entriesSeen).containsExactly(entry("key1", "value1"), entry("key2", "value2"));
   }
 
   @Test
@@ -46,7 +47,7 @@ class LabelsTest {
     Labels labels = Labels.of("key", "value");
     labels.forEach(entriesSeen::put);
 
-    assertThat(entriesSeen).containsExactly("key", "value");
+    assertThat(entriesSeen).containsExactly(entry("key", "value"));
   }
 
   @Test

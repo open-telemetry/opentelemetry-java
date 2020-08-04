@@ -16,7 +16,7 @@
 
 package io.opentelemetry.correlationcontext;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class CorrelationsContextUtilsTest {
   @Test
   void testGetCurrentCorrelationContext_Default() {
     CorrelationContext corrContext = CorrelationsContextUtils.getCurrentCorrelationContext();
-    assertThat(corrContext).isSameInstanceAs(EmptyCorrelationContext.getInstance());
+    assertThat(corrContext).isSameAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
@@ -36,8 +36,7 @@ class CorrelationsContextUtilsTest {
     Context orig =
         CorrelationsContextUtils.withCorrelationContext(corrContext, Context.current()).attach();
     try {
-      assertThat(CorrelationsContextUtils.getCurrentCorrelationContext())
-          .isSameInstanceAs(corrContext);
+      assertThat(CorrelationsContextUtils.getCurrentCorrelationContext()).isSameAs(corrContext);
     } finally {
       Context.current().detach(orig);
     }
@@ -47,7 +46,7 @@ class CorrelationsContextUtilsTest {
   void testGetCorrelationContext_DefaultContext() {
     CorrelationContext corrContext =
         CorrelationsContextUtils.getCorrelationContext(Context.current());
-    assertThat(corrContext).isSameInstanceAs(EmptyCorrelationContext.getInstance());
+    assertThat(corrContext).isSameAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
@@ -56,8 +55,7 @@ class CorrelationsContextUtilsTest {
         DefaultCorrelationContextManager.getInstance().contextBuilder().build();
     Context context =
         CorrelationsContextUtils.withCorrelationContext(corrContext, Context.current());
-    assertThat(CorrelationsContextUtils.getCorrelationContext(context))
-        .isSameInstanceAs(corrContext);
+    assertThat(CorrelationsContextUtils.getCorrelationContext(context)).isSameAs(corrContext);
   }
 
   @Test
@@ -73,7 +71,6 @@ class CorrelationsContextUtilsTest {
         DefaultCorrelationContextManager.getInstance().contextBuilder().build();
     Context context =
         CorrelationsContextUtils.withCorrelationContext(corrContext, Context.current());
-    assertThat(CorrelationsContextUtils.getCorrelationContext(context))
-        .isSameInstanceAs(corrContext);
+    assertThat(CorrelationsContextUtils.getCorrelationContext(context)).isSameAs(corrContext);
   }
 }

@@ -16,9 +16,9 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.trace.TracingContextUtils.getSpan;
 import static io.opentelemetry.trace.TracingContextUtils.withSpan;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -128,7 +128,7 @@ class TraceMultiPropagatorTest {
 
     Context context = Context.current();
     Context resContext = prop.extract(context, carrier, Map::get);
-    assertThat(context).isSameInstanceAs(resContext);
+    assertThat(context).isSameAs(resContext);
   }
 
   @Test

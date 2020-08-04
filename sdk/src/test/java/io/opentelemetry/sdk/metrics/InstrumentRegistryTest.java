@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.common.InstrumentationLibraryInfo.getEmpty;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Labels;
@@ -61,9 +61,9 @@ class InstrumentRegistryTest {
         new TestInstrument(
             INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, ACTIVE_BATCHER);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
-        .isSameInstanceAs(testInstrument);
+        .isSameAs(testInstrument);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
-        .isSameInstanceAs(testInstrument);
+        .isSameAs(testInstrument);
     assertThat(
             meterSharedState
                 .getInstrumentRegistry()
@@ -73,7 +73,7 @@ class InstrumentRegistryTest {
                         METER_PROVIDER_SHARED_STATE,
                         meterSharedState,
                         ACTIVE_BATCHER)))
-        .isSameInstanceAs(testInstrument);
+        .isSameAs(testInstrument);
   }
 
   @Test
@@ -83,7 +83,7 @@ class InstrumentRegistryTest {
         new TestInstrument(
             INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, ACTIVE_BATCHER);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
-        .isSameInstanceAs(testInstrument);
+        .isSameAs(testInstrument);
 
     assertThrows(
         IllegalArgumentException.class,
@@ -106,7 +106,7 @@ class InstrumentRegistryTest {
         new TestInstrument(
             INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, ACTIVE_BATCHER);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
-        .isSameInstanceAs(testInstrument);
+        .isSameAs(testInstrument);
 
     assertThrows(
         IllegalArgumentException.class,

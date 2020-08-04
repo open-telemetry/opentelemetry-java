@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
@@ -260,7 +260,7 @@ class BatchSpanProcessorTest {
     // While we wait for maxQueuedSpans we ensure that the queue is also empty after this.
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
-    assertThat(exported).containsExactlyElementsIn(spansToExport);
+    assertThat(exported).containsExactlyElementsOf(spansToExport);
     exported.clear();
     spansToExport.clear();
 
@@ -278,7 +278,7 @@ class BatchSpanProcessorTest {
 
     exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
-    assertThat(exported).containsExactlyElementsIn(spansToExport);
+    assertThat(exported).containsExactlyElementsOf(spansToExport);
   }
 
   @Test

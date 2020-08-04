@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -113,7 +114,7 @@ class DoubleMinMaxSumCountTest {
     assertThat(actual.getEpochNanos()).isEqualTo(100);
     assertThat(actual.getLabels()).isEqualTo(Labels.empty());
     assertThat(actual.getCount()).isEqualTo(numberOfThreads * numberOfUpdates);
-    assertThat(actual.getSum()).isWithin(0.001).of(102000d);
+    assertThat(actual.getSum()).isCloseTo(102000d, offset(0.001));
     List<ValueAtPercentile> percentileValues = actual.getPercentileValues();
     assertThat(percentileValues).isEqualTo(createPercentiles(1.1d, 23.1d));
   }

@@ -16,7 +16,7 @@
 
 package io.opentelemetry;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -77,16 +77,15 @@ class OpenTelemetryTest {
   @Test
   void testDefault() {
     assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(DefaultTracerProvider.class);
-    assertThat(OpenTelemetry.getTracerProvider())
-        .isSameInstanceAs(OpenTelemetry.getTracerProvider());
+    assertThat(OpenTelemetry.getTracerProvider()).isSameAs(OpenTelemetry.getTracerProvider());
     assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
-    assertThat(OpenTelemetry.getMeterProvider()).isSameInstanceAs(OpenTelemetry.getMeterProvider());
+    assertThat(OpenTelemetry.getMeterProvider()).isSameAs(OpenTelemetry.getMeterProvider());
     assertThat(OpenTelemetry.getCorrelationContextManager())
         .isInstanceOf(DefaultCorrelationContextManager.class);
     assertThat(OpenTelemetry.getCorrelationContextManager())
-        .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
+        .isSameAs(OpenTelemetry.getCorrelationContextManager());
     assertThat(OpenTelemetry.getPropagators()).isInstanceOf(DefaultContextPropagators.class);
-    assertThat(OpenTelemetry.getPropagators()).isSameInstanceAs(OpenTelemetry.getPropagators());
+    assertThat(OpenTelemetry.getPropagators()).isSameAs(OpenTelemetry.getPropagators());
   }
 
   @Test

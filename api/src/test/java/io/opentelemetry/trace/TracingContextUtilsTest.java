@@ -16,7 +16,7 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ public final class TracingContextUtilsTest {
   @Test
   void testGetCurrentSpan_Default() {
     Span span = TracingContextUtils.getCurrentSpan();
-    assertThat(span).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(span).isSameAs(DefaultSpan.getInvalid());
   }
 
   @Test
@@ -35,7 +35,7 @@ public final class TracingContextUtilsTest {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     Context orig = TracingContextUtils.withSpan(span, Context.current()).attach();
     try {
-      assertThat(TracingContextUtils.getCurrentSpan()).isSameInstanceAs(span);
+      assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(span);
     } finally {
       Context.current().detach(orig);
     }
@@ -44,14 +44,14 @@ public final class TracingContextUtilsTest {
   @Test
   void testGetSpan_DefaultContext() {
     Span span = TracingContextUtils.getSpan(Context.current());
-    assertThat(span).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(span).isSameAs(DefaultSpan.getInvalid());
   }
 
   @Test
   void testGetSpan_ExplicitContext() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     Context context = TracingContextUtils.withSpan(span, Context.current());
-    assertThat(TracingContextUtils.getSpan(context)).isSameInstanceAs(span);
+    assertThat(TracingContextUtils.getSpan(context)).isSameAs(span);
   }
 
   @Test
@@ -64,6 +64,6 @@ public final class TracingContextUtilsTest {
   void testGetSpanWithoutDefault_ExplicitContext() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     Context context = TracingContextUtils.withSpan(span, Context.current());
-    assertThat(TracingContextUtils.getSpanWithoutDefault(context)).isSameInstanceAs(span);
+    assertThat(TracingContextUtils.getSpanWithoutDefault(context)).isSameAs(span);
   }
 }

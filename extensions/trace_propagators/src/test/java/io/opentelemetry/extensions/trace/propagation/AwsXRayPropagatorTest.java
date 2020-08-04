@@ -16,8 +16,8 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.extensions.trace.propagation.AwsXRayPropagator.TRACE_HEADER_KEY;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
@@ -115,7 +115,7 @@ class AwsXRayPropagatorTest {
     assertThat(
             xrayPropagator.extract(
                 Context.current(), Collections.<String, String>emptyMap(), Map::get))
-        .isSameInstanceAs(Context.current());
+        .isSameAs(Context.current());
   }
 
   @Test
@@ -177,7 +177,7 @@ class AwsXRayPropagatorTest {
     invalidHeaders.put(TRACE_HEADER_KEY, "");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -188,7 +188,7 @@ class AwsXRayPropagatorTest {
         "Root=abcdefghijklmnopabcdefghijklmnop;Parent=53995c3f42cd8ad8;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -199,7 +199,7 @@ class AwsXRayPropagatorTest {
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa600;Parent=53995c3f42cd8ad8;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -210,7 +210,7 @@ class AwsXRayPropagatorTest {
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=abcdefghijklmnop;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -221,7 +221,7 @@ class AwsXRayPropagatorTest {
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad800;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -232,7 +232,7 @@ class AwsXRayPropagatorTest {
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -243,7 +243,7 @@ class AwsXRayPropagatorTest {
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=10220");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -254,7 +254,7 @@ class AwsXRayPropagatorTest {
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=a");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {

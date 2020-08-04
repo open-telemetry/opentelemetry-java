@@ -16,12 +16,13 @@
 
 package io.opentelemetry.common;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
 import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 import static io.opentelemetry.common.AttributeValue.longAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +44,8 @@ class AttributesTest {
     attributes.forEach(entriesSeen::put);
 
     assertThat(entriesSeen)
-        .containsExactly("key1", stringAttributeValue("value1"), "key2", longAttributeValue(333));
+        .containsExactly(
+            entry("key1", stringAttributeValue("value1")), entry("key2", longAttributeValue(333)));
   }
 
   @Test
@@ -52,7 +54,7 @@ class AttributesTest {
 
     Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
     attributes.forEach(entriesSeen::put);
-    assertThat(entriesSeen).containsExactly("key", stringAttributeValue("value"));
+    assertThat(entriesSeen).containsExactly(entry("key", stringAttributeValue("value")));
   }
 
   @Test

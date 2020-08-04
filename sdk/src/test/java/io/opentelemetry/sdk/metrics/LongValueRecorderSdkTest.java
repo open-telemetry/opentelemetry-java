@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
@@ -164,7 +164,7 @@ class LongValueRecorderSdkTest {
       MetricData metricData = metricDataList.get(0);
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
-          .containsExactly(
+          .containsExactlyInAnyOrder(
               SummaryPoint.create(
                   startTime, firstCollect, Labels.empty(), 2, -2, valueAtPercentiles(-14, 12)),
               SummaryPoint.create(
@@ -186,7 +186,7 @@ class LongValueRecorderSdkTest {
       metricData = metricDataList.get(0);
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
-          .containsExactly(
+          .containsExactlyInAnyOrder(
               SummaryPoint.create(
                   startTime + SECOND_NANOS,
                   secondCollect,
