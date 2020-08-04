@@ -16,6 +16,8 @@
   * [Sampler](#sampler)
   * [Span Processor](#span-processor)
   * [Exporter](#exporter)
+- [Logging And Error Handling](#logging-and-error-handling)
+  * [Examples](#examples)
 <!-- tocstop -->
 
 OpenTelemetry can be used to instrument code for collecting telemetry data. For more details, check
@@ -409,3 +411,59 @@ tracerProvider.addSpanProcessor(BatchSpanProcessor.newBuilder(
 [OpenTelemetry Website]: https://opentelemetry.io/
 [Obtaining a Tracer]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/api.md#obtaining-a-tracer
 [Semantic Conventions]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions
+
+## Logging and Error Handling 
+
+OpenTelemetry uses [java.util.logging](https://docs.oracle.com/javase/7/docs/api/java/util/logging/package-summary.html)
+to log information about OpenTelemetry, including errors and warnings about misconfigurations or failures exporting 
+data. 
+
+By default, log messages are handled by the root handler in your application. If you have not 
+installed a custom root handler for your application, logs of level `INFO` or higher are sent to the console by default. 
+
+You may 
+want to change the behavior of the logger for OpenTelemetry. For example, you can reduce the logging level 
+to output additional information when debugging, increase the level for a particular class to ignore errors coming 
+from that class, or install a custom handler or filter to run custom code whenever OpenTelemetry logs
+a particular message. 
+
+### Examples
+
+```properties
+## Turn off all OpenTelemetry logging 
+io.opentelemetry.level = OFF
+```
+
+```properties
+## Turn off logging for just the BatchSpanProcessor 
+io.opentelemetry.sdk.trace.export.BatchSpanProcessor.level = OFF
+```
+
+```properties
+## Log "FINE" messages for help in debugging 
+io.opentelemetry.level = FINE
+
+## Sets the default ConsoleHandler's logger's level 
+## Note this impacts the logging outside of OpenTelemetry as well 
+java.util.logging.ConsoleHandler.level = FINE
+
+```
+
+For more fine-grained control and special case handling, custom handlers and filters can be specified
+with code. 
+
+```java
+// Custom filter which does not log errors that come from the export
+public class IgnoreExportErrorsFilter implements Filter {
+
+ public boolean isLoggable(LogRecord record) {
+    return !record.getMessage().contains("Exception thrown by the export");
+ }
+}
+```
+
+```properties
+## Registering the custom filter on the BatchSpanProcessor
+io.opentelemetry.sdk.trace.export.BatchSpanProcessor = io.opentelemetry.extensions.logging.IgnoreExportErrorsFilter
+```
+
