@@ -130,6 +130,10 @@ class ResourceTest {
     attributes.setAttribute(
         "NullArrayBooleanKey", AttributeValue.arrayAttributeValue((Boolean[]) null));
 
+    Resource resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(0);
+
     // These should be maintained
     attributes.setAttribute(
         "ArrayWithNullLongKey", AttributeValue.arrayAttributeValue(new Long[] {null}));
@@ -140,7 +144,7 @@ class ResourceTest {
     attributes.setAttribute(
         "ArrayWithNullBooleanKey", AttributeValue.arrayAttributeValue(new Boolean[] {null}));
 
-    Resource resource = Resource.create(attributes.build());
+    resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(4);
   }
