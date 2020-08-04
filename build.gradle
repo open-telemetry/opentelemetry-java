@@ -245,14 +245,7 @@ configure(opentelemetryProjects) {
         source = "8"
         encoding = "UTF-8"
         links 'https://docs.oracle.com/javase/8/docs/api/'
-    }
-
-    if (JavaVersion.current().isJava8Compatible()) {
-        allprojects {
-            tasks.withType(Javadoc) {
-                options.addBooleanOption('Xdoclint:all,-missing', true)
-            }
-        }
+        addBooleanOption('Xdoclint:all,-missing', true)
     }
 
     afterEvaluate {  // Allow subproject to add more source sets.
