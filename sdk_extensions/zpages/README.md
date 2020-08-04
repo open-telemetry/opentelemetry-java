@@ -102,14 +102,16 @@ provides an interface for users to modify relevant parameters. Here is what the 
 
 ## Benchmark Testing
 
-This module contains a set of benchmark tests for adding spans to an instance of TracezSpanBuckets.
-You can run the tests yourself with the following command:
+This module contains two sets of benchmark tests: one for adding spans to an instance of
+TracezSpanBuckets and another for retrieving counts and spans with TracezDataAggregator. You can run
+the tests yourself with the following commands:
 
 ```
 ./gradlew -PjmhIncludeSingleClass=TracezSpanBucketsBenchmark clean :opentelemetry-sdk-extension-zpages:jmh
+./gradlew -PjmhIncludeSingleClass=TracezDataAggregatorBenchmark clean :opentelemetry-sdk-extension-zpages:jmh
 ```
 
-Below is a summary of the expected results:
+The expected results for `TracezSpanBucketsBenchmark` are as follows:
 
 ```
 Benchmark                                                                       Mode  Cnt      Score     Error   Units
@@ -145,4 +147,74 @@ TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.churn.G1_Eden_Space       
 TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.churn.G1_Eden_Space.norm  thrpt   10    106.904 ± 340.741    B/op
 TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.count                     thrpt   10      2.000            counts
 TracezSpanBucketsBenchmark.addToBucket_20Threads:·gc.time                      thrpt   10     10.000                ms
+```
+
+On the other hand, the expected results for `TracezDataAggregatorBenchmark` are as follows:
+
+```
+Benchmark                                                                        Mode  Cnt       Score       Error   Units
+
+TracezDataAggregatorBenchmark.getCounts_01Thread                                thrpt   10   36217.766 ±  3931.251  ops/ms
+TracezDataAggregatorBenchmark.getCounts_01Thread:·gc.alloc.rate                 thrpt   10    3313.826 ±   359.607  MB/sec
+TracezDataAggregatorBenchmark.getCounts_01Thread:·gc.alloc.rate.norm            thrpt   10     144.000 ±     0.001    B/op
+TracezDataAggregatorBenchmark.getCounts_01Thread:·gc.churn.G1_Eden_Space        thrpt   10    3297.395 ±  1025.085  MB/sec
+TracezDataAggregatorBenchmark.getCounts_01Thread:·gc.churn.G1_Eden_Space.norm   thrpt   10     142.472 ±    36.689    B/op
+TracezDataAggregatorBenchmark.getCounts_01Thread:·gc.count                      thrpt   10      34.000              counts
+TracezDataAggregatorBenchmark.getCounts_01Thread:·gc.time                       thrpt   10      33.000                  ms
+
+TracezDataAggregatorBenchmark.getCounts_05Threads                               thrpt   10  177606.691 ±  2560.040  ops/ms
+TracezDataAggregatorBenchmark.getCounts_05Threads:·gc.alloc.rate                thrpt   10   16241.832 ±   234.530  MB/sec
+TracezDataAggregatorBenchmark.getCounts_05Threads:·gc.alloc.rate.norm           thrpt   10     144.000 ±     0.001    B/op
+TracezDataAggregatorBenchmark.getCounts_05Threads:·gc.churn.G1_Eden_Space       thrpt   10   16397.312 ±   880.415  MB/sec
+TracezDataAggregatorBenchmark.getCounts_05Threads:·gc.churn.G1_Eden_Space.norm  thrpt   10     145.385 ±     7.878    B/op
+TracezDataAggregatorBenchmark.getCounts_05Threads:·gc.count                     thrpt   10      89.000              counts
+TracezDataAggregatorBenchmark.getCounts_05Threads:·gc.time                      thrpt   10     110.000                  ms
+
+TracezDataAggregatorBenchmark.getCounts_10Threads                               thrpt   10  240423.681 ± 12230.556  ops/ms
+TracezDataAggregatorBenchmark.getCounts_10Threads:·gc.alloc.rate                thrpt   10   21977.607 ±  1120.038  MB/sec
+TracezDataAggregatorBenchmark.getCounts_10Threads:·gc.alloc.rate.norm           thrpt   10     144.000 ±     0.001    B/op
+TracezDataAggregatorBenchmark.getCounts_10Threads:·gc.churn.G1_Eden_Space       thrpt   10   22004.327 ±  1987.165  MB/sec
+TracezDataAggregatorBenchmark.getCounts_10Threads:·gc.churn.G1_Eden_Space.norm  thrpt   10     144.141 ±     9.628    B/op
+TracezDataAggregatorBenchmark.getCounts_10Threads:·gc.count                     thrpt   10     113.000              counts
+TracezDataAggregatorBenchmark.getCounts_10Threads:·gc.time                      thrpt   10     153.000                  ms
+
+TracezDataAggregatorBenchmark.getCounts_20Threads                               thrpt   10  256043.668 ±  9521.760  ops/ms
+TracezDataAggregatorBenchmark.getCounts_20Threads:·gc.alloc.rate                thrpt   10   23600.749 ±   777.233  MB/sec
+TracezDataAggregatorBenchmark.getCounts_20Threads:·gc.alloc.rate.norm           thrpt   10     144.000 ±     0.001    B/op
+TracezDataAggregatorBenchmark.getCounts_20Threads:·gc.churn.G1_Eden_Space       thrpt   10   23814.163 ±  1600.632  MB/sec
+TracezDataAggregatorBenchmark.getCounts_20Threads:·gc.churn.G1_Eden_Space.norm  thrpt   10     145.309 ±     8.791    B/op
+TracezDataAggregatorBenchmark.getCounts_20Threads:·gc.count                     thrpt   10     125.000              counts
+TracezDataAggregatorBenchmark.getCounts_20Threads:·gc.time                      thrpt   10     177.000                  ms
+
+TracezDataAggregatorBenchmark.getSpans_01Thread                                 thrpt   10   42505.545 ±   181.221  ops/ms
+TracezDataAggregatorBenchmark.getSpans_01Thread:·gc.alloc.rate                  thrpt   10     648.178 ±     2.753  MB/sec
+TracezDataAggregatorBenchmark.getSpans_01Thread:·gc.alloc.rate.norm             thrpt   10      24.000 ±     0.001    B/op
+TracezDataAggregatorBenchmark.getSpans_01Thread:·gc.churn.G1_Eden_Space         thrpt   10     630.905 ±   502.717  MB/sec
+TracezDataAggregatorBenchmark.getSpans_01Thread:·gc.churn.G1_Eden_Space.norm    thrpt   10      23.375 ±    18.626    B/op
+TracezDataAggregatorBenchmark.getSpans_01Thread:·gc.count                       thrpt   10       8.000              counts
+TracezDataAggregatorBenchmark.getSpans_01Thread:·gc.time                        thrpt   10      36.000                  ms
+
+TracezDataAggregatorBenchmark.getSpans_05Threads                                thrpt   10  199683.545 ±  5860.668  ops/ms
+TracezDataAggregatorBenchmark.getSpans_05Threads:·gc.alloc.rate                 thrpt   10    3042.634 ±    89.845  MB/sec
+TracezDataAggregatorBenchmark.getSpans_05Threads:·gc.alloc.rate.norm            thrpt   10      24.000 ±     0.001    B/op
+TracezDataAggregatorBenchmark.getSpans_05Threads:·gc.churn.G1_Eden_Space        thrpt   10    3100.044 ±   617.551  MB/sec
+TracezDataAggregatorBenchmark.getSpans_05Threads:·gc.churn.G1_Eden_Space.norm   thrpt   10      24.461 ±     4.913    B/op
+TracezDataAggregatorBenchmark.getSpans_05Threads:·gc.count                      thrpt   10      32.000              counts
+TracezDataAggregatorBenchmark.getSpans_05Threads:·gc.time                       thrpt   10      46.000                  ms
+
+TracezDataAggregatorBenchmark.getSpans_10Threads                                thrpt   10  308778.984 ± 18626.414  ops/ms
+TracezDataAggregatorBenchmark.getSpans_10Threads:·gc.alloc.rate                 thrpt   10    4703.341 ±   283.686  MB/sec
+TracezDataAggregatorBenchmark.getSpans_10Threads:·gc.alloc.rate.norm            thrpt   10      24.000 ±     0.001    B/op
+TracezDataAggregatorBenchmark.getSpans_10Threads:·gc.churn.G1_Eden_Space        thrpt   10    4744.419 ±   462.747  MB/sec
+TracezDataAggregatorBenchmark.getSpans_10Threads:·gc.churn.G1_Eden_Space.norm   thrpt   10      24.197 ±     1.578    B/op
+TracezDataAggregatorBenchmark.getSpans_10Threads:·gc.count                      thrpt   10      49.000              counts
+TracezDataAggregatorBenchmark.getSpans_10Threads:·gc.time                       thrpt   10      54.000                  ms
+
+TracezDataAggregatorBenchmark.getSpans_20Threads                                thrpt   10  338069.284 ±  5567.309  ops/ms
+TracezDataAggregatorBenchmark.getSpans_20Threads:·gc.alloc.rate                 thrpt   10    5183.458 ±    90.970  MB/sec
+TracezDataAggregatorBenchmark.getSpans_20Threads:·gc.alloc.rate.norm            thrpt   10      24.000 ±     0.001    B/op
+TracezDataAggregatorBenchmark.getSpans_20Threads:·gc.churn.G1_Eden_Space        thrpt   10    5230.926 ±   745.883  MB/sec
+TracezDataAggregatorBenchmark.getSpans_20Threads:·gc.churn.G1_Eden_Space.norm   thrpt   10      24.209 ±     3.224    B/op
+TracezDataAggregatorBenchmark.getSpans_20Threads:·gc.count                      thrpt   10      55.000              counts
+TracezDataAggregatorBenchmark.getSpans_20Threads:·gc.time                       thrpt   10      74.000                  ms
 ```
