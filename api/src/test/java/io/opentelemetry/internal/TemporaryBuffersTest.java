@@ -16,21 +16,21 @@
 
 package io.opentelemetry.internal;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TemporaryBuffersTest {
+class TemporaryBuffersTest {
 
   @Test
-  public void chars() {
+  void chars() {
     TemporaryBuffers.clearChars();
     char[] buffer10 = TemporaryBuffers.chars(10);
-    assertThat(buffer10).hasLength(10);
+    assertThat(buffer10).hasSize(10);
     char[] buffer8 = TemporaryBuffers.chars(8);
     // Buffer was reused even though smaller.
-    assertThat(buffer8).isSameInstanceAs(buffer10);
+    assertThat(buffer8).isSameAs(buffer10);
     char[] buffer20 = TemporaryBuffers.chars(20);
-    assertThat(buffer20).hasLength(20);
+    assertThat(buffer20).hasSize(20);
   }
 }

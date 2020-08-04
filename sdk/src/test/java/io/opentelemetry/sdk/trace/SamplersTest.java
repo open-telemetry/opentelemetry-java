@@ -16,8 +16,9 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -32,19 +33,13 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Samplers}. */
-@RunWith(JUnit4.class)
-public class SamplersTest {
+class SamplersTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
-  @Rule public final ExpectedException thrown = ExpectedException.none();
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
   private final TraceId traceId = idsGenerator.generateTraceId();
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
@@ -57,11 +52,11 @@ public class SamplersTest {
   private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpanContext);
 
   @Test
-  public void emptySamplingDecision() {
+  void emptySamplingDecision() {
     assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED))
-        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
     assertThat(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD))
-        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
 
     assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED).getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -77,15 +72,15 @@ public class SamplersTest {
   }
 
   @Test
-  public void samplingDecisionEmpty() {
+  void samplingDecisionEmpty() {
     assertThat(Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLED, Attributes.empty()))
-        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
     assertThat(Samplers.samplingResult(Sampler.Decision.NOT_RECORD, Attributes.empty()))
-        .isSameInstanceAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
   }
 
   @Test
-  public void samplingDecisionAttrs() {
+  void samplingDecisionAttrs() {
     final Attributes attrs =
         Attributes.of(
             "foo", AttributeValue.longAttributeValue(42),
@@ -102,7 +97,7 @@ public class SamplersTest {
   }
 
   @Test
-  public void alwaysOnSampler() {
+  void alwaysOnSampler() {
     // Sampled parent.
     assertThat(
             Samplers.alwaysOn()
@@ -144,12 +139,12 @@ public class SamplersTest {
   }
 
   @Test
-  public void alwaysOnSampler_GetDescription() {
+  void alwaysOnSampler_GetDescription() {
     assertThat(Samplers.alwaysOn().getDescription()).isEqualTo("AlwaysOnSampler");
   }
 
   @Test
-  public void alwaysOffSampler() {
+  void alwaysOffSampler() {
     // Sampled parent.
     assertThat(
             Samplers.alwaysOff()
@@ -191,12 +186,12 @@ public class SamplersTest {
   }
 
   @Test
-  public void alwaysOffSampler_GetDescription() {
+  void alwaysOffSampler_GetDescription() {
     assertThat(Samplers.alwaysOff().getDescription()).isEqualTo("AlwaysOffSampler");
   }
 
   @Test
-  public void parentOrElseSampler_AlwaysOn() {
+  void parentOrElseSampler_AlwaysOn() {
     // Sampled parent.
     assertThat(
             Samplers.parentOrElse(Samplers.alwaysOn())
@@ -238,7 +233,7 @@ public class SamplersTest {
   }
 
   @Test
-  public void parentOrElseSampler_AlwaysOff() {
+  void parentOrElseSampler_AlwaysOff() {
     // Sampled parent.
     assertThat(
             Samplers.parentOrElse(Samplers.alwaysOff())
@@ -280,37 +275,35 @@ public class SamplersTest {
   }
 
   @Test
-  public void parentOrElseSampler_GetDescription() {
+  void parentOrElseSampler_GetDescription() {
     assertThat(Samplers.parentOrElse(Samplers.alwaysOn()).getDescription())
-        .isEqualTo("ParentOrElseSampler-AlwaysOnSampler");
+        .isEqualTo("ParentOrElse{AlwaysOnSampler}");
   }
 
   @Test
-  public void probabilitySampler_AlwaysSample() {
+  void probabilitySampler_AlwaysSample() {
     Samplers.Probability sampler = Samplers.Probability.create(1);
     assertThat(sampler.getIdUpperBound()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
-  public void probabilitySampler_NeverSample() {
+  void probabilitySampler_NeverSample() {
     Samplers.Probability sampler = Samplers.Probability.create(0);
     assertThat(sampler.getIdUpperBound()).isEqualTo(Long.MIN_VALUE);
   }
 
   @Test
-  public void probabilitySampler_outOfRangeHighProbability() {
-    thrown.expect(IllegalArgumentException.class);
-    Samplers.Probability.create(1.01);
+  void probabilitySampler_outOfRangeHighProbability() {
+    assertThrows(IllegalArgumentException.class, () -> Samplers.Probability.create(1.01));
   }
 
   @Test
-  public void probabilitySampler_outOfRangeLowProbability() {
-    thrown.expect(IllegalArgumentException.class);
-    Samplers.Probability.create(-0.00001);
+  void probabilitySampler_outOfRangeLowProbability() {
+    assertThrows(IllegalArgumentException.class, () -> Samplers.Probability.create(-0.00001));
   }
 
   @Test
-  public void probabilitySampler_getDescription() {
+  void probabilitySampler_getDescription() {
     assertThat(Samplers.Probability.create(0.5).getDescription())
         .isEqualTo(String.format("ProbabilitySampler{%.6f}", 0.5));
   }
@@ -343,7 +336,7 @@ public class SamplersTest {
   }
 
   @Test
-  public void probabilitySampler_DifferentProbabilities_NotSampledParent() {
+  void probabilitySampler_DifferentProbabilities_NotSampledParent() {
     final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
     assertSamplerSamplesWithProbability(
         fiftyPercentSample, notSampledSpanContext, Collections.emptyList(), 0.5);
@@ -356,7 +349,7 @@ public class SamplersTest {
   }
 
   @Test
-  public void probabilitySampler_DifferentProbabilities_SampledParent() {
+  void probabilitySampler_DifferentProbabilities_SampledParent() {
     final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
     assertSamplerSamplesWithProbability(
         fiftyPercentSample, sampledSpanContext, Collections.emptyList(), 1.0);
@@ -369,7 +362,7 @@ public class SamplersTest {
   }
 
   @Test
-  public void probabilitySampler_DifferentProbabilities_SampledParentLink() {
+  void probabilitySampler_DifferentProbabilities_SampledParentLink() {
     final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
     assertSamplerSamplesWithProbability(
         fiftyPercentSample,
@@ -388,7 +381,7 @@ public class SamplersTest {
   }
 
   @Test
-  public void probabilitySampler_SampleBasedOnTraceId() {
+  void probabilitySampler_SampleBasedOnTraceId() {
     final Sampler defaultProbability = Samplers.Probability.create(0.0001);
     // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
@@ -463,14 +456,14 @@ public class SamplersTest {
   }
 
   @Test
-  public void isSampled() {
+  void isSampled() {
     assertThat(Samplers.isSampled(Decision.NOT_RECORD)).isFalse();
     assertThat(Samplers.isSampled(Decision.RECORD)).isFalse();
     assertThat(Samplers.isSampled(Decision.RECORD_AND_SAMPLED)).isTrue();
   }
 
   @Test
-  public void isRecording() {
+  void isRecording() {
     assertThat(Samplers.isRecording(Decision.NOT_RECORD)).isFalse();
     assertThat(Samplers.isRecording(Decision.RECORD)).isTrue();
     assertThat(Samplers.isRecording(Decision.RECORD_AND_SAMPLED)).isTrue();

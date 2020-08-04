@@ -16,8 +16,9 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
@@ -39,15 +40,10 @@ import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanBuilderSdk}. */
-@RunWith(JUnit4.class)
-public class SpanBuilderSdkTest {
+class SpanBuilderSdkTest {
   private static final String SPAN_NAME = "span_name";
   private final SpanContext sampledSpanContext =
       SpanContext.create(
@@ -59,28 +55,27 @@ public class SpanBuilderSdkTest {
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final TracerSdk tracerSdk = tracerSdkFactory.get("SpanBuilderSdkTest");
 
-  @Rule public final ExpectedException thrown = ExpectedException.none();
-
   @Test
-  public void setSpanKind_null() {
-    thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).setSpanKind(null);
+  void setSpanKind_null() {
+    assertThrows(
+        NullPointerException.class, () -> tracerSdk.spanBuilder(SPAN_NAME).setSpanKind(null));
   }
 
   @Test
-  public void setParent_null() {
-    thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).setParent((Span) null);
+  void setParent_null() {
+    assertThrows(
+        NullPointerException.class, () -> tracerSdk.spanBuilder(SPAN_NAME).setParent((Span) null));
   }
 
   @Test
-  public void setRemoteParent_null() {
-    thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).setParent((SpanContext) null);
+  void setRemoteParent_null() {
+    assertThrows(
+        NullPointerException.class,
+        () -> tracerSdk.spanBuilder(SPAN_NAME).setParent((SpanContext) null));
   }
 
   @Test
-  public void addLink() {
+  void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(Link.create(DefaultSpan.getInvalid().getContext()));
@@ -96,7 +91,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void truncateLink() {
+  void truncateLink() {
     final int maxNumberOfLinks = 8;
     TraceConfig traceConfig =
         tracerSdkFactory
@@ -126,7 +121,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void truncateLinkAttributes() {
+  void truncateLinkAttributes() {
     TraceConfig traceConfig =
         tracerSdkFactory
             .getActiveTraceConfig()
@@ -156,7 +151,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void addLink_NoEffectAfterStartSpan() {
+  void addLink_NoEffectAfterStartSpan() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(sampledSpanContext);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
@@ -179,31 +174,36 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void addLink_null() {
-    thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).addLink((io.opentelemetry.trace.Link) null);
+  void addLink_null() {
+    assertThrows(
+        NullPointerException.class,
+        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink((io.opentelemetry.trace.Link) null));
   }
 
   @Test
-  public void addLinkSpanContext_null() {
-    thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).addLink((SpanContext) null);
+  void addLinkSpanContext_null() {
+    assertThrows(
+        NullPointerException.class,
+        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink((SpanContext) null));
   }
 
   @Test
-  public void addLinkSpanContextAttributes_nullContext() {
-    thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty());
+  void addLinkSpanContextAttributes_nullContext() {
+    assertThrows(
+        NullPointerException.class,
+        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()));
   }
 
   @Test
-  public void addLinkSpanContextAttributes_nullAttributes() {
-    thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).addLink(DefaultSpan.getInvalid().getContext(), null);
+  void addLinkSpanContextAttributes_nullAttributes() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            tracerSdk.spanBuilder(SPAN_NAME).addLink(DefaultSpan.getInvalid().getContext(), null));
   }
 
   @Test
-  public void setAttribute() {
+  void setAttribute() {
     Span.Builder spanBuilder =
         tracerSdk
             .spanBuilder(SPAN_NAME)
@@ -231,7 +231,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_afterEnd() {
+  void setAttribute_afterEnd() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("string", "value");
     spanBuilder.setAttribute("long", 12345L);
@@ -269,7 +269,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_emptyArrayAttributeValue() {
+  void setAttribute_emptyArrayAttributeValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute(
         "stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
@@ -283,7 +283,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_nullStringValue() {
+  void setAttribute_nullStringValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", (String) null);
@@ -297,7 +297,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_onlyNullStringValue() {
+  void setAttribute_onlyNullStringValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("nullStringAttributeValue", AttributeValue.stringAttributeValue(null));
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
@@ -305,7 +305,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_NoEffectAfterStartSpan() {
+  void setAttribute_NoEffectAfterStartSpan() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("key1", "value1");
     spanBuilder.setAttribute("key2", "value2");
@@ -329,7 +329,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_nullAttributeValue() {
+  void setAttribute_nullAttributeValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", (AttributeValue) null);
@@ -359,7 +359,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_nullAttributeValue_afterEnd() {
+  void setAttribute_nullAttributeValue_afterEnd() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
@@ -388,7 +388,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void droppingAttributes() {
+  void droppingAttributes() {
     final int maxNumberOfAttrs = 8;
     TraceConfig traceConfig =
         tracerSdkFactory
@@ -415,7 +415,67 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void addAttributes_OnlyViaSampler() {
+  public void tooLargeAttributeValuesAreTruncated() {
+    TraceConfig traceConfig =
+        tracerSdkFactory
+            .getActiveTraceConfig()
+            .toBuilder()
+            .setMaxLengthOfAttributeValues(10)
+            .build();
+    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    spanBuilder.setAttribute("builderStringNull", (String) null);
+    spanBuilder.setAttribute("builderStringSmall", "small");
+    spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
+    spanBuilder.setAttribute("builderLong", 42L);
+    spanBuilder.setAttribute(
+        "builderStringLargeValue",
+        AttributeValue.stringAttributeValue("very large string that we have to cut"));
+    spanBuilder.setAttribute(
+        "builderStringArray",
+        AttributeValue.arrayAttributeValue("small", null, "very large string that we have to cut"));
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    span.setAttribute("spanStringSmall", "small");
+    span.setAttribute("spanStringLarge", "very large string that we have to cut");
+    span.setAttribute("spanLong", 42L);
+    span.setAttribute(
+        "spanStringLarge",
+        AttributeValue.stringAttributeValue("very large string that we have to cut"));
+    span.setAttribute(
+        "spanStringArray",
+        AttributeValue.arrayAttributeValue("small", null, "very large string that we have to cut"));
+
+    try {
+      ReadableAttributes attrs = span.toSpanData().getAttributes();
+      assertThat(attrs.get("builderStringNull")).isEqualTo(null);
+      assertThat(attrs.get("builderStringSmall"))
+          .isEqualTo(AttributeValue.stringAttributeValue("small"));
+      assertThat(attrs.get("builderStringLarge"))
+          .isEqualTo(AttributeValue.stringAttributeValue("very large"));
+      assertThat(attrs.get("builderLong")).isEqualTo(AttributeValue.longAttributeValue(42L));
+      assertThat(attrs.get("builderStringLargeValue"))
+          .isEqualTo(AttributeValue.stringAttributeValue("very large"));
+      assertThat(attrs.get("builderStringArray"))
+          .isEqualTo(AttributeValue.arrayAttributeValue("small", null, "very large"));
+
+      assertThat(attrs.get("spanStringSmall"))
+          .isEqualTo(AttributeValue.stringAttributeValue("small"));
+      assertThat(attrs.get("spanStringLarge"))
+          .isEqualTo(AttributeValue.stringAttributeValue("very large"));
+      assertThat(attrs.get("spanLong")).isEqualTo(AttributeValue.longAttributeValue(42L));
+      assertThat(attrs.get("spanStringLarge"))
+          .isEqualTo(AttributeValue.stringAttributeValue("very large"));
+      assertThat(attrs.get("spanStringArray"))
+          .isEqualTo(AttributeValue.arrayAttributeValue("small", null, "very large"));
+    } finally {
+      span.end();
+      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
+    }
+  }
+
+  @Test
+  void addAttributes_OnlyViaSampler() {
     TraceConfig traceConfig =
         tracerSdkFactory
             .getActiveTraceConfig()
@@ -436,7 +496,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void recordEvents_default() {
+  void recordEvents_default() {
     Span span = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       assertThat(span.isRecording()).isTrue();
@@ -446,7 +506,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void kind_default() {
+  void kind_default() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
@@ -457,7 +517,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void kind() {
+  void kind() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
             tracerSdk.spanBuilder(SPAN_NAME).setSpanKind(Kind.CONSUMER).startSpan();
@@ -469,7 +529,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void sampler() {
+  void sampler() {
     Span span =
         TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.alwaysOff())
             .startSpan();
@@ -481,7 +541,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void sampler_decisionAttributes() {
+  void sampler_decisionAttributes() {
     final String samplerAttributeName = "sampler-attribute";
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
@@ -529,7 +589,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void sampledViaParentLinks() {
+  void sampledViaParentLinks() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
             TestUtils.startSpanWithSampler(
@@ -546,7 +606,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void noParent() {
+  void noParent() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try (Scope ignored = tracerSdk.withSpan(parent)) {
       Span span = tracerSdk.spanBuilder(SPAN_NAME).setNoParent().startSpan();
@@ -574,7 +634,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void noParent_override() {
+  void noParent_override() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       RecordEventsReadableSpan span =
@@ -605,7 +665,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void overrideNoParent_remoteParent() {
+  void overrideNoParent_remoteParent() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
 
@@ -628,7 +688,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void parent_fromContext() {
+  void parent_fromContext() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     Context context = TracingContextUtils.withSpan(parent, Context.current());
     try {
@@ -647,7 +707,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void parent_fromEmptyContext() {
+  void parent_fromEmptyContext() {
     Context emptyContext = Context.current();
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
@@ -671,7 +731,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void parentCurrentSpan() {
+  void parentCurrentSpan() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try (Scope ignored = tracerSdk.withSpan(parent)) {
       RecordEventsReadableSpan span =
@@ -688,7 +748,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void parent_invalidContext() {
+  void parent_invalidContext() {
     Span parent = DefaultSpan.getInvalid();
 
     RecordEventsReadableSpan span =
@@ -703,33 +763,34 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void startTimestamp_null() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Negative startTimestamp");
-    tracerSdk.spanBuilder(SPAN_NAME).setStartTimestamp(-1);
+  void startTimestamp_null() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> tracerSdk.spanBuilder(SPAN_NAME).setStartTimestamp(-1),
+        "Negative startTimestamp");
   }
 
   @Test
-  public void parent_clockIsSame() {
+  void parent_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
 
-      assertThat(span.getClock()).isSameInstanceAs(((RecordEventsReadableSpan) parent).getClock());
+      assertThat(span.getClock()).isSameAs(((RecordEventsReadableSpan) parent).getClock());
     } finally {
       parent.end();
     }
   }
 
   @Test
-  public void parentCurrentSpan_clockIsSame() {
+  void parentCurrentSpan_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try (Scope ignored = tracerSdk.withSpan(parent)) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 
-      assertThat(span.getClock()).isSameInstanceAs(((RecordEventsReadableSpan) parent).getClock());
+      assertThat(span.getClock()).isSameAs(((RecordEventsReadableSpan) parent).getClock());
     } finally {
       parent.end();
     }

@@ -16,32 +16,29 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongLastValueAggregator}. */
-@RunWith(JUnit4.class)
-public class LongLastValueAggregatorTest {
+class LongLastValueAggregatorTest {
   @Test
-  public void factoryAggregation() {
+  void factoryAggregation() {
     AggregatorFactory factory = LongLastValueAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(LongLastValueAggregator.class);
   }
 
   @Test
-  public void toPoint() {
+  void toPoint() {
     Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
     assertNullPoint(aggregator);
   }
 
   @Test
-  public void multipleRecords() {
+  void multipleRecords() {
     Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     assertThat(getPoint(aggregator).getValue()).isEqualTo(12);
@@ -51,7 +48,7 @@ public class LongLastValueAggregatorTest {
   }
 
   @Test
-  public void mergeAndReset() {
+  void mergeAndReset() {
     Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
     aggregator.recordLong(13);
     assertThat(getPoint(aggregator).getValue()).isEqualTo(13);

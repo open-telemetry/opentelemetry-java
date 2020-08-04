@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.prometheus;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
@@ -30,16 +30,13 @@ import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import java.util.Collections;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link MetricAdapter}. */
-@RunWith(JUnit4.class)
-public class MetricAdapterTest {
+class MetricAdapterTest {
 
   @Test
-  public void toProtoMetricDescriptorType() {
+  void toProtoMetricDescriptorType() {
     assertThat(MetricAdapter.toMetricFamilyType(Descriptor.Type.NON_MONOTONIC_DOUBLE))
         .isEqualTo(Collector.Type.GAUGE);
     assertThat(MetricAdapter.toMetricFamilyType(Descriptor.Type.NON_MONOTONIC_LONG))
@@ -53,7 +50,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toSamples_LongPoints() {
+  void toSamples_LongPoints() {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
@@ -104,7 +101,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toSamples_DoublePoints() {
+  void toSamples_DoublePoints() {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
@@ -145,7 +142,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toSamples_SummaryPoints() {
+  void toSamples_SummaryPoints() {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
@@ -213,7 +210,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toMetricFamilySamples() {
+  void toMetricFamilySamples() {
     Descriptor descriptor =
         Descriptor.create(
             "name", "description", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.of("kc", "vc"));

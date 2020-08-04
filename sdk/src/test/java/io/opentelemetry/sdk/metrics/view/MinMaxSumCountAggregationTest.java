@@ -16,19 +16,19 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MinMaxSumCountAggregationTest {
+class MinMaxSumCountAggregationTest {
 
   @Test
-  public void getDescriptorType() {
+  void getDescriptorType() {
     Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
     assertThat(
             minMaxSumCount.getDescriptorType(
@@ -49,7 +49,7 @@ public class MinMaxSumCountAggregationTest {
   }
 
   @Test
-  public void getAggregatorFactory() {
+  void getAggregatorFactory() {
     Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
     assertThat(minMaxSumCount.getAggregatorFactory(InstrumentValueType.LONG))
         .isInstanceOf(LongMinMaxSumCount.getFactory().getClass());
@@ -58,7 +58,7 @@ public class MinMaxSumCountAggregationTest {
   }
 
   @Test
-  public void availableForInstrument() {
+  void availableForInstrument() {
     Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
     for (InstrumentType type : InstrumentType.values()) {
       if (type == InstrumentType.VALUE_OBSERVER || type == InstrumentType.VALUE_RECORDER) {

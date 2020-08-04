@@ -16,25 +16,22 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Status}. */
-@RunWith(JUnit4.class)
-public class StatusTest {
+class StatusTest {
   @Test
-  public void status_Ok() {
+  void status_Ok() {
     assertThat(Status.OK.getCanonicalCode()).isEqualTo(Status.CanonicalCode.OK);
     assertThat(Status.OK.getDescription()).isNull();
     assertThat(Status.OK.isOk()).isTrue();
   }
 
   @Test
-  public void createStatus_WithDescription() {
+  void createStatus_WithDescription() {
     Status status = Status.UNKNOWN.withDescription("This is an error.");
     assertThat(status.getCanonicalCode()).isEqualTo(Status.CanonicalCode.UNKNOWN);
     assertThat(status.getDescription()).isEqualTo("This is an error.");
@@ -42,7 +39,7 @@ public class StatusTest {
   }
 
   @Test
-  public void status_EqualsAndHashCode() {
+  void status_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(Status.OK, Status.OK.withDescription(null));
     tester.addEqualityGroup(

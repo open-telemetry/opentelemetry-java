@@ -16,17 +16,25 @@
 
 package io.opentelemetry.exporters.otlp;
 
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+
+import com.google.common.base.Splitter;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -52,6 +60,9 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
+  public static final String DEFAULT_ENDPOINT = "localhost:55680";
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+
   private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
 
   private final MetricsServiceGrpc.MetricsServiceBlockingStub blockingStub;
@@ -95,6 +106,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
       stub.export(exportMetricsServiceRequest);
       return ResultCode.SUCCESS;
     } catch (Throwable e) {
+      logger.log(Level.WARNING, "Failed to export metrics", e);
       return ResultCode.FAILURE;
     }
   }
@@ -146,12 +158,18 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   /** Builder utility for this exporter. */
   public static class Builder extends ConfigBuilder<Builder> {
     private static final String KEY_METRIC_TIMEOUT = "otel.otlp.metric.timeout";
-
+    private static final String KEY_ENDPOINT = "otel.otlp.endpoint";
+    private static final String KEY_USE_TLS = "otel.otlp.use.tls";
+    private static final String KEY_METADATA = "otel.otlp.metadata";
     private ManagedChannel channel;
-    private long deadlineMs = 1_000; // 1 second
+    private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
+    private String endpoint = DEFAULT_ENDPOINT;
+    private boolean useTls;
+    @Nullable private Metadata metadata;
 
     /**
-     * Sets the managed chanel to use when communicating with the backend. Required.
+     * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+     * {@link #setEndpoint(String)} if both are called.
      *
      * @param channel the channel to use
      * @return this builder's instance
@@ -173,11 +191,66 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     }
 
     /**
+     * Sets the OTLP endpoint to connect to. Optional, defaults to "localhost:55680".
+     *
+     * @param endpoint endpoint to connect to
+     * @return this builder's instance
+     */
+    public Builder setEndpoint(String endpoint) {
+      this.endpoint = endpoint;
+      return this;
+    }
+
+    /**
+     * Sets use or not TLS, default is false. Optional. Applicable only if {@link Builder#endpoint}
+     * is set to build channel.
+     *
+     * @param useTls use TLS or not
+     * @return this builder's instance
+     */
+    public Builder setUseTls(boolean useTls) {
+      this.useTls = useTls;
+      return this;
+    }
+
+    /**
+     * Add header to request. Optional. Applicable only if {@link Builder#endpoint} is set to build
+     * channel.
+     *
+     * @param key header key
+     * @param value header value
+     * @return this builder's instance
+     */
+    public Builder addHeader(String key, String value) {
+      if (metadata == null) {
+        metadata = new Metadata();
+      }
+      metadata.put(Metadata.Key.of(key, ASCII_STRING_MARSHALLER), value);
+      return this;
+    }
+
+    /**
      * Constructs a new instance of the exporter based on the builder's values.
      *
      * @return a new exporter's instance
      */
     public OtlpGrpcMetricExporter build() {
+      if (channel == null) {
+        final ManagedChannelBuilder<?> managedChannelBuilder =
+            ManagedChannelBuilder.forTarget(endpoint);
+
+        if (useTls) {
+          managedChannelBuilder.useTransportSecurity();
+        } else {
+          managedChannelBuilder.usePlaintext();
+        }
+
+        if (metadata != null) {
+          managedChannelBuilder.intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+        }
+
+        channel = managedChannelBuilder.build();
+      }
       return new OtlpGrpcMetricExporter(channel, deadlineMs);
     }
 
@@ -197,6 +270,26 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
       if (value != null) {
         this.setDeadlineMs(value);
       }
+      String endpointValue = getStringProperty(KEY_ENDPOINT, configMap);
+      if (endpointValue != null) {
+        this.setEndpoint(endpointValue);
+      }
+
+      Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
+      if (useTlsValue != null) {
+        this.setUseTls(useTlsValue);
+      }
+
+      String metadataValue = getStringProperty(KEY_METADATA, configMap);
+      if (metadataValue != null) {
+        for (String keyValueString : Splitter.on(';').split(metadataValue)) {
+          final List<String> keyValue = Splitter.on('=').splitToList(keyValueString);
+          if (keyValue.size() == 2) {
+            addHeader(keyValue.get(0), keyValue.get(1));
+          }
+        }
+      }
+
       return this;
     }
   }

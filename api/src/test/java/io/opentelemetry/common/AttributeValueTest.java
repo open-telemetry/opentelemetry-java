@@ -16,19 +16,15 @@
 
 package io.opentelemetry.common;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link AttributeValue}. */
-@RunWith(JUnit4.class)
-public class AttributeValueTest {
+class AttributeValueTest {
 
   @Test
-  public void attributeValue_EqualsAndHashCode() {
+  void attributeValue_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(
         AttributeValue.stringAttributeValue("MyStringAttributeValue"),
@@ -65,7 +61,7 @@ public class AttributeValueTest {
   }
 
   @Test
-  public void doNotCrashOnNull() {
+  void doNotCrashOnNull() {
     AttributeValue.stringAttributeValue(null);
     AttributeValue.arrayAttributeValue((String[]) null);
     AttributeValue.arrayAttributeValue((Boolean[]) null);
@@ -74,7 +70,7 @@ public class AttributeValueTest {
   }
 
   @Test
-  public void attributeValue_ToString() {
+  void attributeValue_ToString() {
     AttributeValue attribute = AttributeValue.stringAttributeValue("MyStringAttributeValue");
     assertThat(attribute.toString()).contains("MyStringAttributeValue");
     attribute = AttributeValue.booleanAttributeValue(true);
@@ -100,7 +96,7 @@ public class AttributeValueTest {
   }
 
   @Test
-  public void arrayAttributeValue_nullValuesWithinArray() {
+  void arrayAttributeValue_nullValuesWithinArray() {
     AttributeValue attribute;
 
     attribute = AttributeValue.arrayAttributeValue("string", null, "", "string");

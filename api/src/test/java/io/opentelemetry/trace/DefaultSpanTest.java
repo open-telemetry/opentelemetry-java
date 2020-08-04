@@ -16,30 +16,24 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DefaultSpan}. */
-@RunWith(JUnit4.class)
-public class DefaultSpanTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class DefaultSpanTest {
 
   @Test
-  public void hasInvalidContextAndDefaultSpanOptions() {
+  void hasInvalidContextAndDefaultSpanOptions() {
     SpanContext context = DefaultSpan.getInvalid().getContext();
     assertThat(context.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
     assertThat(context.getTraceState()).isEqualTo(TraceState.getDefault());
   }
 
   @Test
-  public void doNotCrash() {
+  void doNotCrash() {
     DefaultSpan span = DefaultSpan.getInvalid();
     span.setAttribute(
         "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
@@ -72,7 +66,7 @@ public class DefaultSpanTest {
   }
 
   @Test
-  public void defaultSpan_ToString() {
+  void defaultSpan_ToString() {
     DefaultSpan span = DefaultSpan.getInvalid();
     assertThat(span.toString()).isEqualTo("DefaultSpan");
   }

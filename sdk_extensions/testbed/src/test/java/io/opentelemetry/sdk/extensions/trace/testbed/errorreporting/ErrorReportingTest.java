@@ -16,10 +16,10 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.errorreporting;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class ErrorReportingTest {
@@ -48,7 +48,7 @@ public final class ErrorReportingTest {
 
   /* Very simple error handling **/
   @Test
-  public void testSimpleError() {
+  void testSimpleError() {
     Span span = tracer.spanBuilder("one").startSpan();
     try (Scope ignored = tracer.withSpan(span)) {
       throw new RuntimeException("Invalid state");
@@ -58,7 +58,7 @@ public final class ErrorReportingTest {
       span.end();
     }
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
@@ -68,7 +68,7 @@ public final class ErrorReportingTest {
 
   /* Error handling in a callback capturing/activating the Span */
   @Test
-  public void testCallbackError() {
+  void testCallbackError() {
     final Span span = tracer.spanBuilder("one").startSpan();
     executor.submit(
         () -> {
@@ -94,7 +94,7 @@ public final class ErrorReportingTest {
   /* Error handling for a max-retries task (such as url fetching).
    * We log the error at each retry. */
   @Test
-  public void testErrorRecovery() {
+  void testErrorRecovery() {
     final int maxRetries = 1;
     int retries = 0;
     Span span = tracer.spanBuilder("one").startSpan();
@@ -111,7 +111,7 @@ public final class ErrorReportingTest {
     span.setStatus(Status.UNKNOWN); // Could not fetch anything.
     span.end();
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
@@ -126,7 +126,7 @@ public final class ErrorReportingTest {
   /* Error handling for a mocked layer automatically capturing/activating
    * the Span for a submitted Runnable. */
   @Test
-  public void testInstrumentationLayer() {
+  void testInstrumentationLayer() {
     Span span = tracer.spanBuilder("one").startSpan();
     try (Scope ignored = tracer.withSpan(span)) {
       // ScopedRunnable captures the active Span at this time.

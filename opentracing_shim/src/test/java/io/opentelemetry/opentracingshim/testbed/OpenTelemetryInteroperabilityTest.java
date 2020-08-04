@@ -16,8 +16,8 @@
 
 package io.opentelemetry.opentracingshim.testbed;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
@@ -29,10 +29,10 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class OpenTelemetryInteroperabilityTest {
+class OpenTelemetryInteroperabilityTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final io.opentelemetry.trace.Tracer tracer = sdk.get("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
@@ -40,13 +40,13 @@ public class OpenTelemetryInteroperabilityTest {
   private final Tracer otTracer =
       TraceShim.createTracerShim(sdk, DefaultCorrelationContextManager.getInstance());
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     inMemoryTracing.getSpanExporter().reset();
   }
 
   @Test
-  public void sdkContinuesOpenTracingTrace() {
+  void sdkContinuesOpenTracingTrace() {
     Span otSpan = otTracer.buildSpan("ot_span").start();
     try (Scope scope = otTracer.scopeManager().activate(otSpan)) {
       tracer.spanBuilder("otel_span").startSpan().end();
@@ -62,7 +62,7 @@ public class OpenTelemetryInteroperabilityTest {
   }
 
   @Test
-  public void openTracingContinuesSdkTrace() {
+  void openTracingContinuesSdkTrace() {
     io.opentelemetry.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
     try (io.opentelemetry.context.Scope scope = tracer.withSpan(otelSpan)) {
       otTracer.buildSpan("ot_span").start().finish();

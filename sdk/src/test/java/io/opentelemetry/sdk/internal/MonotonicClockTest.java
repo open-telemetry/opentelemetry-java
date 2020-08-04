@@ -16,20 +16,17 @@
 
 package io.opentelemetry.sdk.internal;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link MonotonicClock}. */
-@RunWith(JUnit4.class)
-public class MonotonicClockTest {
+class MonotonicClockTest {
   private static final long EPOCH_NANOS = 1234_000_005_678L;
   private final TestClock testClock = TestClock.create(EPOCH_NANOS);
 
   @Test
-  public void nanoTime() {
+  void nanoTime() {
     assertThat(testClock.now()).isEqualTo(EPOCH_NANOS);
     MonotonicClock monotonicClock = MonotonicClock.create(testClock);
     assertThat(monotonicClock.nanoTime()).isEqualTo(testClock.nanoTime());
@@ -38,7 +35,7 @@ public class MonotonicClockTest {
   }
 
   @Test
-  public void now_PositiveIncrease() {
+  void now_PositiveIncrease() {
     MonotonicClock monotonicClock = MonotonicClock.create(testClock);
     assertThat(monotonicClock.now()).isEqualTo(testClock.now());
     testClock.advanceNanos(3210);
@@ -51,7 +48,7 @@ public class MonotonicClockTest {
   }
 
   @Test
-  public void now_NegativeIncrease() {
+  void now_NegativeIncrease() {
     MonotonicClock monotonicClock = MonotonicClock.create(testClock);
     assertThat(monotonicClock.now()).isEqualTo(testClock.now());
     testClock.advanceNanos(-3456);

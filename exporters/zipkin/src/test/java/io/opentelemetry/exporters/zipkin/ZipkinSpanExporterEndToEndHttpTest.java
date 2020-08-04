@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.zipkin;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.Attributes;
@@ -34,20 +34,17 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.Encoding;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.junit.ZipkinRule;
-import zipkin2.reporter.urlconnection.URLConnectionSender;
+import zipkin2.reporter.okhttp3.OkHttpSender;
 
 /**
  * Tests which use Zipkin's {@link ZipkinRule} to verify that the {@link ZipkinSpanExporter} can
  * send spans via HTTP to Zipkin's API using supported encodings.
  */
-@RunWith(JUnit4.class)
 public class ZipkinSpanExporterEndToEndHttpTest {
 
   private static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";
@@ -129,7 +126,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static ZipkinSpanExporter buildZipkinExporter(
       String endpoint, Encoding encoding, SpanBytesEncoder encoder) {
     return ZipkinSpanExporter.newBuilder()
-        .setSender(URLConnectionSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
+        .setSender(OkHttpSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
         .setServiceName(SERVICE_NAME)
         .setEncoder(encoder)
         .build();

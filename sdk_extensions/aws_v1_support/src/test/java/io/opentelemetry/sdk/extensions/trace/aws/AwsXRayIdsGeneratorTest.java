@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.trace.IdsGenerator;
 import io.opentelemetry.trace.SpanId;
@@ -27,16 +27,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AwsXRayIdsGenerator}. */
-@RunWith(JUnit4.class)
-public class AwsXRayIdsGeneratorTest {
+class AwsXRayIdsGeneratorTest {
 
   @Test
-  public void shouldGenerateValidIds() {
+  void shouldGenerateValidIds() {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
     for (int i = 0; i < 1000; i++) {
       TraceId traceId = generator.generateTraceId();
@@ -47,21 +44,21 @@ public class AwsXRayIdsGeneratorTest {
   }
 
   @Test
-  public void shouldGenerateTraceIdsWithTimestampsWithAllowedXrayTimeRange() {
+  void shouldGenerateTraceIdsWithTimestampsWithAllowedXrayTimeRange() {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
     for (int i = 0; i < 1000; i++) {
       TraceId traceId = generator.generateTraceId();
       long unixSeconds = Long.valueOf(traceId.toLowerBase16().substring(0, 8), 16);
       long ts = unixSeconds * 1000L;
       long currentTs = System.currentTimeMillis();
-      assertThat(ts).isAtMost(currentTs);
+      assertThat(ts).isLessThanOrEqualTo(currentTs);
       long month = 86400000L * 30L;
       assertThat(ts).isGreaterThan(currentTs - month);
     }
   }
 
   @Test
-  public void shouldGenerateUniqueIdsInMultithreadedEnvironment()
+  void shouldGenerateUniqueIdsInMultithreadedEnvironment()
       throws BrokenBarrierException, InterruptedException {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
     Set<TraceId> traceIds = new CopyOnWriteArraySet<>();

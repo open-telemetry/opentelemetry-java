@@ -16,27 +16,24 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link NoopSpanProcessorTest}. */
-@RunWith(JUnit4.class)
-public class NoopSpanProcessorTest {
+class NoopSpanProcessorTest {
   @Mock private ReadableSpan readableSpan;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
   }
 
   @Test
-  public void noCrash() {
+  void noCrash() {
     SpanProcessor noopSpanProcessor = NoopSpanProcessor.getInstance();
     noopSpanProcessor.onStart(readableSpan);
     assertThat(noopSpanProcessor.isStartRequired()).isFalse();

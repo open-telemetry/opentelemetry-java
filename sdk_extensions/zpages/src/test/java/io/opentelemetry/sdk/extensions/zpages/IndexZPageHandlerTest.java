@@ -16,25 +16,22 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Map;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link IndexZPageHandler}. */
-@RunWith(JUnit4.class)
 public final class IndexZPageHandlerTest {
   private static final ZPageHandler tracezZPageHandler = new TracezZPageHandler(null);
   private final Map<String, String> emptyQueryMap = ImmutableMap.of();
 
   @Test
-  public void emitHtmlCorrectly() {
+  void emitHtmlCorrectly() {
     OutputStream output = new ByteArrayOutputStream();
     IndexZPageHandler indexZPageHandler =
         new IndexZPageHandler(ImmutableList.of(tracezZPageHandler));

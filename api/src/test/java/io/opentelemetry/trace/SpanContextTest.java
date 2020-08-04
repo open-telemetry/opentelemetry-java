@@ -16,15 +16,12 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanContext}. */
-@RunWith(JUnit4.class)
-public class SpanContextTest {
+class SpanContextTest {
   private static final byte[] firstTraceIdBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final byte[] secondTraceIdBytes =
@@ -56,14 +53,14 @@ public class SpanContextTest {
           EMPTY_TRACE_STATE);
 
   @Test
-  public void invalidSpanContext() {
+  void invalidSpanContext() {
     assertThat(SpanContext.getInvalid().getTraceId()).isEqualTo(TraceId.getInvalid());
     assertThat(SpanContext.getInvalid().getSpanId()).isEqualTo(SpanId.getInvalid());
     assertThat(SpanContext.getInvalid().getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 
   @Test
-  public void isValid() {
+  void isValid() {
     assertThat(SpanContext.getInvalid().isValid()).isFalse();
     assertThat(
             SpanContext.create(
@@ -86,31 +83,31 @@ public class SpanContextTest {
   }
 
   @Test
-  public void getTraceId() {
+  void getTraceId() {
     assertThat(first.getTraceId()).isEqualTo(TraceId.fromBytes(firstTraceIdBytes, 0));
     assertThat(second.getTraceId()).isEqualTo(TraceId.fromBytes(secondTraceIdBytes, 0));
   }
 
   @Test
-  public void getSpanId() {
+  void getSpanId() {
     assertThat(first.getSpanId()).isEqualTo(SpanId.fromBytes(firstSpanIdBytes, 0));
     assertThat(second.getSpanId()).isEqualTo(SpanId.fromBytes(secondSpanIdBytes, 0));
   }
 
   @Test
-  public void getTraceFlags() {
+  void getTraceFlags() {
     assertThat(first.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
     assertThat(second.getTraceFlags()).isEqualTo(TraceFlags.builder().setIsSampled(true).build());
   }
 
   @Test
-  public void getTraceState() {
+  void getTraceState() {
     assertThat(first.getTraceState()).isEqualTo(FIRST_TRACE_STATE);
     assertThat(second.getTraceState()).isEqualTo(SECOND_TRACE_STATE);
   }
 
   @Test
-  public void isRemote() {
+  void isRemote() {
     assertThat(first.isRemote()).isFalse();
     assertThat(second.isRemote()).isFalse();
     assertThat(remote.isRemote()).isTrue();

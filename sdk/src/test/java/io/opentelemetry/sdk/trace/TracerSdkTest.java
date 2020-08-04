@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
@@ -31,19 +31,16 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link TracerSdk}. */
-@RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
-public class TracerSdkTest {
+class TracerSdkTest {
 
   private static final String SPAN_NAME = "span_name";
   private static final String INSTRUMENTATION_LIBRARY_NAME =
@@ -58,28 +55,28 @@ public class TracerSdkTest {
           .build()
           .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
   }
 
   @Test
-  public void defaultGetCurrentSpan() {
+  void defaultGetCurrentSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
-  public void defaultSpanBuilder() {
+  void defaultSpanBuilder() {
     assertThat(tracer.spanBuilder(SPAN_NAME)).isInstanceOf(SpanBuilderSdk.class);
   }
 
   @Test
-  public void getCurrentSpan() {
+  void getCurrentSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
     // Make sure context is detached even if test fails.
     try {
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
+      assertThat(tracer.getCurrentSpan()).isSameAs(span);
     } finally {
       Context.current().detach(origContext);
     }
@@ -87,7 +84,7 @@ public class TracerSdkTest {
   }
 
   @Test
-  public void withSpan_NullSpan() {
+  void withSpan_NullSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     try (Scope ignored = tracer.withSpan(null)) {
       assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
@@ -96,27 +93,27 @@ public class TracerSdkTest {
   }
 
   @Test
-  public void getCurrentSpan_WithSpan() {
+  void getCurrentSpan_WithSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     try (Scope ignored = tracer.withSpan(span)) {
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
+      assertThat(tracer.getCurrentSpan()).isSameAs(span);
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
-  public void getInstrumentationLibraryInfo() {
+  void getInstrumentationLibraryInfo() {
     assertThat(tracer.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
   }
 
   @Test
-  public void propagatesInstrumentationLibraryInfoToSpan() {
+  void propagatesInstrumentationLibraryInfoToSpan() {
     ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("spanName").startSpan();
     assertThat(readableSpan.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
   }
 
   @Test
-  public void stressTest() {
+  void stressTest() {
     CountingSpanProcessor spanProcessor = new CountingSpanProcessor();
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
@@ -137,7 +134,7 @@ public class TracerSdkTest {
   }
 
   @Test
-  public void stressTest_withBatchSpanProcessor() {
+  void stressTest_withBatchSpanProcessor() {
     CountingSpanExporter countingSpanExporter = new CountingSpanExporter();
     SpanProcessor spanProcessor = BatchSpanProcessor.newBuilder(countingSpanExporter).build();
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();

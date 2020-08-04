@@ -16,42 +16,38 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link CorrelationContextManagerSdk}. */
-@RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
-public class CorrelationContextManagerSdkTest {
+class CorrelationContextManagerSdkTest {
   @Mock private CorrelationContext distContext;
   private final CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
   }
 
   @Test
-  public void testGetCurrentContext_DefaultContext() {
-    assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+  void testGetCurrentContext_DefaultContext() {
+    assertThat(contextManager.getCurrentContext()).isSameAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
-  public void testGetCurrentContext_ContextSetToNull() {
+  void testGetCurrentContext_ContextSetToNull() {
     Context orig =
         CorrelationsContextUtils.withCorrelationContext(null, Context.current()).attach();
     try {
@@ -64,29 +60,27 @@ public class CorrelationContextManagerSdkTest {
   }
 
   @Test
-  public void testWithCorrelationContext() {
-    assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+  void testWithCorrelationContext() {
+    assertThat(contextManager.getCurrentContext()).isSameAs(EmptyCorrelationContext.getInstance());
     try (Scope wtm = contextManager.withContext(distContext)) {
-      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
+      assertThat(contextManager.getCurrentContext()).isSameAs(distContext);
     }
-    assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+    assertThat(contextManager.getCurrentContext()).isSameAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
-  public void testWithCorrelationContextUsingWrap() {
+  void testWithCorrelationContextUsingWrap() {
     Runnable runnable;
     try (Scope wtm = contextManager.withContext(distContext)) {
-      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
+      assertThat(contextManager.getCurrentContext()).isSameAs(distContext);
       runnable =
           Context.current()
               .wrap(
-                  () ->
-                      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext));
+                  () -> {
+                    assertThat(contextManager.getCurrentContext()).isSameAs(distContext);
+                  });
     }
-    assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+    assertThat(contextManager.getCurrentContext()).isSameAs(EmptyCorrelationContext.getInstance());
     // When we run the runnable we will have the CorrelationContext in the current Context.
     runnable.run();
   }

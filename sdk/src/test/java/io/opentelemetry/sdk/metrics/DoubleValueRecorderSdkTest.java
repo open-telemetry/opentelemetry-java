@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -34,17 +35,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleValueRecorderSdk}. */
-@RunWith(JUnit4.class)
-public class DoubleValueRecorderSdkTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class DoubleValueRecorderSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
@@ -59,21 +53,23 @@ public class DoubleValueRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
-  public void record_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.doubleValueRecorderBuilder("testRecorder").build().record(1.0, null);
+  void record_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.doubleValueRecorderBuilder("testRecorder").build().record(1.0, null),
+        "labels");
   }
 
   @Test
-  public void bound_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.doubleValueRecorderBuilder("testRecorder").build().bind(null);
+  void bound_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.doubleValueRecorderBuilder("testRecorder").build().bind(null),
+        "labels");
   }
 
   @Test
-  public void collectMetrics_NoRecords() {
+  void collectMetrics_NoRecords() {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
             .doubleValueRecorderBuilder("testRecorder")
@@ -98,7 +94,7 @@ public class DoubleValueRecorderSdkTest {
   }
 
   @Test
-  public void collectMetrics_EmptyCollectionCycle() {
+  void collectMetrics_EmptyCollectionCycle() {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
             .doubleValueRecorderBuilder("testRecorder")
@@ -125,7 +121,7 @@ public class DoubleValueRecorderSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithOneRecord() {
+  void collectMetrics_WithOneRecord() {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testRecorder").build();
     testClock.advanceNanos(SECOND_NANOS);
@@ -148,7 +144,7 @@ public class DoubleValueRecorderSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithMultipleCollects() {
+  void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testRecorder").build();
@@ -168,7 +164,7 @@ public class DoubleValueRecorderSdkTest {
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
       assertThat(metricData.getPoints())
-          .containsExactly(
+          .containsExactlyInAnyOrder(
               SummaryPoint.create(
                   startTime,
                   firstCollect,
@@ -194,7 +190,7 @@ public class DoubleValueRecorderSdkTest {
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
       assertThat(metricData.getPoints())
-          .containsExactly(
+          .containsExactlyInAnyOrder(
               SummaryPoint.create(
                   startTime + SECOND_NANOS,
                   secondCollect,
@@ -215,7 +211,7 @@ public class DoubleValueRecorderSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet() {
+  void sameBound_ForSameLabelSet() {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
@@ -229,7 +225,7 @@ public class DoubleValueRecorderSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
@@ -247,7 +243,7 @@ public class DoubleValueRecorderSdkTest {
   }
 
   @Test
-  public void stressTest() {
+  void stressTest() {
     final DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testRecorder").build();
 
@@ -280,7 +276,7 @@ public class DoubleValueRecorderSdkTest {
   }
 
   @Test
-  public void stressTest_WithDifferentLabelSet() {
+  void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final DoubleValueRecorderSdk doubleMeasure =

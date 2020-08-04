@@ -16,26 +16,24 @@
 
 package io.opentelemetry.common;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
 import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 import static io.opentelemetry.common.AttributeValue.longAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Attributes}s. */
-public class AttributesTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class AttributesTest {
 
   @Test
-  public void forEach() {
+  void forEach() {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
     Attributes attributes =
@@ -46,20 +44,21 @@ public class AttributesTest {
     attributes.forEach(entriesSeen::put);
 
     assertThat(entriesSeen)
-        .containsExactly("key1", stringAttributeValue("value1"), "key2", longAttributeValue(333));
+        .containsExactly(
+            entry("key1", stringAttributeValue("value1")), entry("key2", longAttributeValue(333)));
   }
 
   @Test
-  public void forEach_singleAttribute() {
+  void forEach_singleAttribute() {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
     Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
     attributes.forEach(entriesSeen::put);
-    assertThat(entriesSeen).containsExactly("key", stringAttributeValue("value"));
+    assertThat(entriesSeen).containsExactly(entry("key", stringAttributeValue("value")));
   }
 
   @Test
-  public void forEach_empty() {
+  void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();
     emptyAttributes.forEach((key, value) -> sawSomething.set(true));
@@ -67,7 +66,7 @@ public class AttributesTest {
   }
 
   @Test
-  public void orderIndependentEquality() {
+  void orderIndependentEquality() {
     Attributes one =
         Attributes.of(
             "key1", stringAttributeValue("value1"),
@@ -103,7 +102,7 @@ public class AttributesTest {
   }
 
   @Test
-  public void deduplication() {
+  void deduplication() {
     Attributes one =
         Attributes.of(
             "key1", stringAttributeValue("value1"),
@@ -114,7 +113,7 @@ public class AttributesTest {
   }
 
   @Test
-  public void emptyAndNullKey() {
+  void emptyAndNullKey() {
     Attributes noAttributes =
         Attributes.of("", stringAttributeValue("empty"), null, stringAttributeValue("null"));
 
@@ -122,7 +121,7 @@ public class AttributesTest {
   }
 
   @Test
-  public void builder() {
+  void builder() {
     Attributes attributes =
         Attributes.newBuilder()
             .setAttribute("string", "value1")
@@ -142,7 +141,7 @@ public class AttributesTest {
   }
 
   @Test
-  public void builder_arrayTypes() {
+  void builder_arrayTypes() {
     Attributes attributes =
         Attributes.newBuilder()
             .setAttribute("string", "value1", "value2")
@@ -163,13 +162,13 @@ public class AttributesTest {
   }
 
   @Test
-  public void get_Null() {
+  void get_Null() {
     assertThat(Attributes.empty().get("foo")).isNull();
     assertThat(Attributes.of("key", stringAttributeValue("value")).get("foo")).isNull();
   }
 
   @Test
-  public void get() {
+  void get() {
     assertThat(Attributes.of("key", stringAttributeValue("value")).get("key"))
         .isEqualTo(stringAttributeValue("value"));
     assertThat(Attributes.of("key", stringAttributeValue("value")).get("value")).isNull();

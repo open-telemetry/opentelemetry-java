@@ -16,24 +16,21 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Labels;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link NoopAggregator}. */
-@RunWith(JUnit4.class)
-public class NoopAggregatorTest {
+class NoopAggregatorTest {
   @Test
-  public void factoryAggregation() {
+  void factoryAggregation() {
     AggregatorFactory factory = NoopAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(NoopAggregator.class);
   }
 
   @Test
-  public void noopOperations() {
+  void noopOperations() {
     Aggregator aggregator = NoopAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     aggregator.recordDouble(12.1);

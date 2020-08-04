@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -25,17 +25,14 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.io.File;
 import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class BeanstalkResourceTest {
-
-  @Rule public TemporaryFolder tempFolder = new TemporaryFolder();
+class BeanstalkResourceTest {
 
   @Test
-  public void testCreateAttributes() throws IOException {
-    File file = tempFolder.newFile("beanstalk.config");
+  void testCreateAttributes(@TempDir File tempFolder) throws IOException {
+    File file = new File(tempFolder, "beanstalk.config");
     String content =
         "{\"noise\": \"noise\", \"deployment_id\":4,\""
             + "version_label\":\"2\",\"environment_name\":\"HttpSubscriber-env\"}";
@@ -51,15 +48,15 @@ public class BeanstalkResourceTest {
   }
 
   @Test
-  public void testConfigFileMissing() throws IOException {
+  void testConfigFileMissing() throws IOException {
     BeanstalkResource populator = new BeanstalkResource("a_file_never_existing");
     Attributes attributes = populator.createAttributes();
     assertThat(attributes.isEmpty()).isTrue();
   }
 
   @Test
-  public void testBadConfigFile() throws IOException {
-    File file = tempFolder.newFile("beanstalk.config");
+  void testBadConfigFile(@TempDir File tempFolder) throws IOException {
+    File file = new File(tempFolder, "beanstalk.config");
     String content =
         "\"deployment_id\":4,\"version_label\":\"2\",\""
             + "environment_name\":\"HttpSubscriber-env\"}";

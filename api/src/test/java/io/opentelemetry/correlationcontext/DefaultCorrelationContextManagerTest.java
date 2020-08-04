@@ -16,21 +16,16 @@
 
 package io.opentelemetry.correlationcontext;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import java.util.Collection;
 import java.util.Collections;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DefaultCorrelationContextManager}. */
-@RunWith(JUnit4.class)
-public final class DefaultCorrelationContextManagerTest {
+class DefaultCorrelationContextManagerTest {
   private static final CorrelationContextManager defaultCorrelationContextManager =
       DefaultCorrelationContextManager.getInstance();
   private static final String KEY = "key";
@@ -51,21 +46,19 @@ public final class DefaultCorrelationContextManagerTest {
         }
       };
 
-  @Rule public final ExpectedException thrown = ExpectedException.none();
-
   @Test
-  public void builderMethod() {
+  void builderMethod() {
     assertThat(defaultCorrelationContextManager.contextBuilder().build().getEntries()).isEmpty();
   }
 
   @Test
-  public void getCurrentContext_DefaultContext() {
+  void getCurrentContext_DefaultContext() {
     assertThat(defaultCorrelationContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+        .isSameAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
-  public void getCurrentContext_ContextSetToNull() {
+  void getCurrentContext_ContextSetToNull() {
     Context orig =
         CorrelationsContextUtils.withCorrelationContext(null, Context.current()).attach();
     try {
@@ -78,93 +71,92 @@ public final class DefaultCorrelationContextManagerTest {
   }
 
   @Test
-  public void withContext() {
+  void withContext() {
     assertThat(defaultCorrelationContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+        .isSameAs(EmptyCorrelationContext.getInstance());
     try (Scope wtm = defaultCorrelationContextManager.withContext(DIST_CONTEXT)) {
-      assertThat(defaultCorrelationContextManager.getCurrentContext())
-          .isSameInstanceAs(DIST_CONTEXT);
+      assertThat(defaultCorrelationContextManager.getCurrentContext()).isSameAs(DIST_CONTEXT);
     }
     assertThat(defaultCorrelationContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+        .isSameAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
-  public void withContext_nullContext() {
+  void withContext_nullContext() {
     assertThat(defaultCorrelationContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+        .isSameAs(EmptyCorrelationContext.getInstance());
     try (Scope wtm = defaultCorrelationContextManager.withContext(null)) {
       assertThat(defaultCorrelationContextManager.getCurrentContext())
-          .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+          .isSameAs(EmptyCorrelationContext.getInstance());
     }
     assertThat(defaultCorrelationContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+        .isSameAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
-  public void withContextUsingWrap() {
+  void withContextUsingWrap() {
     Runnable runnable;
     try (Scope wtm = defaultCorrelationContextManager.withContext(DIST_CONTEXT)) {
-      assertThat(defaultCorrelationContextManager.getCurrentContext())
-          .isSameInstanceAs(DIST_CONTEXT);
+      assertThat(defaultCorrelationContextManager.getCurrentContext()).isSameAs(DIST_CONTEXT);
       runnable =
           Context.current()
               .wrap(
-                  () ->
-                      assertThat(defaultCorrelationContextManager.getCurrentContext())
-                          .isSameInstanceAs(DIST_CONTEXT));
+                  () -> {
+                    assertThat(defaultCorrelationContextManager.getCurrentContext())
+                        .isSameAs(DIST_CONTEXT);
+                  });
     }
     assertThat(defaultCorrelationContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
+        .isSameAs(EmptyCorrelationContext.getInstance());
     // When we run the runnable we will have the CorrelationContext in the current Context.
     runnable.run();
   }
 
   @Test
-  public void noopContextBuilder_SetParent_DisallowsNullParent() {
+  void noopContextBuilder_SetParent_DisallowsNullParent() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
-    thrown.expect(NullPointerException.class);
-    noopBuilder.setParent((CorrelationContext) null);
+    assertThrows(
+        NullPointerException.class, () -> noopBuilder.setParent((CorrelationContext) null));
   }
 
   @Test
-  public void noopContextBuilder_SetParent_DisallowsNullContext() {
+  void noopContextBuilder_SetParent_DisallowsNullContext() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
-    thrown.expect(NullPointerException.class);
-    noopBuilder.setParent((Context) null);
+    assertThrows(NullPointerException.class, () -> noopBuilder.setParent((Context) null));
+    ;
   }
 
   @Test
-  public void noopContextBuilder_SetParent_fromContext() {
+  void noopContextBuilder_SetParent_fromContext() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
     noopBuilder.setParent(Context.current()); // No error.
   }
 
   @Test
-  public void noopContextBuilder_Put_DisallowsNullKey() {
+  void noopContextBuilder_Put_DisallowsNullKey() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
-    thrown.expect(NullPointerException.class);
-    noopBuilder.put(null, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION);
+    assertThrows(
+        NullPointerException.class,
+        () -> noopBuilder.put(null, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
   }
 
   @Test
-  public void noopContextBuilder_Put_DisallowsNullValue() {
+  void noopContextBuilder_Put_DisallowsNullValue() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
-    thrown.expect(NullPointerException.class);
-    noopBuilder.put(KEY, null, Entry.METADATA_UNLIMITED_PROPAGATION);
+    assertThrows(
+        NullPointerException.class,
+        () -> noopBuilder.put(KEY, null, Entry.METADATA_UNLIMITED_PROPAGATION));
   }
 
   @Test
-  public void noopContextBuilder_Put_DisallowsNullEntryMetadata() {
+  void noopContextBuilder_Put_DisallowsNullEntryMetadata() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
-    thrown.expect(NullPointerException.class);
-    noopBuilder.put(KEY, VALUE, null);
+    assertThrows(NullPointerException.class, () -> noopBuilder.put(KEY, VALUE, null));
   }
 
   @Test
-  public void noopContextBuilder_Remove_DisallowsNullKey() {
+  void noopContextBuilder_Remove_DisallowsNullKey() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
-    thrown.expect(NullPointerException.class);
-    noopBuilder.remove(null);
+    assertThrows(NullPointerException.class, () -> noopBuilder.remove(null));
   }
 }

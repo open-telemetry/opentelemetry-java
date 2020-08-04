@@ -16,29 +16,26 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link AbstractBoundInstrument}. */
-@RunWith(JUnit4.class)
-public class AbstractBoundInstrumentTest {
+class AbstractBoundInstrumentTest {
   @Mock private Aggregator aggregator;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
   }
 
   @Test
-  public void bindMapped() {
+  void bindMapped() {
     TestBoundInstrument testBoundInstrument = new TestBoundInstrument(aggregator);
     assertThat(testBoundInstrument.bind()).isTrue();
     testBoundInstrument.unbind();
@@ -51,7 +48,7 @@ public class AbstractBoundInstrumentTest {
   }
 
   @Test
-  public void tryUnmap_BoundInstrument() {
+  void tryUnmap_BoundInstrument() {
     TestBoundInstrument testBoundInstrument = new TestBoundInstrument(aggregator);
     assertThat(testBoundInstrument.bind()).isTrue();
     assertThat(testBoundInstrument.tryUnmap()).isFalse();
@@ -63,7 +60,7 @@ public class AbstractBoundInstrumentTest {
   }
 
   @Test
-  public void tryUnmap_BoundInstrument_MultipleTimes() {
+  void tryUnmap_BoundInstrument_MultipleTimes() {
     TestBoundInstrument testBoundInstrument = new TestBoundInstrument(aggregator);
     assertThat(testBoundInstrument.bind()).isTrue();
     assertThat(testBoundInstrument.bind()).isTrue();
@@ -84,7 +81,7 @@ public class AbstractBoundInstrumentTest {
   }
 
   @Test
-  public void bind_ThenUnmap_ThenTryToBind() {
+  void bind_ThenUnmap_ThenTryToBind() {
     TestBoundInstrument testBoundInstrument = new TestBoundInstrument(aggregator);
     testBoundInstrument.unbind();
     assertThat(testBoundInstrument.tryUnmap()).isTrue();
@@ -93,7 +90,7 @@ public class AbstractBoundInstrumentTest {
   }
 
   @Test
-  public void recordDoubleValue() {
+  void recordDoubleValue() {
     TestBoundInstrument testBoundInstrument = new TestBoundInstrument(aggregator);
     Mockito.verifyNoInteractions(aggregator);
     Mockito.doNothing().when(aggregator).recordDouble(Mockito.anyDouble());
@@ -102,7 +99,7 @@ public class AbstractBoundInstrumentTest {
   }
 
   @Test
-  public void recordLongValue() {
+  void recordLongValue() {
     TestBoundInstrument testBoundInstrument = new TestBoundInstrument(aggregator);
     Mockito.verifyNoInteractions(aggregator);
     Mockito.doNothing().when(aggregator).recordLong(Mockito.anyLong());

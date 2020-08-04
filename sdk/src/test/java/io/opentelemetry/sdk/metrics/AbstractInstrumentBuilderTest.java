@@ -16,7 +16,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.ERROR_MESSAGE_INVALID_NAME;
+import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.NAME_MAX_LENGTH;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -28,16 +31,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AbstractInstrument.Builder}. */
-@RunWith(JUnit4.class)
-public class AbstractInstrumentBuilderTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class AbstractInstrumentBuilderTest {
 
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
@@ -49,75 +46,94 @@ public class AbstractInstrumentBuilderTest {
       MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
 
   @Test
-  public void preventNull_Name() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    new TestInstrumentBuilder(null, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE).build();
+  void preventNull_Name() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            new TestInstrumentBuilder(null, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
+                .build(),
+        "name");
   }
 
   @Test
-  public void preventEmpty_Name() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Name");
-    new TestInstrumentBuilder("", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
+  void preventEmpty_Name() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> new TestInstrumentBuilder("", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE),
+        "Name");
   }
 
   @Test
-  public void checkCorrect_Name() {
+  void checkCorrect_Name() {
     new TestInstrumentBuilder("a", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
     new TestInstrumentBuilder("METRIC_name", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
     new TestInstrumentBuilder("metric.name_01", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
     new TestInstrumentBuilder("metric_name.01", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Name");
-    new TestInstrumentBuilder("01.metric_name_01", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            new TestInstrumentBuilder(
+                "01.metric_name_01", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE),
+        "Name");
   }
 
   @Test
-  public void preventNonPrintableName() {
-    thrown.expect(IllegalArgumentException.class);
-    new TestInstrumentBuilder("\2", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE).build();
+  void preventNonPrintableName() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            new TestInstrumentBuilder("\2", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
+                .build());
   }
 
   @Test
-  public void preventTooLongName() {
-    char[] chars = new char[AbstractInstrument.Builder.NAME_MAX_LENGTH + 1];
+  void preventTooLongName() {
+    char[] chars = new char[NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(AbstractInstrument.Builder.ERROR_MESSAGE_INVALID_NAME);
-    new TestInstrumentBuilder(longName, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE).build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            new TestInstrumentBuilder(longName, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
+                .build(),
+        ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventNull_Description() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("description");
-    new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
-        .setDescription(null)
-        .build();
+  void preventNull_Description() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
+                .setDescription(null)
+                .build(),
+        "description");
   }
 
   @Test
-  public void preventNull_Unit() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("unit");
-    new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
-        .setUnit(null)
-        .build();
+  void preventNull_Unit() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
+                .setUnit(null)
+                .build(),
+        "unit");
   }
 
   @Test
-  public void preventNull_ConstantLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("constantLabels");
-    new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
-        .setConstantLabels(null)
-        .build();
+  void preventNull_ConstantLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
+                .setConstantLabels(null)
+                .build(),
+        "constantLabels");
   }
 
   @Test
-  public void defaultValue() {
+  void defaultValue() {
     TestInstrumentBuilder testInstrumentBuilder =
         new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
     TestInstrument testInstrument = testInstrumentBuilder.build();
@@ -129,15 +145,15 @@ public class AbstractInstrumentBuilderTest {
   }
 
   @Test
-  public void setAndGetValues() {
+  void setAndGetValues() {
     TestInstrumentBuilder testInstrumentBuilder =
         new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
             .setDescription(DESCRIPTION)
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS);
     assertThat(testInstrumentBuilder.getMeterProviderSharedState())
-        .isSameInstanceAs(METER_PROVIDER_SHARED_STATE);
-    assertThat(testInstrumentBuilder.getMeterSharedState()).isSameInstanceAs(METER_SHARED_STATE);
+        .isSameAs(METER_PROVIDER_SHARED_STATE);
+    assertThat(testInstrumentBuilder.getMeterSharedState()).isSameAs(METER_SHARED_STATE);
 
     TestInstrument testInstrument = testInstrumentBuilder.build();
     assertThat(testInstrument).isInstanceOf(TestInstrument.class);

@@ -16,68 +16,61 @@
 
 package io.opentelemetry.correlationcontext;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link CorrelationsContextUtils}. */
-@RunWith(JUnit4.class)
-public final class CorrelationsContextUtilsTest {
+class CorrelationsContextUtilsTest {
 
   @Test
-  public void testGetCurrentCorrelationContext_Default() {
+  void testGetCurrentCorrelationContext_Default() {
     CorrelationContext corrContext = CorrelationsContextUtils.getCurrentCorrelationContext();
-    assertThat(corrContext).isSameInstanceAs(EmptyCorrelationContext.getInstance());
+    assertThat(corrContext).isSameAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
-  public void testGetCurrentCorrelationContext_SetCorrContext() {
+  void testGetCurrentCorrelationContext_SetCorrContext() {
     CorrelationContext corrContext =
         DefaultCorrelationContextManager.getInstance().contextBuilder().build();
     Context orig =
         CorrelationsContextUtils.withCorrelationContext(corrContext, Context.current()).attach();
     try {
-      assertThat(CorrelationsContextUtils.getCurrentCorrelationContext())
-          .isSameInstanceAs(corrContext);
+      assertThat(CorrelationsContextUtils.getCurrentCorrelationContext()).isSameAs(corrContext);
     } finally {
       Context.current().detach(orig);
     }
   }
 
   @Test
-  public void testGetCorrelationContext_DefaultContext() {
+  void testGetCorrelationContext_DefaultContext() {
     CorrelationContext corrContext =
         CorrelationsContextUtils.getCorrelationContext(Context.current());
-    assertThat(corrContext).isSameInstanceAs(EmptyCorrelationContext.getInstance());
+    assertThat(corrContext).isSameAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
-  public void testGetCorrelationContext_ExplicitContext() {
+  void testGetCorrelationContext_ExplicitContext() {
     CorrelationContext corrContext =
         DefaultCorrelationContextManager.getInstance().contextBuilder().build();
     Context context =
         CorrelationsContextUtils.withCorrelationContext(corrContext, Context.current());
-    assertThat(CorrelationsContextUtils.getCorrelationContext(context))
-        .isSameInstanceAs(corrContext);
+    assertThat(CorrelationsContextUtils.getCorrelationContext(context)).isSameAs(corrContext);
   }
 
   @Test
-  public void testGetCorrelationContextWithoutDefault_DefaultContext() {
+  void testGetCorrelationContextWithoutDefault_DefaultContext() {
     CorrelationContext corrContext =
         CorrelationsContextUtils.getCorrelationContextWithoutDefault(Context.current());
     assertThat(corrContext).isNull();
   }
 
   @Test
-  public void testGetCorrelationContextWithoutDefault_ExplicitContext() {
+  void testGetCorrelationContextWithoutDefault_ExplicitContext() {
     CorrelationContext corrContext =
         DefaultCorrelationContextManager.getInstance().contextBuilder().build();
     Context context =
         CorrelationsContextUtils.withCorrelationContext(corrContext, Context.current());
-    assertThat(CorrelationsContextUtils.getCorrelationContext(context))
-        .isSameInstanceAs(corrContext);
+    assertThat(CorrelationsContextUtils.getCorrelationContext(context)).isSameAs(corrContext);
   }
 }

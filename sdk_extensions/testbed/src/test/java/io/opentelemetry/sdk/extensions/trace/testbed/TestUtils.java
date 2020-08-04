@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;

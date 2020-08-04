@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -28,17 +28,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleUpDownSumObserverSdk}. */
-@RunWith(JUnit4.class)
-public class DoubleUpDownSumObserverSdkTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class DoubleUpDownSumObserverSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
@@ -53,7 +46,7 @@ public class DoubleUpDownSumObserverSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
-  public void collectMetrics_NoCallback() {
+  void collectMetrics_NoCallback() {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
@@ -65,7 +58,7 @@ public class DoubleUpDownSumObserverSdkTest {
   }
 
   @Test
-  public void collectMetrics_NoRecords() {
+  void collectMetrics_NoRecords() {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
@@ -92,7 +85,7 @@ public class DoubleUpDownSumObserverSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithOneRecord() {
+  void collectMetrics_WithOneRecord() {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk.doubleUpDownSumObserverBuilder("testObserver").build();
     doubleUpDownSumObserver.setCallback(result -> result.observe(12.1d, Labels.of("k", "v")));

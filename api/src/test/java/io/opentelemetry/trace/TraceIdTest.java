@@ -16,18 +16,15 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceId}. */
-@RunWith(JUnit4.class)
-public class TraceIdTest {
+class TraceIdTest {
   private static final byte[] firstBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final byte[] secondBytes =
@@ -38,19 +35,19 @@ public class TraceIdTest {
           ByteBuffer.wrap(secondBytes).getLong(), ByteBuffer.wrap(secondBytes, 8, 8).getLong());
 
   @Test
-  public void invalidTraceId() {
+  void invalidTraceId() {
     assertThat(TraceId.getInvalid().getTraceRandomPart()).isEqualTo(0);
   }
 
   @Test
-  public void isValid() {
+  void isValid() {
     assertThat(TraceId.getInvalid().isValid()).isFalse();
     assertThat(first.isValid()).isTrue();
     assertThat(second.isValid()).isTrue();
   }
 
   @Test
-  public void testGetRandomTracePart() {
+  void testGetRandomTracePart() {
     byte[] id = {
       0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x00
     };
@@ -59,7 +56,7 @@ public class TraceIdTest {
   }
 
   @Test
-  public void testGetRandomTracePart_NegativeLongRepresentation() {
+  void testGetRandomTracePart_NegativeLongRepresentation() {
     byte[] id = {
       0x01,
       0x02,
@@ -83,7 +80,7 @@ public class TraceIdTest {
   }
 
   @Test
-  public void fromLowerBase16() {
+  void fromLowerBase16() {
     assertThat(TraceId.fromLowerBase16("00000000000000000000000000000000", 0))
         .isEqualTo(TraceId.getInvalid());
     assertThat(TraceId.fromLowerBase16("00000000000000000000000000000061", 0)).isEqualTo(first);
@@ -91,7 +88,7 @@ public class TraceIdTest {
   }
 
   @Test
-  public void fromLowerBase16_WithOffset() {
+  void fromLowerBase16_WithOffset() {
     assertThat(TraceId.fromLowerBase16("XX00000000000000000000000000000000CC", 2))
         .isEqualTo(TraceId.getInvalid());
     assertThat(TraceId.fromLowerBase16("YY00000000000000000000000000000061AA", 2)).isEqualTo(first);
@@ -100,21 +97,21 @@ public class TraceIdTest {
   }
 
   @Test
-  public void toLowerBase16() {
+  void toLowerBase16() {
     assertThat(TraceId.getInvalid().toLowerBase16()).isEqualTo("00000000000000000000000000000000");
     assertThat(first.toLowerBase16()).isEqualTo("00000000000000000000000000000061");
     assertThat(second.toLowerBase16()).isEqualTo("ff000000000000000000000000000041");
   }
 
   @Test
-  public void traceId_CompareTo() {
+  void traceId_CompareTo() {
     assertThat(first.compareTo(second)).isGreaterThan(0);
     assertThat(second.compareTo(first)).isLessThan(0);
     assertThat(first.compareTo(TraceId.fromBytes(firstBytes, 0))).isEqualTo(0);
   }
 
   @Test
-  public void traceId_EqualsAndHashCode() {
+  void traceId_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(TraceId.getInvalid(), TraceId.getInvalid());
     tester.addEqualityGroup(
@@ -125,7 +122,7 @@ public class TraceIdTest {
   }
 
   @Test
-  public void traceId_ToString() {
+  void traceId_ToString() {
     assertThat(TraceId.getInvalid().toString()).contains("00000000000000000000000000000000");
     assertThat(first.toString()).contains("00000000000000000000000000000061");
     assertThat(second.toString()).contains("ff000000000000000000000000000041");

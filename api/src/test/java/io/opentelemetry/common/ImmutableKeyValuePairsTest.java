@@ -16,17 +16,18 @@
 
 package io.opentelemetry.common;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ImmutableKeyValuePairsTest {
+class ImmutableKeyValuePairsTest {
+
   @Test
-  public void toStringIsCorrect() {
+  void toStringIsCorrect() {
     assertThat(new TestPairs(Collections.emptyList()).toString()).isEqualTo("{}");
     assertThat(new TestPairs(Arrays.asList("one", 55)).toString()).isEqualTo("{one=55}");
     assertThat(new TestPairs(Arrays.asList("one", 55, "two", "b")).toString())

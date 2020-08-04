@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -41,16 +41,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link SimpleSpanProcessor}. */
-@RunWith(JUnit4.class)
-public class SimpleSpanProcessorTest {
+class SimpleSpanProcessorTest {
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private static final String SPAN_NAME = "MySpanName";
   @Mock private ReadableSpan readableSpan;
@@ -67,14 +64,14 @@ public class SimpleSpanProcessorTest {
 
   private SimpleSpanProcessor simpleSampledSpansProcessor;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
     simpleSampledSpansProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
   }
 
   @Test
-  public void configTest() {
+  void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.ssp.export.sampled", "false");
     SimpleSpanProcessor.Builder config =
@@ -84,7 +81,7 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void configTest_EmptyOptions() {
+  void configTest_EmptyOptions() {
     SimpleSpanProcessor.Builder config =
         SimpleSpanProcessor.newBuilder(spanExporter)
             .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
@@ -93,13 +90,13 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void onStartSync() {
+  void onStartSync() {
     simpleSampledSpansProcessor.onStart(readableSpan);
     verifyNoInteractions(spanExporter);
   }
 
   @Test
-  public void onEndSync_SampledSpan() {
+  void onEndSync_SampledSpan() {
     SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData()).thenReturn(spanData);
@@ -108,14 +105,14 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void onEndSync_NotSampledSpan() {
+  void onEndSync_NotSampledSpan() {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     simpleSampledSpansProcessor.onEnd(readableSpan);
     verifyNoInteractions(spanExporter);
   }
 
   @Test
-  public void onEndSync_OnlySampled_NotSampledSpan() {
+  void onEndSync_OnlySampled_NotSampledSpan() {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
@@ -126,7 +123,7 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void onEndSync_OnlySampled_SampledSpan() {
+  void onEndSync_OnlySampled_SampledSpan() {
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
@@ -137,7 +134,7 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void tracerSdk_NotSampled_Span() {
+  void tracerSdk_NotSampled_Span() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
 
     tracerSdkFactory.addSpanProcessor(
@@ -166,7 +163,7 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void tracerSdk_NotSampled_RecordingEventsSpan() {
+  void tracerSdk_NotSampled_RecordingEventsSpan() {
     // TODO(bdrutu): Fix this when Sampler return RECORD option.
     /*
     tracer.addSpanProcessor(
@@ -188,7 +185,7 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void onEndSync_ExporterReturnError() {
+  void onEndSync_ExporterReturnError() {
     SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData()).thenReturn(spanData);
@@ -199,13 +196,13 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void shutdown() {
+  void shutdown() {
     simpleSampledSpansProcessor.shutdown();
     verify(spanExporter).shutdown();
   }
 
   @Test
-  public void buildFromProperties_defaultSampledFlag() {
+  void buildFromProperties_defaultSampledFlag() {
     Properties properties = new Properties();
     SimpleSpanProcessor spanProcessor =
         SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
@@ -216,7 +213,7 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void buildFromProperties_onlySampledTrue() {
+  void buildFromProperties_onlySampledTrue() {
     Properties properties = new Properties();
     properties.setProperty("otel.ssp.export.sampled", "true");
     SimpleSpanProcessor spanProcessor =
@@ -228,7 +225,7 @@ public class SimpleSpanProcessorTest {
   }
 
   @Test
-  public void buildFromProperties_onlySampledFalse() {
+  void buildFromProperties_onlySampledFalse() {
     Properties properties = new Properties();
     properties.setProperty("otel.ssp.export.sampled", "false");
     SimpleSpanProcessor spanProcessor =

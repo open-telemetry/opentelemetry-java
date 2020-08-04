@@ -16,18 +16,15 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Event;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TimedEvent}. */
-@RunWith(JUnit4.class)
-public class TimedEventTest {
+class TimedEventTest {
 
   private static final String NAME = "event";
   private static final String NAME_2 = "event2";
@@ -49,7 +46,7 @@ public class TimedEventTest {
       };
 
   @Test
-  public void rawTimedEventWithNameAndAttributesAndTotalAttributeCount() {
+  void rawTimedEventWithNameAndAttributesAndTotalAttributeCount() {
     TimedEvent event = TimedEvent.create(1234567890L, NAME, ATTRIBUTES, ATTRIBUTES.size() + 2);
     assertThat(event.getEpochNanos()).isEqualTo(1234567890L);
     assertThat(event.getName()).isEqualTo(NAME);
@@ -58,7 +55,7 @@ public class TimedEventTest {
   }
 
   @Test
-  public void rawTimedEventWithEvent() {
+  void rawTimedEventWithEvent() {
     TimedEvent event = TimedEvent.create(9876501234L, EVENT);
     assertThat(event.getEpochNanos()).isEqualTo(9876501234L);
     assertThat(event.getName()).isEqualTo(NAME_2);

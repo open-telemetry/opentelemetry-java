@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -31,17 +31,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleValueObserverSdk}. */
-@RunWith(JUnit4.class)
-public class DoubleValueObserverSdkTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class DoubleValueObserverSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
@@ -56,7 +49,7 @@ public class DoubleValueObserverSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
-  public void collectMetrics_NoCallback() {
+  void collectMetrics_NoCallback() {
     DoubleValueObserverSdk doubleValueObserver =
         testSdk
             .doubleValueObserverBuilder("testObserver")
@@ -68,7 +61,7 @@ public class DoubleValueObserverSdkTest {
   }
 
   @Test
-  public void collectMetrics_NoRecords() {
+  void collectMetrics_NoRecords() {
     DoubleValueObserverSdk doubleValueObserver =
         testSdk
             .doubleValueObserverBuilder("testObserver")
@@ -95,7 +88,7 @@ public class DoubleValueObserverSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithOneRecord() {
+  void collectMetrics_WithOneRecord() {
     DoubleValueObserverSdk doubleValueObserver =
         testSdk.doubleValueObserverBuilder("testObserver").build();
     doubleValueObserver.setCallback(result -> result.observe(12.1d, Labels.of("k", "v")));

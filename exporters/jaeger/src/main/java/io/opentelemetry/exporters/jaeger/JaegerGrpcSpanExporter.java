@@ -21,13 +21,13 @@ import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,17 +36,17 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
 @ThreadSafe
 public final class JaegerGrpcSpanExporter implements SpanExporter {
+  public static final String DEFAULT_HOST_NAME = "unknown";
+  public static final String DEFAULT_ENDPOINT = "localhost:14250";
+  public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+
   private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
-  private static final String JAEGER_SERVICE_NAME = "JAEGER_SERVICE_NAME";
-  private static final String JAEGER_ENDPOINT = "JAEGER_ENDPOINT";
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
-  private static final String DEFAULT_JAEGER_ENDPOINT = "localhost:14250";
   private static final String HOSTNAME_KEY = "hostname";
-  private static final String UNKNOWN = "unknown";
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
-
   private final CollectorServiceGrpc.CollectorServiceBlockingStub blockingStub;
   private final Model.Process process;
   private final ManagedChannel managedChannel;
@@ -72,7 +72,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       hostname = InetAddress.getLocalHost().getHostName();
       ipv4 = InetAddress.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
-      hostname = UNKNOWN;
+      hostname = DEFAULT_HOST_NAME;
       ipv4 = IP_DEFAULT;
     }
 
@@ -128,6 +128,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       stub.postSpans(request);
       return ResultCode.SUCCESS;
     } catch (Throwable e) {
+      logger.log(Level.WARNING, "Failed to export spans", e);
       return ResultCode.FAILURE;
     }
   }
@@ -165,10 +166,14 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   }
 
   /** Builder utility for this exporter. */
-  public static class Builder {
-    private String serviceName;
+  public static class Builder extends ConfigBuilder<Builder> {
+    private static final String KEY_SERVICE_NAME = "otel.jaeger.service.name";
+    private static final String KEY_ENDPOINT = "otel.jaeger.endpoint";
+
+    private String serviceName = DEFAULT_SERVICE_NAME;
+    private String endpoint = DEFAULT_ENDPOINT;
     private ManagedChannel channel;
-    private long deadlineMs = 1_000; // 1 second
+    private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
 
     /**
      * Sets the service name to be used by this exporter. Required.
@@ -182,13 +187,26 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the managed chanel to use when communicating with the backend. Required.
+     * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+     * {@link #setEndpoint(String)} if both are called.
      *
      * @param channel the channel to use.
      * @return this.
      */
     public Builder setChannel(ManagedChannel channel) {
       this.channel = channel;
+      return this;
+    }
+
+    /**
+     * Sets the Jaeger endpoint to connect to. Optional, defaults to "localhost:14250".
+     *
+     * @param endpoint The Jaeger endpoint URL, ex. "jaegerhost:14250".
+     * @return this.
+     * @since 0.7.0
+     */
+    public Builder setEndpoint(String endpoint) {
+      this.endpoint = endpoint;
       return this;
     }
 
@@ -204,17 +222,25 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Creates builder from system properties and environmental variables: {@code JAEGER_ENDPOINT}
-     * e.g. {@code localhost:14250} and {@code JAEGER_SERVICE_NAME} e.g. {@code my-deployment}.
+     * Sets the configuration values from the given configuration map for only the available keys.
      *
-     * @return thes builder's instance
+     * @param configMap {@link Map} holding the configuration values.
+     * @return this.
+     * @since 0.7.0
      */
-    public static Builder fromEnv() {
-      Builder builder = new Builder();
-      String host = getProperty(JAEGER_ENDPOINT, DEFAULT_JAEGER_ENDPOINT);
-      builder.channel = ManagedChannelBuilder.forTarget(host).usePlaintext().build();
-      builder.serviceName = getProperty(JAEGER_SERVICE_NAME, UNKNOWN);
-      return builder;
+    @Override
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
+      configMap = namingConvention.normalize(configMap);
+      String stringValue = getStringProperty(KEY_SERVICE_NAME, configMap);
+      if (stringValue != null) {
+        this.setServiceName(stringValue);
+      }
+      stringValue = getStringProperty(KEY_ENDPOINT, configMap);
+      if (stringValue != null) {
+        this.setEndpoint(stringValue);
+      }
+      return this;
     }
 
     /**
@@ -223,27 +249,12 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
      * @return a new exporter's instance.
      */
     public JaegerGrpcSpanExporter build() {
+      if (channel == null) {
+        channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
+      }
       return new JaegerGrpcSpanExporter(serviceName, channel, deadlineMs);
     }
 
-    /**
-     * Installs exporter into tracer SDK provider with batching span processor.
-     *
-     * @param tracerSdkProvider tracer SDK provider
-     */
-    public void install(TracerSdkProvider tracerSdkProvider) {
-      BatchSpanProcessor spansProcessor = BatchSpanProcessor.newBuilder(this.build()).build();
-      tracerSdkProvider.addSpanProcessor(spansProcessor);
-    }
-
     private Builder() {}
-  }
-
-  private static String getProperty(String name, String defaultValue) {
-    String val = System.getProperty(name, System.getenv(name));
-    if (val == null || val.isEmpty()) {
-      return defaultValue;
-    }
-    return val;
   }
 }

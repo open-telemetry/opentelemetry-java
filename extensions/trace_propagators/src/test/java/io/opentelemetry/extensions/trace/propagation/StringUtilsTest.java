@@ -16,17 +16,15 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class StringUtilsTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class StringUtilsTest {
 
   @Test
-  public void isNullOrEmpty() {
+  void isNullOrEmpty() {
     assertThat(StringUtils.isNullOrEmpty("")).isTrue();
     assertThat(StringUtils.isNullOrEmpty(null)).isTrue();
     assertThat(StringUtils.isNullOrEmpty("hello")).isFalse();
@@ -34,18 +32,17 @@ public class StringUtilsTest {
   }
 
   @Test
-  public void padLeft() {
+  void padLeft() {
     assertThat(StringUtils.padLeft("value", 10)).isEqualTo("00000value");
   }
 
   @Test
-  public void padLeft_throws_for_null_value() {
-    thrown.expect(NullPointerException.class);
-    StringUtils.padLeft(null, 10);
+  void padLeft_throws_for_null_value() {
+    assertThrows(NullPointerException.class, () -> StringUtils.padLeft(null, 10));
   }
 
   @Test
-  public void padLeft_length_does_not_exceed_length() {
+  void padLeft_length_does_not_exceed_length() {
     assertThat(StringUtils.padLeft("value", 3)).isEqualTo("value");
     assertThat(StringUtils.padLeft("value", -10)).isEqualTo("value");
     assertThat(StringUtils.padLeft("value", 0)).isEqualTo("value");

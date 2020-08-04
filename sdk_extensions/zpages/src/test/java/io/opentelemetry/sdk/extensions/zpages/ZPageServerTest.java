@@ -16,20 +16,17 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link ZPageServer}. */
-@RunWith(JUnit4.class)
 public final class ZPageServerTest {
   @Test
-  public void tracezSpanProcessorOnlyAddedOnce() throws IOException {
+  void tracezSpanProcessorOnlyAddedOnce() throws IOException {
     // tracezSpanProcessor is not added yet
     assertThat(ZPageServer.getIsTracezSpanProcesserAdded()).isFalse();
     HttpServer server = HttpServer.create(new InetSocketAddress(8888), 5);

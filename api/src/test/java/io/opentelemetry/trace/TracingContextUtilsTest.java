@@ -16,57 +16,54 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TracingContextUtils}. */
-@RunWith(JUnit4.class)
 public final class TracingContextUtilsTest {
 
   @Test
-  public void testGetCurrentSpan_Default() {
+  void testGetCurrentSpan_Default() {
     Span span = TracingContextUtils.getCurrentSpan();
-    assertThat(span).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(span).isSameAs(DefaultSpan.getInvalid());
   }
 
   @Test
-  public void testGetCurrentSpan_SetSpan() {
+  void testGetCurrentSpan_SetSpan() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     Context orig = TracingContextUtils.withSpan(span, Context.current()).attach();
     try {
-      assertThat(TracingContextUtils.getCurrentSpan()).isSameInstanceAs(span);
+      assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(span);
     } finally {
       Context.current().detach(orig);
     }
   }
 
   @Test
-  public void testGetSpan_DefaultContext() {
+  void testGetSpan_DefaultContext() {
     Span span = TracingContextUtils.getSpan(Context.current());
-    assertThat(span).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(span).isSameAs(DefaultSpan.getInvalid());
   }
 
   @Test
-  public void testGetSpan_ExplicitContext() {
+  void testGetSpan_ExplicitContext() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     Context context = TracingContextUtils.withSpan(span, Context.current());
-    assertThat(TracingContextUtils.getSpan(context)).isSameInstanceAs(span);
+    assertThat(TracingContextUtils.getSpan(context)).isSameAs(span);
   }
 
   @Test
-  public void testGetSpanWithoutDefault_DefaultContext() {
+  void testGetSpanWithoutDefault_DefaultContext() {
     Span span = TracingContextUtils.getSpanWithoutDefault(Context.current());
     assertThat(span).isNull();
   }
 
   @Test
-  public void testGetSpanWithoutDefault_ExplicitContext() {
+  void testGetSpanWithoutDefault_ExplicitContext() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     Context context = TracingContextUtils.withSpan(span, Context.current());
-    assertThat(TracingContextUtils.getSpanWithoutDefault(context)).isSameInstanceAs(span);
+    assertThat(TracingContextUtils.getSpanWithoutDefault(context)).isSameAs(span);
   }
 }

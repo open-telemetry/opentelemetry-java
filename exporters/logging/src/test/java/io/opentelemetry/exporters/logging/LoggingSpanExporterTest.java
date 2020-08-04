@@ -16,9 +16,9 @@
 
 package io.opentelemetry.exporters.logging;
 
-import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -36,27 +36,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Tests for the {@link LoggingSpanExporter}. */
-public class LoggingSpanExporterTest {
+class LoggingSpanExporterTest {
 
   LoggingSpanExporter exporter;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     exporter = new LoggingSpanExporter();
   }
 
-  @After
-  public void tearDown() {
+  @AfterEach
+  void tearDown() {
     exporter.shutdown();
   }
 
   @Test
-  public void returnCode() {
+  void returnCode() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     SpanData spanData =
         TestSpanData.newBuilder()
@@ -82,7 +82,7 @@ public class LoggingSpanExporterTest {
   }
 
   @Test
-  public void testFlush() {
+  void testFlush() {
     final AtomicBoolean flushed = new AtomicBoolean(false);
     Logger.getLogger(LoggingSpanExporter.class.getName())
         .addHandler(

@@ -16,20 +16,15 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link io.opentelemetry.sdk.metrics.data.MetricData.Descriptor}. */
-@RunWith(JUnit4.class)
-public class MetricDataDescriptorTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class MetricDataDescriptorTest {
 
   private static final String METRIC_NAME = "metric";
   private static final String DESCRIPTION = "Instrument description.";
@@ -39,7 +34,7 @@ public class MetricDataDescriptorTest {
   private static final String VALUE = "value_1";
 
   @Test
-  public void testGet() {
+  void testGet() {
     Descriptor descriptor =
         Descriptor.create(METRIC_NAME, DESCRIPTION, UNIT, TYPE, Labels.of(KEY, VALUE));
     assertThat(descriptor.getName()).isEqualTo(METRIC_NAME);
@@ -51,37 +46,42 @@ public class MetricDataDescriptorTest {
   }
 
   @Test
-  public void create_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    Descriptor.create(null, DESCRIPTION, UNIT, TYPE, Labels.of(KEY, VALUE));
+  void create_NullName() {
+    assertThrows(
+        NullPointerException.class,
+        () -> Descriptor.create(null, DESCRIPTION, UNIT, TYPE, Labels.of(KEY, VALUE)),
+        "name");
   }
 
   @Test
-  public void create_NullDescription() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("description");
-    Descriptor.create(METRIC_NAME, null, UNIT, TYPE, Labels.of(KEY, VALUE));
+  void create_NullDescription() {
+    assertThrows(
+        NullPointerException.class,
+        () -> Descriptor.create(METRIC_NAME, null, UNIT, TYPE, Labels.of(KEY, VALUE)),
+        "description");
   }
 
   @Test
-  public void create_NullUnit() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("unit");
-    Descriptor.create(METRIC_NAME, DESCRIPTION, null, TYPE, Labels.of(KEY, VALUE));
+  void create_NullUnit() {
+    assertThrows(
+        NullPointerException.class,
+        () -> Descriptor.create(METRIC_NAME, DESCRIPTION, null, TYPE, Labels.of(KEY, VALUE)),
+        "unit");
   }
 
   @Test
-  public void create_NullType() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("type");
-    Descriptor.create(METRIC_NAME, DESCRIPTION, UNIT, null, Labels.of(KEY, VALUE));
+  void create_NullType() {
+    assertThrows(
+        NullPointerException.class,
+        () -> Descriptor.create(METRIC_NAME, DESCRIPTION, UNIT, null, Labels.of(KEY, VALUE)),
+        "type");
   }
 
   @Test
-  public void create_NullConstantLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("constantLabels");
-    Descriptor.create(METRIC_NAME, DESCRIPTION, UNIT, TYPE, null);
+  void create_NullConstantLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> Descriptor.create(METRIC_NAME, DESCRIPTION, UNIT, TYPE, null),
+        "constantLabels");
   }
 }

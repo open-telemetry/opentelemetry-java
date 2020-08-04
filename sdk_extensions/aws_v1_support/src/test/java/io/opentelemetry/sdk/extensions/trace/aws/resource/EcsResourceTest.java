@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.common.Attributes;
@@ -26,22 +26,20 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-public class EcsResourceTest {
+@ExtendWith(MockitoExtension.class)
+class EcsResourceTest {
   private static final String ECS_METADATA_KEY_V4 = "ECS_CONTAINER_METADATA_URI_V4";
   private static final String ECS_METADATA_KEY_V3 = "ECS_CONTAINER_METADATA_URI";
-
-  @Rule public MockitoRule mocks = MockitoJUnit.rule();
 
   @Mock private DockerHelper mockDockerHelper;
 
   @Test
-  public void testCreateAttributes() throws UnknownHostException {
+  void testCreateAttributes() throws UnknownHostException {
     when(mockDockerHelper.getContainerId()).thenReturn("0123456789A");
     Map<String, String> mockSysEnv = new HashMap<>();
     mockSysEnv.put(ECS_METADATA_KEY_V3, "ecs_metadata_v3_uri");
@@ -57,8 +55,7 @@ public class EcsResourceTest {
   }
 
   @Test
-  public void testNotOnEcs() {
-    when(mockDockerHelper.getContainerId()).thenReturn("0123456789A");
+  void testNotOnEcs() {
     Map<String, String> mockSysEnv = new HashMap<>();
     mockSysEnv.put(ECS_METADATA_KEY_V3, "");
     mockSysEnv.put(ECS_METADATA_KEY_V4, "");
@@ -68,7 +65,7 @@ public class EcsResourceTest {
   }
 
   @Test
-  public void testContainerIdMissing() throws UnknownHostException {
+  void testContainerIdMissing() throws UnknownHostException {
     when(mockDockerHelper.getContainerId()).thenReturn("");
     Map<String, String> mockSysEnv = new HashMap<>();
     mockSysEnv.put(ECS_METADATA_KEY_V4, "ecs_metadata_v4_uri");

@@ -141,18 +141,69 @@ public final class SemanticAttributes {
   /** RPC span event attribute for uncompressed size. */
   public static final LongAttributeSetter MESSAGE_UNCOMPRESSED_SIZE =
       LongAttributeSetter.create("message.uncompressed_size");
-  /** Database type. For any SQL database, "sql". For others, the lower-case database category. */
-  public static final StringAttributeSetter DB_TYPE = StringAttributeSetter.create("db.type");
-  /** Database instance name. */
-  public static final StringAttributeSetter DB_INSTANCE =
-      StringAttributeSetter.create("db.instance");
+  /**
+   * An identifier for the database management system (DBMS) product being used.
+   *
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/database.md#notes-and-well-known-identifiers-for-dbsystem">A
+   *     list of well-known identifiers</a>
+   */
+  public static final StringAttributeSetter DB_SYSTEM = StringAttributeSetter.create("db.system");
+  /** Database name. */
+  public static final StringAttributeSetter DB_NAME = StringAttributeSetter.create("db.name");
+  /**
+   * The connection string used to connect to the database. It's recommended to remove embedded
+   * credentials. This will replace db.url.
+   */
+  public static final StringAttributeSetter DB_CONNECTION_STRING =
+      StringAttributeSetter.create("db.connection_string");
   /** Database statement for the given database type. */
   public static final StringAttributeSetter DB_STATEMENT =
       StringAttributeSetter.create("db.statement");
+  /** Database operation that is being executed. */
+  public static final StringAttributeSetter DB_OPERATION =
+      StringAttributeSetter.create("db.operation");
   /** Username for accessing database. */
   public static final StringAttributeSetter DB_USER = StringAttributeSetter.create("db.user");
-  /** JDBC substring like "mysql://db.example.com:3306" */
-  public static final StringAttributeSetter DB_URL = StringAttributeSetter.create("db.url");
+
+  /**
+   * For db.system == mssql, the instance name connecting to. This name is used to determine the
+   * port of a named instance. When set, {@link #NET_PEER_PORT} is not required, but recommended
+   * when connecting to a non-standard port.
+   */
+  public static final StringAttributeSetter MSSQL_SQL_SERVER =
+      StringAttributeSetter.create("db.mssql.instance_name");
+  /**
+   * For JDBC clients, the fully-qualified class name of the Java Database Connectivity (JDBC)
+   * driver used to connect, e.g. "org.postgresql.Driver" or
+   * "com.microsoft.sqlserver.jdbc.SQLServerDriver".
+   */
+  public static final StringAttributeSetter JDBC_DRIVER_CLASSNAME =
+      StringAttributeSetter.create("db.jdbc.driver_classname");
+
+  /**
+   * For db.system == cassandra, the name of the keyspace being accessed. To be used instead of the
+   * generic db.name attribute.
+   */
+  public static final StringAttributeSetter CASSANDRA_NAMESPACE =
+      StringAttributeSetter.create("db.cassandra.keyspace");
+  /**
+   * For db.system == hbase, the namespace being accessed. To be used instead of the generic db.name
+   * attribute.
+   */
+  public static final StringAttributeSetter HBASE_NAMESPACE =
+      StringAttributeSetter.create("db.hbase.namespace");
+  /**
+   * For db.system == redis, the index of the database being accessed as used in the SELECT command,
+   * provided as an integer. To be used instead of the generic db.name attribute.
+   */
+  public static final StringAttributeSetter REDIS_DATABASE_INDEX =
+      StringAttributeSetter.create("db.redis.database_index");
+  /**
+   * For db.system == mongodb, the collection being accessed within the database stated in db.name
+   */
+  public static final StringAttributeSetter MONGODB_COLLECTION =
+      StringAttributeSetter.create("db.mongodb.collection");
 
   /** A string identifying the messaging system such as kafka, rabbitmq or activemq. */
   public static final StringAttributeSetter MESSAGING_SYSTEM =

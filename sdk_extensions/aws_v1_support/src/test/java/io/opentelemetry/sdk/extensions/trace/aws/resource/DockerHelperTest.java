@@ -16,29 +16,26 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-public class DockerHelperTest {
-
-  @Rule public TemporaryFolder tempFolder = new TemporaryFolder();
+class DockerHelperTest {
 
   @Test
-  public void testCgroupFileMissing() {
+  void testCgroupFileMissing() {
     DockerHelper dockerHelper = new DockerHelper("a_file_never_existing");
     assertThat(dockerHelper.getContainerId()).isEmpty();
   }
 
   @Test
-  public void testContainerIdMissing() throws IOException {
-    File file = tempFolder.newFile("no_container_id");
+  void testContainerIdMissing(@TempDir File tempFolder) throws IOException {
+    File file = new File(tempFolder, "no_container_id");
     String content = "13:pids:/\n" + "12:hugetlb:/\n" + "11:net_prio:/";
     Files.write(content.getBytes(Charsets.UTF_8), file);
 
@@ -47,8 +44,8 @@ public class DockerHelperTest {
   }
 
   @Test
-  public void testGetContainerId() throws IOException {
-    File file = tempFolder.newFile("cgroup");
+  void testGetContainerId(@TempDir File tempFolder) throws IOException {
+    File file = new File(tempFolder, "cgroup");
     String expected = "386a1920640799b5bf5a39bd94e489e5159a88677d96ca822ce7c433ff350163";
     String content = "dummy\n11:devices:/ecs/bbc36dd0-5ee0-4007-ba96-c590e0b278d2/" + expected;
     Files.write(content.getBytes(Charsets.UTF_8), file);

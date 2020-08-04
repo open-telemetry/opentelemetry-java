@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.export;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
@@ -26,24 +26,21 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link DisruptorAsyncSpanProcessor}. */
-@RunWith(JUnit4.class)
-public class DisruptorAsyncSpanProcessorTest {
+class DisruptorAsyncSpanProcessorTest {
   private static final boolean REQUIRED = true;
   private static final boolean NOT_REQUIRED = false;
 
   @Mock private ReadableSpan readableSpan;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
   }
 
@@ -123,7 +120,7 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void incrementOnce() {
+  void incrementOnce() {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
@@ -142,7 +139,7 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void incrementOnce_NoStart() {
+  void incrementOnce_NoStart() {
     IncrementSpanProcessor incrementSpanProcessor =
         new IncrementSpanProcessor(NOT_REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
@@ -162,7 +159,7 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void incrementOnce_NoEnd() {
+  void incrementOnce_NoEnd() {
     IncrementSpanProcessor incrementSpanProcessor =
         new IncrementSpanProcessor(REQUIRED, NOT_REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
@@ -182,7 +179,7 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void shutdownIsCalledOnlyOnce() {
+  void shutdownIsCalledOnlyOnce() {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
@@ -195,7 +192,7 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void incrementAfterShutdown() {
+  void incrementAfterShutdown() {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
@@ -211,7 +208,7 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void incrementTenK() {
+  void incrementTenK() {
     final int tenK = 10000;
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
@@ -231,7 +228,7 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void incrementMultiSpanProcessor() {
+  void incrementMultiSpanProcessor() {
     IncrementSpanProcessor incrementSpanProcessor1 = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     IncrementSpanProcessor incrementSpanProcessor2 = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
@@ -253,7 +250,7 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void multipleForceFlush() {
+  void multipleForceFlush() {
     final int tenK = 10000;
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
@@ -280,7 +277,7 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void configTest() {
+  void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.disruptor.blocking", "false");
     options.put("otel.disruptor.buffer.size", "1234");

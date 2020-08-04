@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -28,36 +28,33 @@ import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link MultiSpanExporterTest}. */
-@RunWith(JUnit4.class)
-public class MultiSpanExporterTest {
+class MultiSpanExporterTest {
   @Mock private SpanExporter spanExporter1;
   @Mock private SpanExporter spanExporter2;
   private static final List<SpanData> SPAN_LIST =
       Collections.singletonList(TestUtils.makeBasicSpan());
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
   }
 
   @Test
-  public void empty() {
+  void empty() {
     SpanExporter multiSpanExporter = MultiSpanExporter.create(Collections.emptyList());
     multiSpanExporter.export(SPAN_LIST);
     multiSpanExporter.shutdown();
   }
 
   @Test
-  public void oneSpanExporter() {
+  void oneSpanExporter() {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Collections.singletonList(spanExporter1));
 
@@ -74,7 +71,7 @@ public class MultiSpanExporterTest {
   }
 
   @Test
-  public void twoSpanExporter() {
+  void twoSpanExporter() {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
 
@@ -96,7 +93,7 @@ public class MultiSpanExporterTest {
   }
 
   @Test
-  public void twoSpanExporter_OneReturnFailure() {
+  void twoSpanExporter_OneReturnFailure() {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
 
@@ -114,7 +111,7 @@ public class MultiSpanExporterTest {
   }
 
   @Test
-  public void twoSpanExporter_FirstThrows() {
+  void twoSpanExporter_FirstThrows() {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
 

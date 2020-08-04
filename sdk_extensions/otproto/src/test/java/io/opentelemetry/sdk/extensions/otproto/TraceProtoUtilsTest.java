@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.otproto;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.ByteString;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
@@ -26,13 +26,10 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceProtoUtils}. */
-@RunWith(JUnit4.class)
-public class TraceProtoUtilsTest {
+class TraceProtoUtilsTest {
   private static final io.opentelemetry.proto.trace.v1.TraceConfig TRACE_CONFIG_PROTO =
       io.opentelemetry.proto.trace.v1.TraceConfig.newBuilder()
           .setConstantSampler(
@@ -51,19 +48,19 @@ public class TraceProtoUtilsTest {
   private static final SpanId SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES, 0);
 
   @Test
-  public void toProtoTraceId() {
+  void toProtoTraceId() {
     ByteString expected = ByteString.copyFrom(TRACE_ID_BYTES);
     assertThat(TraceProtoUtils.toProtoTraceId(TRACE_ID)).isEqualTo(expected);
   }
 
   @Test
-  public void toProtoSpanId() {
+  void toProtoSpanId() {
     ByteString expected = ByteString.copyFrom(SPAN_ID_BYTES);
     assertThat(TraceProtoUtils.toProtoSpanId(SPAN_ID)).isEqualTo(expected);
   }
 
   @Test
-  public void traceConfigFromProto() {
+  void traceConfigFromProto() {
     TraceConfig traceConfig = TraceProtoUtils.traceConfigFromProto(TRACE_CONFIG_PROTO);
     assertThat(traceConfig.getSampler()).isEqualTo(Samplers.alwaysOn());
     assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(10);
@@ -74,7 +71,7 @@ public class TraceProtoUtilsTest {
   }
 
   @Test
-  public void traceConfigFromProto_AlwaysOffSampler() {
+  void traceConfigFromProto_AlwaysOffSampler() {
     TraceConfig traceConfig =
         TraceProtoUtils.traceConfigFromProto(
             io.opentelemetry.proto.trace.v1.TraceConfig.newBuilder()
@@ -90,7 +87,7 @@ public class TraceProtoUtilsTest {
   }
 
   @Test
-  public void traceConfigFromProto_ProbabilitySampler() {
+  void traceConfigFromProto_ProbabilitySampler() {
     TraceConfig traceConfig =
         TraceProtoUtils.traceConfigFromProto(
             io.opentelemetry.proto.trace.v1.TraceConfig.newBuilder()

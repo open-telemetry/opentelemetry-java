@@ -16,21 +16,18 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Aggregations#count()}. */
-@RunWith(JUnit4.class)
-public class CountAggregationTest {
+class CountAggregationTest {
   @Test
-  public void getDescriptorType() {
+  void getDescriptorType() {
     Aggregation count = Aggregations.count();
     for (InstrumentType type : InstrumentType.values()) {
       assertThat(count.getDescriptorType(type, InstrumentValueType.DOUBLE))
@@ -41,7 +38,7 @@ public class CountAggregationTest {
   }
 
   @Test
-  public void getAggregatorFactory() {
+  void getAggregatorFactory() {
     // TODO: Change this to CountAggregator when available.
     Aggregation count = Aggregations.count();
     assertThat(count.getAggregatorFactory(InstrumentValueType.LONG))
@@ -51,7 +48,7 @@ public class CountAggregationTest {
   }
 
   @Test
-  public void availableForInstrument() {
+  void availableForInstrument() {
     Aggregation count = Aggregations.count();
     for (InstrumentType type : InstrumentType.values()) {
       assertThat(count.availableForInstrument(type)).isTrue();

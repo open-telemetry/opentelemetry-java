@@ -16,31 +16,24 @@
 
 package io.opentelemetry.context;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link ContextUtils}. */
-@RunWith(JUnit4.class)
-public class ContextUtilsTest {
-
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class ContextUtilsTest {
 
   private static final Context.Key<String> SIMPLE_KEY = Context.key("simple");
 
   @Test
-  public void withScopedContextNull() {
-    thrown.expect(NullPointerException.class);
-    ContextUtils.withScopedContext(null);
+  void withScopedContextNull() {
+    assertThrows(NullPointerException.class, () -> ContextUtils.withScopedContext(null));
   }
 
   @Test
-  public void withScopedContext() {
+  void withScopedContext() {
     Context prevCtx = Context.current();
     Context ctx = Context.current().withValue(SIMPLE_KEY, "value1");
     try (Scope scope = ContextUtils.withScopedContext(ctx)) {

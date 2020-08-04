@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -31,17 +32,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleCounterSdk}. */
-@RunWith(JUnit4.class)
-public class DoubleCounterSdkTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class DoubleCounterSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
@@ -55,21 +49,23 @@ public class DoubleCounterSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
-  public void add_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.doubleCounterBuilder("testCounter").build().add(1.0, null);
+  void add_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.doubleCounterBuilder("testCounter").build().add(1.0, null),
+        "labels");
   }
 
   @Test
-  public void bound_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.doubleCounterBuilder("testCounter").build().bind(null);
+  void bound_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.doubleCounterBuilder("testCounter").build().bind(null),
+        "labels");
   }
 
   @Test
-  public void collectMetrics_NoRecords() {
+  void collectMetrics_NoRecords() {
     DoubleCounterSdk doubleCounter =
         testSdk
             .doubleCounterBuilder("testCounter")
@@ -94,7 +90,7 @@ public class DoubleCounterSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithOneRecord() {
+  void collectMetrics_WithOneRecord() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
     doubleCounter.add(12.1d, Labels.empty());
@@ -113,7 +109,7 @@ public class DoubleCounterSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithMultipleCollects() {
+  void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter boundCounter = doubleCounter.bind(Labels.of("K", "V"));
@@ -157,7 +153,7 @@ public class DoubleCounterSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet() {
+  void sameBound_ForSameLabelSet() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter boundCounter = doubleCounter.bind(Labels.of("K", "V"));
     BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind(Labels.of("K", "V"));
@@ -170,7 +166,7 @@ public class DoubleCounterSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter boundCounter = doubleCounter.bind(Labels.of("K", "V"));
     try {
@@ -187,23 +183,22 @@ public class DoubleCounterSdkTest {
   }
 
   @Test
-  public void doubleCounterAdd_Monotonicity() {
+  void doubleCounterAdd_Monotonicity() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
-    thrown.expect(IllegalArgumentException.class);
-    doubleCounter.add(-45.77d, Labels.empty());
+    assertThrows(IllegalArgumentException.class, () -> doubleCounter.add(-45.77d, Labels.empty()));
   }
 
   @Test
-  public void boundDoubleCounterAdd_Monotonicity() {
+  void boundDoubleCounterAdd_Monotonicity() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
-    thrown.expect(IllegalArgumentException.class);
-    doubleCounter.bind(Labels.empty()).add(-9.3);
+    assertThrows(
+        IllegalArgumentException.class, () -> doubleCounter.bind(Labels.empty()).add(-9.3));
   }
 
   @Test
-  public void stressTest() {
+  void stressTest() {
     final DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
@@ -227,7 +222,7 @@ public class DoubleCounterSdkTest {
   }
 
   @Test
-  public void stressTest_WithDifferentLabelSet() {
+  void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();

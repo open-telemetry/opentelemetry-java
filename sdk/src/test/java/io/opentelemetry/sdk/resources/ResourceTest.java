@@ -16,29 +16,23 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Resource}. */
-@RunWith(JUnit4.class)
-public class ResourceTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class ResourceTest {
   private static final Resource DEFAULT_RESOURCE = Resource.create(Attributes.empty());
   private Resource resource1;
   private Resource resource2;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     Attributes attributes1 =
         Attributes.of(
             "a",
@@ -58,7 +52,7 @@ public class ResourceTest {
   }
 
   @Test
-  public void create() {
+  void create() {
     Attributes attributes =
         Attributes.of(
             "a",
@@ -76,7 +70,7 @@ public class ResourceTest {
   }
 
   @Test
-  public void testResourceEquals() {
+  void testResourceEquals() {
     Attributes attribute1 =
         Attributes.of(
             "a",
@@ -98,7 +92,7 @@ public class ResourceTest {
   }
 
   @Test
-  public void testMergeResources() {
+  void testMergeResources() {
     Attributes expectedAttributes =
         Attributes.of(
             "a",
@@ -113,7 +107,7 @@ public class ResourceTest {
   }
 
   @Test
-  public void testMergeResources_Resource1() {
+  void testMergeResources_Resource1() {
     Attributes expectedAttributes =
         Attributes.of(
             "a",
@@ -126,7 +120,7 @@ public class ResourceTest {
   }
 
   @Test
-  public void testMergeResources_Resource1_Null() {
+  void testMergeResources_Resource1_Null() {
     Attributes expectedAttributes =
         Attributes.of(
             "a", AttributeValue.stringAttributeValue("1"),
@@ -138,7 +132,7 @@ public class ResourceTest {
   }
 
   @Test
-  public void testMergeResources_Resource2_Null() {
+  void testMergeResources_Resource2_Null() {
     Attributes expectedAttributes =
         Attributes.of(
             "a",
@@ -150,7 +144,7 @@ public class ResourceTest {
   }
 
   @Test
-  public void testSdkTelemetryResources() {
+  void testSdkTelemetryResources() {
     Resource resource = Resource.getTelemetrySdk();
     ReadableAttributes attributes = resource.getAttributes();
     assertThat(attributes.get("telemetry.sdk.name"))

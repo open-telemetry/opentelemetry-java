@@ -16,26 +16,22 @@
 
 package io.opentelemetry.correlationcontext;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.correlationcontext.EntryMetadata.EntryTtl;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Tests for {@link EntryMetadata}. */
-@RunWith(JUnit4.class)
-public class EntryMetadataTest {
+class EntryMetadataTest {
 
   @Test
-  public void testGetEntryTtl() {
+  void testGetEntryTtl() {
     EntryMetadata entryMetadata = EntryMetadata.create(EntryTtl.NO_PROPAGATION);
     assertThat(entryMetadata.getEntryTtl()).isEqualTo(EntryTtl.NO_PROPAGATION);
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             EntryMetadata.create(EntryTtl.NO_PROPAGATION),

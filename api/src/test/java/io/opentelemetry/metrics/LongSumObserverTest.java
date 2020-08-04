@@ -16,20 +16,15 @@
 
 package io.opentelemetry.metrics;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import java.util.Arrays;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link LongSumObserver}. */
-@RunWith(JUnit4.class)
-public class LongSumObserverTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class LongSumObserverTest {
 
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
@@ -39,67 +34,69 @@ public class LongSumObserverTest {
   private final Meter meter = OpenTelemetry.getMeter("LongSumObserverTest");
 
   @Test
-  public void preventNull_Name() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    meter.longSumObserverBuilder(null);
+  void preventNull_Name() {
+    assertThrows(NullPointerException.class, () -> meter.longSumObserverBuilder(null), "name");
   }
 
   @Test
-  public void preventEmpty_Name() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.longSumObserverBuilder("").build();
+  void preventEmpty_Name() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.longSumObserverBuilder("").build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventNonPrintableName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.longSumObserverBuilder("\2").build();
+  void preventNonPrintableName() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.longSumObserverBuilder("\2").build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventTooLongName() {
+  void preventTooLongName() {
     char[] chars = new char[StringUtils.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.longSumObserverBuilder(longName).build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.longSumObserverBuilder(longName).build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventNull_Description() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("description");
-    meter.longSumObserverBuilder("metric").setDescription(null).build();
+  void preventNull_Description() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.longSumObserverBuilder("metric").setDescription(null).build(),
+        "description");
   }
 
   @Test
-  public void preventNull_Unit() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("unit");
-    meter.longSumObserverBuilder("metric").setUnit(null).build();
+  void preventNull_Unit() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.longSumObserverBuilder("metric").setUnit(null).build(),
+        "unit");
   }
 
   @Test
-  public void preventNull_ConstantLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("constantLabels");
-    meter.longSumObserverBuilder("metric").setConstantLabels(null).build();
+  void preventNull_ConstantLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.longSumObserverBuilder("metric").setConstantLabels(null).build(),
+        "constantLabels");
   }
 
   @Test
-  public void preventNull_Callback() {
+  void preventNull_Callback() {
     LongSumObserver longSumObserver = meter.longSumObserverBuilder("metric").build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("callback");
-    longSumObserver.setCallback(null);
+    assertThrows(NullPointerException.class, () -> longSumObserver.setCallback(null), "callback");
   }
 
   @Test
-  public void doesNotThrow() {
+  void doesNotThrow() {
     LongSumObserver longSumObserver =
         meter
             .longSumObserverBuilder(NAME)

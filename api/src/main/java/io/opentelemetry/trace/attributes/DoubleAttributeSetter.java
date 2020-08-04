@@ -81,4 +81,9 @@ public final class DoubleAttributeSetter {
   public void set(Attributes.Builder attributesBuilder, double value) {
     attributesBuilder.setAttribute(key(), value);
   }
+
+  @Override
+  public String toString() {
+    return key();
+  }
 }

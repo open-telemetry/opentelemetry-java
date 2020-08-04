@@ -16,29 +16,27 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-public class AwsResourceTest {
-
-  @Rule public MockitoRule mocks = MockitoJUnit.rule();
+@ExtendWith(MockitoExtension.class)
+class AwsResourceTest {
 
   @Mock private AwsResource populator1;
 
   @Mock private AwsResource populator2;
 
   @Test
-  public void createsResource() {
+  void createsResource() {
     when(populator1.createAttributes())
         .thenReturn(
             Attributes.of(

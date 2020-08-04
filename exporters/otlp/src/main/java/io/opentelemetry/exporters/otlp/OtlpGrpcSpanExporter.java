@@ -68,6 +68,9 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
+  public static final String DEFAULT_ENDPOINT = "localhost:55680";
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
 
   private final TraceServiceGrpc.TraceServiceBlockingStub blockingStub;
@@ -111,6 +114,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
       stub.export(exportTraceServiceRequest);
       return ResultCode.SUCCESS;
     } catch (Throwable e) {
+      logger.log(Level.WARNING, "Failed to export spans", e);
       return ResultCode.FAILURE;
     }
   }
@@ -166,14 +170,14 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     private static final String KEY_USE_TLS = "otel.otlp.use.tls";
     private static final String KEY_METADATA = "otel.otlp.metadata";
     private ManagedChannel channel;
-    private long deadlineMs = 1_000; // 1 second
-    @Nullable private String endpoint;
+    private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
+    private String endpoint = DEFAULT_ENDPOINT;
     private boolean useTls;
     @Nullable private Metadata metadata;
 
     /**
-     * Sets the managed chanel to use when communicating with the backend. Required if {@link
-     * Builder#endpoint} is not set. If {@link Builder#endpoint} is set then build the channel.
+     * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+     * {@link #setEndpoint(String)} if both are called.
      *
      * @param channel the channel to use
      * @return this builder's instance
@@ -195,7 +199,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the OTLP endpoint to connect to. Optional.
+     * Sets the OTLP endpoint to connect to. Optional, defaults to "localhost:55680".
      *
      * @param endpoint endpoint to connect to
      * @return this builder's instance
@@ -239,7 +243,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
      * @return a new exporter's instance
      */
     public OtlpGrpcSpanExporter build() {
-      if (endpoint != null) {
+      if (channel == null) {
         final ManagedChannelBuilder<?> managedChannelBuilder =
             ManagedChannelBuilder.forTarget(endpoint);
 

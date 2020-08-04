@@ -18,11 +18,11 @@ package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByName;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -36,15 +36,15 @@ import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * There is only one instance of 'RequestHandler' per 'Client'. Methods of 'RequestHandler' are
  * executed concurrently in different threads which are reused (common pool). Therefore we cannot
  * use current active span and activate span. So one issue here is setting correct parent span.
  */
-public class HandlerTest {
+class HandlerTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
@@ -52,13 +52,13 @@ public class HandlerTest {
   private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private final Client client = new Client(new RequestHandler(tracer));
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     inMemoryTracing.getSpanExporter().reset();
   }
 
   @Test
-  public void two_requests() throws Exception {
+  void two_requests() throws Exception {
     Future<String> responseFuture = client.send("message");
     Future<String> responseFuture2 = client.send("message2");
 
@@ -81,7 +81,7 @@ public class HandlerTest {
 
   /** Active parent is not picked up by child. */
   @Test
-  public void parent_not_picked_up() throws Exception {
+  void parent_not_picked_up() throws Exception {
     Span parentSpan = tracer.buildSpan("parent").start();
     try (Scope parentScope = tracer.activateSpan(parentSpan)) {
       String response = client.send("no_parent").get(15, TimeUnit.SECONDS);
@@ -110,7 +110,7 @@ public class HandlerTest {
    * different places then initial parent will not be correct.
    */
   @Test
-  public void bad_solution_to_set_parent() throws Exception {
+  void bad_solution_to_set_parent() throws Exception {
     Client client;
     Span parentSpan = tracer.buildSpan("parent").start();
     try (Scope parentScope = tracer.activateSpan(parentSpan)) {

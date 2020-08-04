@@ -16,18 +16,15 @@
 
 package io.opentelemetry.sdk.internal;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link TestClock}. */
-@RunWith(JUnit4.class)
 public final class TestClockTest {
 
   @Test
-  public void setAndGetTime() {
+  void setAndGetTime() {
     TestClock clock = TestClock.create(1234);
     assertThat(clock.now()).isEqualTo(1234);
     clock.setTime(9876543210L);
@@ -35,14 +32,14 @@ public final class TestClockTest {
   }
 
   @Test
-  public void advanceMillis() {
+  void advanceMillis() {
     TestClock clock = TestClock.create(1_500_000_000L);
     clock.advanceMillis(2600);
     assertThat(clock.now()).isEqualTo(4_100_000_000L);
   }
 
   @Test
-  public void measureElapsedTime() {
+  void measureElapsedTime() {
     TestClock clock = TestClock.create(10_000_000_001L);
     long nanos1 = clock.nanoTime();
     clock.setTime(11_000_000_005L);

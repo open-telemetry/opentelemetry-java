@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -26,12 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DoubleMinMaxSumCountTest {
+class DoubleMinMaxSumCountTest {
 
   @Test
-  public void testRecordings() {
+  void testRecordings() {
     Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
 
     assertThat(aggregator.toPoint(0, 100, Labels.empty())).isNull();
@@ -53,7 +54,7 @@ public class DoubleMinMaxSumCountTest {
   }
 
   @Test
-  public void testMergeAndReset() {
+  void testMergeAndReset() {
     Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
 
     aggregator.recordDouble(100);
@@ -68,7 +69,7 @@ public class DoubleMinMaxSumCountTest {
   }
 
   @Test
-  public void testMultithreadedUpdates() throws Exception {
+  void testMultithreadedUpdates() throws Exception {
     final Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
     final Aggregator summarizer = DoubleMinMaxSumCount.getFactory().getAggregator();
     int numberOfThreads = 10;
@@ -113,7 +114,7 @@ public class DoubleMinMaxSumCountTest {
     assertThat(actual.getEpochNanos()).isEqualTo(100);
     assertThat(actual.getLabels()).isEqualTo(Labels.empty());
     assertThat(actual.getCount()).isEqualTo(numberOfThreads * numberOfUpdates);
-    assertThat(actual.getSum()).isWithin(0.001).of(102000d);
+    assertThat(actual.getSum()).isCloseTo(102000d, offset(0.001));
     List<ValueAtPercentile> percentileValues = actual.getPercentileValues();
     assertThat(percentileValues).isEqualTo(createPercentiles(1.1d, 23.1d));
   }

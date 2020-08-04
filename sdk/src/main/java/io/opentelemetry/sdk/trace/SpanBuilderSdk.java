@@ -21,6 +21,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -190,6 +191,11 @@ final class SpanBuilderSdk implements Span.Builder {
     if (attributes == null) {
       attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
     }
+
+    if (traceConfig.shouldTruncateStringAttributeValues()) {
+      value = StringUtils.truncateToSize(value, traceConfig.getMaxLengthOfAttributeValues());
+    }
+
     attributes.put(key, value);
     return this;
   }

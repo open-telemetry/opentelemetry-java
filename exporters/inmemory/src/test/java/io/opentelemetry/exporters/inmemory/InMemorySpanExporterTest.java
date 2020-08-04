@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.inmemory;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -30,25 +30,22 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link InMemorySpanExporter}. */
-@RunWith(JUnit4.class)
-public class InMemorySpanExporterTest {
+class InMemorySpanExporterTest {
   private final TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkProvider.get("InMemorySpanExporterTest");
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     tracerSdkProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
 
   @Test
-  public void getFinishedSpanItems() {
+  void getFinishedSpanItems() {
     tracer.spanBuilder("one").startSpan().end();
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();
@@ -62,7 +59,7 @@ public class InMemorySpanExporterTest {
   }
 
   @Test
-  public void reset() {
+  void reset() {
     tracer.spanBuilder("one").startSpan().end();
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();
@@ -75,7 +72,7 @@ public class InMemorySpanExporterTest {
   }
 
   @Test
-  public void shutdown() {
+  void shutdown() {
     tracer.spanBuilder("one").startSpan().end();
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();
@@ -91,7 +88,7 @@ public class InMemorySpanExporterTest {
   }
 
   @Test
-  public void export_ReturnCode() {
+  void export_ReturnCode() {
     assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
         .isEqualTo(ResultCode.SUCCESS);
     exporter.shutdown();

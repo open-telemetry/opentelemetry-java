@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.common.Clock;
@@ -25,31 +26,25 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link TracerSdkProvider}. */
-@RunWith(JUnit4.class)
-public class TracerSdkProviderTest {
+class TracerSdkProviderTest {
   @Mock private SpanProcessor spanProcessor;
-  @Rule public final ExpectedException thrown = ExpectedException.none();
   private final TracerSdkProvider tracerFactory = TracerSdkProvider.builder().build();
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
     tracerFactory.addSpanProcessor(spanProcessor);
   }
 
   @Test
-  public void builder_HappyPath() {
+  void builder_HappyPath() {
     assertThat(
             TracerSdkProvider.builder()
                 .setClock(mock(Clock.class))
@@ -60,45 +55,45 @@ public class TracerSdkProviderTest {
   }
 
   @Test
-  public void builder_NullClock() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("clock");
-    TracerSdkProvider.builder().setClock(null);
+  void builder_NullClock() {
+    assertThrows(
+        NullPointerException.class, () -> TracerSdkProvider.builder().setClock(null), "clock");
   }
 
   @Test
-  public void builder_NullResource() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("resource");
-    TracerSdkProvider.builder().setResource(null);
+  void builder_NullResource() {
+    assertThrows(
+        NullPointerException.class,
+        () -> TracerSdkProvider.builder().setResource(null),
+        "resource");
   }
 
   @Test
-  public void builder_NullIdsGenerator() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("idsGenerator");
-    TracerSdkProvider.builder().setIdsGenerator(null);
+  void builder_NullIdsGenerator() {
+    assertThrows(
+        NullPointerException.class,
+        () -> TracerSdkProvider.builder().setIdsGenerator(null),
+        "idsGenerator");
   }
 
   @Test
-  public void defaultGet() {
+  void defaultGet() {
     assertThat(tracerFactory.get("test")).isInstanceOf(TracerSdk.class);
   }
 
   @Test
-  public void getSameInstanceForSameName_WithoutVersion() {
-    assertThat(tracerFactory.get("test")).isSameInstanceAs(tracerFactory.get("test"));
-    assertThat(tracerFactory.get("test")).isSameInstanceAs(tracerFactory.get("test", null));
+  void getSameInstanceForSameName_WithoutVersion() {
+    assertThat(tracerFactory.get("test")).isSameAs(tracerFactory.get("test"));
+    assertThat(tracerFactory.get("test")).isSameAs(tracerFactory.get("test", null));
   }
 
   @Test
-  public void getSameInstanceForSameName_WithVersion() {
-    assertThat(tracerFactory.get("test", "version"))
-        .isSameInstanceAs(tracerFactory.get("test", "version"));
+  void getSameInstanceForSameName_WithVersion() {
+    assertThat(tracerFactory.get("test", "version")).isSameAs(tracerFactory.get("test", "version"));
   }
 
   @Test
-  public void propagatesInstrumentationLibraryInfoToTracer() {
+  void propagatesInstrumentationLibraryInfoToTracer() {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("theName", "theVersion");
     TracerSdk tracer = tracerFactory.get(expected.getName(), expected.getVersion());
@@ -106,7 +101,7 @@ public class TracerSdkProviderTest {
   }
 
   @Test
-  public void updateActiveTraceConfig() {
+  void updateActiveTraceConfig() {
     assertThat(tracerFactory.getActiveTraceConfig()).isEqualTo(TraceConfig.getDefault());
     TraceConfig newConfig =
         TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOff()).build();
@@ -115,19 +110,19 @@ public class TracerSdkProviderTest {
   }
 
   @Test
-  public void shutdown() {
+  void shutdown() {
     tracerFactory.shutdown();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
   }
 
   @Test
-  public void forceFlush() {
+  void forceFlush() {
     tracerFactory.forceFlush();
     Mockito.verify(spanProcessor, Mockito.times(1)).forceFlush();
   }
 
   @Test
-  public void shutdownTwice_OnlyFlushSpanProcessorOnce() {
+  void shutdownTwice_OnlyFlushSpanProcessorOnce() {
     tracerFactory.shutdown();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
     tracerFactory.shutdown(); // the second call will be ignored
@@ -135,7 +130,7 @@ public class TracerSdkProviderTest {
   }
 
   @Test
-  public void returnNoopSpanAfterShutdown() {
+  void returnNoopSpanAfterShutdown() {
     tracerFactory.shutdown();
     Span span = tracerFactory.get("noop").spanBuilder("span").startSpan();
     assertThat(span).isInstanceOf(DefaultSpan.class);

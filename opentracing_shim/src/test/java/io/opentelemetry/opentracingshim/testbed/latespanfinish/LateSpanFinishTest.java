@@ -18,9 +18,9 @@ package io.opentelemetry.opentracingshim.testbed.latespanfinish;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.assertSameTrace;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class LateSpanFinishTest {
@@ -45,7 +45,7 @@ public final class LateSpanFinishTest {
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     // Create a Span manually and use it as parent of a pair of subtasks
     Span parentSpan = tracer.buildSpan("parent").start();
     submitTasks(parentSpan);

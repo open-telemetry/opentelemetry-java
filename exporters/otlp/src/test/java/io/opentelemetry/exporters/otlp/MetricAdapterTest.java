@@ -16,8 +16,8 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
@@ -41,15 +41,12 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link MetricAdapter}. */
-@RunWith(JUnit4.class)
-public class MetricAdapterTest {
+class MetricAdapterTest {
   @Test
-  public void toProtoLabels() {
+  void toProtoLabels() {
     assertThat(MetricAdapter.toProtoLabels(Labels.empty())).isEmpty();
     assertThat(MetricAdapter.toProtoLabels(Labels.of("k", "v")))
         .containsExactly(StringKeyValue.newBuilder().setKey("k").setValue("v").build());
@@ -60,7 +57,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toProtoMetricDescriptorType() {
+  void toProtoMetricDescriptorType() {
     assertThat(MetricAdapter.toProtoMetricDescriptorType(Descriptor.Type.NON_MONOTONIC_DOUBLE))
         .isEqualTo(MetricDescriptor.Type.DOUBLE);
     assertThat(MetricAdapter.toProtoMetricDescriptorType(Descriptor.Type.NON_MONOTONIC_LONG))
@@ -74,7 +71,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toProtoValueAtPercentiles() {
+  void toProtoValueAtPercentiles() {
     assertThat(MetricAdapter.toProtoValueAtPercentiles(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toProtoValueAtPercentiles(
@@ -91,7 +88,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toInt64DataPoints() {
+  void toInt64DataPoints() {
     Descriptor descriptor =
         Descriptor.create(
             "test",
@@ -140,7 +137,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toDoubleDataPoints() {
+  void toDoubleDataPoints() {
     Descriptor descriptor =
         Descriptor.create(
             "test",
@@ -189,7 +186,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toSummaryDataPoints() {
+  void toSummaryDataPoints() {
     Descriptor descriptor =
         Descriptor.create(
             "test", "testDescription", "unit", Descriptor.Type.SUMMARY, Labels.of("ck", "cv"));
@@ -259,7 +256,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toProtoMetricDescriptor() {
+  void toProtoMetricDescriptor() {
     assertThat(
             MetricAdapter.toProtoMetricDescriptor(
                 Descriptor.create(
@@ -307,7 +304,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toProtoMetric() {
+  void toProtoMetric() {
     assertThat(
             MetricAdapter.toProtoMetric(
                 MetricData.create(
@@ -380,7 +377,7 @@ public class MetricAdapterTest {
   }
 
   @Test
-  public void toProtoResourceMetrics() {
+  void toProtoResourceMetrics() {
     Descriptor descriptor =
         Descriptor.create(
             "name", "description", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.of("k", "v"));
@@ -432,7 +429,7 @@ public class MetricAdapterTest {
                         Resource.getEmpty(),
                         InstrumentationLibraryInfo.getEmpty(),
                         Collections.emptyList()))))
-        .containsExactly(
+        .containsExactlyInAnyOrder(
             ResourceMetrics.newBuilder()
                 .setResource(resourceProto)
                 .addAllInstrumentationLibraryMetrics(

@@ -16,11 +16,11 @@ dependencies {
     annotationProcessor libraries.auto_value
 
     implementation libraries.zipkin_reporter,
-            libraries.zipkin_urlconnection
+            libraries.zipkin_okhttp
 
     testImplementation libraries.guava,
             libraries.zipkin_junit
-    
+
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }

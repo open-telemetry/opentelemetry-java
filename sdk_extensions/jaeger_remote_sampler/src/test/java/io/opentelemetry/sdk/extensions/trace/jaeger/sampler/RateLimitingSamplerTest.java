@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -30,12 +30,9 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class RateLimitingSamplerTest {
+class RateLimitingSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private final TraceId traceId = new TraceId(150, 150);
@@ -49,7 +46,7 @@ public class RateLimitingSamplerTest {
           traceId, parentSpanId, TraceFlags.builder().setIsSampled(false).build(), traceState);
 
   @Test
-  public void alwaysSampleSampledContext() {
+  void alwaysSampleSampledContext() {
     RateLimitingSampler sampler = new RateLimitingSampler(1);
     assertThat(
             sampler
@@ -76,7 +73,7 @@ public class RateLimitingSamplerTest {
   }
 
   @Test
-  public void sampleOneTrace() {
+  void sampleOneTrace() {
     RateLimitingSampler sampler = new RateLimitingSampler(1);
     SamplingResult samplingResult =
         sampler.shouldSample(
@@ -108,7 +105,7 @@ public class RateLimitingSamplerTest {
   }
 
   @Test
-  public void description() {
+  void description() {
     RateLimitingSampler sampler = new RateLimitingSampler(15);
     assertEquals("RateLimitingSampler{15.00}", sampler.getDescription());
   }

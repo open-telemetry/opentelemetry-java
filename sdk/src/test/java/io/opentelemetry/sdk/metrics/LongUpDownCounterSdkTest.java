@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -31,17 +32,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongUpDownCounterSdk}. */
-@RunWith(JUnit4.class)
-public class LongUpDownCounterSdkTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class LongUpDownCounterSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
@@ -56,21 +50,23 @@ public class LongUpDownCounterSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
-  public void add_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.longUpDownCounterBuilder("testCounter").build().add(1, null);
+  void add_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.longUpDownCounterBuilder("testCounter").build().add(1, null),
+        "labels");
   }
 
   @Test
-  public void bound_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.longUpDownCounterBuilder("testUpDownCounter").build().bind(null);
+  void bound_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.longUpDownCounterBuilder("testUpDownCounter").build().bind(null),
+        "labels");
   }
 
   @Test
-  public void collectMetrics_NoRecords() {
+  void collectMetrics_NoRecords() {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk
             .longUpDownCounterBuilder("testUpDownCounter")
@@ -95,7 +91,7 @@ public class LongUpDownCounterSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithOneRecord() {
+  void collectMetrics_WithOneRecord() {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
@@ -112,7 +108,7 @@ public class LongUpDownCounterSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithMultipleCollects() {
+  void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongUpDownCounterSdk longUpDownCounter =
         testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
@@ -157,7 +153,7 @@ public class LongUpDownCounterSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet() {
+  void sameBound_ForSameLabelSet() {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
@@ -171,7 +167,7 @@ public class LongUpDownCounterSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
@@ -189,7 +185,7 @@ public class LongUpDownCounterSdkTest {
   }
 
   @Test
-  public void stressTest() {
+  void stressTest() {
     final LongUpDownCounterSdk longUpDownCounter =
         testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
 
@@ -216,7 +212,7 @@ public class LongUpDownCounterSdkTest {
   }
 
   @Test
-  public void stressTest_WithDifferentLabelSet() {
+  void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final LongUpDownCounterSdk longUpDownCounter =

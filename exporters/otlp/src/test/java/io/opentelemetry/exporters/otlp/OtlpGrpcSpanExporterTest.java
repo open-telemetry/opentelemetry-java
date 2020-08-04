@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.ManagedChannel;
 import io.grpc.Status.Code;
@@ -46,12 +46,9 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
 /** Unit tests for {@link OtlpGrpcSpanExporter}. */
-@RunWith(JUnit4.class)
 public class OtlpGrpcSpanExporterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";

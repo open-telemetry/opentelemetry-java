@@ -16,10 +16,10 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.clientserver;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
@@ -31,11 +31,11 @@ import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class TestClientServerTest {
+class TestClientServerTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
@@ -44,20 +44,20 @@ public class TestClientServerTest {
   private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(10);
   private Server server;
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     server = new Server(queue, tracer);
     server.start();
   }
 
-  @After
-  public void after() throws InterruptedException {
+  @AfterEach
+  void after() throws InterruptedException {
     server.interrupt();
     server.join(5_000L);
   }
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     Client client = new Client(queue, tracer);
     client.send();
 
@@ -73,6 +73,6 @@ public class TestClientServerTest {
     assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
     assertThat(finished.get(1).getKind()).isEqualTo(Kind.SERVER);
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
   }
 }

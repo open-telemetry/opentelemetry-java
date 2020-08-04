@@ -16,19 +16,14 @@
 
 package io.opentelemetry.sdk.internal;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InstrumentationLibraryInfo}. */
-@RunWith(JUnit4.class)
-public class ComponentRegistryTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class ComponentRegistryTest {
 
   private static final String INSTRUMENTATION_NAME = "test_name";
   private static final String INSTRUMENTATION_VERSION = "version";
@@ -41,14 +36,12 @@ public class ComponentRegistryTest {
       };
 
   @Test
-  public void libraryName_MustNotBeNull() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    registry.get(null, "version");
+  void libraryName_MustNotBeNull() {
+    assertThrows(NullPointerException.class, () -> registry.get(null, "version"), "name");
   }
 
   @Test
-  public void libraryVersion_AllowsNull() {
+  void libraryVersion_AllowsNull() {
     TestComponent testComponent = registry.get(INSTRUMENTATION_NAME, null);
     assertThat(testComponent).isNotNull();
     assertThat(testComponent.instrumentationLibraryInfo.getName()).isEqualTo(INSTRUMENTATION_NAME);
@@ -56,29 +49,28 @@ public class ComponentRegistryTest {
   }
 
   @Test
-  public void getSameInstanceForSameName_WithoutVersion() {
+  void getSameInstanceForSameName_WithoutVersion() {
+    assertThat(registry.get(INSTRUMENTATION_NAME)).isSameAs(registry.get(INSTRUMENTATION_NAME));
     assertThat(registry.get(INSTRUMENTATION_NAME))
-        .isSameInstanceAs(registry.get(INSTRUMENTATION_NAME));
-    assertThat(registry.get(INSTRUMENTATION_NAME))
-        .isSameInstanceAs(registry.get(INSTRUMENTATION_NAME, null));
+        .isSameAs(registry.get(INSTRUMENTATION_NAME, null));
   }
 
   @Test
-  public void getSameInstanceForSameName_WithVersion() {
+  void getSameInstanceForSameName_WithVersion() {
     assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
-        .isSameInstanceAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION));
+        .isSameAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION));
   }
 
   @Test
-  public void getDifferentInstancesForDifferentNames() {
+  void getDifferentInstancesForDifferentNames() {
     assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
-        .isNotSameInstanceAs(registry.get(INSTRUMENTATION_NAME + "_2", INSTRUMENTATION_VERSION));
+        .isNotSameAs(registry.get(INSTRUMENTATION_NAME + "_2", INSTRUMENTATION_VERSION));
   }
 
   @Test
-  public void getDifferentInstancesForDifferentVersions() {
+  void getDifferentInstancesForDifferentVersions() {
     assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
-        .isNotSameInstanceAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION + "_1"));
+        .isNotSameAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION + "_1"));
   }
 
   private static final class TestComponent {

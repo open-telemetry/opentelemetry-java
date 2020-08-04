@@ -243,7 +243,7 @@ public final class Samplers {
 
     @Override
     public String getDescription() {
-      return String.format("ParentOrElseSampler-%s", this.delegateSampler.getDescription());
+      return String.format("ParentOrElse{%s}", this.delegateSampler.getDescription());
     }
   }
 

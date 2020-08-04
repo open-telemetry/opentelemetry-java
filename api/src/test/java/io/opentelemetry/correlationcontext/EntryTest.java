@@ -16,21 +16,15 @@
 
 package io.opentelemetry.correlationcontext;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.correlationcontext.EntryMetadata.EntryTtl;
 import java.util.Arrays;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Tests for {@link Entry}. */
-@RunWith(JUnit4.class)
-public final class EntryTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class EntryTest {
 
   private static final String KEY = "KEY";
   private static final String KEY_2 = "KEY2";
@@ -42,18 +36,18 @@ public final class EntryTest {
       EntryMetadata.create(EntryTtl.NO_PROPAGATION);
 
   @Test
-  public void testGetKey() {
+  void testGetKey() {
     assertThat(Entry.create(KEY, VALUE, METADATA_UNLIMITED_PROPAGATION).getKey()).isEqualTo(KEY);
   }
 
   @Test
-  public void testGetEntryMetadata() {
+  void testGetEntryMetadata() {
     assertThat(Entry.create(KEY, VALUE, METADATA_NO_PROPAGATION).getEntryMetadata())
         .isEqualTo(METADATA_NO_PROPAGATION);
   }
 
   @Test
-  public void testEntryEquals() {
+  void testEntryEquals() {
     new EqualsTester()
         .addEqualityGroup(
             Entry.create(KEY, VALUE, METADATA_UNLIMITED_PROPAGATION),
@@ -65,12 +59,12 @@ public final class EntryTest {
   }
 
   @Test
-  public void testKeyMaxLength() {
+  void testKeyMaxLength() {
     assertThat(Entry.MAX_KEY_LENGTH).isEqualTo(255);
   }
 
   @Test
-  public void create_AllowEntryKeyNameWithMaxLength() {
+  void create_AllowEntryKeyNameWithMaxLength() {
     char[] chars = new char[Entry.MAX_KEY_LENGTH];
     Arrays.fill(chars, 'k');
     String key = new String(chars);
@@ -78,33 +72,36 @@ public final class EntryTest {
   }
 
   @Test
-  public void create_DisallowEntryKeyNameOverMaxLength() {
+  void create_DisallowEntryKeyNameOverMaxLength() {
     char[] chars = new char[Entry.MAX_KEY_LENGTH + 1];
     Arrays.fill(chars, 'k');
     String key = new String(chars);
-    thrown.expect(IllegalArgumentException.class);
-    Entry.create(key, "value", Entry.METADATA_UNLIMITED_PROPAGATION);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> Entry.create(key, "value", Entry.METADATA_UNLIMITED_PROPAGATION));
   }
 
   @Test
-  public void create_DisallowKeyUnprintableChars() {
-    thrown.expect(IllegalArgumentException.class);
-    Entry.create("\2ab\3cd", "value", Entry.METADATA_UNLIMITED_PROPAGATION);
+  void create_DisallowKeyUnprintableChars() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> Entry.create("\2ab\3cd", "value", Entry.METADATA_UNLIMITED_PROPAGATION));
   }
 
   @Test
-  public void createString_DisallowKeyEmpty() {
-    thrown.expect(IllegalArgumentException.class);
-    Entry.create("", "value", Entry.METADATA_UNLIMITED_PROPAGATION);
+  void createString_DisallowKeyEmpty() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> Entry.create("", "value", Entry.METADATA_UNLIMITED_PROPAGATION));
   }
 
   @Test
-  public void testValueMaxLength() {
+  void testValueMaxLength() {
     assertThat(Entry.MAX_VALUE_LENGTH).isEqualTo(255);
   }
 
   @Test
-  public void create_AllowEntryValueWithMaxLength() {
+  void create_AllowEntryValueWithMaxLength() {
     char[] chars = new char[Entry.MAX_VALUE_LENGTH];
     Arrays.fill(chars, 'v');
     String value = new String(chars);
@@ -113,18 +110,20 @@ public final class EntryTest {
   }
 
   @Test
-  public void create_DisallowEntryValueOverMaxLength() {
+  void create_DisallowEntryValueOverMaxLength() {
     char[] chars = new char[Entry.MAX_VALUE_LENGTH + 1];
     Arrays.fill(chars, 'v');
     String value = new String(chars);
-    thrown.expect(IllegalArgumentException.class);
-    Entry.create("key", value, Entry.METADATA_UNLIMITED_PROPAGATION);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> Entry.create("key", value, Entry.METADATA_UNLIMITED_PROPAGATION));
   }
 
   @Test
-  public void disallowEntryValueWithUnprintableChars() {
+  void disallowEntryValueWithUnprintableChars() {
     String value = "\2ab\3cd";
-    thrown.expect(IllegalArgumentException.class);
-    Entry.create("key", value, Entry.METADATA_UNLIMITED_PROPAGATION);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> Entry.create("key", value, Entry.METADATA_UNLIMITED_PROPAGATION));
   }
 }

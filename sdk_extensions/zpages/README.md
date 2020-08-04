@@ -2,7 +2,7 @@
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-This module contains code for OpenTelemetry Java zPages, which are a collection of dynamic HTML
+This module contains code for the OpenTelemetry Java zPages, which are a collection of dynamic HTML
 web pages that display stats and trace data.
 
 * Java 7 compatible.

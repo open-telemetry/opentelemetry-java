@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.inmemory;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -29,13 +29,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link InMemoryMetricExporter}. */
-@RunWith(JUnit4.class)
-public class InMemoryMetricExporterTest {
+class InMemoryMetricExporterTest {
 
   private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
 
@@ -51,7 +48,7 @@ public class InMemoryMetricExporterTest {
   }
 
   @Test
-  public void test_getFinishedMetricItems() {
+  void test_getFinishedMetricItems() {
     List<MetricData> metrics = new ArrayList<MetricData>();
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
@@ -64,7 +61,7 @@ public class InMemoryMetricExporterTest {
   }
 
   @Test
-  public void test_reset() {
+  void test_reset() {
     List<MetricData> metrics = new ArrayList<MetricData>();
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
@@ -81,7 +78,7 @@ public class InMemoryMetricExporterTest {
   }
 
   @Test
-  public void test_shutdown() {
+  void test_shutdown() {
     List<MetricData> metrics = new ArrayList<MetricData>();
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
@@ -95,7 +92,7 @@ public class InMemoryMetricExporterTest {
   }
 
   @Test
-  public void testShutdown_export() {
+  void testShutdown_export() {
     List<MetricData> metrics = new ArrayList<MetricData>();
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
@@ -107,7 +104,7 @@ public class InMemoryMetricExporterTest {
   }
 
   @Test
-  public void test_flush() {
+  void test_flush() {
     assertThat(exporter.flush()).isEqualTo(ResultCode.SUCCESS);
   }
 }

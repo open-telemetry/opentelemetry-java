@@ -16,8 +16,9 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.correlationcontext.CorrelationContextTestUtil.listToCorrelationContext;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import io.grpc.Context;
@@ -27,11 +28,7 @@ import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryMetadata;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link CorrelationContextSdk} and {@link CorrelationContextSdk.Builder}.
@@ -39,8 +36,7 @@ import org.junit.runners.JUnit4;
  * <p>Tests for scope management with {@link CorrelationContextManagerSdk} are in {@link
  * ScopedCorrelationContextTest}.
  */
-@RunWith(JUnit4.class)
-public class CorrelationContextSdkTest {
+class CorrelationContextSdkTest {
   private final CorrelationContextManager contextManager = new CorrelationContextManagerSdk();
 
   private static final EntryMetadata TMD =
@@ -55,22 +51,20 @@ public class CorrelationContextSdkTest {
   private static final Entry T1 = Entry.create(K1, V1, TMD);
   private static final Entry T2 = Entry.create(K2, V2, TMD);
 
-  @Rule public final ExpectedException thrown = ExpectedException.none();
-
   @Test
-  public void getEntries_empty() {
+  void getEntries_empty() {
     CorrelationContextSdk distContext = new CorrelationContextSdk.Builder().build();
     assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
-  public void getEntries_nonEmpty() {
+  void getEntries_nonEmpty() {
     CorrelationContextSdk distContext = listToCorrelationContext(T1, T2);
     assertThat(distContext.getEntries()).containsExactly(T1, T2);
   }
 
   @Test
-  public void getEntries_chain() {
+  void getEntries_chain() {
     Entry t1alt = Entry.create(K1, V2, TMD);
     CorrelationContextSdk parent = listToCorrelationContext(T1, T2);
     CorrelationContext distContext =
@@ -83,7 +77,7 @@ public class CorrelationContextSdkTest {
   }
 
   @Test
-  public void put_newKey() {
+  void put_newKey() {
     CorrelationContextSdk distContext = listToCorrelationContext(T1);
     assertThat(
             contextManager
@@ -96,7 +90,7 @@ public class CorrelationContextSdkTest {
   }
 
   @Test
-  public void put_existingKey() {
+  void put_existingKey() {
     CorrelationContextSdk distContext = listToCorrelationContext(T1);
     assertThat(
             contextManager
@@ -109,38 +103,41 @@ public class CorrelationContextSdkTest {
   }
 
   @Test
-  public void put_nullKey() {
+  void put_nullKey() {
     CorrelationContextSdk distContext = listToCorrelationContext(T1);
     CorrelationContext.Builder builder = contextManager.contextBuilder().setParent(distContext);
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("key");
-    builder.put(null, V2, TMD);
+    assertThrows(NullPointerException.class, () -> builder.put(null, V2, TMD), "key");
   }
 
   @Test
-  public void put_nullValue() {
+  void put_nullValue() {
     CorrelationContextSdk distContext = listToCorrelationContext(T1);
     CorrelationContext.Builder builder = contextManager.contextBuilder().setParent(distContext);
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("value");
-    builder.put(K2, null, TMD);
+    assertThrows(NullPointerException.class, () -> builder.put(K2, null, TMD), "value");
   }
 
   @Test
-  public void setParent_nullValue() {
+  void setParent_nullValue() {
     CorrelationContextSdk parent = listToCorrelationContext(T1);
-    thrown.expect(NullPointerException.class);
-    contextManager.contextBuilder().setParent(parent).setParent((CorrelationContext) null).build();
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            contextManager
+                .contextBuilder()
+                .setParent(parent)
+                .setParent((CorrelationContext) null)
+                .build());
   }
 
   @Test
-  public void setParent_nullContext() {
-    thrown.expect(NullPointerException.class);
-    contextManager.contextBuilder().setParent((Context) null);
+  void setParent_nullContext() {
+    assertThrows(
+        NullPointerException.class,
+        () -> contextManager.contextBuilder().setParent((Context) null));
   }
 
   @Test
-  public void setParent_fromContext() {
+  void setParent_fromContext() {
     CorrelationContextSdk parent = listToCorrelationContext(T1);
     Context context =
         CorrelationsContextUtils.withCorrelationContext(
@@ -151,7 +148,7 @@ public class CorrelationContextSdkTest {
   }
 
   @Test
-  public void setParent_fromEmptyContext() {
+  void setParent_fromEmptyContext() {
     Context emptyContext = Context.current();
     CorrelationContextSdk parent = listToCorrelationContext(T1);
     try (Scope scope = CorrelationsContextUtils.currentContextWith(parent)) {
@@ -162,7 +159,7 @@ public class CorrelationContextSdkTest {
   }
 
   @Test
-  public void setParent_setNoParent() {
+  void setParent_setNoParent() {
     CorrelationContextSdk parent = listToCorrelationContext(T1);
     CorrelationContext distContext =
         contextManager.contextBuilder().setParent(parent).setNoParent().build();
@@ -170,7 +167,7 @@ public class CorrelationContextSdkTest {
   }
 
   @Test
-  public void remove_existingKey() {
+  void remove_existingKey() {
     CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
@@ -179,7 +176,7 @@ public class CorrelationContextSdkTest {
   }
 
   @Test
-  public void remove_differentKey() {
+  void remove_differentKey() {
     CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
@@ -188,7 +185,7 @@ public class CorrelationContextSdkTest {
   }
 
   @Test
-  public void remove_keyFromParent() {
+  void remove_keyFromParent() {
     CorrelationContextSdk distContext = listToCorrelationContext(T1, T2);
     assertThat(
             contextManager.contextBuilder().setParent(distContext).remove(K1).build().getEntries())
@@ -196,15 +193,13 @@ public class CorrelationContextSdkTest {
   }
 
   @Test
-  public void remove_nullKey() {
+  void remove_nullKey() {
     CorrelationContext.Builder builder = contextManager.contextBuilder();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("key");
-    builder.remove(null);
+    assertThrows(NullPointerException.class, () -> builder.remove(null), "key");
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             contextManager.contextBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -26,12 +26,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LongMinMaxSumCountTest {
+class LongMinMaxSumCountTest {
 
   @Test
-  public void testRecordings() {
+  void testRecordings() {
     Aggregator aggregator = LongMinMaxSumCount.getFactory().getAggregator();
 
     assertThat(aggregator.toPoint(0, 100, Labels.empty())).isNull();
@@ -54,7 +54,7 @@ public class LongMinMaxSumCountTest {
   }
 
   @Test
-  public void testMergeAndReset() {
+  void testMergeAndReset() {
     Aggregator aggregator = LongMinMaxSumCount.getFactory().getAggregator();
 
     aggregator.recordLong(100);
@@ -70,7 +70,7 @@ public class LongMinMaxSumCountTest {
   }
 
   @Test
-  public void testMultithreadedUpdates() throws Exception {
+  void testMultithreadedUpdates() throws Exception {
     final Aggregator aggregator = LongMinMaxSumCount.getFactory().getAggregator();
     final Aggregator summarizer = LongMinMaxSumCount.getFactory().getAggregator();
     int numberOfThreads = 10;

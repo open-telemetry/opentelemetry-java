@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -29,17 +29,17 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collection;
 import java.util.Properties;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /** Unit tests for {@link TracezSpanProcessor}. */
-@RunWith(JUnit4.class)
-public final class TracezSpanProcessorTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class TracezSpanProcessorTest {
   private static final String SPAN_NAME = "span";
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
@@ -61,10 +61,8 @@ public final class TracezSpanProcessorTest {
   @Mock private ReadableSpan readableSpan;
   @Mock private SpanData spanData;
 
-  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
-
   @Test
-  public void onStart_sampledSpan_inCache() {
+  void onStart_sampledSpan_inCache() {
     TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
     /* Return a sampled span, which should be added to the running cache by default */
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
@@ -73,7 +71,7 @@ public final class TracezSpanProcessorTest {
   }
 
   @Test
-  public void onEnd_sampledSpan_inCache() {
+  void onEnd_sampledSpan_inCache() {
     TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
     /* Return a sampled span, which should be added to the completed cache upon ending */
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
@@ -86,7 +84,7 @@ public final class TracezSpanProcessorTest {
   }
 
   @Test
-  public void onStart_notSampledSpan_inCache() {
+  void onStart_notSampledSpan_inCache() {
     TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
     /* Return a non-sampled span, which should not be added to the running cache by default */
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
@@ -95,7 +93,7 @@ public final class TracezSpanProcessorTest {
   }
 
   @Test
-  public void onEnd_notSampledSpan_notInCache() {
+  void onEnd_notSampledSpan_notInCache() {
     TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
     /* Return a non-sampled span, which should not be added to the running cache by default */
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
@@ -105,7 +103,7 @@ public final class TracezSpanProcessorTest {
   }
 
   @Test
-  public void build_sampledFlagTrue_notInCache() {
+  void build_sampledFlagTrue_notInCache() {
     /* Initialize a TraceZSpanProcessor that only looks at sampled spans */
     Properties properties = new Properties();
     properties.setProperty("otel.zpages.export.sampled", "true");
@@ -121,7 +119,7 @@ public final class TracezSpanProcessorTest {
   }
 
   @Test
-  public void build_sampledFlagFalse_inCache() {
+  void build_sampledFlagFalse_inCache() {
     /* Initialize a TraceZSpanProcessor that looks at all spans */
     Properties properties = new Properties();
     properties.setProperty("otel.zpages.export.sampled", "false");

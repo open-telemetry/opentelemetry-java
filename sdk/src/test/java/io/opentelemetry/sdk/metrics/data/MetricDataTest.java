@@ -16,7 +16,9 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import static com.google.common.truth.Truth.assertThat;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -29,17 +31,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link io.opentelemetry.sdk.metrics.data.MetricData}. */
-@RunWith(JUnit4.class)
-public class MetricDataTest {
-
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class MetricDataTest {
 
   private static final Descriptor LONG_METRIC_DESCRIPTOR =
       Descriptor.create(
@@ -80,45 +75,56 @@ public class MetricDataTest {
               ValueAtPercentile.create(100, DOUBLE_VALUE)));
 
   @Test
-  public void metricData_NullDescriptor() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("descriptor");
-    MetricData.create(
-        null,
-        Resource.getEmpty(),
-        InstrumentationLibraryInfo.getEmpty(),
-        Collections.singletonList(DOUBLE_POINT));
+  void metricData_NullDescriptor() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            MetricData.create(
+                null,
+                Resource.getEmpty(),
+                InstrumentationLibraryInfo.getEmpty(),
+                singletonList(DOUBLE_POINT)),
+        "descriptor");
   }
 
   @Test
-  public void metricData_NullResource() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("resource");
-    MetricData.create(
-        LONG_METRIC_DESCRIPTOR,
-        null,
-        InstrumentationLibraryInfo.getEmpty(),
-        Collections.singletonList(DOUBLE_POINT));
+  void metricData_NullResource() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            MetricData.create(
+                LONG_METRIC_DESCRIPTOR,
+                null,
+                InstrumentationLibraryInfo.getEmpty(),
+                singletonList(DOUBLE_POINT)),
+        "resource");
   }
 
   @Test
-  public void metricData_NullInstrumentationLibraryInfo() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("instrumentationLibraryInfo");
-    MetricData.create(
-        LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), null, Collections.singletonList(DOUBLE_POINT));
+  void metricData_NullInstrumentationLibraryInfo() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            MetricData.create(
+                LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), null, singletonList(DOUBLE_POINT)),
+        "instrumentationLibraryInfo");
   }
 
   @Test
-  public void metricData_NullPoints() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("points");
-    MetricData.create(
-        LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), InstrumentationLibraryInfo.getEmpty(), null);
+  void metricData_NullPoints() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            MetricData.create(
+                LONG_METRIC_DESCRIPTOR,
+                Resource.getEmpty(),
+                InstrumentationLibraryInfo.getEmpty(),
+                null),
+        "points");
   }
 
   @Test
-  public void metricData_Getters() {
+  void metricData_Getters() {
     MetricData metricData =
         MetricData.create(
             LONG_METRIC_DESCRIPTOR,
@@ -133,7 +139,7 @@ public class MetricDataTest {
   }
 
   @Test
-  public void metricData_LongPoints() {
+  void metricData_LongPoints() {
     assertThat(LONG_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(LONG_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
     assertThat(LONG_POINT.getLabels().size()).isEqualTo(1);
@@ -149,7 +155,7 @@ public class MetricDataTest {
   }
 
   @Test
-  public void metricData_SummaryPoints() {
+  void metricData_SummaryPoints() {
     assertThat(SUMMARY_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(SUMMARY_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
     assertThat(SUMMARY_POINT.getLabels().size()).isEqualTo(1);
@@ -168,7 +174,7 @@ public class MetricDataTest {
   }
 
   @Test
-  public void metricData_DoublePoints() {
+  void metricData_DoublePoints() {
     assertThat(DOUBLE_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(DOUBLE_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
     assertThat(DOUBLE_POINT.getLabels().size()).isEqualTo(1);

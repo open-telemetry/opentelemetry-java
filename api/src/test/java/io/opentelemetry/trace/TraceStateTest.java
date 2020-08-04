@@ -16,25 +16,19 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import java.util.Arrays;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceState}. */
-@RunWith(JUnit4.class)
-public class TraceStateTest {
+class TraceStateTest {
   private static final String FIRST_KEY = "key_1";
   private static final String SECOND_KEY = "key_2";
   private static final String FIRST_VALUE = "value.1";
   private static final String SECOND_VALUE = "value.2";
-
-  @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private static final TraceState EMPTY = TraceState.builder().build();
   private final TraceState firstTraceState = EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).build();
@@ -44,7 +38,7 @@ public class TraceStateTest {
       EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).set(SECOND_KEY, SECOND_VALUE).build();
 
   @Test
-  public void get() {
+  void get() {
     assertThat(firstTraceState.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
     assertThat(secondTraceState.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
     assertThat(multiValueTraceState.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
@@ -52,64 +46,65 @@ public class TraceStateTest {
   }
 
   @Test
-  public void getEntries() {
+  void getEntries() {
     assertThat(firstTraceState.getEntries())
         .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
     assertThat(secondTraceState.getEntries())
         .containsExactly(TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
+    // Reverse order of input.
     assertThat(multiValueTraceState.getEntries())
         .containsExactly(
-            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE),
-            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
+            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE),
+            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test
-  public void disallowsNullKey() {
-    thrown.expect(NullPointerException.class);
-    EMPTY.toBuilder().set(null, FIRST_VALUE).build();
+  void disallowsNullKey() {
+    assertThrows(
+        NullPointerException.class, () -> EMPTY.toBuilder().set(null, FIRST_VALUE).build());
   }
 
   @Test
-  public void invalidFirstKeyCharacter() {
-    thrown.expect(IllegalArgumentException.class);
-    EMPTY.toBuilder().set("$_key", FIRST_VALUE).build();
+  void invalidFirstKeyCharacter() {
+    assertThrows(
+        IllegalArgumentException.class, () -> EMPTY.toBuilder().set("$_key", FIRST_VALUE).build());
   }
 
   @Test
-  public void firstKeyCharacterDigitIsAllowed() {
+  void firstKeyCharacterDigitIsAllowed() {
     TraceState result = EMPTY.toBuilder().set("1_key", FIRST_VALUE).build();
     assertThat(result.get("1_key")).isEqualTo(FIRST_VALUE);
   }
 
   @Test
-  public void invalidKeyCharacters() {
-    thrown.expect(IllegalArgumentException.class);
-    EMPTY.toBuilder().set("kEy_1", FIRST_VALUE).build();
+  void invalidKeyCharacters() {
+    assertThrows(
+        IllegalArgumentException.class, () -> EMPTY.toBuilder().set("kEy_1", FIRST_VALUE).build());
   }
 
   @Test
-  public void testValidAtSignVendorNamePrefix() {
+  void testValidAtSignVendorNamePrefix() {
     TraceState result = EMPTY.toBuilder().set("1@nr", FIRST_VALUE).build();
     assertThat(result.get("1@nr")).isEqualTo(FIRST_VALUE);
   }
 
   @Test
-  public void testMultipleAtSignNotAllowed() {
-    thrown.expect(IllegalArgumentException.class);
-    EMPTY.toBuilder().set("1@n@r@", FIRST_VALUE).build();
+  void testMultipleAtSignNotAllowed() {
+    assertThrows(
+        IllegalArgumentException.class, () -> EMPTY.toBuilder().set("1@n@r@", FIRST_VALUE).build());
   }
 
   @Test
-  public void invalidKeySize() {
+  void invalidKeySize() {
     char[] chars = new char[257];
     Arrays.fill(chars, 'a');
     String longKey = new String(chars);
-    thrown.expect(IllegalArgumentException.class);
-    EMPTY.toBuilder().set(longKey, FIRST_VALUE).build();
+    assertThrows(
+        IllegalArgumentException.class, () -> EMPTY.toBuilder().set(longKey, FIRST_VALUE).build());
   }
 
   @Test
-  public void allAllowedKeyCharacters() {
+  void allAllowedKeyCharacters() {
     StringBuilder stringBuilder = new StringBuilder();
     for (char c = 'a'; c <= 'z'; c++) {
       stringBuilder.append(c);
@@ -127,40 +122,41 @@ public class TraceStateTest {
   }
 
   @Test
-  public void disallowsNullValue() {
-    thrown.expect(NullPointerException.class);
-    EMPTY.toBuilder().set(FIRST_KEY, null).build();
+  void disallowsNullValue() {
+    assertThrows(NullPointerException.class, () -> EMPTY.toBuilder().set(FIRST_KEY, null).build());
   }
 
   @Test
-  public void valueCannotContainEqual() {
-    thrown.expect(IllegalArgumentException.class);
-    EMPTY.toBuilder().set(FIRST_KEY, "my_vakue=5").build();
+  void valueCannotContainEqual() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set(FIRST_KEY, "my_vakue=5").build());
   }
 
   @Test
-  public void valueCannotContainComma() {
-    thrown.expect(IllegalArgumentException.class);
-    EMPTY.toBuilder().set(FIRST_KEY, "first,second").build();
+  void valueCannotContainComma() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set(FIRST_KEY, "first,second").build());
   }
 
   @Test
-  public void valueCannotContainTrailingSpaces() {
-    thrown.expect(IllegalArgumentException.class);
-    EMPTY.toBuilder().set(FIRST_KEY, "first ").build();
+  void valueCannotContainTrailingSpaces() {
+    assertThrows(
+        IllegalArgumentException.class, () -> EMPTY.toBuilder().set(FIRST_KEY, "first ").build());
   }
 
   @Test
-  public void invalidValueSize() {
+  void invalidValueSize() {
     char[] chars = new char[257];
     Arrays.fill(chars, 'a');
     String longValue = new String(chars);
-    thrown.expect(IllegalArgumentException.class);
-    EMPTY.toBuilder().set(FIRST_KEY, longValue).build();
+    assertThrows(
+        IllegalArgumentException.class, () -> EMPTY.toBuilder().set(FIRST_KEY, longValue).build());
   }
 
   @Test
-  public void allAllowedValueCharacters() {
+  void allAllowedValueCharacters() {
     StringBuilder stringBuilder = new StringBuilder();
     for (char c = ' ' /* '\u0020' */; c <= '~' /* '\u007E' */; c++) {
       if (c == ',' || c == '=') {
@@ -174,13 +170,13 @@ public class TraceStateTest {
   }
 
   @Test
-  public void addEntry() {
+  void addEntry() {
     assertThat(firstTraceState.toBuilder().set(SECOND_KEY, SECOND_VALUE).build())
         .isEqualTo(multiValueTraceState);
   }
 
   @Test
-  public void updateEntry() {
+  void updateEntry() {
     assertThat(firstTraceState.toBuilder().set(FIRST_KEY, SECOND_VALUE).build().get(FIRST_KEY))
         .isEqualTo(SECOND_VALUE);
     TraceState updatedMultiValueTraceState =
@@ -190,7 +186,7 @@ public class TraceStateTest {
   }
 
   @Test
-  public void addAndUpdateEntry() {
+  void addAndUpdateEntry() {
     assertThat(
             firstTraceState
                 .toBuilder()
@@ -199,12 +195,12 @@ public class TraceStateTest {
                 .build()
                 .getEntries())
         .containsExactly(
-            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE),
-            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE));
+            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE),
+            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE));
   }
 
   @Test
-  public void addSameKey() {
+  void addSameKey() {
     assertThat(
             EMPTY
                 .toBuilder()
@@ -216,13 +212,13 @@ public class TraceStateTest {
   }
 
   @Test
-  public void remove() {
+  void remove() {
     assertThat(multiValueTraceState.toBuilder().remove(SECOND_KEY).build())
         .isEqualTo(firstTraceState);
   }
 
   @Test
-  public void addAndRemoveEntry() {
+  void addAndRemoveEntry() {
     assertThat(
             EMPTY
                 .toBuilder()
@@ -233,13 +229,13 @@ public class TraceStateTest {
   }
 
   @Test
-  public void remove_NullNotAllowed() {
-    thrown.expect(NullPointerException.class);
-    multiValueTraceState.toBuilder().remove(null).build();
+  void remove_NullNotAllowed() {
+    assertThrows(
+        NullPointerException.class, () -> multiValueTraceState.toBuilder().remove(null).build());
   }
 
   @Test
-  public void traceState_EqualsAndHashCode() {
+  void traceState_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(EMPTY, EMPTY);
     tester.addEqualityGroup(firstTraceState, EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).build());
@@ -249,7 +245,7 @@ public class TraceStateTest {
   }
 
   @Test
-  public void traceState_ToString() {
+  void traceState_ToString() {
     assertThat(EMPTY.toString()).isEqualTo("TraceState{entries=[]}");
   }
 }

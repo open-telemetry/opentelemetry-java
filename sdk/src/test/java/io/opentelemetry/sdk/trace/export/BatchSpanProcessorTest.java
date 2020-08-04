@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
@@ -39,18 +39,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link BatchSpanProcessor}. */
-@RunWith(JUnit4.class)
-public class BatchSpanProcessorTest {
+class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
@@ -60,13 +58,13 @@ public class BatchSpanProcessorTest {
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     MockitoAnnotations.initMocks(this);
   }
 
-  @After
-  public void cleanup() {
+  @AfterEach
+  void cleanup() {
     tracerSdkFactory.shutdown();
   }
 
@@ -95,7 +93,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void configTest() {
+  void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.bsp.schedule.delay", "12");
     options.put("otel.bsp.max.queue", "34");
@@ -113,7 +111,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void configTest_EmptyOptions() {
+  void configTest_EmptyOptions() {
     BatchSpanProcessor.Builder config =
         BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0))
             .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
@@ -130,7 +128,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void startEndRequirements() {
+  void startEndRequirements() {
     BatchSpanProcessor spansProcessor =
         BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0)).build();
     assertThat(spansProcessor.isStartRequired()).isFalse();
@@ -138,7 +136,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void exportDifferentSampledSpans() {
+  void exportDifferentSampledSpans() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
@@ -152,7 +150,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void exportMoreSpansThanTheBufferSize() {
+  void exportMoreSpansThanTheBufferSize() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(6);
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
@@ -181,7 +179,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void forceExport() {
+  void forceExport() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1, 1);
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
@@ -204,7 +202,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void exportSpansToMultipleServices() {
+  void exportSpansToMultipleServices() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
     WaitingSpanExporter waitingSpanExporter2 = new WaitingSpanExporter(2);
     tracerSdkFactory.addSpanProcessor(
@@ -222,7 +220,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void exportMoreSpansThanTheMaximumLimit() {
+  void exportMoreSpansThanTheMaximumLimit() {
     final int maxQueuedSpans = 8;
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(maxQueuedSpans);
     BatchSpanProcessor batchSpanProcessor =
@@ -262,7 +260,7 @@ public class BatchSpanProcessorTest {
     // While we wait for maxQueuedSpans we ensure that the queue is also empty after this.
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
-    assertThat(exported).containsExactlyElementsIn(spansToExport);
+    assertThat(exported).containsExactlyElementsOf(spansToExport);
     exported.clear();
     spansToExport.clear();
 
@@ -280,11 +278,11 @@ public class BatchSpanProcessorTest {
 
     exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
-    assertThat(exported).containsExactlyElementsIn(spansToExport);
+    assertThat(exported).containsExactlyElementsOf(spansToExport);
   }
 
   @Test
-  public void serviceHandlerThrowsException() {
+  void serviceHandlerThrowsException() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockServiceHandler)
@@ -304,7 +302,8 @@ public class BatchSpanProcessorTest {
     assertThat(exported).containsExactly(span2.toSpanData());
   }
 
-  @Test(timeout = 5000)
+  @Test
+  @Timeout(5)
   public void exporterTimesOut() throws Exception {
     final CountDownLatch interruptMarker = new CountDownLatch(1);
     WaitingSpanExporter waitingSpanExporter =
@@ -342,7 +341,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void exportNotSampledSpans() {
+  void exportNotSampledSpans() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
@@ -364,7 +363,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void exportNotSampledSpans_recordingEvents() {
+  void exportNotSampledSpans_recordingEvents() {
     // TODO(bdrutu): Fix this when Sampler return RECORD option.
     /*
     tracerSdkFactory.addSpanProcessor(
@@ -380,7 +379,7 @@ public class BatchSpanProcessorTest {
   }
 
   @Test
-  public void exportNotSampledSpans_reportOnlySampled() {
+  void exportNotSampledSpans_reportOnlySampled() {
     // TODO(bdrutu): Fix this when Sampler return RECORD option.
     /*
     tracerSdkFactory.addSpanProcessor(
@@ -396,7 +395,8 @@ public class BatchSpanProcessorTest {
     */
   }
 
-  @Test(timeout = 10000L)
+  @Test
+  @Timeout(10)
   public void shutdownFlushes() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
     // Set the export delay to zero, for no timeout, in order to confirm the #flush() below works

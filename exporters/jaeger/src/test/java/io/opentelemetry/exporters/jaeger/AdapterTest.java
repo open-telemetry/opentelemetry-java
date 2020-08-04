@@ -16,9 +16,9 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
@@ -44,13 +44,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Adapter}. */
-@RunWith(JUnit4.class)
-public class AdapterTest {
+class AdapterTest {
 
   private static final String LINK_TRACE_ID = "00000000000000000000000000cba123";
   private static final String LINK_SPAN_ID = "0000000000fed456";
@@ -59,7 +56,7 @@ public class AdapterTest {
   private static final String PARENT_SPAN_ID = "0000000000aef789";
 
   @Test
-  public void testProtoSpans() {
+  void testProtoSpans() {
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
@@ -74,7 +71,7 @@ public class AdapterTest {
   }
 
   @Test
-  public void testProtoSpan() {
+  void testProtoSpan() {
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
@@ -117,7 +114,7 @@ public class AdapterTest {
   }
 
   @Test
-  public void testJaegerLogs() {
+  void testJaegerLogs() {
     // prepare
     Event eventsData = getTimedEvent();
 
@@ -129,7 +126,7 @@ public class AdapterTest {
   }
 
   @Test
-  public void testJaegerLog() {
+  void testJaegerLog() {
     // prepare
     EventImpl event = getTimedEvent();
 
@@ -148,7 +145,7 @@ public class AdapterTest {
   }
 
   @Test
-  public void testKeyValues() {
+  void testKeyValues() {
     // prepare
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
 
@@ -162,7 +159,7 @@ public class AdapterTest {
   }
 
   @Test
-  public void testKeyValue() {
+  void testKeyValue() {
     // prepare
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
     AttributeValue valueD = AttributeValue.doubleAttributeValue(1.);
@@ -208,7 +205,7 @@ public class AdapterTest {
   }
 
   @Test
-  public void testSpanRefs() {
+  void testSpanRefs() {
     // prepare
     Link link =
         Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
@@ -221,7 +218,7 @@ public class AdapterTest {
   }
 
   @Test
-  public void testSpanRef() {
+  void testSpanRef() {
     // prepare
     Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
 
@@ -237,7 +234,7 @@ public class AdapterTest {
   }
 
   @Test
-  public void testStatusNotOk() {
+  void testStatusNotOk() {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
@@ -258,7 +255,7 @@ public class AdapterTest {
   }
 
   @Test
-  public void testSpanError() {
+  void testSpanError() {
     Attributes attributes =
         Attributes.of(
             "error.type",
@@ -354,7 +351,7 @@ public class AdapterTest {
         found = true;
       }
     }
-    assertTrue("Should have found the follows-from reference", found);
+    assertTrue(found, "Should have found the follows-from reference");
   }
 
   private static void assertHasParent(Model.Span jaegerSpan) {
@@ -370,6 +367,6 @@ public class AdapterTest {
         found = true;
       }
     }
-    assertTrue("Should have found the parent reference", found);
+    assertTrue(found, "Should have found the parent reference");
   }
 }

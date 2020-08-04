@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.suspendresumepropagation;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -25,8 +25,8 @@ import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Tracer;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * These tests are intended to simulate the kind of async models that are common in java async
@@ -34,17 +34,17 @@ import org.junit.Test;
  *
  * @author tylerbenson
  */
-public class SuspendResumePropagationTest {
+class SuspendResumePropagationTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
 
-  @Before
-  public void before() {}
+  @BeforeEach
+  void before() {}
 
   @Test
-  public void testContinuationInterleaving() {
+  void testContinuationInterleaving() {
     SuspendResume job1 = new SuspendResume(1, tracer);
     SuspendResume job2 = new SuspendResume(2, tracer);
 

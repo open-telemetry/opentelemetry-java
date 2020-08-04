@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -25,13 +25,10 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
-/** Unit tests for {@link SpanBucket}. */
-@RunWith(JUnit4.class)
-public final class SpanBucketTest {
+class SpanBucketTest {
   private static final String SPAN_NAME = "span";
   private static final int LATENCY_BUCKET_SIZE = 16;
   private static final int ERROR_BUCKET_SIZE = 8;
@@ -39,8 +36,8 @@ public final class SpanBucketTest {
   private final Tracer tracer = tracerSdkProvider.get("SpanBucketTest");
 
   @Test
-  public void verifyLatencyBucketSizeLimit() {
-    SpanBucket latencyBucket = new SpanBucket(true);
+  void verifyLatencyBucketSizeLimit() {
+    SpanBucket latencyBucket = new SpanBucket(/* isLatencyBucket= */ true);
     Span[] spans = new Span[LATENCY_BUCKET_SIZE + 1];
     for (int i = 0; i < LATENCY_BUCKET_SIZE + 1; i++) {
       spans[i] = tracer.spanBuilder(SPAN_NAME).startSpan();
@@ -52,15 +49,15 @@ public final class SpanBucketTest {
     /* The latency SpanBucket should have the most recent LATENCY_BUCKET_SIZE spans */
     assertThat(latencyBucket.size()).isEqualTo(LATENCY_BUCKET_SIZE);
     assertThat(bucketSpans.size()).isEqualTo(LATENCY_BUCKET_SIZE);
-    assertThat(bucketSpans).doesNotContain(spans[0]);
+    assertThat(bucketSpans).doesNotContain((ReadableSpan) spans[0]);
     for (int i = 1; i < LATENCY_BUCKET_SIZE + 1; i++) {
-      assertThat(bucketSpans).contains(spans[i]);
+      assertThat(bucketSpans).contains((ReadableSpan) spans[i]);
     }
   }
 
   @Test
-  public void verifyErrorBucketSizeLimit() {
-    SpanBucket errorBucket = new SpanBucket(false);
+  void verifyErrorBucketSizeLimit() {
+    SpanBucket errorBucket = new SpanBucket(/* isLatencyBucket= */ false);
     Span[] spans = new Span[ERROR_BUCKET_SIZE + 1];
     for (int i = 0; i < ERROR_BUCKET_SIZE + 1; i++) {
       spans[i] = tracer.spanBuilder(SPAN_NAME).startSpan();
@@ -72,17 +69,17 @@ public final class SpanBucketTest {
     /* The error SpanBucket should have the most recent ERROR_BUCKET_SIZE spans */
     assertThat(errorBucket.size()).isEqualTo(ERROR_BUCKET_SIZE);
     assertThat(bucketSpans.size()).isEqualTo(ERROR_BUCKET_SIZE);
-    assertThat(bucketSpans).doesNotContain(spans[0]);
+    assertThat(bucketSpans).doesNotContain((ReadableSpan) spans[0]);
     for (int i = 1; i < ERROR_BUCKET_SIZE + 1; i++) {
-      assertThat(bucketSpans).contains(spans[i]);
+      assertThat(bucketSpans).contains((ReadableSpan) spans[i]);
     }
   }
 
-  @Test(timeout = 1000)
+  @Timeout(value = 1)
   public void verifyThreadSafety() throws InterruptedException {
     int numberOfThreads = 4;
     int numberOfSpans = 4;
-    SpanBucket spanBucket = new SpanBucket(true);
+    SpanBucket spanBucket = new SpanBucket(/* isLatencyBucket= */ true);
     final CountDownLatch startSignal = new CountDownLatch(1);
     final CountDownLatch endSignal = new CountDownLatch(numberOfThreads);
     for (int i = 0; i < numberOfThreads; i++) {

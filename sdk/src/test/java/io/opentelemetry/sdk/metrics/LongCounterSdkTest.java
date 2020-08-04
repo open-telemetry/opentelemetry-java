@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -31,17 +32,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongCounterSdk}. */
-@RunWith(JUnit4.class)
-public class LongCounterSdkTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class LongCounterSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
@@ -55,21 +49,23 @@ public class LongCounterSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
-  public void add_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.longCounterBuilder("testCounter").build().add(1, null);
+  void add_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.longCounterBuilder("testCounter").build().add(1, null),
+        "labels");
   }
 
   @Test
-  public void bound_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.longCounterBuilder("testCounter").build().bind(null);
+  void bound_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.longCounterBuilder("testCounter").build().bind(null),
+        "labels");
   }
 
   @Test
-  public void collectMetrics_NoRecords() {
+  void collectMetrics_NoRecords() {
     LongCounterSdk longCounter =
         testSdk
             .longCounterBuilder("testCounter")
@@ -94,7 +90,7 @@ public class LongCounterSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithOneRecord() {
+  void collectMetrics_WithOneRecord() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
     longCounter.add(12, Labels.empty());
@@ -110,7 +106,7 @@ public class LongCounterSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithMultipleCollects() {
+  void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
@@ -154,7 +150,7 @@ public class LongCounterSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet() {
+  void sameBound_ForSameLabelSet() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
     BoundLongCounter duplicateBoundCounter = longCounter.bind(Labels.of("K", "V"));
@@ -167,7 +163,7 @@ public class LongCounterSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
     try {
@@ -184,23 +180,21 @@ public class LongCounterSdkTest {
   }
 
   @Test
-  public void longCounterAdd_MonotonicityCheck() {
+  void longCounterAdd_MonotonicityCheck() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
-    thrown.expect(IllegalArgumentException.class);
-    longCounter.add(-45, Labels.empty());
+    assertThrows(IllegalArgumentException.class, () -> longCounter.add(-45, Labels.empty()));
   }
 
   @Test
-  public void boundLongCounterAdd_MonotonicityCheck() {
+  void boundLongCounterAdd_MonotonicityCheck() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
-    thrown.expect(IllegalArgumentException.class);
-    longCounter.bind(Labels.empty()).add(-9);
+    assertThrows(IllegalArgumentException.class, () -> longCounter.bind(Labels.empty()).add(-9));
   }
 
   @Test
-  public void stressTest() {
+  void stressTest() {
     final LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
@@ -224,7 +218,7 @@ public class LongCounterSdkTest {
   }
 
   @Test
-  public void stressTest_WithDifferentLabelSet() {
+  void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();

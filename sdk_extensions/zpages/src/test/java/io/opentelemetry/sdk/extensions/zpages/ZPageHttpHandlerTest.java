@@ -16,29 +16,27 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link ZPageHttpHandler}. */
-@RunWith(JUnit4.class)
 public final class ZPageHttpHandlerTest {
   @Test
-  public void parseEmptyQuery() throws URISyntaxException, UnsupportedEncodingException {
+  void parseEmptyQuery() throws URISyntaxException, UnsupportedEncodingException {
     URI uri = new URI("http://localhost:8000/tracez");
     assertThat(ZPageHttpHandler.parseQueryMap(uri)).isEmpty();
   }
 
   @Test
-  public void parseNormalQuery() throws URISyntaxException, UnsupportedEncodingException {
+  void parseNormalQuery() throws URISyntaxException, UnsupportedEncodingException {
     URI uri =
         new URI("http://localhost:8000/tracez/tracez?zspanname=Test&ztype=1&zsubtype=5&noval");
     assertThat(ZPageHttpHandler.parseQueryMap(uri))
-        .containsExactly("zspanname", "Test", "ztype", "1", "zsubtype", "5", "noval", "");
+        .containsOnly(entry("zspanname", "Test"), entry("ztype", "1"), entry("zsubtype", "5"));
   }
 }

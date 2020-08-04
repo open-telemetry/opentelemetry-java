@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.times;
@@ -26,22 +26,18 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link MultiSpanProcessorTest}. */
-@RunWith(JUnit4.class)
-public class MultiSpanProcessorTest {
+class MultiSpanProcessorTest {
   @Mock private SpanProcessor spanProcessor1;
   @Mock private SpanProcessor spanProcessor2;
   @Mock private ReadableSpan readableSpan;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     MockitoAnnotations.initMocks(this);
     when(spanProcessor1.isStartRequired()).thenReturn(true);
     when(spanProcessor1.isEndRequired()).thenReturn(true);
@@ -50,7 +46,7 @@ public class MultiSpanProcessorTest {
   }
 
   @Test
-  public void empty() {
+  void empty() {
     SpanProcessor multiSpanProcessor = MultiSpanProcessor.create(Collections.emptyList());
     multiSpanProcessor.onStart(readableSpan);
     multiSpanProcessor.onEnd(readableSpan);
@@ -58,7 +54,7 @@ public class MultiSpanProcessorTest {
   }
 
   @Test
-  public void oneSpanProcessor() {
+  void oneSpanProcessor() {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Collections.singletonList(spanProcessor1));
     multiSpanProcessor.onStart(readableSpan);
@@ -75,7 +71,7 @@ public class MultiSpanProcessorTest {
   }
 
   @Test
-  public void oneSpanProcessor_NoRequirements() {
+  void oneSpanProcessor_NoRequirements() {
     when(spanProcessor1.isStartRequired()).thenReturn(false);
     when(spanProcessor1.isEndRequired()).thenReturn(false);
     SpanProcessor multiSpanProcessor =
@@ -101,7 +97,7 @@ public class MultiSpanProcessorTest {
   }
 
   @Test
-  public void twoSpanProcessor() {
+  void twoSpanProcessor() {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Arrays.asList(spanProcessor1, spanProcessor2));
     multiSpanProcessor.onStart(readableSpan);
@@ -122,7 +118,7 @@ public class MultiSpanProcessorTest {
   }
 
   @Test
-  public void twoSpanProcessor_DifferentRequirements() {
+  void twoSpanProcessor_DifferentRequirements() {
     when(spanProcessor1.isEndRequired()).thenReturn(false);
     when(spanProcessor2.isStartRequired()).thenReturn(false);
     SpanProcessor multiSpanProcessor =

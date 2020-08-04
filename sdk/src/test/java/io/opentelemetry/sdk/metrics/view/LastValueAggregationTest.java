@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
@@ -24,18 +24,15 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import java.util.EnumSet;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Aggregations#sum()}. */
-@RunWith(JUnit4.class)
-public class LastValueAggregationTest {
+class LastValueAggregationTest {
   private static final EnumSet<InstrumentType> SUPPORTED_INSTRUMENTS =
       EnumSet.of(InstrumentType.SUM_OBSERVER, InstrumentType.UP_DOWN_SUM_OBSERVER);
 
   @Test
-  public void getDescriptorType_ForSupportedInstruments() {
+  void getDescriptorType_ForSupportedInstruments() {
     Aggregation lastValue = Aggregations.lastValue();
     assertThat(lastValue.getDescriptorType(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE))
         .isEqualTo(Descriptor.Type.MONOTONIC_DOUBLE);
@@ -52,7 +49,7 @@ public class LastValueAggregationTest {
   }
 
   @Test
-  public void getAggregatorFactory() {
+  void getAggregatorFactory() {
     Aggregation lastValue = Aggregations.lastValue();
     assertThat(lastValue.getAggregatorFactory(InstrumentValueType.LONG))
         .isInstanceOf(LongLastValueAggregator.getFactory().getClass());
@@ -61,7 +58,7 @@ public class LastValueAggregationTest {
   }
 
   @Test
-  public void availableForInstrument() {
+  void availableForInstrument() {
     Aggregation lastValue = Aggregations.lastValue();
     for (InstrumentType type : InstrumentType.values()) {
       if (SUPPORTED_INSTRUMENTS.contains(type)) {

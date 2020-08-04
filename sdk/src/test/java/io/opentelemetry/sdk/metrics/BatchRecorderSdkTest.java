@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -29,16 +30,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link BatchRecorderSdk}. */
-@RunWith(JUnit4.class)
-public class BatchRecorderSdkTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class BatchRecorderSdkTest {
   private static final Resource RESOURCE =
       Resource.create(
           Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
@@ -51,14 +46,15 @@ public class BatchRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
-  public void batchRecorder_badLabelSet() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    testSdk.newBatchRecorder("key").record();
+  void batchRecorder_badLabelSet() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.newBatchRecorder("key").record(),
+        "key/value");
   }
 
   @Test
-  public void batchRecorder() {
+  void batchRecorder() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
     DoubleUpDownCounterSdk doubleUpDownCounter =

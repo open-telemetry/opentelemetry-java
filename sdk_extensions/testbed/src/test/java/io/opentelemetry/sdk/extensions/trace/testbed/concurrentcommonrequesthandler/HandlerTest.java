@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthandler;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
@@ -30,15 +30,15 @@ import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * There is only one instance of 'RequestHandler' per 'Client'. Methods of 'RequestHandler' are
  * executed concurrently in different threads which are reused (common pool). Therefore we cannot
  * use current active span and activate span. So one issue here is setting correct parent span.
  */
-public class HandlerTest {
+class HandlerTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
@@ -46,13 +46,13 @@ public class HandlerTest {
   private final Tracer tracer = sdk.get(HandlerTest.class.getName());
   private final Client client = new Client(new RequestHandler(tracer));
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     inMemoryTracing.getSpanExporter().reset();
   }
 
   @Test
-  public void two_requests() throws Exception {
+  void two_requests() throws Exception {
     Future<String> responseFuture = client.send("message");
     Future<String> responseFuture2 = client.send("message2");
 
@@ -70,12 +70,12 @@ public class HandlerTest {
     assertThat(finished.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
     assertThat(finished.get(1).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
   }
 
   /** Active parent is not picked up by child. */
   @Test
-  public void parent_not_picked_up() throws Exception {
+  void parent_not_picked_up() throws Exception {
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
     try (Scope ignored = tracer.withSpan(parentSpan)) {
       String response = client.send("no_parent").get(15, TimeUnit.SECONDS);
@@ -104,7 +104,7 @@ public class HandlerTest {
    * different places then initial parent will not be correct.
    */
   @Test
-  public void bad_solution_to_set_parent() throws Exception {
+  void bad_solution_to_set_parent() throws Exception {
     Client client;
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
     try (Scope ignored = tracer.withSpan(parentSpan)) {

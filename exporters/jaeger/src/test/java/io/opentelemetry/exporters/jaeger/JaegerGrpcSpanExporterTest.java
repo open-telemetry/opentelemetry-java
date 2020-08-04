@@ -31,6 +31,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;
@@ -40,16 +41,16 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import java.net.InetAddress;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 /** Unit tests for {@link JaegerGrpcSpanExporter}. */
-@RunWith(JUnit4.class)
 public class JaegerGrpcSpanExporterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
@@ -137,6 +138,26 @@ public class JaegerGrpcSpanExporterTest {
     assertTrue("a client tag should have been present", foundClientTag);
     assertTrue("an ip tag should have been present", foundIp);
     assertTrue("a hostname tag should have been present", foundHostname);
+  }
+
+  @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    String serviceName = "myGreatService";
+    String endpoint = "127.0.0.1:9090";
+    options.put("otel.jaeger.service.name", serviceName);
+    options.put("otel.jaeger.endpoint", endpoint);
+    JaegerGrpcSpanExporter.Builder config = JaegerGrpcSpanExporter.newBuilder();
+    JaegerGrpcSpanExporter.Builder spy = Mockito.spy(config);
+    spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
+    Mockito.verify(spy).setServiceName(serviceName);
+    Mockito.verify(spy).setEndpoint(endpoint);
+  }
+
+  abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
+    public static NamingConvention getNaming() {
+      return NamingConvention.DOT;
+    }
   }
 
   static class MockCollectorService extends CollectorServiceGrpc.CollectorServiceImplBase {

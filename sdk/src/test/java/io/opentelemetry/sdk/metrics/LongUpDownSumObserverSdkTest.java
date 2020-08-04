@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -28,17 +28,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongUpDownSumObserverSdk}. */
-@RunWith(JUnit4.class)
-public class LongUpDownSumObserverSdkTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class LongUpDownSumObserverSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
@@ -53,7 +46,7 @@ public class LongUpDownSumObserverSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
-  public void collectMetrics_NoCallback() {
+  void collectMetrics_NoCallback() {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
@@ -65,7 +58,7 @@ public class LongUpDownSumObserverSdkTest {
   }
 
   @Test
-  public void collectMetrics_NoRecords() {
+  void collectMetrics_NoRecords() {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
@@ -92,7 +85,7 @@ public class LongUpDownSumObserverSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithOneRecord() {
+  void collectMetrics_WithOneRecord() {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk.longUpDownSumObserverBuilder("testObserver").build();
     longUpDownSumObserver.setCallback(result -> result.observe(12, Labels.of("k", "v")));

@@ -16,8 +16,8 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.extensions.trace.propagation.AwsXRayPropagator.TRACE_HEADER_KEY;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
@@ -32,12 +32,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class AwsXRayPropagatorTest {
+class AwsXRayPropagatorTest {
 
   private static final String TRACE_ID_BASE16 = "8a3c60f7d188f8fa79d48a391a778fa6";
   private static final TraceId TRACE_ID = TraceId.fromLowerBase16(TRACE_ID_BASE16, 0);
@@ -60,7 +57,7 @@ public class AwsXRayPropagatorTest {
   private final AwsXRayPropagator xrayPropagator = new AwsXRayPropagator();
 
   @Test
-  public void inject_SampledContext() {
+  void inject_SampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     xrayPropagator.inject(
         withSpanContext(
@@ -76,7 +73,7 @@ public class AwsXRayPropagatorTest {
   }
 
   @Test
-  public void inject_NotSampledContext() {
+  void inject_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     xrayPropagator.inject(
         withSpanContext(
@@ -92,7 +89,7 @@ public class AwsXRayPropagatorTest {
   }
 
   @Test
-  public void inject_WithTraceState() {
+  void inject_WithTraceState() {
     Map<String, String> carrier = new LinkedHashMap<>();
     xrayPropagator.inject(
         withSpanContext(
@@ -113,16 +110,16 @@ public class AwsXRayPropagatorTest {
   }
 
   @Test
-  public void extract_Nothing() {
+  void extract_Nothing() {
     // Context remains untouched.
     assertThat(
             xrayPropagator.extract(
                 Context.current(), Collections.<String, String>emptyMap(), Map::get))
-        .isSameInstanceAs(Context.current());
+        .isSameAs(Context.current());
   }
 
   @Test
-  public void extract_SampledContext() {
+  void extract_SampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
         TRACE_HEADER_KEY,
@@ -135,7 +132,7 @@ public class AwsXRayPropagatorTest {
   }
 
   @Test
-  public void extract_NotSampledContext() {
+  void extract_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
         TRACE_HEADER_KEY,
@@ -148,7 +145,7 @@ public class AwsXRayPropagatorTest {
   }
 
   @Test
-  public void extract_DifferentPartOrder() {
+  void extract_DifferentPartOrder() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
         TRACE_HEADER_KEY,
@@ -161,7 +158,7 @@ public class AwsXRayPropagatorTest {
   }
 
   @Test
-  public void extract_AdditionalFields() {
+  void extract_AdditionalFields() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
         TRACE_HEADER_KEY,
@@ -175,89 +172,89 @@ public class AwsXRayPropagatorTest {
   }
 
   @Test
-  public void extract_EmptyHeaderValue() {
+  void extract_EmptyHeaderValue() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(TRACE_HEADER_KEY, "");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
-  public void extract_InvalidTraceId() {
+  void extract_InvalidTraceId() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY,
         "Root=abcdefghijklmnopabcdefghijklmnop;Parent=53995c3f42cd8ad8;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
-  public void extract_InvalidTraceId_Size() {
+  void extract_InvalidTraceId_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa600;Parent=53995c3f42cd8ad8;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
-  public void extract_InvalidSpanId() {
+  void extract_InvalidSpanId() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=abcdefghijklmnop;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
-  public void extract_InvalidSpanId_Size() {
+  void extract_InvalidSpanId_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad800;Sampled=0");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
-  public void extract_InvalidFlags() {
+  void extract_InvalidFlags() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
-  public void extract_InvalidFlags_Size() {
+  void extract_InvalidFlags_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=10220");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   @Test
-  public void extract_InvalidFlags_NonNumeric() {
+  void extract_InvalidFlags_NonNumeric() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=a");
 
     assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameInstanceAs(SpanContext.getInvalid());
+        .isSameAs(SpanContext.getInvalid());
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {

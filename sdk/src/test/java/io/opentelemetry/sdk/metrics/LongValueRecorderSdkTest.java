@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -34,17 +35,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongValueRecorderSdk}. */
-@RunWith(JUnit4.class)
-public class LongValueRecorderSdkTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class LongValueRecorderSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
@@ -59,21 +53,23 @@ public class LongValueRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
   @Test
-  public void record_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.longValueRecorderBuilder("testRecorder").build().record(1, null);
+  void record_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.longValueRecorderBuilder("testRecorder").build().record(1, null),
+        "labels");
   }
 
   @Test
-  public void bound_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    testSdk.longValueRecorderBuilder("testRecorder").build().bind(null);
+  void bound_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> testSdk.longValueRecorderBuilder("testRecorder").build().bind(null),
+        "labels");
   }
 
   @Test
-  public void collectMetrics_NoRecords() {
+  void collectMetrics_NoRecords() {
     LongValueRecorderSdk longMeasure =
         testSdk
             .longValueRecorderBuilder("testRecorder")
@@ -98,7 +94,7 @@ public class LongValueRecorderSdkTest {
   }
 
   @Test
-  public void collectMetrics_emptyCollectionCycle() {
+  void collectMetrics_emptyCollectionCycle() {
     LongValueRecorderSdk longMeasure =
         testSdk
             .longValueRecorderBuilder("testRecorder")
@@ -126,7 +122,7 @@ public class LongValueRecorderSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithOneRecord() {
+  void collectMetrics_WithOneRecord() {
     LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
     testClock.advanceNanos(SECOND_NANOS);
     longMeasure.record(12, Labels.empty());
@@ -148,7 +144,7 @@ public class LongValueRecorderSdkTest {
   }
 
   @Test
-  public void collectMetrics_WithMultipleCollects() {
+  void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
     BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
@@ -168,7 +164,7 @@ public class LongValueRecorderSdkTest {
       MetricData metricData = metricDataList.get(0);
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
-          .containsExactly(
+          .containsExactlyInAnyOrder(
               SummaryPoint.create(
                   startTime, firstCollect, Labels.empty(), 2, -2, valueAtPercentiles(-14, 12)),
               SummaryPoint.create(
@@ -190,7 +186,7 @@ public class LongValueRecorderSdkTest {
       metricData = metricDataList.get(0);
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
-          .containsExactly(
+          .containsExactlyInAnyOrder(
               SummaryPoint.create(
                   startTime + SECOND_NANOS,
                   secondCollect,
@@ -211,7 +207,7 @@ public class LongValueRecorderSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet() {
+  void sameBound_ForSameLabelSet() {
     LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
     BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
     BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind(Labels.of("K", "V"));
@@ -224,7 +220,7 @@ public class LongValueRecorderSdkTest {
   }
 
   @Test
-  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
     BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
     try {
@@ -241,7 +237,7 @@ public class LongValueRecorderSdkTest {
   }
 
   @Test
-  public void stressTest() {
+  void stressTest() {
     final LongValueRecorderSdk longMeasure =
         testSdk.longValueRecorderBuilder("testRecorder").build();
 
@@ -277,7 +273,7 @@ public class LongValueRecorderSdkTest {
   }
 
   @Test
-  public void stressTest_WithDifferentLabelSet() {
+  void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final LongValueRecorderSdk longMeasure =

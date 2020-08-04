@@ -13,7 +13,7 @@ ext {
 
 subprojects {
     group = "io.opentelemetry"
-    version = "0.7.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
+    version = "0.8.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
 }
 
 configure(opentelemetryProjects) {
@@ -112,6 +112,8 @@ configure(opentelemetryProjects) {
         grpcVersion = '1.30.2'
         guavaVersion = '28.2-android'
         jmhVersion = '1.19'
+        junitVersion = '5.6.2'
+        mockitoVersion = '3.3.3'
         opentracingVersion = '0.33.0'
         prometheusVersion = '0.8.1'
         protobufVersion = '3.11.4'
@@ -122,6 +124,7 @@ configure(opentelemetryProjects) {
         boms = [
                 grpc           : "io.grpc:grpc-bom:${grpcVersion}",
                 guava          : "com.google.guava:guava-bom:${guavaVersion}",
+                junit          : "org.junit:junit-bom:${junitVersion}",
                 protobuf       : "com.google.protobuf:protobuf-bom:${protobufVersion}",
                 zipkin_reporter: "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
         ]
@@ -147,16 +150,21 @@ configure(opentelemetryProjects) {
                 protobuf                : "com.google.protobuf:protobuf-java",
                 protobuf_util           : "com.google.protobuf:protobuf-java-util",
                 zipkin_reporter         : "io.zipkin.reporter2:zipkin-reporter",
-                zipkin_urlconnection    : "io.zipkin.reporter2:zipkin-sender-urlconnection",
+                zipkin_okhttp           : "io.zipkin.reporter2:zipkin-sender-okhttp3",
 
                 // Compatibility layer
                 opentracing             : "io.opentracing:opentracing-api:${opentracingVersion}",
 
                 // Test dependencies.
+                assertj                 : "org.assertj:assertj-core:3.16.1",
                 guava_testlib           : "com.google.guava:guava-testlib",
                 junit                   : 'junit:junit:4.12',
-                mockito                 : 'org.mockito:mockito-core:3.3.3',
-                truth                   : 'com.google.truth:truth:1.0.1',
+                junit_pioneer           : 'org.junit-pioneer:junit-pioneer:0.7.0',
+                junit_jupiter_api       : 'org.junit.jupiter:junit-jupiter-api',
+                junit_jupiter_engine    : 'org.junit.jupiter:junit-jupiter-engine',
+                junit_vintage_engine    : 'org.junit.vintage:junit-vintage-engine',
+                mockito                 : "org.mockito:mockito-core:${mockitoVersion}",
+                mockito_junit_jupiter   : "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
                 system_rules            : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
                 slf4jsimple             : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
                 awaitility              : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
@@ -195,6 +203,7 @@ configure(opentelemetryProjects) {
             if (it.name.endsWith('Classpath')) {
                 add(it.name, enforcedPlatform(boms.grpc))
                 add(it.name, enforcedPlatform(boms.guava))
+                add(it.name, enforcedPlatform(boms.junit))
                 add(it.name, enforcedPlatform(boms.protobuf))
                 add(it.name, enforcedPlatform(boms.zipkin_reporter))
             }
@@ -204,10 +213,14 @@ configure(opentelemetryProjects) {
                 libraries.errorprone_annotation,
                 libraries.jsr305
 
-        testImplementation libraries.junit,
+        testImplementation libraries.junit_jupiter_api,
                 libraries.mockito,
-                libraries.truth,
+                libraries.mockito_junit_jupiter,
+                libraries.assertj,
                 libraries.guava_testlib
+
+        testRuntimeOnly libraries.junit_jupiter_engine,
+                libraries.junit_vintage_engine
 
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check
@@ -219,11 +232,12 @@ configure(opentelemetryProjects) {
         if (JavaVersion.current().isJava9Compatible()) {
             // Workaround for @javax.annotation.Generated
             // see: https://github.com/grpc/grpc-java/issues/3633
-            compile("javax.annotation:javax.annotation-api:1.3.2")
+            compileOnly libraries.javax_annotations
         }
 
         test {
             systemProperties project.properties.subMap(["enable.docker.tests"])
+            useJUnitPlatform()
         }
     }
 
@@ -231,6 +245,7 @@ configure(opentelemetryProjects) {
         source = "8"
         encoding = "UTF-8"
         links 'https://docs.oracle.com/javase/8/docs/api/'
+        addBooleanOption('Xdoclint:all,-missing', true)
     }
 
     afterEvaluate {  // Allow subproject to add more source sets.
@@ -441,5 +456,5 @@ configure(opentelemetryProjects) {
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = '6.0.1'
+    gradleVersion = '6.5.1'
 }

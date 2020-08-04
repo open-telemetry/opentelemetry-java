@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.ByteString;
 import io.opentelemetry.common.AttributeValue;
@@ -37,13 +37,10 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanAdapter}. */
-@RunWith(JUnit4.class)
-public class SpanAdapterTest {
+class SpanAdapterTest {
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
   private static final TraceId TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES, 0);
@@ -55,7 +52,7 @@ public class SpanAdapterTest {
           TRACE_ID, SPAN_ID, TraceFlags.builder().setIsSampled(true).build(), TRACE_STATE);
 
   @Test
-  public void toProtoSpan() {
+  void toProtoSpan() {
     Span span =
         SpanAdapter.toProtoSpan(
             TestSpanData.newBuilder()
@@ -107,7 +104,7 @@ public class SpanAdapterTest {
   }
 
   @Test
-  public void toProtoSpanKind() {
+  void toProtoSpanKind() {
     assertThat(SpanAdapter.toProtoSpanKind(Kind.INTERNAL)).isEqualTo(SpanKind.INTERNAL);
     assertThat(SpanAdapter.toProtoSpanKind(Kind.CLIENT)).isEqualTo(SpanKind.CLIENT);
     assertThat(SpanAdapter.toProtoSpanKind(Kind.SERVER)).isEqualTo(SpanKind.SERVER);
@@ -116,7 +113,7 @@ public class SpanAdapterTest {
   }
 
   @Test
-  public void toProtoStatus() {
+  void toProtoStatus() {
     assertThat(SpanAdapter.toStatusProto(io.opentelemetry.trace.Status.OK))
         .isEqualTo(Status.newBuilder().setCode(StatusCode.Ok).build());
     assertThat(
@@ -229,7 +226,7 @@ public class SpanAdapterTest {
   }
 
   @Test
-  public void toProtoSpanEvent_WithoutAttributes() {
+  void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
                 EventImpl.create(12345, "test_without_attributes", Attributes.empty())))
@@ -241,7 +238,7 @@ public class SpanAdapterTest {
   }
 
   @Test
-  public void toProtoSpanEvent_WithAttributes() {
+  void toProtoSpanEvent_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
                 EventImpl.create(
@@ -263,7 +260,7 @@ public class SpanAdapterTest {
   }
 
   @Test
-  public void toProtoSpanLink_WithoutAttributes() {
+  void toProtoSpanLink_WithoutAttributes() {
     assertThat(SpanAdapter.toProtoSpanLink(Link.create(SPAN_CONTEXT)))
         .isEqualTo(
             Span.Link.newBuilder()
@@ -273,7 +270,7 @@ public class SpanAdapterTest {
   }
 
   @Test
-  public void toProtoSpanLink_WithAttributes() {
+  void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
                 Link.create(

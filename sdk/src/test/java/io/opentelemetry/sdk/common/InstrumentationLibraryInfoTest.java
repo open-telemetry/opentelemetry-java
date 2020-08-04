@@ -16,29 +16,25 @@
 
 package io.opentelemetry.sdk.common;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link InstrumentationLibraryInfo}. */
-@RunWith(JUnit4.class)
-public class InstrumentationLibraryInfoTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class InstrumentationLibraryInfoTest {
 
   @Test
-  public void emptyLibraryInfo() {
+  void emptyLibraryInfo() {
     assertThat(InstrumentationLibraryInfo.getEmpty().getName()).isEmpty();
     assertThat(InstrumentationLibraryInfo.getEmpty().getVersion()).isNull();
   }
 
   @Test
-  public void nullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    InstrumentationLibraryInfo.create(null, "semver:1.0.0");
+  void nullName() {
+    assertThrows(
+        NullPointerException.class,
+        () -> InstrumentationLibraryInfo.create(null, "semver:1.0.0"),
+        "name");
   }
 }

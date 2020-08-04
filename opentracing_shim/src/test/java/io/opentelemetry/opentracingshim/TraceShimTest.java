@@ -16,41 +16,43 @@
 
 package io.opentelemetry.opentracingshim;
 
-import static org.junit.Assert.assertEquals;
+import static io.opentelemetry.OpenTelemetry.getCorrelationContextManager;
+import static io.opentelemetry.OpenTelemetry.getTracerProvider;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-public class TraceShimTest {
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+class TraceShimTest {
 
   @Test
-  public void createTracerShim_default() {
+  void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim();
     assertEquals(OpenTelemetry.getTracer("opentracingshim"), tracerShim.tracer());
     assertEquals(OpenTelemetry.getCorrelationContextManager(), tracerShim.contextManager());
   }
 
   @Test
-  public void createTracerShim_nullTracer() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("tracerProvider");
-    TraceShim.createTracerShim(null, OpenTelemetry.getCorrelationContextManager());
+  void createTracerShim_nullTracer() {
+    assertThrows(
+        NullPointerException.class,
+        () -> TraceShim.createTracerShim(null, getCorrelationContextManager()),
+        "tracerProvider");
   }
 
   @Test
-  public void createTracerShim_nullContextManager() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("contextManager");
-    TraceShim.createTracerShim(OpenTelemetry.getTracerProvider(), null);
+  void createTracerShim_nullContextManager() {
+    assertThrows(
+        NullPointerException.class,
+        () -> TraceShim.createTracerShim(getTracerProvider(), null),
+        "contextManager");
   }
 
   @Test
-  public void createTracerShim() {
+  void createTracerShim() {
     TracerSdkProvider sdk = TracerSdkProvider.builder().build();
     CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(sdk, contextManager);

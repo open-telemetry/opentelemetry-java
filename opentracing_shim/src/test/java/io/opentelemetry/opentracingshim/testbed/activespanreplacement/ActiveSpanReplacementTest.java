@@ -20,10 +20,10 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSi
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -37,10 +37,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
-public class ActiveSpanReplacementTest {
+class ActiveSpanReplacementTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
@@ -49,7 +49,7 @@ public class ActiveSpanReplacementTest {
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     // Start an isolated task and query for its result in another task/thread
     Span span = tracer.buildSpan("initial").start();
     try (Scope scope = tracer.scopeManager().activate(span)) {

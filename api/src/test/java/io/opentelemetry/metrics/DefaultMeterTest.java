@@ -16,29 +16,23 @@
 
 package io.opentelemetry.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DefaultMeter}. */
-@RunWith(JUnit4.class)
-public final class DefaultMeterTest {
+class DefaultMeterTest {
   @Test
-  public void expectDefaultMeter() {
+  void expectDefaultMeter() {
     assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
     assertThat(OpenTelemetry.getMeter("test")).isInstanceOf(DefaultMeter.class);
-    assertThat(OpenTelemetry.getMeter("test")).isSameInstanceAs(DefaultMeter.getInstance());
-    assertThat(OpenTelemetry.getMeter("test", "0.1.0"))
-        .isSameInstanceAs(DefaultMeter.getInstance());
+    assertThat(OpenTelemetry.getMeter("test")).isSameAs(DefaultMeter.getInstance());
+    assertThat(OpenTelemetry.getMeter("test", "0.1.0")).isSameAs(DefaultMeter.getInstance());
   }
 
   @Test
-  public void expectDefaultMeterProvider() {
-    assertThat(OpenTelemetry.getMeterProvider())
-        .isSameInstanceAs(DefaultMeterProvider.getInstance());
+  void expectDefaultMeterProvider() {
+    assertThat(OpenTelemetry.getMeterProvider()).isSameAs(DefaultMeterProvider.getInstance());
     assertThat(OpenTelemetry.getMeterProvider().get("test")).isInstanceOf(DefaultMeter.class);
     assertThat(OpenTelemetry.getMeterProvider().get("test", "0.1.0"))
         .isInstanceOf(DefaultMeter.class);

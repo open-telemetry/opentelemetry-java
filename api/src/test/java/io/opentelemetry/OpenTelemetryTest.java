@@ -16,8 +16,9 @@
 
 package io.opentelemetry;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -54,26 +55,19 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import javax.annotation.Nullable;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class OpenTelemetryTest {
+class OpenTelemetryTest {
 
-  @Rule public final ExpectedException thrown = ExpectedException.none();
-
-  @BeforeClass
-  public static void beforeClass() {
+  @BeforeAll
+  static void beforeClass() {
     OpenTelemetry.reset();
   }
 
-  @After
-  public void after() {
+  @AfterEach
+  void after() {
     OpenTelemetry.reset();
     System.clearProperty(TracerProviderFactory.class.getName());
     System.clearProperty(MeterProviderFactory.class.getName());
@@ -81,22 +75,21 @@ public class OpenTelemetryTest {
   }
 
   @Test
-  public void testDefault() {
+  void testDefault() {
     assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(DefaultTracerProvider.class);
-    assertThat(OpenTelemetry.getTracerProvider())
-        .isSameInstanceAs(OpenTelemetry.getTracerProvider());
+    assertThat(OpenTelemetry.getTracerProvider()).isSameAs(OpenTelemetry.getTracerProvider());
     assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
-    assertThat(OpenTelemetry.getMeterProvider()).isSameInstanceAs(OpenTelemetry.getMeterProvider());
+    assertThat(OpenTelemetry.getMeterProvider()).isSameAs(OpenTelemetry.getMeterProvider());
     assertThat(OpenTelemetry.getCorrelationContextManager())
         .isInstanceOf(DefaultCorrelationContextManager.class);
     assertThat(OpenTelemetry.getCorrelationContextManager())
-        .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
+        .isSameAs(OpenTelemetry.getCorrelationContextManager());
     assertThat(OpenTelemetry.getPropagators()).isInstanceOf(DefaultContextPropagators.class);
-    assertThat(OpenTelemetry.getPropagators()).isSameInstanceAs(OpenTelemetry.getPropagators());
+    assertThat(OpenTelemetry.getPropagators()).isSameAs(OpenTelemetry.getPropagators());
   }
 
   @Test
-  public void testTracerLoadArbitrary() throws IOException {
+  void testTracerLoadArbitrary() throws IOException {
     File serviceFile =
         createService(
             TracerProviderFactory.class,
@@ -113,7 +106,7 @@ public class OpenTelemetryTest {
   }
 
   @Test
-  public void testTracerSystemProperty() throws IOException {
+  void testTracerSystemProperty() throws IOException {
     File serviceFile =
         createService(
             TracerProviderFactory.class,
@@ -130,14 +123,13 @@ public class OpenTelemetryTest {
   }
 
   @Test
-  public void testTracerNotFound() {
+  void testTracerNotFound() {
     System.setProperty(TracerProviderFactory.class.getName(), "io.does.not.exists");
-    thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getTracer("testTracer");
+    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getTracer("testTracer"));
   }
 
   @Test
-  public void testMeterLoadArbitrary() throws IOException {
+  void testMeterLoadArbitrary() throws IOException {
     File serviceFile =
         createService(
             MeterProviderFactory.class,
@@ -154,7 +146,7 @@ public class OpenTelemetryTest {
   }
 
   @Test
-  public void testMeterSystemProperty() throws IOException {
+  void testMeterSystemProperty() throws IOException {
     File serviceFile =
         createService(
             MeterProviderFactory.class,
@@ -171,14 +163,13 @@ public class OpenTelemetryTest {
   }
 
   @Test
-  public void testMeterNotFound() {
+  void testMeterNotFound() {
     System.setProperty(MeterProviderFactory.class.getName(), "io.does.not.exists");
-    thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getMeterProvider();
+    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getMeterProvider());
   }
 
   @Test
-  public void testCorrelationContextManagerLoadArbitrary() throws IOException {
+  void testCorrelationContextManagerLoadArbitrary() throws IOException {
     File serviceFile =
         createService(
             CorrelationContextManagerFactory.class,
@@ -197,7 +188,7 @@ public class OpenTelemetryTest {
   }
 
   @Test
-  public void testCorrelationContextManagerSystemProperty() throws IOException {
+  void testCorrelationContextManagerSystemProperty() throws IOException {
     File serviceFile =
         createService(
             CorrelationContextManagerFactory.class,
@@ -217,23 +208,21 @@ public class OpenTelemetryTest {
   }
 
   @Test
-  public void testCorrelationContextManagerNotFound() {
+  void testCorrelationContextManagerNotFound() {
     System.setProperty(CorrelationContextManagerFactory.class.getName(), "io.does.not.exists");
-    thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getCorrelationContextManager();
+    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getCorrelationContextManager());
   }
 
   @Test
-  public void testPropagatorsSet() {
+  void testPropagatorsSet() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
     OpenTelemetry.setPropagators(propagators);
     assertThat(OpenTelemetry.getPropagators()).isEqualTo(propagators);
   }
 
   @Test
-  public void testPropagatorsSetNull() {
-    thrown.expect(NullPointerException.class);
-    OpenTelemetry.setPropagators(null);
+  void testPropagatorsSetNull() {
+    assertThrows(NullPointerException.class, () -> OpenTelemetry.setPropagators(null));
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {

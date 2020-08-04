@@ -83,7 +83,7 @@ Snapshots based out the `master` branch are available for `opentelemetry-api`, `
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.7.0-SNAPSHOT</version>
+      <version>0.8.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -96,7 +96,7 @@ repositories {
 }
 
 dependencies {
-	compile('io.opentelemetry:opentelemetry-api:0.7.0-SNAPSHOT')
+	compile('io.opentelemetry:opentelemetry-api:0.8.0-SNAPSHOT')
 }
 ```
 
@@ -142,9 +142,10 @@ managed better. We are open to feedback and suggestions from all of you!
 
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
+- [Anuraag Agrawal](https://github.com/anuraaga), AWS
+- [Armin Ruech](https://github.com/arminru), Dynatrace
 - [Pavol Loffay](https://github.com/pavolloffay), RedHat
 - [Tyler Benson](https://github.com/tylerbenson), DataDog
-- [Armin Ruech](https://github.com/arminru), Dynatrace
 - [Giovanni Liva](https://github.com/thisthat), Dynatrace
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*

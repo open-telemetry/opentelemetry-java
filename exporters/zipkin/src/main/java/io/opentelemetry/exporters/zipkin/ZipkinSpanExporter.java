@@ -45,7 +45,7 @@ import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;
-import zipkin2.reporter.urlconnection.URLConnectionSender;
+import zipkin2.reporter.okhttp3.OkHttpSender;
 
 /**
  * This class was based on the OpenCensus zipkin exporter code at
@@ -70,6 +70,8 @@ import zipkin2.reporter.urlconnection.URLConnectionSender;
  * </ul>
  */
 public final class ZipkinSpanExporter implements SpanExporter {
+  public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
+  public static final String DEFAULT_SERVICE_NAME = "unknown";
 
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
@@ -245,7 +247,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
     try {
       sender.sendSpans(encodedSpans).execute();
-    } catch (IOException e) {
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Failed to export spans", e);
       return ResultCode.FAILURE;
     }
     return ResultCode.SUCCESS;
@@ -279,10 +282,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
   public static final class Builder extends ConfigBuilder<Builder> {
     private static final String KEY_SERVICE_NAME = "otel.zipkin.service.name";
     private static final String KEY_ENDPOINT = "otel.zipkin.endpoint";
-
     private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
     private Sender sender;
-    private String serviceName;
+    private String serviceName = DEFAULT_SERVICE_NAME;
+    private String endpoint = DEFAULT_ENDPOINT;
 
     /**
      * Label of the remote node in the service graph, such as "favstar". Avoid names with variables
@@ -311,7 +314,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     /**
      * Sets the Zipkin sender. Implements the client side of the span transport. A {@link
-     * URLConnectionSender} is a good default.
+     * OkHttpSender} is a good default.
      *
      * <p>The {@link Sender#close()} method will be called when the exporter is shut down.
      *
@@ -339,16 +342,16 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the zipkin endpoint. This will use the endpoint to assign a {@link URLConnectionSender}
+     * Sets the zipkin endpoint. This will use the endpoint to assign a {@link OkHttpSender}
      * instance to this builder.
      *
      * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
      * @return this.
-     * @see URLConnectionSender
+     * @see OkHttpSender
      * @since 0.4.0
      */
     public Builder setEndpoint(String endpoint) {
-      setSender(URLConnectionSender.create(endpoint));
+      this.endpoint = endpoint;
       return this;
     }
 
@@ -380,6 +383,9 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @since 0.4.0
      */
     public ZipkinSpanExporter build() {
+      if (sender == null) {
+        sender = OkHttpSender.create(endpoint);
+      }
       return new ZipkinSpanExporter(this.encoder, this.sender, this.serviceName);
     }
   }

@@ -16,23 +16,19 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
 import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DefaultTracer}. */
-@RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
-public class DefaultTracerTest {
+class DefaultTracerTest {
   private static final Tracer defaultTracer = DefaultTracer.getInstance();
   private static final String SPAN_NAME = "MySpanName";
   private static final byte[] firstBytes =
@@ -44,15 +40,13 @@ public class DefaultTracerTest {
           TraceFlags.getDefault(),
           TraceState.getDefault());
 
-  @Rule public final ExpectedException thrown = ExpectedException.none();
-
   @Test
-  public void defaultGetCurrentSpan() {
+  void defaultGetCurrentSpan() {
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
-  public void getCurrentSpan_WithSpan() {
+  void getCurrentSpan_WithSpan() {
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     try (Scope ws = defaultTracer.withSpan(DefaultSpan.getInvalid())) {
       assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
@@ -61,18 +55,17 @@ public class DefaultTracerTest {
   }
 
   @Test
-  public void spanBuilderWithName_NullName() {
-    thrown.expect(NullPointerException.class);
-    defaultTracer.spanBuilder(null);
+  void spanBuilderWithName_NullName() {
+    assertThrows(NullPointerException.class, () -> defaultTracer.spanBuilder(null));
   }
 
   @Test
-  public void defaultSpanBuilderWithName() {
+  void defaultSpanBuilderWithName() {
     assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
-  public void testInProcessContext() {
+  void testInProcessContext() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
     try (Scope scope = defaultTracer.withSpan(span)) {
       assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
@@ -87,55 +80,56 @@ public class DefaultTracerTest {
   }
 
   @Test
-  public void testSpanContextPropagationExplicitParent() {
+  void testSpanContextPropagationExplicitParent() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(spanContext).startSpan();
-    assertThat(span.getContext()).isSameInstanceAs(spanContext);
+    assertThat(span.getContext()).isSameAs(spanContext);
   }
 
   @Test
-  public void testSpanContextPropagation() {
+  void testSpanContextPropagation() {
     DefaultSpan parent = new DefaultSpan(spanContext);
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
-    assertThat(span.getContext()).isSameInstanceAs(spanContext);
+    assertThat(span.getContext()).isSameAs(spanContext);
   }
 
   @Test
-  public void noSpanContextMakesInvalidSpans() {
+  void noSpanContextMakesInvalidSpans() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-    assertThat(span.getContext()).isSameInstanceAs(SpanContext.getInvalid());
+    assertThat(span.getContext()).isSameAs(SpanContext.getInvalid());
   }
 
   @Test
-  public void testSpanContextPropagation_nullContext() {
-    thrown.expect(NullPointerException.class);
-    defaultTracer.spanBuilder(SPAN_NAME).setParent((Context) null);
+  void testSpanContextPropagation_nullContext() {
+    assertThrows(
+        NullPointerException.class,
+        () -> defaultTracer.spanBuilder(SPAN_NAME).setParent((Context) null));
   }
 
   @Test
-  public void testSpanContextPropagation_fromContext() {
+  void testSpanContextPropagation_fromContext() {
     Context context = TracingContextUtils.withSpan(new DefaultSpan(spanContext), Context.current());
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
-    assertThat(span.getContext()).isSameInstanceAs(spanContext);
+    assertThat(span.getContext()).isSameAs(spanContext);
   }
 
   @Test
-  public void testSpanContextPropagationCurrentSpan() {
+  void testSpanContextPropagationCurrentSpan() {
     DefaultSpan parent = new DefaultSpan(spanContext);
     try (Scope scope = defaultTracer.withSpan(parent)) {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-      assertThat(span.getContext()).isSameInstanceAs(spanContext);
+      assertThat(span.getContext()).isSameAs(spanContext);
     }
   }
 
   @Test
-  public void testSpanContextPropagationCurrentSpanContext() {
+  void testSpanContextPropagationCurrentSpanContext() {
     Context context =
         TracingContextUtils.withSpan(DefaultSpan.create(spanContext), Context.current());
     try (Scope scope = ContextUtils.withScopedContext(context)) {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-      assertThat(span.getContext()).isSameInstanceAs(spanContext);
+      assertThat(span.getContext()).isSameAs(spanContext);
     }
   }
 }

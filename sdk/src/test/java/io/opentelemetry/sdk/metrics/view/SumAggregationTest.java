@@ -16,20 +16,17 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Aggregations#sum()}. */
-@RunWith(JUnit4.class)
-public class SumAggregationTest {
+class SumAggregationTest {
   private static final InstrumentType[] MONOTONIC_INSTRUMENTS = {
     InstrumentType.COUNTER, InstrumentType.SUM_OBSERVER
   };
@@ -41,7 +38,7 @@ public class SumAggregationTest {
   };
 
   @Test
-  public void getDescriptorType() {
+  void getDescriptorType() {
     Aggregation sum = Aggregations.sum();
     for (InstrumentType type : MONOTONIC_INSTRUMENTS) {
       assertThat(sum.getDescriptorType(type, InstrumentValueType.DOUBLE))
@@ -58,7 +55,7 @@ public class SumAggregationTest {
   }
 
   @Test
-  public void getAggregatorFactory() {
+  void getAggregatorFactory() {
     Aggregation sum = Aggregations.sum();
     assertThat(sum.getAggregatorFactory(InstrumentValueType.LONG))
         .isInstanceOf(LongSumAggregator.getFactory().getClass());
@@ -67,7 +64,7 @@ public class SumAggregationTest {
   }
 
   @Test
-  public void availableForInstrument() {
+  void availableForInstrument() {
     Aggregation sum = Aggregations.sum();
     for (InstrumentType type : InstrumentType.values()) {
       assertThat(sum.availableForInstrument(type)).isTrue();

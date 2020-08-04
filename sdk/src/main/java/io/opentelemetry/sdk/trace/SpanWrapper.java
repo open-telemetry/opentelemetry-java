@@ -30,6 +30,16 @@ import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Immutable class that stores {@link SpanData} based on a {@link RecordEventsReadableSpan}.
+ *
+ * <p>This class stores a reference to a mutable {@link RecordEventsReadableSpan} ({@code delegate})
+ * which it uses only the immutable parts from, and a copy of all the mutable parts.
+ *
+ * <p>When adding a new field to {@link RecordEventsReadableSpan}, store a copy if and only if the
+ * field is mutable in the {@link RecordEventsReadableSpan}. Otherwise retrieve it from the
+ * referenced {@link RecordEventsReadableSpan}.
+ */
 @Immutable
 @AutoValue
 abstract class SpanWrapper implements SpanData {
@@ -47,6 +57,12 @@ abstract class SpanWrapper implements SpanData {
 
   abstract Status status();
 
+  abstract String name();
+
+  abstract long endEpochNanos();
+
+  abstract boolean hasEnded();
+
   /**
    * Note: the collections that are passed into this creator method are assumed to be immutable to
    * preserve the overall immutability of the class.
@@ -58,9 +74,21 @@ abstract class SpanWrapper implements SpanData {
       ReadableAttributes attributes,
       int totalAttributeCount,
       int totalRecordedEvents,
-      Status status) {
+      Status status,
+      String name,
+      long endEpochNanos,
+      boolean hasEnded) {
     return new AutoValue_SpanWrapper(
-        delegate, links, events, attributes, totalAttributeCount, totalRecordedEvents, status);
+        delegate,
+        links,
+        events,
+        attributes,
+        totalAttributeCount,
+        totalRecordedEvents,
+        status,
+        name,
+        endEpochNanos,
+        hasEnded);
   }
 
   @Override
@@ -100,7 +128,7 @@ abstract class SpanWrapper implements SpanData {
 
   @Override
   public String getName() {
-    return delegate().getName();
+    return name();
   }
 
   @Override
@@ -135,7 +163,7 @@ abstract class SpanWrapper implements SpanData {
 
   @Override
   public long getEndEpochNanos() {
-    return delegate().getEndEpochNanos();
+    return endEpochNanos();
   }
 
   @Override
@@ -145,7 +173,7 @@ abstract class SpanWrapper implements SpanData {
 
   @Override
   public boolean getHasEnded() {
-    return delegate().hasEnded();
+    return hasEnded();
   }
 
   @Override

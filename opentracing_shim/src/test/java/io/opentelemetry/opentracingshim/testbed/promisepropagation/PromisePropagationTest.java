@@ -16,8 +16,8 @@
 
 package io.opentelemetry.opentracingshim.testbed.promisepropagation;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByAttr;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
@@ -32,8 +32,8 @@ import io.opentracing.tag.Tags;
 import java.util.List;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * These tests are intended to simulate the kind of async models that are common in java async
@@ -44,20 +44,20 @@ import org.junit.Test;
  *
  * @author tylerbenson
  */
-public class PromisePropagationTest {
+class PromisePropagationTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private Phaser phaser;
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     phaser = new Phaser();
   }
 
   @Test
-  public void testPromiseCallback() {
+  void testPromiseCallback() {
     phaser.register(); // register test thread
     final AtomicReference<String> successResult1 = new AtomicReference<>();
     final AtomicReference<String> successResult2 = new AtomicReference<>();
@@ -101,7 +101,7 @@ public class PromisePropagationTest {
       phaser.arriveAndAwaitAdvance(); // wait for results to be set
       assertThat(successResult1.get()).isEqualTo("success!");
       assertThat(successResult2.get()).isEqualTo("success!");
-      assertThat(errorResult.get()).hasMessageThat().isEqualTo("some error.");
+      assertThat(errorResult.get()).hasMessage("some error.");
 
       phaser.arriveAndAwaitAdvance(); // wait for traces to be reported
 

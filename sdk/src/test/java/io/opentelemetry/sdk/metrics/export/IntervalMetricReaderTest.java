@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.common.Labels;
@@ -36,14 +36,15 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link IntervalMetricReader}. */
-public class IntervalMetricReaderTest {
+class IntervalMetricReaderTest {
   private static final MetricData.Descriptor METRIC_DESCRIPTOR =
       MetricData.Descriptor.create(
           "my metric",
@@ -64,14 +65,14 @@ public class IntervalMetricReaderTest {
 
   @Mock private MetricProducer metricProducer;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     MockitoAnnotations.initMocks(this);
     when(metricProducer.collectAllMetrics()).thenReturn(Collections.singletonList(METRIC_DATA));
   }
 
   @Test
-  public void configTest() {
+  void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.imr.export.interval", "12");
     IntervalMetricReader.Builder config = IntervalMetricReader.builder();
@@ -81,7 +82,7 @@ public class IntervalMetricReaderTest {
   }
 
   @Test
-  public void intervalExport() {
+  void intervalExport() {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()
@@ -102,7 +103,8 @@ public class IntervalMetricReaderTest {
     }
   }
 
-  @Test(timeout = 2000)
+  @Test
+  @Timeout(2)
   public void intervalExport_exporterThrowsException() {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
     IntervalMetricReader intervalMetricReader =
@@ -125,7 +127,7 @@ public class IntervalMetricReaderTest {
   }
 
   @Test
-  public void oneLastExportAfterShutdown() {
+  void oneLastExportAfterShutdown() {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()

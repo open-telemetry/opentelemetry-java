@@ -16,21 +16,16 @@
 
 package io.opentelemetry.metrics;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import java.util.Arrays;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DoubleCounter}. */
-@RunWith(JUnit4.class)
-public class DoubleCounterTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
+class DoubleCounterTest {
 
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
@@ -40,89 +35,96 @@ public class DoubleCounterTest {
   private final Meter meter = OpenTelemetry.getMeter("DoubleCounterTest");
 
   @Test
-  public void preventNull_Name() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    meter.doubleCounterBuilder(null);
+  void preventNull_Name() {
+    assertThrows(NullPointerException.class, () -> meter.doubleCounterBuilder(null), "name");
   }
 
   @Test
-  public void preventEmpty_Name() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleCounterBuilder("").build();
+  void preventEmpty_Name() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.doubleCounterBuilder("").build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventNonPrintableName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleCounterBuilder("\2").build();
+  void preventNonPrintableName() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.doubleCounterBuilder("\2").build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventTooLongName() {
+  void preventTooLongName() {
     char[] chars = new char[StringUtils.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleCounterBuilder(longName).build();
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> meter.doubleCounterBuilder(longName).build(),
+        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
-  public void preventNull_Description() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("description");
-    meter.doubleCounterBuilder("metric").setDescription(null).build();
+  void preventNull_Description() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleCounterBuilder("metric").setDescription(null).build(),
+        "description");
   }
 
   @Test
-  public void preventNull_Unit() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("unit");
-    meter.doubleCounterBuilder("metric").setUnit(null).build();
+  void preventNull_Unit() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleCounterBuilder("metric").setUnit(null).build(),
+        "unit");
   }
 
   @Test
-  public void preventNull_ConstantLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("constantLabels");
-    meter.doubleCounterBuilder("metric").setConstantLabels(null).build();
+  void preventNull_ConstantLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleCounterBuilder("metric").setConstantLabels(null).build(),
+        "constantLabels");
   }
 
   @Test
-  public void add_preventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    meter.doubleCounterBuilder("metric").build().add(1.0, null);
+  void add_preventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleCounterBuilder("metric").build().add(1.0, null),
+        "labels");
   }
 
   @Test
-  public void add_DoesNotThrow() {
+  void add_DoesNotThrow() {
     DoubleCounter doubleCounter =
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     doubleCounter.add(1.0, Labels.empty());
   }
 
   @Test
-  public void add_PreventNegativeValue() {
+  void add_PreventNegativeValue() {
     DoubleCounter doubleCounter =
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Counters can only increase");
-    doubleCounter.add(-1.0, Labels.empty());
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> doubleCounter.add(-1.0, Labels.empty()),
+        "Counters can only increase");
   }
 
   @Test
-  public void bound_PreventNullLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labels");
-    meter.doubleCounterBuilder("metric").build().bind(null);
+  void bound_PreventNullLabels() {
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleCounterBuilder("metric").build().bind(null),
+        "labels");
   }
 
   @Test
-  public void bound_DoesNotThrow() {
+  void bound_DoesNotThrow() {
     DoubleCounter doubleCounter =
         meter
             .doubleCounterBuilder(NAME)
@@ -136,7 +138,7 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void bound_PreventNegativeValue() {
+  void bound_PreventNegativeValue() {
     DoubleCounter doubleCounter =
         meter
             .doubleCounterBuilder(NAME)
@@ -146,9 +148,8 @@ public class DoubleCounterTest {
             .build();
     BoundDoubleCounter bound = doubleCounter.bind(Labels.empty());
     try {
-      thrown.expect(IllegalArgumentException.class);
-      thrown.expectMessage("Counters can only increase");
-      bound.add(-1.0);
+      assertThrows(
+          IllegalArgumentException.class, () -> bound.add(-1.0), "Counters can only increase");
     } finally {
       bound.unbind();
     }

@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.activespanreplacement;
 
-import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.extensions.trace.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.sdk.extensions.trace.testbed.TestUtils.sleep;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -34,10 +34,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
-public class ActiveSpanReplacementTest {
+class ActiveSpanReplacementTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
@@ -46,7 +46,7 @@ public class ActiveSpanReplacementTest {
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
-  public void test() {
+  void test() {
     // Start an isolated task and query for its result in another task/thread
     Span span = tracer.spanBuilder("initial").startSpan();
     try (Scope scope = tracer.withSpan(span)) {
@@ -72,7 +72,7 @@ public class ActiveSpanReplacementTest {
     assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
     assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
   }
 
   private void submitAnotherTask(final Span initialSpan) {

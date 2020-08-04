@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.listenerperrequest;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -25,17 +25,17 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Each request has own instance of ResponseListener. */
-public class ListenerTest {
+class ListenerTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer tracer = sdk.get(ListenerTest.class.getName());
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     Client client = new Client(tracer);
     Object response = client.send("message").get();
     assertThat(response).isEqualTo("message:response");
@@ -44,6 +44,6 @@ public class ListenerTest {
     assertThat(finished).hasSize(1);
     assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
   }
 }

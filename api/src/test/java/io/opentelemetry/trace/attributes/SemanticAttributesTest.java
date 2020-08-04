@@ -16,31 +16,28 @@
 
 package io.opentelemetry.trace.attributes;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.trace.Span;
 import java.lang.reflect.Field;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 /** Unit tests for {@link SemanticAttributes}. */
-@RunWith(JUnit4.class)
-public class SemanticAttributesTest {
+class SemanticAttributesTest {
 
   private Span span;
   private Span.Builder builder;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     span = Mockito.mock(Span.class);
     builder = Mockito.mock(Span.Builder.class);
   }
 
   @Test
-  public void shouldEnableSetAttributeOnSpan() throws IllegalAccessException {
+  void shouldEnableSetAttributeOnSpan() throws IllegalAccessException {
     Field[] fields = SemanticAttributes.class.getFields();
     for (Field field : fields) {
       Object attribute = field.get(null);
@@ -107,7 +104,7 @@ public class SemanticAttributesTest {
   }
 
   @Test
-  public void shouldCreateAllSetterTypes() {
+  void shouldCreateAllSetterTypes() {
     assertThat(BooleanAttributeSetter.create("attr.one"))
         .isInstanceOf(BooleanAttributeSetter.class);
     assertThat(DoubleAttributeSetter.create("attr.two")).isInstanceOf(DoubleAttributeSetter.class);

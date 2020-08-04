@@ -16,43 +16,41 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleSumAggregator}. */
-@RunWith(JUnit4.class)
-public class DoubleSumAggregatorTest {
+class DoubleSumAggregatorTest {
   @Test
-  public void factoryAggregation() {
+  void factoryAggregation() {
     AggregatorFactory factory = DoubleSumAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(DoubleSumAggregator.class);
   }
 
   @Test
-  public void toPoint() {
+  void toPoint() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
+    assertThat(getPoint(aggregator).getValue()).isCloseTo(0, offset(1e-6));
   }
 
   @Test
-  public void multipleRecords() {
+  void multipleRecords() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(12.1 * 5);
+    assertThat(getPoint(aggregator).getValue()).isCloseTo(12.1 * 5, offset(1e-6));
   }
 
   @Test
-  public void multipleRecords_WithNegatives() {
+  void multipleRecords_WithNegatives() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
@@ -60,24 +58,24 @@ public class DoubleSumAggregatorTest {
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.3);
     aggregator.recordDouble(-11.3);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(14.1);
+    assertThat(getPoint(aggregator).getValue()).isCloseTo(14.1, offset(1e-6));
   }
 
   @Test
-  public void mergeAndReset() {
+  void mergeAndReset() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(13.1);
     aggregator.recordDouble(12.1);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(25.2);
+    assertThat(getPoint(aggregator).getValue()).isCloseTo(25.2, offset(1e-6));
     Aggregator mergedAggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
-    assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(25.2);
+    assertThat(getPoint(aggregator).getValue()).isCloseTo(0, offset(1e-6));
+    assertThat(getPoint(mergedAggregator).getValue()).isCloseTo(25.2, offset(1e-6));
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(-25.2);
     aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
-    assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(12.1);
+    assertThat(getPoint(aggregator).getValue()).isCloseTo(0, offset(1e-6));
+    assertThat(getPoint(mergedAggregator).getValue()).isCloseTo(12.1, offset(1e-6));
   }
 
   private static DoublePoint getPoint(Aggregator aggregator) {

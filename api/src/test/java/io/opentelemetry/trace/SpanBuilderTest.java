@@ -16,24 +16,20 @@
 
 package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Span.Kind;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Span.Builder}. */
-@RunWith(JUnit4.class)
-public class SpanBuilderTest {
+class SpanBuilderTest {
   private final Tracer tracer = DefaultTracer.getInstance();
 
   @Test
-  public void doNotCrash_NoopImplementation() {
+  void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
     spanBuilder.setParent(DefaultSpan.getInvalid());
@@ -64,27 +60,24 @@ public class SpanBuilderTest {
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }
 
-  @Rule public final ExpectedException thrown = ExpectedException.none();
-
   @Test
-  public void setParent_NullSpan() {
+  void setParent_NullSpan() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    thrown.expect(NullPointerException.class);
-    spanBuilder.setParent((Span) null);
+    assertThrows(NullPointerException.class, () -> spanBuilder.setParent((Span) null));
   }
 
   @Test
-  public void setParent_NullSpanContext() {
+  void setParent_NullSpanContext() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    thrown.expect(NullPointerException.class);
-    spanBuilder.setParent((SpanContext) null);
+    assertThrows(NullPointerException.class, () -> spanBuilder.setParent((SpanContext) null));
   }
 
   @Test
-  public void setStartTimestamp_Negative() {
+  void setStartTimestamp_Negative() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Negative startTimestamp");
-    spanBuilder.setStartTimestamp(-1);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> spanBuilder.setStartTimestamp(-1),
+        "Negative startTimestamp");
   }
 }

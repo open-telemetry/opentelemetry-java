@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.multiplecallbacks;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -31,7 +31,7 @@ import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * These tests are intended to simulate a task with independent, asynchronous callbacks.
@@ -40,14 +40,14 @@ import org.junit.Test;
  * deterministic execution for the tests without sleeps.
  */
 @SuppressWarnings("FutureReturnValueIgnored")
-public class MultipleCallbacksTest {
+class MultipleCallbacksTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer tracer = sdk.get(MultipleCallbacksTest.class.getName());
 
   @Test
-  public void test() {
+  void test() {
     CountDownLatch parentDoneLatch = new CountDownLatch(1);
     Client client = new Client(tracer, parentDoneLatch);
 
@@ -75,6 +75,6 @@ public class MultipleCallbacksTest {
       assertThat(spans.get(i).getParentSpanId()).isEqualTo(parentSpan.getSpanId());
     }
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
   }
 }

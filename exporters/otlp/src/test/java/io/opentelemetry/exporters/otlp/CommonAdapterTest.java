@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.proto.common.v1.AnyValue;
@@ -24,15 +24,12 @@ import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link CommonAdapter}. */
-@RunWith(JUnit4.class)
-public class CommonAdapterTest {
+class CommonAdapterTest {
   @Test
-  public void toProtoAttribute_Bool() {
+  void toProtoAttribute_Bool() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.booleanAttributeValue(true)))
         .isEqualTo(
             KeyValue.newBuilder()
@@ -42,7 +39,7 @@ public class CommonAdapterTest {
   }
 
   @Test
-  public void toProtoAttribute_BoolArray() {
+  void toProtoAttribute_BoolArray() {
     assertThat(
             CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(true, false)))
         .isEqualTo(
@@ -60,7 +57,7 @@ public class CommonAdapterTest {
   }
 
   @Test
-  public void toProtoAttribute_String() {
+  void toProtoAttribute_String() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.stringAttributeValue("string")))
         .isEqualTo(
             KeyValue.newBuilder()
@@ -70,7 +67,7 @@ public class CommonAdapterTest {
   }
 
   @Test
-  public void toProtoAttribute_StringArray() {
+  void toProtoAttribute_StringArray() {
     assertThat(
             CommonAdapter.toProtoAttribute(
                 "key", AttributeValue.arrayAttributeValue("string1", "string2")))
@@ -89,7 +86,7 @@ public class CommonAdapterTest {
   }
 
   @Test
-  public void toProtoAttribute_Int() {
+  void toProtoAttribute_Int() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.longAttributeValue(100)))
         .isEqualTo(
             KeyValue.newBuilder()
@@ -99,7 +96,7 @@ public class CommonAdapterTest {
   }
 
   @Test
-  public void toProtoAttribute_IntArray() {
+  void toProtoAttribute_IntArray() {
     assertThat(
             CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(100L, 200L)))
         .isEqualTo(
@@ -117,7 +114,7 @@ public class CommonAdapterTest {
   }
 
   @Test
-  public void toProtoAttribute_Double() {
+  void toProtoAttribute_Double() {
     assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.doubleAttributeValue(100.3)))
         .isEqualTo(
             KeyValue.newBuilder()
@@ -127,7 +124,7 @@ public class CommonAdapterTest {
   }
 
   @Test
-  public void toProtoAttribute_DoubleArray() {
+  void toProtoAttribute_DoubleArray() {
     assertThat(
             CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(100.3, 200.5)))
         .isEqualTo(
@@ -145,7 +142,7 @@ public class CommonAdapterTest {
   }
 
   @Test
-  public void toProtoInstrumentationLibrary() {
+  void toProtoInstrumentationLibrary() {
     InstrumentationLibrary instrumentationLibrary =
         CommonAdapter.toProtoInstrumentationLibrary(
             InstrumentationLibraryInfo.create("name", "version"));
@@ -154,7 +151,7 @@ public class CommonAdapterTest {
   }
 
   @Test
-  public void toProtoInstrumentationLibrary_NoVersion() {
+  void toProtoInstrumentationLibrary_NoVersion() {
     InstrumentationLibrary instrumentationLibrary =
         CommonAdapter.toProtoInstrumentationLibrary(
             InstrumentationLibraryInfo.create("name", null));

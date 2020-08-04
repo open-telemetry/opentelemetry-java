@@ -16,32 +16,29 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import static com.google.common.truth.Truth.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongSumAggregator}. */
-@RunWith(JUnit4.class)
-public class LongSumAggregatorTest {
+class LongSumAggregatorTest {
   @Test
-  public void factoryAggregation() {
+  void factoryAggregation() {
     AggregatorFactory factory = LongSumAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(LongSumAggregator.class);
   }
 
   @Test
-  public void toPoint() {
+  void toPoint() {
     Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
     assertThat(getPoint(aggregator).getValue()).isEqualTo(0);
   }
 
   @Test
-  public void multipleRecords() {
+  void multipleRecords() {
     Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     aggregator.recordLong(12);
@@ -52,7 +49,7 @@ public class LongSumAggregatorTest {
   }
 
   @Test
-  public void multipleRecords_WithNegatives() {
+  void multipleRecords_WithNegatives() {
     Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     aggregator.recordLong(12);
@@ -64,7 +61,7 @@ public class LongSumAggregatorTest {
   }
 
   @Test
-  public void mergeAndReset() {
+  void mergeAndReset() {
     Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
     aggregator.recordLong(13);
     aggregator.recordLong(12);
