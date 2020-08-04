@@ -24,6 +24,7 @@ import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -134,7 +135,16 @@ public abstract class Resource {
 
     @Override
     public void consume(String key, AttributeValue value) {
-      if (value.getType() == AttributeValue.Type.STRING && value.getStringValue() == null) {
+      boolean ignore = false;
+      switch (value.getType()){
+        case STRING: ignore = value.getStringValue() == null; break;
+        case LONG_ARRAY: ignore = value.getLongArrayValue().equals(Collections.<Long>emptyList()); break;
+        case DOUBLE_ARRAY: ignore = value.getDoubleArrayValue().equals(Collections.<Double>emptyList()); break;
+        case BOOLEAN_ARRAY: ignore = value.getBooleanArrayValue().equals(Collections.<Boolean>emptyList()); break;
+        case STRING_ARRAY: ignore = value.getStringArrayValue().equals(Collections.<String>emptyList()); break;
+        default: break;
+      }
+      if (ignore) {
         return;
       }
       attrBuilder.setAttribute(key, value);

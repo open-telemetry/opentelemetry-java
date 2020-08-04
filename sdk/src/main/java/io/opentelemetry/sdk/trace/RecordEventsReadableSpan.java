@@ -16,8 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.Type.STRING;
-
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -314,12 +312,26 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
-      if (value == null || (value.getType().equals(STRING) && value.getStringValue() == null)) {
-        if (attributes == null) {
-          return;
-        }
+      if(value == null && attributes != null){
         attributes.remove(key);
         return;
+      }
+      if (value != null) {
+        boolean shouldRemove = false;
+        switch (value.getType()){
+          case STRING: shouldRemove = value.getStringValue() == null; break;
+          case LONG_ARRAY: shouldRemove = value.getLongArrayValue().equals(Collections.<Long>emptyList()); break;
+          case DOUBLE_ARRAY: shouldRemove = value.getDoubleArrayValue().equals(Collections.<Double>emptyList()); break;
+          case BOOLEAN_ARRAY: shouldRemove = value.getBooleanArrayValue().equals(Collections.<Boolean>emptyList()); break;
+          case STRING_ARRAY: shouldRemove = value.getStringArrayValue().equals(Collections.<String>emptyList()); break;
+          default: break;
+        }
+        if (shouldRemove) {
+          if (attributes != null) {
+            attributes.remove(key);
+          }
+          return;
+        }
       }
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());

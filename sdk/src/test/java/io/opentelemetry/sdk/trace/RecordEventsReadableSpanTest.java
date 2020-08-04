@@ -386,11 +386,17 @@ class RecordEventsReadableSpanTest {
           "ArrayDoubleKey", AttributeValue.arrayAttributeValue(0.1, 2.3, 4.5, 6.7, 8.9));
       span.setAttribute(
           "ArrayBooleanKey", AttributeValue.arrayAttributeValue(true, false, false, true));
+      // These should be dropped
       span.setAttribute("NullArrayStringKey", AttributeValue.arrayAttributeValue((String[]) null));
       span.setAttribute("NullArrayLongKey", AttributeValue.arrayAttributeValue((Long[]) null));
       span.setAttribute("NullArrayDoubleKey", AttributeValue.arrayAttributeValue((Double[]) null));
       span.setAttribute(
           "NullArrayBooleanKey", AttributeValue.arrayAttributeValue((Boolean[]) null));
+      // These should be maintained
+      span.setAttribute("ArrayWithNullLongKey", AttributeValue.arrayAttributeValue(new Long[]{null}));
+      span.setAttribute("ArrayWithNullStringKey", AttributeValue.arrayAttributeValue(new String[]{null}));
+      span.setAttribute("ArrayWithNullDoubleKey", AttributeValue.arrayAttributeValue(new Double[]{null}));
+      span.setAttribute("ArrayWithNullBooleanKey", AttributeValue.arrayAttributeValue(new Boolean[]{null}));
     } finally {
       span.end();
     }
@@ -431,7 +437,7 @@ class RecordEventsReadableSpanTest {
     span.setAttribute(null, AttributeValue.arrayAttributeValue(new Boolean[0]));
     span.setAttribute(null, AttributeValue.arrayAttributeValue(new Long[0]));
     span.setAttribute(null, AttributeValue.arrayAttributeValue(new Double[0]));
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
+    assertThat(span.toSpanData().getAttributes().size()).isZero();
   }
 
   @Test
@@ -441,7 +447,7 @@ class RecordEventsReadableSpanTest {
     span.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue(new Boolean[0]));
     span.setAttribute("longArrayAttribute", AttributeValue.arrayAttributeValue(new Long[0]));
     span.setAttribute("doubleArrayAttribute", AttributeValue.arrayAttributeValue(new Double[0]));
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(4);
+    assertThat(span.toSpanData().getAttributes().size()).isZero();
   }
 
   @Test
