@@ -83,7 +83,7 @@ Snapshots based out the `master` branch are available for `opentelemetry-api`, `
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.7.0-SNAPSHOT</version>
+      <version>0.8.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -96,7 +96,7 @@ repositories {
 }
 
 dependencies {
-	compile('io.opentelemetry:opentelemetry-api:0.7.0-SNAPSHOT')
+	compile('io.opentelemetry:opentelemetry-api:0.8.0-SNAPSHOT')
 }
 ```
 
