@@ -115,21 +115,30 @@ class ResourceTest {
     Attributes.Builder attributes = Attributes.newBuilder();
 
     // These should be dropped
-    attributes.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
-    attributes.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue(new Boolean[0]));
+    attributes.setAttribute(
+        "stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
+    attributes.setAttribute(
+        "boolArrayAttribute", AttributeValue.arrayAttributeValue(new Boolean[0]));
     attributes.setAttribute("longArrayAttribute", AttributeValue.arrayAttributeValue(new Long[0]));
-    attributes.setAttribute("doubleArrayAttribute", AttributeValue.arrayAttributeValue(new Double[0]));
-    attributes.setAttribute("NullArrayStringKey", AttributeValue.arrayAttributeValue((String[]) null));
+    attributes.setAttribute(
+        "doubleArrayAttribute", AttributeValue.arrayAttributeValue(new Double[0]));
+    attributes.setAttribute(
+        "NullArrayStringKey", AttributeValue.arrayAttributeValue((String[]) null));
     attributes.setAttribute("NullArrayLongKey", AttributeValue.arrayAttributeValue((Long[]) null));
-    attributes.setAttribute("NullArrayDoubleKey", AttributeValue.arrayAttributeValue((Double[]) null));
+    attributes.setAttribute(
+        "NullArrayDoubleKey", AttributeValue.arrayAttributeValue((Double[]) null));
     attributes.setAttribute(
         "NullArrayBooleanKey", AttributeValue.arrayAttributeValue((Boolean[]) null));
 
     // These should be maintained
-    attributes.setAttribute("ArrayWithNullLongKey", AttributeValue.arrayAttributeValue(new Long[]{null}));
-    attributes.setAttribute("ArrayWithNullStringKey", AttributeValue.arrayAttributeValue(new String[]{null}));
-    attributes.setAttribute("ArrayWithNullDoubleKey", AttributeValue.arrayAttributeValue(new Double[]{null}));
-    attributes.setAttribute("ArrayWithNullBooleanKey", AttributeValue.arrayAttributeValue(new Boolean[]{null}));
+    attributes.setAttribute(
+        "ArrayWithNullLongKey", AttributeValue.arrayAttributeValue(new Long[] {null}));
+    attributes.setAttribute(
+        "ArrayWithNullStringKey", AttributeValue.arrayAttributeValue(new String[] {null}));
+    attributes.setAttribute(
+        "ArrayWithNullDoubleKey", AttributeValue.arrayAttributeValue(new Double[] {null}));
+    attributes.setAttribute(
+        "ArrayWithNullBooleanKey", AttributeValue.arrayAttributeValue(new Boolean[] {null}));
 
     Resource resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();

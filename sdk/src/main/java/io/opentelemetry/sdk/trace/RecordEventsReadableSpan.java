@@ -312,19 +312,30 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
-      if(value == null && attributes != null){
+      if (value == null && attributes != null) {
         attributes.remove(key);
         return;
       }
       if (value != null) {
         boolean shouldRemove = false;
-        switch (value.getType()){
-          case STRING: shouldRemove = value.getStringValue() == null; break;
-          case LONG_ARRAY: shouldRemove = value.getLongArrayValue().equals(Collections.<Long>emptyList()); break;
-          case DOUBLE_ARRAY: shouldRemove = value.getDoubleArrayValue().equals(Collections.<Double>emptyList()); break;
-          case BOOLEAN_ARRAY: shouldRemove = value.getBooleanArrayValue().equals(Collections.<Boolean>emptyList()); break;
-          case STRING_ARRAY: shouldRemove = value.getStringArrayValue().equals(Collections.<String>emptyList()); break;
-          default: break;
+        switch (value.getType()) {
+          case STRING:
+            shouldRemove = value.getStringValue() == null;
+            break;
+          case LONG_ARRAY:
+            shouldRemove = value.getLongArrayValue().equals(Collections.<Long>emptyList());
+            break;
+          case DOUBLE_ARRAY:
+            shouldRemove = value.getDoubleArrayValue().equals(Collections.<Double>emptyList());
+            break;
+          case BOOLEAN_ARRAY:
+            shouldRemove = value.getBooleanArrayValue().equals(Collections.<Boolean>emptyList());
+            break;
+          case STRING_ARRAY:
+            shouldRemove = value.getStringArrayValue().equals(Collections.<String>emptyList());
+            break;
+          default:
+            break;
         }
         if (shouldRemove) {
           if (attributes != null) {

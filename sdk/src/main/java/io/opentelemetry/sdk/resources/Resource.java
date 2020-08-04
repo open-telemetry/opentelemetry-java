@@ -136,13 +136,24 @@ public abstract class Resource {
     @Override
     public void consume(String key, AttributeValue value) {
       boolean ignore = false;
-      switch (value.getType()){
-        case STRING: ignore = value.getStringValue() == null; break;
-        case LONG_ARRAY: ignore = value.getLongArrayValue().equals(Collections.<Long>emptyList()); break;
-        case DOUBLE_ARRAY: ignore = value.getDoubleArrayValue().equals(Collections.<Double>emptyList()); break;
-        case BOOLEAN_ARRAY: ignore = value.getBooleanArrayValue().equals(Collections.<Boolean>emptyList()); break;
-        case STRING_ARRAY: ignore = value.getStringArrayValue().equals(Collections.<String>emptyList()); break;
-        default: break;
+      switch (value.getType()) {
+        case STRING:
+          ignore = value.getStringValue() == null;
+          break;
+        case LONG_ARRAY:
+          ignore = value.getLongArrayValue().equals(Collections.<Long>emptyList());
+          break;
+        case DOUBLE_ARRAY:
+          ignore = value.getDoubleArrayValue().equals(Collections.<Double>emptyList());
+          break;
+        case BOOLEAN_ARRAY:
+          ignore = value.getBooleanArrayValue().equals(Collections.<Boolean>emptyList());
+          break;
+        case STRING_ARRAY:
+          ignore = value.getStringArrayValue().equals(Collections.<String>emptyList());
+          break;
+        default:
+          break;
       }
       if (ignore) {
         return;

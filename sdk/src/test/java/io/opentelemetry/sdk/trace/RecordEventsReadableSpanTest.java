@@ -393,15 +393,33 @@ class RecordEventsReadableSpanTest {
       span.setAttribute(
           "NullArrayBooleanKey", AttributeValue.arrayAttributeValue((Boolean[]) null));
       // These should be maintained
-      span.setAttribute("ArrayWithNullLongKey", AttributeValue.arrayAttributeValue(new Long[]{null}));
-      span.setAttribute("ArrayWithNullStringKey", AttributeValue.arrayAttributeValue(new String[]{null}));
-      span.setAttribute("ArrayWithNullDoubleKey", AttributeValue.arrayAttributeValue(new Double[]{null}));
-      span.setAttribute("ArrayWithNullBooleanKey", AttributeValue.arrayAttributeValue(new Boolean[]{null}));
+      span.setAttribute(
+          "ArrayWithNullLongKey", AttributeValue.arrayAttributeValue(new Long[] {null}));
+      span.setAttribute(
+          "ArrayWithNullStringKey", AttributeValue.arrayAttributeValue(new String[] {null}));
+      span.setAttribute(
+          "ArrayWithNullDoubleKey", AttributeValue.arrayAttributeValue(new Double[] {null}));
+      span.setAttribute(
+          "ArrayWithNullBooleanKey", AttributeValue.arrayAttributeValue(new Boolean[] {null}));
     } finally {
       span.end();
     }
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(14);
+    assertThat(spanData.getAttributes().get("StringKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("EmptyStringKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("EmptyStringAttributeValue")).isNotNull();
+    assertThat(spanData.getAttributes().get("LongKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("DoubleKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("BooleanKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayStringKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayLongKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayDoubleKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayBooleanKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayWithNullLongKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayWithNullStringKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayWithNullDoubleKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayWithNullBooleanKey")).isNotNull();
     assertThat(spanData.getAttributes().get("ArrayStringKey").getStringArrayValue().size())
         .isEqualTo(4);
     assertThat(spanData.getAttributes().get("ArrayLongKey").getLongArrayValue().size())
