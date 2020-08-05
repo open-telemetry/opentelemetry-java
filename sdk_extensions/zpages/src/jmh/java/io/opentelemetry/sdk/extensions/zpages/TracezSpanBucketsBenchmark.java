@@ -32,6 +32,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
+/** Benchmark class for {@link TracezSpanBuckets}. */
 @State(Scope.Benchmark)
 public class TracezSpanBucketsBenchmark {
 

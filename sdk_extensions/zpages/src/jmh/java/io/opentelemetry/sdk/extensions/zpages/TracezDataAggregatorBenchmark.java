@@ -33,6 +33,7 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
+/** Benchmark class for {@link TracezDataAggregator}. */
 @State(Scope.Benchmark)
 public class TracezDataAggregatorBenchmark {
 
@@ -56,6 +57,7 @@ public class TracezDataAggregatorBenchmark {
     }
   }
 
+  /** Get span counts with 1 thread. */
   @Benchmark
   @Threads(value = 1)
   @Fork(1)
@@ -68,6 +70,7 @@ public class TracezDataAggregatorBenchmark {
     blackhole.consume(dataAggregator.getErrorSpanCounts());
   }
 
+  /** Get span counts with 5 threads. */
   @Benchmark
   @Threads(value = 5)
   @Fork(1)
@@ -80,6 +83,7 @@ public class TracezDataAggregatorBenchmark {
     blackhole.consume(dataAggregator.getErrorSpanCounts());
   }
 
+  /** Get span counts with 10 threads. */
   @Benchmark
   @Threads(value = 10)
   @Fork(1)
@@ -92,6 +96,7 @@ public class TracezDataAggregatorBenchmark {
     blackhole.consume(dataAggregator.getErrorSpanCounts());
   }
 
+  /** Get span counts with 20 threads. */
   @Benchmark
   @Threads(value = 20)
   @Fork(1)
@@ -104,6 +109,7 @@ public class TracezDataAggregatorBenchmark {
     blackhole.consume(dataAggregator.getErrorSpanCounts());
   }
 
+  /** Get spans with 1 thread. */
   @Benchmark
   @Threads(value = 1)
   @Fork(1)
@@ -116,6 +122,7 @@ public class TracezDataAggregatorBenchmark {
     blackhole.consume(dataAggregator.getErrorSpans(errorSpan));
   }
 
+  /** Get spans with 5 threads. */
   @Benchmark
   @Threads(value = 5)
   @Fork(1)
@@ -128,6 +135,7 @@ public class TracezDataAggregatorBenchmark {
     blackhole.consume(dataAggregator.getErrorSpans(errorSpan));
   }
 
+  /** Get spans with 10 threads. */
   @Benchmark
   @Threads(value = 10)
   @Fork(1)
@@ -140,6 +148,7 @@ public class TracezDataAggregatorBenchmark {
     blackhole.consume(dataAggregator.getErrorSpans(errorSpan));
   }
 
+  /** Get spans with 20 threads. */
   @Benchmark
   @Threads(value = 20)
   @Fork(1)
