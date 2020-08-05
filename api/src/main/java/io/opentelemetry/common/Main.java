@@ -30,14 +30,14 @@ public class Main {
   public static void main(String[] args) {
     CleanAttributes attributes =
         CleanAttributes.newBuilder()
-            .setAttribute("string", "I'm a String")
-            .setAttribute("boolean", true)
-            .setAttribute("double", 33.444d)
-            .setAttribute("long", 34333L)
-            .setAttribute("stringArray", "one", "two", "three")
-            .setAttribute("booleanArray", true, false, true)
-            .setAttribute("longArray", 33L, 55L, 99L)
-            .setAttribute("doubleArray", 123.33, 6655.33, 339393.33, 3434.33)
+            .setString("string", "I'm a String")
+            .setBoolean("boolean", true)
+            .setDouble("double", 33.444d)
+            .setLong("long", 34333L)
+            .setStringArray("stringArray", "one", "two", "three")
+            .setBooleanArray("booleanArray", true, false, true)
+            .setLongArray("longArray", 33L, 55L, 99L)
+            .setDoubleArray("doubleArray", 123.33, 6655.33, 339393.33, 3434.33)
             .build();
 
     process(attributes);
@@ -48,38 +48,38 @@ public class Main {
     attributes.forEach(
         new CleanReadableAttributes.AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue.Type type, Object value) {
+          public void consume(String key, AttributeType type, Object value) {
             switch (type) {
               case STRING:
-                String stringValue = attributes.getStringValue(value);
+                String stringValue = type.asString(value);
                 System.out.println("stringValue = " + stringValue);
                 break;
               case BOOLEAN:
-                Boolean booleanValue = attributes.getBooleanValue(value);
+                boolean booleanValue = type.asBoolean(value);
                 System.out.println("booleanValue = " + booleanValue);
                 break;
               case LONG:
-                Long longValue = attributes.getLongValue(value);
+                long longValue = type.asLong(value);
                 System.out.println("longValue = " + longValue);
                 break;
               case DOUBLE:
-                Double doubleValue = attributes.getDoubleValue(value);
+                double doubleValue = type.asDouble(value);
                 System.out.println("doubleValue = " + doubleValue);
                 break;
               case STRING_ARRAY:
-                List<String> stringArrayValue = attributes.getStringArrayValue(value);
+                List<String> stringArrayValue = type.asStringArray(value);
                 System.out.println("stringArrayValue = " + stringArrayValue);
                 break;
               case BOOLEAN_ARRAY:
-                List<Boolean> booleanArrayValue = attributes.getBooleanArrayValue(value);
+                List<Boolean> booleanArrayValue = type.asBooleanArray(value);
                 System.out.println("booleanArrayValue = " + booleanArrayValue);
                 break;
               case LONG_ARRAY:
-                List<Long> longArrayValue = attributes.getLongArrayValue(value);
+                List<Long> longArrayValue = type.asLongArray(value);
                 System.out.println("longArrayValue = " + longArrayValue);
                 break;
               case DOUBLE_ARRAY:
-                List<Double> doubleArrayValue = attributes.getDoubleArrayValue(value);
+                List<Double> doubleArrayValue = type.asDoubleArray(value);
                 System.out.println("doubleArrayValue = " + doubleArrayValue);
                 break;
             }

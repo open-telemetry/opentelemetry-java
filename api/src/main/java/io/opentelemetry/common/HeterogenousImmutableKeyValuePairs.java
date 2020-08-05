@@ -18,7 +18,6 @@ package io.opentelemetry.common;
 
 import static io.opentelemetry.internal.Utils.checkArgument;
 
-import io.opentelemetry.common.CleanReadableAttributes.AttributeConsumer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,11 +51,10 @@ abstract class HeterogenousImmutableKeyValuePairs implements CleanReadableAttrib
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public void forEach(AttributeConsumer consumer) {
     for (int i = 0; i < data().size(); i += 3) {
       consumer.consume(
-          (String) data().get(i), (AttributeValue.Type) data().get(i + 1), data().get(i + 2));
+          (String) data().get(i), (AttributeType) data().get(i + 1), data().get(i + 2));
     }
   }
 
@@ -139,7 +137,7 @@ abstract class HeterogenousImmutableKeyValuePairs implements CleanReadableAttrib
     forEach(
         new AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue.Type type, Object value) {
+          public void consume(String key, AttributeType type, Object value) {
             sb.append(key)
                 .append("=")
                 .append("(")

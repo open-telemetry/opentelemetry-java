@@ -26,69 +26,14 @@ import javax.annotation.concurrent.Immutable;
  * An immutable container for attributes. Holds keys, values and the types of the values, as there
  * is a limited set of types that are allowable.
  */
-@SuppressWarnings("unchecked")
 @Immutable
+@AutoValue
 public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
     implements CleanReadableAttributes {
   private static final CleanAttributes EMPTY = CleanAttributes.newBuilder().build();
 
-  @AutoValue
-  @Immutable
-  abstract static class ArrayBackedAttributes extends CleanAttributes {
-    ArrayBackedAttributes() {}
-
-    @Override
-    abstract List<Object> data();
-  }
-
   @Override
-  public Boolean getBooleanValue(Object value) {
-    return (Boolean) value;
-  }
-
-  @Override
-  public String getStringValue(Object value) {
-    return (String) value;
-  }
-
-  @Override
-  public Double getDoubleValue(Object value) {
-    return (Double) value;
-  }
-
-  @Override
-  public Long getLongValue(Object value) {
-    return (Long) value;
-  }
-
-  @Override
-  public List<Boolean> getBooleanArrayValue(Object value) {
-    return (List<Boolean>) value;
-  }
-
-  @Override
-  public List<String> getStringArrayValue(Object value) {
-    return (List<String>) value;
-  }
-
-  @Override
-  public List<Double> getDoubleArrayValue(Object value) {
-    return (List<Double>) value;
-  }
-
-  @Override
-  public List<Long> getLongArrayValue(Object value) {
-    return (List<Long>) value;
-  }
-
-  @Override
-  public void forEach(AttributeConsumer consumer) {
-    List<Object> data = data();
-    for (int i = 0; i < data.size(); i += 3) {
-      consumer.consume(
-          (String) data.get(i), (AttributeValue.Type) data.get(i + 1), data.get(i + 2));
-    }
-  }
+  abstract List<Object> data();
 
   /** Returns a {@link CleanAttributes} instance with no attributes. */
   public static CleanAttributes empty() {
@@ -96,7 +41,7 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
   }
 
   private static CleanAttributes sortAndFilterToAttributes(Object... data) {
-    return new AutoValue_CleanAttributes_ArrayBackedAttributes(sortAndFilter(data));
+    return new AutoValue_CleanAttributes(sortAndFilter(data));
   }
 
   /** Creates a new {@link Builder} instance for creating arbitrary {@link CleanAttributes}. */
@@ -121,9 +66,9 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, String value) {
+    public Builder setString(String key, String value) {
       data.add(key);
-      data.add(AttributeValue.Type.STRING);
+      data.add(AttributeType.STRING);
       data.add(value);
       return this;
     }
@@ -133,9 +78,9 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, long value) {
+    public Builder setLong(String key, long value) {
       data.add(key);
-      data.add(AttributeValue.Type.LONG);
+      data.add(AttributeType.LONG);
       data.add(value);
       return this;
     }
@@ -145,9 +90,9 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, double value) {
+    public Builder setDouble(String key, double value) {
       data.add(key);
-      data.add(AttributeValue.Type.DOUBLE);
+      data.add(AttributeType.DOUBLE);
       data.add(value);
       return this;
     }
@@ -157,9 +102,9 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, boolean value) {
+    public Builder setBoolean(String key, boolean value) {
       data.add(key);
-      data.add(AttributeValue.Type.BOOLEAN);
+      data.add(AttributeType.BOOLEAN);
       data.add(value);
       return this;
     }
@@ -169,9 +114,9 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, String... value) {
+    public Builder setStringArray(String key, String... value) {
       data.add(key);
-      data.add(AttributeValue.Type.STRING_ARRAY);
+      data.add(AttributeType.STRING_ARRAY);
       data.add(Arrays.asList(value));
       return this;
     }
@@ -181,9 +126,9 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, Long... value) {
+    public Builder setLongArray(String key, Long... value) {
       data.add(key);
-      data.add(AttributeValue.Type.LONG_ARRAY);
+      data.add(AttributeType.LONG_ARRAY);
       data.add(Arrays.asList(value));
       return this;
     }
@@ -193,9 +138,9 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, Double... value) {
+    public Builder setDoubleArray(String key, Double... value) {
       data.add(key);
-      data.add(AttributeValue.Type.DOUBLE_ARRAY);
+      data.add(AttributeType.DOUBLE_ARRAY);
       data.add(Arrays.asList(value));
       return this;
     }
@@ -205,9 +150,9 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, Boolean... value) {
+    public Builder setBooleanArray(String key, Boolean... value) {
       data.add(key);
-      data.add(AttributeValue.Type.BOOLEAN_ARRAY);
+      data.add(AttributeType.BOOLEAN_ARRAY);
       data.add(Arrays.asList(value));
       return this;
     }
