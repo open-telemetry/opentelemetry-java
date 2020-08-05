@@ -16,6 +16,7 @@
 
 package io.opentelemetry.common;
 
+import io.opentelemetry.common.CleanReadableAttributes.TypedAttributeConsumer;
 import java.util.List;
 
 @SuppressWarnings({
@@ -40,10 +41,59 @@ public class Main {
             .setDoubleArray("doubleArray", 123.33, 6655.33, 339393.33, 3434.33)
             .build();
 
+    System.out.println("Processing with casts:");
     process(attributes);
+    System.out.println();
+    System.out.println("Processing with types:");
+    processTyped(attributes);
   }
 
-  public static void process(final CleanReadableAttributes attributes) {
+  private static void processTyped(CleanAttributes attributes) {
+    attributes.forEach(
+        new TypedAttributeConsumer() {
+          @Override
+          public void consumeString(String key, String value) {
+            System.out.println(key + " = " + value);
+          }
+
+          @Override
+          public void consumeLong(String key, long value) {
+            System.out.println(key + " = " + value);
+          }
+
+          @Override
+          public void consumeDouble(String key, double value) {
+            System.out.println(key + " = " + value);
+          }
+
+          @Override
+          public void consumeBoolean(String key, boolean value) {
+            System.out.println(key + " = " + value);
+          }
+
+          @Override
+          public void consumeStringArray(String key, List<String> value) {
+            System.out.println(key + " = " + value);
+          }
+
+          @Override
+          public void consumeLongArray(String key, List<Long> value) {
+            System.out.println(key + " = " + value);
+          }
+
+          @Override
+          public void consumeDoubleArray(String key, List<Double> value) {
+            System.out.println(key + " = " + value);
+          }
+
+          @Override
+          public void consumeBooleanArray(String key, List<Boolean> value) {
+            System.out.println(key + " = " + value);
+          }
+        });
+  }
+
+  public static void process(CleanReadableAttributes attributes) {
     System.out.println("attributes = " + attributes);
     attributes.forEach(
         new CleanReadableAttributes.AttributeConsumer() {

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.common;
 
+import java.util.List;
 import javax.annotation.Nullable;
 
 /**
@@ -32,10 +33,30 @@ public interface CleanReadableAttributes {
   /** Iterates over all the key-value pairs of attributes contained by this instance. */
   void forEach(AttributeConsumer consumer);
 
+  void forEach(TypedAttributeConsumer typedConsumer);
+
   @Nullable
   Object get(String key);
 
   interface AttributeConsumer {
     void consume(String key, AttributeType type, Object value);
+  }
+
+  interface TypedAttributeConsumer {
+    void consumeString(String key, String value);
+
+    void consumeLong(String key, long value);
+
+    void consumeDouble(String key, double value);
+
+    void consumeBoolean(String key, boolean value);
+
+    void consumeStringArray(String key, List<String> value);
+
+    void consumeLongArray(String key, List<Long> value);
+
+    void consumeDoubleArray(String key, List<Double> value);
+
+    void consumeBooleanArray(String key, List<Boolean> value);
   }
 }

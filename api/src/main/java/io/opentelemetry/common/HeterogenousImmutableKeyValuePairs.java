@@ -58,6 +58,42 @@ abstract class HeterogenousImmutableKeyValuePairs implements CleanReadableAttrib
     }
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public void forEach(TypedAttributeConsumer typedConsumer) {
+    for (int i = 0; i < data().size(); i += 3) {
+      AttributeType type = (AttributeType) data().get(i + 1);
+      String key = (String) data().get(i);
+      Object value = data().get(i + 2);
+      switch (type) {
+        case STRING:
+          typedConsumer.consumeString(key, (String) value);
+          break;
+        case BOOLEAN:
+          typedConsumer.consumeBoolean(key, (boolean) value);
+          break;
+        case LONG:
+          typedConsumer.consumeLong(key, (long) value);
+          break;
+        case DOUBLE:
+          typedConsumer.consumeDouble(key, (double) value);
+          break;
+        case STRING_ARRAY:
+          typedConsumer.consumeStringArray(key, (List<String>) value);
+          break;
+        case BOOLEAN_ARRAY:
+          typedConsumer.consumeBooleanArray(key, (List<Boolean>) value);
+          break;
+        case LONG_ARRAY:
+          typedConsumer.consumeLongArray(key, (List<Long>) value);
+          break;
+        case DOUBLE_ARRAY:
+          typedConsumer.consumeDoubleArray(key, (List<Double>) value);
+          break;
+      }
+    }
+  }
+
   @Override
   @Nullable
   public Object get(String key) {
