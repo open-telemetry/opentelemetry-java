@@ -62,10 +62,6 @@ configure(opentelemetryProjects) {
         // Yep, we're using an obsolete JDK.
         it.options.errorprone.disable("JdkObsolete")
 
-        // We prefer ExpectedException to assertThrows
-        it.options.errorprone.disable("ExpectedExceptionChecker")
-        // "-Xep:ExpectedExceptionRefactoring:OFF"
-
         // AutoValueImmutableFields suggests returning Guava types from API methods
         it.options.errorprone.disable("AutoValueImmutableFields")
         // "-Xep:AutoValueImmutableFields:OFF"
