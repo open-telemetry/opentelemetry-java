@@ -57,27 +57,18 @@ final class MetricAdapter {
   // Converts a MetricData to a Prometheus MetricFamilySamples.
   static MetricFamilySamples toMetricFamilySamples(MetricData metricData) {
     Descriptor descriptor = metricData.getDescriptor();
-    String fullName =
-        toMetricFullName(
-            descriptor.getName(), metricData.getInstrumentationLibraryInfo().getName());
+    String cleanMetricName = cleanMetricName(descriptor.getName());
     Collector.Type type = toMetricFamilyType(descriptor.getType());
 
     return new MetricFamilySamples(
-        fullName,
+        cleanMetricName,
         type,
         descriptor.getDescription(),
-        toSamples(fullName, descriptor, metricData.getPoints()));
+        toSamples(cleanMetricName, descriptor, metricData.getPoints()));
   }
 
-  private static String toMetricFullName(
-      String descriptorMetricName, String instrumentationLibraryName) {
-    if (instrumentationLibraryName.isEmpty()) {
-      return Collector.sanitizeMetricName(descriptorMetricName);
-    }
-
-    // Use "_" here even though the right way would be to use "." in general, but "." will be
-    // replaced with "_" anyway so one less replace call.
-    return Collector.sanitizeMetricName(instrumentationLibraryName + "_" + descriptorMetricName);
+  private static String cleanMetricName(String descriptorMetricName) {
+    return Collector.sanitizeMetricName(descriptorMetricName);
   }
 
   static Collector.Type toMetricFamilyType(MetricData.Descriptor.Type type) {

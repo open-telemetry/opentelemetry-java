@@ -213,7 +213,11 @@ class MetricAdapterTest {
   void toMetricFamilySamples() {
     Descriptor descriptor =
         Descriptor.create(
-            "name", "description", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.of("kc", "vc"));
+            "instrument.name",
+            "description",
+            "1",
+            Descriptor.Type.MONOTONIC_DOUBLE,
+            Labels.of("kc", "vc"));
 
     MetricData metricData =
         MetricData.create(
@@ -226,12 +230,12 @@ class MetricAdapterTest {
     assertThat(MetricAdapter.toMetricFamilySamples(metricData))
         .isEqualTo(
             new MetricFamilySamples(
-                "full_name",
+                "instrument_name",
                 Collector.Type.COUNTER,
                 descriptor.getDescription(),
                 ImmutableList.of(
                     new Sample(
-                        "full_name",
+                        "instrument_name",
                         ImmutableList.of("kc", "kp"),
                         ImmutableList.of("vc", "vp"),
                         5))));
