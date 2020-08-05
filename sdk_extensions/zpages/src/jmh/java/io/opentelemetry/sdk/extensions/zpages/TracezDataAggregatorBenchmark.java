@@ -26,6 +26,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -45,10 +46,13 @@ public class TracezDataAggregatorBenchmark {
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
 
+  @Param({"1000000"})
+  private int numberOfSpans;
+
   @Setup(Level.Trial)
   public final void setup() {
     // Generate 1 million running spans, span latencies, and error spans
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < numberOfSpans; i++) {
       tracer.spanBuilder(runningSpan).startSpan();
       tracer.spanBuilder(latencySpan).startSpan().end();
       Span error = tracer.spanBuilder(errorSpan).startSpan();
