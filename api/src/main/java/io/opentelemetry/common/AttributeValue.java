@@ -244,6 +244,15 @@ public abstract class AttributeValue {
    */
   public abstract Type getType();
 
+  /**
+   * Returns {@code true} if the {@code AttributeValue} contains a {@code null} value or it is an
+   * empty array.
+   *
+   * @return {@code true} if the {@code AttributeValue} is empty.
+   * @since 0.8.0
+   */
+  public abstract boolean isEmpty();
+
   @Immutable
   @AutoValue
   abstract static class AttributeValueString extends AttributeValue {
@@ -257,6 +266,11 @@ public abstract class AttributeValue {
     @Override
     public final Type getType() {
       return Type.STRING;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return getStringValue() == null;
     }
 
     @Override
@@ -280,6 +294,11 @@ public abstract class AttributeValue {
     }
 
     @Override
+    public boolean isEmpty() {
+      return false;
+    }
+
+    @Override
     public abstract boolean getBooleanValue();
   }
 
@@ -299,6 +318,11 @@ public abstract class AttributeValue {
     }
 
     @Override
+    public boolean isEmpty() {
+      return false;
+    }
+
+    @Override
     public abstract long getLongValue();
   }
 
@@ -315,6 +339,11 @@ public abstract class AttributeValue {
     @Override
     public final Type getType() {
       return Type.DOUBLE;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return false;
     }
 
     @Override
@@ -339,6 +368,11 @@ public abstract class AttributeValue {
     @Override
     public final Type getType() {
       return Type.STRING_ARRAY;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return getStringArrayValue().isEmpty();
     }
 
     @Override
@@ -368,6 +402,11 @@ public abstract class AttributeValue {
     }
 
     @Override
+    public boolean isEmpty() {
+      return getBooleanArrayValue().isEmpty();
+    }
+
+    @Override
     public abstract List<Boolean> getBooleanArrayValue();
   }
 
@@ -390,6 +429,11 @@ public abstract class AttributeValue {
     @Override
     public final Type getType() {
       return Type.LONG_ARRAY;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return getLongArrayValue().isEmpty();
     }
 
     @Override
@@ -416,6 +460,11 @@ public abstract class AttributeValue {
     @Override
     public final Type getType() {
       return Type.DOUBLE_ARRAY;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return getDoubleArrayValue().isEmpty();
     }
 
     @Override
