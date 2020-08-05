@@ -64,8 +64,14 @@ public class TraceContextDataProviderTest {
     try (Scope scope = tracer.withSpan(span)) {
       logger.warn("hello");
     }
-    Thread.sleep(15); // Default wait for log4j is 10ms
-    final List<String> events = appender.getMessages();
+    // Loop to get the list of Messages at max timeoutMillis
+    final long timeoutMillis = 1000;
+    final long endMillis = System.currentTimeMillis() + timeoutMillis;
+    List<String> events = appender.getMessages();
+    while (events.size() < 1 && System.currentTimeMillis() < endMillis) {
+      events = appender.getMessages();
+      Thread.sleep(5);
+    }
     assertThat(events.size()).isEqualTo(1);
     String withTrace = events.get(0);
 
