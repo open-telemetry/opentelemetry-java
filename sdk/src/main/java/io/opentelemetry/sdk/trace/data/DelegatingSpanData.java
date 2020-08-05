@@ -28,14 +28,14 @@ import java.util.List;
  *   SpanDataWithClientType(SpanData delegate) {
  *     super(delegate);
  *     String clientType = ClientConfig.parseUserAgent(
- *       delegate.getAttributes().get(SemanticConventions.HTTP_USER_AGENT).getStringValue());
+ *       delegate.getAttributes().get(SemanticAttributes.HTTP_USER_AGENT).getStringValue());
  *     Attributes.Builder newAttributes = Attributes.newBuilder();
  *     delegate.getAttributes().forEach(newAttributes::setAttribute);
  *     newAttributes.setAttribute("client_type", clientType);
  *     attributes = newAttributes.build();
  *   }
  *
- *   @Override
+ *   {@literal @}Override
  *   public ReadableAttributes getAttributes() {
  *     return attributes;
  *   }
@@ -149,5 +149,109 @@ public abstract class DelegatingSpanData implements SpanData {
   @Override
   public int getTotalAttributeCount() {
     return delegate.getTotalAttributeCount();
+  }
+
+  @Override
+  public final boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (o instanceof SpanData) {
+      SpanData that = (SpanData) o;
+      return getTraceId().equals(that.getTraceId())
+          && getSpanId().equals(that.getSpanId())
+          && getTraceFlags().equals(that.getTraceFlags())
+          && getTraceState().equals(that.getTraceState())
+          && getParentSpanId().equals(that.getParentSpanId())
+          && getResource().equals(that.getResource())
+          && getInstrumentationLibraryInfo().equals(that.getInstrumentationLibraryInfo())
+          && getName().equals(that.getName())
+          && getKind().equals(that.getKind())
+          && getStartEpochNanos() == that.getStartEpochNanos()
+          && getAttributes().equals(that.getAttributes())
+          && getEvents().equals(that.getEvents())
+          && getLinks().equals(that.getLinks())
+          && getStatus().equals(that.getStatus())
+          && getEndEpochNanos() == that.getEndEpochNanos()
+          && getHasRemoteParent() == that.getHasRemoteParent()
+          && getHasEnded() == that.getHasEnded()
+          && getTotalRecordedEvents() == that.getTotalRecordedEvents()
+          && getTotalRecordedLinks() == that.getTotalRecordedLinks()
+          && getTotalAttributeCount() == that.getTotalAttributeCount();
+    }
+    return false;
+  }
+
+
+  @Override
+  public int hashCode() {
+    int h$ = 1;
+    h$ *= 1000003;
+    h$ ^= getTraceId().hashCode();
+    h$ *= 1000003;
+    h$ ^= getSpanId().hashCode();
+    h$ *= 1000003;
+    h$ ^= getTraceId().hashCode();
+    h$ *= 1000003;
+    h$ ^= getTraceState().hashCode();
+    h$ *= 1000003;
+    h$ ^= getParentSpanId().hashCode();
+    h$ *= 1000003;
+    h$ ^= getResource().hashCode();
+    h$ *= 1000003;
+    h$ ^= getInstrumentationLibraryInfo().hashCode();
+    h$ *= 1000003;
+    h$ ^= getName().hashCode();
+    h$ *= 1000003;
+    h$ ^= getKind().hashCode();
+    h$ *= 1000003;
+    h$ ^= (int) ((getStartEpochNanos() >>> 32) ^ getStartEpochNanos());
+    h$ *= 1000003;
+    h$ ^= getAttributes().hashCode();
+    h$ *= 1000003;
+    h$ ^= getEvents().hashCode();
+    h$ *= 1000003;
+    h$ ^= getLinks().hashCode();
+    h$ *= 1000003;
+    h$ ^= getStatus().hashCode();
+    h$ *= 1000003;
+    h$ ^= (int) ((getEndEpochNanos() >>> 32) ^ getEndEpochNanos());
+    h$ *= 1000003;
+    h$ ^= getHasRemoteParent() ? 1231 : 1237;
+    h$ *= 1000003;
+    h$ ^= getHasEnded() ? 1231 : 1237;
+    h$ *= 1000003;
+    h$ ^= getTotalRecordedEvents();
+    h$ *= 1000003;
+    h$ ^= getTotalRecordedLinks();
+    h$ *= 1000003;
+    h$ ^= getTotalAttributeCount();
+    return h$;
+  }
+
+  @Override
+  public String toString() {
+    return "SpanDataImpl{"
+        + "traceId=" + getTraceId() + ", "
+        + "spanId=" + getSpanId() + ", "
+        + "traceFlags=" + getTraceFlags() + ", "
+        + "traceState=" + getTraceState() + ", "
+        + "parentSpanId=" + getParentSpanId() + ", "
+        + "resource=" + getResource() + ", "
+        + "instrumentationLibraryInfo=" + getInstrumentationLibraryInfo() + ", "
+        + "name=" + getName() + ", "
+        + "kind=" + getKind() + ", "
+        + "startEpochNanos=" + getStartEpochNanos() + ", "
+        + "attributes=" + getAttributes() + ", "
+        + "events=" + getEvents() + ", "
+        + "links=" + getLinks() + ", "
+        + "status=" + getStatus() + ", "
+        + "endEpochNanos=" + getEndEpochNanos() + ", "
+        + "hasRemoteParent=" + getHasRemoteParent() + ", "
+        + "hasEnded=" + getHasEnded() + ", "
+        + "totalRecordedEvents=" + getTotalRecordedEvents() + ", "
+        + "totalRecordedLinks=" + getTotalRecordedLinks() + ", "
+        + "totalAttributeCount=" + getTotalAttributeCount()
+        + "}";
   }
 }
