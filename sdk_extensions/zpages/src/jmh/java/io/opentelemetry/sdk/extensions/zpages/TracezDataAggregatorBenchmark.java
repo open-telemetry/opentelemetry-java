@@ -46,7 +46,7 @@ public class TracezDataAggregatorBenchmark {
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
 
-  @Param({"1000000"})
+  @Param({"1", "10", "1000", "1000000"})
   private int numberOfSpans;
 
   @Setup(Level.Trial)
