@@ -29,6 +29,7 @@ public enum AttributeType {
   LONG_ARRAY,
   DOUBLE_ARRAY;
 
+  @SuppressWarnings("TypeParameterUnusedInFormals")
   public <T> T cast(Object value) {
     return (T) value;
   }
