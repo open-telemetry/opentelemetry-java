@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -35,9 +37,7 @@ import io.opentelemetry.sdk.trace.Sampler;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -106,16 +106,16 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .build();
 
-    Awaitility.await()
+    await()
         .atMost(10, TimeUnit.SECONDS)
         .until(samplerIsType(sampler, RateLimitingSampler.class));
 
     // verify
     verify(service).getSamplingStrategy(requestCaptor.capture(), ArgumentMatchers.any());
-    Assertions.assertEquals(SERVICE_NAME, requestCaptor.getValue().getServiceName());
-    Assertions.assertTrue(sampler.getSampler() instanceof RateLimitingSampler);
-    Assertions.assertEquals(
-        RATE, ((RateLimitingSampler) sampler.getSampler()).getMaxTracesPerSecond(), 0);
+    assertThat(requestCaptor.getValue().getServiceName()).isEqualTo(SERVICE_NAME);
+    assertThat(sampler.getSampler()).isInstanceOf(RateLimitingSampler.class);
+    assertThat(((RateLimitingSampler) sampler.getSampler()).getMaxTracesPerSecond())
+        .isEqualTo(RATE);
   }
 
   @Test
@@ -125,14 +125,11 @@ class JaegerRemoteSamplerTest {
             .setChannel(inProcessChannel)
             .setServiceName(SERVICE_NAME)
             .build();
-    Assertions.assertTrue(
-        sampler
-            .getDescription()
-            .matches(
-                "JaegerRemoteSampler\\{Probability\\{probability=0.001, idUpperBound=.*\\}\\}"));
+    assertThat(sampler.getDescription())
+        .matches("JaegerRemoteSampler\\{Probability\\{probability=0.001, idUpperBound=.*\\}\\}");
 
     // wait until the sampling strategy is retrieved before exiting test method
-    Awaitility.await()
+    await()
         .atMost(10, TimeUnit.SECONDS)
         .until(samplerIsType(sampler, RateLimitingSampler.class));
   }

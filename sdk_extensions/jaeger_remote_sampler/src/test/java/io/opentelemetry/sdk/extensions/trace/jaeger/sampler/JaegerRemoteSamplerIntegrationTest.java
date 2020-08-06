@@ -17,11 +17,11 @@
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
 import static io.opentelemetry.sdk.extensions.trace.jaeger.sampler.JaegerRemoteSamplerTest.samplerIsType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import io.grpc.ManagedChannelBuilder;
 import java.util.concurrent.TimeUnit;
-import org.awaitility.Awaitility;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.testcontainers.containers.BindMode;
@@ -59,12 +59,11 @@ class JaegerRemoteSamplerIntegrationTest {
             .setServiceName(SERVICE_NAME)
             .build();
 
-    Awaitility.await()
+    await()
         .atMost(10, TimeUnit.SECONDS)
         .until(samplerIsType(remoteSampler, PerOperationSampler.class));
-    Assertions.assertTrue(remoteSampler.getSampler() instanceof PerOperationSampler);
-    Assertions.assertTrue(remoteSampler.getDescription().contains("0.33"));
-    Assertions.assertFalse(remoteSampler.getDescription().contains("150"));
+    assertThat(remoteSampler.getSampler()).isInstanceOf(PerOperationSampler.class);
+    assertThat(remoteSampler.getDescription()).contains("0.33").doesNotContain("150");
   }
 
   @Test
@@ -77,11 +76,11 @@ class JaegerRemoteSamplerIntegrationTest {
             .setServiceName(SERVICE_NAME_RATE_LIMITING)
             .build();
 
-    Awaitility.await()
+    await()
         .atMost(10, TimeUnit.SECONDS)
         .until(samplerIsType(remoteSampler, RateLimitingSampler.class));
-    Assertions.assertTrue(remoteSampler.getSampler() instanceof RateLimitingSampler);
-    Assertions.assertEquals(
-        RATE, ((RateLimitingSampler) remoteSampler.getSampler()).getMaxTracesPerSecond(), 0);
+    assertThat(remoteSampler.getSampler()).isInstanceOf(RateLimitingSampler.class);
+    assertThat(((RateLimitingSampler) remoteSampler.getSampler()).getMaxTracesPerSecond())
+        .isEqualTo(RATE);
   }
 }
