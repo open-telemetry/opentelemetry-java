@@ -41,8 +41,11 @@ public class Main {
             .setDoubleArray("doubleArray", 123.33, 6655.33, 339393.33, 3434.33)
             .build();
 
+    System.out.println("attributes = " + attributes);
+    System.out.println();
     System.out.println("Processing with casts:");
     process(attributes);
+
     System.out.println();
     System.out.println("Processing with types:");
     processTyped(attributes);
@@ -94,7 +97,6 @@ public class Main {
   }
 
   public static void process(CleanReadableAttributes attributes) {
-    System.out.println("attributes = " + attributes);
     attributes.forEach(
         new CleanReadableAttributes.AttributeConsumer() {
           @Override
@@ -102,7 +104,11 @@ public class Main {
             switch (type) {
               case STRING:
                 String stringValue = type.asString(value);
+                // or (although you could put any java Class on the LHS here and it would still
+                // compile):
+                String alsoStringValue = type.cast(value);
                 System.out.println("stringValue = " + stringValue);
+                System.out.println("alsoStringValue = " + alsoStringValue);
                 break;
               case BOOLEAN:
                 boolean booleanValue = type.asBoolean(value);

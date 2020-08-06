@@ -29,6 +29,10 @@ public enum AttributeType {
   LONG_ARRAY,
   DOUBLE_ARRAY;
 
+  public <T> T cast(Object value) {
+    return (T) value;
+  }
+
   public String asString(Object value) {
     return (String) value;
   }
