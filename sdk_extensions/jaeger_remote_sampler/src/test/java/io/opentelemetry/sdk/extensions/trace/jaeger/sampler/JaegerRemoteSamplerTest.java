@@ -16,16 +16,16 @@
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
-import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
+import io.grpc.Server;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import io.grpc.testing.GrpcCleanupRule;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
@@ -36,14 +36,14 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 
-public class JaegerRemoteSamplerTest {
+class JaegerRemoteSamplerTest {
 
   private static final String SERVICE_NAME = "my-service";
   private static final int RATE = 999;
@@ -51,8 +51,6 @@ public class JaegerRemoteSamplerTest {
   private final String serverName = InProcessServerBuilder.generateName();
   private final ManagedChannel inProcessChannel =
       InProcessChannelBuilder.forName(serverName).directExecutor().build();
-
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
   private final SamplingManagerGrpc.SamplingManagerImplBase service =
       mock(
@@ -78,19 +76,27 @@ public class JaegerRemoteSamplerTest {
     }
   }
 
-  @Before
+  private final Closer closer = Closer.create();
+
+  @BeforeEach
   public void before() throws IOException {
-    grpcCleanup.register(
+    Server server =
         InProcessServerBuilder.forName(serverName)
             .directExecutor()
             .addService(service)
             .build()
-            .start());
-    grpcCleanup.register(inProcessChannel);
+            .start();
+    closer.register(server::shutdownNow);
+    closer.register(inProcessChannel::shutdownNow);
+  }
+
+  @AfterEach
+  void tearDown() throws Exception {
+    closer.close();
   }
 
   @Test
-  public void connectionWorks() {
+  void connectionWorks() {
     ArgumentCaptor<SamplingStrategyParameters> requestCaptor =
         ArgumentCaptor.forClass(Sampling.SamplingStrategyParameters.class);
 
@@ -106,20 +112,20 @@ public class JaegerRemoteSamplerTest {
 
     // verify
     verify(service).getSamplingStrategy(requestCaptor.capture(), ArgumentMatchers.any());
-    Assert.assertEquals(SERVICE_NAME, requestCaptor.getValue().getServiceName());
-    Assert.assertTrue(sampler.getSampler() instanceof RateLimitingSampler);
-    Assert.assertEquals(
+    Assertions.assertEquals(SERVICE_NAME, requestCaptor.getValue().getServiceName());
+    Assertions.assertTrue(sampler.getSampler() instanceof RateLimitingSampler);
+    Assertions.assertEquals(
         RATE, ((RateLimitingSampler) sampler.getSampler()).getMaxTracesPerSecond(), 0);
   }
 
   @Test
-  public void description() {
+  void description() {
     JaegerRemoteSampler sampler =
         JaegerRemoteSampler.newBuilder()
             .setChannel(inProcessChannel)
             .setServiceName(SERVICE_NAME)
             .build();
-    assertTrue(
+    Assertions.assertTrue(
         sampler
             .getDescription()
             .matches(

@@ -164,7 +164,7 @@ configure(opentelemetryProjects) {
                 system_rules            : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
                 slf4jsimple             : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
                 awaitility              : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
-                testcontainers          : 'org.testcontainers:testcontainers:1.13.0',
+                testcontainers          : 'org.testcontainers:junit-jupiter:1.13.0',
                 rest_assured            : 'io.rest-assured:rest-assured:4.2.0',
                 jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
                 zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
@@ -230,11 +230,11 @@ configure(opentelemetryProjects) {
             // see: https://github.com/grpc/grpc-java/issues/3633
             compileOnly libraries.javax_annotations
         }
+    }
 
-        test {
-            systemProperties project.properties.subMap(["enable.docker.tests"])
-            useJUnitPlatform()
-        }
+    test {
+        systemProperties project.properties.subMap(["enable.docker.tests"])
+        useJUnitPlatform()
     }
 
     javadoc.options {

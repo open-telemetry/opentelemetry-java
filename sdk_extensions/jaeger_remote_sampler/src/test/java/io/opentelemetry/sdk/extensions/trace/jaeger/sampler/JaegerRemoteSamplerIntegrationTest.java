@@ -20,17 +20,20 @@ import static io.opentelemetry.sdk.extensions.trace.jaeger.sampler.JaegerRemoteS
 
 import io.grpc.ManagedChannelBuilder;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import org.awaitility.Awaitility;
-import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-public class JaegerRemoteSamplerIntegrationTest {
+@Testcontainers
+@EnabledIfSystemProperty(named = "enable.docker.tests", matches = "true")
+class JaegerRemoteSamplerIntegrationTest {
 
   private static final int QUERY_PORT = 16686;
   private static final int COLLECTOR_PORT = 14250;
@@ -39,25 +42,16 @@ public class JaegerRemoteSamplerIntegrationTest {
   private static final String SERVICE_NAME_RATE_LIMITING = "bar";
   private static final int RATE = 150;
 
-  @SuppressWarnings("rawtypes")
-  @ClassRule
-  @Nullable
-  public static GenericContainer jaegerContainer;
-
-  static {
-    // make sure that the user has enabled the docker-based tests
-    if (Boolean.getBoolean("enable.docker.tests")) {
-      jaegerContainer =
-          new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
-              .withCommand("--sampling.strategies-file=/sampling.json")
-              .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
-              .waitingFor(new HttpWaitStrategy().forPath("/"))
-              .withClasspathResourceMapping("sampling.json", "/sampling.json", BindMode.READ_ONLY);
-    }
-  }
+  @Container
+  public static GenericContainer<?> jaegerContainer =
+      new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
+          .withCommand("--sampling.strategies-file=/sampling.json")
+          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
+          .waitingFor(new HttpWaitStrategy().forPath("/"))
+          .withClasspathResourceMapping("sampling.json", "/sampling.json", BindMode.READ_ONLY);
 
   @Test
-  public void remoteSampling_perOperation() {
+  void remoteSampling_perOperation() {
     Assume.assumeNotNull(jaegerContainer);
     String jaegerHost =
         String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
@@ -70,13 +64,13 @@ public class JaegerRemoteSamplerIntegrationTest {
     Awaitility.await()
         .atMost(10, TimeUnit.SECONDS)
         .until(samplerIsType(remoteSampler, PerOperationSampler.class));
-    Assert.assertTrue(remoteSampler.getSampler() instanceof PerOperationSampler);
-    Assert.assertTrue(remoteSampler.getDescription().contains("0.33"));
-    Assert.assertFalse(remoteSampler.getDescription().contains("150"));
+    Assertions.assertTrue(remoteSampler.getSampler() instanceof PerOperationSampler);
+    Assertions.assertTrue(remoteSampler.getDescription().contains("0.33"));
+    Assertions.assertFalse(remoteSampler.getDescription().contains("150"));
   }
 
   @Test
-  public void remoteSampling_rateLimiting() {
+  void remoteSampling_rateLimiting() {
     Assume.assumeNotNull(jaegerContainer);
     String jaegerHost =
         String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
@@ -89,8 +83,8 @@ public class JaegerRemoteSamplerIntegrationTest {
     Awaitility.await()
         .atMost(10, TimeUnit.SECONDS)
         .until(samplerIsType(remoteSampler, RateLimitingSampler.class));
-    Assert.assertTrue(remoteSampler.getSampler() instanceof RateLimitingSampler);
-    Assert.assertEquals(
+    Assertions.assertTrue(remoteSampler.getSampler() instanceof RateLimitingSampler);
+    Assertions.assertEquals(
         RATE, ((RateLimitingSampler) remoteSampler.getSampler()).getMaxTracesPerSecond(), 0);
   }
 }

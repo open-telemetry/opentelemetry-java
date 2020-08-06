@@ -22,11 +22,12 @@ import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
+import io.grpc.Server;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import io.grpc.testing.GrpcCleanupRule;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
@@ -44,18 +45,22 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-/** Unit tests for {@link JaegerGrpcSpanExporter}. */
-public class JaegerGrpcSpanExporterTest {
+class JaegerGrpcSpanExporterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
 
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
+  private final Closer closer = Closer.create();
+
+  @AfterEach
+  void tearDown() throws Exception {
+    closer.close();
+  }
 
   private final CollectorServiceGrpc.CollectorServiceImplBase service =
       mock(
@@ -63,20 +68,21 @@ public class JaegerGrpcSpanExporterTest {
           delegatesTo(new MockCollectorService()));
 
   @Test
-  public void testExport() throws Exception {
+  void testExport() throws Exception {
     String serverName = InProcessServerBuilder.generateName();
     ArgumentCaptor<PostSpansRequest> requestCaptor =
         ArgumentCaptor.forClass(Collector.PostSpansRequest.class);
 
-    grpcCleanup.register(
+    Server server =
         InProcessServerBuilder.forName(serverName)
             .directExecutor()
             .addService(service)
             .build()
-            .start());
+            .start();
+    closer.register(server::shutdownNow);
 
-    ManagedChannel channel =
-        grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build());
+    ManagedChannel channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
+    closer.register(channel::shutdownNow);
 
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
@@ -141,7 +147,7 @@ public class JaegerGrpcSpanExporterTest {
   }
 
   @Test
-  public void configTest() {
+  void configTest() {
     Map<String, String> options = new HashMap<>();
     String serviceName = "myGreatService";
     String endpoint = "127.0.0.1:9090";

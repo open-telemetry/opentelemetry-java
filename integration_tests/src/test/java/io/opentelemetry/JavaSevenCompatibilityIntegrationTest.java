@@ -23,12 +23,13 @@ import io.restassured.response.Response;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.MountableFile;
 
 /**
@@ -41,7 +42,8 @@ import org.testcontainers.utility.MountableFile;
  * executable JAR added to it and executed which will send a trace to the Jaeger instance. The test
  * verifies that the trace is received by Jaeger.
  */
-public class JavaSevenCompatibilityIntegrationTest {
+@Testcontainers
+class JavaSevenCompatibilityIntegrationTest {
 
   private static final String ARCHIVE_NAME = System.getProperty("archive.name");
   private static final String APP_NAME = "SendTraceToJaeger.jar";
@@ -56,7 +58,7 @@ public class JavaSevenCompatibilityIntegrationTest {
   private static final Network network = Network.SHARED;
 
   @SuppressWarnings("rawtypes")
-  @ClassRule
+  @Container
   public static GenericContainer jaegerContainer =
       new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
           .withNetwork(network)
@@ -65,7 +67,7 @@ public class JavaSevenCompatibilityIntegrationTest {
           .waitingFor(new HttpWaitStrategy().forPath("/"));
 
   @SuppressWarnings("rawtypes")
-  @ClassRule
+  @Container
   public static GenericContainer jaegerExampleAppContainer =
       new GenericContainer("openjdk:7u111-jre-alpine")
           .withNetwork(network)
@@ -81,7 +83,7 @@ public class JavaSevenCompatibilityIntegrationTest {
           .dependsOn(jaegerContainer);
 
   @Test
-  public void testJaegerExampleAppIntegration() {
+  void testJaegerExampleAppIntegration() {
     Awaitility.await()
         .atMost(30, TimeUnit.SECONDS)
         .until(JavaSevenCompatibilityIntegrationTest::assertJaegerHaveTrace);
