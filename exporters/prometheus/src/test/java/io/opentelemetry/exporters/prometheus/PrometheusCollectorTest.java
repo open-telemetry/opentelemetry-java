@@ -68,7 +68,7 @@ class PrometheusCollectorTest {
     return ImmutableList.of(
         MetricData.create(
             Descriptor.create(
-                "name",
+                "grpc.name",
                 "long_description",
                 "1",
                 Descriptor.Type.MONOTONIC_LONG,
@@ -79,7 +79,7 @@ class PrometheusCollectorTest {
                 MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
         MetricData.create(
             Descriptor.create(
-                "name",
+                "http.name",
                 "double_description",
                 "1",
                 Descriptor.Type.MONOTONIC_DOUBLE,
