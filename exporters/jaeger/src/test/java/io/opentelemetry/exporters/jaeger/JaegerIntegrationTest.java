@@ -31,7 +31,6 @@ import io.restassured.response.Response;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
-import org.junit.Assume;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.testcontainers.containers.GenericContainer;
@@ -58,7 +57,6 @@ class JaegerIntegrationTest {
 
   @Test
   void testJaegerIntegration() {
-    Assume.assumeNotNull(jaegerContainer);
     setupJaegerExporter();
     imitateWork();
     Awaitility.await()

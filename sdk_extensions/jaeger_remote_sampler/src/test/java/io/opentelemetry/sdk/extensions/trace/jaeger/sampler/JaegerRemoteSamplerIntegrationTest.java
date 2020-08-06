@@ -21,7 +21,6 @@ import static io.opentelemetry.sdk.extensions.trace.jaeger.sampler.JaegerRemoteS
 import io.grpc.ManagedChannelBuilder;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
-import org.junit.Assume;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -52,7 +51,6 @@ class JaegerRemoteSamplerIntegrationTest {
 
   @Test
   void remoteSampling_perOperation() {
-    Assume.assumeNotNull(jaegerContainer);
     String jaegerHost =
         String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
@@ -71,7 +69,6 @@ class JaegerRemoteSamplerIntegrationTest {
 
   @Test
   void remoteSampling_rateLimiting() {
-    Assume.assumeNotNull(jaegerContainer);
     String jaegerHost =
         String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
