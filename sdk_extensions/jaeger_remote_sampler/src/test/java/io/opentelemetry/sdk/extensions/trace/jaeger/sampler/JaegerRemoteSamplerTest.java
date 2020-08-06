@@ -106,9 +106,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .build();
 
-    await()
-        .atMost(10, TimeUnit.SECONDS)
-        .until(samplerIsType(sampler, RateLimitingSampler.class));
+    await().atMost(10, TimeUnit.SECONDS).until(samplerIsType(sampler, RateLimitingSampler.class));
 
     // verify
     verify(service).getSamplingStrategy(requestCaptor.capture(), ArgumentMatchers.any());
@@ -129,9 +127,7 @@ class JaegerRemoteSamplerTest {
         .matches("JaegerRemoteSampler\\{Probability\\{probability=0.001, idUpperBound=.*\\}\\}");
 
     // wait until the sampling strategy is retrieved before exiting test method
-    await()
-        .atMost(10, TimeUnit.SECONDS)
-        .until(samplerIsType(sampler, RateLimitingSampler.class));
+    await().atMost(10, TimeUnit.SECONDS).until(samplerIsType(sampler, RateLimitingSampler.class));
   }
 
   static Callable<Boolean> samplerIsType(
