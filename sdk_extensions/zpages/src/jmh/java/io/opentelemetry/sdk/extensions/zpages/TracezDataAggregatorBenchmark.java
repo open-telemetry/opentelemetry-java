@@ -51,7 +51,6 @@ public class TracezDataAggregatorBenchmark {
 
   @Setup(Level.Trial)
   public final void setup() {
-    // Generate 1 million running spans, span latencies, and error spans
     for (int i = 0; i < numberOfSpans; i++) {
       tracer.spanBuilder(runningSpan).startSpan();
       tracer.spanBuilder(latencySpan).startSpan().end();
