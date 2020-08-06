@@ -30,15 +30,17 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import org.awaitility.Awaitility;
-import org.junit.Assume;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-public class JaegerIntegrationTest {
+@Testcontainers
+@EnabledIfSystemProperty(named = "enable.docker.tests", matches = "true")
+class JaegerIntegrationTest {
 
   private static final int QUERY_PORT = 16686;
   private static final int COLLECTOR_PORT = 14250;
@@ -47,24 +49,14 @@ public class JaegerIntegrationTest {
   private static final String JAEGER_URL = "http://localhost";
   private final Tracer tracer = OpenTelemetry.getTracer(getClass().getCanonicalName());
 
-  @SuppressWarnings("rawtypes")
-  @ClassRule
-  @Nullable
-  public static GenericContainer jaegerContainer = null;
-
-  static {
-    // make sure that the user has enabled the docker-based tests
-    if (Boolean.getBoolean("enable.docker.tests")) {
-      jaegerContainer =
-          new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
-              .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
-              .waitingFor(new HttpWaitStrategy().forPath("/"));
-    }
-  }
+  @Container
+  public static GenericContainer<?> jaegerContainer =
+      new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
+          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
+          .waitingFor(new HttpWaitStrategy().forPath("/"));
 
   @Test
-  public void testJaegerIntegration() {
-    Assume.assumeNotNull(jaegerContainer);
+  void testJaegerIntegration() {
     setupJaegerExporter();
     imitateWork();
     Awaitility.await()
