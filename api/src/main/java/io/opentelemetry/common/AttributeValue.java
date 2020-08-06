@@ -251,7 +251,9 @@ public abstract class AttributeValue {
    * @return {@code true} if the {@code AttributeValue} is empty.
    * @since 0.8.0
    */
-  public abstract boolean isEmpty();
+  public boolean isEmpty() {
+    return false;
+  }
 
   @Immutable
   @AutoValue
@@ -294,11 +296,6 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public boolean isEmpty() {
-      return false;
-    }
-
-    @Override
     public abstract boolean getBooleanValue();
   }
 
@@ -318,11 +315,6 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public boolean isEmpty() {
-      return false;
-    }
-
-    @Override
     public abstract long getLongValue();
   }
 
@@ -339,11 +331,6 @@ public abstract class AttributeValue {
     @Override
     public final Type getType() {
       return Type.DOUBLE;
-    }
-
-    @Override
-    public boolean isEmpty() {
-      return false;
     }
 
     @Override
