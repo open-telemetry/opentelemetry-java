@@ -18,9 +18,9 @@ package io.opentelemetry.exporters.inmemory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;

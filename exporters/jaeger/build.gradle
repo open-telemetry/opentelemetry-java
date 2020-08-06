@@ -25,6 +25,8 @@ dependencies {
             libraries.awaitility,
             libraries.rest_assured
 
+    testImplementation project(':opentelemetry-testing-internal')
+
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"

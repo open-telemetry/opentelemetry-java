@@ -43,7 +43,8 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-extension-testbed",
         ":opentelemetry-sdk-extension-jaeger-remote-sampler",
         ":opentelemetry-sdk-extension-zpages",
-        ":opentelemetry-bom"
+        ":opentelemetry-bom",
+        ":opentelemetry-testing-internal"
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name
