@@ -25,7 +25,6 @@ include ":opentelemetry-all",
         ":opentelemetry-extension-runtime-metrics",
         ":opentelemetry-extension-trace-propagators",
         ":opentelemetry-extension-trace-utils",
-        ":opentelemetry-extension-logging-log4j2-extensions",
         ":opentelemetry-exporters-inmemory",
         ":opentelemetry-exporters-jaeger",
         ":opentelemetry-exporters-logging",
@@ -43,7 +42,8 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-extension-testbed",
         ":opentelemetry-sdk-extension-jaeger-remote-sampler",
         ":opentelemetry-sdk-extension-zpages",
-        ":opentelemetry-bom"
+        ":opentelemetry-bom",
+        ":opentelemetry-testing-internal"
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name

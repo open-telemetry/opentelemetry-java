@@ -18,19 +18,20 @@ package io.opentelemetry.exporters.otlp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
+import io.grpc.Server;
 import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import io.grpc.testing.GrpcCleanupRule;
 import io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporterTest.ConfigBuilderTest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -43,30 +44,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-/** Unit tests for {@link OtlpGrpcSpanExporter}. */
-public class OtlpGrpcSpanExporterTest {
+class OtlpGrpcSpanExporterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
-
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
   private final FakeCollector fakeCollector = new FakeCollector();
   private final String serverName = InProcessServerBuilder.generateName();
   private final ManagedChannel inProcessChannel =
       InProcessChannelBuilder.forName(serverName).directExecutor().build();
 
+  private final Closer closer = Closer.create();
+
   @Test
-  public void configTest() {
+  void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.otlp.span.timeout", "12");
     options.put("otel.otlp.endpoint", "http://localhost:6553");
     options.put("otel.otlp.use.tls", "true");
-    options.put("otel.otlp.metadata", "key=value");
+    options.put("otel.otlp.metadata", "key=value;key2=value2=;key3=val=ue3; key4 = value4 ;key5= ");
     OtlpGrpcSpanExporter.Builder config = OtlpGrpcSpanExporter.newBuilder();
     OtlpGrpcSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
@@ -74,21 +74,31 @@ public class OtlpGrpcSpanExporterTest {
     Mockito.verify(spy).setEndpoint("http://localhost:6553");
     Mockito.verify(spy).setUseTls(true);
     Mockito.verify(spy).addHeader("key", "value");
+    Mockito.verify(spy).addHeader("key2", "value2=");
+    Mockito.verify(spy).addHeader("key3", "val=ue3");
+    Mockito.verify(spy).addHeader("key4", "value4");
+    Mockito.verify(spy, Mockito.never()).addHeader("key5", "");
   }
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
-    grpcCleanup.register(
+    Server server =
         InProcessServerBuilder.forName(serverName)
             .directExecutor()
             .addService(fakeCollector)
             .build()
-            .start());
-    grpcCleanup.register(inProcessChannel);
+            .start();
+    closer.register(server::shutdownNow);
+    closer.register(inProcessChannel::shutdownNow);
+  }
+
+  @AfterEach
+  void tearDown() throws Exception {
+    closer.close();
   }
 
   @Test
-  public void testExport() {
+  void testExport() {
     SpanData span = generateFakeSpan();
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
@@ -102,7 +112,7 @@ public class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  public void testExport_MultipleSpans() {
+  void testExport_MultipleSpans() {
     List<SpanData> spans = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       spans.add(generateFakeSpan());
@@ -119,7 +129,7 @@ public class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  public void testExport_AfterShutdown() {
+  void testExport_AfterShutdown() {
     SpanData span = generateFakeSpan();
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
@@ -129,7 +139,7 @@ public class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  public void testExport_Cancelled() {
+  void testExport_Cancelled() {
     fakeCollector.setReturnedStatus(io.grpc.Status.CANCELLED);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
@@ -142,7 +152,7 @@ public class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  public void testExport_DeadlineExceeded() {
+  void testExport_DeadlineExceeded() {
     fakeCollector.setReturnedStatus(io.grpc.Status.DEADLINE_EXCEEDED);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
@@ -155,7 +165,7 @@ public class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  public void testExport_ResourceExhausted() {
+  void testExport_ResourceExhausted() {
     fakeCollector.setReturnedStatus(io.grpc.Status.RESOURCE_EXHAUSTED);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
@@ -168,7 +178,7 @@ public class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  public void testExport_OutOfRange() {
+  void testExport_OutOfRange() {
     fakeCollector.setReturnedStatus(io.grpc.Status.OUT_OF_RANGE);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
@@ -181,7 +191,7 @@ public class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  public void testExport_Unavailable() {
+  void testExport_Unavailable() {
     fakeCollector.setReturnedStatus(io.grpc.Status.UNAVAILABLE);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
@@ -194,7 +204,7 @@ public class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  public void testExport_DataLoss() {
+  void testExport_DataLoss() {
     fakeCollector.setReturnedStatus(io.grpc.Status.DATA_LOSS);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
@@ -207,7 +217,7 @@ public class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  public void testExport_PermissionDenied() {
+  void testExport_PermissionDenied() {
     fakeCollector.setReturnedStatus(io.grpc.Status.PERMISSION_DENIED);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
