@@ -291,7 +291,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
       String metadataValue = getStringProperty(KEY_METADATA, configMap);
       if (metadataValue != null) {
         for (String keyValueString : Splitter.on(';').split(metadataValue)) {
-          final List<String> keyValue = Splitter.on('=').limit(2).splitToList(keyValueString);
+          final List<String> keyValue = Splitter.on('=').limit(2).trimResults().omitEmptyStrings()
+              .splitToList(keyValueString);
           if (keyValue.size() == 2) {
             addHeader(keyValue.get(0), keyValue.get(1));
           }
