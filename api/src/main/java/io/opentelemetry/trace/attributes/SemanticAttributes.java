@@ -134,6 +134,7 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter RPC_SERVICE =
       StringAttributeSetter.create("rpc.service");
 
+/* The name of the method being called, must be equal to the $method part in the span name */
   public static final StringAttributeSetter RPC_METHOD = StringAttributeSetter.create("rpc.method");
 
   /** The name of a gRPC span event to populate for each message sent / received. */
