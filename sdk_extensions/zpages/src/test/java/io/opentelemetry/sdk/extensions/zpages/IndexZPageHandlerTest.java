@@ -36,7 +36,7 @@ public final class IndexZPageHandlerTest {
     IndexZPageHandler indexZPageHandler =
         new IndexZPageHandler(ImmutableList.of(tracezZPageHandler));
 
-    indexZPageHandler.emitHtml(emptyQueryMap, output);
+    indexZPageHandler.emitHtml("get", emptyQueryMap, output);
 
     assertThat(output.toString()).contains("<a href=\"" + tracezZPageHandler.getUrlPath() + "\">");
     assertThat(output.toString()).contains(">" + tracezZPageHandler.getPageName() + "</h2></a>");

@@ -292,7 +292,8 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
   }
 
   @Override
-  public void emitHtml(Map<String, String> queryMap, OutputStream outputStream) {
+  public void emitHtml(
+      String requestMethod, Map<String, String> queryMap, OutputStream outputStream) {
     // PrintStream for emiting HTML contents
     try (PrintStream out = new PrintStream(outputStream, /* autoFlush= */ false, "UTF-8")) {
       out.print("<!DOCTYPE html>");
@@ -313,8 +314,10 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       out.print("</head>");
       out.print("<body>");
       try {
-        // Apply updated trace configuration based on query parameters
-        applyTraceConfig(queryMap);
+        // Apply updated trace configuration based on query parameters, apply only on POST requests
+        if (requestMethod.equalsIgnoreCase("post")) {
+          applyTraceConfig(queryMap);
+        }
         emitHtmlBody(out);
       } catch (Throwable t) {
         out.print("Error while generating HTML: " + t.toString());

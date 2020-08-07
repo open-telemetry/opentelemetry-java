@@ -49,10 +49,12 @@ public abstract class ZPageHandler {
   /**
    * Emits the generated HTML page to the {@code outputStream}.
    *
+   * @param requestMethod the request method HttpHandler received.
    * @param queryMap the map of the URL query parameters.
    * @param outputStream the output for the generated HTML page.
    */
-  public abstract void emitHtml(Map<String, String> queryMap, OutputStream outputStream);
+  public abstract void emitHtml(
+      String requestMethod, Map<String, String> queryMap, OutputStream outputStream);
 
   /** Package protected constructor to disallow users to extend this class. */
   ZPageHandler() {}

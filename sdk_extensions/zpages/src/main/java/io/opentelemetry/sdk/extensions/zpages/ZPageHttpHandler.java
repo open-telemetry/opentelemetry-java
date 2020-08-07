@@ -51,8 +51,8 @@ final class ZPageHttpHandler implements HttpHandler {
   /**
    * Build a query map from the {@code uri}.
    *
-   * @param uri the {@link URI} for buiding the query map
-   * @return the query map built based on the @{code uri}
+   * @param uri the {@link URI} for buiding the query map.
+   * @return the query map built based on the @{code uri}.
    */
   @VisibleForTesting
   static ImmutableMap<String, String> parseQueryMap(URI uri) throws UnsupportedEncodingException {
@@ -77,8 +77,8 @@ final class ZPageHttpHandler implements HttpHandler {
   /**
    * Build a query map from the query string.
    *
-   * @param queryString the query string for buiding the query map
-   * @return the query map built based on the query string
+   * @param queryString the query string for buiding the query map.
+   * @return the query map built based on the query string.
    */
   @VisibleForTesting
   static ImmutableMap<String, String> parseQueryMap(String queryString)
@@ -107,12 +107,15 @@ final class ZPageHttpHandler implements HttpHandler {
       httpExchange.sendResponseHeaders(200, 0);
       if (requestMethod.equalsIgnoreCase("get")) {
         zpageHandler.emitHtml(
-            parseQueryMap(httpExchange.getRequestURI()), httpExchange.getResponseBody());
+            requestMethod,
+            parseQueryMap(httpExchange.getRequestURI()),
+            httpExchange.getResponseBody());
       } else if (requestMethod.equalsIgnoreCase("post")) {
         BufferedReader requestBodyReader =
             new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), "utf-8"));
         String queryString = requestBodyReader.readLine();
-        zpageHandler.emitHtml(parseQueryMap(queryString), httpExchange.getResponseBody());
+        zpageHandler.emitHtml(
+            requestMethod, parseQueryMap(queryString), httpExchange.getResponseBody());
       }
     } finally {
       httpExchange.close();

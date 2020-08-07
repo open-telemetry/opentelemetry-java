@@ -45,7 +45,7 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml(emptyQueryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", emptyQueryMap, output);
 
     assertThat(output.toString()).contains("SamplingProbability to");
     assertThat(output.toString()).contains("name=" + querySamplingProbability);
@@ -86,7 +86,7 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml(emptyQueryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", emptyQueryMap, output);
 
     assertThat(output.toString()).contains("Sampler");
     assertThat(output.toString())
@@ -154,7 +154,7 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(
@@ -179,7 +179,7 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
@@ -203,7 +203,7 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
@@ -228,7 +228,7 @@ public final class TraceConfigzZPageHandlerTest {
     Map<String, String> queryMap =
         ImmutableMap.of("action", "change", "samplingprobability", "invalid");
 
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("SamplingProbability must be of the type double");
@@ -238,7 +238,7 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "samplingprobability", "-1");
 
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("probability must be in range [0.0, 1.0]");
@@ -248,7 +248,7 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "samplingprobability", "1.1");
 
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("probability must be in range [0.0, 1.0]");
@@ -258,7 +258,7 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumofattributes", "invalid");
 
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("MaxNumOfAttributes must be of the type integer");
@@ -268,7 +268,7 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumofevents", "invalid");
 
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("MaxNumOfEvents must be of the type integer");
@@ -278,7 +278,7 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumoflinks", "invalid");
 
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("MaxNumOfLinks must be of the type integer");
@@ -288,7 +288,7 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperevent", "invalid");
 
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString())
@@ -299,7 +299,7 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperlink", "invalid");
 
-    traceConfigzZPageHandler.emitHtml(queryMap, output);
+    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("MaxNumOfAttributesPerLink must be of the type integer");
