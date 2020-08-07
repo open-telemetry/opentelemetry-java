@@ -133,7 +133,6 @@ public final class SemanticAttributes {
   /** The full name of the service being called, including its package name, if applicable. */
   public static final StringAttributeSetter RPC_SERVICE =
       StringAttributeSetter.create("rpc.service");
-
 /* The name of the method being called, must be equal to the $method part in the span name */
   public static final StringAttributeSetter RPC_METHOD = StringAttributeSetter.create("rpc.method");
 
