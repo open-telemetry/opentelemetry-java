@@ -66,7 +66,7 @@ class OtlpGrpcSpanExporterTest {
     options.put("otel.otlp.span.timeout", "12");
     options.put("otel.otlp.endpoint", "http://localhost:6553");
     options.put("otel.otlp.use.tls", "true");
-    options.put("otel.otlp.metadata", "key=value");
+    options.put("otel.otlp.metadata", "key=value;key2=value2=;key3=val=ue3");
     OtlpGrpcSpanExporter.Builder config = OtlpGrpcSpanExporter.newBuilder();
     OtlpGrpcSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
@@ -74,6 +74,8 @@ class OtlpGrpcSpanExporterTest {
     Mockito.verify(spy).setEndpoint("http://localhost:6553");
     Mockito.verify(spy).setUseTls(true);
     Mockito.verify(spy).addHeader("key", "value");
+    Mockito.verify(spy).addHeader("key2", "value2=");
+    Mockito.verify(spy).addHeader("key3", "val=ue3");
   }
 
   @BeforeEach
