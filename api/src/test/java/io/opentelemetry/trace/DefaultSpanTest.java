@@ -34,7 +34,7 @@ class DefaultSpanTest {
 
   @Test
   void doNotCrash() {
-    DefaultSpan span = DefaultSpan.getInvalid();
+    Span span = DefaultSpan.getInvalid();
     span.setAttribute(
         "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
     span.setAttribute("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
@@ -67,7 +67,7 @@ class DefaultSpanTest {
 
   @Test
   void defaultSpan_ToString() {
-    DefaultSpan span = DefaultSpan.getInvalid();
+    Span span = DefaultSpan.getInvalid();
     assertThat(span.toString()).isEqualTo("DefaultSpan");
   }
 
