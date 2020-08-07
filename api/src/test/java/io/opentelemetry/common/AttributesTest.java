@@ -210,14 +210,13 @@ class AttributesTest {
             .setAttribute("dog", "bark")
             .build();
     assertThat(fromEmpty).isEqualTo(filled);
+    // Original not mutated.
+    assertThat(Attributes.empty().isEmpty()).isTrue();
 
-    Attributes fromPartial =
-        Attributes.newBuilder()
-            .setAttribute("cat", "meow")
-            .build()
-            .toBuilder()
-            .setAttribute("dog", "bark")
-            .build();
+    Attributes partial = Attributes.newBuilder().setAttribute("cat", "meow").build();
+    Attributes fromPartial = partial.toBuilder().setAttribute("dog", "bark").build();
     assertThat(fromPartial).isEqualTo(filled);
+    // Original not mutated.
+    assertThat(partial).isEqualTo(Attributes.newBuilder().setAttribute("cat", "meow").build());
   }
 }
