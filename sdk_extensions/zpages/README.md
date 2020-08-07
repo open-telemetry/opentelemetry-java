@@ -1,8 +1,8 @@
-# OpenTelemetry SDK Contrib - zPages
+# OpenTelemetry SDK Extension zPages
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-This module contains code for OpenTelemetry's Java zPages, which are a collection of dynamic HTML
+This module contains code for the OpenTelemetry Java zPages, which are a collection of dynamic HTML
 web pages that display stats and trace data.
 
 * Java 7 compatible.
@@ -99,3 +99,14 @@ The /traceconfigz zPage displays information about the currently active tracing 
 provides an interface for users to modify relevant parameters. Here is what the web page looks like:
 
 ![traceconfigz](img/traceconfigz.png)
+
+## Benchmark Testing
+
+This module contains two sets of benchmark tests: one for adding spans to an instance of
+TracezSpanBuckets and another for retrieving counts and spans with TracezDataAggregator. You can run
+the tests yourself with the following commands:
+
+```
+./gradlew -PjmhIncludeSingleClass=TracezSpanBucketsBenchmark clean :opentelemetry-sdk-extension-zpages:jmh
+./gradlew -PjmhIncludeSingleClass=TracezDataAggregatorBenchmark clean :opentelemetry-sdk-extension-zpages:jmh
+```

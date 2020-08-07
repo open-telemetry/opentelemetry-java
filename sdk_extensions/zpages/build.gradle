@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
 
+    id "me.champeau.gradle.jmh"
     id "ru.vyarus.animalsniffer"
 }
 
@@ -21,4 +22,11 @@ dependencies {
     testAnnotationProcessor libraries.auto_value
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
+}
+
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
 }
