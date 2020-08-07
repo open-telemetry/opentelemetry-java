@@ -274,7 +274,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
             + ZPageLogo.getLogoBase64()
             + "\" /></a>");
     out.print("<h1>Trace Configuration</h1>");
-    out.print("<form class=\"form-flex\" action=\"" + TRACE_CONFIGZ_URL + "\" method=\"get\">");
+    out.print("<form class=\"form-flex\" action=\"" + TRACE_CONFIGZ_URL + "\" method=\"post\">");
     out.print(
         "<input type=\"hidden\" name=\"action\" value=\"" + QUERY_STRING_ACTION_CHANGE + "\" />");
     emitChangeTable(out);
@@ -282,7 +282,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     out.print("<button class=\"button\" type=\"submit\" value=\"Submit\">Submit</button>");
     out.print("</form>");
     // Button for restore default
-    out.print("<form class=\"form-flex\" action=\"" + TRACE_CONFIGZ_URL + "\" method=\"get\">");
+    out.print("<form class=\"form-flex\" action=\"" + TRACE_CONFIGZ_URL + "\" method=\"post\">");
     out.print(
         "<input type=\"hidden\" name=\"action\" value=\"" + QUERY_STRING_ACTION_DEFAULT + "\" />");
     out.print("<button class=\"button\" type=\"submit\" value=\"Submit\">Restore Default</button>");

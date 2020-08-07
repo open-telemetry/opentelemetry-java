@@ -21,7 +21,9 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -54,12 +56,38 @@ final class ZPageHttpHandler implements HttpHandler {
    */
   @VisibleForTesting
   static ImmutableMap<String, String> parseQueryMap(URI uri) throws UnsupportedEncodingException {
-    String queryStrings = uri.getRawQuery();
-    if (queryStrings == null) {
+    String queryString = uri.getRawQuery();
+    if (queryString == null) {
       return ImmutableMap.of();
     }
     Map<String, String> queryMap = new HashMap<String, String>();
-    for (String param : QUERY_SPLITTER.split(queryStrings)) {
+    for (String param : QUERY_SPLITTER.split(queryString)) {
+      List<String> keyValuePair = QUERY_KEYVAL_SPLITTER.splitToList(param);
+      if (keyValuePair.size() > 1) {
+        if (keyValuePair.get(0).equals(PARAM_SPAN_NAME)) {
+          queryMap.put(keyValuePair.get(0), URLDecoder.decode(keyValuePair.get(1), "UTF-8"));
+        } else {
+          queryMap.put(keyValuePair.get(0), keyValuePair.get(1));
+        }
+      }
+    }
+    return ImmutableMap.copyOf(queryMap);
+  }
+
+  /**
+   * Build a query map from the query string.
+   *
+   * @param queryString the query string for buiding the query map
+   * @return the query map built based on the query string
+   */
+  @VisibleForTesting
+  static ImmutableMap<String, String> parseQueryMap(String queryString)
+      throws UnsupportedEncodingException {
+    if (queryString == null) {
+      return ImmutableMap.of();
+    }
+    Map<String, String> queryMap = new HashMap<String, String>();
+    for (String param : QUERY_SPLITTER.split(queryString)) {
       List<String> keyValuePair = QUERY_KEYVAL_SPLITTER.splitToList(param);
       if (keyValuePair.size() > 1) {
         if (keyValuePair.get(0).equals(PARAM_SPAN_NAME)) {
@@ -75,9 +103,17 @@ final class ZPageHttpHandler implements HttpHandler {
   @Override
   public final void handle(HttpExchange httpExchange) throws IOException {
     try {
+      String requestMethod = httpExchange.getRequestMethod();
       httpExchange.sendResponseHeaders(200, 0);
-      zpageHandler.emitHtml(
-          parseQueryMap(httpExchange.getRequestURI()), httpExchange.getResponseBody());
+      if (requestMethod.equalsIgnoreCase("get")) {
+        zpageHandler.emitHtml(
+            parseQueryMap(httpExchange.getRequestURI()), httpExchange.getResponseBody());
+      } else if (requestMethod.equalsIgnoreCase("post")) {
+        BufferedReader requestBodyReader =
+            new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), "utf-8"));
+        String queryString = requestBodyReader.readLine();
+        zpageHandler.emitHtml(parseQueryMap(queryString), httpExchange.getResponseBody());
+      }
     } finally {
       httpExchange.close();
     }

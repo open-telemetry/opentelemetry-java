@@ -29,14 +29,19 @@ public final class ZPageHttpHandlerTest {
   @Test
   void parseEmptyQuery() throws URISyntaxException, UnsupportedEncodingException {
     URI uri = new URI("http://localhost:8000/tracez");
+    String queryString = "";
     assertThat(ZPageHttpHandler.parseQueryMap(uri)).isEmpty();
+    assertThat(ZPageHttpHandler.parseQueryMap(queryString)).isEmpty();
   }
 
   @Test
   void parseNormalQuery() throws URISyntaxException, UnsupportedEncodingException {
     URI uri =
         new URI("http://localhost:8000/tracez/tracez?zspanname=Test&ztype=1&zsubtype=5&noval");
+    String queryString = "zspanname=Test&ztype=1&zsubtype=5&noval";
     assertThat(ZPageHttpHandler.parseQueryMap(uri))
+        .containsOnly(entry("zspanname", "Test"), entry("ztype", "1"), entry("zsubtype", "5"));
+    assertThat(ZPageHttpHandler.parseQueryMap(queryString))
         .containsOnly(entry("zspanname", "Test"), entry("ztype", "1"), entry("zsubtype", "5"));
   }
 }
