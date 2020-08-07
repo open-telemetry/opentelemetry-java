@@ -127,20 +127,30 @@ public final class SemanticAttributes {
    */
   public static final LongAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH_UNCOMPRESSED =
       LongAttributeSetter.create("http.response_content_length_uncompressed");
-  /** The service name, must be equal to the $service part in the span name. */
+
+  /** A string identifying the remoting system, e.g., "grpc", "java_rmi" or "wcf". */
+  public static final StringAttributeSetter RPC_SYSTEM = StringAttributeSetter.create("rpc.system");
+  /** The full name of the service being called, including its package name, if applicable. */
   public static final StringAttributeSetter RPC_SERVICE =
       StringAttributeSetter.create("rpc.service");
-  /** RPC span event attribute with value "SENT" or "RECEIVED". */
-  public static final StringAttributeSetter MESSAGE_TYPE =
+
+  public static final StringAttributeSetter RPC_METHOD = StringAttributeSetter.create("rpc.method");
+
+  /** The name of a gRPC span event to populate for each message sent / received. */
+  public static final String GRPC_MESSAGE_EVENT_NAME = "message";
+  /** gRPC span event attribute with value "SENT" or "RECEIVED". */
+  public static final StringAttributeSetter GRPC_MESSAGE_TYPE =
       StringAttributeSetter.create("message.type");
-  /** RPC span event attribute starting from 1 for each of sent messages and received messages. */
-  public static final LongAttributeSetter MESSAGE_ID = LongAttributeSetter.create("message.id");
-  /** RPC span event attribute for compressed size. */
-  public static final LongAttributeSetter MESSAGE_COMPRESSED_SIZE =
+  /** gRPC span event attribute starting from 1 for each of sent messages and received messages. */
+  public static final LongAttributeSetter GRPC_MESSAGE_ID =
+      LongAttributeSetter.create("message.id");
+  /** gRPC span event attribute for compressed size of a message. */
+  public static final LongAttributeSetter GRPC_MESSAGE_COMPRESSED_SIZE =
       LongAttributeSetter.create("message.compressed_size");
-  /** RPC span event attribute for uncompressed size. */
-  public static final LongAttributeSetter MESSAGE_UNCOMPRESSED_SIZE =
+  /** gRPC span event attribute for uncompressed size of a message. */
+  public static final LongAttributeSetter GRPC_MESSAGE_UNCOMPRESSED_SIZE =
       LongAttributeSetter.create("message.uncompressed_size");
+
   /**
    * An identifier for the database management system (DBMS) product being used.
    *
