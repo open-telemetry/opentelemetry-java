@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+## 0.7.0 - 2020-08-02
+
+NOTE: This release contains non-backward-compatible breaking SDK changes
+
+- Added an InMemoryMetricExporter
+- Added a toBuilder method to Labels
+- Added some semantic attribute constants
+- New ZPages extension module with TraceZ and TraceConfigZ pages implemented
+- Some overloads added for setting the parent Context
+- Some performance improvements in HttpTraceContext implementation
+- Removed null checks from the Trace APIs
+- The bare API will no longer generate Trace and Span IDs when there is no parent trace context.
+- Null Strings are no longer valid keys for Attributes
+- BREAKING CHANGE: The Sampler API was changed
+- Default endpoint is now set for the OTLP exporters
+- BREAKING CHANGE: Jaeger exporter env vars/system properties were updated
+- Resource attributes may now be set with a System Property as well as the environment variable.
+- Added a propagator for Lightstep OpenTracing propagator
+- The ZipkinSpanExporter now defaults to using the OkHttpSender
+- The default Sampler in the SDK is now the ParentOrElse sampler
+- BUGFIX: SpanWrapper SpanData implementation is now truly Immutable
+- Added some simple logging for failed export calls
+- Quieted the noisy B3 propagator
+- Public constants were added for exporter configuration options
+- Added a new configuration option to limit the size of Span attributes
+- Many thanks for contributions from @anuraaga, @dengliming, @iNikem, @wtyanan, @williamhu99, @trask, @Oberon00, @MitchellDumovic, @FrankSpitulski, @heyams, @ptravers, @thisthat, @albertteoh, @evantorrie, @neeraj97,
+
 ## 0.6.0 - 2020-07-01
 
 NOTE: This release contains non-backward-compatible breaking API and SDK changes
