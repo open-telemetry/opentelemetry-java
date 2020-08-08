@@ -591,40 +591,42 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public String toString() {
-    return "RecordEventsReadableSpan{"
-        + "traceId="
-        + context.getTraceId()
-        + ", "
-        + "spanId="
-        + context.getSpanId()
-        + ", "
-        + "parentSpanId="
-        + parentSpanId
-        + ", "
-        + "name="
-        + name
-        + ", "
-        + "kind="
-        + kind
-        + ", "
-        + "attributes="
-        + attributes
-        + ", "
-        + "status="
-        + status
-        + ", "
-        + "totalRecordedEvents="
-        + totalRecordedEvents
-        + ", "
-        + "totalRecordedLinks="
-        + totalRecordedLinks
-        + ", "
-        + "startEpochNanos="
-        + startEpochNanos
-        + ", "
-        + "endEpochNanos="
-        + endEpochNanos
-        + "}";
+    synchronized (lock) {
+      return "RecordEventsReadableSpan{"
+          + "traceId="
+          + context.getTraceId()
+          + ", "
+          + "spanId="
+          + context.getSpanId()
+          + ", "
+          + "parentSpanId="
+          + parentSpanId
+          + ", "
+          + "name="
+          + name
+          + ", "
+          + "kind="
+          + kind
+          + ", "
+          + "attributes="
+          + attributes
+          + ", "
+          + "status="
+          + status
+          + ", "
+          + "totalRecordedEvents="
+          + totalRecordedEvents
+          + ", "
+          + "totalRecordedLinks="
+          + totalRecordedLinks
+          + ", "
+          + "startEpochNanos="
+          + startEpochNanos
+          + ", "
+          + "endEpochNanos="
+          + endEpochNanos
+          + "}";
+    }
   }
 
   private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
