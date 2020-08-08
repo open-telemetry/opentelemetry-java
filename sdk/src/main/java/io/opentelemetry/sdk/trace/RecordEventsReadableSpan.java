@@ -589,6 +589,44 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     return builder.build();
   }
 
+  @Override
+  public String toString() {
+    return "RecordEventsReadableSpan{"
+        + "traceId="
+        + context.getTraceId()
+        + ", "
+        + "spanId="
+        + context.getSpanId()
+        + ", "
+        + "parentSpanId="
+        + parentSpanId
+        + ", "
+        + "name="
+        + name
+        + ", "
+        + "kind="
+        + kind
+        + ", "
+        + "attributes="
+        + attributes
+        + ", "
+        + "status="
+        + status
+        + ", "
+        + "totalRecordedEvents="
+        + totalRecordedEvents
+        + ", "
+        + "totalRecordedLinks="
+        + totalRecordedLinks
+        + ", "
+        + "startEpochNanos="
+        + startEpochNanos
+        + ", "
+        + "endEpochNanos="
+        + endEpochNanos
+        + "}";
+  }
+
   private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
     private final int limit;
     private final Attributes.Builder builder;
