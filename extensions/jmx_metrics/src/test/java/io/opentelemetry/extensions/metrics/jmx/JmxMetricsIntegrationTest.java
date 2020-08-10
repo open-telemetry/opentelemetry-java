@@ -42,6 +42,7 @@ import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -72,7 +73,7 @@ public class JmxMetricsIntegrationTest {
 
   private static final Network network = Network.SHARED;
   private static final Server collector =
-      ServerBuilder.forPort(9080).addService(otelCollector).build();
+      ServerBuilder.forPort(55680).addService(otelCollector).build();
 
   @SuppressWarnings("rawtypes")
   @ClassRule
@@ -86,6 +87,8 @@ public class JmxMetricsIntegrationTest {
 
   static {
     if (Boolean.getBoolean("enable.docker.tests")) {
+      Testcontainers.exposeHostPorts(55680);
+
       cassandraContainer =
           new GenericContainer<>(
                   new ImageFromDockerfile().withFileFromString("Dockerfile", CASSANDRA_DOCKERFILE))

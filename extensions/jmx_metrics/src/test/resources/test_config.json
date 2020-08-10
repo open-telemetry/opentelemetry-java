@@ -1,7 +1,7 @@
 {
   "intervalSeconds": 3,
   "exporterType": "otlp",
-  "exporterEndpoint": "host.docker.internal:9080",
+  "exporterEndpoint": "host.testcontainers.internal:55680",
   "serviceUrl": "service:jmx:rmi:///jndi/rmi://cassandra:7199/jmxrmi",
   "groovyScript": "/app/script.groovy",
   "username": "cassandra",
