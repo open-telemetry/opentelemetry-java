@@ -591,42 +591,43 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public String toString() {
+    String name;
+    String attributes;
+    Status status;
+    long totalRecordedEvents;
+    long endEpochNanos;
     synchronized (lock) {
-      return "RecordEventsReadableSpan{"
-          + "traceId="
-          + context.getTraceId()
-          + ", "
-          + "spanId="
-          + context.getSpanId()
-          + ", "
-          + "parentSpanId="
-          + parentSpanId
-          + ", "
-          + "name="
-          + name
-          + ", "
-          + "kind="
-          + kind
-          + ", "
-          + "attributes="
-          + attributes
-          + ", "
-          + "status="
-          + status
-          + ", "
-          + "totalRecordedEvents="
-          + totalRecordedEvents
-          + ", "
-          + "totalRecordedLinks="
-          + totalRecordedLinks
-          + ", "
-          + "startEpochNanos="
-          + startEpochNanos
-          + ", "
-          + "endEpochNanos="
-          + endEpochNanos
-          + "}";
+      name = this.name;
+      attributes = String.valueOf(this.attributes);
+      status = this.status;
+      totalRecordedEvents = this.totalRecordedEvents;
+      endEpochNanos = this.endEpochNanos;
     }
+    StringBuilder sb = new StringBuilder();
+    sb.append("RecordEventsReadableSpan{traceId=");
+    sb.append(context.getTraceId());
+    sb.append(", spanId=");
+    sb.append(context.getSpanId());
+    sb.append(", parentSpanId=");
+    sb.append(parentSpanId);
+    sb.append(", name=");
+    sb.append(name);
+    sb.append(", kind=");
+    sb.append(kind);
+    sb.append(", attributes=");
+    sb.append(attributes);
+    sb.append(", status=");
+    sb.append(status);
+    sb.append(", totalRecordedEvents=");
+    sb.append(totalRecordedEvents);
+    sb.append(", totalRecordedLinks=");
+    sb.append(totalRecordedLinks);
+    sb.append(", startEpochNanos=");
+    sb.append(startEpochNanos);
+    sb.append(", endEpochNanos=");
+    sb.append(endEpochNanos);
+    sb.append("}");
+    return sb.toString();
   }
 
   private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
