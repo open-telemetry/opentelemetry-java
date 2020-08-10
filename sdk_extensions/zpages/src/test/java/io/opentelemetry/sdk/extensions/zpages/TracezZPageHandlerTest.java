@@ -357,14 +357,15 @@ class TracezZPageHandlerTest {
   private static ImmutableMap<String, String> generateQueryMap(
       String spanName, String type, String subtype)
       throws UnsupportedEncodingException, URISyntaxException {
-    return ZPageHttpHandler.parseQueryMap(
+    return ZPageHttpHandler.parseQueryString(
         new URI(
-            "tracez?zspanname="
-                + urlFormParameterEscaper().escape(spanName)
-                + "&ztype="
-                + type
-                + "&zsubtype="
-                + subtype));
+                "tracez?zspanname="
+                    + urlFormParameterEscaper().escape(spanName)
+                    + "&ztype="
+                    + type
+                    + "&zsubtype="
+                    + subtype)
+            .getRawQuery());
   }
 
   @Test

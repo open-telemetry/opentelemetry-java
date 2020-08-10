@@ -19,13 +19,12 @@ package io.opentelemetry.sdk.extensions.zpages;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.CharStreams;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
@@ -49,39 +48,13 @@ final class ZPageHttpHandler implements HttpHandler {
   }
 
   /**
-   * Build a query map from the {@code uri}.
-   *
-   * @param uri the {@link URI} for buiding the query map.
-   * @return the query map built based on the @{code uri}.
-   */
-  @VisibleForTesting
-  static ImmutableMap<String, String> parseQueryMap(URI uri) throws UnsupportedEncodingException {
-    String queryString = uri.getRawQuery();
-    if (queryString == null) {
-      return ImmutableMap.of();
-    }
-    Map<String, String> queryMap = new HashMap<String, String>();
-    for (String param : QUERY_SPLITTER.split(queryString)) {
-      List<String> keyValuePair = QUERY_KEYVAL_SPLITTER.splitToList(param);
-      if (keyValuePair.size() > 1) {
-        if (keyValuePair.get(0).equals(PARAM_SPAN_NAME)) {
-          queryMap.put(keyValuePair.get(0), URLDecoder.decode(keyValuePair.get(1), "UTF-8"));
-        } else {
-          queryMap.put(keyValuePair.get(0), keyValuePair.get(1));
-        }
-      }
-    }
-    return ImmutableMap.copyOf(queryMap);
-  }
-
-  /**
    * Build a query map from the query string.
    *
    * @param queryString the query string for buiding the query map.
    * @return the query map built based on the query string.
    */
   @VisibleForTesting
-  static ImmutableMap<String, String> parseQueryMap(String queryString)
+  static ImmutableMap<String, String> parseQueryString(String queryString)
       throws UnsupportedEncodingException {
     if (queryString == null) {
       return ImmutableMap.of();
@@ -105,17 +78,21 @@ final class ZPageHttpHandler implements HttpHandler {
     try {
       String requestMethod = httpExchange.getRequestMethod();
       httpExchange.sendResponseHeaders(200, 0);
-      if (requestMethod.equalsIgnoreCase("get")) {
+      if (requestMethod.equalsIgnoreCase("GET")) {
         zpageHandler.emitHtml(
             requestMethod,
-            parseQueryMap(httpExchange.getRequestURI()),
+            parseQueryString(httpExchange.getRequestURI().getRawQuery()),
             httpExchange.getResponseBody());
-      } else if (requestMethod.equalsIgnoreCase("post")) {
-        BufferedReader requestBodyReader =
-            new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), "utf-8"));
-        String queryString = requestBodyReader.readLine();
+      } else if (requestMethod.equalsIgnoreCase("POST")) {
+        // BufferedReader requestBodyReader =
+        // new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), "utf-8"));
+        // String queryString = requestBodyReader.readLine();
+        InputStreamReader requestBodyReader =
+            new InputStreamReader(httpExchange.getRequestBody(), "utf-8");
+        String queryString = CharStreams.toString(requestBodyReader);
+        requestBodyReader.close();
         zpageHandler.emitHtml(
-            requestMethod, parseQueryMap(queryString), httpExchange.getResponseBody());
+            requestMethod, parseQueryString(queryString), httpExchange.getResponseBody());
       }
     } finally {
       httpExchange.close();

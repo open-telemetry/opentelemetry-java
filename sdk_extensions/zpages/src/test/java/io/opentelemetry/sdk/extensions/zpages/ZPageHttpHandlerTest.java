@@ -30,8 +30,8 @@ public final class ZPageHttpHandlerTest {
   void parseEmptyQuery() throws URISyntaxException, UnsupportedEncodingException {
     URI uri = new URI("http://localhost:8000/tracez");
     String queryString = "";
-    assertThat(ZPageHttpHandler.parseQueryMap(uri)).isEmpty();
-    assertThat(ZPageHttpHandler.parseQueryMap(queryString)).isEmpty();
+    assertThat(ZPageHttpHandler.parseQueryString(uri.getRawQuery())).isEmpty();
+    assertThat(ZPageHttpHandler.parseQueryString(queryString)).isEmpty();
   }
 
   @Test
@@ -39,9 +39,9 @@ public final class ZPageHttpHandlerTest {
     URI uri =
         new URI("http://localhost:8000/tracez/tracez?zspanname=Test&ztype=1&zsubtype=5&noval");
     String queryString = "zspanname=Test&ztype=1&zsubtype=5&noval";
-    assertThat(ZPageHttpHandler.parseQueryMap(uri))
+    assertThat(ZPageHttpHandler.parseQueryString(uri.getRawQuery()))
         .containsOnly(entry("zspanname", "Test"), entry("ztype", "1"), entry("zsubtype", "5"));
-    assertThat(ZPageHttpHandler.parseQueryMap(queryString))
+    assertThat(ZPageHttpHandler.parseQueryString(queryString))
         .containsOnly(entry("zspanname", "Test"), entry("ztype", "1"), entry("zsubtype", "5"));
   }
 }
