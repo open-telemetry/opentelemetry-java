@@ -26,6 +26,7 @@ import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
@@ -73,6 +74,33 @@ class LongCounterSdkTest {
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
+    List<MetricData> metricDataList = longCounter.collectAll();
+    assertThat(metricDataList).hasSize(1);
+    MetricData metricData = metricDataList.get(0);
+    assertThat(metricData.getDescriptor())
+        .isEqualTo(
+            Descriptor.create(
+                "testCounter",
+                "My very own counter",
+                "ms",
+                Descriptor.Type.MONOTONIC_LONG,
+                Labels.of("sk1", "sv1")));
+    assertThat(metricData.getResource()).isEqualTo(RESOURCE);
+    assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
+    assertThat(metricData.getPoints()).isEmpty();
+  }
+
+  @Test
+  void collectMetrics_bound_NoRecords() {
+    LongCounterSdk longCounter =
+        testSdk
+            .longCounterBuilder("testCounter")
+            .setConstantLabels(Labels.of("sk1", "sv1"))
+            .setDescription("My very own counter")
+            .setUnit("ms")
+            .build();
+    BoundInstrument ignored = longCounter.bind(Labels.of("foo", "bar"));
+
     List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
