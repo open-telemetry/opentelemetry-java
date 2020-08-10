@@ -39,7 +39,7 @@ public final class DefaultSpan implements Span {
    * @return a {@code DefaultSpan} with an invalid {@code SpanContext}.
    * @since 0.1.0
    */
-  public static DefaultSpan getInvalid() {
+  public static Span getInvalid() {
     return INVALID;
   }
 
@@ -50,7 +50,7 @@ public final class DefaultSpan implements Span {
    * @return a {@link DefaultSpan}.
    * @since 0.1.0
    */
-  public static DefaultSpan create(SpanContext spanContext) {
+  public static Span create(SpanContext spanContext) {
     return new DefaultSpan(spanContext);
   }
 
