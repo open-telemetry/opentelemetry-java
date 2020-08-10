@@ -9,7 +9,7 @@ OpenTelemetry Extensions JMX Metric Gatherer
 [javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-contrib-runtime-metrics
 
 This utility provides an easy framework for gathering and reporting metrics based on queried
-MBeans from a JMX server.  It loads a custom Groovy script establishes a helpful bound `otel`
+MBeans from a JMX server.  It loads a custom Groovy script and establishes a helpful, bound `otel`
 object with methods for obtaining MBeans and constructing synchronous OpenTelemetry instruments:
 
 ### Usage
