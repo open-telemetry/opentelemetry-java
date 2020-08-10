@@ -6,12 +6,13 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-description = 'OpenTelemetry SDK'
-ext.moduleName = "io.opentelemetry.sdk"
-ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk"
+description = 'OpenTelemetry SDK Metrics'
+ext.moduleName = "io.opentelemetry.sdk.metrics"
+ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/metrics"
 
 dependencies {
-    api project(':opentelemetry-api')
+    api project(':opentelemetry-api'),
+            project(':opentelemetry-sdk-common')
 
     implementation libraries.guava
 
@@ -19,6 +20,8 @@ dependencies {
 
     testAnnotationProcessor libraries.auto_value
     testCompileOnly libraries.auto_value_annotation
+
+    testCompile project(path: ':opentelemetry-sdk-common', configuration: 'testClasses')
 
     testImplementation project(':opentelemetry-testing-internal')
     testImplementation libraries.junit_pioneer
