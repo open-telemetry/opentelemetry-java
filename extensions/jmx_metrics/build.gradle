@@ -1,0 +1,60 @@
+plugins {
+    id "groovy"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+    id "me.champeau.gradle.jmh"
+}
+
+description = 'OpenTelemetry Extension : JMX Metrics'
+ext.moduleName = "io.opentelemetry.extension.metrics.jmx"
+
+// we are joint compiling so rely on groovy plugin
+sourceSets.main.groovy.srcDirs = ["src/main/java", "src/main/groovy"]
+sourceSets.test.groovy.srcDirs = ["src/test/java", "src/test/groovy"]
+sourceSets.main.java.srcDirs = []
+sourceSets.test.java.srcDirs = []
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+ext.groovyVersion = "2.5.7"
+
+dependencies {
+    implementation project(':opentelemetry-api'),
+         project(':opentelemetry-proto'),
+         project(':opentelemetry-sdk'),
+         project(':opentelemetry-exporters-inmemory'),
+         project(':opentelemetry-exporters-logging'),
+         project(':opentelemetry-exporters-otlp'),
+         libraries.protobuf,
+         libraries.protobuf_util,
+         "com.fasterxml.jackson.core:jackson-databind:2.10.0",
+         "com.google.guava:guava:25.0-jre",
+         "io.grpc:grpc-netty-shaded:${grpcVersion}",
+         "org.codehaus.groovy:groovy-jmx:${groovyVersion}",
+         "org.codehaus.groovy:groovy:${groovyVersion}"
+
+    runtime "org.terracotta:jmxremote_optional-tc:1.0.5"
+
+    testImplementation project(':opentelemetry-proto'),
+        libraries.grpc_api,
+        libraries.grpc_protobuf,
+        libraries.grpc_stub,
+        libraries.testcontainers,
+        libraries.awaitility,
+        libraries.rest_assured,
+        "io.grpc:grpc-testing:${grpcVersion}",
+        "org.codehaus.groovy:groovy-test:${groovyVersion}"
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+}
+
+tasks.withType(Test) {
+    dependsOn fatJar
+    systemProperty 'fat.jar.path', fatJar.outputs.files[0].path
+}
+

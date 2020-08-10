@@ -12,6 +12,7 @@ def subprojects = [
         project(':opentelemetry-extension-trace-propagators'),
         project(':opentelemetry-extension-trace-utils'),
         project(':opentelemetry-extension-auto-annotations'),
+        project(':opentelemetry-extension-jmx-metrics'),
         project(':opentelemetry-exporters-logging'),
         project(':opentelemetry-exporters-inmemory'),
         project(':opentelemetry-exporters-jaeger'),
