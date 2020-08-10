@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * A LoggingBatchStrategy encodes the logic for how to batch and aggregate records for transmission.
- * {@see SizeOrLatencyBatchStrategy}
+ * {@link SizeOrLatencyBatchStrategy}
  */
 public interface LoggingBatchStrategy {
   /**

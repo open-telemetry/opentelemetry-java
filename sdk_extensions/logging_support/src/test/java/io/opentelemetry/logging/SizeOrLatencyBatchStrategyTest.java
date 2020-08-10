@@ -1,15 +1,3 @@
-package io.opentelemetry.logging;
-
-import static com.google.common.truth.Truth.assertThat;
-
-import io.opentelemetry.logging.api.LogRecord;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
 /*
  * Copyright 2020, OpenTelemetry Authors
  *
@@ -25,6 +13,19 @@ import org.junit.runners.JUnit4;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package io.opentelemetry.logging;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import io.opentelemetry.logging.api.LogRecord;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 @RunWith(JUnit4.class)
 public class SizeOrLatencyBatchStrategyTest {
 

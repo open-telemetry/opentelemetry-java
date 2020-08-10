@@ -125,7 +125,7 @@ public class SizeOrLatencyBatchStrategy implements LoggingBatchStrategy {
     }
 
     /**
-     * Instantiate the strategy
+     * Instantiate the strategy.
      *
      * @return built strategy
      */

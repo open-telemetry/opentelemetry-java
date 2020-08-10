@@ -25,7 +25,6 @@ include ":opentelemetry-all",
         ":opentelemetry-extension-runtime-metrics",
         ":opentelemetry-extension-trace-propagators",
         ":opentelemetry-extension-trace-utils",
-        ":opentelemetry-extension-logging-support",
         ":opentelemetry-exporters-inmemory",
         ":opentelemetry-exporters-jaeger",
         ":opentelemetry-exporters-logging",
@@ -39,6 +38,7 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-extension-async-processor",
         ":opentelemetry-sdk-extension-auto-config",
         ":opentelemetry-sdk-extension-aws-v1-support",
+        ":opentelemetry-sdk-extension-logging-support",
         ":opentelemetry-sdk-extension-otproto",
         ":opentelemetry-sdk-extension-testbed",
         ":opentelemetry-sdk-extension-jaeger-remote-sampler",
@@ -51,7 +51,6 @@ rootProject.children.each {
         .replace("opentelemetry-exporters-", "exporters/")
         .replace("opentelemetry-extension-", "extensions/")
         .replace("opentelemetry-sdk-extension-", "sdk_extensions/")
-        .replace("logging-", "logging/")
         .replace("opentelemetry-", "")
         .replace("-", "_") as File
 }

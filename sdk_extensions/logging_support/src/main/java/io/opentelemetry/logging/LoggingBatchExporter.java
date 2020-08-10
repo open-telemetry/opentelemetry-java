@@ -25,7 +25,7 @@ import java.util.List;
  */
 public interface LoggingBatchExporter {
   /**
-   * Accept a batch of records for transmission or export
+   * Accept a batch of records for transmission or export.
    *
    * @param batch list of records ready for transport
    */

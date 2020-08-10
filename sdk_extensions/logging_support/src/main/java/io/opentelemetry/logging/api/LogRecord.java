@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * A LogRecord is an implementation of the <a
  * href="https://github.com/open-telemetry/oteps/blob/master/text/logs/0097-log-data-model.md">
- * OpenTelemetry logging model</a>
+ * OpenTelemetry logging model</a>.
  */
 public interface LogRecord {
   long getTimeUnixNano();
