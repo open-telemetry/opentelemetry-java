@@ -349,12 +349,12 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
           out.print("<title>" + TRACE_CONFIGZ_NAME + "</title>");
           out.print("</head>");
           out.print("<body>");
-          out.print("Error while generating HTML: " + t.toString());
+          out.print("Error while applying trace config changes: " + t.toString());
           out.print("</body>");
           out.print("</html>");
-          logger.log(Level.WARNING, "error while generating HTML", t);
+          logger.log(Level.WARNING, "error while applying trace config changes", t);
         } catch (Throwable e) {
-          logger.log(Level.WARNING, "error while generating HTML", e);
+          logger.log(Level.WARNING, "error while applying trace config changes", e);
           return true;
         }
         return true;

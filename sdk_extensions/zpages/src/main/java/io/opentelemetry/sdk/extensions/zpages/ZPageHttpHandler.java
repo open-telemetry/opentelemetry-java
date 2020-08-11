@@ -83,10 +83,11 @@ final class ZPageHttpHandler implements HttpHandler {
             parseQueryString(httpExchange.getRequestURI().getRawQuery()),
             httpExchange.getResponseBody());
       } else {
-        InputStreamReader requestBodyReader =
-            new InputStreamReader(httpExchange.getRequestBody(), "utf-8");
-        String queryString = CharStreams.toString(requestBodyReader);
-        requestBodyReader.close();
+        final String queryString;
+        try (InputStreamReader requestBodyReader =
+            new InputStreamReader(httpExchange.getRequestBody(), "utf-8")) {
+          queryString = CharStreams.toString(requestBodyReader);
+        }
         boolean error =
             zpageHandler.processRequest(
                 requestMethod, parseQueryString(queryString), httpExchange.getResponseBody());
