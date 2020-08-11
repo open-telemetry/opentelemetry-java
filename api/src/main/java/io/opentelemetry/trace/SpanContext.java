@@ -60,7 +60,36 @@ public abstract class SpanContext {
    */
   public static SpanContext create(
       CharSequence traceId, CharSequence spanId, TraceFlags traceFlags, TraceState traceState) {
-    return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ false);
+    return create(traceId, 0, spanId, 0, traceFlags, traceState, /* remote=*/ false);
+  }
+
+  /**
+   * Creates a new {@code SpanContext} with the given identifiers and options.
+   *
+   * @param traceId the trace identifier of the span context.
+   * @param traceIdOffset the offset at which the traceId starts.
+   * @param spanId the span identifier of the span context.
+   * @param spanIdOffset the offset at which the spanId starts.
+   * @param traceFlags the trace options for the span context.
+   * @param traceState the trace state for the span context.
+   * @return a new {@code SpanContext} with the given identifiers and options.
+   * @since 0.1.0
+   */
+  @SuppressWarnings("InconsistentOverloads")
+  public static SpanContext create(
+      CharSequence traceId,
+      int traceIdOffset,
+      CharSequence spanId,
+      int spanIdOffset,
+      TraceFlags traceFlags,
+      TraceState traceState,
+      boolean remote) {
+    return new AutoValue_SpanContext(
+        traceId.subSequence(traceIdOffset, traceIdOffset + 32).toString(),
+        spanId.subSequence(spanIdOffset, spanIdOffset + 16).toString(),
+        traceFlags,
+        traceState,
+        /* remote=*/ remote);
   }
 
   /**
@@ -76,7 +105,7 @@ public abstract class SpanContext {
    */
   public static SpanContext createFromRemoteParent(
       CharSequence traceId, CharSequence spanId, TraceFlags traceFlags, TraceState traceState) {
-    return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ true);
+    return create(traceId, 0, spanId, 0, traceFlags, traceState, /* remote=*/ true);
   }
 
   /**
@@ -85,7 +114,7 @@ public abstract class SpanContext {
    * @return the trace identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract CharSequence getTraceId();
+  public abstract String getTraceIdAsBase16();
 
   /**
    * Returns the span identifier associated with this {@code SpanContext}.
@@ -93,7 +122,7 @@ public abstract class SpanContext {
    * @return the span identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract CharSequence getSpanId();
+  public abstract String getSpanIdAsBase16();
 
   /**
    * Returns the {@code TraceFlags} associated with this {@code SpanContext}.
@@ -118,7 +147,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public boolean isValid() {
-    return TraceId.isValid(getTraceId()) && SpanId.isValid(getSpanId());
+    return TraceId.isValid(getTraceIdAsBase16()) && SpanId.isValid(getSpanIdAsBase16());
   }
 
   /**

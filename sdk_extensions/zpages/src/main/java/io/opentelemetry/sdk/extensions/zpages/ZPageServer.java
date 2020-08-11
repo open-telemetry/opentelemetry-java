@@ -89,8 +89,7 @@ public final class ZPageServer {
 
   /** Function that adds the {@link TracezSpanProcessor} to the {@link TracerSdkProvider}. */
   private static void addTracezSpanProcessor() {
-    if (isTracezSpanProcesserAdded.compareAndSet(
-        /* expectedValue=*/ false, /* newValue=*/ true)) {
+    if (isTracezSpanProcesserAdded.compareAndSet(/* expectedValue=*/ false, /* newValue=*/ true)) {
       tracerProvider.addSpanProcessor(tracezSpanProcessor);
     }
   }

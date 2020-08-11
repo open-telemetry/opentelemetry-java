@@ -95,14 +95,14 @@ public class HttpTraceContext implements HttpTextFormat {
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
 
-    CharSequence traceId = spanContext.getTraceId();
+    CharSequence traceId = spanContext.getTraceIdAsBase16();
     for (int i = 0; i < traceId.length(); i++) {
       chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
     }
 
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
 
-    CharSequence spanId = spanContext.getSpanId();
+    CharSequence spanId = spanContext.getSpanIdAsBase16();
     for (int i = 0; i < spanId.length(); i++) {
       chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
     }
@@ -162,8 +162,8 @@ public class HttpTraceContext implements HttpTextFormat {
     try {
       TraceState traceState = extractTraceState(traceStateHeader);
       return SpanContext.createFromRemoteParent(
-          contextFromParentHeader.getTraceId(),
-          contextFromParentHeader.getSpanId(),
+          contextFromParentHeader.getTraceIdAsBase16(),
+          contextFromParentHeader.getSpanIdAsBase16(),
           contextFromParentHeader.getTraceFlags(),
           traceState);
     } catch (IllegalArgumentException e) {

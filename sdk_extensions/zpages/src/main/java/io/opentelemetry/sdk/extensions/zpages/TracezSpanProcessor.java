@@ -64,7 +64,7 @@ final class TracezSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(ReadableSpan span) {
-    runningSpanCache.put(span.getSpanContext().getSpanId().toString(), span);
+    runningSpanCache.put(span.getSpanContext().getSpanIdAsBase16().toString(), span);
   }
 
   @Override
@@ -74,7 +74,7 @@ final class TracezSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    runningSpanCache.remove(span.getSpanContext().getSpanId().toString());
+    runningSpanCache.remove(span.getSpanContext().getSpanIdAsBase16().toString());
     if (!sampled || span.getSpanContext().getTraceFlags().isSampled()) {
       completedSpanCache.putIfAbsent(span.getName(), new TracezSpanBuckets());
       completedSpanCache.get(span.getName()).addToBucket(span);

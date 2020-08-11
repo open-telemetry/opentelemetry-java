@@ -55,9 +55,9 @@ class SpanContextTest {
 
   @Test
   void invalidSpanContext() {
-    assertThat(SpanContext.getInvalid().getTraceId().toString())
+    assertThat(SpanContext.getInvalid().getTraceIdAsBase16().toString())
         .isEqualTo(TraceId.getInvalid().toString());
-    assertThat(SpanContext.getInvalid().getSpanId().toString())
+    assertThat(SpanContext.getInvalid().getSpanIdAsBase16().toString())
         .isEqualTo(SpanId.getInvalid().toString());
     assertThat(SpanContext.getInvalid().getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
@@ -81,14 +81,14 @@ class SpanContextTest {
 
   @Test
   void getTraceId() {
-    assertThat(first.getTraceId().toString()).isEqualTo(FIRST_TRACE_ID.toString());
-    assertThat(second.getTraceId().toString()).isEqualTo(SECOND_TRACE_ID.toString());
+    assertThat(first.getTraceIdAsBase16().toString()).isEqualTo(FIRST_TRACE_ID.toString());
+    assertThat(second.getTraceIdAsBase16().toString()).isEqualTo(SECOND_TRACE_ID.toString());
   }
 
   @Test
   void getSpanId() {
-    assertThat(first.getSpanId().toString()).isEqualTo(FIRST_SPAN_ID.toString());
-    assertThat(second.getSpanId().toString()).isEqualTo(SECOND_SPAN_ID.toString());
+    assertThat(first.getSpanIdAsBase16().toString()).isEqualTo(FIRST_SPAN_ID.toString());
+    assertThat(second.getSpanIdAsBase16().toString()).isEqualTo(SECOND_SPAN_ID.toString());
   }
 
   @Test

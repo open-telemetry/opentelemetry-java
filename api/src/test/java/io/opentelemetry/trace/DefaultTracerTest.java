@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.grpc.Context;
 import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DefaultTracer}. */
@@ -37,8 +36,8 @@ class DefaultTracerTest {
   private static final byte[] spanBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final SpanContext spanContext =
       SpanContext.create(
-          new String(firstBytes, StandardCharsets.US_ASCII),
-          new String(spanBytes, StandardCharsets.US_ASCII),
+          TraceId.toLowerBase16(firstBytes),
+          SpanId.toLowerBase16(spanBytes),
           TraceFlags.getDefault(),
           TraceState.getDefault());
 

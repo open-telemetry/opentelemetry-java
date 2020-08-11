@@ -93,13 +93,13 @@ abstract class SpanWrapper implements SpanData {
   @Override
   @Memoized
   public CharSequence getTraceId() {
-    return delegate().getContext().getTraceId();
+    return delegate().getContext().getTraceIdAsBase16();
   }
 
   @Override
   @Memoized
   public CharSequence getSpanId() {
-    return delegate().getContext().getSpanId();
+    return delegate().getContext().getSpanIdAsBase16();
   }
 
   @Override

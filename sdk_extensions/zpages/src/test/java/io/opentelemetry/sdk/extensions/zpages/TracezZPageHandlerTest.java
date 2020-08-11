@@ -287,8 +287,9 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + RUNNING_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of running: 1");
-    assertThat(output.toString()).contains(runningSpan.getContext().getTraceId().toString());
-    assertThat(output.toString()).contains(runningSpan.getContext().getSpanId().toString());
+    assertThat(output.toString())
+        .contains(runningSpan.getContext().getTraceIdAsBase16().toString());
+    assertThat(output.toString()).contains(runningSpan.getContext().getSpanIdAsBase16().toString());
 
     runningSpan.end();
   }
@@ -311,10 +312,14 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + LATENCY_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of latency samples: 2");
-    assertThat(output.toString()).contains(latencySpan1.getContext().getTraceId().toString());
-    assertThat(output.toString()).contains(latencySpan1.getContext().getSpanId().toString());
-    assertThat(output.toString()).contains(latencySpan2.getContext().getTraceId().toString());
-    assertThat(output.toString()).contains(latencySpan2.getContext().getSpanId().toString());
+    assertThat(output.toString())
+        .contains(latencySpan1.getContext().getTraceIdAsBase16().toString());
+    assertThat(output.toString())
+        .contains(latencySpan1.getContext().getSpanIdAsBase16().toString());
+    assertThat(output.toString())
+        .contains(latencySpan2.getContext().getTraceIdAsBase16().toString());
+    assertThat(output.toString())
+        .contains(latencySpan2.getContext().getSpanIdAsBase16().toString());
   }
 
   @Test
@@ -335,10 +340,10 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + ERROR_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of error samples: 2");
-    assertThat(output.toString()).contains(errorSpan1.getContext().getTraceId().toString());
-    assertThat(output.toString()).contains(errorSpan1.getContext().getSpanId().toString());
-    assertThat(output.toString()).contains(errorSpan2.getContext().getTraceId().toString());
-    assertThat(output.toString()).contains(errorSpan2.getContext().getSpanId().toString());
+    assertThat(output.toString()).contains(errorSpan1.getContext().getTraceIdAsBase16().toString());
+    assertThat(output.toString()).contains(errorSpan1.getContext().getSpanIdAsBase16().toString());
+    assertThat(output.toString()).contains(errorSpan2.getContext().getTraceIdAsBase16().toString());
+    assertThat(output.toString()).contains(errorSpan2.getContext().getSpanIdAsBase16().toString());
   }
 
   @Test

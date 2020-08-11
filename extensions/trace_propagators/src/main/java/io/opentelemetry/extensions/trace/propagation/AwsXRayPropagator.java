@@ -93,14 +93,14 @@ public class AwsXRayPropagator implements HttpTextFormat {
 
     SpanContext spanContext = span.getContext();
 
-    String otTraceId = (String) spanContext.getTraceId();
+    String otTraceId = spanContext.getTraceIdAsBase16();
     String xrayTraceId =
         TRACE_ID_VERSION
             + TRACE_ID_DELIMITER
             + otTraceId.substring(0, TRACE_ID_FIRST_PART_LENGTH)
             + TRACE_ID_DELIMITER
             + otTraceId.substring(TRACE_ID_FIRST_PART_LENGTH);
-    CharSequence parentId = spanContext.getSpanId();
+    CharSequence parentId = spanContext.getSpanIdAsBase16();
     char samplingFlag = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 

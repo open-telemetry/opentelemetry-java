@@ -605,9 +605,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
     StringBuilder sb = new StringBuilder();
     sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceId());
+    sb.append(context.getTraceIdAsBase16());
     sb.append(", spanId=");
-    sb.append(context.getSpanId());
+    sb.append(context.getSpanIdAsBase16());
     sb.append(", parentSpanId=");
     sb.append(parentSpanId);
     sb.append(", name=");

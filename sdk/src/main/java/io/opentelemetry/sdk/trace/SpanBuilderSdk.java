@@ -218,7 +218,7 @@ final class SpanBuilderSdk implements Span.Builder {
       parentContext = null;
     } else {
       // New child span.
-      traceId = parentContext.getTraceId();
+      traceId = parentContext.getTraceIdAsBase16();
       traceState = parentContext.getTraceState();
     }
     List<io.opentelemetry.trace.Link> immutableLinks =
@@ -272,7 +272,7 @@ final class SpanBuilderSdk implements Span.Builder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentContext != null ? parentContext.getSpanId() : null,
+        parentContext != null ? parentContext.getSpanIdAsBase16() : null,
         parentContext != null && parentContext.isRemote(),
         traceConfig,
         spanProcessor,
