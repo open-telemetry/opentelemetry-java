@@ -26,8 +26,8 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * An immutable set of key-value pairs. Keys are only {@link String} typed. Can be iterated over
- * using the {@link #forEach(AttributeConsumer)} method. The type of the value is stored along with
- * the key, for reference when reading the data back out.
+ * using the {@link #forEach(RawAttributeConsumer)} method. The type of the value is stored along
+ * with the key, for reference when reading the data back out.
  *
  * <p>Key-value pairs are dropped for {@code null} or empty keys.
  *
@@ -51,7 +51,7 @@ abstract class HeterogenousImmutableKeyValuePairs implements CleanReadableAttrib
   }
 
   @Override
-  public void forEach(AttributeConsumer consumer) {
+  public void forEach(RawAttributeConsumer consumer) {
     for (int i = 0; i < data().size(); i += 3) {
       consumer.consume(
           (String) data().get(i), (AttributeType) data().get(i + 1), data().get(i + 2));
@@ -171,7 +171,7 @@ abstract class HeterogenousImmutableKeyValuePairs implements CleanReadableAttrib
   public String toString() {
     final StringBuilder sb = new StringBuilder("{");
     forEach(
-        new AttributeConsumer() {
+        new RawAttributeConsumer() {
           @Override
           public void consume(String key, AttributeType type, Object value) {
             sb.append(key)

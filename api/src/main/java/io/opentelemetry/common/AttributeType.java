@@ -16,9 +16,6 @@
 
 package io.opentelemetry.common;
 
-import java.util.List;
-
-@SuppressWarnings("unchecked")
 public enum AttributeType {
   STRING,
   BOOLEAN,
@@ -28,41 +25,4 @@ public enum AttributeType {
   BOOLEAN_ARRAY,
   LONG_ARRAY,
   DOUBLE_ARRAY;
-
-  @SuppressWarnings("TypeParameterUnusedInFormals")
-  public <T> T cast(Object value) {
-    return (T) value;
-  }
-
-  public String asString(Object value) {
-    return (String) value;
-  }
-
-  public long asLong(Object value) {
-    return (long) value;
-  }
-
-  public double asDouble(Object value) {
-    return (double) value;
-  }
-
-  public boolean asBoolean(Object value) {
-    return (boolean) value;
-  }
-
-  public List<String> asStringArray(Object value) {
-    return (List<String>) value;
-  }
-
-  public List<Long> asLongArray(Object value) {
-    return (List<Long>) value;
-  }
-
-  public List<Double> asDoubleArray(Object value) {
-    return (List<Double>) value;
-  }
-
-  public List<Boolean> asBooleanArray(Object value) {
-    return (List<Boolean>) value;
-  }
 }

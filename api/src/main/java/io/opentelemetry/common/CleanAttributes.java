@@ -49,12 +49,22 @@ public abstract class CleanAttributes extends HeterogenousImmutableKeyValuePairs
     return new Builder();
   }
 
+  public Builder toBuilder() {
+    return new Builder(data());
+  }
+
   /**
    * Enables the creation of an {@link CleanAttributes} instance with an arbitrary number of
    * key-value pairs.
    */
   public static class Builder {
     private final List<Object> data = new ArrayList<>();
+
+    public Builder() {}
+
+    public Builder(List<Object> data) {
+      this.data.addAll(data);
+    }
 
     /** Create the {@link CleanAttributes} from this. */
     public CleanAttributes build() {

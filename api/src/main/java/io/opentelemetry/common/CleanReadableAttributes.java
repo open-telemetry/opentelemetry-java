@@ -31,14 +31,18 @@ public interface CleanReadableAttributes {
   boolean isEmpty();
 
   /** Iterates over all the key-value pairs of attributes contained by this instance. */
-  void forEach(AttributeConsumer consumer);
+  void forEach(RawAttributeConsumer consumer);
 
+  /**
+   * Iterates over all the key-value pairs of attributes contained by this instance, with a
+   * type-safe access pattern.
+   */
   void forEach(TypedAttributeConsumer typedConsumer);
 
   @Nullable
   Object get(String key);
 
-  interface AttributeConsumer {
+  interface RawAttributeConsumer {
     void consume(String key, AttributeType type, Object value);
   }
 

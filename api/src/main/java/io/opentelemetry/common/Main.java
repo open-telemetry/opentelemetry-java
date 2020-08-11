@@ -16,6 +16,7 @@
 
 package io.opentelemetry.common;
 
+import io.opentelemetry.common.CleanReadableAttributes.RawAttributeConsumer;
 import io.opentelemetry.common.CleanReadableAttributes.TypedAttributeConsumer;
 import java.util.List;
 
@@ -44,11 +45,55 @@ public class Main {
     System.out.println("attributes = " + attributes);
     System.out.println();
     System.out.println("Processing with casts:");
-    process(attributes);
+    processRaw(attributes);
 
     System.out.println();
     System.out.println("Processing with types:");
     processTyped(attributes);
+  }
+
+  public static void processRaw(CleanReadableAttributes attributes) {
+    attributes.forEach(
+        new RawAttributeConsumer() {
+          @SuppressWarnings("unchecked")
+          @Override
+          public void consume(String key, AttributeType type, Object value) {
+            switch (type) {
+              case STRING:
+                String stringValue = (String) value;
+                System.out.println("stringValue = " + stringValue);
+                break;
+              case BOOLEAN:
+                boolean booleanValue = (boolean) value;
+                System.out.println("booleanValue = " + booleanValue);
+                break;
+              case LONG:
+                long longValue = (long) value;
+                System.out.println("longValue = " + longValue);
+                break;
+              case DOUBLE:
+                double doubleValue = (double) value;
+                System.out.println("doubleValue = " + doubleValue);
+                break;
+              case STRING_ARRAY:
+                List<String> stringArrayValue = (List<String>) value;
+                System.out.println("stringArrayValue = " + stringArrayValue);
+                break;
+              case BOOLEAN_ARRAY:
+                List<Boolean> booleanArrayValue = (List<Boolean>) value;
+                System.out.println("booleanArrayValue = " + booleanArrayValue);
+                break;
+              case LONG_ARRAY:
+                List<Long> longArrayValue = (List<Long>) value;
+                System.out.println("longArrayValue = " + longArrayValue);
+                break;
+              case DOUBLE_ARRAY:
+                List<Double> doubleArrayValue = (List<Double>) value;
+                System.out.println("doubleArrayValue = " + doubleArrayValue);
+                break;
+            }
+          }
+        });
   }
 
   private static void processTyped(CleanAttributes attributes) {
@@ -92,53 +137,6 @@ public class Main {
           @Override
           public void consumeBooleanArray(String key, List<Boolean> value) {
             System.out.println(key + " = " + value);
-          }
-        });
-  }
-
-  public static void process(CleanReadableAttributes attributes) {
-    attributes.forEach(
-        new CleanReadableAttributes.AttributeConsumer() {
-          @Override
-          public void consume(String key, AttributeType type, Object value) {
-            switch (type) {
-              case STRING:
-                String stringValue = type.asString(value);
-                // or (although you could put any java Class on the LHS here and it would still
-                // compile):
-                String alsoStringValue = type.cast(value);
-                System.out.println("stringValue = " + stringValue);
-                System.out.println("alsoStringValue = " + alsoStringValue);
-                break;
-              case BOOLEAN:
-                boolean booleanValue = type.asBoolean(value);
-                System.out.println("booleanValue = " + booleanValue);
-                break;
-              case LONG:
-                long longValue = type.asLong(value);
-                System.out.println("longValue = " + longValue);
-                break;
-              case DOUBLE:
-                double doubleValue = type.asDouble(value);
-                System.out.println("doubleValue = " + doubleValue);
-                break;
-              case STRING_ARRAY:
-                List<String> stringArrayValue = type.asStringArray(value);
-                System.out.println("stringArrayValue = " + stringArrayValue);
-                break;
-              case BOOLEAN_ARRAY:
-                List<Boolean> booleanArrayValue = type.asBooleanArray(value);
-                System.out.println("booleanArrayValue = " + booleanArrayValue);
-                break;
-              case LONG_ARRAY:
-                List<Long> longArrayValue = type.asLongArray(value);
-                System.out.println("longArrayValue = " + longArrayValue);
-                break;
-              case DOUBLE_ARRAY:
-                List<Double> doubleArrayValue = type.asDoubleArray(value);
-                System.out.println("doubleArrayValue = " + doubleArrayValue);
-                break;
-            }
           }
         });
   }
