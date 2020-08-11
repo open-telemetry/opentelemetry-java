@@ -137,7 +137,7 @@ public class TracerSdkProvider implements TracerProvider {
 
     private Clock clock = MillisClock.getInstance();
     private IdsGenerator idsGenerator = new RandomIdsGenerator();
-    private Resource resource = Resource.getTelemetrySdk().merge(Resource.getDefault());
+    private Resource resource = Resource.getDefault();
 
     /**
      * Assign a {@link Clock}.

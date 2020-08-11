@@ -54,7 +54,11 @@ public abstract class Resource {
               .setAttribute("telemetry.sdk.version", readVersion())
               .build());
   private static final Resource DEFAULT =
-      new EnvAutodetectResource.Builder().readEnvironmentVariables().readSystemProperties().build();
+      new EnvAutodetectResource.Builder()
+          .readEnvironmentVariables()
+          .readSystemProperties()
+          .build()
+          .merge(TELEMETRY_SDK);
 
   @Nullable
   private static String readVersion() {
