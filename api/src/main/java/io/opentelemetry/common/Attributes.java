@@ -44,6 +44,11 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
 
     @Override
     abstract List<Object> data();
+
+    @Override
+    public Builder toBuilder() {
+      return new Builder(new ArrayList<>(data()));
+    }
   }
 
   /** Returns a {@link Attributes} instance with no attributes. */
@@ -122,17 +127,28 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
     return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
   }
 
-  /** Creates a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
+  /** Returns a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
   public static Builder newBuilder() {
     return new Builder();
   }
+
+  /** Returns a new {@link Builder} instance populated with the data of this {@link Attributes}. */
+  public abstract Builder toBuilder();
 
   /**
    * Enables the creation of an {@link Attributes} instance with an arbitrary number of key-value
    * pairs.
    */
   public static class Builder {
-    private final List<Object> data = new ArrayList<>();
+    private final List<Object> data;
+
+    private Builder() {
+      data = new ArrayList<>();
+    }
+
+    private Builder(List<Object> data) {
+      this.data = data;
+    }
 
     /** Create the {@link Attributes} from this. */
     public Attributes build() {

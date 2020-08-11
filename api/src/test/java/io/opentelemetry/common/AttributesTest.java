@@ -197,4 +197,26 @@ class AttributesTest {
     assertThat(threeElements.get("string")).isEqualTo(stringAttributeValue("value"));
     assertThat(threeElements.get("long")).isEqualTo(longAttributeValue(1L));
   }
+
+  @Test
+  void toBuilder() {
+    Attributes filled =
+        Attributes.newBuilder().setAttribute("cat", "meow").setAttribute("dog", "bark").build();
+
+    Attributes fromEmpty =
+        Attributes.empty()
+            .toBuilder()
+            .setAttribute("cat", "meow")
+            .setAttribute("dog", "bark")
+            .build();
+    assertThat(fromEmpty).isEqualTo(filled);
+    // Original not mutated.
+    assertThat(Attributes.empty().isEmpty()).isTrue();
+
+    Attributes partial = Attributes.newBuilder().setAttribute("cat", "meow").build();
+    Attributes fromPartial = partial.toBuilder().setAttribute("dog", "bark").build();
+    assertThat(fromPartial).isEqualTo(filled);
+    // Original not mutated.
+    assertThat(partial).isEqualTo(Attributes.newBuilder().setAttribute("cat", "meow").build());
+  }
 }
