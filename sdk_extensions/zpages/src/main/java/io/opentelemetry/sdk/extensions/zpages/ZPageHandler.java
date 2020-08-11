@@ -47,14 +47,25 @@ public abstract class ZPageHandler {
   public abstract String getPageDescription();
 
   /**
-   * Emits the generated HTML page to the {@code outputStream}.
+   * Process requests that require changes (POST/PUT/DELETE).
    *
    * @param requestMethod the request method HttpHandler received.
    * @param queryMap the map of the URL query parameters.
+   * @return true if theres an error while processing the request.
+   */
+  public boolean processRequest(
+      String requestMethod, Map<String, String> queryMap, OutputStream outputStream) {
+    // base no-op method
+    return false;
+  }
+
+  /**
+   * Emits the generated HTML page to the {@code outputStream}.
+   *
+   * @param queryMap the map of the URL query parameters.
    * @param outputStream the output for the generated HTML page.
    */
-  public abstract void emitHtml(
-      String requestMethod, Map<String, String> queryMap, OutputStream outputStream);
+  public abstract void emitHtml(Map<String, String> queryMap, OutputStream outputStream);
 
   /** Package protected constructor to disallow users to extend this class. */
   ZPageHandler() {}

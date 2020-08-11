@@ -80,7 +80,7 @@ class TracezZPageHandlerTest {
     errorSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", emptyQueryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Emit a row for all types of spans
     assertThat(output.toString()).contains(FINISHED_SPAN_ONE);
@@ -102,7 +102,7 @@ class TracezZPageHandlerTest {
     finishedSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", emptyQueryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Link for running span with 3 running
     assertThat(output.toString())
@@ -120,7 +120,7 @@ class TracezZPageHandlerTest {
   void summaryTable_linkForLatencyBasedSpans_NoneForEmptyBoundary() {
     OutputStream output = new ByteArrayOutputStream();
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", emptyQueryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // No link for boundary 0
     assertThat(output.toString())
@@ -192,7 +192,7 @@ class TracezZPageHandlerTest {
     latencySpanSubtype8.end(endOptions8);
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", emptyQueryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Link for boundary 0
     assertThat(output.toString())
@@ -241,7 +241,7 @@ class TracezZPageHandlerTest {
     latencySpan100ms4.end(endOptions4);
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", emptyQueryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Link for boundary 5 with 4 samples
     assertThat(output.toString())
@@ -264,7 +264,7 @@ class TracezZPageHandlerTest {
     finishedSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", emptyQueryMap, output);
+    tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
     // Link for error based spans with 3 samples
     assertThat(output.toString())
@@ -282,7 +282,7 @@ class TracezZPageHandlerTest {
         ImmutableMap.of("zspanname", RUNNING_SPAN, "ztype", "0", "zsubtype", "0");
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", queryMap, output);
+    tracezZPageHandler.emitHtml(queryMap, output);
 
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + RUNNING_SPAN + "</b>");
@@ -306,7 +306,7 @@ class TracezZPageHandlerTest {
         ImmutableMap.of("zspanname", LATENCY_SPAN, "ztype", "1", "zsubtype", "1");
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", queryMap, output);
+    tracezZPageHandler.emitHtml(queryMap, output);
 
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + LATENCY_SPAN + "</b>");
@@ -330,7 +330,7 @@ class TracezZPageHandlerTest {
         ImmutableMap.of("zspanname", ERROR_SPAN, "ztype", "2", "zsubtype", "0");
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", queryMap, output);
+    tracezZPageHandler.emitHtml(queryMap, output);
 
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + ERROR_SPAN + "</b>");
@@ -348,7 +348,7 @@ class TracezZPageHandlerTest {
         ImmutableMap.of("zspanname", "Span", "ztype", "-1", "zsubtype", "0");
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
-    tracezZPageHandler.emitHtml("get", queryMap, output);
+    tracezZPageHandler.emitHtml(queryMap, output);
 
     assertThat(output.toString()).doesNotContain("<h2>Span Details</h2>");
     assertThat(output.toString()).doesNotContain("<b> Span Name: Span</b>");
@@ -377,10 +377,10 @@ class TracezZPageHandlerTest {
     tracer.spanBuilder(nameWithSpace).startSpan().end();
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
 
-    tracezZPageHandler.emitHtml("get", generateQueryMap(nameWithSpace, "0", "0"), output);
+    tracezZPageHandler.emitHtml(generateQueryMap(nameWithSpace, "0", "0"), output);
     assertThat(output.toString()).contains("<b> Span Name: " + nameWithSpace + "</b>");
     assertThat(output.toString()).contains("<b> Number of running: 1");
-    tracezZPageHandler.emitHtml("get", generateQueryMap(nameWithSpace, "1", "0"), output);
+    tracezZPageHandler.emitHtml(generateQueryMap(nameWithSpace, "1", "0"), output);
     assertThat(output.toString()).contains("<b> Span Name: " + nameWithSpace + "</b>");
     assertThat(output.toString()).contains("<b> Number of latency samples: 1");
 
@@ -396,10 +396,10 @@ class TracezZPageHandlerTest {
     tracer.spanBuilder(nameWithPlus).startSpan().end();
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
 
-    tracezZPageHandler.emitHtml("get", generateQueryMap(nameWithPlus, "0", "0"), output);
+    tracezZPageHandler.emitHtml(generateQueryMap(nameWithPlus, "0", "0"), output);
     assertThat(output.toString()).contains("<b> Span Name: " + nameWithPlus + "</b>");
     assertThat(output.toString()).contains("<b> Number of running: 1");
-    tracezZPageHandler.emitHtml("get", generateQueryMap(nameWithPlus, "1", "0"), output);
+    tracezZPageHandler.emitHtml(generateQueryMap(nameWithPlus, "1", "0"), output);
     assertThat(output.toString()).contains("<b> Span Name: " + nameWithPlus + "</b>");
     assertThat(output.toString()).contains("<b> Number of latency samples: 1");
 
@@ -415,10 +415,10 @@ class TracezZPageHandlerTest {
     tracer.spanBuilder(nameWithSpaceAndPlus).startSpan().end();
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
 
-    tracezZPageHandler.emitHtml("get", generateQueryMap(nameWithSpaceAndPlus, "0", "0"), output);
+    tracezZPageHandler.emitHtml(generateQueryMap(nameWithSpaceAndPlus, "0", "0"), output);
     assertThat(output.toString()).contains("<b> Span Name: " + nameWithSpaceAndPlus + "</b>");
     assertThat(output.toString()).contains("<b> Number of running: 1");
-    tracezZPageHandler.emitHtml("get", generateQueryMap(nameWithSpaceAndPlus, "1", "0"), output);
+    tracezZPageHandler.emitHtml(generateQueryMap(nameWithSpaceAndPlus, "1", "0"), output);
     assertThat(output.toString()).contains("<b> Span Name: " + nameWithSpaceAndPlus + "</b>");
     assertThat(output.toString()).contains("<b> Number of latency samples: 1");
 
@@ -434,10 +434,10 @@ class TracezZPageHandlerTest {
     tracer.spanBuilder(nameWithUrlChars).startSpan().end();
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
 
-    tracezZPageHandler.emitHtml("get", generateQueryMap(nameWithUrlChars, "0", "0"), output);
+    tracezZPageHandler.emitHtml(generateQueryMap(nameWithUrlChars, "0", "0"), output);
     assertThat(output.toString()).contains("<b> Span Name: " + nameWithUrlChars + "</b>");
     assertThat(output.toString()).contains("<b> Number of running: 1");
-    tracezZPageHandler.emitHtml("get", generateQueryMap(nameWithUrlChars, "1", "0"), output);
+    tracezZPageHandler.emitHtml(generateQueryMap(nameWithUrlChars, "1", "0"), output);
     assertThat(output.toString()).contains("<b> Span Name: " + nameWithUrlChars + "</b>");
     assertThat(output.toString()).contains("<b> Number of latency samples: 1");
 

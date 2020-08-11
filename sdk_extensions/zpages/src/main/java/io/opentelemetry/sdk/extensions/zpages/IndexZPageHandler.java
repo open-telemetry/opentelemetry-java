@@ -57,8 +57,7 @@ final class IndexZPageHandler extends ZPageHandler {
   }
 
   @Override
-  public void emitHtml(
-      String requestMethod, Map<String, String> queryMap, OutputStream outputStream) {
+  public void emitHtml(Map<String, String> queryMap, OutputStream outputStream) {
     // PrintStream for emiting HTML contents
     try (PrintStream out = new PrintStream(outputStream, /* autoFlush= */ false, "UTF-8")) {
       out.print("<!DOCTYPE html>");

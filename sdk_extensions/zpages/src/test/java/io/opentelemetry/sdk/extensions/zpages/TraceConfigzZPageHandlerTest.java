@@ -42,7 +42,10 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    boolean error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
@@ -70,7 +73,7 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml("post", emptyQueryMap, output);
+    traceConfigzZPageHandler.emitHtml(emptyQueryMap, output);
 
     assertThat(output.toString()).contains("SamplingProbability to");
     assertThat(output.toString()).contains("name=" + querySamplingProbability);
@@ -111,7 +114,7 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml("post", emptyQueryMap, output);
+    traceConfigzZPageHandler.emitHtml(emptyQueryMap, output);
 
     assertThat(output.toString()).contains("Sampler");
     assertThat(output.toString())
@@ -179,7 +182,10 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    boolean error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(
@@ -204,7 +210,10 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    boolean error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
@@ -228,7 +237,10 @@ public final class TraceConfigzZPageHandlerTest {
 
     TraceConfigzZPageHandler traceConfigzZPageHandler =
         new TraceConfigzZPageHandler(tracerProvider);
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    boolean error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
@@ -253,7 +265,10 @@ public final class TraceConfigzZPageHandlerTest {
     Map<String, String> queryMap =
         ImmutableMap.of("action", "change", "samplingprobability", "invalid");
 
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    boolean error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("SamplingProbability must be of the type double");
@@ -263,7 +278,10 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "samplingprobability", "-1");
 
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("probability must be in range [0.0, 1.0]");
@@ -273,7 +291,10 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "samplingprobability", "1.1");
 
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("probability must be in range [0.0, 1.0]");
@@ -283,7 +304,10 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumofattributes", "invalid");
 
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("MaxNumOfAttributes must be of the type integer");
@@ -293,7 +317,10 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumofevents", "invalid");
 
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("MaxNumOfEvents must be of the type integer");
@@ -303,7 +330,10 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumoflinks", "invalid");
 
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("MaxNumOfLinks must be of the type integer");
@@ -313,7 +343,10 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperevent", "invalid");
 
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString())
@@ -324,14 +357,17 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler = new TraceConfigzZPageHandler(tracerProvider);
     queryMap = ImmutableMap.of("action", "change", "maxnumofattributesperlink", "invalid");
 
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(output.toString()).contains("Error while generating HTML: ");
     assertThat(output.toString()).contains("MaxNumOfAttributesPerLink must be of the type integer");
   }
 
   @Test
-  void applyChanges_updateOnlyOnPostRequest() {
+  void applyChanges_shouldNotUpdateOnGetRequest() {
     OutputStream output = new ByteArrayOutputStream();
     String querySamplingProbability = "samplingprobability";
     String queryMaxNumOfAttributes = "maxnumofattributes";
@@ -362,7 +398,7 @@ public final class TraceConfigzZPageHandlerTest {
         new TraceConfigzZPageHandler(tracerProvider);
 
     // GET request, Should not apply changes
-    traceConfigzZPageHandler.emitHtml("get", queryMap, output);
+    traceConfigzZPageHandler.emitHtml(queryMap, output);
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
@@ -378,7 +414,10 @@ public final class TraceConfigzZPageHandlerTest {
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerLink());
 
     // POST request, Should apply changes
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
+    boolean error = traceConfigzZPageHandler.processRequest("POST", queryMap, output);
+    if (!error) {
+      traceConfigzZPageHandler.emitHtml(queryMap, output);
+    }
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(
@@ -393,41 +432,5 @@ public final class TraceConfigzZPageHandlerTest {
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributesPerEvent));
     assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributesPerLink));
-
-    // Restore default
-    queryMap = ImmutableMap.of("action", "default");
-
-    // GET request, should not apply changes
-    traceConfigzZPageHandler.emitHtml("get", queryMap, output);
-
-    assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
-        .isEqualTo(
-            Samplers.probability(Double.parseDouble(newSamplingProbability)).getDescription());
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributes())
-        .isEqualTo(Integer.parseInt(newMaxNumOfAttributes));
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfEvents())
-        .isEqualTo(Integer.parseInt(newMaxNumOfEvents));
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfLinks())
-        .isEqualTo(Integer.parseInt(newMaxNumOfLinks));
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent())
-        .isEqualTo(Integer.parseInt(newMaxNumOfAttributesPerEvent));
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
-        .isEqualTo(Integer.parseInt(newMaxNumOfAttributesPerLink));
-
-    // POST request, should apply changes
-    traceConfigzZPageHandler.emitHtml("post", queryMap, output);
-
-    assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
-        .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributes())
-        .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfEvents())
-        .isEqualTo(TraceConfig.getDefault().getMaxNumberOfEvents());
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfLinks())
-        .isEqualTo(TraceConfig.getDefault().getMaxNumberOfLinks());
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent())
-        .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent());
-    assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
-        .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerLink());
   }
 }

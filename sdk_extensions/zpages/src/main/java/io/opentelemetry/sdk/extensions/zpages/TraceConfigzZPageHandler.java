@@ -292,8 +292,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
   }
 
   @Override
-  public void emitHtml(
-      String requestMethod, Map<String, String> queryMap, OutputStream outputStream) {
+  public void emitHtml(Map<String, String> queryMap, OutputStream outputStream) {
     // PrintStream for emiting HTML contents
     try (PrintStream out = new PrintStream(outputStream, /* autoFlush= */ false, "UTF-8")) {
       out.print("<!DOCTYPE html>");
@@ -314,10 +313,6 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       out.print("</head>");
       out.print("<body>");
       try {
-        // Apply updated trace configuration based on query parameters, apply only on POST requests
-        if (requestMethod.equalsIgnoreCase("post")) {
-          applyTraceConfig(queryMap);
-        }
         emitHtmlBody(out);
       } catch (Throwable t) {
         out.print("Error while generating HTML: " + t.toString());
@@ -328,6 +323,44 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     } catch (Throwable t) {
       logger.log(Level.WARNING, "error while generating HTML", t);
     }
+  }
+
+  @Override
+  public boolean processRequest(
+      String requestMethod, Map<String, String> queryMap, OutputStream outputStream) {
+    if (requestMethod.equalsIgnoreCase("POST")) {
+      try {
+        applyTraceConfig(queryMap);
+      } catch (Throwable t) {
+        try (PrintStream out = new PrintStream(outputStream, /* autoFlush= */ false, "UTF-8")) {
+          out.print("<!DOCTYPE html>");
+          out.print("<html lang=\"en\">");
+          out.print("<head>");
+          out.print("<meta charset=\"UTF-8\">");
+          out.print(
+              "<link rel=\"shortcut icon\" href=\"data:image/png;base64,"
+                  + ZPageLogo.getFaviconBase64()
+                  + "\" type=\"image/png\">");
+          out.print(
+              "<link href=\"https://fonts.googleapis.com/css?family=Open+Sans:300\""
+                  + "rel=\"stylesheet\">");
+          out.print(
+              "<link href=\"https://fonts.googleapis.com/css?family=Roboto\" rel=\"stylesheet\">");
+          out.print("<title>" + TRACE_CONFIGZ_NAME + "</title>");
+          out.print("</head>");
+          out.print("<body>");
+          out.print("Error while generating HTML: " + t.toString());
+          out.print("</body>");
+          out.print("</html>");
+          logger.log(Level.WARNING, "error while generating HTML", t);
+        } catch (Throwable e) {
+          logger.log(Level.WARNING, "error while generating HTML", e);
+          return true;
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

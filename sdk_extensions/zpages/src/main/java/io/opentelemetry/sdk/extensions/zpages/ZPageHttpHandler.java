@@ -80,19 +80,19 @@ final class ZPageHttpHandler implements HttpHandler {
       httpExchange.sendResponseHeaders(200, 0);
       if (requestMethod.equalsIgnoreCase("GET")) {
         zpageHandler.emitHtml(
-            requestMethod,
             parseQueryString(httpExchange.getRequestURI().getRawQuery()),
             httpExchange.getResponseBody());
-      } else if (requestMethod.equalsIgnoreCase("POST")) {
-        // BufferedReader requestBodyReader =
-        // new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), "utf-8"));
-        // String queryString = requestBodyReader.readLine();
+      } else {
         InputStreamReader requestBodyReader =
             new InputStreamReader(httpExchange.getRequestBody(), "utf-8");
         String queryString = CharStreams.toString(requestBodyReader);
         requestBodyReader.close();
-        zpageHandler.emitHtml(
-            requestMethod, parseQueryString(queryString), httpExchange.getResponseBody());
+        boolean error =
+            zpageHandler.processRequest(
+                requestMethod, parseQueryString(queryString), httpExchange.getResponseBody());
+        if (!error) {
+          zpageHandler.emitHtml(parseQueryString(queryString), httpExchange.getResponseBody());
+        }
       }
     } finally {
       httpExchange.close();
