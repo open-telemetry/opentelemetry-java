@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Holds information about the instrumentation library specified when creating an instance of {@link
- * Tracer} using io.opentelemetry.sdk.trace.TracerSdkProvider.
+ * Tracer} using the Tracer Provider.
  */
 @AutoValue
 @Immutable
