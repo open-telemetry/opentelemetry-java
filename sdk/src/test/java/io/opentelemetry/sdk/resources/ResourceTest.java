@@ -16,10 +16,10 @@
 
 package io.opentelemetry.sdk.resources;
 
+import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,19 +34,15 @@ class ResourceTest {
   @BeforeEach
   void setUp() {
     Attributes attributes1 =
-        Attributes.of(
-            "a",
-            AttributeValue.stringAttributeValue("1"),
-            "b",
-            AttributeValue.stringAttributeValue("2"));
+        Attributes.of("a", stringAttributeValue("1"), "b", stringAttributeValue("2"));
     Attributes attribute2 =
         Attributes.of(
             "a",
-            AttributeValue.stringAttributeValue("1"),
+            stringAttributeValue("1"),
             "b",
-            AttributeValue.stringAttributeValue("3"),
+            stringAttributeValue("3"),
             "c",
-            AttributeValue.stringAttributeValue("4"));
+            stringAttributeValue("4"));
     resource1 = Resource.create(attributes1);
     resource2 = Resource.create(attribute2);
   }
@@ -54,11 +50,7 @@ class ResourceTest {
   @Test
   void create() {
     Attributes attributes =
-        Attributes.of(
-            "a",
-            AttributeValue.stringAttributeValue("1"),
-            "b",
-            AttributeValue.stringAttributeValue("2"));
+        Attributes.of("a", stringAttributeValue("1"), "b", stringAttributeValue("2"));
     Resource resource = Resource.create(attributes);
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(2);
@@ -72,19 +64,15 @@ class ResourceTest {
   @Test
   void testResourceEquals() {
     Attributes attribute1 =
-        Attributes.of(
-            "a",
-            AttributeValue.stringAttributeValue("1"),
-            "b",
-            AttributeValue.stringAttributeValue("2"));
+        Attributes.of("a", stringAttributeValue("1"), "b", stringAttributeValue("2"));
     Attributes attribute2 =
         Attributes.of(
             "a",
-            AttributeValue.stringAttributeValue("1"),
+            stringAttributeValue("1"),
             "b",
-            AttributeValue.stringAttributeValue("3"),
+            stringAttributeValue("3"),
             "c",
-            AttributeValue.stringAttributeValue("4"));
+            stringAttributeValue("4"));
     new EqualsTester()
         .addEqualityGroup(Resource.create(attribute1), Resource.create(attribute1), resource1)
         .addEqualityGroup(Resource.create(attribute2), resource2)
@@ -96,11 +84,11 @@ class ResourceTest {
     Attributes expectedAttributes =
         Attributes.of(
             "a",
-            AttributeValue.stringAttributeValue("1"),
+            stringAttributeValue("1"),
             "b",
-            AttributeValue.stringAttributeValue("2"),
+            stringAttributeValue("2"),
             "c",
-            AttributeValue.stringAttributeValue("4"));
+            stringAttributeValue("4"));
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(resource2);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
@@ -109,11 +97,7 @@ class ResourceTest {
   @Test
   void testMergeResources_Resource1() {
     Attributes expectedAttributes =
-        Attributes.of(
-            "a",
-            AttributeValue.stringAttributeValue("1"),
-            "b",
-            AttributeValue.stringAttributeValue("2"));
+        Attributes.of("a", stringAttributeValue("1"), "b", stringAttributeValue("2"));
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
@@ -123,9 +107,9 @@ class ResourceTest {
   void testMergeResources_Resource1_Null() {
     Attributes expectedAttributes =
         Attributes.of(
-            "a", AttributeValue.stringAttributeValue("1"),
-            "b", AttributeValue.stringAttributeValue("3"),
-            "c", AttributeValue.stringAttributeValue("4"));
+            "a", stringAttributeValue("1"),
+            "b", stringAttributeValue("3"),
+            "c", stringAttributeValue("4"));
 
     Resource resource = DEFAULT_RESOURCE.merge(null).merge(resource2);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
@@ -134,11 +118,7 @@ class ResourceTest {
   @Test
   void testMergeResources_Resource2_Null() {
     Attributes expectedAttributes =
-        Attributes.of(
-            "a",
-            AttributeValue.stringAttributeValue("1"),
-            "b",
-            AttributeValue.stringAttributeValue("2"));
+        Attributes.of("a", stringAttributeValue("1"), "b", stringAttributeValue("2"));
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(null);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
@@ -148,9 +128,19 @@ class ResourceTest {
     Resource resource = Resource.getTelemetrySdk();
     ReadableAttributes attributes = resource.getAttributes();
     assertThat(attributes.get("telemetry.sdk.name"))
-        .isEqualTo(AttributeValue.stringAttributeValue("opentelemetry"));
-    assertThat(attributes.get("telemetry.sdk.language"))
-        .isEqualTo(AttributeValue.stringAttributeValue("java"));
+        .isEqualTo(stringAttributeValue("opentelemetry"));
+    assertThat(attributes.get("telemetry.sdk.language")).isEqualTo(stringAttributeValue("java"));
+    assertThat(attributes.get("telemetry.sdk.version").getStringValue()).isNotNull();
+  }
+
+  @Test
+  void testDefault() {
+    Resource resource = Resource.getDefault();
+    ReadableAttributes attributes = resource.getAttributes();
+    assertThat(attributes.get("cat")).isEqualTo(stringAttributeValue("meow"));
+    assertThat(attributes.get("telemetry.sdk.name"))
+        .isEqualTo(stringAttributeValue("opentelemetry"));
+    assertThat(attributes.get("telemetry.sdk.language")).isEqualTo(stringAttributeValue("java"));
     assertThat(attributes.get("telemetry.sdk.version").getStringValue()).isNotNull();
   }
 }
