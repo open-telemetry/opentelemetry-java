@@ -50,10 +50,3 @@ task generateVersionResource {
         propertiesFile.write("sdk.version=${project.version}")
     }
 }
-
-test {
-    // We test the default Resource by setting the environment here. While we could consider
-    // separating out a test for it, setting the environment should generally be harmless for
-    // other tests so keep things simple for now.
-    environment('OTEL_RESOURCE_ATTRIBUTES', 'cat=meow')
-}
