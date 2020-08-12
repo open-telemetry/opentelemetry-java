@@ -68,7 +68,7 @@ public final class DoubleLastValueAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void recordDouble(double value) {
+  public void doRecordDouble(double value) {
     current.set(value);
   }
 }

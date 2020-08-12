@@ -61,7 +61,7 @@ public final class LongMinMaxSumCount extends AbstractAggregator {
   }
 
   @Override
-  public void recordLong(long value) {
+  public void doRecordLong(long value) {
     current.record(value);
   }
 

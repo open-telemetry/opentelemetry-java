@@ -57,4 +57,7 @@ public interface Aggregator {
    * @param value the new {@code double} value to be added.
    */
   void recordDouble(double value);
+
+  /** Whether there have been any recordings since this aggregator has been reset. */
+  boolean hasRecordings();
 }

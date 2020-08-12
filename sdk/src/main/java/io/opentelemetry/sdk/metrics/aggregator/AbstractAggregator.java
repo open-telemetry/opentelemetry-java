@@ -16,7 +16,14 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 abstract class AbstractAggregator implements Aggregator {
+  // Note: This is not 100% thread-safe. There is a race condition where recordings can
+  // be made in the moment between the reset and the setting of this field's value. In those
+  // cases, it is possible that a recording could be missed in a given recording interval, but
+  // it should be picked up in the next, assuming that more recordings are being made.
+  private final AtomicBoolean hasRecordings = new AtomicBoolean(false);
 
   @Override
   public void mergeToAndReset(Aggregator other) {
@@ -24,6 +31,7 @@ abstract class AbstractAggregator implements Aggregator {
       return;
     }
     doMergeAndReset(other);
+    hasRecordings.set(false);
   }
 
   /**
@@ -38,12 +46,37 @@ abstract class AbstractAggregator implements Aggregator {
   abstract void doMergeAndReset(Aggregator aggregator);
 
   @Override
-  public void recordLong(long value) {
-    throw new UnsupportedOperationException("This Aggregator does not support long values");
+  public final void recordLong(long value) {
+    hasRecordings.set(true);
+    doRecordLong(value);
+  }
+
+  /**
+   * Concrete Aggregator instances should implement this method in order support recordings of long
+   * values.
+   */
+  protected void doRecordLong(long value) {
+    throw new UnsupportedOperationException(
+        "This aggregator does not support recording long values.");
   }
 
   @Override
-  public void recordDouble(double value) {
-    throw new UnsupportedOperationException("This Aggregator does not support double values");
+  public final void recordDouble(double value) {
+    hasRecordings.set(true);
+    doRecordDouble(value);
+  }
+
+  /**
+   * Concrete Aggregator instances should implement this method in order support recordings of
+   * double values.
+   */
+  protected void doRecordDouble(double value) {
+    throw new UnsupportedOperationException(
+        "This aggregator does not support recording double values.");
+  }
+
+  @Override
+  public boolean hasRecordings() {
+    return hasRecordings.get();
   }
 }
