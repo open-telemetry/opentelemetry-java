@@ -19,11 +19,12 @@ package io.opentelemetry.sdk.extensions.zpages;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.CharStreams;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
@@ -47,19 +48,19 @@ final class ZPageHttpHandler implements HttpHandler {
   }
 
   /**
-   * Build a query map from the {@code uri}.
+   * Build a query map from the query string.
    *
-   * @param uri the {@link URI} for buiding the query map
-   * @return the query map built based on the @{code uri}
+   * @param queryString the query string for buiding the query map.
+   * @return the query map built based on the query string.
    */
   @VisibleForTesting
-  static ImmutableMap<String, String> parseQueryMap(URI uri) throws UnsupportedEncodingException {
-    String queryStrings = uri.getRawQuery();
-    if (queryStrings == null) {
+  static ImmutableMap<String, String> parseQueryString(String queryString)
+      throws UnsupportedEncodingException {
+    if (queryString == null) {
       return ImmutableMap.of();
     }
     Map<String, String> queryMap = new HashMap<String, String>();
-    for (String param : QUERY_SPLITTER.split(queryStrings)) {
+    for (String param : QUERY_SPLITTER.split(queryString)) {
       List<String> keyValuePair = QUERY_KEYVAL_SPLITTER.splitToList(param);
       if (keyValuePair.size() > 1) {
         if (keyValuePair.get(0).equals(PARAM_SPAN_NAME)) {
@@ -75,9 +76,25 @@ final class ZPageHttpHandler implements HttpHandler {
   @Override
   public final void handle(HttpExchange httpExchange) throws IOException {
     try {
+      String requestMethod = httpExchange.getRequestMethod();
       httpExchange.sendResponseHeaders(200, 0);
-      zpageHandler.emitHtml(
-          parseQueryMap(httpExchange.getRequestURI()), httpExchange.getResponseBody());
+      if (requestMethod.equalsIgnoreCase("GET")) {
+        zpageHandler.emitHtml(
+            parseQueryString(httpExchange.getRequestURI().getRawQuery()),
+            httpExchange.getResponseBody());
+      } else {
+        final String queryString;
+        try (InputStreamReader requestBodyReader =
+            new InputStreamReader(httpExchange.getRequestBody(), "utf-8")) {
+          queryString = CharStreams.toString(requestBodyReader);
+        }
+        boolean error =
+            zpageHandler.processRequest(
+                requestMethod, parseQueryString(queryString), httpExchange.getResponseBody());
+        if (!error) {
+          zpageHandler.emitHtml(parseQueryString(queryString), httpExchange.getResponseBody());
+        }
+      }
     } finally {
       httpExchange.close();
     }

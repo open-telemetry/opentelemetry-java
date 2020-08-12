@@ -274,7 +274,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
             + ZPageLogo.getLogoBase64()
             + "\" /></a>");
     out.print("<h1>Trace Configuration</h1>");
-    out.print("<form class=\"form-flex\" action=\"" + TRACE_CONFIGZ_URL + "\" method=\"get\">");
+    out.print("<form class=\"form-flex\" action=\"" + TRACE_CONFIGZ_URL + "\" method=\"post\">");
     out.print(
         "<input type=\"hidden\" name=\"action\" value=\"" + QUERY_STRING_ACTION_CHANGE + "\" />");
     emitChangeTable(out);
@@ -282,7 +282,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     out.print("<button class=\"button\" type=\"submit\" value=\"Submit\">Submit</button>");
     out.print("</form>");
     // Button for restore default
-    out.print("<form class=\"form-flex\" action=\"" + TRACE_CONFIGZ_URL + "\" method=\"get\">");
+    out.print("<form class=\"form-flex\" action=\"" + TRACE_CONFIGZ_URL + "\" method=\"post\">");
     out.print(
         "<input type=\"hidden\" name=\"action\" value=\"" + QUERY_STRING_ACTION_DEFAULT + "\" />");
     out.print("<button class=\"button\" type=\"submit\" value=\"Submit\">Restore Default</button>");
@@ -313,8 +313,6 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       out.print("</head>");
       out.print("<body>");
       try {
-        // Apply updated trace configuration based on query parameters
-        applyTraceConfig(queryMap);
         emitHtmlBody(out);
       } catch (Throwable t) {
         out.print("Error while generating HTML: " + t.toString());
@@ -325,6 +323,44 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     } catch (Throwable t) {
       logger.log(Level.WARNING, "error while generating HTML", t);
     }
+  }
+
+  @Override
+  public boolean processRequest(
+      String requestMethod, Map<String, String> queryMap, OutputStream outputStream) {
+    if (requestMethod.equalsIgnoreCase("POST")) {
+      try {
+        applyTraceConfig(queryMap);
+      } catch (Throwable t) {
+        try (PrintStream out = new PrintStream(outputStream, /* autoFlush= */ false, "UTF-8")) {
+          out.print("<!DOCTYPE html>");
+          out.print("<html lang=\"en\">");
+          out.print("<head>");
+          out.print("<meta charset=\"UTF-8\">");
+          out.print(
+              "<link rel=\"shortcut icon\" href=\"data:image/png;base64,"
+                  + ZPageLogo.getFaviconBase64()
+                  + "\" type=\"image/png\">");
+          out.print(
+              "<link href=\"https://fonts.googleapis.com/css?family=Open+Sans:300\""
+                  + "rel=\"stylesheet\">");
+          out.print(
+              "<link href=\"https://fonts.googleapis.com/css?family=Roboto\" rel=\"stylesheet\">");
+          out.print("<title>" + TRACE_CONFIGZ_NAME + "</title>");
+          out.print("</head>");
+          out.print("<body>");
+          out.print("Error while applying trace config changes: " + t.toString());
+          out.print("</body>");
+          out.print("</html>");
+          logger.log(Level.WARNING, "error while applying trace config changes", t);
+        } catch (Throwable e) {
+          logger.log(Level.WARNING, "error while applying trace config changes", e);
+          return true;
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
