@@ -67,7 +67,7 @@ public abstract class SpanContext {
 
   /**
    * todo: javadoc me. This one has all the options for how ids are represented. The Strings taking
-   * precendence over the longs, if you're asking for the base16 versions
+   * precedence over the longs, if you're asking for the base16 versions
    */
   @SuppressWarnings("InconsistentOverloads")
   public static SpanContext create(
