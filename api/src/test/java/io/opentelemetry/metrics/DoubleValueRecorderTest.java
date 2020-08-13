@@ -108,6 +108,8 @@ class DoubleValueRecorderTest {
             .build();
     doubleValueRecorder.record(5.0, Labels.empty());
     doubleValueRecorder.record(-5.0, Labels.empty());
+    doubleValueRecorder.record(5.0);
+    doubleValueRecorder.record(-5.0);
   }
 
   @Test

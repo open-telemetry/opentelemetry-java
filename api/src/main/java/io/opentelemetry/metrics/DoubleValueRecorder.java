@@ -76,6 +76,8 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
    */
   void record(double value, Labels labels);
 
+  void record(double value);
+
   @Override
   BoundDoubleValueRecorder bind(Labels labels);
 

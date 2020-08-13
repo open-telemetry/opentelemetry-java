@@ -103,6 +103,7 @@ class LongCounterTest {
     LongCounter longCounter =
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     longCounter.add(1, Labels.empty());
+    longCounter.add(1);
   }
 
   @Test

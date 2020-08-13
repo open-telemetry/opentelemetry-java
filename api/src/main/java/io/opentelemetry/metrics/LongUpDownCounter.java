@@ -67,6 +67,8 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
    */
   void add(long increment, Labels labels);
 
+  void add(long increment);
+
   @Override
   BoundLongUpDownCounter bind(Labels labels);
 

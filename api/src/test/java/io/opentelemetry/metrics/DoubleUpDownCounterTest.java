@@ -109,6 +109,8 @@ class DoubleUpDownCounterTest {
             .build();
     doubleUpDownCounter.add(1.0, Labels.empty());
     doubleUpDownCounter.add(-1.0, Labels.empty());
+    doubleUpDownCounter.add(1.0);
+    doubleUpDownCounter.add(-1.0);
   }
 
   @Test

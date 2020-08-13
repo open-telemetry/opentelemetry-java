@@ -109,6 +109,8 @@ class LongUpDownCounterTest {
             .build();
     longUpDownCounter.add(1, Labels.empty());
     longUpDownCounter.add(-1, Labels.empty());
+    longUpDownCounter.add(1);
+    longUpDownCounter.add(-1);
   }
 
   @Test
