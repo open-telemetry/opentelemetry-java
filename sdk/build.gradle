@@ -23,7 +23,12 @@ dependencies {
     testImplementation project(':opentelemetry-testing-internal')
     testImplementation libraries.junit_pioneer
 
-    jmh project(':opentelemetry-testing-internal')
+    jmh(project(':opentelemetry-testing-internal')) {
+        // JMH doesn't handle dependencies that are duplicated between the main and jmh
+        // configurations properly, but luckily here it's simple enough to just exclude transitive
+        // dependencies.
+        transitive = false
+    }
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
