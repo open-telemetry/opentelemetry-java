@@ -152,5 +152,6 @@ class ResourceTest {
     assertThat(attributes.get("telemetry.sdk.language"))
         .isEqualTo(AttributeValue.stringAttributeValue("java"));
     assertThat(attributes.get("telemetry.sdk.version").getStringValue()).isNotNull();
+    assertThat(attributes.get("telemetry.sdk.version").getStringValue()).startsWith("semver:");
   }
 }

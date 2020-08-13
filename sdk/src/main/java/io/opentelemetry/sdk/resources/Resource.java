@@ -51,7 +51,7 @@ public abstract class Resource {
           Attributes.newBuilder()
               .setAttribute("telemetry.sdk.name", "opentelemetry")
               .setAttribute("telemetry.sdk.language", "java")
-              .setAttribute("telemetry.sdk.version", readVersion())
+              .setAttribute("telemetry.sdk.version", "semver:" + readVersion())
               .build());
   private static final Resource DEFAULT =
       new EnvAutodetectResource.Builder()
