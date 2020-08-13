@@ -50,7 +50,7 @@ public final class RandomIdsGenerator implements IdsGenerator {
     return new TraceIdWrapper(idHi, idLo);
   }
 
-  private static final class TraceIdWrapper implements CharSequence {
+  static final class TraceIdWrapper implements CharSequence {
     private final long idHi;
     private final long idLo;
     private volatile CharSequence chars;
@@ -75,6 +75,14 @@ public final class RandomIdsGenerator implements IdsGenerator {
       return getCharSequence().subSequence(start, end);
     }
 
+    public long getIdHi() {
+      return idHi;
+    }
+
+    public long getIdLo() {
+      return idLo;
+    }
+
     @Override
     public String toString() {
       return getCharSequence().toString();
@@ -88,7 +96,7 @@ public final class RandomIdsGenerator implements IdsGenerator {
     }
   }
 
-  private static final class SpanIdWrapper implements CharSequence {
+  static final class SpanIdWrapper implements CharSequence {
     private final long id;
     private volatile CharSequence chars;
 
@@ -109,6 +117,10 @@ public final class RandomIdsGenerator implements IdsGenerator {
     @Override
     public CharSequence subSequence(int start, int end) {
       return getCharSequence().subSequence(start, end);
+    }
+
+    public long getId() {
+      return id;
     }
 
     @Override

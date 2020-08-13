@@ -17,6 +17,8 @@
 package io.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
+import com.google.auto.value.extension.memoized.Memoized;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -64,6 +66,31 @@ public abstract class SpanContext {
   }
 
   /**
+   * todo: javadoc me. This one has all the options for how ids are represented. The Strings taking
+   * precendence over the longs, if you're asking for the base16 versions
+   */
+  @SuppressWarnings("InconsistentOverloads")
+  public static SpanContext create(
+      @Nullable String traceIdString,
+      long traceIdHi,
+      long traceIdLo,
+      @Nullable String spanIdString,
+      long spanId,
+      TraceFlags traceFlags,
+      TraceState traceState,
+      boolean remote) {
+    return new AutoValue_SpanContext(
+        traceIdString,
+        traceIdHi,
+        traceIdLo,
+        spanIdString,
+        spanId,
+        traceFlags,
+        traceState, /* remote$=*/
+        remote);
+  }
+
+  /**
    * Creates a new {@code SpanContext} with the given identifiers and options.
    *
    * @param traceId the trace identifier of the span context.
@@ -86,10 +113,13 @@ public abstract class SpanContext {
       boolean remote) {
     return new AutoValue_SpanContext(
         traceId.subSequence(traceIdOffset, traceIdOffset + 32).toString(),
+        0,
+        0,
         spanId.subSequence(spanIdOffset, spanIdOffset + 16).toString(),
+        0,
         traceFlags,
         traceState,
-        /* remote=*/ remote);
+        /* remote$=*/ remote);
   }
 
   /**
@@ -114,7 +144,26 @@ public abstract class SpanContext {
    * @return the trace identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract String getTraceIdAsBase16();
+  @Memoized
+  public String getTraceIdAsBase16() {
+    String traceIdString = getTraceIdString();
+    if (traceIdString != null) {
+      return traceIdString;
+    }
+    return TraceId.fromLongs(getTraceIdHi(), getTraceIdLo()).toString();
+  }
+
+  @Nullable
+  abstract String getTraceIdString();
+
+  abstract long getTraceIdHi();
+
+  abstract long getTraceIdLo();
+
+  @Nullable
+  abstract String getSpanIdString();
+
+  abstract long getSpanIdLong();
 
   /**
    * Returns the span identifier associated with this {@code SpanContext}.
@@ -122,7 +171,14 @@ public abstract class SpanContext {
    * @return the span identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract String getSpanIdAsBase16();
+  @Memoized
+  public String getSpanIdAsBase16() {
+    String spanIdString = getSpanIdString();
+    if (spanIdString != null) {
+      return spanIdString;
+    }
+    return SpanId.fromLong(getSpanIdLong()).toString();
+  }
 
   /**
    * Returns the {@code TraceFlags} associated with this {@code SpanContext}.
