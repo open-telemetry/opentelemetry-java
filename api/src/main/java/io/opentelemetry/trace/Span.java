@@ -144,7 +144,7 @@ public interface Span {
 
   /**
    * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
-   * this {@code timestmap} is not the same as {@link System#nanoTime()} but may be computed using
+   * this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed using
    * it, for example, by taking a difference of readings from {@link System#nanoTime()} and adding
    * to the span start time.
    *
@@ -170,7 +170,7 @@ public interface Span {
 
   /**
    * Adds an event to the {@link Span} with the given {@link Attributes} and {@code timestamp}.
-   * Note, this {@code timestmap} is not the same as {@link System#nanoTime()} but may be computed
+   * Note, this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed
    * using it, for example, by taking a difference of readings from {@link System#nanoTime()} and
    * adding to the span start time.
    *
@@ -195,7 +195,7 @@ public interface Span {
 
   /**
    * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
-   * this {@code timestmap} is not the same as {@link System#nanoTime()} but may be computed using
+   * this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed using
    * it, for example, by taking a difference of readings from {@link System#nanoTime()} and adding
    * to the span start time.
    *
