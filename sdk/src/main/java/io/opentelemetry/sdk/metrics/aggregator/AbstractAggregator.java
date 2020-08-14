@@ -16,14 +16,12 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 abstract class AbstractAggregator implements Aggregator {
   // Note: This is not 100% thread-safe. There is a race condition where recordings can
   // be made in the moment between the reset and the setting of this field's value. In those
   // cases, it is possible that a recording could be missed in a given recording interval, but
   // it should be picked up in the next, assuming that more recordings are being made.
-  private final AtomicBoolean hasRecordings = new AtomicBoolean(false);
+  private volatile boolean hasRecordings = false;
 
   @Override
   public void mergeToAndReset(Aggregator other) {
@@ -31,7 +29,7 @@ abstract class AbstractAggregator implements Aggregator {
       return;
     }
     doMergeAndReset(other);
-    hasRecordings.set(false);
+    hasRecordings = false;
   }
 
   /**
@@ -47,8 +45,8 @@ abstract class AbstractAggregator implements Aggregator {
 
   @Override
   public final void recordLong(long value) {
-    hasRecordings.set(true);
     doRecordLong(value);
+    hasRecordings = true;
   }
 
   /**
@@ -62,8 +60,8 @@ abstract class AbstractAggregator implements Aggregator {
 
   @Override
   public final void recordDouble(double value) {
-    hasRecordings.set(true);
     doRecordDouble(value);
+    hasRecordings = true;
   }
 
   /**
@@ -77,6 +75,6 @@ abstract class AbstractAggregator implements Aggregator {
 
   @Override
   public boolean hasRecordings() {
-    return hasRecordings.get();
+    return hasRecordings;
   }
 }
