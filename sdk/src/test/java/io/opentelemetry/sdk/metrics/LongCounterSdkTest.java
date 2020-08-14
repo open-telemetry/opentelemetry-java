@@ -106,6 +106,18 @@ class LongCounterSdkTest {
   }
 
   @Test
+  void collectMetrics_WithEmptyLabel() {
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    LongCounterSdk longCounter1 = testSdk.longCounterBuilder("testCounter1").build();
+    testClock.advanceNanos(SECOND_NANOS);
+    longCounter.add(12, Labels.empty());
+    longCounter1.add(12);
+
+    assertThat(longCounter.collectAll().get(0))
+        .isEqualToIgnoringGivenFields(longCounter1.collectAll().get(0), "descriptor");
+  }
+
+  @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();

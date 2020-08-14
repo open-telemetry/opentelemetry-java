@@ -108,6 +108,20 @@ class LongUpDownCounterSdkTest {
   }
 
   @Test
+  void collectMetrics_WithEmptyLabel() {
+    LongUpDownCounterSdk longUpDownCounter =
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+    LongUpDownCounterSdk longUpDownCounter1 =
+        testSdk.longUpDownCounterBuilder("testUpDownCounter1").build();
+    testClock.advanceNanos(SECOND_NANOS);
+    longUpDownCounter.add(12, Labels.empty());
+    longUpDownCounter1.add(12);
+
+    assertThat(longUpDownCounter.collectAll().get(0))
+        .isEqualToIgnoringGivenFields(longUpDownCounter1.collectAll().get(0), "descriptor");
+  }
+
+  @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongUpDownCounterSdk longUpDownCounter =

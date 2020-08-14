@@ -67,6 +67,14 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
    */
   void add(long increment, Labels labels);
 
+  /**
+   * Adds the given {@code increment} to the current value.
+   *
+   * <p>The value added is associated with the current {@code Context} and empty labels.
+   *
+   * @param increment the value to add.
+   * @since 0.8.0
+   */
   void add(long increment);
 
   @Override
