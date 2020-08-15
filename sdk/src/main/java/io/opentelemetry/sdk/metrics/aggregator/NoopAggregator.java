@@ -55,5 +55,10 @@ public final class NoopAggregator implements Aggregator {
     // Noop
   }
 
+  @Override
+  public boolean hasRecordings() {
+    return false;
+  }
+
   private NoopAggregator() {}
 }

@@ -36,5 +36,6 @@ class NoopAggregatorTest {
     aggregator.recordDouble(12.1);
     aggregator.mergeToAndReset(aggregator);
     assertThat(aggregator.toPoint(1, 2, Labels.empty())).isNull();
+    assertThat(aggregator.hasRecordings()).isFalse();
   }
 }

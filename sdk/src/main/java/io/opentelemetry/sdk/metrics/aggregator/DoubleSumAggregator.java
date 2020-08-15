@@ -56,7 +56,7 @@ public final class DoubleSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void recordDouble(double value) {
+  public void doRecordDouble(double value) {
     current.getAndAdd(value);
   }
 }
