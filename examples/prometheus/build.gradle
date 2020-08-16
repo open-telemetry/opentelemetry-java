@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+}
+
+description = 'OpenTelemetry Example for Prometheus Exporter'
+ext.moduleName = "io.opentelemetry.examples.prometheus"
+
+dependencies {
+    compile("io.opentelemetry:opentelemetry-api:${opentelemetryVersion}")
+    compile("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
+    compile("io.opentelemetry:opentelemetry-exporters-prometheus:${opentelemetryVersion}")
+    compile("io.prometheus:simpleclient:0.8.1")
+    compile("io.prometheus:simpleclient_httpserver:0.8.1")
+}
