@@ -20,6 +20,8 @@ These are collected by a Prometheus instance which is configured to pull these  
 Start Prometheus instance with a configuration that sets up a HTTP collection job for  ```127.0.0.1:19090```
 `
 
+See [prometheus.yml](prometheus.yml)
+
 ```shell script
 docker run --network="host" --rm -it \
     --name prometheus \
