@@ -63,6 +63,11 @@ public final class MeterSdkProvider implements MeterProvider {
    * Returns the {@link MetricProducer} that can be used to retrieve metrics from this {@code
    * MeterSdkProvider}.
    *
+   * <p>WARNING: A MetricProducer is stateful. It will only return changes since the last time it
+   * was access. This means that if more than one {@link
+   * io.opentelemetry.sdk.metrics.export.MetricExporter} has a handle to this MetricProducer, the
+   * two exporters will not receive the same metric data to export.
+   *
    * @return the {@link MetricProducer} that can be used to retrieve metrics from this {@code
    *     MeterSdkProvider}.
    */
