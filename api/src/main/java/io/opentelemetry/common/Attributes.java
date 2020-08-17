@@ -155,7 +155,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
       return sortAndFilterToAttributes(data.toArray());
     }
 
-    private boolean checkKeyValue(String key, AttributeValue value) {
+    private boolean doNotAdd(String key, AttributeValue value) {
       if (key == null || key.length() == 0) {
         return true;
       }
@@ -178,7 +178,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, AttributeValue value) {
-      if (checkKeyValue(key, value)) {
+      if (doNotAdd(key, value)) {
         return this;
       }
       data.add(key);
@@ -193,7 +193,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, String value) {
       AttributeValue v = stringAttributeValue(value);
-      if (checkKeyValue(key, v)) {
+      if (doNotAdd(key, v)) {
         return this;
       }
       data.add(key);
@@ -208,7 +208,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, long value) {
       AttributeValue v = longAttributeValue(value);
-      if (checkKeyValue(key, v)) {
+      if (doNotAdd(key, v)) {
         return this;
       }
       data.add(key);
@@ -223,7 +223,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, double value) {
       AttributeValue v = doubleAttributeValue(value);
-      if (checkKeyValue(key, v)) {
+      if (doNotAdd(key, v)) {
         return this;
       }
       data.add(key);
@@ -238,7 +238,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, boolean value) {
       AttributeValue v = booleanAttributeValue(value);
-      if (checkKeyValue(key, v)) {
+      if (doNotAdd(key, v)) {
         return this;
       }
       data.add(key);
@@ -253,7 +253,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, String... value) {
       AttributeValue v = arrayAttributeValue(value);
-      if (checkKeyValue(key, v)) {
+      if (doNotAdd(key, v)) {
         return this;
       }
       data.add(key);
@@ -268,7 +268,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, Long... value) {
       AttributeValue v = arrayAttributeValue(value);
-      if (checkKeyValue(key, v)) {
+      if (doNotAdd(key, v)) {
         return this;
       }
       data.add(key);
@@ -283,7 +283,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, Double... value) {
       AttributeValue v = arrayAttributeValue(value);
-      if (checkKeyValue(key, v)) {
+      if (doNotAdd(key, v)) {
         return this;
       }
       data.add(key);
@@ -298,7 +298,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, Boolean... value) {
       AttributeValue v = arrayAttributeValue(value);
-      if (checkKeyValue(key, v)) {
+      if (doNotAdd(key, v)) {
         return this;
       }
       data.add(key);
