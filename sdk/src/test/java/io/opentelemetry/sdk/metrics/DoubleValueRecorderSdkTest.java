@@ -144,6 +144,20 @@ class DoubleValueRecorderSdkTest {
   }
 
   @Test
+  void collectMetrics_WithEmptyLabel() {
+    DoubleValueRecorderSdk doubleMeasure =
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    DoubleValueRecorderSdk doubleMeasure1 =
+        testSdk.doubleValueRecorderBuilder("testRecorder1").build();
+    testClock.advanceNanos(SECOND_NANOS);
+    doubleMeasure.record(12.1d, Labels.empty());
+    doubleMeasure1.record(12.1d);
+
+    assertThat(doubleMeasure.collectAll().get(0))
+        .isEqualToIgnoringGivenFields(doubleMeasure1.collectAll().get(0), "descriptor");
+  }
+
+  @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleValueRecorderSdk doubleMeasure =

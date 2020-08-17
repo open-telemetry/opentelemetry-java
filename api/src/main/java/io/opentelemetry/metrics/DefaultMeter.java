@@ -153,6 +153,11 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
+    public void add(double increment) {
+      add(increment, Labels.empty());
+    }
+
+    @Override
     public NoopBoundDoubleCounter bind(Labels labels) {
       Utils.checkNotNull(labels, "labels");
       return NoopBoundDoubleCounter.INSTANCE;
@@ -196,6 +201,11 @@ public final class DefaultMeter implements Meter {
     public void add(long increment, Labels labels) {
       Utils.checkNotNull(labels, "labels");
       Utils.checkArgument(increment >= 0, COUNTERS_CAN_ONLY_INCREASE);
+    }
+
+    @Override
+    public void add(long increment) {
+      add(increment, Labels.empty());
     }
 
     @Override
@@ -244,6 +254,11 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
+    public void add(double increment) {
+      add(increment, Labels.empty());
+    }
+
+    @Override
     public NoopBoundDoubleUpDownCounter bind(Labels labels) {
       Utils.checkNotNull(labels, "labels");
       return NoopBoundDoubleUpDownCounter.INSTANCE;
@@ -284,6 +299,11 @@ public final class DefaultMeter implements Meter {
     @Override
     public void add(long increment, Labels labels) {
       Utils.checkNotNull(labels, "labels");
+    }
+
+    @Override
+    public void add(long increment) {
+      add(increment, Labels.empty());
     }
 
     @Override
@@ -330,6 +350,11 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
+    public void record(double value) {
+      record(value, Labels.empty());
+    }
+
+    @Override
     public NoopBoundDoubleValueRecorder bind(Labels labels) {
       Utils.checkNotNull(labels, "labels");
       return NoopBoundDoubleValueRecorder.INSTANCE;
@@ -370,6 +395,11 @@ public final class DefaultMeter implements Meter {
     @Override
     public void record(long value, Labels labels) {
       Utils.checkNotNull(labels, "labels");
+    }
+
+    @Override
+    public void record(long value) {
+      record(value, Labels.empty());
     }
 
     @Override

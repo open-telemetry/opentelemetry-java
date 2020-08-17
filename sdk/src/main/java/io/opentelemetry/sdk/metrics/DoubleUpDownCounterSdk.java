@@ -41,6 +41,11 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
   }
 
   @Override
+  public void add(double increment) {
+    add(increment, Labels.empty());
+  }
+
+  @Override
   BoundInstrument newBinding(Batcher batcher) {
     return new BoundInstrument(batcher);
   }

@@ -110,6 +110,8 @@ public final class LongValueRecorderTest {
             .build();
     longValueRecorder.record(5, Labels.empty());
     longValueRecorder.record(-5, Labels.empty());
+    longValueRecorder.record(5);
+    longValueRecorder.record(-5);
   }
 
   @Test

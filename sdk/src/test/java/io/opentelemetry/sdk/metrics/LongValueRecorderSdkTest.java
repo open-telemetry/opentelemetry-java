@@ -144,6 +144,18 @@ class LongValueRecorderSdkTest {
   }
 
   @Test
+  void collectMetrics_WithEmptyLabel() {
+    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
+    LongValueRecorderSdk longMeasure1 = testSdk.longValueRecorderBuilder("testRecorder1").build();
+    testClock.advanceNanos(SECOND_NANOS);
+    longMeasure.record(12, Labels.empty());
+    longMeasure1.record(12);
+
+    assertThat(longMeasure.collectAll().get(0))
+        .isEqualToIgnoringGivenFields(longMeasure1.collectAll().get(0), "descriptor");
+  }
+
+  @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();

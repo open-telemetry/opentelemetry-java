@@ -103,6 +103,7 @@ class DoubleCounterTest {
     DoubleCounter doubleCounter =
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     doubleCounter.add(1.0, Labels.empty());
+    doubleCounter.add(1.0);
   }
 
   @Test
