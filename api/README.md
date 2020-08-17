@@ -2,7 +2,7 @@
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-* Java 7 and Android 14 compatible.
+* Java 7 and Android API Level 14 compatible.
 * The abstract classes in this directory can be subclassed to create alternative
   implementations of the OpenTelemetry library.
 
