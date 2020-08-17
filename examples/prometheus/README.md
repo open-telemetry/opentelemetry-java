@@ -18,7 +18,6 @@ These are collected by a Prometheus instance which is configured to pull these m
 ## 2 - Run Prometheus
 
 Start Prometheus instance with a configuration that sets up a HTTP collection job for  ```127.0.0.1:19090```
-`
 
 See [prometheus.yml](prometheus.yml)
 
@@ -39,5 +38,4 @@ java -cp build/libs/opentelemetry-examples-prometheus-all-0.1.0-SNAPSHOT.jar io.
 Navigate to:
 
 http://localhost:9090/graph?g0.range_input=15m&g0.expr=incoming_messages&g0.tab=0
-
 
