@@ -195,7 +195,7 @@ public final class SemanticAttributes {
    * For db.system == cassandra, the name of the keyspace being accessed. To be used instead of the
    * generic db.name attribute.
    */
-  public static final StringAttributeSetter CASSANDRA_NAMESPACE =
+  public static final StringAttributeSetter CASSANDRA_KEYSPACE =
       StringAttributeSetter.create("db.cassandra.keyspace");
   /**
    * For db.system == hbase, the namespace being accessed. To be used instead of the generic db.name
