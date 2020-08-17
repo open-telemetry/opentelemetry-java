@@ -3,7 +3,7 @@
 This example demonstrates how to use the OpenTelemetry SDK 
 to instrument a simple application using Prometheus as the metric exporter and expose the metrics via HTTP. 
 
-These are collected by a Prometheus instance which is configured to pull these  metrics via HTTP. 
+These are collected by a Prometheus instance which is configured to pull these metrics via HTTP. 
 
 # How to run
 
@@ -39,6 +39,5 @@ java -cp build/libs/opentelemetry-examples-prometheus-all-0.1.0-SNAPSHOT.jar io.
 Navigate to:
 
 http://localhost:9090/graph?g0.range_input=15m&g0.expr=incoming_messages&g0.tab=0
-
 
 
