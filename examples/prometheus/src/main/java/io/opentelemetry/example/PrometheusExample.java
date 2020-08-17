@@ -68,7 +68,13 @@ public class PrometheusExample {
 
   public static void main(String[] args) throws IOException {
 
-    int port = Integer.parseInt(args[0]);
+    int port = 0;
+    try {
+      port = Integer.parseInt(args[0]);
+    } catch (Exception e) {
+      System.out.println("Port not set, or is invalid. Exiting");
+      System.exit(1);
+    }
 
     PrometheusExample prometheusExample = new PrometheusExample(port);
 
