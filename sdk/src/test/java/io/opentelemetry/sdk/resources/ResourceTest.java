@@ -111,10 +111,10 @@ class ResourceTest {
   }
 
   @Test
-  void create_ignoreNullArray() {
+  void create_NullEmptyArray() {
     Attributes.Builder attributes = Attributes.newBuilder();
 
-    // These should be dropped
+    // Empty arrays should be maintained
     attributes.setAttribute(
         "stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
     attributes.setAttribute(
@@ -122,6 +122,26 @@ class ResourceTest {
     attributes.setAttribute("longArrayAttribute", AttributeValue.arrayAttributeValue(new Long[0]));
     attributes.setAttribute(
         "doubleArrayAttribute", AttributeValue.arrayAttributeValue(new Double[0]));
+
+    Resource resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(4);
+
+    // Arrays with null values should be maintained
+    attributes.setAttribute(
+        "ArrayWithNullStringKey", AttributeValue.arrayAttributeValue(new String[] {null}));
+    attributes.setAttribute(
+        "ArrayWithNullLongKey", AttributeValue.arrayAttributeValue(new Long[] {null}));
+    attributes.setAttribute(
+        "ArrayWithNullDoubleKey", AttributeValue.arrayAttributeValue(new Double[] {null}));
+    attributes.setAttribute(
+        "ArrayWithNullBooleanKey", AttributeValue.arrayAttributeValue(new Boolean[] {null}));
+
+    resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(8);
+
+    // Null arrays should be dropped
     attributes.setAttribute(
         "NullArrayStringKey", AttributeValue.arrayAttributeValue((String[]) null));
     attributes.setAttribute("NullArrayLongKey", AttributeValue.arrayAttributeValue((Long[]) null));
@@ -130,23 +150,18 @@ class ResourceTest {
     attributes.setAttribute(
         "NullArrayBooleanKey", AttributeValue.arrayAttributeValue((Boolean[]) null));
 
-    Resource resource = Resource.create(attributes.build());
+    resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(0);
+    assertThat(resource.getAttributes().size()).isEqualTo(8);
 
-    // These should be maintained
-    attributes.setAttribute(
-        "ArrayWithNullLongKey", AttributeValue.arrayAttributeValue(new Long[] {null}));
-    attributes.setAttribute(
-        "ArrayWithNullStringKey", AttributeValue.arrayAttributeValue(new String[] {null}));
-    attributes.setAttribute(
-        "ArrayWithNullDoubleKey", AttributeValue.arrayAttributeValue(new Double[] {null}));
-    attributes.setAttribute(
-        "ArrayWithNullBooleanKey", AttributeValue.arrayAttributeValue(new Boolean[] {null}));
+    attributes.setAttribute("dropNullString", (AttributeValue) null);
+    attributes.setAttribute("dropNullLong", (AttributeValue) null);
+    attributes.setAttribute("dropNullDouble", (AttributeValue) null);
+    attributes.setAttribute("dropNullBool", (AttributeValue) null);
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(4);
+    assertThat(resource.getAttributes().size()).isEqualTo(8);
   }
 
   @Test

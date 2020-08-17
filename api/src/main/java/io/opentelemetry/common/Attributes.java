@@ -155,12 +155,32 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
       return sortAndFilterToAttributes(data.toArray());
     }
 
+    private boolean checkKeyValue(String key, AttributeValue value) {
+      if (key == null || key.length() == 0) {
+        return true;
+      }
+      if (value == null || value.isEmpty()) {
+        int index = data.indexOf(key);
+        if (index == -1) {
+          return true;
+        }
+        // Remove key/value pair
+        data.remove(index);
+        data.remove(index);
+        return true;
+      }
+      return false;
+    }
+
     /**
      * Sets a bare {@link AttributeValue} into this.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, AttributeValue value) {
+      if (checkKeyValue(key, value)) {
+        return this;
+      }
       data.add(key);
       data.add(value);
       return this;
@@ -172,8 +192,12 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, String value) {
+      AttributeValue v = stringAttributeValue(value);
+      if (checkKeyValue(key, v)) {
+        return this;
+      }
       data.add(key);
-      data.add(stringAttributeValue(value));
+      data.add(v);
       return this;
     }
 
@@ -183,8 +207,12 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, long value) {
+      AttributeValue v = longAttributeValue(value);
+      if (checkKeyValue(key, v)) {
+        return this;
+      }
       data.add(key);
-      data.add(longAttributeValue(value));
+      data.add(v);
       return this;
     }
 
@@ -194,8 +222,12 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, double value) {
+      AttributeValue v = doubleAttributeValue(value);
+      if (checkKeyValue(key, v)) {
+        return this;
+      }
       data.add(key);
-      data.add(doubleAttributeValue(value));
+      data.add(v);
       return this;
     }
 
@@ -205,8 +237,12 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, boolean value) {
+      AttributeValue v = booleanAttributeValue(value);
+      if (checkKeyValue(key, v)) {
+        return this;
+      }
       data.add(key);
-      data.add(booleanAttributeValue(value));
+      data.add(v);
       return this;
     }
 
@@ -216,8 +252,12 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, String... value) {
+      AttributeValue v = arrayAttributeValue(value);
+      if (checkKeyValue(key, v)) {
+        return this;
+      }
       data.add(key);
-      data.add(arrayAttributeValue(value));
+      data.add(v);
       return this;
     }
 
@@ -227,8 +267,12 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, Long... value) {
+      AttributeValue v = arrayAttributeValue(value);
+      if (checkKeyValue(key, v)) {
+        return this;
+      }
       data.add(key);
-      data.add(arrayAttributeValue(value));
+      data.add(v);
       return this;
     }
 
@@ -238,8 +282,12 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, Double... value) {
+      AttributeValue v = arrayAttributeValue(value);
+      if (checkKeyValue(key, v)) {
+        return this;
+      }
       data.add(key);
-      data.add(arrayAttributeValue(value));
+      data.add(v);
       return this;
     }
 
@@ -249,8 +297,12 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, Boolean... value) {
+      AttributeValue v = arrayAttributeValue(value);
+      if (checkKeyValue(key, v)) {
+        return this;
+      }
       data.add(key);
-      data.add(arrayAttributeValue(value));
+      data.add(v);
       return this;
     }
   }

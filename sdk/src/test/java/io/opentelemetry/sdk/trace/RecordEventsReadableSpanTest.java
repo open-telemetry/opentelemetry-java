@@ -461,10 +461,26 @@ class RecordEventsReadableSpanTest {
   @Test
   void setAttribute_emptyArrayAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
+    span.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue((String[]) null));
+    assertThat(span.toSpanData().getAttributes().size()).isZero();
     span.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
+    span.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue((Boolean[]) null));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
     span.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue(new Boolean[0]));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
+    span.setAttribute("longArrayAttribute", AttributeValue.arrayAttributeValue((Long[]) null));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
     span.setAttribute("longArrayAttribute", AttributeValue.arrayAttributeValue(new Long[0]));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(3);
+    span.setAttribute("doubleArrayAttribute", AttributeValue.arrayAttributeValue((Double[]) null));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(3);
     span.setAttribute("doubleArrayAttribute", AttributeValue.arrayAttributeValue(new Double[0]));
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(4);
+    span.setAttribute("stringArrayAttribute", (AttributeValue) null);
+    span.setAttribute("boolArrayAttribute", (AttributeValue) null);
+    span.setAttribute("longArrayAttribute", (AttributeValue) null);
+    span.setAttribute("doubleArrayAttribute", (AttributeValue) null);
     assertThat(span.toSpanData().getAttributes().size()).isZero();
   }
 

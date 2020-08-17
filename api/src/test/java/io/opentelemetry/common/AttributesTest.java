@@ -219,4 +219,26 @@ class AttributesTest {
     // Original not mutated.
     assertThat(partial).isEqualTo(Attributes.newBuilder().setAttribute("cat", "meow").build());
   }
+
+  @Test
+  void deleteByNull() {
+    Attributes.Builder attributes = Attributes.newBuilder();
+    attributes.setAttribute("attrValue", AttributeValue.stringAttributeValue("attrValue"));
+    attributes.setAttribute("string", "string");
+    attributes.setAttribute("long", 10);
+    attributes.setAttribute("double", 1.0);
+    attributes.setAttribute("bool", true);
+    attributes.setAttribute("arrayString", new String[] {"string"});
+    attributes.setAttribute("arrayLong", new Long[] {10L});
+    attributes.setAttribute("arrayDouble", new Double[] {1.0});
+    attributes.setAttribute("arrayBool", new Boolean[] {true});
+    assertThat(attributes.build().size()).isEqualTo(9);
+    attributes.setAttribute("attrValue", (AttributeValue) null);
+    attributes.setAttribute("string", (String) null);
+    attributes.setAttribute("arrayString", (String[]) null);
+    attributes.setAttribute("arrayLong", (Long[]) null);
+    attributes.setAttribute("arrayDouble", (Double[]) null);
+    attributes.setAttribute("arrayBool", (Boolean[]) null);
+    assertThat(attributes.build().size()).isEqualTo(3);
+  }
 }
