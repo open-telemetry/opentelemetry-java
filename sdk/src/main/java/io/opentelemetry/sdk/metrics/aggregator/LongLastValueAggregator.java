@@ -68,7 +68,7 @@ public final class LongLastValueAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void recordLong(long value) {
+  public void doRecordLong(long value) {
     current.set(value);
   }
 }

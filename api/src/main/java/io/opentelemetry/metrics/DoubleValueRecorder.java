@@ -76,6 +76,15 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
    */
   void record(double value, Labels labels);
 
+  /**
+   * Records the given measurement, associated with the current {@code Context} and empty labels.
+   *
+   * @param value the measurement to record.
+   * @throws IllegalArgumentException if value is negative.
+   * @since 0.8.0
+   */
+  void record(double value);
+
   @Override
   BoundDoubleValueRecorder bind(Labels labels);
 

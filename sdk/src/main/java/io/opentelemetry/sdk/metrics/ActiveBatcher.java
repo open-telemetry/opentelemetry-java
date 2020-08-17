@@ -43,7 +43,9 @@ final class ActiveBatcher implements Batcher {
 
   @Override
   public void batch(Labels labelSet, Aggregator aggregator, boolean mappedAggregator) {
-    batcher.batch(labelSet, aggregator, mappedAggregator);
+    if (aggregator.hasRecordings()) {
+      batcher.batch(labelSet, aggregator, mappedAggregator);
+    }
   }
 
   @Override

@@ -26,6 +26,7 @@ import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
@@ -90,6 +91,33 @@ class LongCounterSdkTest {
   }
 
   @Test
+  void collectMetrics_bound_NoRecords() {
+    LongCounterSdk longCounter =
+        testSdk
+            .longCounterBuilder("testCounter")
+            .setConstantLabels(Labels.of("sk1", "sv1"))
+            .setDescription("My very own counter")
+            .setUnit("ms")
+            .build();
+    BoundInstrument ignored = longCounter.bind(Labels.of("foo", "bar"));
+
+    List<MetricData> metricDataList = longCounter.collectAll();
+    assertThat(metricDataList).hasSize(1);
+    MetricData metricData = metricDataList.get(0);
+    assertThat(metricData.getDescriptor())
+        .isEqualTo(
+            Descriptor.create(
+                "testCounter",
+                "My very own counter",
+                "ms",
+                Descriptor.Type.MONOTONIC_LONG,
+                Labels.of("sk1", "sv1")));
+    assertThat(metricData.getResource()).isEqualTo(RESOURCE);
+    assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
+    assertThat(metricData.getPoints()).isEmpty();
+  }
+
+  @Test
   void collectMetrics_WithOneRecord() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
@@ -103,6 +131,18 @@ class LongCounterSdkTest {
     assertThat(metricData.getPoints())
         .containsExactly(
             LongPoint.create(testClock.now() - SECOND_NANOS, testClock.now(), Labels.empty(), 12));
+  }
+
+  @Test
+  void collectMetrics_WithEmptyLabel() {
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    LongCounterSdk longCounter1 = testSdk.longCounterBuilder("testCounter1").build();
+    testClock.advanceNanos(SECOND_NANOS);
+    longCounter.add(12, Labels.empty());
+    longCounter1.add(12);
+
+    assertThat(longCounter.collectAll().get(0))
+        .isEqualToIgnoringGivenFields(longCounter1.collectAll().get(0), "descriptor");
   }
 
   @Test

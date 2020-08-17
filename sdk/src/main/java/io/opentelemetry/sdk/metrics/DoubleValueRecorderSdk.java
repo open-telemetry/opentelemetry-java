@@ -41,6 +41,11 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
   }
 
   @Override
+  public void record(double value) {
+    record(value, Labels.empty());
+  }
+
+  @Override
   BoundInstrument newBinding(Batcher batcher) {
     return new BoundInstrument(batcher);
   }

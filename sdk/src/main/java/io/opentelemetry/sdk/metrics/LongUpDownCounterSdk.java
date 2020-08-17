@@ -41,6 +41,11 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInst
   }
 
   @Override
+  public void add(long increment) {
+    add(increment, Labels.empty());
+  }
+
+  @Override
   BoundInstrument newBinding(Batcher batcher) {
     return new BoundInstrument(batcher);
   }

@@ -60,7 +60,7 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
   }
 
   @Override
-  public void recordDouble(double value) {
+  public void doRecordDouble(double value) {
     current.record(value);
   }
 

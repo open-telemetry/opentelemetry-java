@@ -56,7 +56,7 @@ public final class LongSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void recordLong(long value) {
+  public void doRecordLong(long value) {
     current.getAndAdd(value);
   }
 }

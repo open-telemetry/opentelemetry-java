@@ -111,6 +111,20 @@ class DoubleUpDownCounterSdkTest {
   }
 
   @Test
+  void collectMetrics_WithEmptyLabel() {
+    DoubleUpDownCounterSdk doubleUpDownCounter =
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+    DoubleUpDownCounterSdk doubleUpDownCounter1 =
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter1").build();
+    testClock.advanceNanos(SECOND_NANOS);
+    doubleUpDownCounter.add(12.1d, Labels.empty());
+    doubleUpDownCounter1.add(12.1d);
+
+    assertThat(doubleUpDownCounter.collectAll().get(0))
+        .isEqualToIgnoringGivenFields(doubleUpDownCounter1.collectAll().get(0), "descriptor");
+  }
+
+  @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleUpDownCounterSdk doubleUpDownCounter =

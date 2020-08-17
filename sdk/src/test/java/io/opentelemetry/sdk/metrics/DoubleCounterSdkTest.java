@@ -109,6 +109,18 @@ class DoubleCounterSdkTest {
   }
 
   @Test
+  void collectMetrics_WithEmptyLabel() {
+    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+    DoubleCounterSdk doubleCounter1 = testSdk.doubleCounterBuilder("testCounter1").build();
+    testClock.advanceNanos(SECOND_NANOS);
+    doubleCounter.add(12.1d, Labels.empty());
+    doubleCounter1.add(12.1d);
+
+    assertThat(doubleCounter.collectAll().get(0))
+        .isEqualToIgnoringGivenFields(doubleCounter1.collectAll().get(0), "descriptor");
+  }
+
+  @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();

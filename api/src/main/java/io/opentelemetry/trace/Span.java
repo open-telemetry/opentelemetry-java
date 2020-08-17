@@ -135,7 +135,7 @@ public interface Span {
   void setAttribute(String key, AttributeValue value);
 
   /**
-   * Adds an event to the {@code Span}.
+   * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
    *
    * @param name the name of the event.
    * @since 0.1.0
@@ -143,12 +143,13 @@ public interface Span {
   void addEvent(String name);
 
   /**
-   * Adds an event to the {@code Span}.
+   * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
+   * this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed using
+   * it, for example, by taking a difference of readings from {@link System#nanoTime()} and adding
+   * to the span start time.
    *
-   * <p>Use this method to specify an explicit event timestamp. If not called, the implementation
-   * will use the current timestamp value, which should be the default case.
-   *
-   * <p>Important: this is NOT equivalent with System.nanoTime().
+   * <p>When possible, it is preferred to use {@link #addEvent(String)} at the time the event
+   * occurred.
    *
    * @param name the name of the event.
    * @param timestamp the explicit event timestamp in nanos since epoch.
@@ -157,7 +158,8 @@ public interface Span {
   void addEvent(String name, long timestamp);
 
   /**
-   * Adds an event to the {@code Span}.
+   * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the *
+   * {@link Event} will be the current time.
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
@@ -167,12 +169,13 @@ public interface Span {
   void addEvent(String name, Attributes attributes);
 
   /**
-   * Adds an event to the {@code Span}.
+   * Adds an event to the {@link Span} with the given {@link Attributes} and {@code timestamp}.
+   * Note, this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed
+   * using it, for example, by taking a difference of readings from {@link System#nanoTime()} and
+   * adding to the span start time.
    *
-   * <p>Use this method to specify an explicit event timestamp. If not called, the implementation
-   * will use the current timestamp value, which should be the default case.
-   *
-   * <p>Important: this is NOT equivalent with System.nanoTime().
+   * <p>When possible, it is preferred to use {@link #addEvent(String)} at the time the event
+   * occurred.
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
@@ -183,7 +186,7 @@ public interface Span {
   void addEvent(String name, Attributes attributes, long timestamp);
 
   /**
-   * Adds an event to the {@code Span}.
+   * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
    *
    * @param event the event to add.
    * @since 0.1.0
@@ -191,12 +194,13 @@ public interface Span {
   void addEvent(Event event);
 
   /**
-   * Adds an event to the {@code Span}.
+   * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
+   * this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed using
+   * it, for example, by taking a difference of readings from {@link System#nanoTime()} and adding
+   * to the span start time.
    *
-   * <p>Use this method to specify an explicit event timestamp. If not called, the implementation
-   * will use the current timestamp value, which should be the default case.
-   *
-   * <p>Important: this is NOT equivalent with System.nanoTime().
+   * <p>When possible, it is preferred to use {@link #addEvent(String)} at the time the event
+   * occurred.
    *
    * @param event the event to add.
    * @param timestamp the explicit event timestamp in nanos since epoch.

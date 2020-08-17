@@ -41,6 +41,11 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
   }
 
   @Override
+  public void record(long value) {
+    record(value, Labels.empty());
+  }
+
+  @Override
   BoundInstrument newBinding(Batcher batcher) {
     return new BoundInstrument(batcher);
   }
