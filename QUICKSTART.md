@@ -436,7 +436,7 @@ Supported system properties and environment variables:
 | otel.config.max.attrs            | OTEL_CONFIG_MAX_ATTRS            | Max number of attributes per span                  |                        
 | otel.config.max.events           | OTEL_CONFIG_MAX_EVENTS           | Max number of Events per span                      |                        
 | otel.config.max.links            | OTEL_CONFIG_MAX_LINKS            | Max number of Link} entries per span               |
-| otel.config.max.event.attrs      | OTEL_CONFIG_MAX_EVENT_ATTRS      | Max number of attributes per even                  |
+| otel.config.max.event.attrs      | OTEL_CONFIG_MAX_EVENT_ATTRS      | Max number of attributes per event                 |
 | otel.config.max.link.attrs       | OTEL_CONFIG_MAX_LINK_ATTRS       | Max number of attributes per link                  |
 | otel.config.max.attr.length      | OTEL_CONFIG_MAX_ATTR_LENGTH      | Max length of string attribute value in characters |
 
