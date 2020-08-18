@@ -24,6 +24,7 @@ import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -155,30 +156,30 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
       return sortAndFilterToAttributes(data.toArray());
     }
 
-    private boolean doNotAdd(String key, AttributeValue value) {
-      if (key == null || key.length() == 0) {
-        return true;
-      }
-      if (value == null || value.isEmpty()) {
-        int index = data.indexOf(key);
-        if (index == -1) {
-          return true;
-        }
-        // Remove key/value pair
-        data.remove(index);
-        data.remove(index);
-        return true;
-      }
-      return false;
-    }
-
     /**
      * Sets a bare {@link AttributeValue} into this.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, AttributeValue value) {
-      if (doNotAdd(key, value)) {
+      if (key == null || key.length() == 0) {
+        return this;
+      }
+      if (value == null || value.isNull()) {
+        // Remove key/value pairs
+        Iterator<Object> itr = data.iterator();
+        while (itr.hasNext()) {
+          String k = (String) itr.next();
+          if (key.equals(k)) {
+            // delete key and value
+            itr.remove();
+            itr.next();
+            itr.remove();
+          } else {
+            // skip the value part
+            itr.next();
+          }
+        }
         return this;
       }
       data.add(key);
@@ -193,12 +194,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, String value) {
       AttributeValue v = stringAttributeValue(value);
-      if (doNotAdd(key, v)) {
-        return this;
-      }
-      data.add(key);
-      data.add(v);
-      return this;
+      return setAttribute(key, v);
     }
 
     /**
@@ -208,12 +204,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, long value) {
       AttributeValue v = longAttributeValue(value);
-      if (doNotAdd(key, v)) {
-        return this;
-      }
-      data.add(key);
-      data.add(v);
-      return this;
+      return setAttribute(key, v);
     }
 
     /**
@@ -223,12 +214,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, double value) {
       AttributeValue v = doubleAttributeValue(value);
-      if (doNotAdd(key, v)) {
-        return this;
-      }
-      data.add(key);
-      data.add(v);
-      return this;
+      return setAttribute(key, v);
     }
 
     /**
@@ -238,12 +224,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, boolean value) {
       AttributeValue v = booleanAttributeValue(value);
-      if (doNotAdd(key, v)) {
-        return this;
-      }
-      data.add(key);
-      data.add(v);
-      return this;
+      return setAttribute(key, v);
     }
 
     /**
@@ -253,12 +234,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, String... value) {
       AttributeValue v = arrayAttributeValue(value);
-      if (doNotAdd(key, v)) {
-        return this;
-      }
-      data.add(key);
-      data.add(v);
-      return this;
+      return setAttribute(key, v);
     }
 
     /**
@@ -268,12 +244,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, Long... value) {
       AttributeValue v = arrayAttributeValue(value);
-      if (doNotAdd(key, v)) {
-        return this;
-      }
-      data.add(key);
-      data.add(v);
-      return this;
+      return setAttribute(key, v);
     }
 
     /**
@@ -283,12 +254,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, Double... value) {
       AttributeValue v = arrayAttributeValue(value);
-      if (doNotAdd(key, v)) {
-        return this;
-      }
-      data.add(key);
-      data.add(v);
-      return this;
+      return setAttribute(key, v);
     }
 
     /**
@@ -298,12 +264,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      */
     public Builder setAttribute(String key, Boolean... value) {
       AttributeValue v = arrayAttributeValue(value);
-      if (doNotAdd(key, v)) {
-        return this;
-      }
-      data.add(key);
-      data.add(v);
-      return this;
+      return setAttribute(key, v);
     }
   }
 }

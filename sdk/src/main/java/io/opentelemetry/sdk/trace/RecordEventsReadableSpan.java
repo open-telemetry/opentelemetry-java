@@ -312,7 +312,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
-      if (value == null || value.isEmpty()) {
+      if (value == null || value.isNull()) {
         if (attributes != null) {
           attributes.remove(key);
         }

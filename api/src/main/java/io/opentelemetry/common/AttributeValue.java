@@ -251,7 +251,7 @@ public abstract class AttributeValue {
    * @return {@code true} if the {@code AttributeValue} is empty.
    * @since 0.8.0
    */
-  public boolean isEmpty() {
+  public boolean isNull() {
     return false;
   }
 
@@ -271,7 +271,7 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isNull() {
       return getStringValue() == null;
     }
 
@@ -341,13 +341,14 @@ public abstract class AttributeValue {
   @AutoValue
   abstract static class AttributeValueStringArray extends AttributeValue {
 
-    private static final List<String> EMPTY = Collections.<String>emptyList();
+    private static final AttributeValue EMPTY =
+        new AutoValue_AttributeValue_AttributeValueStringArray(Collections.<String>emptyList());
 
     AttributeValueStringArray() {}
 
     static AttributeValue create(String... stringValues) {
       if (stringValues == null) {
-        return new AutoValue_AttributeValue_AttributeValueStringArray(EMPTY);
+        return EMPTY;
       }
       return new AutoValue_AttributeValue_AttributeValueStringArray(
           Collections.unmodifiableList(Arrays.asList(stringValues)));
@@ -359,8 +360,8 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public boolean isEmpty() {
-      return getStringArrayValue() == EMPTY;
+    public boolean isNull() {
+      return this == EMPTY;
     }
 
     @Override
@@ -371,13 +372,14 @@ public abstract class AttributeValue {
   @AutoValue
   abstract static class AttributeValueBooleanArray extends AttributeValue {
 
-    private static final List<Boolean> EMPTY = Collections.<Boolean>emptyList();
+    private static final AttributeValue EMPTY =
+        new AutoValue_AttributeValue_AttributeValueBooleanArray(Collections.<Boolean>emptyList());
 
     AttributeValueBooleanArray() {}
 
     static AttributeValue create(Boolean... booleanValues) {
       if (booleanValues == null) {
-        return new AutoValue_AttributeValue_AttributeValueBooleanArray(EMPTY);
+        return EMPTY;
       }
       List<Boolean> values = new ArrayList<>(booleanValues.length);
       values.addAll(Arrays.asList(booleanValues));
@@ -391,8 +393,8 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public boolean isEmpty() {
-      return getBooleanArrayValue() == EMPTY;
+    public boolean isNull() {
+      return this == EMPTY;
     }
 
     @Override
@@ -403,13 +405,14 @@ public abstract class AttributeValue {
   @AutoValue
   abstract static class AttributeValueLongArray extends AttributeValue {
 
-    private static final List<Long> EMPTY = Collections.<Long>emptyList();
+    private static final AttributeValue EMPTY =
+        new AutoValue_AttributeValue_AttributeValueLongArray(Collections.<Long>emptyList());
 
     AttributeValueLongArray() {}
 
     static AttributeValue create(Long... longValues) {
       if (longValues == null) {
-        return new AutoValue_AttributeValue_AttributeValueLongArray(EMPTY);
+        return EMPTY;
       }
       List<Long> values = new ArrayList<>(longValues.length);
       values.addAll(Arrays.asList(longValues));
@@ -423,8 +426,8 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public boolean isEmpty() {
-      return getLongArrayValue() == EMPTY;
+    public boolean isNull() {
+      return this == EMPTY;
     }
 
     @Override
@@ -435,13 +438,14 @@ public abstract class AttributeValue {
   @AutoValue
   abstract static class AttributeValueDoubleArray extends AttributeValue {
 
-    private static final List<Double> EMPTY = Collections.<Double>emptyList();
+    private static final AttributeValue EMPTY =
+        new AutoValue_AttributeValue_AttributeValueDoubleArray(Collections.<Double>emptyList());
 
     AttributeValueDoubleArray() {}
 
     static AttributeValue create(Double... doubleValues) {
       if (doubleValues == null) {
-        return new AutoValue_AttributeValue_AttributeValueDoubleArray(EMPTY);
+        return EMPTY;
       }
       List<Double> values = new ArrayList<>(doubleValues.length);
       values.addAll(Arrays.asList(doubleValues));
@@ -455,8 +459,8 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public boolean isEmpty() {
-      return getDoubleArrayValue() == EMPTY;
+    public boolean isNull() {
+      return this == EMPTY;
     }
 
     @Override
