@@ -17,23 +17,24 @@
 package io.opentelemetry.sdk.common.export;
 
 import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * The implementation of Export operations are often asynchronous in nature, hence the need to
- * convey a result at a later time. CompletableResultCode facilitates this.
- *
- * <p>This class models JDK 8's CompletableFuture to afford migration should Open Telemetry's SDK
+ * This class models JDK 8's CompletableFuture to afford migration should Open Telemetry's SDK
  * select JDK 8 or greater as a baseline, and also to offer familiarity to developers.
+ *
+ * <p>The implementation of Export operations are often asynchronous in nature, hence the need to
+ * convey a result at a later time. CompletableResultCode facilitates this.
  */
 public class CompletableResultCode {
-  /** A convenience for declaring success. */
+  /** Returns a {@link CompletableResultCode} that has been completed successfully. */
   public static CompletableResultCode ofSuccess() {
     return SUCCESS;
   }
 
-  /** A convenience for declaring failure. */
+  /** Returns a {@link CompletableResultCode} that has been completed unsuccessfully. */
   public static CompletableResultCode ofFailure() {
     return FAILURE;
   }
@@ -48,11 +49,11 @@ public class CompletableResultCode {
   private Boolean succeeded = null;
 
   @GuardedBy("lock")
-  private final ArrayList<Runnable> completionActions = new ArrayList<>();
+  private final List<Runnable> completionActions = new ArrayList<>();
 
   private final Object lock = new Object();
 
-  /** The export operation finished successfully. */
+  /** Complete this {@link CompletableResultCode} successfully if it is not already completed. */
   public CompletableResultCode succeed() {
     synchronized (lock) {
       if (succeeded == null) {
@@ -65,7 +66,7 @@ public class CompletableResultCode {
     return this;
   }
 
-  /** The export operation finished with an error. */
+  /** Complete this {@link CompletableResultCode} unsuccessfully if it is not already completed. */
   public CompletableResultCode fail() {
     synchronized (lock) {
       if (succeeded == null) {

@@ -161,4 +161,32 @@ class CompletableResultCodeTest {
 
     assertThat(resultCode.isSuccess()).isTrue();
   }
+
+  @Test
+  void whenSuccessThenFailure() throws InterruptedException {
+    CompletableResultCode resultCode = new CompletableResultCode();
+
+    CountDownLatch completions = new CountDownLatch(1);
+
+    new Thread(
+            new Runnable() {
+              @Override
+              public void run() {
+                resultCode.succeed().fail();
+              }
+            })
+        .start();
+
+    resultCode.whenComplete(
+        new Runnable() {
+          @Override
+          public void run() {
+            completions.countDown();
+          }
+        });
+
+    completions.await(3, TimeUnit.SECONDS);
+
+    assertThat(resultCode.isSuccess()).isTrue();
+  }
 }

@@ -48,7 +48,7 @@ public class LoggingMetricExporter implements MetricExporter {
       try {
         handler.flush();
       } catch (Throwable t) {
-        resultCode.fail();
+        return resultCode.fail();
       }
     }
     return resultCode.succeed();

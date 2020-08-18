@@ -74,7 +74,6 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  @SuppressWarnings("BooleanParameter")
   public void onEnd(ReadableSpan span) {
     if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
