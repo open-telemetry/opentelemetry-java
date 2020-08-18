@@ -19,12 +19,18 @@ package io.opentelemetry.exporters.otlp;
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
 import com.google.common.base.Splitter;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
+import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc.MetricsServiceFutureStub;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -65,9 +71,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
 
-  private final MetricsServiceGrpc.MetricsServiceBlockingStub blockingStub;
+  private final MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
-  private final long deadlineMs;
 
   /**
    * Creates a new OTLP gRPC Metric Reporter with the given name, using the given channel.
@@ -78,8 +83,11 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    */
   private OtlpGrpcMetricExporter(ManagedChannel channel, long deadlineMs) {
     this.managedChannel = channel;
-    this.blockingStub = MetricsServiceGrpc.newBlockingStub(channel);
-    this.deadlineMs = deadlineMs;
+    MetricsServiceFutureStub stub = MetricsServiceGrpc.newFutureStub(channel);
+    if (deadlineMs > 0) {
+      stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    }
+    metricsService = stub;
   }
 
   /**
@@ -89,26 +97,29 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @return the result of the operation
    */
   @Override
-  public ResultCode export(Collection<MetricData> metrics) {
+  public CompletableResultCode export(Collection<MetricData> metrics) {
     ExportMetricsServiceRequest exportMetricsServiceRequest =
         ExportMetricsServiceRequest.newBuilder()
             .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metrics))
             .build();
 
-    try {
-      MetricsServiceGrpc.MetricsServiceBlockingStub stub = this.blockingStub;
-      if (deadlineMs > 0) {
-        stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
-      }
+    final CompletableResultCode result = new CompletableResultCode();
+    Futures.addCallback(
+        metricsService.export(exportMetricsServiceRequest),
+        new FutureCallback<ExportMetricsServiceResponse>() {
+          @Override
+          public void onSuccess(@Nullable ExportMetricsServiceResponse response) {
+            result.succeed();
+          }
 
-      // for now, there's nothing to check in the response object
-      // noinspection ResultOfMethodCallIgnored
-      stub.export(exportMetricsServiceRequest);
-      return ResultCode.SUCCESS;
-    } catch (Throwable e) {
-      logger.log(Level.WARNING, "Failed to export metrics", e);
-      return ResultCode.FAILURE;
-    }
+          @Override
+          public void onFailure(Throwable t) {
+            logger.log(Level.WARNING, "Failed to export spans", t);
+            result.fail();
+          }
+        },
+        MoreExecutors.directExecutor());
+    return result;
   }
 
   /**
@@ -117,8 +128,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @return always Success
    */
   @Override
-  public ResultCode flush() {
-    return ResultCode.SUCCESS;
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
   }
 
   /**

@@ -24,6 +24,7 @@ import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -32,12 +33,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
@@ -49,7 +47,8 @@ import javax.annotation.concurrent.GuardedBy;
  * <p>All spans reported by the SDK implementation are first added to a synchronized queue (with a
  * {@code maxQueueSize} maximum size, after the size is reached spans are dropped) and exported
  * every {@code scheduleDelayMillis} to the exporter pipeline in batches of {@code
- * maxExportBatchSize}.
+ * maxExportBatchSize}. Spans may also be dropped when it becomes time to export again, and there is
+ * an export in progress.
  *
  * <p>If the queue gets half full a preemptive notification is sent to the worker thread that
  * exports the spans to wake up and start a new export cycle.
@@ -85,8 +84,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   private static final String WORKER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
-  private static final String EXPORTER_THREAD_NAME =
-      BatchSpanProcessor.class.getSimpleName() + "_ExporterThread";
+  private static final String TIMER_THREAD_NAME =
+      BatchSpanProcessor.class.getSimpleName() + "_TimerThread";
   private final Worker worker;
   private final Thread workerThread;
   private final boolean sampled;
@@ -165,8 +164,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private static final BoundLongCounter droppedSpans;
 
-    private final ExecutorService executorService =
-        Executors.newSingleThreadExecutor(new DaemonThreadFactory(EXPORTER_THREAD_NAME));
+    private final Timer timer = new Timer(TIMER_THREAD_NAME);
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;
@@ -176,6 +174,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final int halfMaxQueueSize;
     private final Object monitor = new Object();
     private final int exporterTimeoutMillis;
+    private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
 
     @GuardedBy("monitor")
     private final List<ReadableSpan> spansList;
@@ -191,8 +190,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.maxQueueSize = maxQueueSize;
       this.halfMaxQueueSize = maxQueueSize >> 1;
       this.maxExportBatchSize = maxExportBatchSize;
-      this.spansList = new ArrayList<>(maxQueueSize);
       this.exporterTimeoutMillis = exporterTimeoutMillis;
+      this.spansList = new ArrayList<>(maxQueueSize);
     }
 
     private void addSpan(ReadableSpan span) {
@@ -242,7 +241,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private void shutdown() {
       forceFlush();
-      executorService.shutdown();
+      timer.cancel();
       spanExporter.shutdown();
     }
 
@@ -277,28 +276,34 @@ public final class BatchSpanProcessor implements SpanProcessor {
     }
 
     // Exports the list of SpanData to the SpanExporter.
+    @SuppressWarnings("BooleanParameter")
     private void onBatchExport(final List<SpanData> spans) {
-      Future<?> submission =
-          executorService.submit(
+      if (exportAvailable.compareAndSet(true, false)) {
+        try {
+          final CompletableResultCode result = spanExporter.export(spans);
+          result.whenComplete(
               new Runnable() {
                 @Override
                 public void run() {
-                  // In case of any exception thrown by the service handlers catch and log.
-                  try {
-                    spanExporter.export(spans);
-                  } catch (Throwable t) {
-                    logger.log(Level.WARNING, "Exception thrown by the export.", t);
+                  if (!result.isSuccess()) {
+                    logger.log(Level.FINE, "Exporter failed");
                   }
+                  exportAvailable.set(true);
                 }
               });
-      try {
-        // wait at most for the configured timeout.
-        submission.get(exporterTimeoutMillis, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException | ExecutionException e) {
-        logger.log(Level.WARNING, "Exception thrown by the export.", e);
-      } catch (TimeoutException e) {
-        logger.log(Level.WARNING, "Export timed out. Cancelling execution.", e);
-        submission.cancel(true);
+          timer.schedule(
+              new TimerTask() {
+                @Override
+                public void run() {
+                  result.fail();
+                }
+              },
+              exporterTimeoutMillis);
+        } catch (Exception e) {
+          logger.log(Level.WARNING, "Exporter threw an Exception", e);
+        }
+      } else {
+        logger.log(Level.FINE, "Exporter busy. Dropping spans.");
       }
     }
   }

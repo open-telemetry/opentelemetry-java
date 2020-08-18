@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -44,13 +44,13 @@ public class MultiSpanExporterBenchmark {
   private static class NoopSpanExporter implements SpanExporter {
 
     @Override
-    public ResultCode export(Collection<SpanData> spans) {
-      return ResultCode.SUCCESS;
+    public CompletableResultCode export(Collection<SpanData> spans) {
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
-    public ResultCode flush() {
-      return ResultCode.SUCCESS;
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
@@ -95,7 +95,7 @@ public class MultiSpanExporterBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public ResultCode export() {
+  public CompletableResultCode export() {
     return exporter.export(spans);
   }
 }

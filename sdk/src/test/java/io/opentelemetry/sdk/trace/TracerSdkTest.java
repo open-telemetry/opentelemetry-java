@@ -22,6 +22,7 @@ import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -212,14 +213,14 @@ class TracerSdkTest {
     public AtomicLong numberOfSpansExported = new AtomicLong();
 
     @Override
-    public ResultCode export(Collection<SpanData> spans) {
+    public CompletableResultCode export(Collection<SpanData> spans) {
       numberOfSpansExported.addAndGet(spans.size());
-      return ResultCode.SUCCESS;
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
-    public ResultCode flush() {
-      return ResultCode.SUCCESS;
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override

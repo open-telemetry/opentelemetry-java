@@ -21,6 +21,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -240,7 +241,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   @Override
-  public ResultCode export(final Collection<SpanData> spanDataList) {
+  public CompletableResultCode export(final Collection<SpanData> spanDataList) {
     List<byte[]> encodedSpans = new ArrayList<>(spanDataList.size());
     for (SpanData spanData : spanDataList) {
       encodedSpans.add(encoder.encode(generateSpan(spanData, localEndpoint)));
@@ -249,15 +250,15 @@ public final class ZipkinSpanExporter implements SpanExporter {
       sender.sendSpans(encodedSpans).execute();
     } catch (Exception e) {
       logger.log(Level.WARNING, "Failed to export spans", e);
-      return ResultCode.FAILURE;
+      return CompletableResultCode.ofFailure();
     }
-    return ResultCode.SUCCESS;
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
-  public ResultCode flush() {
+  public CompletableResultCode flush() {
     // nothing required here
-    return ResultCode.SUCCESS;
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override

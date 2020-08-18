@@ -16,12 +16,11 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILURE;
-import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.SUCCESS;
-
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,18 +46,20 @@ public final class MultiSpanExporter implements SpanExporter {
   }
 
   @Override
-  public ResultCode export(Collection<SpanData> spans) {
-    ResultCode currentResultCode = SUCCESS;
+  public CompletableResultCode export(Collection<SpanData> spans) {
+    final CompletableResultCode compositeResultCode = new CompletableResultCode();
+    final AtomicInteger completionsToProcess = new AtomicInteger(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
       try {
-        currentResultCode = mergeResultCode(currentResultCode, spanExporter.export(spans));
-      } catch (Throwable t) {
+        final CompletableResultCode singleResult = spanExporter.export(spans);
+        mergeResultCode(compositeResultCode, singleResult, completionsToProcess);
+      } catch (Exception e) {
         // If an exception was thrown by the exporter
-        logger.log(Level.WARNING, "Exception thrown by the export.", t);
-        currentResultCode = FAILURE;
+        logger.log(Level.WARNING, "Exception thrown by the export.", e);
+        compositeResultCode.fail();
       }
     }
-    return currentResultCode;
+    return compositeResultCode;
   }
 
   /**
@@ -67,18 +68,19 @@ public final class MultiSpanExporter implements SpanExporter {
    * @return the result of the operation
    */
   @Override
-  public ResultCode flush() {
-    ResultCode currentResultCode = SUCCESS;
+  public CompletableResultCode flush() {
+    final CompletableResultCode compositeResultCode = new CompletableResultCode();
+    final AtomicInteger completionsToProcess = new AtomicInteger(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
       try {
-        currentResultCode = mergeResultCode(currentResultCode, spanExporter.flush());
-      } catch (Throwable t) {
+        mergeResultCode(compositeResultCode, spanExporter.flush(), completionsToProcess);
+      } catch (Exception e) {
         // If an exception was thrown by the exporter
-        logger.log(Level.WARNING, "Exception thrown by the export.", t);
-        currentResultCode = FAILURE;
+        logger.log(Level.WARNING, "Exception thrown by the flush.", e);
+        compositeResultCode.fail();
       }
     }
-    return currentResultCode;
+    return compositeResultCode;
   }
 
   @Override
@@ -88,15 +90,24 @@ public final class MultiSpanExporter implements SpanExporter {
     }
   }
 
-  // Returns a merged error code, see the rules in the code.
-  private static ResultCode mergeResultCode(
-      ResultCode currentResultCode, ResultCode newResultCode) {
-    // If both errors are success then return success.
-    if (currentResultCode == SUCCESS && newResultCode == SUCCESS) {
-      return SUCCESS;
-    }
-
-    return FAILURE;
+  private static void mergeResultCode(
+      final CompletableResultCode compositeResultCode,
+      final CompletableResultCode singleResultCode,
+      final AtomicInteger completionsToProcess) {
+    singleResultCode.whenComplete(
+        new Runnable() {
+          @Override
+          public void run() {
+            int completionsRemaining = completionsToProcess.decrementAndGet();
+            if (singleResultCode.isSuccess()) {
+              if (completionsRemaining == 0) {
+                compositeResultCode.succeed();
+              }
+            } else {
+              compositeResultCode.fail();
+            }
+          }
+        });
   }
 
   private MultiSpanExporter(List<SpanExporter> spanExporters) {

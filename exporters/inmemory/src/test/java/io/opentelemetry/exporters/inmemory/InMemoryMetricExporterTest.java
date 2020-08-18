@@ -23,7 +23,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,7 +53,7 @@ class InMemoryMetricExporterTest {
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
 
-    assertThat(exporter.export(metrics)).isEqualTo(ResultCode.SUCCESS);
+    assertThat(exporter.export(metrics).isSuccess()).isTrue();
     List<MetricData> metricItems = exporter.getFinishedMetricItems();
     assertThat(metricItems).isNotNull();
     assertThat(metricItems.size()).isEqualTo(3);
@@ -67,7 +66,7 @@ class InMemoryMetricExporterTest {
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
 
-    assertThat(exporter.export(metrics)).isEqualTo(ResultCode.SUCCESS);
+    assertThat(exporter.export(metrics).isSuccess()).isTrue();
     List<MetricData> metricItems = exporter.getFinishedMetricItems();
     assertThat(metricItems).isNotNull();
     assertThat(metricItems.size()).isEqualTo(3);
@@ -84,7 +83,7 @@ class InMemoryMetricExporterTest {
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
 
-    assertThat(exporter.export(metrics)).isEqualTo(ResultCode.SUCCESS);
+    assertThat(exporter.export(metrics).isSuccess()).isTrue();
     exporter.shutdown();
     List<MetricData> metricItems = exporter.getFinishedMetricItems();
     assertThat(metricItems).isNotNull();
@@ -98,13 +97,13 @@ class InMemoryMetricExporterTest {
     metrics.add(generateFakeMetric());
     metrics.add(generateFakeMetric());
 
-    assertThat(exporter.export(metrics)).isEqualTo(ResultCode.SUCCESS);
+    assertThat(exporter.export(metrics).isSuccess()).isTrue();
     exporter.shutdown();
-    assertThat(exporter.export(metrics)).isEqualTo(ResultCode.FAILURE);
+    assertThat(exporter.export(metrics).isSuccess()).isFalse();
   }
 
   @Test
   void test_flush() {
-    assertThat(exporter.flush()).isEqualTo(ResultCode.SUCCESS);
+    assertThat(exporter.flush().isSuccess()).isTrue();
   }
 }

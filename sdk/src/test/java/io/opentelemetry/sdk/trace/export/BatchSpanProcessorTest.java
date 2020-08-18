@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace.export;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
@@ -101,7 +102,7 @@ class BatchSpanProcessorTest {
     options.put("otel.bsp.export.timeout", "78");
     options.put("otel.bsp.export.sampled", "false");
     BatchSpanProcessor.Builder config =
-        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0))
+        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
             .fromConfigMap(options, ConfigTester.getNamingDot());
     assertThat(config.getScheduleDelayMillis()).isEqualTo(12);
     assertThat(config.getMaxQueueSize()).isEqualTo(34);
@@ -113,7 +114,7 @@ class BatchSpanProcessorTest {
   @Test
   void configTest_EmptyOptions() {
     BatchSpanProcessor.Builder config =
-        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0))
+        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
             .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
     assertThat(config.getScheduleDelayMillis())
         .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_SCHEDULE_DELAY_MILLIS);
@@ -130,14 +131,16 @@ class BatchSpanProcessorTest {
   @Test
   void startEndRequirements() {
     BatchSpanProcessor spansProcessor =
-        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0)).build();
+        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
+            .build();
     assertThat(spansProcessor.isStartRequired()).isFalse();
     assertThat(spansProcessor.isEndRequired()).isTrue();
   }
 
   @Test
   void exportDifferentSampledSpans() {
-    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(2, CompletableResultCode.ofSuccess());
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
@@ -151,7 +154,8 @@ class BatchSpanProcessorTest {
 
   @Test
   void exportMoreSpansThanTheBufferSize() {
-    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(6);
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(6, CompletableResultCode.ofSuccess());
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setMaxQueueSize(6)
@@ -180,7 +184,8 @@ class BatchSpanProcessorTest {
 
   @Test
   void forceExport() {
-    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1, 1);
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1, CompletableResultCode.ofSuccess(), 1);
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setMaxQueueSize(10_000)
@@ -203,8 +208,10 @@ class BatchSpanProcessorTest {
 
   @Test
   void exportSpansToMultipleServices() {
-    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
-    WaitingSpanExporter waitingSpanExporter2 = new WaitingSpanExporter(2);
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(2, CompletableResultCode.ofSuccess());
+    WaitingSpanExporter waitingSpanExporter2 =
+        new WaitingSpanExporter(2, CompletableResultCode.ofSuccess());
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(waitingSpanExporter, waitingSpanExporter2)))
@@ -222,7 +229,8 @@ class BatchSpanProcessorTest {
   @Test
   void exportMoreSpansThanTheMaximumLimit() {
     final int maxQueuedSpans = 8;
-    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(maxQueuedSpans);
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(maxQueuedSpans, CompletableResultCode.ofSuccess());
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
@@ -283,7 +291,8 @@ class BatchSpanProcessorTest {
 
   @Test
   void serviceHandlerThrowsException() {
-    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockServiceHandler)
         .export(ArgumentMatchers.anyList());
@@ -304,19 +313,36 @@ class BatchSpanProcessorTest {
 
   @Test
   @Timeout(5)
-  public void exporterTimesOut() throws Exception {
+  public void exporterTimesOut() throws InterruptedException {
     final CountDownLatch interruptMarker = new CountDownLatch(1);
     WaitingSpanExporter waitingSpanExporter =
-        new WaitingSpanExporter(1) {
+        new WaitingSpanExporter(1, new CompletableResultCode()) {
           @Override
-          public ResultCode export(Collection<SpanData> spans) {
-            ResultCode result = super.export(spans);
-            try {
-              // sleep longer than the configured timout of 100ms
-              Thread.sleep(1000);
-            } catch (InterruptedException e) {
-              interruptMarker.countDown();
-            }
+          public CompletableResultCode export(Collection<SpanData> spans) {
+            CompletableResultCode result = super.export(spans);
+            Thread exporterThread =
+                new Thread(
+                    new Runnable() {
+                      @Override
+                      public void run() {
+                        try {
+                          // sleep longer than the configured timeout of 100ms
+                          Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                          interruptMarker.countDown();
+                        }
+                      }
+                    });
+            exporterThread.start();
+            result.whenComplete(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    if (!result.isSuccess()) {
+                      exporterThread.interrupt();
+                    }
+                  }
+                });
             return result;
           }
         };
@@ -342,7 +368,8 @@ class BatchSpanProcessorTest {
 
   @Test
   void exportNotSampledSpans() {
-    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
@@ -398,7 +425,8 @@ class BatchSpanProcessorTest {
   @Test
   @Timeout(10)
   public void shutdownFlushes() {
-    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     // Set the export delay to zero, for no timeout, in order to confirm the #flush() below works
 
     tracerSdkFactory.addSpanProcessor(
@@ -428,7 +456,7 @@ class BatchSpanProcessorTest {
     State state = State.WAIT_TO_BLOCK;
 
     @Override
-    public ResultCode export(Collection<SpanData> spanDataList) {
+    public CompletableResultCode export(Collection<SpanData> spanDataList) {
       synchronized (monitor) {
         while (state != State.UNBLOCKED) {
           try {
@@ -441,12 +469,12 @@ class BatchSpanProcessorTest {
           }
         }
       }
-      return ResultCode.SUCCESS;
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
-    public ResultCode flush() {
-      return ResultCode.SUCCESS;
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
     }
 
     private void waitUntilIsBlocked() {
@@ -478,17 +506,19 @@ class BatchSpanProcessorTest {
 
     private final List<SpanData> spanDataList = new ArrayList<>();
     private final int numberToWaitFor;
+    private final CompletableResultCode exportResultCode;
     private CountDownLatch countDownLatch;
     private int timeout = 10;
     private final AtomicBoolean shutDownCalled = new AtomicBoolean(false);
 
-    WaitingSpanExporter(int numberToWaitFor) {
+    WaitingSpanExporter(int numberToWaitFor, CompletableResultCode exportResultCode) {
       countDownLatch = new CountDownLatch(numberToWaitFor);
       this.numberToWaitFor = numberToWaitFor;
+      this.exportResultCode = exportResultCode;
     }
 
-    WaitingSpanExporter(int numberToWaitFor, int timeout) {
-      this(numberToWaitFor);
+    WaitingSpanExporter(int numberToWaitFor, CompletableResultCode exportResultCode, int timeout) {
+      this(numberToWaitFor, exportResultCode);
       this.timeout = timeout;
     }
 
@@ -514,17 +544,17 @@ class BatchSpanProcessorTest {
     }
 
     @Override
-    public ResultCode export(Collection<SpanData> spans) {
+    public CompletableResultCode export(Collection<SpanData> spans) {
       this.spanDataList.addAll(spans);
       for (int i = 0; i < spans.size(); i++) {
         countDownLatch.countDown();
       }
-      return ResultCode.SUCCESS;
+      return exportResultCode;
     }
 
     @Override
-    public ResultCode flush() {
-      return ResultCode.SUCCESS;
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override

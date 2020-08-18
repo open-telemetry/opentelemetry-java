@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 
@@ -30,35 +31,23 @@ import java.util.Collection;
 public interface MetricExporter {
 
   /**
-   * The possible results for the export method.
-   *
-   * @since 0.1.0
-   */
-  // TODO: extract this enum and unify it with SpanExporter.ResultCode
-  enum ResultCode {
-    /** The export operation finished successfully. */
-    SUCCESS,
-
-    /** The export operation finished with an error. */
-    FAILURE
-  }
-
-  /**
-   * Exports the collection of given {@link MetricData}.
+   * Exports the collection of given {@link MetricData}. Note that export operations can be
+   * performed simultaneously depending on the type of metric reader being used. However, the {@link
+   * IntervalMetricReader} will ensure that only one export can occur at a time.
    *
    * @param metrics the collection of {@link MetricData} to be exported.
-   * @return the result of the export.
-   * @since 0.1.0
+   * @return the result of the export, which is often an asynchronous operation.
    */
-  ResultCode export(Collection<MetricData> metrics);
+  CompletableResultCode export(Collection<MetricData> metrics);
 
   /**
-   * Exports the collection of {@link MetricData} that have not yet been exported.
+   * Exports the collection of {@link MetricData} that have not yet been exported. Note that flush
+   * operations can be performed simultaneously depending on the type of metric reader being used.
+   * However, the {@link IntervalMetricReader} will ensure that only one export can occur at a time.
    *
-   * @return the result of the flush.
-   * @since 0.4.0
+   * @return the result of the flush, which is often an asynchronous operation.
    */
-  ResultCode flush();
+  CompletableResultCode flush();
 
   /** Called when the associated IntervalMetricReader is shutdown. */
   void shutdown();
