@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.resources;
 
 import io.opentelemetry.common.Attributes;
-import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * ResourceProvider is a service provider for additional {@link Resource}s. Users of OpenTelemetry
@@ -31,7 +30,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * @see EnvAutodetectResource
  */
-@ThreadSafe
 public abstract class ResourceProvider {
 
   public Resource create() {
