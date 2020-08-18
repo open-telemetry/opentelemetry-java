@@ -245,10 +245,9 @@ public abstract class AttributeValue {
   public abstract Type getType();
 
   /**
-   * Returns {@code true} if the {@code AttributeValue} contains a {@code null} value or it is an
-   * empty array.
+   * Returns {@code true} if the {@code AttributeValue} contains a {@code null} value.
    *
-   * @return {@code true} if the {@code AttributeValue} is empty.
+   * @return {@code true} if the {@code AttributeValue} contains a {@code null} value.
    * @since 0.8.0
    */
   public boolean isNull() {
