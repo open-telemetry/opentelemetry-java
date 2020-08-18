@@ -16,8 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.Type.STRING;
-
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -314,11 +312,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
-      if (value == null || (value.getType().equals(STRING) && value.getStringValue() == null)) {
-        if (attributes == null) {
-          return;
+      if (value == null || value.isNull()) {
+        if (attributes != null) {
+          attributes.remove(key);
         }
-        attributes.remove(key);
         return;
       }
       if (attributes == null) {

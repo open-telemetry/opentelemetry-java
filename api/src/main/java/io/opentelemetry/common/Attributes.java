@@ -24,6 +24,7 @@ import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -161,6 +162,26 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, AttributeValue value) {
+      if (key == null || key.length() == 0) {
+        return this;
+      }
+      if (value == null || value.isNull()) {
+        // Remove key/value pairs
+        Iterator<Object> itr = data.iterator();
+        while (itr.hasNext()) {
+          String k = (String) itr.next();
+          if (key.equals(k)) {
+            // delete key and value
+            itr.remove();
+            itr.next();
+            itr.remove();
+          } else {
+            // skip the value part
+            itr.next();
+          }
+        }
+        return this;
+      }
       data.add(key);
       data.add(value);
       return this;
@@ -172,9 +193,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, String value) {
-      data.add(key);
-      data.add(stringAttributeValue(value));
-      return this;
+      AttributeValue v = stringAttributeValue(value);
+      return setAttribute(key, v);
     }
 
     /**
@@ -183,9 +203,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, long value) {
-      data.add(key);
-      data.add(longAttributeValue(value));
-      return this;
+      AttributeValue v = longAttributeValue(value);
+      return setAttribute(key, v);
     }
 
     /**
@@ -194,9 +213,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, double value) {
-      data.add(key);
-      data.add(doubleAttributeValue(value));
-      return this;
+      AttributeValue v = doubleAttributeValue(value);
+      return setAttribute(key, v);
     }
 
     /**
@@ -205,9 +223,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, boolean value) {
-      data.add(key);
-      data.add(booleanAttributeValue(value));
-      return this;
+      AttributeValue v = booleanAttributeValue(value);
+      return setAttribute(key, v);
     }
 
     /**
@@ -216,9 +233,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, String... value) {
-      data.add(key);
-      data.add(arrayAttributeValue(value));
-      return this;
+      AttributeValue v = arrayAttributeValue(value);
+      return setAttribute(key, v);
     }
 
     /**
@@ -227,9 +243,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, Long... value) {
-      data.add(key);
-      data.add(arrayAttributeValue(value));
-      return this;
+      AttributeValue v = arrayAttributeValue(value);
+      return setAttribute(key, v);
     }
 
     /**
@@ -238,9 +253,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, Double... value) {
-      data.add(key);
-      data.add(arrayAttributeValue(value));
-      return this;
+      AttributeValue v = arrayAttributeValue(value);
+      return setAttribute(key, v);
     }
 
     /**
@@ -249,9 +263,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
      * @return this Builder
      */
     public Builder setAttribute(String key, Boolean... value) {
-      data.add(key);
-      data.add(arrayAttributeValue(value));
-      return this;
+      AttributeValue v = arrayAttributeValue(value);
+      return setAttribute(key, v);
     }
   }
 }
