@@ -34,6 +34,10 @@ include ":opentelemetry-all",
         ":opentelemetry-integration-tests",
         ":opentelemetry-opentracing-shim",
         ":opentelemetry-proto",
+        ":opentelemetry-sdk-common",
+        ":opentelemetry-sdk-correlation-context",
+        ":opentelemetry-sdk-metrics",
+        ":opentelemetry-sdk-tracing",
         ":opentelemetry-sdk",
         ":opentelemetry-sdk-extension-async-processor",
         ":opentelemetry-sdk-extension-auto-config",
@@ -50,7 +54,10 @@ rootProject.children.each {
         .replace("opentelemetry-exporters-", "exporters/")
         .replace("opentelemetry-extension-", "extensions/")
         .replace("opentelemetry-sdk-extension-", "sdk_extensions/")
+        .replace("opentelemetry-sdk-", "sdk/")
         .replace("logging-", "logging/")
         .replace("opentelemetry-", "")
         .replace("-", "_") as File
 }
+
+project(":opentelemetry-sdk").projectDir = "$rootDir/sdk/all" as File
