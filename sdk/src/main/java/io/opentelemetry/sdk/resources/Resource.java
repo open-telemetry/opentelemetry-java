@@ -26,6 +26,7 @@ import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -58,11 +59,11 @@ public abstract class Resource {
           .readEnvironmentVariables()
           .readSystemProperties()
           .build()
-          .merge(TELEMETRY_SDK);
+          .merge(TELEMETRY_SDK)
+          .merge(readResourceFromProviders());
 
   @Nullable
   private static String readVersion() {
-
     Properties properties = new Properties();
     try {
       properties.load(
@@ -72,6 +73,14 @@ public abstract class Resource {
       return "unknown";
     }
     return properties.getProperty("sdk.version");
+  }
+
+  private static Resource readResourceFromProviders() {
+    Resource result = Resource.EMPTY;
+    for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
+      result = result.merge(resourceProvider.create());
+    }
+    return result;
   }
 
   Resource() {}
