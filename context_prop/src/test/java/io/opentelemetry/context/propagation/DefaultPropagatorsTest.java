@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -146,6 +147,11 @@ class DefaultPropagatorsTest {
 
   private static final class MapGetter implements HttpTextFormat.Getter<Map<String, String>> {
     private static final MapGetter INSTANCE = new MapGetter();
+
+    @Override
+    public Collection<String> keys(Map<String, String> map) {
+      return map.keySet();
+    }
 
     @Override
     public String get(Map<String, String> map, String key) {

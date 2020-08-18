@@ -17,6 +17,7 @@
 package io.opentelemetry.context.propagation;
 
 import io.grpc.Context;
+import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -133,6 +134,14 @@ public interface HttpTextFormat {
    * @since 0.1.0
    */
   interface Getter<C> {
+
+    /**
+     * Returns all the keys in the given carrier.
+     *
+     * @param carrier carrier of propagation fields, such as an http request.
+     * @since 0.8.0
+     */
+    Collection<String> keys(C carrier);
 
     /**
      * Returns the first value of the given propagation {@code key} or returns {@code null}.

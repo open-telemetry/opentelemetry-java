@@ -31,10 +31,12 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link io.opentelemetry.trace.propagation.HttpTraceContext}. */
@@ -55,7 +57,19 @@ class HttpTraceContextTest {
   private static final String TRACEPARENT_HEADER_NOT_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00";
   private static final Setter<Map<String, String>> setter = Map::put;
-  private static final Getter<Map<String, String>> getter = Map::get;
+  private static final Getter<Map<String, String>> getter =
+      new Getter<Map<String, String>>() {
+        @Override
+        public Collection<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
+        @Nullable
+        @Override
+        public String get(Map<String, String> carrier, String key) {
+          return carrier.get(key);
+        }
+      };
   // Encoding preserves the order which is the reverse order of adding.
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING = "bar=baz,foo=bar";
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING_WITH_SPACES =
@@ -162,7 +176,7 @@ class HttpTraceContextTest {
     // Context remains untouched.
     assertThat(
             httpTraceContext.extract(
-                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+                Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 

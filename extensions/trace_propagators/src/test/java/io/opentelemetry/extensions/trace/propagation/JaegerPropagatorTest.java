@@ -35,6 +35,7 @@ import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -62,6 +63,11 @@ class JaegerPropagatorTest {
   private static final HttpTextFormat.Setter<Map<String, String>> setter = Map::put;
   private static final HttpTextFormat.Getter<Map<String, String>> getter =
       new HttpTextFormat.Getter<Map<String, String>>() {
+        @Override
+        public Collection<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
         @Nullable
         @Override
         public String get(Map<String, String> carrier, String key) {
@@ -151,7 +157,7 @@ class JaegerPropagatorTest {
     // Context remains untouched.
     assertThat(
             jaegerPropagator.extract(
-                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+                Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 

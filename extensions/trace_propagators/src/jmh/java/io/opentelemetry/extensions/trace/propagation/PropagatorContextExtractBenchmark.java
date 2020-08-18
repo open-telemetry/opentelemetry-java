@@ -21,6 +21,7 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,11 @@ public class PropagatorContextExtractBenchmark {
     private final HttpTextFormat.Getter<Map<String, String>> getter =
         new HttpTextFormat.Getter<Map<String, String>>() {
           @Override
+          public Collection<String> keys(Map<String, String> carrier) {
+            return carrier.keySet();
+          }
+
+          @Override
           public String get(Map<String, String> carrier, String key) {
             return carrier.get(key);
           }
@@ -150,6 +156,11 @@ public class PropagatorContextExtractBenchmark {
     private final HttpTextFormat.Getter<Map<String, String>> getter =
         new HttpTextFormat.Getter<Map<String, String>>() {
           @Override
+          public Collection<String> keys(Map<String, String> carrier) {
+            return carrier.keySet();
+          }
+
+          @Override
           public String get(Map<String, String> carrier, String key) {
             return carrier.get(key);
           }
@@ -192,6 +203,11 @@ public class PropagatorContextExtractBenchmark {
 
     private final HttpTextFormat.Getter<Map<String, String>> getter =
         new HttpTextFormat.Getter<Map<String, String>>() {
+          @Override
+          public Collection<String> keys(Map<String, String> carrier) {
+            return carrier.keySet();
+          }
+
           @Override
           public String get(Map<String, String> carrier, String key) {
             return carrier.get(key);
@@ -238,6 +254,11 @@ public class PropagatorContextExtractBenchmark {
 
     private final HttpTextFormat.Getter<Map<String, String>> getter =
         new HttpTextFormat.Getter<Map<String, String>>() {
+          @Override
+          public Collection<String> keys(Map<String, String> carrier) {
+            return carrier.keySet();
+          }
+
           @Override
           public String get(Map<String, String> carrier, String key) {
             return carrier.get(key);

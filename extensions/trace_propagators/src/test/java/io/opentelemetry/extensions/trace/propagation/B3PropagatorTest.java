@@ -28,6 +28,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -54,6 +55,11 @@ class B3PropagatorTest {
   private static final Setter<Map<String, String>> setter = Map::put;
   private static final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
+        @Override
+        public Collection<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
         @Nullable
         @Override
         public String get(Map<String, String> carrier, String key) {
@@ -133,8 +139,7 @@ class B3PropagatorTest {
   void extract_Nothing() {
     // Context remains untouched.
     assertThat(
-            b3Propagator.extract(
-                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+            b3Propagator.extract(Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 
@@ -347,7 +352,7 @@ class B3PropagatorTest {
     // Context remains untouched.
     assertThat(
             b3PropagatorSingleHeader.extract(
-                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+                Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 

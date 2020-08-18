@@ -20,6 +20,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,11 @@ public class HttpTraceContextExtractBenchmark {
   private final HttpTraceContext httpTraceContext = new HttpTraceContext();
   private final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
+        @Override
+        public Collection<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
         @Override
         public String get(Map<String, String> carrier, String key) {
           return carrier.get(key);
