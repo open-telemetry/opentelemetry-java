@@ -146,7 +146,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
    * @param kind the span kind.
-   * @param parentSpanId the span_id of the parent span, or null if the new span is a root span.
+   * @param parentSpanId the span_id of the parent span, or {@code Span.INVALID} if the new span is
+   *     a root span.
    * @param hasRemoteParent {@code true} if the parentContext is remote. {@code false} if this is a
    *     root span.
    * @param traceConfig trace parameters like sampler and probability.
@@ -162,7 +163,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      @Nullable SpanId parentSpanId,
+      SpanId parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -178,7 +179,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             name,
             instrumentationLibraryInfo,
             kind,
-            parentSpanId == null ? SpanId.getInvalid() : parentSpanId,
+            parentSpanId,
             hasRemoteParent,
             traceConfig,
             spanProcessor,

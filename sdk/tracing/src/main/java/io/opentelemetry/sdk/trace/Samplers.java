@@ -176,7 +176,7 @@ public final class Samplers {
     // Returns a "yes" {@link SamplingResult} for {@link Span} sampling.
     @Override
     public SamplingResult shouldSample(
-        @Nullable SpanContext parentContext,
+        SpanContext parentContext,
         TraceId traceId,
         String name,
         Kind spanKind,
@@ -198,7 +198,7 @@ public final class Samplers {
     // Returns a "no" {@link SamplingResult}T on {@link Span} sampling.
     @Override
     public SamplingResult shouldSample(
-        @Nullable SpanContext parentContext,
+        SpanContext parentContext,
         TraceId traceId,
         String name,
         Kind spanKind,
@@ -225,13 +225,13 @@ public final class Samplers {
     // Otherwise, uses the delegateSampler provided at initialization to make a decision.
     @Override
     public SamplingResult shouldSample(
-        @Nullable SpanContext parentContext,
+        SpanContext parentContext,
         TraceId traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
         List<Link> parentLinks) {
-      if (parentContext != null) {
+      if (parentContext.isValid()) {
         if (parentContext.getTraceFlags().isSampled()) {
           return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
         }
@@ -292,14 +292,14 @@ public final class Samplers {
 
     @Override
     public final SamplingResult shouldSample(
-        @Nullable SpanContext parentContext,
+        SpanContext parentContext,
         TraceId traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
         @Nullable List<Link> parentLinks) {
       // If the parent is sampled keep the sampling samplingResult.
-      if (parentContext != null && parentContext.getTraceFlags().isSampled()) {
+      if (parentContext.getTraceFlags().isSampled()) {
         return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
       }
       if (parentLinks != null) {

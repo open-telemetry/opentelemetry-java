@@ -49,6 +49,7 @@ class SamplersTest {
           traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), traceState);
   private final SpanContext notSampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
+  private final SpanContext invalidSpanContext = SpanContext.getInvalid();
   private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpanContext);
 
   @Test
@@ -218,11 +219,11 @@ class SamplersTest {
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
 
-    // Null parent.
+    // Invalid parent.
     assertThat(
             Samplers.parentOrElse(Samplers.alwaysOn())
                 .shouldSample(
-                    null,
+                    invalidSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -260,11 +261,11 @@ class SamplersTest {
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
 
-    // Null parent.
+    // Invalid parent.
     assertThat(
             Samplers.parentOrElse(Samplers.alwaysOff())
                 .shouldSample(
-                    null,
+                    invalidSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -408,7 +409,7 @@ class SamplersTest {
             0);
     SamplingResult samplingResult1 =
         defaultProbability.shouldSample(
-            null,
+            invalidSpanContext,
             notSampledtraceId,
             SPAN_NAME,
             SPAN_KIND,
@@ -443,7 +444,7 @@ class SamplersTest {
             0);
     SamplingResult samplingResult2 =
         defaultProbability.shouldSample(
-            null,
+            invalidSpanContext,
             sampledtraceId,
             SPAN_NAME,
             SPAN_KIND,
