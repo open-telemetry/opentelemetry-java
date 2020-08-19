@@ -164,7 +164,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private static final BoundLongCounter droppedSpans;
 
-    private final Timer timer = new Timer(TIMER_THREAD_NAME);
+    private final Timer timer = new Timer(TIMER_THREAD_NAME, /* isDaemon= */ true);
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;
