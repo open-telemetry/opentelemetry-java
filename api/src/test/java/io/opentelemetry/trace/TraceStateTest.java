@@ -72,8 +72,9 @@ class TraceStateTest {
 
   @Test
   void firstKeyCharacterDigitIsAllowed() {
-    TraceState result = EMPTY.toBuilder().set("1_key", FIRST_VALUE).build();
-    assertThat(result.get("1_key")).isEqualTo(FIRST_VALUE);
+    // note: a digit is only allowed if the key is in the tenant format (with an '@')
+    TraceState result = EMPTY.toBuilder().set("1@tenant", FIRST_VALUE).build();
+    assertThat(result.get("1@tenant")).isEqualTo(FIRST_VALUE);
   }
 
   @Test
@@ -86,6 +87,30 @@ class TraceStateTest {
   void testValidAtSignVendorNamePrefix() {
     TraceState result = EMPTY.toBuilder().set("1@nr", FIRST_VALUE).build();
     assertThat(result.get("1@nr")).isEqualTo(FIRST_VALUE);
+  }
+
+  @Test
+  void testVendorIdLongerThan13Characters() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set("1@nrabcdefghijkl", FIRST_VALUE).build());
+  }
+
+  @Test
+  void tenantIdLongerThan240Characters() {
+    char[] chars = new char[241];
+    Arrays.fill(chars, 'a');
+    String tenantId = new String(chars);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set(tenantId + "@nr", FIRST_VALUE).build());
+  }
+
+  @Test
+  void testNonVendorFormatFirstKeyCharacter() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set("1acdfrgs", FIRST_VALUE).build());
   }
 
   @Test

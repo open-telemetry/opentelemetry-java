@@ -235,26 +235,53 @@ public abstract class TraceState {
   // Key is opaque string up to 256 characters printable. It MUST begin with a lowercase letter, and
   // can only contain lowercase letters a-z, digits 0-9, underscores _, dashes -, asterisks *, and
   // forward slashes /.  For multi-tenant vendor scenarios, an at sign (@) can be used to prefix the
-  // vendor name.
+  // vendor name. The tenant id (before the '@') is limited to 240 characters and the vendor id is
+  // limited to 13 characters. If in the multi-tenant vendor format, then the first character
+  // may additionally be digit.
+  //
   // todo: benchmark this implementation
   private static boolean validateKey(String key) {
-    if (key.length() > KEY_MAX_SIZE || key.isEmpty() || !isNumberOrDigit(key.charAt(0))) {
+    if (key.length() > KEY_MAX_SIZE || key.isEmpty() || !isLowercaseLetterOrDigit(key.charAt(0))) {
       return false;
     }
     int atSeenCount = 0;
     for (int i = 1; i < key.length(); i++) {
       char c = key.charAt(i);
-      if (!isNumberOrDigit(c) && c != '_' && c != '-' && c != '@' && c != '*' && c != '/') {
+      if (!isLowercaseLetterOrDigit(c)
+          && c != '_'
+          && c != '-'
+          && c != '@'
+          && c != '*'
+          && c != '/') {
         return false;
       }
-      if ((c == '@') && (++atSeenCount > 1)) {
-        return false;
+      int atPosition = 0;
+      if (c == '@') {
+        atPosition = i;
+        // tenant id must be 240 characters or less
+        if (i > 240) {
+          return false;
+        }
+        atSeenCount++;
+        if (atSeenCount > 1) {
+          return false;
+        }
       }
+      if (atSeenCount == 1) {
+        // vendor id must be 13 characters or less
+        if ((i - atPosition) > 13) {
+          return false;
+        }
+      }
+    }
+    if (atSeenCount == 0) {
+      // if it's not the vendor format (with an '@' sign), the key must start with a letter.
+      return !Character.isDigit(key.charAt(0));
     }
     return true;
   }
 
-  private static boolean isNumberOrDigit(char ch) {
+  private static boolean isLowercaseLetterOrDigit(char ch) {
     return (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9');
   }
 
