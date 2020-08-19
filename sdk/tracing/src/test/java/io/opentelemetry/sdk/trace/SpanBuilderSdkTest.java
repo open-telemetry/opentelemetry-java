@@ -590,14 +590,13 @@ class SpanBuilderSdkTest {
 
   @Test
   void sampledViaParentLinks() {
-    RecordEventsReadableSpan span =
-        (RecordEventsReadableSpan)
-            TestUtils.startSpanWithSampler(
-                    tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.probability(0.0))
-                .addLink(sampledSpanContext)
-                .startSpan();
+    Span span =
+        TestUtils.startSpanWithSampler(
+                tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.probability(0.0))
+            .addLink(sampledSpanContext)
+            .startSpan();
     try {
-      assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
     } finally {
       if (span != null) {
         span.end();
