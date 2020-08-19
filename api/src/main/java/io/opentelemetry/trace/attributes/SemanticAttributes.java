@@ -285,5 +285,11 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter EXCEPTION_STACKTRACE =
       StringAttributeSetter.create("exception.stacktrace");
 
+  /** Id of the thread that has started a span, as produced by {@link Thread#getId()}. */
+  public static final LongAttributeSetter THREAD_ID = LongAttributeSetter.create("thread.id");
+  /** Name of the thread that has started a span, as produced by {@link Thread#getName()}. */
+  public static final StringAttributeSetter THREAD_NAME =
+      StringAttributeSetter.create("thread.name");
+
   private SemanticAttributes() {}
 }
