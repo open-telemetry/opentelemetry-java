@@ -16,6 +16,7 @@
   * [Sampler](#sampler)
   * [Span Processor](#span-processor)
   * [Exporter](#exporter)
+  * [TraceConfig](#traceconfig)
 - [Logging And Error Handling](#logging-and-error-handling)
   * [Examples](#examples)
 <!-- tocstop -->
@@ -401,6 +402,43 @@ tracerProvider.addSpanProcessor(BatchSpanProcessor.newBuilder(
     jaegerExporter
 ).build());
 ```
+
+### TraceConfig
+
+The `TraceConfig` associated with a `TracerSdkProvider` can be updated via system properties, 
+environment variables and builder `set*` methods.  
+
+```java
+// Get TraceConfig associated with TracerSdkProvider 
+TraceConfig traceConfig = OpenTelemetrySdk.getTracerProvider().getActiveTraceConfig();
+
+// Get TraceConfig Builder
+Builder builder = traceConfig.toBuilder();
+
+// Read configuration options from system properties
+builder.readSystemProperties();
+
+// Read configuration options from environment variables
+builder.readEnvironmentVariables()
+
+// Set options via builder.set* methods, e.g.
+builder.setMaxNumberOfLinks(10);
+
+// Update the resulting TraceConfig instance
+OpenTelemetrySdk.getTracerProvider().updateActiveTraceConfig(builder.build());
+```
+
+Supported system properties and environment variables:
+
+| System property                  | Environment variable             | Purpose                                                                                             | 
+|----------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------|       
+| otel.config.sampler.probability  | OTEL_CONFIG_SAMPLER_PROBABILITY  | Sampler which is used when constructing a new span (default: 1)                                     |                        
+| otel.config.max.attrs            | OTEL_CONFIG_MAX_ATTRS            | Max number of attributes per span, extra will be dropped (default: 32)                              |                        
+| otel.config.max.events           | OTEL_CONFIG_MAX_EVENTS           | Max number of Events per span, extra will be dropped (default: 128)                                 |                        
+| otel.config.max.links            | OTEL_CONFIG_MAX_LINKS            | Max number of Link entries per span, extra will be dropped (default: 32)                            |
+| otel.config.max.event.attrs      | OTEL_CONFIG_MAX_EVENT_ATTRS      | Max number of attributes per event, extra will be dropped (default: 32)                             |
+| otel.config.max.link.attrs       | OTEL_CONFIG_MAX_LINK_ATTRS       | Max number of attributes per link, extra will be dropped  (default: 32)                             |
+| otel.config.max.attr.length      | OTEL_CONFIG_MAX_ATTR_LENGTH      | Max length of string attribute value in characters, too long will be truncated (default: unlimited) |
 
 [AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L82--L105
 [AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L108--L131
