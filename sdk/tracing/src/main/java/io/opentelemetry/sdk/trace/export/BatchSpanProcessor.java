@@ -218,19 +218,17 @@ public final class BatchSpanProcessor implements SpanProcessor {
         ArrayList<ReadableSpan> spansCopy;
         synchronized (monitor) {
           // If still maxExportBatchSize elements in the queue better to execute an extra
-          if (spansList.size() < maxExportBatchSize) {
-            do {
-              // In the case of a spurious wakeup we export only if we have at least one span in
-              // the batch. It is acceptable because batching is a best effort mechanism here.
-              try {
-                monitor.wait(scheduleDelayMillis);
-              } catch (InterruptedException ie) {
-                // Preserve the interruption status as per guidance and stop doing any work.
-                Thread.currentThread().interrupt();
-                return;
-              }
-            } while (spansList.isEmpty());
-          }
+          do {
+            // In the case of a spurious wakeup we export only if we have at least one span in
+            // the batch. It is acceptable because batching is a best effort mechanism here.
+            try {
+              monitor.wait(scheduleDelayMillis);
+            } catch (InterruptedException ie) {
+              // Preserve the interruption status as per guidance and stop doing any work.
+              Thread.currentThread().interrupt();
+              return;
+            }
+          } while (spansList.isEmpty());
           spansCopy = new ArrayList<>(spansList);
         }
         // Execute the batch export outside the synchronized to not block all producers.
