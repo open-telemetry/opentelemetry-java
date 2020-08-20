@@ -32,6 +32,9 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
+import io.opentelemetry.exporters.jaeger.proto.api_v2.Model.KeyValue;
+import io.opentelemetry.exporters.jaeger.proto.api_v2.Model.Span;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.TestSpanData;
@@ -44,6 +47,7 @@ import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -100,6 +104,8 @@ class JaegerGrpcSpanExporterTest {
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
+            .setInstrumentationLibraryInfo(
+                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
             .build();
 
     // test
@@ -121,6 +127,18 @@ class JaegerGrpcSpanExporterTest {
         batch.getSpans(0).getSpanId());
     assertEquals("test", batch.getProcess().getServiceName());
     assertEquals(3, batch.getProcess().getTagsCount());
+
+    assertEquals(
+        "io.opentelemetry.auto",
+        getSpanTagValue(batch.getSpans(0), "otel.instrumentation_library.name")
+            .orElseThrow(() -> new AssertionError("otel.instrumentation_library.name not found"))
+            .getVStr());
+
+    assertEquals(
+        "1.0.0",
+        getSpanTagValue(batch.getSpans(0), "otel.instrumentation_library.version")
+            .orElseThrow(() -> new AssertionError("otel.instrumentation_library.version not found"))
+            .getVStr());
 
     boolean foundClientTag = false;
     boolean foundHostname = false;
@@ -144,6 +162,10 @@ class JaegerGrpcSpanExporterTest {
     assertTrue("a client tag should have been present", foundClientTag);
     assertTrue("an ip tag should have been present", foundIp);
     assertTrue("a hostname tag should have been present", foundHostname);
+  }
+
+  private static Optional<KeyValue> getSpanTagValue(Span span, String tagKey) {
+    return span.getTagsList().stream().filter(kv -> kv.getKey().equals(tagKey)).findFirst();
   }
 
   @Test

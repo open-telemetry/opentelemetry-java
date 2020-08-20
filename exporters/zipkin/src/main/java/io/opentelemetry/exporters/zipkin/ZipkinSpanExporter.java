@@ -21,6 +21,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.ResourceConstants;
@@ -83,6 +84,9 @@ public final class ZipkinSpanExporter implements SpanExporter {
   static final String GRPC_STATUS_CODE = "grpc.status_code";
   static final String GRPC_STATUS_DESCRIPTION = "grpc.status_description";
   static final String STATUS_ERROR = "error";
+
+  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.instrumentation_library.name";
+  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.instrumentation_library.version";
 
   private final BytesEncoder<Span> encoder;
   private final Sender sender;
@@ -159,6 +163,17 @@ public final class ZipkinSpanExporter implements SpanExporter {
     // add the error tag, if it isn't already in the source span.
     if (status != null && !status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
       spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
+    }
+
+    InstrumentationLibraryInfo instrumentationLibraryInfo =
+        spanData.getInstrumentationLibraryInfo();
+
+    if (!instrumentationLibraryInfo.getName().isEmpty()) {
+      spanBuilder.putTag(KEY_INSTRUMENTATION_LIBRARY_NAME, instrumentationLibraryInfo.getName());
+    }
+    if (instrumentationLibraryInfo.getVersion() != null) {
+      spanBuilder.putTag(
+          KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationLibraryInfo.getVersion());
     }
 
     for (Event annotation : spanData.getEvents()) {

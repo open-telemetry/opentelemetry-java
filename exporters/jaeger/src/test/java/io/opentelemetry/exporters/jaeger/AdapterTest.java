@@ -86,7 +86,7 @@ class AdapterTest {
     assertEquals(Timestamps.fromMillis(startMs), jaegerSpan.getStartTime());
     assertEquals(duration, Durations.toMillis(jaegerSpan.getDuration()));
 
-    assertEquals(4, jaegerSpan.getTagsCount());
+    assertEquals(5, jaegerSpan.getTagsCount());
     Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
     assertNotNull(keyValue);
     assertEquals("server", keyValue.getVStr());
