@@ -232,10 +232,12 @@ public final class BatchSpanProcessor implements SpanProcessor {
             } while (spansList.isEmpty());
           }
           spansCopy = new ArrayList<>(spansList);
-          spansList.clear();
         }
         // Execute the batch export outside the synchronized to not block all producers.
-        exportBatches(spansCopy);
+        int taken = onBatchExport(spansCopy);
+        synchronized (monitor) {
+          spansList.retainAll(spansList.subList(taken, spansList.size()));
+        }
       }
     }
 
@@ -249,18 +251,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
       ArrayList<ReadableSpan> spansCopy;
       synchronized (monitor) {
         spansCopy = new ArrayList<>(spansList);
-        spansList.clear();
       }
       // Execute the batch export outside the synchronized to not block all producers.
-      exportBatches(spansCopy);
-    }
-
-    private void exportBatches(ArrayList<ReadableSpan> spanList) {
-      // TODO: Record a counter for pushed spans.
-      for (int i = 0; i < spanList.size(); ) {
-        int lastIndexToTake = Math.min(i + maxExportBatchSize, spanList.size());
-        onBatchExport(createSpanDataForExport(spanList, i, lastIndexToTake));
-        i = lastIndexToTake;
+      int taken = onBatchExport(spansCopy);
+      synchronized (monitor) {
+        spansList.retainAll(spansList.subList(taken, spansList.size()));
       }
     }
 
@@ -277,10 +272,12 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     // Exports the list of SpanData to the SpanExporter.
     @SuppressWarnings("BooleanParameter")
-    private void onBatchExport(final List<SpanData> spans) {
+    private int onBatchExport(final List<ReadableSpan> spans) {
       if (exportAvailable.compareAndSet(true, false)) {
+        int exportSize = Math.min(maxExportBatchSize, spans.size());
         try {
-          final CompletableResultCode result = spanExporter.export(spans);
+          final CompletableResultCode result =
+              spanExporter.export(createSpanDataForExport(spans, 0, exportSize));
           result.whenComplete(
               new Runnable() {
                 @Override
@@ -302,8 +299,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
         } catch (Exception e) {
           logger.log(Level.WARNING, "Exporter threw an Exception", e);
         }
+        return exportSize;
       } else {
-        logger.log(Level.FINE, "Exporter busy. Dropping spans.");
+        return 0;
       }
     }
   }
