@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.doThrow;
 
 import io.opentelemetry.sdk.common.export.CompletableResultCode;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
@@ -153,11 +155,10 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  void exportMoreSpansThanTheBufferSize() {
-    WaitingSpanExporter waitingSpanExporter =
-        new WaitingSpanExporter(6, CompletableResultCode.ofSuccess());
+  void exportMoreSpansThanTheBufferSize() throws Exception {
+    CompletableSpanExporter spanExporter = new CompletableSpanExporter();
     BatchSpanProcessor batchSpanProcessor =
-        BatchSpanProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.newBuilder(spanExporter)
             .setMaxQueueSize(6)
             .setMaxExportBatchSize(2)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
@@ -171,15 +172,23 @@ class BatchSpanProcessorTest {
     ReadableSpan span4 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span5 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span6 = createSampledEndedSpan(SPAN_NAME_1);
-    List<SpanData> exported = waitingSpanExporter.waitForExport();
-    assertThat(exported)
-        .containsExactly(
-            span1.toSpanData(),
-            span2.toSpanData(),
-            span3.toSpanData(),
-            span4.toSpanData(),
-            span5.toSpanData(),
-            span6.toSpanData());
+
+    // Give time for the BatchSpanProcessor to attempt to export spans.
+    Thread.sleep(500);
+
+    spanExporter.succeed();
+
+    await()
+        .untilAsserted(
+            () ->
+                assertThat(spanExporter.getExported())
+                    .containsExactly(
+                        span1.toSpanData(),
+                        span2.toSpanData(),
+                        span3.toSpanData(),
+                        span4.toSpanData(),
+                        span5.toSpanData(),
+                        span6.toSpanData()));
   }
 
   @Test
@@ -500,6 +509,46 @@ class BatchSpanProcessorTest {
         monitor.notifyAll();
       }
     }
+  }
+
+  private static class CompletableSpanExporter implements SpanExporter {
+
+    private final List<CompletableResultCode> results = new ArrayList<>();
+
+    private final List<SpanData> exported = new ArrayList<>();
+
+    private final AtomicInteger pending = new AtomicInteger();
+
+    private volatile boolean succeeded;
+
+    List<SpanData> getExported() {
+      return exported;
+    }
+
+    void succeed() {
+      succeeded = true;
+      results.forEach(CompletableResultCode::succeed);
+    }
+
+    @Override
+    public CompletableResultCode export(Collection<SpanData> spans) {
+      pending.incrementAndGet();
+      exported.addAll(spans);
+      if (succeeded) {
+        return CompletableResultCode.ofSuccess();
+      }
+      CompletableResultCode result = new CompletableResultCode();
+      results.add(result);
+      return result;
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      return new CompletableResultCode();
+    }
+
+    @Override
+    public void shutdown() {}
   }
 
   static class WaitingSpanExporter implements SpanExporter {

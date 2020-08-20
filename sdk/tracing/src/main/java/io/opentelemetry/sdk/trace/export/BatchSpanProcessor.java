@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -255,12 +257,21 @@ public final class BatchSpanProcessor implements SpanProcessor {
       exportBatches(spansCopy);
     }
 
+    @SuppressWarnings("BooleanParameter")
     private void exportBatches(ArrayList<ReadableSpan> spanList) {
       // TODO: Record a counter for pushed spans.
-      for (int i = 0; i < spanList.size(); ) {
-        int lastIndexToTake = Math.min(i + maxExportBatchSize, spanList.size());
-        onBatchExport(createSpanDataForExport(spanList, i, lastIndexToTake));
-        i = lastIndexToTake;
+      if (exportAvailable.compareAndSet(true, false)) {
+        try {
+          for (int i = 0; i < spanList.size(); ) {
+            int lastIndexToTake = Math.min(i + maxExportBatchSize, spanList.size());
+            onBatchExport(createSpanDataForExport(spanList, i, lastIndexToTake));
+            i = lastIndexToTake;
+          }
+        } finally {
+          exportAvailable.set(true);
+        }
+      } else {
+        logger.log(Level.FINE, "Exporter busy. Dropping spans.");
       }
     }
 
@@ -276,34 +287,34 @@ public final class BatchSpanProcessor implements SpanProcessor {
     }
 
     // Exports the list of SpanData to the SpanExporter.
-    @SuppressWarnings("BooleanParameter")
     private void onBatchExport(final List<SpanData> spans) {
-      if (exportAvailable.compareAndSet(true, false)) {
-        try {
-          final CompletableResultCode result = spanExporter.export(spans);
-          result.whenComplete(
-              new Runnable() {
-                @Override
-                public void run() {
-                  if (!result.isSuccess()) {
-                    logger.log(Level.FINE, "Exporter failed");
-                  }
-                  exportAvailable.set(true);
-                }
-              });
-          timer.schedule(
-              new TimerTask() {
-                @Override
-                public void run() {
-                  result.fail();
-                }
-              },
-              exporterTimeoutMillis);
-        } catch (Exception e) {
-          logger.log(Level.WARNING, "Exporter threw an Exception", e);
+      try {
+        final CompletableResultCode result = spanExporter.export(spans);
+        final CountDownLatch latch = new CountDownLatch(1);
+        result.whenComplete(
+            new Runnable() {
+              @Override
+              public void run() {
+                latch.countDown();
+              }
+            });
+        timer.schedule(
+            new TimerTask() {
+              @Override
+              public void run() {
+                result.fail();
+              }
+            },
+            exporterTimeoutMillis);
+        latch.await(exporterTimeoutMillis, TimeUnit.MILLISECONDS);
+        if (!result.isSuccess()) {
+          logger.log(Level.FINE, "Exporter failed");
         }
-      } else {
-        logger.log(Level.FINE, "Exporter busy. Dropping spans.");
+      } catch (InterruptedException e) {
+        logger.log(Level.WARNING, "Interrupted while exporting batch.", e);
+        Thread.currentThread().interrupt();
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Exporter threw an Exception", e);
       }
     }
   }
