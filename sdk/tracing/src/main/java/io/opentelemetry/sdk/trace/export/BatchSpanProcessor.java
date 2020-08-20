@@ -37,7 +37,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
@@ -176,7 +175,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final int halfMaxQueueSize;
     private final Object monitor = new Object();
     private final int exporterTimeoutMillis;
-    private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
 
     @GuardedBy("monitor")
     private final List<ReadableSpan> spansList;
@@ -259,20 +257,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     @SuppressWarnings("BooleanParameter")
     private void exportBatches(ArrayList<ReadableSpan> spanList) {
-      // TODO: Record a counter for pushed spans.
-      if (exportAvailable.compareAndSet(true, false)) {
-        try {
-          for (int i = 0; i < spanList.size(); ) {
-            int lastIndexToTake = Math.min(i + maxExportBatchSize, spanList.size());
-            onBatchExport(createSpanDataForExport(spanList, i, lastIndexToTake));
-            i = lastIndexToTake;
-          }
-        } finally {
-          exportAvailable.set(true);
-        }
-      } else {
-        logger.log(Level.FINE, "Exporter busy. Dropping spans.");
-        droppedSpans.add(spanList.size());
+      for (int i = 0; i < spanList.size(); ) {
+        int lastIndexToTake = Math.min(i + maxExportBatchSize, spanList.size());
+        onBatchExport(createSpanDataForExport(spanList, i, lastIndexToTake));
+        i = lastIndexToTake;
       }
     }
 
