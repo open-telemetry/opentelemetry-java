@@ -20,7 +20,7 @@ package io.opentelemetry.sdk.resources;
  * Provides constants for resource semantic conventions defined by the OpenTelemetry specification.
  *
  * @see <a
- *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-resource-semantic-conventions.md">Resource
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/semantic_conventions/README.md">Resource
  *     Conventions</a>
  */
 public class ResourceConstants {
