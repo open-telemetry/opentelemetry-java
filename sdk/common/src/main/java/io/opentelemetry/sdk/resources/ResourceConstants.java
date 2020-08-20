@@ -20,10 +20,40 @@ package io.opentelemetry.sdk.resources;
  * Provides constants for resource semantic conventions defined by the OpenTelemetry specification.
  *
  * @see <a
- *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-resource-semantic-conventions.md">Resource
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/semantic_conventions/README.md">Resource
  *     Conventions</a>
  */
 public class ResourceConstants {
+
+  /** The operating system type, such as {@code "WINDOWS"}, {@code "DARWIN"}, {@code "LINUX"}. */
+  public static final String OS_NAME = "os.name";
+
+  /**
+   * Human readable information about the OS version, e.g. {@code "Microsoft Windows [Version
+   * 10.0.18363.778]"}, {@code "Ubuntu 18.04.1 LTS"}.
+   */
+  public static final String OS_DESCRIPTION = "os.description";
+
+  /** Process identifier (PID). */
+  public static final String PROCESS_PID = "process.pid";
+
+  /** The name of the process executable. */
+  public static final String PROCESS_EXECUTABLE_NAME = "process.executable.name";
+
+  /** The full path to the process executable. */
+  public static final String PROCESS_EXECUTABLE_PATH = "process.executable.path";
+
+  /** The command used to launch the process (i.e. the command name). */
+  public static final String PROCESS_COMMAND = "process.command";
+
+  /**
+   * The full command used to launch the process. The value can be either a list of strings
+   * representing the ordered list of arguments, or a single string representing the full command.
+   */
+  public static final String PROCESS_COMMAND_LINE = "process.command_line";
+
+  /** The username of the user that owns the process. */
+  public static final String PROCESS_OWNER = "process.owner";
 
   /**
    * Logical name of the service. MUST be the same for all instances of horizontally scaled
