@@ -82,6 +82,7 @@ import javax.annotation.concurrent.GuardedBy;
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 
+  // FIXME This worker thread can be eliminated by leveraging the timer
   private static final String WORKER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private static final String TIMER_THREAD_NAME =
@@ -217,7 +218,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
         // avoid blocking the producer thread.
         ArrayList<ReadableSpan> spansCopy;
         synchronized (monitor) {
-          // If still maxExportBatchSize elements in the queue better to execute an extra
           do {
             // In the case of a spurious wakeup we export only if we have at least one span in
             // the batch. It is acceptable because batching is a best effort mechanism here.
