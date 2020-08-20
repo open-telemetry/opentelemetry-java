@@ -46,6 +46,8 @@ public abstract class TraceState {
   private static final int VALUE_MAX_SIZE = 256;
   private static final int MAX_KEY_VALUE_PAIRS = 32;
   private static final TraceState DEFAULT = TraceState.builder().build();
+  private static final int MAX_TENANT_ID_SIZE = 240;
+  public static final int MAX_VENDOR_ID_SIZE = 13;
 
   /**
    * Returns the default {@code TraceState} with no entries.
@@ -241,48 +243,61 @@ public abstract class TraceState {
   //
   // todo: benchmark this implementation
   private static boolean validateKey(String key) {
-    if (key.length() > KEY_MAX_SIZE || key.isEmpty() || !isLowercaseLetterOrDigit(key.charAt(0))) {
+    if (key.length() > KEY_MAX_SIZE
+        || key.isEmpty()
+        || isNotLowercaseLetterOrDigit(key.charAt(0))) {
       return false;
     }
-    int atSeenCount = 0;
+    boolean isMultiTenantVendorKey = false;
     for (int i = 1; i < key.length(); i++) {
       char c = key.charAt(i);
-      if (!isLowercaseLetterOrDigit(c)
-          && c != '_'
-          && c != '-'
-          && c != '@'
-          && c != '*'
-          && c != '/') {
+      if (isNotLegalKeyCharacter(c)) {
         return false;
       }
-      int atPosition = 0;
+      // the location of the '@' sign, or -1 if it isn't there.
+      int atPosition = -1;
       if (c == '@') {
-        atPosition = i;
-        // tenant id must be 240 characters or less
-        if (i > 240) {
+        // you can't have 2 '@' signs
+        if (isMultiTenantVendorKey) {
           return false;
         }
-        atSeenCount++;
-        if (atSeenCount > 1) {
+        atPosition = i;
+        isMultiTenantVendorKey = true;
+        // tenant id (the part to the left of the '@' sign) must be 240 characters or less
+        if (i > MAX_TENANT_ID_SIZE) {
           return false;
         }
       }
-      if (atSeenCount == 1) {
-        // vendor id must be 13 characters or less
-        if ((i - atPosition) > 13) {
+      if (isMultiTenantVendorKey) {
+        // vendor id (the part to the right of the '@' sign) must be 13 characters or less
+        int numberOfCharactersPastTheAt = i - atPosition;
+        if (numberOfCharactersPastTheAt > MAX_VENDOR_ID_SIZE) {
           return false;
         }
       }
     }
-    if (atSeenCount == 0) {
+    if (!isMultiTenantVendorKey) {
       // if it's not the vendor format (with an '@' sign), the key must start with a letter.
-      return !Character.isDigit(key.charAt(0));
+      return isNotDigit(key.charAt(0));
     }
     return true;
   }
 
-  private static boolean isLowercaseLetterOrDigit(char ch) {
-    return (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9');
+  private static boolean isNotLegalKeyCharacter(char c) {
+    return isNotLowercaseLetterOrDigit(c)
+        && c != '_'
+        && c != '-'
+        && c != '@'
+        && c != '*'
+        && c != '/';
+  }
+
+  private static boolean isNotLowercaseLetterOrDigit(char ch) {
+    return (ch < 'a' || ch > 'z') && isNotDigit(ch);
+  }
+
+  private static boolean isNotDigit(char ch) {
+    return ch < '0' || ch > '9';
   }
 
   // Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the range
