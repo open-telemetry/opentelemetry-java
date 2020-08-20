@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
@@ -517,8 +516,6 @@ class BatchSpanProcessorTest {
 
     private final List<SpanData> exported = new ArrayList<>();
 
-    private final AtomicInteger pending = new AtomicInteger();
-
     private volatile boolean succeeded;
 
     List<SpanData> getExported() {
@@ -532,7 +529,6 @@ class BatchSpanProcessorTest {
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
-      pending.incrementAndGet();
       exported.addAll(spans);
       if (succeeded) {
         return CompletableResultCode.ofSuccess();
