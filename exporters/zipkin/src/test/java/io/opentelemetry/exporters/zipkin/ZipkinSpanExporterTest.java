@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -161,6 +162,24 @@ class ZipkinSpanExporterTest {
                 .putTag("stringArray", "Hello")
                 .putTag("doubleArray", "32.33,-98.3")
                 .putTag("longArray", "33,999")
+                .build());
+  }
+
+  @Test
+  void generateSpan_WithInstrumentationLibraryInfo() {
+    SpanData data =
+        buildStandardSpan()
+            .setInstrumentationLibraryInfo(
+                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setKind(Kind.CLIENT)
+            .build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(
+            buildZipkinSpan(Span.Kind.CLIENT)
+                .toBuilder()
+                .putTag("otel.instrumentation_library.name", "io.opentelemetry.auto")
+                .putTag("otel.instrumentation_library.version", "1.0.0")
                 .build());
   }
 

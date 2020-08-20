@@ -43,6 +43,8 @@ final class Adapter {
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
   static final String KEY_SPAN_STATUS_CODE = "span.status.code";
+  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.instrumentation_library.name";
+  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.instrumentation_library.version";
 
   private Adapter() {}
 
@@ -112,6 +114,20 @@ final class Adapter {
             .setVInt64(span.getStatus().getCanonicalCode().value())
             .setVType(Model.ValueType.INT64)
             .build());
+
+    target.addTags(
+        Model.KeyValue.newBuilder()
+            .setKey(KEY_INSTRUMENTATION_LIBRARY_NAME)
+            .setVStr(span.getInstrumentationLibraryInfo().getName())
+            .build());
+
+    if (span.getInstrumentationLibraryInfo().getVersion() != null) {
+      target.addTags(
+          Model.KeyValue.newBuilder()
+              .setKey(KEY_INSTRUMENTATION_LIBRARY_VERSION)
+              .setVStr(span.getInstrumentationLibraryInfo().getVersion())
+              .build());
+    }
 
     if (!span.getStatus().isOk()) {
       target.addTags(toKeyValue(KEY_ERROR, AttributeValue.booleanAttributeValue(true)));
