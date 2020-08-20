@@ -759,7 +759,11 @@ class RecordEventsReadableSpanTest {
 
   private RecordEventsReadableSpan createTestRootSpan() {
     return createTestSpan(
-        Kind.INTERNAL, TraceConfig.getDefault(), null, null, Collections.singletonList(link));
+        Kind.INTERNAL,
+        TraceConfig.getDefault(),
+        SpanId.getInvalid(),
+        null,
+        Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(Kind kind) {

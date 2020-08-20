@@ -37,7 +37,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
 public class JaegerRemoteSampler implements Sampler {
@@ -79,7 +78,7 @@ public class JaegerRemoteSampler implements Sampler {
 
   @Override
   public SamplingResult shouldSample(
-      @Nullable SpanContext parentContext,
+      SpanContext parentContext,
       TraceId traceId,
       String name,
       Kind spanKind,

@@ -213,11 +213,9 @@ final class SpanBuilderSdk implements Span.Builder {
     TraceId traceId;
     SpanId spanId = idsGenerator.generateSpanId();
     TraceState traceState = TraceState.getDefault();
-    if (parentContext == null || !parentContext.isValid()) {
+    if (!parentContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
-      // This is a root span so no remote or local parent.
-      parentContext = null;
     } else {
       // New child span.
       traceId = parentContext.getTraceId();
@@ -274,8 +272,8 @@ final class SpanBuilderSdk implements Span.Builder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentContext != null ? parentContext.getSpanId() : null,
-        parentContext != null && parentContext.isRemote(),
+        parentContext.getSpanId(),
+        parentContext.isRemote(),
         traceConfig,
         spanProcessor,
         getClock(parentSpan(parentType, parent), clock),
@@ -295,12 +293,11 @@ final class SpanBuilderSdk implements Span.Builder {
     }
   }
 
-  @Nullable
   private static SpanContext parent(
       ParentType parentType, Span explicitParent, SpanContext remoteParent) {
     switch (parentType) {
       case NO_PARENT:
-        return null;
+        return SpanContext.getInvalid();
       case CURRENT_CONTEXT:
         return TracingContextUtils.getCurrentSpan().getContext();
       case EXPLICIT_PARENT:
