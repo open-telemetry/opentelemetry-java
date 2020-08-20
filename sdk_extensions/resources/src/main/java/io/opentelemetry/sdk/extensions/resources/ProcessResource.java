@@ -32,6 +32,8 @@ public class ProcessResource extends ResourceProvider {
     // TODO(anuraaga): Use reflection to get more stable values on Java 9+
     RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
     long pid = -1;
+    // While this is not strictly defined, almost all commonly used JVMs format this as
+    // pid@hostname.
     String runtimeName = ManagementFactory.getRuntimeMXBean().getName();
     int atIndex = runtimeName.indexOf('@');
     if (atIndex >= 0) {
@@ -43,7 +45,9 @@ public class ProcessResource extends ResourceProvider {
       }
     }
 
-    attributes.setAttribute(ResourceConstants.PROCESS_PID, pid);
+    if (pid >= 0) {
+      attributes.setAttribute(ResourceConstants.PROCESS_PID, pid);
+    }
 
     String javaHome = null;
     String osName = null;
