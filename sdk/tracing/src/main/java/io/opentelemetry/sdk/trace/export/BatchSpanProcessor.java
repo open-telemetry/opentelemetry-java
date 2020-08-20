@@ -272,6 +272,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
       } else {
         logger.log(Level.FINE, "Exporter busy. Dropping spans.");
+        droppedSpans.add(spanList.size());
       }
     }
 
