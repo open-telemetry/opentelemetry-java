@@ -276,8 +276,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
                   exportAvailable.set(true);
 
                   synchronized (monitor) {
-                    // If there are still more to process then schedule our task immediately
-                    if (!spansList.isEmpty()) {
+                    // If there are still more to process and we remain pretty full...
+                    if (spansList.size() >= halfMaxQueueSize) {
                       timer.schedule(new WorkerTask(), 0);
                     }
                   }
