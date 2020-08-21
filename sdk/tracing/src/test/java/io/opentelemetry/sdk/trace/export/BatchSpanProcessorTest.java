@@ -244,7 +244,6 @@ class BatchSpanProcessorTest {
     // Wait to block the worker thread in the BatchSampledSpansProcessor. This ensures that no items
     // can be removed from the queue. Need to add a span to trigger the export otherwise the
     // pipeline is never called.
-    spansToExport.add(createSampledEndedSpan("blocking_span").toSpanData());
     blockingSpanExporter.waitUntilIsBlocked();
 
     for (int i = 0; i < maxQueuedSpans; i++) {

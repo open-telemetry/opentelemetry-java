@@ -23,13 +23,13 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -83,12 +83,9 @@ import javax.annotation.concurrent.GuardedBy;
 public final class BatchSpanProcessor implements SpanProcessor {
 
   // FIXME This worker thread can be eliminated by leveraging the timer
-  private static final String WORKER_THREAD_NAME =
-      BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private static final String TIMER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_TimerThread";
   private final Worker worker;
-  private final Thread workerThread;
   private final boolean sampled;
 
   private BatchSpanProcessor(
@@ -105,8 +102,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
             maxQueueSize,
             maxExportBatchSize,
             exporterTimeoutMillis);
-    this.workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
-    this.workerThread.start();
     this.sampled = sampled;
   }
 
@@ -133,7 +128,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void shutdown() {
-    workerThread.interrupt();
     worker.shutdown();
   }
 
@@ -142,12 +136,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
     worker.forceFlush();
   }
 
-  // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
+  // Worker manages a timer that batches multiple spans and calls the registered SpanExporter to
+  // export
   // the data.
-  //
-  // The list of batched data is protected by an explicit monitor object which ensures full
-  // concurrency.
-  private static final class Worker implements Runnable {
+  private static final class Worker {
 
     static {
       Meter meter = OpenTelemetry.getMeter("io.opentelemetry.sdk.trace");
@@ -169,7 +161,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;
-    private final long scheduleDelayMillis;
     private final int maxQueueSize;
     private final int maxExportBatchSize;
     private final int halfMaxQueueSize;
@@ -186,13 +177,22 @@ public final class BatchSpanProcessor implements SpanProcessor {
         int maxQueueSize,
         int maxExportBatchSize,
         int exporterTimeoutMillis) {
+      // 0 isn't permitted as a period for the timer
+      if (scheduleDelayMillis == 0) {
+        scheduleDelayMillis = 1;
+      }
+      if (exporterTimeoutMillis == 0) {
+        exporterTimeoutMillis = 1;
+      }
+
       this.spanExporter = spanExporter;
-      this.scheduleDelayMillis = scheduleDelayMillis;
       this.maxQueueSize = maxQueueSize;
       this.halfMaxQueueSize = maxQueueSize >> 1;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutMillis = exporterTimeoutMillis;
       this.spansList = new ArrayList<>(maxQueueSize);
+
+      timer.scheduleAtFixedRate(new WorkerTask(), scheduleDelayMillis, scheduleDelayMillis);
     }
 
     private void addSpan(ReadableSpan span) {
@@ -211,24 +211,14 @@ public final class BatchSpanProcessor implements SpanProcessor {
       }
     }
 
-    @Override
-    public void run() {
-      while (!Thread.currentThread().isInterrupted()) {
+    // The core of this worker's activity
+    private class WorkerTask extends TimerTask {
+      @Override
+      public void run() {
         // Copy all the batched spans in a separate list to release the monitor lock asap to
         // avoid blocking the producer thread.
         ArrayList<ReadableSpan> spansCopy;
         synchronized (monitor) {
-          do {
-            // In the case of a spurious wakeup we export only if we have at least one span in
-            // the batch. It is acceptable because batching is a best effort mechanism here.
-            try {
-              monitor.wait(scheduleDelayMillis);
-            } catch (InterruptedException ie) {
-              // Preserve the interruption status as per guidance and stop doing any work.
-              Thread.currentThread().interrupt();
-              return;
-            }
-          } while (spansList.isEmpty());
           spansCopy = new ArrayList<>(spansList);
         }
         // Execute the batch export outside the synchronized to not block all producers.
@@ -271,6 +261,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
      * Tries to export the list of SpanData to the SpanExporter. Returns the number
      * of spans actually exported.
      */
+    @SuppressWarnings("BooleanParameter")
     private int tryExport(final List<ReadableSpan> spans) {
       if (exportAvailable.compareAndSet(true, false)) {
         int exportSize = Math.min(maxExportBatchSize, spans.size());
@@ -285,6 +276,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
                     logger.log(Level.FINE, "Exporter failed");
                   }
                   exportAvailable.set(true);
+
+                  synchronized (monitor) {
+                    // If there are still more to process then schedule our task immediately
+                    if (!spansList.isEmpty()) {
+                      timer.schedule(new WorkerTask(), 0);
+                    }
+                  }
                 }
               });
           timer.schedule(
@@ -305,9 +303,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
     }
 
     private static void dropSpans(ArrayList<ReadableSpan> spansList, int count) {
-      List<ReadableSpan> retainedSpanList = spansList.subList(0, count);
+      int remaining = spansList.size() - count;
+      ReadableSpan[] retainedSpanList = new ReadableSpan[remaining];
+      System.arraycopy(spansList.toArray(), count, retainedSpanList, 0, remaining);
       spansList.clear();
-      spansList.addAll(retainedSpanList);
+      spansList.addAll(Arrays.asList(retainedSpanList));
     }
   }
 
