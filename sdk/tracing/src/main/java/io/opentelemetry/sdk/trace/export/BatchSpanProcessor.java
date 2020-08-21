@@ -277,7 +277,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
                   synchronized (monitor) {
                     // If there are still more to process and we remain pretty full...
-                    if (spansList.size() >= halfMaxQueueSize) {
+                    if (spansList.size() >= maxExportBatchSize) {
                       timer.schedule(new WorkerTask(), 0);
                     }
                   }
