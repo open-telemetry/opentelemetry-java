@@ -50,8 +50,8 @@ import javax.annotation.concurrent.GuardedBy;
  * maxExportBatchSize}. Spans may also be dropped when it becomes time to export again, and there is
  * an export in progress.
  *
- * <p>If the queue gets half full a preemptive notification is sent to the worker thread that
- * exports the spans to wake up and start a new export cycle.
+ * <p>If the queue gets half full a preemptive notification is sent to a worker that exports the
+ * spans to wake up and start a new export cycle.
  *
  * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
  * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
@@ -202,10 +202,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
         // TODO: Record a gauge for referenced spans.
         spansList.add(span);
-        // Notify the worker thread that at half of the queue is available. It will take
-        // time anyway for the thread to wake up.
+        // Notify the worker that at half of the queue is available.
         if (spansList.size() >= halfMaxQueueSize) {
-          monitor.notifyAll();
+          timer.schedule(new WorkerTask(), 0);
         }
       }
     }
