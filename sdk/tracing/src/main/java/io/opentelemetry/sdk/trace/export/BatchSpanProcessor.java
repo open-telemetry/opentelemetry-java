@@ -82,7 +82,6 @@ import javax.annotation.concurrent.GuardedBy;
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 
-  // FIXME This worker thread can be eliminated by leveraging the timer
   private static final String TIMER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_TimerThread";
   private final Worker worker;
