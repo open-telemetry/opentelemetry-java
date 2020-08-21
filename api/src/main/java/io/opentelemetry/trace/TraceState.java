@@ -254,24 +254,18 @@ public abstract class TraceState {
       if (isNotLegalKeyCharacter(c)) {
         return false;
       }
-      // the location of the '@' sign, or -1 if it isn't there.
-      int atPosition = -1;
       if (c == '@') {
         // you can't have 2 '@' signs
         if (isMultiTenantVendorKey) {
           return false;
         }
-        atPosition = i;
         isMultiTenantVendorKey = true;
         // tenant id (the part to the left of the '@' sign) must be 240 characters or less
         if (i > MAX_TENANT_ID_SIZE) {
           return false;
         }
-      }
-      if (isMultiTenantVendorKey) {
         // vendor id (the part to the right of the '@' sign) must be 13 characters or less
-        int numberOfCharactersPastTheAt = i - atPosition;
-        if (numberOfCharactersPastTheAt > MAX_VENDOR_ID_SIZE) {
+        if (key.length() - i > MAX_VENDOR_ID_SIZE) {
           return false;
         }
       }

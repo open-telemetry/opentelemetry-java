@@ -78,6 +78,12 @@ class TraceStateTest {
   }
 
   @Test
+  void testValidLongTenantId() {
+    TraceState result = EMPTY.toBuilder().set("12345678901234567890@nr", FIRST_VALUE).build();
+    assertThat(result.get("12345678901234567890@nr")).isEqualTo(FIRST_VALUE);
+  }
+
+  @Test
   void invalidKeyCharacters() {
     assertThrows(
         IllegalArgumentException.class, () -> EMPTY.toBuilder().set("kEy_1", FIRST_VALUE).build());
@@ -94,6 +100,13 @@ class TraceStateTest {
     assertThrows(
         IllegalArgumentException.class,
         () -> EMPTY.toBuilder().set("1@nrabcdefghijkl", FIRST_VALUE).build());
+  }
+
+  @Test
+  void testVendorIdLongerThan13Characters_longTenantId() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set("12345678901234567890@nrabcdefghijkl", FIRST_VALUE).build());
   }
 
   @Test
