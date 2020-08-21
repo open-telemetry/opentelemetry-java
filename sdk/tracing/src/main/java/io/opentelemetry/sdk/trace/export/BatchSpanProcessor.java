@@ -47,8 +47,7 @@ import javax.annotation.concurrent.GuardedBy;
  * <p>All spans reported by the SDK implementation are first added to a synchronized queue (with a
  * {@code maxQueueSize} maximum size, after the size is reached spans are dropped) and exported
  * every {@code scheduleDelayMillis} to the exporter pipeline in batches of {@code
- * maxExportBatchSize}. Spans may also be dropped when it becomes time to export again, and there is
- * an export in progress.
+ * maxExportBatchSize}.
  *
  * <p>If the queue gets half full a preemptive notification is sent to a worker that exports the
  * spans to wake up and start a new export cycle.
