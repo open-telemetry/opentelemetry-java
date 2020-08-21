@@ -26,6 +26,7 @@ import org.mockito.MockitoAnnotations;
 /** Unit tests for {@link NoopSpanProcessorTest}. */
 class NoopSpanProcessorTest {
   @Mock private ReadableSpan readableSpan;
+  @Mock private ReadWriteSpan readWriteSpan;
 
   @BeforeEach
   void setUp() {
@@ -35,7 +36,7 @@ class NoopSpanProcessorTest {
   @Test
   void noCrash() {
     SpanProcessor noopSpanProcessor = NoopSpanProcessor.getInstance();
-    noopSpanProcessor.onStart(readableSpan);
+    noopSpanProcessor.onStart(readWriteSpan);
     assertThat(noopSpanProcessor.isStartRequired()).isFalse();
     noopSpanProcessor.onEnd(readableSpan);
     assertThat(noopSpanProcessor.isEndRequired()).isFalse();
