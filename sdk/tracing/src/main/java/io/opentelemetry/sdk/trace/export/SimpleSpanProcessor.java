@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace.export;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -64,7 +65,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadableSpan span) {
+  public void onStart(ReadWriteSpan span) {
     // Do nothing.
   }
 

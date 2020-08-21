@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Arrays;
@@ -62,7 +63,7 @@ class DisruptorAsyncSpanProcessorTest {
     }
 
     @Override
-    public void onStart(ReadableSpan span) {
+    public void onStart(ReadWriteSpan span) {
       counterOnStart.incrementAndGet();
     }
 
