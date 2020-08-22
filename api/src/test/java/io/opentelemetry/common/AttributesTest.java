@@ -138,6 +138,17 @@ class AttributesTest {
                 "long", longAttributeValue(100),
                 "double", doubleAttributeValue(33.44),
                 "boolean", booleanAttributeValue(false)));
+
+    Attributes.Builder newAttributes = Attributes.newBuilder(attributes);
+    newAttributes.setAttribute("newKey", "newValue");
+    assertThat(newAttributes.build())
+        .isEqualTo(
+            Attributes.of(
+                "string", stringAttributeValue("value1"),
+                "long", longAttributeValue(100),
+                "double", doubleAttributeValue(33.44),
+                "boolean", booleanAttributeValue(false),
+                "newKey", stringAttributeValue("newValue")));
   }
 
   @Test

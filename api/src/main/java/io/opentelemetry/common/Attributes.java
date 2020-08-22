@@ -133,6 +133,19 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
     return new Builder();
   }
 
+  /** Returns a new {@link Builder} instance from ReadableAttributes. */
+  public static Builder newBuilder(ReadableAttributes attributes) {
+    final Builder builder = new Builder();
+    attributes.forEach(
+        new KeyValueConsumer<AttributeValue>() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            builder.setAttribute(key, value);
+          }
+        });
+    return builder;
+  }
+
   /** Returns a new {@link Builder} instance populated with the data of this {@link Attributes}. */
   public abstract Builder toBuilder();
 
