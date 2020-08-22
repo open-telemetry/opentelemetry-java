@@ -153,8 +153,8 @@ public final class Samplers {
    *     following the delegate sampler's decision.
    * @since 0.7.0
    */
-  public static Sampler parentOrElse(Sampler delegateSampler) {
-    return new ParentOrElse(delegateSampler);
+  public static Sampler parentBased(Sampler delegateSampler) {
+    return new ParentBased(delegateSampler);
   }
 
   /**
@@ -214,10 +214,10 @@ public final class Samplers {
   }
 
   @Immutable
-  static class ParentOrElse implements Sampler {
+  static class ParentBased implements Sampler {
     private final Sampler delegateSampler;
 
-    ParentOrElse(Sampler delegateSampler) {
+    ParentBased(Sampler delegateSampler) {
       this.delegateSampler = delegateSampler;
     }
 
@@ -243,7 +243,7 @@ public final class Samplers {
 
     @Override
     public String getDescription() {
-      return String.format("ParentOrElse{%s}", this.delegateSampler.getDescription());
+      return String.format("ParentBased{%s}", this.delegateSampler.getDescription());
     }
   }
 

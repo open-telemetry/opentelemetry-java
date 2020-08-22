@@ -192,10 +192,10 @@ class SamplersTest {
   }
 
   @Test
-  void parentOrElseSampler_AlwaysOn() {
+  void parentBasedSampler_AlwaysOn() {
     // Sampled parent.
     assertThat(
-            Samplers.parentOrElse(Samplers.alwaysOn())
+            Samplers.parentBased(Samplers.alwaysOn())
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
@@ -208,7 +208,7 @@ class SamplersTest {
 
     // Not sampled parent.
     assertThat(
-            Samplers.parentOrElse(Samplers.alwaysOn())
+            Samplers.parentBased(Samplers.alwaysOn())
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
@@ -221,7 +221,7 @@ class SamplersTest {
 
     // Invalid parent.
     assertThat(
-            Samplers.parentOrElse(Samplers.alwaysOn())
+            Samplers.parentBased(Samplers.alwaysOn())
                 .shouldSample(
                     invalidSpanContext,
                     traceId,
@@ -234,10 +234,10 @@ class SamplersTest {
   }
 
   @Test
-  void parentOrElseSampler_AlwaysOff() {
+  void parentBasedSampler_AlwaysOff() {
     // Sampled parent.
     assertThat(
-            Samplers.parentOrElse(Samplers.alwaysOff())
+            Samplers.parentBased(Samplers.alwaysOff())
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
@@ -250,7 +250,7 @@ class SamplersTest {
 
     // Not sampled parent.
     assertThat(
-            Samplers.parentOrElse(Samplers.alwaysOff())
+            Samplers.parentBased(Samplers.alwaysOff())
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
@@ -263,7 +263,7 @@ class SamplersTest {
 
     // Invalid parent.
     assertThat(
-            Samplers.parentOrElse(Samplers.alwaysOff())
+            Samplers.parentBased(Samplers.alwaysOff())
                 .shouldSample(
                     invalidSpanContext,
                     traceId,
@@ -276,9 +276,9 @@ class SamplersTest {
   }
 
   @Test
-  void parentOrElseSampler_GetDescription() {
-    assertThat(Samplers.parentOrElse(Samplers.alwaysOn()).getDescription())
-        .isEqualTo("ParentOrElse{AlwaysOnSampler}");
+  void parentBasedSampler_GetDescription() {
+    assertThat(Samplers.parentBased(Samplers.alwaysOn()).getDescription())
+        .isEqualTo("ParentBased{AlwaysOnSampler}");
   }
 
   @Test
