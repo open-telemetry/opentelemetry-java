@@ -131,13 +131,13 @@ class AttributesTest {
             .setAttribute("boolean", "duplicateShouldBeRemoved")
             .build();
 
-    assertThat(attributes)
-        .isEqualTo(
-            Attributes.of(
-                "string", stringAttributeValue("value1"),
-                "long", longAttributeValue(100),
-                "double", doubleAttributeValue(33.44),
-                "boolean", booleanAttributeValue(false)));
+    Attributes wantAttributes =
+        Attributes.of(
+            "string", stringAttributeValue("value1"),
+            "long", longAttributeValue(100),
+            "double", doubleAttributeValue(33.44),
+            "boolean", booleanAttributeValue(false));
+    assertThat(attributes).isEqualTo(wantAttributes);
 
     Attributes.Builder newAttributes = Attributes.newBuilder(attributes);
     newAttributes.setAttribute("newKey", "newValue");
@@ -149,6 +149,8 @@ class AttributesTest {
                 "double", doubleAttributeValue(33.44),
                 "boolean", booleanAttributeValue(false),
                 "newKey", stringAttributeValue("newValue")));
+    // Original not mutated.
+    assertThat(attributes).isEqualTo(wantAttributes);
   }
 
   @Test
