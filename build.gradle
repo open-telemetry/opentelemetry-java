@@ -70,6 +70,8 @@ configure(opentelemetryProjects) {
         it.options.errorprone.disable("UnnecessaryAnonymousClass")
         // "-Xep:UnnecessaryAnonymousClass:OFF"
 
+        it.options.errorprone.disable("UnusedNestedClass")
+
         it.options.encoding = "UTF-8"
 
         // Ignore warnings for protobuf and jmh generated files.

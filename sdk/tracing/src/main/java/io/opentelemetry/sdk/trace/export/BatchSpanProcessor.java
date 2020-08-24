@@ -32,13 +32,12 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * Implementation of the {@link SpanProcessor} that batches spans exported by the SDK then pushes
@@ -130,7 +129,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void forceFlush() {
-    worker.forceFlush();
+    try {
+      worker.forceFlush().join();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
@@ -149,9 +152,20 @@ public final class BatchSpanProcessor implements SpanProcessor {
       droppedSpans =
           droppedSpansCounter.bind(
               Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName()));
+      LongCounter exportedSpansCounter =
+          meter
+              .longCounterBuilder("exportedSpans")
+              .setUnit("1")
+              .setDescription(
+                  "The number of spans exported by the BatchSpanProcessor.")
+              .build();
+      exportedSpans =
+          exportedSpansCounter.bind(
+              Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName()));
     }
 
     private static final BoundLongCounter droppedSpans;
+    private static final BoundLongCounter exportedSpans;
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;
@@ -163,7 +177,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private final BlockingQueue<ReadableSpan> queue;
 
-    @Nullable private volatile CompletableResultCode flushRequested = null;
+    private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
     private final ArrayList<SpanData> batch;
 
@@ -193,7 +207,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
       while (continueWork) {
         try {
-          if (flushRequested != null) {
+          if (flushRequested.get() != null) {
             flush();
           }
 
@@ -226,8 +240,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
       }
       exportCurrentBatch();
-      Objects.requireNonNull(flushRequested).succeed();
-      flushRequested = null;
+      flushRequested.get().succeed();
+      flushRequested.set(null);
     }
 
     private void updateNextExportTime() {
@@ -235,19 +249,19 @@ public final class BatchSpanProcessor implements SpanProcessor {
     }
 
     private void shutdown() {
-      forceFlush();
+      try {
+        forceFlush().join();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
       spanExporter.shutdown();
       continueWork = false;
     }
 
-    private void forceFlush() {
+    private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
-      this.flushRequested = flushResult;
-      try {
-        flushResult.join();
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
+      this.flushRequested.compareAndSet(null, flushResult);
+      return this.flushRequested.get();
     }
 
     private void exportCurrentBatch() {
@@ -258,7 +272,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
       try {
         final CompletableResultCode result = spanExporter.export(batch);
         result.join(exporterTimeoutMillis, TimeUnit.MILLISECONDS);
-        if (!result.isSuccess()) {
+        if (result.isSuccess()) {
+          exportedSpans.add(batch.size());
+        } else {
           logger.log(Level.FINE, "Exporter failed");
         }
       } catch (InterruptedException e) {

@@ -59,3 +59,7 @@ task generateVersionResource {
         propertiesFile.write("sdk.version=${project.version}")
     }
 }
+
+jmh {
+    include = ['io.opentelemetry.sdk.trace.export.BatchSpanProcessorBenchmark*']
+}
