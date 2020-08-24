@@ -29,11 +29,24 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class SizeOrLatencyBatchStrategyTest {
+  private static class TestBatchHandler implements LoggingBatchExporter {
+    private final List<LogRecord> records = new ArrayList<>();
+    private int callCount = 0;
+
+    @Override
+    public void handleLogRecordBatch(List<LogRecord> batch) {
+      records.addAll(batch);
+      callCount++;
+    }
+  }
 
   @Test
   public void testSizeStrategy() {
     SizeOrLatencyBatchStrategy strategy =
-        new SizeOrLatencyBatchStrategy.Builder().withMaxBatchSize(5).build();
+        new SizeOrLatencyBatchStrategy.Builder()
+            .withMaxBatchSize(5)
+            .withMaxDelay(1, TimeUnit.DAYS)
+            .build();
     final List<LogRecord> transmittedBatch = new ArrayList<>();
 
     strategy.setBatchHandler(transmittedBatch::addAll);
@@ -54,22 +67,23 @@ public class SizeOrLatencyBatchStrategyTest {
   @Test
   public void testLatencyStrategy() throws InterruptedException {
     int maxDelay = 50;
+    TestBatchHandler batchHandler = new TestBatchHandler();
     SizeOrLatencyBatchStrategy strategy =
         new SizeOrLatencyBatchStrategy.Builder()
             .withMaxDelay(maxDelay, TimeUnit.MILLISECONDS)
             .build();
 
-    final List<LogRecord> transmittedBatch = new ArrayList<>();
-
-    strategy.setBatchHandler(transmittedBatch::addAll);
+    strategy.setBatchHandler(batchHandler);
 
     for (int i = 0; i < 7; i++) {
       strategy.add(null);
       Thread.sleep(10);
     }
 
-    assertThat(transmittedBatch.size()).isEqualTo(5);
+    await()
+        .atMost(200, TimeUnit.MILLISECONDS)
+        .until(() -> batchHandler.records.size() == 7);
 
-    await().atMost(200, TimeUnit.MILLISECONDS).until(() -> transmittedBatch.size() == 7);
+    assertThat(batchHandler.callCount).isEqualTo(2);
   }
 }
