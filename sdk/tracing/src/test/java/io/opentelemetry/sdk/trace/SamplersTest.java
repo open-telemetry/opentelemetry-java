@@ -74,16 +74,18 @@ class SamplersTest {
 
   @Test
   void samplingDecisionEmpty() {
-    assertThat(Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLED, Attributes.empty()))
+    assertThat(
+            Samplers.samplingResult(
+                Sampler.Decision.RECORD_AND_SAMPLED, Attributes.Factory.empty()))
         .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
-    assertThat(Samplers.samplingResult(Sampler.Decision.NOT_RECORD, Attributes.empty()))
+    assertThat(Samplers.samplingResult(Sampler.Decision.NOT_RECORD, Attributes.Factory.empty()))
         .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
   }
 
   @Test
   void samplingDecisionAttrs() {
     final Attributes attrs =
-        Attributes.of(
+        Attributes.Factory.of(
             "foo", AttributeValue.longAttributeValue(42),
             "bar", AttributeValue.stringAttributeValue("baz"));
     final SamplingResult sampledSamplingResult =
@@ -107,7 +109,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -120,7 +122,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -133,7 +135,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -154,7 +156,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
@@ -167,7 +169,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
@@ -180,7 +182,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
@@ -201,7 +203,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -214,7 +216,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
@@ -227,7 +229,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -243,7 +245,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -256,7 +258,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
@@ -269,7 +271,7 @@ class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
@@ -324,7 +326,7 @@ class SamplersTest {
                   idsGenerator.generateTraceId(),
                   SPAN_NAME,
                   SPAN_KIND,
-                  Attributes.empty(),
+                  Attributes.Factory.empty(),
                   parentLinks)
               .getDecision())) {
         count++;
@@ -413,12 +415,13 @@ class SamplersTest {
             notSampledtraceId,
             SPAN_NAME,
             SPAN_KIND,
-            Attributes.empty(),
+            Attributes.Factory.empty(),
             Collections.emptyList());
     assertThat(samplingResult1.getDecision()).isEqualTo(Decision.NOT_RECORD);
     assertThat(samplingResult1.getAttributes())
         .isEqualTo(
-            Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
+            Attributes.Factory.of(
+                Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     TraceId sampledtraceId =
@@ -448,12 +451,13 @@ class SamplersTest {
             sampledtraceId,
             SPAN_NAME,
             SPAN_KIND,
-            Attributes.empty(),
+            Attributes.Factory.empty(),
             Collections.emptyList());
     assertThat(samplingResult2.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLED);
     assertThat(samplingResult1.getAttributes())
         .isEqualTo(
-            Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
+            Attributes.Factory.of(
+                Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
   }
 
   @Test

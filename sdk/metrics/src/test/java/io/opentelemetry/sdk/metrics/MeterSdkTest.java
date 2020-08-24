@@ -40,7 +40,8 @@ import org.junit.jupiter.api.Test;
 class MeterSdkTest {
   private static final Resource RESOURCE =
       Resource.create(
-          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
+          Attributes.Factory.of(
+              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.MeterSdkTest", null);
   private final TestClock testClock = TestClock.create();

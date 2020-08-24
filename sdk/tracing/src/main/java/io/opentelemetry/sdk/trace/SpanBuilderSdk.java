@@ -228,7 +228,8 @@ final class SpanBuilderSdk implements Span.Builder {
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
-    ReadableAttributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
+    ReadableAttributes immutableAttributes =
+        attributes == null ? Attributes.Factory.empty() : attributes;
     SamplingResult samplingResult =
         traceConfig
             .getSampler()

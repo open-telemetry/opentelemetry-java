@@ -29,7 +29,7 @@ class StringAttributeSetterTest {
     StringAttributeSetter setter = StringAttributeSetter.create("hello?");
     assertThat(setter.key()).isEqualTo("hello?");
     assertThat(setter.toString()).isEqualTo("hello?");
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.Factory.newBuilder();
     setter.set(attributes, "world");
     assertThat(attributes.build().get("hello?")).isEqualTo(stringAttributeValue("world"));
   }

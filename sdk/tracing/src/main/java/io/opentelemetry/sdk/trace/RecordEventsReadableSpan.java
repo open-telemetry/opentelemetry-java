@@ -336,7 +336,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(TimedEvent.create(clock.now(), name, Attributes.empty(), 0));
+    addTimedEvent(TimedEvent.create(clock.now(), name, Attributes.Factory.empty(), 0));
   }
 
   @Override
@@ -344,7 +344,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(TimedEvent.create(timestamp, name, Attributes.empty(), 0));
+    addTimedEvent(TimedEvent.create(timestamp, name, Attributes.Factory.empty(), 0));
   }
 
   @Override
@@ -396,7 +396,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return attributes;
     }
 
-    Attributes.Builder result = Attributes.newBuilder();
+    Attributes.Builder result = Attributes.Factory.newBuilder();
     attributes.forEach(new LimitingAttributeConsumer(limit, result));
     return result.build();
   }
@@ -432,7 +432,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return;
     }
     long timestamp = clock.now();
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.Factory.newBuilder();
     SemanticAttributes.EXCEPTION_TYPE.set(attributes, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
       SemanticAttributes.EXCEPTION_MESSAGE.set(attributes, exception.getMessage());
@@ -572,7 +572,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   @GuardedBy("lock")
   private ReadableAttributes getImmutableAttributes() {
     if (attributes == null || attributes.isEmpty()) {
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     }
     // if the span has ended, then the attributes are unmodifiable,
     // so we can return them directly and save copying all the data.
@@ -580,7 +580,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return attributes;
     }
     // otherwise, make a copy of the data into an immutable container.
-    Attributes.Builder builder = Attributes.newBuilder();
+    Attributes.Builder builder = Attributes.Factory.newBuilder();
     for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }

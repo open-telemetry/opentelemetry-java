@@ -222,7 +222,7 @@ class MetricAdapterTest {
     MetricData metricData =
         MetricData.create(
             descriptor,
-            Resource.create(Attributes.of("kr", AttributeValue.stringAttributeValue("vr"))),
+            Resource.create(Attributes.Factory.of("kr", AttributeValue.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("full", "version"),
             Collections.singletonList(
                 MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5)));

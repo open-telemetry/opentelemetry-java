@@ -340,7 +340,8 @@ public final class Samplers {
      */
     static SamplingResult createWithProbability(Decision decision, double probability) {
       return new AutoValue_Samplers_SamplingResultImpl(
-          decision, Attributes.of(SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
+          decision,
+          Attributes.Factory.of(SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
     }
 
     /**
@@ -349,7 +350,7 @@ public final class Samplers {
      * @param decision sampling samplingResult
      */
     static SamplingResult createWithoutAttributes(Decision decision) {
-      return new AutoValue_Samplers_SamplingResultImpl(decision, Attributes.empty());
+      return new AutoValue_Samplers_SamplingResultImpl(decision, Attributes.Factory.empty());
     }
 
     /**

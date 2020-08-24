@@ -74,7 +74,7 @@ public class SpanPipelineBenchmark {
             .setAttribute("key", "value")
             .addLink(new TestLink())
             .startSpan();
-    span.addEvent("started", Attributes.of("operation", stringAttributeValue("some_work")));
+    span.addEvent("started", Attributes.Factory.of("operation", stringAttributeValue("some_work")));
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
     span.setAttribute("doubleAttribute", 4844.44d);
@@ -111,7 +111,7 @@ public class SpanPipelineBenchmark {
 
     @Override
     public Attributes getAttributes() {
-      return Attributes.of("linkAttr", stringAttributeValue("linkValue"));
+      return Attributes.Factory.of("linkAttr", stringAttributeValue("linkValue"));
     }
   }
 
@@ -123,7 +123,7 @@ public class SpanPipelineBenchmark {
 
     @Override
     public Attributes getAttributes() {
-      return Attributes.of("finalized", booleanAttributeValue(true));
+      return Attributes.Factory.of("finalized", booleanAttributeValue(true));
     }
   }
 }

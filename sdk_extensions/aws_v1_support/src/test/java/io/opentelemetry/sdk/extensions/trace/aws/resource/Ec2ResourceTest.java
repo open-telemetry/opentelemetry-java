@@ -80,7 +80,7 @@ public class Ec2ResourceTest {
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
     Attributes attributes = populator.getAttributes();
-    Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
+    Attributes.Builder expectedAttrBuilders = Attributes.Factory.newBuilder();
     expectedAttrBuilders.setAttribute(ResourceConstants.HOST_ID, "i-1234567890abcdef0");
     expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, "us-west-2b");
     expectedAttrBuilders.setAttribute(ResourceConstants.HOST_TYPE, "t2.micro");
@@ -111,7 +111,7 @@ public class Ec2ResourceTest {
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
     Attributes attributes = populator.getAttributes();
-    Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
+    Attributes.Builder expectedAttrBuilders = Attributes.Factory.newBuilder();
     expectedAttrBuilders.setAttribute(ResourceConstants.HOST_ID, "i-1234567890abcdef0");
     expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, "us-west-2b");
     expectedAttrBuilders.setAttribute(ResourceConstants.HOST_TYPE, "t2.micro");

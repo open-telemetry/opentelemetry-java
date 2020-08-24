@@ -55,7 +55,7 @@ public abstract class TestSpanData implements SpanData {
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
-        .setAttributes(Attributes.empty())
+        .setAttributes(Attributes.Factory.empty())
         .setEvents(Collections.<Event>emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())

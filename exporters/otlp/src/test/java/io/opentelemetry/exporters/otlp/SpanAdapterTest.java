@@ -64,11 +64,12 @@ class SpanAdapterTest {
                 .setKind(Kind.SERVER)
                 .setStartEpochNanos(12345)
                 .setEndEpochNanos(12349)
-                .setAttributes(Attributes.of("key", AttributeValue.booleanAttributeValue(true)))
+                .setAttributes(
+                    Attributes.Factory.of("key", AttributeValue.booleanAttributeValue(true)))
                 .setTotalAttributeCount(2)
                 .setEvents(
                     Collections.singletonList(
-                        EventImpl.create(12347, "my_event", Attributes.empty())))
+                        EventImpl.create(12347, "my_event", Attributes.Factory.empty())))
                 .setTotalRecordedEvents(3)
                 .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
@@ -229,7 +230,7 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                EventImpl.create(12345, "test_without_attributes", Attributes.empty())))
+                EventImpl.create(12345, "test_without_attributes", Attributes.Factory.empty())))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -244,7 +245,8 @@ class SpanAdapterTest {
                 EventImpl.create(
                     12345,
                     "test_with_attributes",
-                    Attributes.of("key_string", AttributeValue.stringAttributeValue("string")),
+                    Attributes.Factory.of(
+                        "key_string", AttributeValue.stringAttributeValue("string")),
                     5)))
         .isEqualTo(
             Span.Event.newBuilder()
@@ -275,7 +277,8 @@ class SpanAdapterTest {
             SpanAdapter.toProtoSpanLink(
                 Link.create(
                     SPAN_CONTEXT,
-                    Attributes.of("key_string", AttributeValue.stringAttributeValue("string")),
+                    Attributes.Factory.of(
+                        "key_string", AttributeValue.stringAttributeValue("string")),
                     5)))
         .isEqualTo(
             Span.Link.newBuilder()

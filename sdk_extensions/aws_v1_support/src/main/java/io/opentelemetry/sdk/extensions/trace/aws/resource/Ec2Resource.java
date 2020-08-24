@@ -154,12 +154,12 @@ public class Ec2Resource extends ResourceProvider {
     String identity = fetchIdentity(token);
     if (identity.isEmpty()) {
       // If no identity document, assume we are not actually running on EC2.
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     }
 
     String hostname = fetchHostname(token);
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.Factory.newBuilder();
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();
@@ -195,7 +195,7 @@ public class Ec2Resource extends ResourceProvider {
       }
     } catch (IOException e) {
       logger.log(Level.WARNING, "Could not parse identity document, resource not filled.", e);
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     }
 
     attrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, hostname);

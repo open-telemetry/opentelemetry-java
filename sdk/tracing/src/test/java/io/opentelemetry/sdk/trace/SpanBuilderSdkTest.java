@@ -80,7 +80,7 @@ class SpanBuilderSdkTest {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
-    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
+    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.Factory.empty());
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
@@ -131,7 +131,7 @@ class SpanBuilderSdkTest {
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     Attributes attributes =
-        Attributes.of(
+        Attributes.Factory.of(
             "key0", AttributeValue.stringAttributeValue("str"),
             "key1", AttributeValue.stringAttributeValue("str"),
             "key2", AttributeValue.stringAttributeValue("str"));
@@ -142,7 +142,7 @@ class SpanBuilderSdkTest {
           .containsExactly(
               Link.create(
                   sampledSpanContext,
-                  Attributes.of("key0", AttributeValue.stringAttributeValue("str")),
+                  Attributes.Factory.of("key0", AttributeValue.stringAttributeValue("str")),
                   3));
     } finally {
       span.end();
@@ -157,7 +157,7 @@ class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
+          .containsExactly(Link.create(sampledSpanContext, Attributes.Factory.empty()));
       // Use a different sampledSpanContext to ensure no logic that avoids duplicate links makes
       // this test to pass.
       spanBuilder.addLink(
@@ -167,7 +167,7 @@ class SpanBuilderSdkTest {
               TraceFlags.builder().setIsSampled(true).build(),
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
+          .containsExactly(Link.create(sampledSpanContext, Attributes.Factory.empty()));
     } finally {
       span.end();
     }
@@ -191,7 +191,7 @@ class SpanBuilderSdkTest {
   void addLinkSpanContextAttributes_nullContext() {
     assertThrows(
         NullPointerException.class,
-        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()));
+        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink(null, Attributes.Factory.empty()));
   }
 
   @Test
@@ -566,7 +566,7 @@ class SpanBuilderSdkTest {
 
                           @Override
                           public Attributes getAttributes() {
-                            return Attributes.of(
+                            return Attributes.Factory.of(
                                 samplerAttributeName, AttributeValue.stringAttributeValue("bar"));
                           }
                         };

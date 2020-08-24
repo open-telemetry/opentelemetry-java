@@ -31,14 +31,14 @@ public class OsResource extends ResourceProvider {
       os = System.getProperty("os.name");
     } catch (SecurityException t) {
       // Security manager enabled, can't provide much os information.
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     }
 
     if (os == null) {
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     }
 
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.Factory.newBuilder();
 
     String osName = getOs(os);
     if (osName != null) {

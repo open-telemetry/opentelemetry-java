@@ -55,7 +55,7 @@ class RateLimitingSamplerTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -66,7 +66,7 @@ class RateLimitingSamplerTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
@@ -81,7 +81,7 @@ class RateLimitingSamplerTest {
             traceId,
             SPAN_NAME,
             SPAN_KIND,
-            Attributes.empty(),
+            Attributes.Factory.empty(),
             Collections.emptyList());
     assertThat(samplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLED);
     assertThat(
@@ -91,7 +91,7 @@ class RateLimitingSamplerTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Attributes.empty(),
+                    Attributes.Factory.empty(),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);

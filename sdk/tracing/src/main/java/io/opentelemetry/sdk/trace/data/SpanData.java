@@ -211,7 +211,7 @@ public interface SpanData {
   @AutoValue
   abstract class Link implements io.opentelemetry.trace.Link {
 
-    private static final Attributes DEFAULT_ATTRIBUTE_COLLECTION = Attributes.empty();
+    private static final Attributes DEFAULT_ATTRIBUTE_COLLECTION = Attributes.Factory.empty();
     private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
 
     /**

@@ -188,7 +188,7 @@ final class SpanShim extends BaseShimObject implements Span {
   }
 
   static Attributes convertToAttributes(Map<String, ?> fields) {
-    Attributes.Builder attributesBuilder = Attributes.newBuilder();
+    Attributes.Builder attributesBuilder = Attributes.Factory.newBuilder();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
       String key = entry.getKey();

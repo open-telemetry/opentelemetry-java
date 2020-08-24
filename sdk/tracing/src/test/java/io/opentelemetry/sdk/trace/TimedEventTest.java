@@ -29,9 +29,9 @@ class TimedEventTest {
   private static final String NAME = "event";
   private static final String NAME_2 = "event2";
   private static final Attributes ATTRIBUTES =
-      Attributes.of("attribute", AttributeValue.stringAttributeValue("value"));
+      Attributes.Factory.of("attribute", AttributeValue.stringAttributeValue("value"));
   private static final Attributes ATTRIBUTES_2 =
-      Attributes.of("attribute2", AttributeValue.stringAttributeValue("value2"));
+      Attributes.Factory.of("attribute2", AttributeValue.stringAttributeValue("value2"));
   private static final Event EVENT =
       new Event() {
         @Override

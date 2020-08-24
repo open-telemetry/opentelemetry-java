@@ -36,7 +36,7 @@ class SpanBuilderTest {
     spanBuilder.setParent(DefaultSpan.getInvalid().getContext());
     spanBuilder.setNoParent();
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
-    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
+    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.Factory.empty());
     spanBuilder.addLink(
         new Link() {
           private final SpanContext spanContext = DefaultSpan.getInvalid().getContext();
@@ -48,7 +48,7 @@ class SpanBuilderTest {
 
           @Override
           public Attributes getAttributes() {
-            return Attributes.empty();
+            return Attributes.Factory.empty();
           }
         });
     spanBuilder.setAttribute("key", "value");

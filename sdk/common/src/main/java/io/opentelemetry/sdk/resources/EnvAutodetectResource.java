@@ -48,9 +48,9 @@ final class EnvAutodetectResource {
   @VisibleForTesting
   static Attributes parseResourceAttributes(@Nullable String rawEnvAttributes) {
     if (rawEnvAttributes == null) {
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     } else {
-      Attributes.Builder attrBuilders = Attributes.newBuilder();
+      Attributes.Builder attrBuilders = Attributes.Factory.newBuilder();
       String[] rawAttributes = rawEnvAttributes.split(ATTRIBUTE_LIST_SPLITTER, -1);
       for (String rawAttribute : rawAttributes) {
         String[] keyValuePair = rawAttribute.split(ATTRIBUTE_KEY_VALUE_SPLITTER, -1);

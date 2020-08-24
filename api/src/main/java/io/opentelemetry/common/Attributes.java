@@ -21,6 +21,7 @@ import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 import static io.opentelemetry.common.AttributeValue.longAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.ImmutableKeyValuePairs.sortAndFilter;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
@@ -34,13 +35,13 @@ import javax.annotation.concurrent.Immutable;
  * <p>The keys are {@link String}s and the values are {@link AttributeValue} instances.
  */
 @Immutable
-public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
-    implements ReadableAttributes {
-  private static final Attributes EMPTY = Attributes.newBuilder().build();
+public interface Attributes extends ReadableAttributes {
+  Attributes EMPTY = Factory.newBuilder().build();
 
   @AutoValue
   @Immutable
-  abstract static class ArrayBackedAttributes extends Attributes {
+  abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeValue>
+      implements Attributes {
     ArrayBackedAttributes() {}
 
     @Override
@@ -52,108 +53,112 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
     }
   }
 
-  /** Returns a {@link Attributes} instance with no attributes. */
-  public static Attributes empty() {
-    return EMPTY;
-  }
+  class Factory {
+    private Factory() {}
 
-  /** Returns a {@link Attributes} instance with a single key-value pair. */
-  public static Attributes of(String key, AttributeValue value) {
-    return sortAndFilterToAttributes(key, value);
-  }
+    /** Returns a {@link Attributes} instance with no attributes. */
+    public static Attributes empty() {
+      return EMPTY;
+    }
 
-  /**
-   * Returns a {@link Attributes} instance with two key-value pairs. Order of the keys is not
-   * preserved. Duplicate keys will be removed.
-   */
-  public static Attributes of(
-      String key1, AttributeValue value1, String key2, AttributeValue value2) {
-    return sortAndFilterToAttributes(key1, value1, key2, value2);
-  }
+    /** Returns a {@link Attributes} instance with a single key-value pair. */
+    public static Attributes of(String key, AttributeValue value) {
+      return sortAndFilterToAttributes(key, value);
+    }
 
-  /**
-   * Returns a {@link Attributes} instance with three key-value pairs. Order of the keys is not
-   * preserved. Duplicate keys will be removed.
-   */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3) {
-    return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3);
-  }
+    /**
+     * Returns a {@link Attributes} instance with two key-value pairs. Order of the keys is not
+     * preserved. Duplicate keys will be removed.
+     */
+    public static Attributes of(
+        String key1, AttributeValue value1, String key2, AttributeValue value2) {
+      return sortAndFilterToAttributes(key1, value1, key2, value2);
+    }
 
-  /**
-   * Returns a {@link Attributes} instance with four key-value pairs. Order of the keys is not
-   * preserved. Duplicate keys will be removed.
-   */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3,
-      String key4,
-      AttributeValue value4) {
-    return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3, key4, value4);
-  }
+    /**
+     * Returns a {@link Attributes} instance with three key-value pairs. Order of the keys is not
+     * preserved. Duplicate keys will be removed.
+     */
+    public static Attributes of(
+        String key1,
+        AttributeValue value1,
+        String key2,
+        AttributeValue value2,
+        String key3,
+        AttributeValue value3) {
+      return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3);
+    }
 
-  /**
-   * Returns a {@link Attributes} instance with five key-value pairs. Order of the keys is not
-   * preserved. Duplicate keys will be removed.
-   */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3,
-      String key4,
-      AttributeValue value4,
-      String key5,
-      AttributeValue value5) {
-    return sortAndFilterToAttributes(
-        key1, value1,
-        key2, value2,
-        key3, value3,
-        key4, value4,
-        key5, value5);
-  }
+    /**
+     * Returns a {@link Attributes} instance with four key-value pairs. Order of the keys is not
+     * preserved. Duplicate keys will be removed.
+     */
+    public static Attributes of(
+        String key1,
+        AttributeValue value1,
+        String key2,
+        AttributeValue value2,
+        String key3,
+        AttributeValue value3,
+        String key4,
+        AttributeValue value4) {
+      return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3, key4, value4);
+    }
 
-  private static Attributes sortAndFilterToAttributes(Object... data) {
-    return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
-  }
+    /**
+     * Returns a {@link Attributes} instance with five key-value pairs. Order of the keys is not
+     * preserved. Duplicate keys will be removed.
+     */
+    public static Attributes of(
+        String key1,
+        AttributeValue value1,
+        String key2,
+        AttributeValue value2,
+        String key3,
+        AttributeValue value3,
+        String key4,
+        AttributeValue value4,
+        String key5,
+        AttributeValue value5) {
+      return sortAndFilterToAttributes(
+          key1, value1,
+          key2, value2,
+          key3, value3,
+          key4, value4,
+          key5, value5);
+    }
 
-  /** Returns a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
-  public static Builder newBuilder() {
-    return new Builder();
-  }
+    private static Attributes sortAndFilterToAttributes(Object... data) {
+      return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
+    }
 
-  /** Returns a new {@link Builder} instance from ReadableAttributes. */
-  public static Builder newBuilder(ReadableAttributes attributes) {
-    final Builder builder = new Builder();
-    attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
-          @Override
-          public void consume(String key, AttributeValue value) {
-            builder.setAttribute(key, value);
-          }
-        });
-    return builder;
+    /** Returns a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
+    public static Builder newBuilder() {
+      return new Builder();
+    }
+
+    /** Returns a new {@link Builder} instance from ReadableAttributes. */
+    public static Builder newBuilder(ReadableAttributes attributes) {
+      final Builder builder = new Builder();
+      attributes.forEach(
+          new KeyValueConsumer<AttributeValue>() {
+            @Override
+            public void consume(String key, AttributeValue value) {
+              builder.setAttribute(key, value);
+            }
+          });
+      return builder;
+    }
   }
 
   /** Returns a new {@link Builder} instance populated with the data of this {@link Attributes}. */
-  public abstract Builder toBuilder();
+  Builder toBuilder();
 
   /**
    * Enables the creation of an {@link Attributes} instance with an arbitrary number of key-value
    * pairs.
    */
-  public static class Builder {
+  class Builder {
     private final List<Object> data;
 
     private Builder() {
@@ -166,7 +171,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
 
     /** Create the {@link Attributes} from this. */
     public Attributes build() {
-      return sortAndFilterToAttributes(data.toArray());
+      return Factory.sortAndFilterToAttributes(data.toArray());
     }
 
     /**

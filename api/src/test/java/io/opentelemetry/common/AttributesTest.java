@@ -37,7 +37,7 @@ class AttributesTest {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
     Attributes attributes =
-        Attributes.of(
+        Attributes.Factory.of(
             "key1", stringAttributeValue("value1"),
             "key2", AttributeValue.longAttributeValue(333));
 
@@ -52,7 +52,7 @@ class AttributesTest {
   void forEach_singleAttribute() {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
-    Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
+    Attributes attributes = Attributes.Factory.of("key", stringAttributeValue("value"));
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry("key", stringAttributeValue("value")));
   }
@@ -60,7 +60,7 @@ class AttributesTest {
   @Test
   void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
-    Attributes emptyAttributes = Attributes.empty();
+    Attributes emptyAttributes = Attributes.Factory.empty();
     emptyAttributes.forEach((key, value) -> sawSomething.set(true));
     assertThat(sawSomething.get()).isFalse();
   }
@@ -68,25 +68,25 @@ class AttributesTest {
   @Test
   void orderIndependentEquality() {
     Attributes one =
-        Attributes.of(
+        Attributes.Factory.of(
             "key1", stringAttributeValue("value1"),
             "key2", stringAttributeValue("value2"));
     Attributes two =
-        Attributes.of(
+        Attributes.Factory.of(
             "key2", stringAttributeValue("value2"),
             "key1", stringAttributeValue("value1"));
 
     assertThat(one).isEqualTo(two);
 
     Attributes three =
-        Attributes.of(
+        Attributes.Factory.of(
             "key1", stringAttributeValue("value1"),
             "key2", stringAttributeValue("value2"),
             "", stringAttributeValue("empty"),
             "key3", stringAttributeValue("value3"),
             "key4", stringAttributeValue("value4"));
     Attributes four =
-        Attributes.of(
+        Attributes.Factory.of(
             null,
             stringAttributeValue("null"),
             "key2",
@@ -104,10 +104,10 @@ class AttributesTest {
   @Test
   void deduplication() {
     Attributes one =
-        Attributes.of(
+        Attributes.Factory.of(
             "key1", stringAttributeValue("value1"),
             "key1", stringAttributeValue("valueX"));
-    Attributes two = Attributes.of("key1", stringAttributeValue("value1"));
+    Attributes two = Attributes.Factory.of("key1", stringAttributeValue("value1"));
 
     assertThat(one).isEqualTo(two);
   }
@@ -115,7 +115,8 @@ class AttributesTest {
   @Test
   void emptyAndNullKey() {
     Attributes noAttributes =
-        Attributes.of("", stringAttributeValue("empty"), null, stringAttributeValue("null"));
+        Attributes.Factory.of(
+            "", stringAttributeValue("empty"), null, stringAttributeValue("null"));
 
     assertThat(noAttributes.size()).isEqualTo(0);
   }
@@ -123,7 +124,7 @@ class AttributesTest {
   @Test
   void builder() {
     Attributes attributes =
-        Attributes.newBuilder()
+        Attributes.Factory.newBuilder()
             .setAttribute("string", "value1")
             .setAttribute("long", 100)
             .setAttribute("double", 33.44)
@@ -132,18 +133,18 @@ class AttributesTest {
             .build();
 
     Attributes wantAttributes =
-        Attributes.of(
+        Attributes.Factory.of(
             "string", stringAttributeValue("value1"),
             "long", longAttributeValue(100),
             "double", doubleAttributeValue(33.44),
             "boolean", booleanAttributeValue(false));
     assertThat(attributes).isEqualTo(wantAttributes);
 
-    Attributes.Builder newAttributes = Attributes.newBuilder(attributes);
+    Attributes.Builder newAttributes = Attributes.Factory.newBuilder(attributes);
     newAttributes.setAttribute("newKey", "newValue");
     assertThat(newAttributes.build())
         .isEqualTo(
-            Attributes.of(
+            Attributes.Factory.of(
                 "string", stringAttributeValue("value1"),
                 "long", longAttributeValue(100),
                 "double", doubleAttributeValue(33.44),
@@ -156,7 +157,7 @@ class AttributesTest {
   @Test
   void builder_arrayTypes() {
     Attributes attributes =
-        Attributes.newBuilder()
+        Attributes.Factory.newBuilder()
             .setAttribute("string", "value1", "value2")
             .setAttribute("long", 100L, 200L)
             .setAttribute("double", 33.44, -44.33)
@@ -167,7 +168,7 @@ class AttributesTest {
 
     assertThat(attributes)
         .isEqualTo(
-            Attributes.of(
+            Attributes.Factory.of(
                 "string", arrayAttributeValue("value1", "value2"),
                 "long", arrayAttributeValue(100L, 200L),
                 "double", arrayAttributeValue(33.44, -44.33),
@@ -176,17 +177,17 @@ class AttributesTest {
 
   @Test
   void get_Null() {
-    assertThat(Attributes.empty().get("foo")).isNull();
-    assertThat(Attributes.of("key", stringAttributeValue("value")).get("foo")).isNull();
+    assertThat(Attributes.Factory.empty().get("foo")).isNull();
+    assertThat(Attributes.Factory.of("key", stringAttributeValue("value")).get("foo")).isNull();
   }
 
   @Test
   void get() {
-    assertThat(Attributes.of("key", stringAttributeValue("value")).get("key"))
+    assertThat(Attributes.Factory.of("key", stringAttributeValue("value")).get("key"))
         .isEqualTo(stringAttributeValue("value"));
-    assertThat(Attributes.of("key", stringAttributeValue("value")).get("value")).isNull();
+    assertThat(Attributes.Factory.of("key", stringAttributeValue("value")).get("value")).isNull();
     Attributes threeElements =
-        Attributes.of(
+        Attributes.Factory.of(
             "string", stringAttributeValue("value"),
             "boolean", booleanAttributeValue(true),
             "long", longAttributeValue(1L));
@@ -194,13 +195,13 @@ class AttributesTest {
     assertThat(threeElements.get("string")).isEqualTo(stringAttributeValue("value"));
     assertThat(threeElements.get("long")).isEqualTo(longAttributeValue(1L));
     Attributes twoElements =
-        Attributes.of(
+        Attributes.Factory.of(
             "string", stringAttributeValue("value"),
             "boolean", booleanAttributeValue(true));
     assertThat(twoElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
     assertThat(twoElements.get("string")).isEqualTo(stringAttributeValue("value"));
     Attributes fourElements =
-        Attributes.of(
+        Attributes.Factory.of(
             "string", stringAttributeValue("value"),
             "boolean", booleanAttributeValue(true),
             "long", longAttributeValue(1L),
@@ -214,28 +215,32 @@ class AttributesTest {
   @Test
   void toBuilder() {
     Attributes filled =
-        Attributes.newBuilder().setAttribute("cat", "meow").setAttribute("dog", "bark").build();
+        Attributes.Factory.newBuilder()
+            .setAttribute("cat", "meow")
+            .setAttribute("dog", "bark")
+            .build();
 
     Attributes fromEmpty =
-        Attributes.empty()
+        Attributes.Factory.empty()
             .toBuilder()
             .setAttribute("cat", "meow")
             .setAttribute("dog", "bark")
             .build();
     assertThat(fromEmpty).isEqualTo(filled);
     // Original not mutated.
-    assertThat(Attributes.empty().isEmpty()).isTrue();
+    assertThat(Attributes.Factory.empty().isEmpty()).isTrue();
 
-    Attributes partial = Attributes.newBuilder().setAttribute("cat", "meow").build();
+    Attributes partial = Attributes.Factory.newBuilder().setAttribute("cat", "meow").build();
     Attributes fromPartial = partial.toBuilder().setAttribute("dog", "bark").build();
     assertThat(fromPartial).isEqualTo(filled);
     // Original not mutated.
-    assertThat(partial).isEqualTo(Attributes.newBuilder().setAttribute("cat", "meow").build());
+    assertThat(partial)
+        .isEqualTo(Attributes.Factory.newBuilder().setAttribute("cat", "meow").build());
   }
 
   @Test
   void deleteByNull() {
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.Factory.newBuilder();
     attributes.setAttribute("attrValue", AttributeValue.stringAttributeValue("attrValue"));
     attributes.setAttribute("string", "string");
     attributes.setAttribute("long", 10);

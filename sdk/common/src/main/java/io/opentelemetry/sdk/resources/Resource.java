@@ -46,10 +46,10 @@ public abstract class Resource {
           + " characters.";
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
-  private static final Resource EMPTY = create(Attributes.empty());
+  private static final Resource EMPTY = create(Attributes.Factory.empty());
   private static final Resource TELEMETRY_SDK =
       create(
-          Attributes.newBuilder()
+          Attributes.Factory.newBuilder()
               .setAttribute("telemetry.sdk.name", "opentelemetry")
               .setAttribute("telemetry.sdk.language", "java")
               .setAttribute("telemetry.sdk.version", readVersion())
@@ -155,7 +155,7 @@ public abstract class Resource {
       return this;
     }
 
-    Attributes.Builder attrBuilder = Attributes.newBuilder();
+    Attributes.Builder attrBuilder = Attributes.Factory.newBuilder();
     Merger merger = new Merger(attrBuilder);
     this.getAttributes().forEach(merger);
     other.getAttributes().forEach(merger);

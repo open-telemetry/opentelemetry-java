@@ -83,7 +83,7 @@ public final class MessageEvent implements Event {
    */
   public static MessageEvent create(
       Type type, long messageId, long uncompressedSize, long compressedSize) {
-    Attributes.Builder attributeBuilder = Attributes.newBuilder();
+    Attributes.Builder attributeBuilder = Attributes.Factory.newBuilder();
     attributeBuilder.setAttribute(
         TYPE, type == Type.SENT ? sentAttributeValue : receivedAttributeValue);
     attributeBuilder.setAttribute(

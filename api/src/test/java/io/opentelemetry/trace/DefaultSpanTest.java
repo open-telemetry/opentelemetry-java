@@ -50,10 +50,10 @@ class DefaultSpanTest {
     span.addEvent("event", 0);
     span.addEvent(
         "event",
-        Attributes.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
+        Attributes.Factory.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
     span.addEvent(
         "event",
-        Attributes.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)),
+        Attributes.Factory.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)),
         0);
     span.addEvent(new TestEvent());
     span.addEvent(new TestEvent(), 0);
@@ -79,7 +79,7 @@ class DefaultSpanTest {
 
     @Override
     public Attributes getAttributes() {
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     }
   }
 }

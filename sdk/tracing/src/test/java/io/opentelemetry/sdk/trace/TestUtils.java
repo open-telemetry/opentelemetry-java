@@ -42,7 +42,7 @@ public final class TestUtils {
    * @return some {@link io.opentelemetry.common.Attributes}
    */
   static Attributes generateRandomAttributes() {
-    return Attributes.of(
+    return Attributes.Factory.of(
         UUID.randomUUID().toString(),
         AttributeValue.stringAttributeValue(UUID.randomUUID().toString()));
   }

@@ -44,7 +44,7 @@ class EnvAutodetectResourceTest {
   @Test
   void parseResourceAttributes_single() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes("value=foo");
-    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    assertThat(result).isEqualTo(Attributes.Factory.of("value", stringAttributeValue("foo")));
   }
 
   @Test
@@ -52,7 +52,7 @@ class EnvAutodetectResourceTest {
     Attributes result = EnvAutodetectResource.parseResourceAttributes("value=foo, other=bar");
     assertThat(result)
         .isEqualTo(
-            Attributes.of(
+            Attributes.Factory.of(
                 "value", stringAttributeValue("foo"),
                 "other", stringAttributeValue("bar")));
   }
@@ -60,13 +60,13 @@ class EnvAutodetectResourceTest {
   @Test
   void parseResourceAttributes_whitespace() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes(" value = foo ");
-    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    assertThat(result).isEqualTo(Attributes.Factory.of("value", stringAttributeValue("foo")));
   }
 
   @Test
   void parseResourceAttributes_quotes() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes("value=\"foo\"");
-    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    assertThat(result).isEqualTo(Attributes.Factory.of("value", stringAttributeValue("foo")));
   }
 
   @Test
@@ -79,7 +79,7 @@ class EnvAutodetectResourceTest {
             .readSystemProperties()
             .build();
     Attributes result = (Attributes) resource.getAttributes();
-    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    assertThat(result).isEqualTo(Attributes.Factory.of("value", stringAttributeValue("foo")));
     System.clearProperty(key);
   }
 
@@ -94,7 +94,7 @@ class EnvAutodetectResourceTest {
               .readSystemProperties()
               .build();
       Attributes result = (Attributes) resource.getAttributes();
-      assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+      assertThat(result).isEqualTo(Attributes.Factory.of("value", stringAttributeValue("foo")));
     }
   }
 }

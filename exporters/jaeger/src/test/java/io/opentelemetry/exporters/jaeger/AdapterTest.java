@@ -257,7 +257,7 @@ class AdapterTest {
   @Test
   void testSpanError() {
     Attributes attributes =
-        Attributes.of(
+        Attributes.Factory.of(
             "error.type",
             AttributeValue.stringAttributeValue(this.getClass().getName()),
             "error.message",
@@ -291,13 +291,13 @@ class AdapterTest {
   private static EventImpl getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
-    Attributes attributes = Attributes.of("foo", valueS);
+    Attributes attributes = Attributes.Factory.of("foo", valueS);
     return EventImpl.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-    Attributes attributes = Attributes.of("valueB", valueB);
+    Attributes attributes = Attributes.Factory.of("valueB", valueB);
 
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
@@ -309,13 +309,13 @@ class AdapterTest {
         .setName("GET /api/endpoint")
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-        .setAttributes(Attributes.of("valueB", valueB))
+        .setAttributes(Attributes.Factory.of("valueB", valueB))
         .setEvents(Collections.singletonList(getTimedEvent()))
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
-        .setResource(Resource.create(Attributes.empty()))
+        .setResource(Resource.create(Attributes.Factory.empty()))
         .setStatus(Status.OK)
         .build();
   }

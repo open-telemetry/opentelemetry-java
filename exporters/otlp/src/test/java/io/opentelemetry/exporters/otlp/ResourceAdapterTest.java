@@ -32,7 +32,7 @@ class ResourceAdapterTest {
     assertThat(
             ResourceAdapter.toProtoResource(
                     Resource.create(
-                        Attributes.of(
+                        Attributes.Factory.of(
                             "key_bool",
                             AttributeValue.booleanAttributeValue(true),
                             "key_string",

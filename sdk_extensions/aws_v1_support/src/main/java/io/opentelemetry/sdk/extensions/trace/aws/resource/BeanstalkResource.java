@@ -61,10 +61,10 @@ public class BeanstalkResource extends ResourceProvider {
   public Attributes getAttributes() {
     File configFile = new File(configPath);
     if (!configFile.exists()) {
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     }
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.Factory.newBuilder();
     try (JsonParser parser = JSON_FACTORY.createParser(configFile)) {
       parser.nextToken();
 
@@ -92,7 +92,7 @@ public class BeanstalkResource extends ResourceProvider {
       }
     } catch (IOException e) {
       logger.log(Level.WARNING, "Could not parse Beanstalk config.", e);
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     }
 
     return attrBuilders.build();

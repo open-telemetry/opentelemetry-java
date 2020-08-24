@@ -55,11 +55,11 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long END_EPOCH_NANOS = 1505855799_465726528L;
   private static final long RECEIVED_TIMESTAMP_NANOS = 1505855799_433901068L;
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
-  private static final Attributes attributes = Attributes.empty();
+  private static final Attributes attributes = Attributes.Factory.empty();
   private static final List<Event> annotations =
       ImmutableList.of(
-          EventImpl.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
-          EventImpl.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
+          EventImpl.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.Factory.empty()),
+          EventImpl.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.Factory.empty()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";

@@ -49,7 +49,7 @@ class EcsResourceTest {
     Attributes attributes = populator.getAttributes();
     assertThat(attributes)
         .isEqualTo(
-            Attributes.of(
+            Attributes.Factory.of(
                 ResourceConstants.CONTAINER_NAME,
                 stringAttributeValue(InetAddress.getLocalHost().getHostName()),
                 ResourceConstants.CONTAINER_ID,
@@ -75,7 +75,7 @@ class EcsResourceTest {
     Attributes attributes = populator.getAttributes();
     assertThat(attributes)
         .isEqualTo(
-            Attributes.of(
+            Attributes.Factory.of(
                 ResourceConstants.CONTAINER_NAME,
                 stringAttributeValue(InetAddress.getLocalHost().getHostName())));
   }

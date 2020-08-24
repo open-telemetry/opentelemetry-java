@@ -27,20 +27,20 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Resource}. */
 class ResourceTest {
-  private static final Resource DEFAULT_RESOURCE = Resource.create(Attributes.empty());
+  private static final Resource DEFAULT_RESOURCE = Resource.create(Attributes.Factory.empty());
   private Resource resource1;
   private Resource resource2;
 
   @BeforeEach
   void setUp() {
     Attributes attributes1 =
-        Attributes.of(
+        Attributes.Factory.of(
             "a",
             AttributeValue.stringAttributeValue("1"),
             "b",
             AttributeValue.stringAttributeValue("2"));
     Attributes attribute2 =
-        Attributes.of(
+        Attributes.Factory.of(
             "a",
             AttributeValue.stringAttributeValue("1"),
             "b",
@@ -54,7 +54,7 @@ class ResourceTest {
   @Test
   void create() {
     Attributes attributes =
-        Attributes.of(
+        Attributes.Factory.of(
             "a",
             AttributeValue.stringAttributeValue("1"),
             "b",
@@ -64,14 +64,14 @@ class ResourceTest {
     assertThat(resource.getAttributes().size()).isEqualTo(2);
     assertThat(resource.getAttributes()).isEqualTo(attributes);
 
-    Resource resource1 = Resource.create(Attributes.empty());
+    Resource resource1 = Resource.create(Attributes.Factory.empty());
     assertThat(resource1.getAttributes()).isNotNull();
     assertThat(resource1.getAttributes().isEmpty()).isTrue();
   }
 
   @Test
   void create_ignoreNull() {
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.Factory.newBuilder();
 
     attributes.setAttribute("string", AttributeValue.stringAttributeValue(null));
     Resource resource = Resource.create(attributes.build());
@@ -112,7 +112,7 @@ class ResourceTest {
 
   @Test
   void create_NullEmptyArray() {
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.Factory.newBuilder();
 
     // Empty arrays should be maintained
     attributes.setAttribute(
@@ -167,13 +167,13 @@ class ResourceTest {
   @Test
   void testResourceEquals() {
     Attributes attribute1 =
-        Attributes.of(
+        Attributes.Factory.of(
             "a",
             AttributeValue.stringAttributeValue("1"),
             "b",
             AttributeValue.stringAttributeValue("2"));
     Attributes attribute2 =
-        Attributes.of(
+        Attributes.Factory.of(
             "a",
             AttributeValue.stringAttributeValue("1"),
             "b",
@@ -189,7 +189,7 @@ class ResourceTest {
   @Test
   void testMergeResources() {
     Attributes expectedAttributes =
-        Attributes.of(
+        Attributes.Factory.of(
             "a",
             AttributeValue.stringAttributeValue("1"),
             "b",
@@ -204,7 +204,7 @@ class ResourceTest {
   @Test
   void testMergeResources_Resource1() {
     Attributes expectedAttributes =
-        Attributes.of(
+        Attributes.Factory.of(
             "a",
             AttributeValue.stringAttributeValue("1"),
             "b",
@@ -217,7 +217,7 @@ class ResourceTest {
   @Test
   void testMergeResources_Resource1_Null() {
     Attributes expectedAttributes =
-        Attributes.of(
+        Attributes.Factory.of(
             "a", AttributeValue.stringAttributeValue("1"),
             "b", AttributeValue.stringAttributeValue("3"),
             "c", AttributeValue.stringAttributeValue("4"));
@@ -229,7 +229,7 @@ class ResourceTest {
   @Test
   void testMergeResources_Resource2_Null() {
     Attributes expectedAttributes =
-        Attributes.of(
+        Attributes.Factory.of(
             "a",
             AttributeValue.stringAttributeValue("1"),
             "b",

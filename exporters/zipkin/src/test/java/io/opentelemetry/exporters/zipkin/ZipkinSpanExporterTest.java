@@ -67,11 +67,11 @@ class ZipkinSpanExporterTest {
   private static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";
   private static final String SPAN_ID = "9cc1e3049173be09";
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
-  private static final Attributes attributes = Attributes.empty();
+  private static final Attributes attributes = Attributes.Factory.empty();
   private static final List<Event> annotations =
       ImmutableList.of(
-          EventImpl.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
-          EventImpl.create(1505855799_459486280L, "SENT", Attributes.empty()));
+          EventImpl.create(1505855799_433901068L, "RECEIVED", Attributes.Factory.empty()),
+          EventImpl.create(1505855799_459486280L, "SENT", Attributes.Factory.empty()));
 
   @Test
   void generateSpan_remoteParent() {
@@ -125,7 +125,7 @@ class ZipkinSpanExporterTest {
   void generateSpan_ResourceServiceNameMapping() {
     final Resource resource =
         Resource.create(
-            Attributes.of(
+            Attributes.Factory.of(
                 ResourceConstants.SERVICE_NAME, stringAttributeValue("super-zipkin-service")));
     SpanData data = buildStandardSpan().setResource(resource).build();
 
@@ -138,7 +138,7 @@ class ZipkinSpanExporterTest {
   @Test
   void generateSpan_WithAttributes() {
     Attributes attributes =
-        Attributes.newBuilder()
+        Attributes.Factory.newBuilder()
             .setAttribute("string", stringAttributeValue("string value"))
             .setAttribute("boolean", AttributeValue.booleanAttributeValue(false))
             .setAttribute("long", AttributeValue.longAttributeValue(9999L))
@@ -186,7 +186,7 @@ class ZipkinSpanExporterTest {
   @Test
   void generateSpan_AlreadyHasHttpStatusInfo() {
     Attributes attributeMap =
-        Attributes.of(
+        Attributes.Factory.of(
             SemanticAttributes.HTTP_STATUS_CODE.key(),
             AttributeValue.longAttributeValue(404),
             SemanticAttributes.HTTP_STATUS_TEXT.key(),
@@ -214,7 +214,7 @@ class ZipkinSpanExporterTest {
   @Test
   void generateSpan_WithRpcErrorStatus() {
     Attributes attributeMap =
-        Attributes.of(
+        Attributes.Factory.of(
             SemanticAttributes.RPC_SERVICE.key(), stringAttributeValue("my service name"));
 
     String errorMessage = "timeout";

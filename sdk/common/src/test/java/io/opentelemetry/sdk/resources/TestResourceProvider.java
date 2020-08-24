@@ -23,6 +23,6 @@ public class TestResourceProvider extends ResourceProvider {
 
   @Override
   protected Attributes getAttributes() {
-    return Attributes.of("providerAttribute", AttributeValue.longAttributeValue(42));
+    return Attributes.Factory.of("providerAttribute", AttributeValue.longAttributeValue(42));
   }
 }

@@ -44,7 +44,7 @@ class TestSpanDataTest {
     SpanData spanData = createBasicSpanBuilder().build();
 
     assertThat(spanData.getParentSpanId().isValid()).isFalse();
-    assertThat(spanData.getAttributes()).isEqualTo(Attributes.empty());
+    assertThat(spanData.getAttributes()).isEqualTo(Attributes.Factory.empty());
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
     assertThat(spanData.getInstrumentationLibraryInfo())
@@ -65,7 +65,7 @@ class TestSpanDataTest {
 
     assertThrows(
         UnsupportedOperationException.class,
-        () -> spanData.getEvents().add(EventImpl.create(1234, "foo", Attributes.empty())));
+        () -> spanData.getEvents().add(EventImpl.create(1234, "foo", Attributes.Factory.empty())));
   }
 
   @Test
@@ -94,13 +94,13 @@ class TestSpanDataTest {
 
   @Test
   void timedEvent_defaultTotalAttributeCountIsZero() {
-    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty());
+    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.Factory.empty());
     assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   void timedEvent_canSetTotalAttributeCount() {
-    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty(), 123);
+    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.Factory.empty(), 123);
     assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 

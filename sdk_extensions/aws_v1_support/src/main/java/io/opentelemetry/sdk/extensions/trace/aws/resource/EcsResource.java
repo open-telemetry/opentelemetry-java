@@ -58,10 +58,10 @@ public class EcsResource extends ResourceProvider {
   @Override
   public Attributes getAttributes() {
     if (!isOnEcs()) {
-      return Attributes.empty();
+      return Attributes.Factory.empty();
     }
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.Factory.newBuilder();
     try {
       String hostName = InetAddress.getLocalHost().getHostName();
       attrBuilders.setAttribute(ResourceConstants.CONTAINER_NAME, hostName);

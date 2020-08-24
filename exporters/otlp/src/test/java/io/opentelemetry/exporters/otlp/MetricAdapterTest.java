@@ -382,7 +382,7 @@ class MetricAdapterTest {
         Descriptor.create(
             "name", "description", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.of("k", "v"));
     Resource resource =
-        Resource.create(Attributes.of("ka", AttributeValue.stringAttributeValue("va")));
+        Resource.create(Attributes.Factory.of("ka", AttributeValue.stringAttributeValue("va")));
     io.opentelemetry.proto.resource.v1.Resource resourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder()
             .addAllAttributes(

@@ -43,7 +43,7 @@ class BeanstalkResourceTest {
     Attributes attributes = populator.getAttributes();
     assertThat(attributes)
         .isEqualTo(
-            Attributes.of(
+            Attributes.Factory.of(
                 ResourceConstants.SERVICE_INSTANCE, stringAttributeValue("4"),
                 ResourceConstants.SERVICE_VERSION, stringAttributeValue("2"),
                 ResourceConstants.SERVICE_NAMESPACE, stringAttributeValue("HttpSubscriber-env")));
