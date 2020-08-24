@@ -24,6 +24,8 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
@@ -31,7 +33,6 @@ import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -165,6 +166,24 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  void generateSpan_WithInstrumentationLibraryInfo() {
+    SpanData data =
+        buildStandardSpan()
+            .setInstrumentationLibraryInfo(
+                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setKind(Kind.CLIENT)
+            .build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(
+            buildZipkinSpan(Span.Kind.CLIENT)
+                .toBuilder()
+                .putTag("otel.instrumentation_library.name", "io.opentelemetry.auto")
+                .putTag("otel.instrumentation_library.version", "1.0.0")
+                .build());
+  }
+
+  @Test
   void generateSpan_AlreadyHasHttpStatusInfo() {
     Attributes attributeMap =
         Attributes.of(
@@ -225,11 +244,11 @@ class ZipkinSpanExporterTest {
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
-    ResultCode resultCode =
+    CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(buildStandardSpan().build()));
 
     verify(mockZipkinCall).execute();
-    assertThat(resultCode).isEqualTo(ResultCode.SUCCESS);
+    assertThat(resultCode.isSuccess()).isTrue();
   }
 
   @Test
@@ -242,10 +261,10 @@ class ZipkinSpanExporterTest {
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
     when(mockZipkinCall.execute()).thenThrow(new IOException());
 
-    ResultCode resultCode =
+    CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(buildStandardSpan().build()));
 
-    assertThat(resultCode).isEqualTo(ResultCode.FAILURE);
+    assertThat(resultCode.isSuccess()).isFalse();
   }
 
   @Test

@@ -20,11 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -115,9 +115,9 @@ public class ZipkinSpanExporterEndToEndHttpTest {
             zipkin.httpUrl() + ENDPOINT_V2_SPANS, Encoding.JSON, SpanBytesEncoder.PROTO3);
 
     SpanData spanData = buildStandardSpan().build();
-    SpanExporter.ResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
+    CompletableResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
 
-    assertThat(resultCode).isEqualTo(SpanExporter.ResultCode.FAILURE);
+    assertThat(resultCode.isSuccess()).isFalse();
     List<Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
     assertThat(zipkinSpans).isNotNull();
     assertThat(zipkinSpans).isEmpty();
@@ -139,9 +139,9 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private void exportAndVerify(ZipkinSpanExporter zipkinSpanExporter) {
 
     SpanData spanData = buildStandardSpan().build();
-    SpanExporter.ResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
+    CompletableResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
 
-    assertThat(resultCode).isEqualTo(SpanExporter.ResultCode.SUCCESS);
+    assertThat(resultCode.isSuccess()).isTrue();
     List<Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
 
     assertThat(zipkinSpans).isNotNull();

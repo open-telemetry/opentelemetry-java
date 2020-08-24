@@ -21,6 +21,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -107,7 +108,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    * @return the result of the operation
    */
   @Override
-  public ResultCode export(Collection<SpanData> spans) {
+  public CompletableResultCode export(Collection<SpanData> spans) {
     Collector.PostSpansRequest request =
         Collector.PostSpansRequest.newBuilder()
             .setBatch(
@@ -126,10 +127,10 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       // for now, there's nothing to check in the response object
       //noinspection ResultOfMethodCallIgnored
       stub.postSpans(request);
-      return ResultCode.SUCCESS;
+      return CompletableResultCode.ofSuccess();
     } catch (Throwable e) {
       logger.log(Level.WARNING, "Failed to export spans", e);
-      return ResultCode.FAILURE;
+      return CompletableResultCode.ofFailure();
     }
   }
 
@@ -139,8 +140,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    * @return always Success
    */
   @Override
-  public ResultCode flush() {
-    return ResultCode.SUCCESS;
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
   }
 
   /**

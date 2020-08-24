@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -89,16 +88,13 @@ class InMemorySpanExporterTest {
 
   @Test
   void export_ReturnCode() {
-    assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
-        .isEqualTo(ResultCode.SUCCESS);
+    assertThat(exporter.export(Collections.singletonList(makeBasicSpan())).isSuccess()).isTrue();
     exporter.shutdown();
     // After shutdown no more export.
-    assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
-        .isEqualTo(ResultCode.FAILURE);
+    assertThat(exporter.export(Collections.singletonList(makeBasicSpan())).isSuccess()).isFalse();
     exporter.reset();
     // Reset does not do anything if already shutdown.
-    assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
-        .isEqualTo(ResultCode.FAILURE);
+    assertThat(exporter.export(Collections.singletonList(makeBasicSpan())).isSuccess()).isFalse();
   }
 
   static SpanData makeBasicSpan() {

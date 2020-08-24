@@ -16,6 +16,7 @@ include ":opentelemetry-examples-grpc",
         ":opentelemetry-examples-http",
         ":opentelemetry-examples-jaeger",
         ":opentelemetry-examples-metrics",
+        ":opentelemetry-examples-prometheus",
         ":opentelemetry-examples-sdk-usage",
         ":opentelemetry-examples-zipkin"
 

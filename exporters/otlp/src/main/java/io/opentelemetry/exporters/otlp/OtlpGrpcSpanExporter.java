@@ -19,12 +19,18 @@ package io.opentelemetry.exporters.otlp;
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
 import com.google.common.base.Splitter;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
+import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc.TraceServiceFutureStub;
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -73,9 +79,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
 
-  private final TraceServiceGrpc.TraceServiceBlockingStub blockingStub;
+  private final TraceServiceFutureStub traceService;
   private final ManagedChannel managedChannel;
-  private final long deadlineMs;
 
   /**
    * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.
@@ -86,8 +91,11 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   private OtlpGrpcSpanExporter(ManagedChannel channel, long deadlineMs) {
     this.managedChannel = channel;
-    this.blockingStub = TraceServiceGrpc.newBlockingStub(channel);
-    this.deadlineMs = deadlineMs;
+    TraceServiceFutureStub stub = TraceServiceGrpc.newFutureStub(channel);
+    if (deadlineMs > 0) {
+      stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    }
+    this.traceService = stub;
   }
 
   /**
@@ -97,26 +105,29 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * @return the result of the operation
    */
   @Override
-  public ResultCode export(Collection<SpanData> spans) {
+  public CompletableResultCode export(Collection<SpanData> spans) {
     ExportTraceServiceRequest exportTraceServiceRequest =
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
             .build();
 
-    try {
-      TraceServiceGrpc.TraceServiceBlockingStub stub = this.blockingStub;
-      if (deadlineMs > 0) {
-        stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
-      }
+    final CompletableResultCode result = new CompletableResultCode();
+    Futures.addCallback(
+        traceService.export(exportTraceServiceRequest),
+        new FutureCallback<ExportTraceServiceResponse>() {
+          @Override
+          public void onSuccess(@Nullable ExportTraceServiceResponse response) {
+            result.succeed();
+          }
 
-      // for now, there's nothing to check in the response object
-      // noinspection ResultOfMethodCallIgnored
-      stub.export(exportTraceServiceRequest);
-      return ResultCode.SUCCESS;
-    } catch (Throwable e) {
-      logger.log(Level.WARNING, "Failed to export spans", e);
-      return ResultCode.FAILURE;
-    }
+          @Override
+          public void onFailure(Throwable t) {
+            logger.log(Level.WARNING, "Failed to export spans", t);
+            result.fail();
+          }
+        },
+        MoreExecutors.directExecutor());
+    return result;
   }
 
   /**
@@ -125,8 +136,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * @return always Success
    */
   @Override
-  public ResultCode flush() {
-    return ResultCode.SUCCESS;
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
   }
 
   /**

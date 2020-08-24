@@ -28,7 +28,6 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
-import javax.annotation.Nullable;
 
 /**
  * {@link RateLimitingSampler} sampler uses a leaky bucket rate limiter to ensure that traces are
@@ -63,13 +62,13 @@ class RateLimitingSampler implements Sampler {
 
   @Override
   public SamplingResult shouldSample(
-      @Nullable SpanContext parentContext,
+      SpanContext parentContext,
       TraceId traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
       List<Link> parentLinks) {
-    if (parentContext != null && parentContext.getTraceFlags().isSampled()) {
+    if (parentContext.getTraceFlags().isSampled()) {
       return Samplers.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }

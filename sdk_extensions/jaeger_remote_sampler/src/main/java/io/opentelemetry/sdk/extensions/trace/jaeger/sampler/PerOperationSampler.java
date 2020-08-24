@@ -27,7 +27,6 @@ import io.opentelemetry.trace.TraceId;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 /** {@link PerOperationSampler} samples spans per operation. */
 class PerOperationSampler implements Sampler {
@@ -48,7 +47,7 @@ class PerOperationSampler implements Sampler {
 
   @Override
   public SamplingResult shouldSample(
-      @Nullable SpanContext parentContext,
+      SpanContext parentContext,
       TraceId traceId,
       String name,
       Kind spanKind,
