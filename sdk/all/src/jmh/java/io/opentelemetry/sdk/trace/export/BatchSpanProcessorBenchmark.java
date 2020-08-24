@@ -145,8 +145,8 @@ public class BatchSpanProcessorBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 5, time = 20)
   @BenchmarkMode(Mode.Throughput)
-  public void export(BenchmarkState benchmarkState, ThreadState threadState)
-      throws InterruptedException {
+  public void export(
+      BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
     benchmarkState.processor.onEnd(
         (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }
