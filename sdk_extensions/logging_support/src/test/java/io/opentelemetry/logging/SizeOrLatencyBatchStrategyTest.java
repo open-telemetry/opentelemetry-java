@@ -17,6 +17,7 @@
 package io.opentelemetry.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import io.opentelemetry.logging.api.LogRecord;
 import java.util.ArrayList;
@@ -52,8 +53,11 @@ public class SizeOrLatencyBatchStrategyTest {
 
   @Test
   public void testLatencyStrategy() throws InterruptedException {
+    int maxDelay = 50;
     SizeOrLatencyBatchStrategy strategy =
-        new SizeOrLatencyBatchStrategy.Builder().withMaxDelay(50, TimeUnit.MILLISECONDS).build();
+        new SizeOrLatencyBatchStrategy.Builder()
+            .withMaxDelay(maxDelay, TimeUnit.MILLISECONDS)
+            .build();
 
     final List<LogRecord> transmittedBatch = new ArrayList<>();
 
@@ -65,7 +69,7 @@ public class SizeOrLatencyBatchStrategyTest {
     }
 
     assertThat(transmittedBatch.size()).isEqualTo(5);
-    Thread.sleep(55);
-    assertThat(transmittedBatch.size()).isEqualTo(7);
+
+    await().atMost(200, TimeUnit.MILLISECONDS).until(() -> transmittedBatch.size() == 7);
   }
 }

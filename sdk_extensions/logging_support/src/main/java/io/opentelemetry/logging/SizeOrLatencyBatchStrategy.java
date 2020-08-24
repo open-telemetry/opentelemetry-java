@@ -17,11 +17,11 @@
 package io.opentelemetry.logging;
 
 import io.opentelemetry.logging.api.LogRecord;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -34,64 +34,58 @@ public class SizeOrLatencyBatchStrategy implements LoggingBatchStrategy {
   private static final int DEFAULT_BATCH_SIZE = 50;
   private static final int DEFAULT_MAX_DELAY = 5;
   private static final TimeUnit DEFAULT_MAX_DELAY_UNITS = TimeUnit.SECONDS;
-  private static final Timer timer = new Timer();
+  private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
   private final int maxBatch;
   private final int maxDelay;
   private final TimeUnit maxDelayUnits;
+  private final ScheduledFuture<?> schedule;
 
-  private WeakReference<LoggingBatchExporter> batchHandler;
+  private LoggingBatchExporter batchHandler;
   private List<LogRecord> batch = new ArrayList<>();
-  private boolean timerPending = false;
 
   private SizeOrLatencyBatchStrategy(int maxBatch, int maxDelay, TimeUnit units) {
     this.maxBatch = maxBatch > 0 ? maxBatch : DEFAULT_BATCH_SIZE;
     this.maxDelay = maxDelay > 0 ? maxDelay : DEFAULT_MAX_DELAY;
     this.maxDelayUnits = units != null ? units : DEFAULT_MAX_DELAY_UNITS;
+    this.schedule =
+        executor.scheduleWithFixedDelay(
+            new Runnable() {
+              @Override
+              public void run() {
+                flush();
+              }
+            },
+            this.maxDelay,
+            this.maxDelay,
+            this.maxDelayUnits);
+  }
+
+  @Override
+  public void stop() {
+    schedule.cancel(false);
   }
 
   @Override
   public void add(LogRecord record) {
-    synchronized (this) {
-      if (!timerPending) {
-        setTimer();
-      }
-      batch.add(record);
-      if (batch.size() >= maxBatch) {
-        flush();
-      }
+    batch.add(record);
+    if (batch.size() >= maxBatch) {
+      flush();
     }
-  }
-
-  private void setTimer() {
-    timerPending = true;
-    timer.schedule(
-        new TimerTask() {
-          @Override
-          public void run() {
-            flush();
-          }
-        },
-        TimeUnit.MILLISECONDS.convert(maxDelay, maxDelayUnits));
   }
 
   @Override
   public void flush() {
-    LoggingBatchExporter handler = batchHandler.get();
-    if (handler != null && batch.size() > 0) {
-      synchronized (this) {
-        timer.purge();
-        timerPending = false;
-        List<LogRecord> completedBatch = batch;
-        batch = new ArrayList<>();
-        handler.handleLogRecordBatch(completedBatch);
-      }
+    if (batchHandler != null && batch.size() > 0) {
+      List<LogRecord> completedBatch = batch;
+      batch = new ArrayList<>();
+      batchHandler.handleLogRecordBatch(completedBatch);
     }
   }
 
   @Override
   public void setBatchHandler(LoggingBatchExporter handler) {
-    batchHandler = new WeakReference<>(handler);
+    batchHandler = handler;
   }
 
   public static class Builder {

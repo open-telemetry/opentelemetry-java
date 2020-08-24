@@ -24,6 +24,8 @@ import java.util.List;
  * {@link SizeOrLatencyBatchStrategy}
  */
 public interface LoggingBatchStrategy {
+  void stop();
+
   /**
    * Add a LogRecord to the existing batch.
    *

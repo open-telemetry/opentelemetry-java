@@ -17,7 +17,9 @@
 package io.opentelemetry.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
+import io.opentelemetry.logging.api.Exporter;
 import io.opentelemetry.logging.api.LogRecord;
 import io.opentelemetry.logging.api.LogRecord.Severity;
 import io.opentelemetry.logging.api.LogSink;
@@ -30,19 +32,30 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class SdkLogSinkProviderTest {
+  private static class TestExporter implements Exporter {
+    private final List<LogRecord> records = new ArrayList<>();
+    private int batches = 0;
+
+    @Override
+    public void accept(List<LogRecord> records) {
+      this.records.addAll(records);
+      batches++;
+    }
+  }
+
   @Test
-  public void testProviderAggregation() throws InterruptedException {
-    List<LogRecord> records1 = new ArrayList<>();
-    List<LogRecord> records2 = new ArrayList<>();
+  public void testProviderAggregation() {
+    TestExporter exporter1 = new TestExporter();
+    TestExporter exporter2 = new TestExporter();
     SdkLogSinkProvider provider =
         new SdkLogSinkProvider.Builder()
             .withBatchManager(
                 new SizeOrLatencyBatchStrategy.Builder()
                     .withMaxBatchSize(5)
-                    .withMaxDelay(50, TimeUnit.MILLISECONDS)
+                    .withMaxDelay(250, TimeUnit.MILLISECONDS)
                     .build())
-            .withExporter(records1::addAll)
-            .withExporter(records2::addAll)
+            .withExporter(exporter1)
+            .withExporter(exporter2)
             .build();
     LogSink sink = provider.get("test", "0.8.0");
     for (int i = 0; i < 11; i++) {
@@ -53,11 +66,10 @@ public class SdkLogSinkProviderTest {
               .withBody("test")
               .build());
     }
-    assertThat(records1.size()).isEqualTo(10);
-    assertThat(records2.size()).isEqualTo(10);
-    Thread.sleep(55);
-    assertThat(records1.size()).isEqualTo(11);
-    assertThat(records2.size()).isEqualTo(11);
-    assertThat(records1).isEqualTo(records2);
+    await()
+        .atLeast(100, TimeUnit.MILLISECONDS)
+        .atMost(500, TimeUnit.MILLISECONDS)
+        .until(() -> exporter1.records.size() == 11);
+    assertThat(exporter1.batches).isEqualTo(3);
   }
 }

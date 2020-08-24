@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 public class SdkLogSinkProvider implements LoggingBatchExporter {
   private final LoggingBatchStrategy batchManager;
   private final List<Exporter> exporters;
+  private final LogSink logSink = new SdkLogSink();
 
   private SdkLogSinkProvider(LoggingBatchStrategy batchManager, List<Exporter> exporters) {
     this.batchManager = batchManager != null ? batchManager : getDefaultBatchManager();
@@ -38,8 +39,8 @@ public class SdkLogSinkProvider implements LoggingBatchExporter {
   }
 
   public LogSink get(String instrumentationName, String instrumentationVersion) {
-    // FIXME: caching
-    return new SdkLogSink();
+    // Currently there is no differentiation by instrumentation library
+    return logSink;
   }
 
   @Override
@@ -57,7 +58,7 @@ public class SdkLogSinkProvider implements LoggingBatchExporter {
 
     @Override
     public LogRecord.Builder buildRecord() {
-      return new DefaultLogRecord.Builder();
+      return new LogRecord.Builder();
     }
   }
 

@@ -28,16 +28,12 @@ import javax.annotation.concurrent.Immutable;
  * {@code kvlist}. represented through {@code AnyValue.Type}. A {@code array} or a {@code kvlist}
  * can in turn hold other {@code AnyValue} instances, allowing for mapping to JSON-like structures.
  *
- * @since 0.7.0
+ * @since 0.8.0
  */
 @Immutable
 public abstract class AnyValue {
 
-  /**
-   * An enum that represents all the possible value types for an {@code AnyValue}.
-   *
-   * @since 0.7.0
-   */
+  /** An enum that represents all the possible value types for an {@code AnyValue}. */
   public enum Type {
     STRING,
     BOOL,
@@ -52,7 +48,6 @@ public abstract class AnyValue {
    *
    * @param stringValue The new value.
    * @return an {@code AnyValue} with a string value.
-   * @since 0.7.0
    */
   public static AnyValue stringAnyValue(String stringValue) {
     return AnyValueString.create(stringValue);
@@ -63,7 +58,6 @@ public abstract class AnyValue {
    * thrown if getType() is not {@link AnyValue.Type#STRING}.
    *
    * @return the string value of this {@code AttributeValue}.
-   * @since 0.7.0
    */
   public String getStringValue() {
     throw new UnsupportedOperationException(
@@ -75,7 +69,6 @@ public abstract class AnyValue {
    *
    * @param intValue The new value.
    * @return an {@code AnyValue} with a int value.
-   * @since 0.7.0
    */
   public static AnyValue intAnyValue(int intValue) {
     return AnyValueInt.create(intValue);
@@ -91,7 +84,6 @@ public abstract class AnyValue {
    *
    * @param boolValue The new value.
    * @return an {@code AnyValue} with a bool value.
-   * @since 0.7.0
    */
   public static AnyValue boolAnyValue(boolean boolValue) {
     return AnyValueBool.create(boolValue);
@@ -102,7 +94,6 @@ public abstract class AnyValue {
    * thrown if getType() is not {@link AnyValue.Type#BOOL}.
    *
    * @return the boolean value of this {@code AttributeValue}.
-   * @since 0.7.0
    */
   public boolean getBoolValue() {
     throw new UnsupportedOperationException(
@@ -114,7 +105,6 @@ public abstract class AnyValue {
    *
    * @param doubleValue The new value.
    * @return an {@code AnyValue} with a double value.
-   * @since 0.7.0
    */
   public static AnyValue doubleAnyValue(double doubleValue) {
     return AnyValueDouble.create(doubleValue);
@@ -125,7 +115,6 @@ public abstract class AnyValue {
    * thrown if getType() is not {@link AnyValue.Type#DOUBLE}.
    *
    * @return the double value of this {@code AttributeValue}.
-   * @since 0.7.0
    */
   public double getDoubleValue() {
     throw new UnsupportedOperationException(
@@ -137,7 +126,6 @@ public abstract class AnyValue {
    *
    * @param values The new value.
    * @return an {@code AnyValue} with a array value.
-   * @since 0.7.0
    */
   public static AnyValue arrayAnyValue(List<AnyValue> values) {
     return AnyValueArray.create(values);
@@ -148,7 +136,6 @@ public abstract class AnyValue {
    * thrown if getType() is not {@link AnyValue.Type#ARRAY}.
    *
    * @return the array value of this {@code AttributeValue}.
-   * @since 0.7.0
    */
   public List<AnyValue> getArrayValue() {
     throw new UnsupportedOperationException(
@@ -160,7 +147,6 @@ public abstract class AnyValue {
    *
    * @param values The new value.
    * @return an {@code AnyValue} with a kvlist value.
-   * @since 0.7.0
    */
   public static AnyValue kvlistAnyValue(Map<String, AnyValue> values) {
     return AnyValueKvlist.create(values);
@@ -171,7 +157,6 @@ public abstract class AnyValue {
    * thrown if getType() is not {@link AnyValue.Type#STRING}.
    *
    * @return the string value of this {@code AttributeValue}.
-   * @since 0.7.0
    */
   public Map<String, AnyValue> getKvlistValue() {
     throw new UnsupportedOperationException(

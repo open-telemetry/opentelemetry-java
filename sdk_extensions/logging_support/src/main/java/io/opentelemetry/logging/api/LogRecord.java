@@ -16,35 +16,44 @@
 
 package io.opentelemetry.logging.api;
 
+import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.AnyValue;
 import io.opentelemetry.common.AttributeValue;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * A LogRecord is an implementation of the <a
  * href="https://github.com/open-telemetry/oteps/blob/master/text/logs/0097-log-data-model.md">
  * OpenTelemetry logging model</a>.
  */
-public interface LogRecord {
-  long getTimeUnixNano();
+@AutoValue
+public abstract class LogRecord {
+  abstract long getTimeUnixNano();
 
-  byte[] getTraceId();
+  @SuppressWarnings("mutable")
+  abstract byte[] getTraceId();
 
-  byte[] getSpanId();
+  @SuppressWarnings("mutable")
+  abstract byte[] getSpanId();
 
-  int getFlags();
+  abstract int getFlags();
 
-  Severity getSeverity();
+  abstract Severity getSeverity();
 
-  String getSeverityText();
+  @Nullable
+  abstract String getSeverityText();
 
-  String getName();
+  @Nullable
+  abstract String getName();
 
-  AnyValue getBody();
+  abstract AnyValue getBody();
 
-  Map<String, AttributeValue> getAttributes();
+  abstract Map<String, AttributeValue> getAttributes();
 
-  enum Severity {
+  public enum Severity {
     UNDEFINED_SEVERITY_NUMBER(0),
     TRACE(1),
     TRACE2(2),
@@ -83,29 +92,82 @@ public interface LogRecord {
     }
   }
 
-  interface Builder {
-    Builder withUnixTimeNano(long timestamp);
+  public static class Builder {
+    private long timeUnixNano;
+    private byte[] traceId = new byte[0];
+    private byte[] spanId = new byte[0];
+    private int flags;
+    private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
+    private String severityText;
+    private String name;
+    private AnyValue body = AnyValue.stringAnyValue("");
+    private final Map<String, AttributeValue> attributes = new HashMap<>();
 
-    Builder withUnixTimeMillis(long currentTimeMillis);
+    public Builder withUnixTimeNano(long timestamp) {
+      this.timeUnixNano = timestamp;
+      return this;
+    }
 
-    Builder withTraceId(byte[] traceId);
+    public Builder withUnixTimeMillis(long timestamp) {
+      return withUnixTimeNano(TimeUnit.MILLISECONDS.toNanos(timestamp));
+    }
 
-    Builder withSpanId(byte[] spanId);
+    public Builder withTraceId(byte[] traceId) {
+      this.traceId = traceId;
+      return this;
+    }
 
-    Builder withFlags(int flags);
+    public Builder withSpanId(byte[] spanId) {
+      this.spanId = spanId;
+      return this;
+    }
 
-    Builder withSeverity(Severity severity);
+    public Builder withFlags(int flags) {
+      this.flags = flags;
+      return this;
+    }
 
-    Builder withSeverityText(String severityText);
+    public Builder withSeverity(Severity severity) {
+      this.severity = severity;
+      return this;
+    }
 
-    Builder withName(String name);
+    public Builder withSeverityText(String severityText) {
+      this.severityText = severityText;
+      return this;
+    }
 
-    Builder withBody(AnyValue body);
+    public Builder withName(String name) {
+      this.name = name;
+      return this;
+    }
 
-    Builder withBody(String body);
+    public Builder withBody(AnyValue body) {
+      this.body = body;
+      return this;
+    }
 
-    Builder withAttributes(Map<String, AttributeValue> attributes);
+    public Builder withBody(String body) {
+      this.body = AnyValue.stringAnyValue(body);
+      return this;
+    }
 
-    LogRecord build();
+    public Builder withAttributes(Map<String, AttributeValue> attributes) {
+      this.attributes.putAll(attributes);
+      return this;
+    }
+
+    /**
+     * Build a LogRecord instance.
+     *
+     * @return value object being built
+     */
+    public LogRecord build() {
+      if (timeUnixNano == 0) {
+        timeUnixNano = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+      }
+      return new AutoValue_LogRecord(
+          timeUnixNano, traceId, spanId, flags, severity, severityText, name, body, attributes);
+    }
   }
 }
