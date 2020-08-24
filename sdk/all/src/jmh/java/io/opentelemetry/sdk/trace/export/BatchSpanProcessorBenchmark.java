@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020, OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.OpenTelemetry;
@@ -27,8 +43,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
-
-//@AuxCounters(AuxCounters.Type.EVENTS)
+// @AuxCounters(AuxCounters.Type.EVENTS)
 public class BatchSpanProcessorBenchmark {
 
   private static class DelayingSpanExporter implements SpanExporter {
@@ -44,18 +59,15 @@ public class BatchSpanProcessorBenchmark {
     }
 
     @Override
-    public void shutdown() {
-
-    }
-
+    public void shutdown() {}
   }
 
-//  private List<Span> spans;
+  //  private List<Span> spans;
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    private final MetricProducer metricProducer = OpenTelemetrySdk.getMeterProvider()
-        .getMetricProducer();
+    private final MetricProducer metricProducer =
+        OpenTelemetrySdk.getMeterProvider().getMetricProducer();
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private Collection<MetricData> allMetrics;
@@ -76,7 +88,7 @@ public class BatchSpanProcessorBenchmark {
     @TearDown(Level.Iteration)
     public final void recordMetrics() {
       allMetrics = metricProducer.collectAllMetrics();
-//      System.out.println(allMetrics);
+      //      System.out.println(allMetrics);
     }
   }
 
@@ -90,7 +102,7 @@ public class BatchSpanProcessorBenchmark {
       allMetrics = benchmarkState.allMetrics;
     }
 
-
+    /** Burn, checkstyle, burn. */
     public double dropRatio() {
       long exported = getMetric("exportedSpans");
       long dropped = getMetric("droppedSpans");
@@ -135,7 +147,7 @@ public class BatchSpanProcessorBenchmark {
   @BenchmarkMode(Mode.Throughput)
   public void export(BenchmarkState benchmarkState, ThreadState threadState)
       throws InterruptedException {
-    benchmarkState.processor
-        .onEnd((ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
+    benchmarkState.processor.onEnd(
+        (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }
 }

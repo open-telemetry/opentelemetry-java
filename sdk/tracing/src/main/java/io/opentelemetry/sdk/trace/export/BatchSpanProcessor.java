@@ -129,11 +129,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void forceFlush() {
-    try {
-      worker.forceFlush().join();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
+    worker.forceFlush();
   }
 
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
@@ -156,8 +152,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
           meter
               .longCounterBuilder("exportedSpans")
               .setUnit("1")
-              .setDescription(
-                  "The number of spans exported by the BatchSpanProcessor.")
+              .setDescription("The number of spans exported by the BatchSpanProcessor.")
               .build();
       exportedSpans =
           exportedSpansCounter.bind(
@@ -249,11 +244,12 @@ public final class BatchSpanProcessor implements SpanProcessor {
     }
 
     private void shutdown() {
-      try {
-        forceFlush().join();
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
+      long pendingBatchesCountInQueue = queue.size() / maxExportBatchSize + 1L;
+      long pendingBatchesCount = pendingBatchesCountInQueue + 1;
+      long shutdownTimeout = pendingBatchesCount * exporterTimeoutMillis;
+
+      forceFlush().join(shutdownTimeout, TimeUnit.MILLISECONDS);
+
       spanExporter.shutdown();
       continueWork = false;
     }
@@ -277,9 +273,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
         } else {
           logger.log(Level.FINE, "Exporter failed");
         }
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        logger.log(Level.WARNING, "Export timed out", e);
       } catch (Exception e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);
       } finally {
