@@ -51,7 +51,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-final class RecordEventsReadableSpan implements ReadableSpan, Span {
+final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
