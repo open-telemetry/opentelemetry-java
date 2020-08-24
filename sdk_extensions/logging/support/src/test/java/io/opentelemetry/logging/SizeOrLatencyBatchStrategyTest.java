@@ -80,9 +80,7 @@ public class SizeOrLatencyBatchStrategyTest {
       Thread.sleep(10);
     }
 
-    await()
-        .atMost(200, TimeUnit.MILLISECONDS)
-        .until(() -> batchHandler.records.size() == 7);
+    await().atMost(200, TimeUnit.MILLISECONDS).until(() -> batchHandler.records.size() == 7);
 
     assertThat(batchHandler.callCount).isEqualTo(2);
   }
