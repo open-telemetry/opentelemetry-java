@@ -43,8 +43,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
-// @AuxCounters(AuxCounters.Type.EVENTS)
-public class BatchSpanProcessorBenchmark {
+public class BatchSpanProcessorDroppedSpansBenchmark {
 
   private static class DelayingSpanExporter implements SpanExporter {
     @SuppressWarnings("FutureReturnValueIgnored")
@@ -61,8 +60,6 @@ public class BatchSpanProcessorBenchmark {
     @Override
     public void shutdown() {}
   }
-
-  //  private List<Span> spans;
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
@@ -88,7 +85,6 @@ public class BatchSpanProcessorBenchmark {
     @TearDown(Level.Iteration)
     public final void recordMetrics() {
       allMetrics = metricProducer.collectAllMetrics();
-      //      System.out.println(allMetrics);
     }
   }
 
@@ -110,6 +106,8 @@ public class BatchSpanProcessorBenchmark {
       if (total == 0) {
         return 0;
       } else {
+        // Due to peculiarities of JMH reporting we have to divide this by the number of the
+        // concurrent threads running the actual benchmark.
         return (double) dropped / total / 5;
       }
     }

@@ -132,6 +132,12 @@ public final class BatchSpanProcessor implements SpanProcessor {
     worker.forceFlush();
   }
 
+  // TODO remove this when this.forceFlush returns CompletableResultCode
+  @VisibleForTesting
+  CompletableResultCode flush() {
+    return worker.forceFlush();
+  }
+
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
   // the data.
   private static final class Worker implements Runnable {
