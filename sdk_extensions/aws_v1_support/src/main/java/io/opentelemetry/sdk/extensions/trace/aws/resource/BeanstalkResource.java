@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -69,13 +69,13 @@ class BeanstalkResource extends AwsResource {
         String value = parser.getText();
         switch (parser.getCurrentName()) {
           case DEVELOPMENT_ID:
-            attrBuilders.setAttribute(ResourceConstants.SERVICE_INSTANCE, value);
+            ResourceAttributes.SERVICE_INSTANCE.set(attrBuilders, value);
             break;
           case VERSION_LABEL:
-            attrBuilders.setAttribute(ResourceConstants.SERVICE_VERSION, value);
+            ResourceAttributes.SERVICE_VERSION.set(attrBuilders, value);
             break;
           case ENVIRONMENT_NAME:
-            attrBuilders.setAttribute(ResourceConstants.SERVICE_NAMESPACE, value);
+            ResourceAttributes.SERVICE_NAMESPACE.set(attrBuilders, value);
             break;
           default:
             parser.skipChildren();

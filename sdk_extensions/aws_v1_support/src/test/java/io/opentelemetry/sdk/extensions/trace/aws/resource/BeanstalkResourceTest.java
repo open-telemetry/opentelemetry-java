@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
@@ -42,9 +42,10 @@ class BeanstalkResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                ResourceConstants.SERVICE_INSTANCE, stringAttributeValue("4"),
-                ResourceConstants.SERVICE_VERSION, stringAttributeValue("2"),
-                ResourceConstants.SERVICE_NAMESPACE, stringAttributeValue("HttpSubscriber-env")));
+                ResourceAttributes.SERVICE_INSTANCE.key(), stringAttributeValue("4"),
+                ResourceAttributes.SERVICE_VERSION.key(), stringAttributeValue("2"),
+                ResourceAttributes.SERVICE_NAMESPACE.key(),
+                    stringAttributeValue("HttpSubscriber-env")));
   }
 
   @Test

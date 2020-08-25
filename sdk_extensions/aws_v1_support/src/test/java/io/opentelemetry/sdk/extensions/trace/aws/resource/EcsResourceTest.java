@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -48,9 +48,9 @@ class EcsResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                ResourceConstants.CONTAINER_NAME,
+                ResourceAttributes.CONTAINER_NAME.key(),
                 stringAttributeValue(InetAddress.getLocalHost().getHostName()),
-                ResourceConstants.CONTAINER_ID,
+                ResourceAttributes.CONTAINER_ID.key(),
                 stringAttributeValue("0123456789A")));
   }
 
@@ -74,7 +74,7 @@ class EcsResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                ResourceConstants.CONTAINER_NAME,
+                ResourceAttributes.CONTAINER_NAME.key(),
                 stringAttributeValue(InetAddress.getLocalHost().getHostName())));
   }
 }
