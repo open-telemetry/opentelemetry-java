@@ -123,6 +123,28 @@ class OtlpGrpcMetricExporterTest {
   }
 
   @Test
+  void testExport_DeadlineSetPerExport() throws InterruptedException {
+    int deadlineMs = 100;
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder()
+            .setChannel(inProcessChannel)
+            .setDeadlineMs(deadlineMs)
+            .build();
+
+    try {
+      TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
+          .isTrue();
+
+      TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
+          .isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
   void testExport_AfterShutdown() {
     MetricData span = generateFakeMetric();
     OtlpGrpcMetricExporter exporter =
