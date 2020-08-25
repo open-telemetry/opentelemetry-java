@@ -320,7 +320,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @param serviceName The service name. It defaults to "unknown".
      * @return this.
      * @see io.opentelemetry.sdk.resources.Resource
-     * @see ResourceAttributes
+     * @see io.opentelemetry.sdk.resources.ResourceAttributes
      * @since 0.4.0
      */
     public Builder setServiceName(String serviceName) {
