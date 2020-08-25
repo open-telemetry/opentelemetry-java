@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.common.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.util.concurrent.CountDownLatch;
@@ -231,7 +232,8 @@ class CompletableResultCodeTest {
     thread.start();
     thread.interrupt();
     assertThat(thread.isInterrupted()).isTrue();
-    assertThat(result.isDone()).isTrue();
+    // Different thread so wait a bit for result to be propagated.
+    await().untilAsserted(() -> assertThat(result.isDone()).isTrue());
     assertThat(result.isSuccess()).isFalse();
   }
 }
