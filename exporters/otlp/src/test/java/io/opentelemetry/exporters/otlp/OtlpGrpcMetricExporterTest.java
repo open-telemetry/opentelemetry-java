@@ -124,7 +124,7 @@ class OtlpGrpcMetricExporterTest {
 
   @Test
   void testExport_DeadlineSetPerExport() throws InterruptedException {
-    int deadlineMs = 100;
+    int deadlineMs = 500;
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.newBuilder()
             .setChannel(inProcessChannel)

@@ -129,7 +129,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_DeadlineSetPerExport() throws InterruptedException {
-    int deadlineMs = 100;
+    int deadlineMs = 500;
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder()
             .setChannel(inProcessChannel)
