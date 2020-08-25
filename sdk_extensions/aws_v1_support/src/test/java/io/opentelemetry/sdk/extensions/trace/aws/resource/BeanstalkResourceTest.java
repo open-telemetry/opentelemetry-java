@@ -23,8 +23,10 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
 import java.io.IOException;
+import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -38,7 +40,7 @@ class BeanstalkResourceTest {
             + "version_label\":\"2\",\"environment_name\":\"HttpSubscriber-env\"}";
     Files.write(content.getBytes(Charsets.UTF_8), file);
     BeanstalkResource populator = new BeanstalkResource(file.getPath());
-    Attributes attributes = populator.createAttributes();
+    Attributes attributes = populator.getAttributes();
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
@@ -50,7 +52,7 @@ class BeanstalkResourceTest {
   @Test
   void testConfigFileMissing() throws IOException {
     BeanstalkResource populator = new BeanstalkResource("a_file_never_existing");
-    Attributes attributes = populator.createAttributes();
+    Attributes attributes = populator.getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
   }
 
@@ -62,7 +64,15 @@ class BeanstalkResourceTest {
             + "environment_name\":\"HttpSubscriber-env\"}";
     Files.write(content.getBytes(Charsets.UTF_8), file);
     BeanstalkResource populator = new BeanstalkResource(file.getPath());
-    Attributes attributes = populator.createAttributes();
+    Attributes attributes = populator.getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
+  }
+
+  @Test
+  void inServiceLoader() {
+    // No practical way to test the attributes themselves so at least check the service loader picks
+    // it up.
+    assertThat(ServiceLoader.load(ResourceProvider.class))
+        .anyMatch(BeanstalkResource.class::isInstance);
   }
 }
