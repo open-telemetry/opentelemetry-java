@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.grpc.Context;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
-import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -59,9 +59,9 @@ class JaegerPropagatorTest {
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
   private static final TraceFlags SAMPLED_TRACE_OPTIONS =
       TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
-  private static final HttpTextFormat.Setter<Map<String, String>> setter = Map::put;
-  private static final HttpTextFormat.Getter<Map<String, String>> getter =
-      new HttpTextFormat.Getter<Map<String, String>>() {
+  private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
+  private static final TextMapPropagator.Getter<Map<String, String>> getter =
+      new TextMapPropagator.Getter<Map<String, String>>() {
         @Nullable
         @Override
         public String get(Map<String, String> carrier, String key) {

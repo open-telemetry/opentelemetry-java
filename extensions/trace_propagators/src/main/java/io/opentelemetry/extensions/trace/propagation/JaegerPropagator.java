@@ -17,7 +17,7 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -41,7 +41,7 @@ import javax.annotation.concurrent.Immutable;
  * Format</a>.
  */
 @Immutable
-public class JaegerPropagator implements HttpTextFormat {
+public class JaegerPropagator implements TextMapPropagator {
 
   private static final Logger logger = Logger.getLogger(JaegerPropagator.class.getName());
 

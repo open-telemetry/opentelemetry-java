@@ -17,10 +17,10 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
 interface B3PropagatorInjector {
-  <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter);
+  <C> void inject(Context context, C carrier, TextMapPropagator.Setter<C> setter);
 }

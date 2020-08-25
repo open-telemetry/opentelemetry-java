@@ -17,7 +17,7 @@
 package io.opentelemetry.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
+import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

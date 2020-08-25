@@ -17,7 +17,7 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -35,7 +35,7 @@ import javax.annotation.concurrent.Immutable;
  * TextMapPropagator</a>.
  */
 @Immutable
-public class OtTracerPropagator implements HttpTextFormat {
+public class OtTracerPropagator implements TextMapPropagator {
 
   static final String TRACE_ID_HEADER = "ot-tracer-traceid";
   static final String SPAN_ID_HEADER = "ot-tracer-spanid";

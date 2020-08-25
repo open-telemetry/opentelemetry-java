@@ -34,12 +34,12 @@ import javax.annotation.concurrent.ThreadSafe;
  * void onSendRequest() {
  *   try (Scope scope = tracer.withSpan(span)) {
  *     ContextPropagators propagators = OpenTelemetry.getPropagators();
- *     HttpTextFormat textFormat = propagators.getHttpTextFormat();
+ *     TextMapPropagator textMapPropagator = propagators.getTextMapPropagator();
  *
  *     // Inject the span's SpanContext and other available concerns (such as correlations)
  *     // contained in the specified Context.
  *     Map<String, String> map = new HashMap<>();
- *     httpTextFormat.inject(Context.current(), map, new Setter<String, String>() {
+ *     textMapPropagator.inject(Context.current(), map, new Setter<String, String>() {
  *       public void put(Map<String, String> map, String key, String value) {
  *         map.put(key, value);
  *       }
@@ -55,11 +55,11 @@ import javax.annotation.concurrent.ThreadSafe;
  * private static final Tracer tracer = OpenTelemetry.getTracer();
  * void onRequestReceived() {
  *   ContextPropagators propagators = OpenTelemetry.getPropagators();
- *   HttpTextFormat textFormat = propagators.getHttpTextFormat();
+ *   TextMapPropagator textMapPropagator = propagators.getTextMapPropagator();
  *
  *   // Extract and store the propagated span's SpanContext and other available concerns
  *   // in the specified Context.
- *   Context context = textFormat.extract(Context.current(), request, new Getter<String, String>() {
+ *   Context context = textMapPropagator.extract(Context.current(), request, new Getter<String, String>() {
  *     public String get(Object request, String key) {
  *       // Return the value associated to the key, if available.
  *     }
@@ -81,14 +81,14 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface ContextPropagators {
 
   /**
-   * Returns a {@link HttpTextFormat} propagator.
+   * Returns a {@link TextMapPropagator} propagator.
    *
    * <p>The returned value will be a composite instance containing all the registered {@link
-   * HttpTextFormat} propagators. If none is registered, the returned value will be a no-op
+   * TextMapPropagator} propagators. If none is registered, the returned value will be a no-op
    * instance.
    *
-   * @return the {@link HttpTextFormat} propagator to inject and extract data.
+   * @return the {@link TextMapPropagator} propagator to inject and extract data.
    * @since 0.3.0
    */
-  HttpTextFormat getHttpTextFormat();
+  TextMapPropagator getTextMapPropagator();
 }

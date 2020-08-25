@@ -17,7 +17,7 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,18 +26,19 @@ import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A propagator designed to inject and extract multiple trace {@code HttpTextFormat} propagators,
+ * A propagator designed to inject and extract multiple trace {@code TextMapPropagator} propagators,
  * intendended for backwards compatibility with existing services using different formats. It works
  * in a stack-fashion, starting with the last registered propagator, to the first one.
  *
- * <p>Upon injection, this propagator invokes {@code HttpTextFormat#inject()} for every registered
- * trace propagator. This will result in the carrier containing all the registered formats.
+ * <p>Upon injection, this propagator invokes {@code TextMapPropagator#inject()} for every
+ * registered trace propagator. This will result in the carrier containing all the registered
+ * formats.
  *
- * <p>Upon extraction, this propagator invokes {@code HttpTextFormat#extract()} for every registered
- * trace propagator, returning immediately when a successful extraction happened.
+ * <p>Upon extraction, this propagator invokes {@code TextMapPropagator#extract()} for every
+ * registered trace propagator, returning immediately when a successful extraction happened.
  *
  * <pre>{@code
- * HttpTextFormat traceFormats = TraceMultiPropagator.builder()
+ * TextMapPropagator traceFormats = TraceMultiPropagator.builder()
  *   .addPropagator(new MyCustomTracePropagator())
  *   .addPropagator(new JaegerPropagator())
  *   .addPropagator(new HttpTraceContext())
@@ -45,28 +46,28 @@ import javax.annotation.concurrent.Immutable;
  * // Register it in the global propagators:
  * OpenTelemetry.setPropagators(
  *     DefaultContextPropagators.builder()
- *       .addHttpTextFormat(traceFormats)
+ *       .addTextMapPropagator(traceFormats)
  *       .build());
  * ...
  * // Extraction will be performed in reverse  order, i.e. starting with the last
  * // registered propagator (HttpTraceContext in this example).
- * Context context = OpenTelemetry.getPropagators().getHttpTextFormat()
+ * Context context = OpenTelemetry.getPropagators().getTextMapPropagator()
  *   .extract(context, carrier, carrierGetter);
  * }</pre>
  *
  * @since 0.6.0
  */
 @Immutable
-public class TraceMultiPropagator implements HttpTextFormat {
-  private final HttpTextFormat[] propagators;
+public class TraceMultiPropagator implements TextMapPropagator {
+  private final TextMapPropagator[] propagators;
   private final List<String> propagatorsFields;
 
-  private TraceMultiPropagator(List<HttpTextFormat> propagatorList) {
-    this.propagators = new HttpTextFormat[propagatorList.size()];
+  private TraceMultiPropagator(List<TextMapPropagator> propagatorList) {
+    this.propagators = new TextMapPropagator[propagatorList.size()];
     propagatorList.toArray(this.propagators);
 
     List<String> fields = new ArrayList<>();
-    for (HttpTextFormat propagator : propagators) {
+    for (TextMapPropagator propagator : propagators) {
       fields.addAll(propagator.fields());
     }
     this.propagatorsFields = Collections.unmodifiableList(fields);
@@ -147,14 +148,14 @@ public class TraceMultiPropagator implements HttpTextFormat {
    * @since 0.6.0
    */
   public static class Builder {
-    private final List<HttpTextFormat> propagators;
+    private final List<TextMapPropagator> propagators;
 
     private Builder() {
       propagators = new ArrayList<>();
     }
 
     /**
-     * Adds a {@link HttpTextFormat} trace propagator.
+     * Adds a {@link TextMapPropagator} trace propagator.
      *
      * <p>Registered propagators will be invoked in reverse order, starting with the last propagator
      * to the first one.
@@ -164,7 +165,7 @@ public class TraceMultiPropagator implements HttpTextFormat {
      * @throws NullPointerException if {@code propagator} is {@code null}.
      * @since 0.6.0
      */
-    public Builder addPropagator(HttpTextFormat propagator) {
+    public Builder addPropagator(TextMapPropagator propagator) {
       Objects.requireNonNull(propagator, "propagator");
 
       propagators.add(propagator);
