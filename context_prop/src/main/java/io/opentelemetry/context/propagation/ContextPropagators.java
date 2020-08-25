@@ -59,11 +59,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   // Extract and store the propagated span's SpanContext and other available concerns
  *   // in the specified Context.
- *   Context context = textMapPropagator.extract(Context.current(), request, new Getter<String, String>() {
- *     public String get(Object request, String key) {
- *       // Return the value associated to the key, if available.
+ *   Context context = textMapPropagator.extract(Context.current(), request,
+ *     new Getter<String, String>() {
+ *       public String get(Object request, String key) {
+ *         // Return the value associated to the key, if available.
+ *       }
  *     }
- *   });
+ *   );
  *   Span span = tracer.spanBuilder("MyRequest")
  *       .setParent(context)
  *       .setSpanKind(Span.Kind.SERVER).startSpan();
