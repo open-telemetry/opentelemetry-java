@@ -311,8 +311,9 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * consistent. Many use a name from service discovery.
      *
      * <p>Note: this value, will be superseded by the value of {@link
-     * ResourceAttributes#SERVICE_NAME} if it has been set in the {@link
-     * io.opentelemetry.sdk.resources.Resource} associated with the Tracer that created the spans.
+     * io.opentelemetry.sdk.resources.ResourceAttributes#SERVICE_NAME} if it has been set in the
+     * {@link io.opentelemetry.sdk.resources.Resource} associated with the Tracer that created the
+     * spans.
      *
      * <p>This property is required to be set.
      *
