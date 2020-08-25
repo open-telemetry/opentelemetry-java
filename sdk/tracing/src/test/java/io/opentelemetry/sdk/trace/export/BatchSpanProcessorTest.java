@@ -18,8 +18,6 @@ package io.opentelemetry.sdk.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 
 import io.opentelemetry.sdk.common.export.CompletableResultCode;
@@ -306,21 +304,18 @@ class BatchSpanProcessorTest {
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockServiceHandler)
         .export(ArgumentMatchers.anyList());
-    BatchSpanProcessor processor = BatchSpanProcessor.newBuilder(mockServiceHandler).build();
-    tracerSdkFactory.addSpanProcessor(processor);
-    createSampledEndedSpan(SPAN_NAME_1);
-    processor.flush().join(1, TimeUnit.SECONDS);
-    List<SpanData> exported = waitingSpanExporter.getExported();
-    assertThat(exported).isEmpty();
-
-    doAnswer(invocation -> waitingSpanExporter.export(invocation.getArgument(0)))
-        .when(mockServiceHandler)
-        .export(anyList());
-
+    tracerSdkFactory.addSpanProcessor(
+        BatchSpanProcessor.newBuilder(
+                MultiSpanExporter.create(Arrays.asList(mockServiceHandler, waitingSpanExporter)))
+            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .build());
+    ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).containsExactly(span1.toSpanData());
+    waitingSpanExporter.reset();
     // Continue to export after the exception was received.
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
-    processor.flush().join(1, TimeUnit.SECONDS);
-    exported = waitingSpanExporter.getExported();
+    exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span2.toSpanData());
   }
 
