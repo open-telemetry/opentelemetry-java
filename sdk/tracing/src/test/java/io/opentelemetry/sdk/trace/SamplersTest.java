@@ -16,11 +16,12 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.doubleAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.longAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
@@ -86,8 +87,8 @@ class SamplersTest {
   void samplingDecisionAttrs() {
     final Attributes attrs =
         Attributes.Factory.of(
-            "foo", AttributeValue.longAttributeValue(42),
-            "bar", AttributeValue.stringAttributeValue("baz"));
+            "foo", longAttributeValue(42),
+            "bar", stringAttributeValue("baz"));
     final SamplingResult sampledSamplingResult =
         Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLED, attrs);
     assertThat(sampledSamplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLED);

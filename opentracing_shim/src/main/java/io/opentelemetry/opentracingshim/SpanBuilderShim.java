@@ -119,7 +119,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       error = Boolean.parseBoolean(value);
     } else {
       this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.stringAttributeValue(value));
+      this.spanBuilderAttributeValues.add(AttributeValue.Factory.stringAttributeValue(value));
     }
 
     return this;
@@ -131,7 +131,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       error = value;
     } else {
       this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.booleanAttributeValue(value));
+      this.spanBuilderAttributeValues.add(AttributeValue.Factory.booleanAttributeValue(value));
     }
     return this;
   }
@@ -144,10 +144,12 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
         || value instanceof Short
         || value instanceof Byte) {
       this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.longAttributeValue(value.longValue()));
+      this.spanBuilderAttributeValues.add(
+          AttributeValue.Factory.longAttributeValue(value.longValue()));
     } else if (value instanceof Float || value instanceof Double) {
       this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.doubleAttributeValue(value.doubleValue()));
+      this.spanBuilderAttributeValues.add(
+          AttributeValue.Factory.doubleAttributeValue(value.doubleValue()));
     } else {
       throw new IllegalArgumentException("Number type not supported");
     }

@@ -61,10 +61,11 @@ public final class MessageEvent implements Event {
   }
 
   private static final AttributeValue sentAttributeValue =
-      AttributeValue.stringAttributeValue(Type.SENT.name());
+      AttributeValue.Factory.stringAttributeValue(Type.SENT.name());
   private static final AttributeValue receivedAttributeValue =
-      AttributeValue.stringAttributeValue(Type.RECEIVED.name());
-  private static final AttributeValue zeroAttributeValue = AttributeValue.longAttributeValue(0);
+      AttributeValue.Factory.stringAttributeValue(Type.RECEIVED.name());
+  private static final AttributeValue zeroAttributeValue =
+      AttributeValue.Factory.longAttributeValue(0);
 
   private final Attributes attributes;
 
@@ -87,17 +88,18 @@ public final class MessageEvent implements Event {
     attributeBuilder.setAttribute(
         TYPE, type == Type.SENT ? sentAttributeValue : receivedAttributeValue);
     attributeBuilder.setAttribute(
-        ID, messageId == 0 ? zeroAttributeValue : AttributeValue.longAttributeValue(messageId));
+        ID,
+        messageId == 0 ? zeroAttributeValue : AttributeValue.Factory.longAttributeValue(messageId));
     attributeBuilder.setAttribute(
         UNCOMPRESSED_SIZE,
         uncompressedSize == 0
             ? zeroAttributeValue
-            : AttributeValue.longAttributeValue(uncompressedSize));
+            : AttributeValue.Factory.longAttributeValue(uncompressedSize));
     attributeBuilder.setAttribute(
         COMPRESSED_SIZE,
         compressedSize == 0
             ? zeroAttributeValue
-            : AttributeValue.longAttributeValue(compressedSize));
+            : AttributeValue.Factory.longAttributeValue(compressedSize));
     return new MessageEvent(attributeBuilder.build());
   }
 

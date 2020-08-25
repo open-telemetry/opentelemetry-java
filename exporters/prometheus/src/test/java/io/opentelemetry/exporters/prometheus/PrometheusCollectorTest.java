@@ -73,7 +73,8 @@ class PrometheusCollectorTest {
                 "1",
                 Descriptor.Type.MONOTONIC_LONG,
                 Labels.of("kc", "vc")),
-            Resource.create(Attributes.Factory.of("kr", AttributeValue.stringAttributeValue("vr"))),
+            Resource.create(
+                Attributes.Factory.of("kr", AttributeValue.Factory.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("grpc", "version"),
             Collections.singletonList(
                 MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
@@ -84,7 +85,8 @@ class PrometheusCollectorTest {
                 "1",
                 Descriptor.Type.MONOTONIC_DOUBLE,
                 Labels.of("kc", "vc")),
-            Resource.create(Attributes.Factory.of("kr", AttributeValue.stringAttributeValue("vr"))),
+            Resource.create(
+                Attributes.Factory.of("kr", AttributeValue.Factory.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("http", "version"),
             Collections.singletonList(
                 MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5))));

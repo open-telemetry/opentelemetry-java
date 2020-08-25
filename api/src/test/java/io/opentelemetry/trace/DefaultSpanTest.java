@@ -36,24 +36,30 @@ class DefaultSpanTest {
   void doNotCrash() {
     Span span = DefaultSpan.getInvalid();
     span.setAttribute(
-        "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
-    span.setAttribute("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
-    span.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
+        "MyStringAttributeKey",
+        AttributeValue.Factory.stringAttributeValue("MyStringAttributeValue"));
+    span.setAttribute("MyBooleanAttributeKey", AttributeValue.Factory.booleanAttributeValue(true));
+    span.setAttribute("MyLongAttributeKey", AttributeValue.Factory.longAttributeValue(123));
     span.setAttribute("NullString", (String) null);
     span.setAttribute("EmptyString", "");
-    span.setAttribute("NullArrayString", AttributeValue.arrayAttributeValue((String[]) null));
-    span.setAttribute("NullArrayBoolean", AttributeValue.arrayAttributeValue((Boolean[]) null));
-    span.setAttribute("NullArrayLong", AttributeValue.arrayAttributeValue((Long[]) null));
-    span.setAttribute("NullArrayDouble", AttributeValue.arrayAttributeValue((Double[]) null));
+    span.setAttribute(
+        "NullArrayString", AttributeValue.Factory.arrayAttributeValue((String[]) null));
+    span.setAttribute(
+        "NullArrayBoolean", AttributeValue.Factory.arrayAttributeValue((Boolean[]) null));
+    span.setAttribute("NullArrayLong", AttributeValue.Factory.arrayAttributeValue((Long[]) null));
+    span.setAttribute(
+        "NullArrayDouble", AttributeValue.Factory.arrayAttributeValue((Double[]) null));
     span.setAttribute(null, (String) null);
     span.addEvent("event");
     span.addEvent("event", 0);
     span.addEvent(
         "event",
-        Attributes.Factory.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
+        Attributes.Factory.of(
+            "MyBooleanAttributeKey", AttributeValue.Factory.booleanAttributeValue(true)));
     span.addEvent(
         "event",
-        Attributes.Factory.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)),
+        Attributes.Factory.of(
+            "MyBooleanAttributeKey", AttributeValue.Factory.booleanAttributeValue(true)),
         0);
     span.addEvent(new TestEvent());
     span.addEvent(new TestEvent(), 0);

@@ -34,13 +34,13 @@ class ResourceAdapterTest {
                     Resource.create(
                         Attributes.Factory.of(
                             "key_bool",
-                            AttributeValue.booleanAttributeValue(true),
+                            AttributeValue.Factory.booleanAttributeValue(true),
                             "key_string",
-                            AttributeValue.stringAttributeValue("string"),
+                            AttributeValue.Factory.stringAttributeValue("string"),
                             "key_int",
-                            AttributeValue.longAttributeValue(100),
+                            AttributeValue.Factory.longAttributeValue(100),
                             "key_double",
-                            AttributeValue.doubleAttributeValue(100.3))))
+                            AttributeValue.Factory.doubleAttributeValue(100.3))))
                 .getAttributesList())
         .containsExactlyInAnyOrder(
             KeyValue.newBuilder()

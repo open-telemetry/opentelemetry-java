@@ -204,14 +204,16 @@ final class SpanShim extends BaseShimObject implements Span {
           || value instanceof Integer
           || value instanceof Long) {
         attributesBuilder.setAttribute(
-            key, AttributeValue.longAttributeValue(((Number) value).longValue()));
+            key, AttributeValue.Factory.longAttributeValue(((Number) value).longValue()));
       } else if (value instanceof Float || value instanceof Double) {
         attributesBuilder.setAttribute(
-            key, AttributeValue.doubleAttributeValue(((Number) value).doubleValue()));
+            key, AttributeValue.Factory.doubleAttributeValue(((Number) value).doubleValue()));
       } else if (value instanceof Boolean) {
-        attributesBuilder.setAttribute(key, AttributeValue.booleanAttributeValue((Boolean) value));
+        attributesBuilder.setAttribute(
+            key, AttributeValue.Factory.booleanAttributeValue((Boolean) value));
       } else {
-        attributesBuilder.setAttribute(key, AttributeValue.stringAttributeValue(value.toString()));
+        attributesBuilder.setAttribute(
+            key, AttributeValue.Factory.stringAttributeValue(value.toString()));
       }
     }
 

@@ -65,7 +65,8 @@ class SpanAdapterTest {
                 .setStartEpochNanos(12345)
                 .setEndEpochNanos(12349)
                 .setAttributes(
-                    Attributes.Factory.of("key", AttributeValue.booleanAttributeValue(true)))
+                    Attributes.Factory.of(
+                        "key", AttributeValue.Factory.booleanAttributeValue(true)))
                 .setTotalAttributeCount(2)
                 .setEvents(
                     Collections.singletonList(
@@ -246,7 +247,7 @@ class SpanAdapterTest {
                     12345,
                     "test_with_attributes",
                     Attributes.Factory.of(
-                        "key_string", AttributeValue.stringAttributeValue("string")),
+                        "key_string", AttributeValue.Factory.stringAttributeValue("string")),
                     5)))
         .isEqualTo(
             Span.Event.newBuilder()
@@ -278,7 +279,7 @@ class SpanAdapterTest {
                 Link.create(
                     SPAN_CONTEXT,
                     Attributes.Factory.of(
-                        "key_string", AttributeValue.stringAttributeValue("string")),
+                        "key_string", AttributeValue.Factory.stringAttributeValue("string")),
                     5)))
         .isEqualTo(
             Span.Link.newBuilder()

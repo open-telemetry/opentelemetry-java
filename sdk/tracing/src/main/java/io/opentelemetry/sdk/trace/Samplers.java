@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.doubleAttributeValue;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;

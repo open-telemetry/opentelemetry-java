@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.booleanAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.stringAttributeValue;
 
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;

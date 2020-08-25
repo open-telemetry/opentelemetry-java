@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.zipkin;
 
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -140,13 +140,13 @@ class ZipkinSpanExporterTest {
     Attributes attributes =
         Attributes.Factory.newBuilder()
             .setAttribute("string", stringAttributeValue("string value"))
-            .setAttribute("boolean", AttributeValue.booleanAttributeValue(false))
-            .setAttribute("long", AttributeValue.longAttributeValue(9999L))
-            .setAttribute("double", AttributeValue.doubleAttributeValue(222.333))
-            .setAttribute("booleanArray", AttributeValue.arrayAttributeValue(true, false))
-            .setAttribute("stringArray", AttributeValue.arrayAttributeValue("Hello"))
-            .setAttribute("doubleArray", AttributeValue.arrayAttributeValue(32.33d, -98.3d))
-            .setAttribute("longArray", AttributeValue.arrayAttributeValue(33L, 999L))
+            .setAttribute("boolean", AttributeValue.Factory.booleanAttributeValue(false))
+            .setAttribute("long", AttributeValue.Factory.longAttributeValue(9999L))
+            .setAttribute("double", AttributeValue.Factory.doubleAttributeValue(222.333))
+            .setAttribute("booleanArray", AttributeValue.Factory.arrayAttributeValue(true, false))
+            .setAttribute("stringArray", AttributeValue.Factory.arrayAttributeValue("Hello"))
+            .setAttribute("doubleArray", AttributeValue.Factory.arrayAttributeValue(32.33d, -98.3d))
+            .setAttribute("longArray", AttributeValue.Factory.arrayAttributeValue(33L, 999L))
             .build();
     SpanData data = buildStandardSpan().setAttributes(attributes).setKind(Kind.CLIENT).build();
 
@@ -188,7 +188,7 @@ class ZipkinSpanExporterTest {
     Attributes attributeMap =
         Attributes.Factory.of(
             SemanticAttributes.HTTP_STATUS_CODE.key(),
-            AttributeValue.longAttributeValue(404),
+            AttributeValue.Factory.longAttributeValue(404),
             SemanticAttributes.HTTP_STATUS_TEXT.key(),
             stringAttributeValue("NOT FOUND"),
             "error",

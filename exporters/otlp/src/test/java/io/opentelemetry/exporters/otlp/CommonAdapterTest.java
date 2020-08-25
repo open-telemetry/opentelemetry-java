@@ -30,7 +30,9 @@ import org.junit.jupiter.api.Test;
 class CommonAdapterTest {
   @Test
   void toProtoAttribute_Bool() {
-    assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.booleanAttributeValue(true)))
+    assertThat(
+            CommonAdapter.toProtoAttribute(
+                "key", AttributeValue.Factory.booleanAttributeValue(true)))
         .isEqualTo(
             KeyValue.newBuilder()
                 .setKey("key")
@@ -41,7 +43,8 @@ class CommonAdapterTest {
   @Test
   void toProtoAttribute_BoolArray() {
     assertThat(
-            CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(true, false)))
+            CommonAdapter.toProtoAttribute(
+                "key", AttributeValue.Factory.arrayAttributeValue(true, false)))
         .isEqualTo(
             KeyValue.newBuilder()
                 .setKey("key")
@@ -58,7 +61,9 @@ class CommonAdapterTest {
 
   @Test
   void toProtoAttribute_String() {
-    assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.stringAttributeValue("string")))
+    assertThat(
+            CommonAdapter.toProtoAttribute(
+                "key", AttributeValue.Factory.stringAttributeValue("string")))
         .isEqualTo(
             KeyValue.newBuilder()
                 .setKey("key")
@@ -70,7 +75,7 @@ class CommonAdapterTest {
   void toProtoAttribute_StringArray() {
     assertThat(
             CommonAdapter.toProtoAttribute(
-                "key", AttributeValue.arrayAttributeValue("string1", "string2")))
+                "key", AttributeValue.Factory.arrayAttributeValue("string1", "string2")))
         .isEqualTo(
             KeyValue.newBuilder()
                 .setKey("key")
@@ -87,7 +92,8 @@ class CommonAdapterTest {
 
   @Test
   void toProtoAttribute_Int() {
-    assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.longAttributeValue(100)))
+    assertThat(
+            CommonAdapter.toProtoAttribute("key", AttributeValue.Factory.longAttributeValue(100)))
         .isEqualTo(
             KeyValue.newBuilder()
                 .setKey("key")
@@ -98,7 +104,8 @@ class CommonAdapterTest {
   @Test
   void toProtoAttribute_IntArray() {
     assertThat(
-            CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(100L, 200L)))
+            CommonAdapter.toProtoAttribute(
+                "key", AttributeValue.Factory.arrayAttributeValue(100L, 200L)))
         .isEqualTo(
             KeyValue.newBuilder()
                 .setKey("key")
@@ -115,7 +122,9 @@ class CommonAdapterTest {
 
   @Test
   void toProtoAttribute_Double() {
-    assertThat(CommonAdapter.toProtoAttribute("key", AttributeValue.doubleAttributeValue(100.3)))
+    assertThat(
+            CommonAdapter.toProtoAttribute(
+                "key", AttributeValue.Factory.doubleAttributeValue(100.3)))
         .isEqualTo(
             KeyValue.newBuilder()
                 .setKey("key")
@@ -126,7 +135,8 @@ class CommonAdapterTest {
   @Test
   void toProtoAttribute_DoubleArray() {
     assertThat(
-            CommonAdapter.toProtoAttribute("key", AttributeValue.arrayAttributeValue(100.3, 200.5)))
+            CommonAdapter.toProtoAttribute(
+                "key", AttributeValue.Factory.arrayAttributeValue(100.3, 200.5)))
         .isEqualTo(
             KeyValue.newBuilder()
                 .setKey("key")

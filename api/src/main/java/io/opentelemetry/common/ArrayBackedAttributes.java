@@ -14,16 +14,28 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.resources;
+package io.opentelemetry.common;
 
-import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.Attributes;
+import com.google.auto.value.AutoValue;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.concurrent.Immutable;
 
-public class TestResourceProvider extends ResourceProvider {
+@AutoValue
+@Immutable
+abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeValue>
+    implements Attributes {
+  ArrayBackedAttributes() {}
+
+  static Attributes create(List<Object> data) {
+    return new AutoValue_ArrayBackedAttributes(data);
+  }
 
   @Override
-  protected Attributes getAttributes() {
-    return Attributes.Factory.of(
-        "providerAttribute", AttributeValue.Factory.longAttributeValue(42));
+  abstract List<Object> data();
+
+  @Override
+  public Attributes.Builder toBuilder() {
+    return new Attributes.Builder(new ArrayList<>(data()));
   }
 }

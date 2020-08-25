@@ -54,8 +54,8 @@ class RateLimitingSampler implements Sampler {
     this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance, MillisClock.getInstance());
     Attributes attributes =
         Attributes.Factory.of(
-            SAMPLER_TYPE, AttributeValue.stringAttributeValue(TYPE),
-            SAMPLER_PARAM, AttributeValue.doubleAttributeValue(maxTracesPerSecond));
+            SAMPLER_TYPE, AttributeValue.Factory.stringAttributeValue(TYPE),
+            SAMPLER_PARAM, AttributeValue.Factory.doubleAttributeValue(maxTracesPerSecond));
     this.onSamplingResult = Samplers.samplingResult(Decision.RECORD_AND_SAMPLED, attributes);
     this.offSamplingResult = Samplers.samplingResult(Decision.NOT_RECORD, attributes);
   }

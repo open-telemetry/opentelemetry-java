@@ -97,10 +97,10 @@ class RateLimitingSamplerTest {
         .isEqualTo(Decision.NOT_RECORD);
     assertEquals(2, samplingResult.getAttributes().size());
     assertEquals(
-        AttributeValue.doubleAttributeValue(1),
+        AttributeValue.Factory.doubleAttributeValue(1),
         samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_PARAM));
     assertEquals(
-        AttributeValue.stringAttributeValue(RateLimitingSampler.TYPE),
+        AttributeValue.Factory.stringAttributeValue(RateLimitingSampler.TYPE),
         samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_TYPE));
   }
 

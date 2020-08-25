@@ -14,16 +14,26 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.resources;
+package io.opentelemetry.common;
 
-import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.Attributes;
+import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 
-public class TestResourceProvider extends ResourceProvider {
+@Immutable
+@AutoValue
+abstract class AttributeValueBoolean extends BaseAttributeValue {
+
+  AttributeValueBoolean() {}
+
+  static AttributeValue create(boolean booleanValue) {
+    return new AutoValue_AttributeValueBoolean(booleanValue);
+  }
 
   @Override
-  protected Attributes getAttributes() {
-    return Attributes.Factory.of(
-        "providerAttribute", AttributeValue.Factory.longAttributeValue(42));
+  public final Type getType() {
+    return Type.BOOLEAN;
   }
+
+  @Override
+  public abstract boolean getBooleanValue();
 }

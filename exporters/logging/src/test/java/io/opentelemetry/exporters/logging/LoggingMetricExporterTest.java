@@ -60,7 +60,8 @@ class LoggingMetricExporterTest {
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
     Resource resource =
         Resource.create(
-            Attributes.Factory.of("host", AttributeValue.stringAttributeValue("localhost")));
+            Attributes.Factory.of(
+                "host", AttributeValue.Factory.stringAttributeValue("localhost")));
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
     exporter.export(

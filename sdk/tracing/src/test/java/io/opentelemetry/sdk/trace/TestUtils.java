@@ -44,7 +44,7 @@ public final class TestUtils {
   static Attributes generateRandomAttributes() {
     return Attributes.Factory.of(
         UUID.randomUUID().toString(),
-        AttributeValue.stringAttributeValue(UUID.randomUUID().toString()));
+        AttributeValue.Factory.stringAttributeValue(UUID.randomUUID().toString()));
   }
 
   /**

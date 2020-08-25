@@ -16,7 +16,7 @@
 
 package io.opentelemetry.trace.attributes;
 
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.doubleAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Attributes;

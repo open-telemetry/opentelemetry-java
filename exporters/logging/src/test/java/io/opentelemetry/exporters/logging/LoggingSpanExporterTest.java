@@ -73,7 +73,7 @@ class LoggingSpanExporterTest {
                         epochNanos + 500,
                         "somethingHappenedHere",
                         Attributes.Factory.of(
-                            "important", AttributeValue.booleanAttributeValue(true)))))
+                            "important", AttributeValue.Factory.booleanAttributeValue(true)))))
             .setTotalRecordedEvents(1)
             .setTotalRecordedLinks(0)
             .build();

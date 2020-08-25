@@ -16,14 +16,13 @@
 
 package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
-import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
-import static io.opentelemetry.common.AttributeValue.longAttributeValue;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.arrayAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.booleanAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.doubleAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.longAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.stringAttributeValue;
 import static io.opentelemetry.common.ImmutableKeyValuePairs.sortAndFilter;
 
-import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,21 +36,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface Attributes extends ReadableAttributes {
   Attributes EMPTY = Factory.newBuilder().build();
-
-  @AutoValue
-  @Immutable
-  abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeValue>
-      implements Attributes {
-    ArrayBackedAttributes() {}
-
-    @Override
-    abstract List<Object> data();
-
-    @Override
-    public Builder toBuilder() {
-      return new Builder(new ArrayList<>(data()));
-    }
-  }
 
   class Factory {
     private Factory() {}
@@ -129,7 +113,7 @@ public interface Attributes extends ReadableAttributes {
     }
 
     private static Attributes sortAndFilterToAttributes(Object... data) {
-      return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
+      return ArrayBackedAttributes.create(sortAndFilter(data));
     }
 
     /** Returns a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
@@ -165,7 +149,7 @@ public interface Attributes extends ReadableAttributes {
       data = new ArrayList<>();
     }
 
-    private Builder(List<Object> data) {
+    Builder(List<Object> data) {
       this.data = data;
     }
 

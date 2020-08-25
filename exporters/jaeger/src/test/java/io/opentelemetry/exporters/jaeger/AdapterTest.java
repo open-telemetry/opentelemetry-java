@@ -147,7 +147,7 @@ class AdapterTest {
   @Test
   void testKeyValues() {
     // prepare
-    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
+    AttributeValue valueB = AttributeValue.Factory.booleanAttributeValue(true);
 
     // test
     Collection<Model.KeyValue> keyValues =
@@ -161,14 +161,14 @@ class AdapterTest {
   @Test
   void testKeyValue() {
     // prepare
-    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-    AttributeValue valueD = AttributeValue.doubleAttributeValue(1.);
-    AttributeValue valueI = AttributeValue.longAttributeValue(2);
-    AttributeValue valueS = AttributeValue.stringAttributeValue("foobar");
-    AttributeValue valueArrayB = AttributeValue.arrayAttributeValue(true, false);
-    AttributeValue valueArrayD = AttributeValue.arrayAttributeValue(1.2345, 6.789);
-    AttributeValue valueArrayI = AttributeValue.arrayAttributeValue(12345L, 67890L);
-    AttributeValue valueArrayS = AttributeValue.arrayAttributeValue("foobar", "barfoo");
+    AttributeValue valueB = AttributeValue.Factory.booleanAttributeValue(true);
+    AttributeValue valueD = AttributeValue.Factory.doubleAttributeValue(1.);
+    AttributeValue valueI = AttributeValue.Factory.longAttributeValue(2);
+    AttributeValue valueS = AttributeValue.Factory.stringAttributeValue("foobar");
+    AttributeValue valueArrayB = AttributeValue.Factory.arrayAttributeValue(true, false);
+    AttributeValue valueArrayD = AttributeValue.Factory.arrayAttributeValue(1.2345, 6.789);
+    AttributeValue valueArrayI = AttributeValue.Factory.arrayAttributeValue(12345L, 67890L);
+    AttributeValue valueArrayS = AttributeValue.Factory.arrayAttributeValue("foobar", "barfoo");
 
     // test
     Model.KeyValue kvB = Adapter.toKeyValue("valueB", valueB);
@@ -259,9 +259,9 @@ class AdapterTest {
     Attributes attributes =
         Attributes.Factory.of(
             "error.type",
-            AttributeValue.stringAttributeValue(this.getClass().getName()),
+            AttributeValue.Factory.stringAttributeValue(this.getClass().getName()),
             "error.message",
-            AttributeValue.stringAttributeValue("server error"));
+            AttributeValue.Factory.stringAttributeValue("server error"));
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
@@ -290,13 +290,13 @@ class AdapterTest {
 
   private static EventImpl getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-    AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
+    AttributeValue valueS = AttributeValue.Factory.stringAttributeValue("bar");
     Attributes attributes = Attributes.Factory.of("foo", valueS);
     return EventImpl.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
-    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
+    AttributeValue valueB = AttributeValue.Factory.booleanAttributeValue(true);
     Attributes attributes = Attributes.Factory.of("valueB", valueB);
 
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);

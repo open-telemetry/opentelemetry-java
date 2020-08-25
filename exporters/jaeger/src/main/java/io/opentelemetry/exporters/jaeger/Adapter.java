@@ -130,7 +130,7 @@ final class Adapter {
     }
 
     if (!span.getStatus().isOk()) {
-      target.addTags(toKeyValue(KEY_ERROR, AttributeValue.booleanAttributeValue(true)));
+      target.addTags(toKeyValue(KEY_ERROR, AttributeValue.Factory.booleanAttributeValue(true)));
     }
 
     return target.build();

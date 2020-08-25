@@ -16,11 +16,11 @@
 
 package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
-import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
-import static io.opentelemetry.common.AttributeValue.longAttributeValue;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.arrayAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.booleanAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.doubleAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.longAttributeValue;
+import static io.opentelemetry.common.AttributeValue.Factory.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
@@ -39,7 +39,7 @@ class AttributesTest {
     Attributes attributes =
         Attributes.Factory.of(
             "key1", stringAttributeValue("value1"),
-            "key2", AttributeValue.longAttributeValue(333));
+            "key2", AttributeValue.Factory.longAttributeValue(333));
 
     attributes.forEach(entriesSeen::put);
 
@@ -241,7 +241,7 @@ class AttributesTest {
   @Test
   void deleteByNull() {
     Attributes.Builder attributes = Attributes.Factory.newBuilder();
-    attributes.setAttribute("attrValue", AttributeValue.stringAttributeValue("attrValue"));
+    attributes.setAttribute("attrValue", AttributeValue.Factory.stringAttributeValue("attrValue"));
     attributes.setAttribute("string", "string");
     attributes.setAttribute("long", 10);
     attributes.setAttribute("double", 1.0);

@@ -285,22 +285,22 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public void setAttribute(String key, String value) {
-    setAttribute(key, AttributeValue.stringAttributeValue(value));
+    setAttribute(key, AttributeValue.Factory.stringAttributeValue(value));
   }
 
   @Override
   public void setAttribute(String key, long value) {
-    setAttribute(key, AttributeValue.longAttributeValue(value));
+    setAttribute(key, AttributeValue.Factory.longAttributeValue(value));
   }
 
   @Override
   public void setAttribute(String key, double value) {
-    setAttribute(key, AttributeValue.doubleAttributeValue(value));
+    setAttribute(key, AttributeValue.Factory.doubleAttributeValue(value));
   }
 
   @Override
   public void setAttribute(String key, boolean value) {
-    setAttribute(key, AttributeValue.booleanAttributeValue(value));
+    setAttribute(key, AttributeValue.Factory.booleanAttributeValue(value));
   }
 
   @Override

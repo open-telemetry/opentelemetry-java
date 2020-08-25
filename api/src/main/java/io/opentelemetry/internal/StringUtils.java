@@ -92,14 +92,14 @@ public final class StringUtils {
         newStrings[i] = truncateToSize(string, limit);
       }
 
-      return AttributeValue.arrayAttributeValue(newStrings);
+      return AttributeValue.Factory.arrayAttributeValue(newStrings);
     }
 
     String string = value.getStringValue();
     // Don't allocate new AttributeValue if not needed
     return (string == null || string.length() <= limit)
         ? value
-        : AttributeValue.stringAttributeValue(string.substring(0, limit));
+        : AttributeValue.Factory.stringAttributeValue(string.substring(0, limit));
   }
 
   @Nullable

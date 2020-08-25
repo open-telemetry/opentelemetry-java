@@ -201,7 +201,8 @@ class TracerSdkTest {
     public void update() {
       Span span = tracer.spanBuilder("testSpan").startSpan();
       try (Scope ignored = tracer.withSpan(span)) {
-        span.setAttribute("testAttribute", AttributeValue.stringAttributeValue("testValue"));
+        span.setAttribute(
+            "testAttribute", AttributeValue.Factory.stringAttributeValue("testValue"));
       } finally {
         span.end();
       }
