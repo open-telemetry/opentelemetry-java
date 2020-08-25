@@ -207,24 +207,23 @@ public final class BatchSpanProcessor implements SpanProcessor {
       updateNextExportTime();
 
       while (continueWork) {
-        try {
-          if (flushRequested.get() != null) {
-            flush();
-          }
+        if (flushRequested.get() != null) {
+          flush();
+        }
 
+        try {
           ReadableSpan lastElement = queue.poll(100, TimeUnit.MILLISECONDS);
           if (lastElement != null) {
             batch.add(lastElement.toSpanData());
           }
-
-          if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
-            exportCurrentBatch();
-            updateNextExportTime();
-          }
-
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           return;
+        }
+
+        if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
+          exportCurrentBatch();
+          updateNextExportTime();
         }
       }
     }
