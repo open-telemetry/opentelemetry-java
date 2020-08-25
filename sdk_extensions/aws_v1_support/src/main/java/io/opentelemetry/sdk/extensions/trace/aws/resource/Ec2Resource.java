@@ -23,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +36,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class Ec2Resource extends AwsResource {
+/**
+ * A {@link ResourceProvider} which provides information about the current EC2 instance if running
+ * on AWS EC2.
+ */
+public class Ec2Resource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());
 
@@ -49,7 +54,11 @@ class Ec2Resource extends AwsResource {
   private final URL hostnameUrl;
   private final URL tokenUrl;
 
-  Ec2Resource() {
+  /**
+   * Returns a {@link Ec2Resource} which attempts to compute information about this instance if
+   * available.
+   */
+  public Ec2Resource() {
     // This is only for testing e.g., with a mock IMDS server and never in production so we just
     // read from a system property. This is similar to the AWS SDK.
     this(System.getProperty("otel.aws.imds.endpointOverride", DEFAULT_IMDS_ENDPOINT));
@@ -137,7 +146,7 @@ class Ec2Resource extends AwsResource {
   }
 
   @Override
-  Attributes createAttributes() {
+  public Attributes getAttributes() {
     String token = fetchToken();
 
     // If token is empty, either IMDSv2 isn't enabled or an unexpected failure happened. We can

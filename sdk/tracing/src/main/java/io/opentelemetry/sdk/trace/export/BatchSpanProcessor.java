@@ -26,6 +26,7 @@ import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -110,7 +111,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadableSpan span) {}
+  public void onStart(ReadWriteSpan span) {}
 
   @Override
   public boolean isStartRequired() {

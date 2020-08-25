@@ -128,6 +128,28 @@ class OtlpGrpcSpanExporterTest {
   }
 
   @Test
+  void testExport_DeadlineSetPerExport() throws InterruptedException {
+    int deadlineMs = 500;
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.newBuilder()
+            .setChannel(inProcessChannel)
+            .setDeadlineMs(deadlineMs)
+            .build();
+
+    try {
+      TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isTrue();
+
+      TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
   void testExport_AfterShutdown() {
     SpanData span = generateFakeSpan();
     OtlpGrpcSpanExporter exporter =

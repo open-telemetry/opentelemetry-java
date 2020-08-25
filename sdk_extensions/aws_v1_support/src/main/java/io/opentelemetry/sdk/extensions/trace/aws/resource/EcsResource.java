@@ -20,13 +20,18 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class EcsResource extends AwsResource {
+/**
+ * A {@link ResourceProvider} which provides information about the current ECS container if running
+ * on AWS ECS.
+ */
+public class EcsResource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(EcsResource.class.getName());
 
@@ -36,7 +41,11 @@ class EcsResource extends AwsResource {
   private final Map<String, String> sysEnv;
   private final DockerHelper dockerHelper;
 
-  EcsResource() {
+  /**
+   * Returns a {@link Ec2Resource} which attempts to compute information about this ECS container if
+   * available.
+   */
+  public EcsResource() {
     this(System.getenv(), new DockerHelper());
   }
 
@@ -47,7 +56,7 @@ class EcsResource extends AwsResource {
   }
 
   @Override
-  Attributes createAttributes() {
+  public Attributes getAttributes() {
     if (!isOnEcs()) {
       return Attributes.empty();
     }
