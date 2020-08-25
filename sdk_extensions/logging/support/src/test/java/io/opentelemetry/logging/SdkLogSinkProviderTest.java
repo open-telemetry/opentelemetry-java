@@ -24,6 +24,7 @@ import io.opentelemetry.logging.api.LogRecord;
 import io.opentelemetry.logging.api.LogRecord.Severity;
 import io.opentelemetry.logging.api.LogSink;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
@@ -37,7 +38,7 @@ public class SdkLogSinkProviderTest {
     private int batches = 0;
 
     @Override
-    public void accept(List<LogRecord> records) {
+    public void accept(Collection<LogRecord> records) {
       this.records.addAll(records);
       batches++;
     }

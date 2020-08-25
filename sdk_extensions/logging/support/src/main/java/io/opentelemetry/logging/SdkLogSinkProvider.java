@@ -20,21 +20,22 @@ import io.opentelemetry.logging.api.Exporter;
 import io.opentelemetry.logging.api.LogRecord;
 import io.opentelemetry.logging.api.LogSink;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 
 public class SdkLogSinkProvider implements LoggingBatchExporter {
-  private final LoggingBatchStrategy batchManager;
+  private final LoggingBatchStrategy batchStrategy;
   private final List<Exporter> exporters;
   private final LogSink logSink = new SdkLogSink();
 
-  private SdkLogSinkProvider(LoggingBatchStrategy batchManager, List<Exporter> exporters) {
-    this.batchManager = batchManager != null ? batchManager : getDefaultBatchManager();
-    this.batchManager.setBatchHandler(this);
+  private SdkLogSinkProvider(LoggingBatchStrategy batchStrategy, List<Exporter> exporters) {
+    this.batchStrategy = batchStrategy != null ? batchStrategy : getDefaultBatchStrategy();
+    this.batchStrategy.setBatchHandler(this);
     this.exporters = exporters;
   }
 
-  private static LoggingBatchStrategy getDefaultBatchManager() {
+  private static LoggingBatchStrategy getDefaultBatchStrategy() {
     return new SizeOrLatencyBatchStrategy.Builder().build();
   }
 
@@ -44,7 +45,7 @@ public class SdkLogSinkProvider implements LoggingBatchExporter {
   }
 
   @Override
-  public void handleLogRecordBatch(List<LogRecord> batch) {
+  public void handleLogRecordBatch(Collection<LogRecord> batch) {
     for (Exporter e : exporters) {
       e.accept(batch);
     }
@@ -53,7 +54,7 @@ public class SdkLogSinkProvider implements LoggingBatchExporter {
   private class SdkLogSink implements LogSink {
     @Override
     public void offer(LogRecord record) {
-      batchManager.add(record);
+      batchStrategy.add(record);
     }
 
     @Override

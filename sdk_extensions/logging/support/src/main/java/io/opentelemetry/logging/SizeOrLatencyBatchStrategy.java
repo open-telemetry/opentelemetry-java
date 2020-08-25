@@ -17,9 +17,10 @@
 package io.opentelemetry.logging;
 
 import io.opentelemetry.logging.api.LogRecord;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Queue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +43,11 @@ public class SizeOrLatencyBatchStrategy implements LoggingBatchStrategy {
   private final ScheduledFuture<?> schedule;
 
   private LoggingBatchExporter batchHandler;
-  private List<LogRecord> batch = new ArrayList<>();
+  private Queue<LogRecord> batch = buildNewQueue();
+
+  private Queue<LogRecord> buildNewQueue() {
+    return new LinkedBlockingQueue<>();
+  }
 
   private SizeOrLatencyBatchStrategy(int maxBatch, int maxDelay, TimeUnit units) {
     this.maxBatch = maxBatch > 0 ? maxBatch : DEFAULT_BATCH_SIZE;
@@ -75,10 +80,10 @@ public class SizeOrLatencyBatchStrategy implements LoggingBatchStrategy {
   }
 
   @Override
-  public void flush() {
+  public synchronized void flush() {
     if (batchHandler != null && batch.size() > 0) {
-      List<LogRecord> completedBatch = batch;
-      batch = new ArrayList<>();
+      Collection<LogRecord> completedBatch = batch;
+      batch = buildNewQueue();
       batchHandler.handleLogRecordBatch(completedBatch);
     }
   }

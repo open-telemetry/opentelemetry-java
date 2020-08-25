@@ -17,7 +17,7 @@
 package io.opentelemetry.logging;
 
 import io.opentelemetry.logging.api.LogRecord;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * A LoggingBatchExporter accepts a batch of records and handles the transmission of those records
@@ -29,5 +29,5 @@ public interface LoggingBatchExporter {
    *
    * @param batch list of records ready for transport
    */
-  void handleLogRecordBatch(List<LogRecord> batch);
+  void handleLogRecordBatch(Collection<LogRecord> batch);
 }

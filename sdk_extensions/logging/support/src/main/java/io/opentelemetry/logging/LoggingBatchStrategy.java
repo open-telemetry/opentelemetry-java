@@ -17,7 +17,6 @@
 package io.opentelemetry.logging;
 
 import io.opentelemetry.logging.api.LogRecord;
-import java.util.List;
 
 /**
  * A LoggingBatchStrategy encodes the logic for how to batch and aggregate records for transmission.
@@ -37,8 +36,9 @@ public interface LoggingBatchStrategy {
   void flush();
 
   /**
-   * This sets the handler for the batch. {@link LoggingBatchExporter#handleLogRecordBatch(List)}
-   * will be called whenever this strategy's constraints are fulfilled.
+   * This sets the handler for the batch. {@link
+   * LoggingBatchExporter#handleLogRecordBatch(Collection)} will be called whenever this strategy's
+   * constraints are fulfilled.
    *
    * @param handler Exporter to invoke when the batch is full
    */

@@ -16,12 +16,12 @@
 
 package io.opentelemetry.logging.api;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * An exporter is responsible for taking a list of {@link LogRecord}s and transmitting them to their
  * ultimate destination.
  */
 public interface Exporter {
-  void accept(List<LogRecord> records);
+  void accept(Collection<LogRecord> records);
 }

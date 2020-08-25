@@ -21,6 +21,7 @@ import static org.awaitility.Awaitility.await;
 
 import io.opentelemetry.logging.api.LogRecord;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class SizeOrLatencyBatchStrategyTest {
     private int callCount = 0;
 
     @Override
-    public void handleLogRecordBatch(List<LogRecord> batch) {
+    public void handleLogRecordBatch(Collection<LogRecord> batch) {
       records.addAll(batch);
       callCount++;
     }
@@ -49,7 +50,7 @@ public class SizeOrLatencyBatchStrategyTest {
             .build();
     final List<LogRecord> transmittedBatch = new ArrayList<>();
 
-    strategy.setBatchHandler(transmittedBatch::addAll);
+    strategy.setBatchHandler(c -> transmittedBatch.addAll(c));
 
     for (int i = 0; i < 7; i++) {
       strategy.add(null);
