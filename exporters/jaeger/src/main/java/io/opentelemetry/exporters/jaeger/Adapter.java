@@ -281,8 +281,8 @@ final class Adapter {
   @VisibleForTesting
   static Model.SpanRef toSpanRef(Link link) {
     Model.SpanRef.Builder builder = Model.SpanRef.newBuilder();
-    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().traceId()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().spanId()));
+    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsBase16()));
+    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsBase16()));
 
     // we can assume that all links are *follows from*
     // https://github.com/open-telemetry/opentelemetry-java/issues/475

@@ -52,8 +52,8 @@ final class Common {
               : NOT_SAMPLED_FLAGS;
 
       return SpanContext.createFromRemoteParent(
-          TraceId.fromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
-          SpanId.fromLowerBase16(spanId, 0),
+          StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH),
+          spanId,
           traceFlags,
           TraceState.getDefault());
     } catch (Exception e) {

@@ -40,9 +40,7 @@ import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceId;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,8 +92,8 @@ class JaegerGrpcSpanExporterTest {
     SpanData span =
         TestSpanData.newBuilder()
             .setHasEnded(true)
-            .setTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0))
-            .setSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -119,12 +117,8 @@ class JaegerGrpcSpanExporterTest {
     Model.Batch batch = requestCaptor.getValue().getBatch();
     assertEquals(1, batch.getSpansCount());
     assertEquals("GET /api/endpoint", batch.getSpans(0).getOperationName());
-    assertEquals(
-        TraceProtoUtils.toProtoTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0)),
-        batch.getSpans(0).getTraceId());
-    assertEquals(
-        TraceProtoUtils.toProtoSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0)),
-        batch.getSpans(0).getSpanId());
+    assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), batch.getSpans(0).getTraceId());
+    assertEquals(TraceProtoUtils.toProtoSpanId(SPAN_ID), batch.getSpans(0).getSpanId());
     assertEquals("test", batch.getProcess().getServiceName());
     assertEquals(3, batch.getProcess().getTagsCount());
 

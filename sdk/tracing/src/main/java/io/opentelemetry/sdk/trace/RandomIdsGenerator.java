@@ -29,17 +29,17 @@ public final class RandomIdsGenerator implements IdsGenerator {
   private static final long INVALID_ID = 0;
 
   @Override
-  public byte[] generateSpanId() {
+  public CharSequence generateSpanId() {
     long id;
     ThreadLocalRandom random = ThreadLocalRandom.current();
     do {
       id = random.nextLong();
     } while (id == INVALID_ID);
-    return SpanId.fromLong(id);
+    return new SpanIdWrapper(id);
   }
 
   @Override
-  public byte[] generateTraceId() {
+  public CharSequence generateTraceId() {
     long idHi;
     long idLo;
     ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -47,6 +47,92 @@ public final class RandomIdsGenerator implements IdsGenerator {
       idHi = random.nextLong();
       idLo = random.nextLong();
     } while (idHi == INVALID_ID && idLo == INVALID_ID);
-    return TraceId.fromLongs(idHi, idLo);
+    return new TraceIdWrapper(idHi, idLo);
+  }
+
+  static final class TraceIdWrapper implements CharSequence {
+    private final long idHi;
+    private final long idLo;
+    private volatile CharSequence chars;
+
+    private TraceIdWrapper(long idHi, long idLo) {
+      this.idHi = idHi;
+      this.idLo = idLo;
+    }
+
+    @Override
+    public int length() {
+      return 32;
+    }
+
+    @Override
+    public char charAt(int index) {
+      return getCharSequence().charAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+      return getCharSequence().subSequence(start, end);
+    }
+
+    public long getIdHi() {
+      return idHi;
+    }
+
+    public long getIdLo() {
+      return idLo;
+    }
+
+    @Override
+    public String toString() {
+      return getCharSequence().toString();
+    }
+
+    private CharSequence getCharSequence() {
+      if (chars == null) {
+        chars = TraceId.fromLongs(idHi, idLo);
+      }
+      return chars;
+    }
+  }
+
+  static final class SpanIdWrapper implements CharSequence {
+    private final long id;
+    private volatile CharSequence chars;
+
+    private SpanIdWrapper(long id) {
+      this.id = id;
+    }
+
+    @Override
+    public int length() {
+      return 16;
+    }
+
+    @Override
+    public char charAt(int index) {
+      return getCharSequence().charAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+      return getCharSequence().subSequence(start, end);
+    }
+
+    public long getId() {
+      return id;
+    }
+
+    @Override
+    public String toString() {
+      return getCharSequence().toString();
+    }
+
+    private CharSequence getCharSequence() {
+      if (chars == null) {
+        chars = SpanId.fromLong(id);
+      }
+      return chars;
+    }
   }
 }

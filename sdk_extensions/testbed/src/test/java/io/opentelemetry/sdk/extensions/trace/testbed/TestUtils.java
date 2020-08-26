@@ -178,8 +178,10 @@ public final class TestUtils {
       // TODO - Include nanos in this comparison.
       assertThat(spans.get(spans.size() - 1).getEndEpochNanos() >= spans.get(i).getEndEpochNanos())
           .isTrue();
-      assertThat(spans.get(spans.size() - 1).getTraceId()).isEqualTo(spans.get(i).getTraceId());
-      assertThat(spans.get(spans.size() - 1).getSpanId()).isEqualTo(spans.get(i).getParentSpanId());
+      assertThat(spans.get(spans.size() - 1).getTraceId().toString())
+          .isEqualTo(spans.get(i).getTraceId().toString());
+      assertThat(spans.get(spans.size() - 1).getSpanId().toString())
+          .isEqualTo(spans.get(i).getParentSpanId().toString());
     }
   }
 }

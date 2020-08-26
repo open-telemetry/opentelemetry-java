@@ -19,7 +19,6 @@ package io.opentelemetry.opentracingshim.testbed.multiplecallbacks;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -74,8 +73,8 @@ class MultipleCallbacksTest {
 
     SpanData parentSpan = spans.get(0);
     for (int i = 1; i < 4; i++) {
-      assertArrayEquals(parentSpan.getTraceId(), spans.get(i).getTraceId());
-      assertArrayEquals(parentSpan.getSpanId(), spans.get(i).getParentSpanId());
+      assertEquals(parentSpan.getTraceId().toString(), spans.get(i).getTraceId().toString());
+      assertEquals(parentSpan.getSpanId().toString(), spans.get(i).getParentSpanId().toString());
     }
 
     assertNull(tracer.scopeManager().activeSpan());

@@ -80,7 +80,8 @@ class ActorPropagationTest {
 
       List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(3);
-      assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
+      assertThat(finished.get(0).getTraceId().toString())
+          .isEqualTo(finished.get(1).getTraceId().toString());
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
@@ -121,7 +122,8 @@ class ActorPropagationTest {
       assertThat(message2).isEqualTo("received my message 2");
 
       assertThat(finished.size()).isEqualTo(3);
-      assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
+      assertThat(finished.get(0).getTraceId().toString())
+          .isEqualTo(finished.get(1).getTraceId().toString());
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 

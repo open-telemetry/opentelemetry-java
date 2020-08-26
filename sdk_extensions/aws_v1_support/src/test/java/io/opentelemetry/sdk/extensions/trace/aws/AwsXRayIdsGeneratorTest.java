@@ -36,9 +36,9 @@ class AwsXRayIdsGeneratorTest {
   void shouldGenerateValidIds() {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
     for (int i = 0; i < 1000; i++) {
-      byte[] traceId = generator.generateTraceId();
+      CharSequence traceId = generator.generateTraceId();
       assertThat(TraceId.isValid(traceId)).isTrue();
-      byte[] spanId = generator.generateSpanId();
+      CharSequence spanId = generator.generateSpanId();
       assertThat(SpanId.isValid(spanId)).isTrue();
     }
   }
@@ -47,8 +47,8 @@ class AwsXRayIdsGeneratorTest {
   void shouldGenerateTraceIdsWithTimestampsWithAllowedXrayTimeRange() {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
     for (int i = 0; i < 1000; i++) {
-      byte[] traceId = generator.generateTraceId();
-      long unixSeconds = Long.valueOf(TraceId.toLowerBase16(traceId).substring(0, 8), 16);
+      CharSequence traceId = generator.generateTraceId();
+      long unixSeconds = Long.valueOf(traceId.subSequence(0, 8).toString(), 16);
       long ts = unixSeconds * 1000L;
       long currentTs = System.currentTimeMillis();
       assertThat(ts).isLessThanOrEqualTo(currentTs);
@@ -61,8 +61,8 @@ class AwsXRayIdsGeneratorTest {
   void shouldGenerateUniqueIdsInMultithreadedEnvironment()
       throws BrokenBarrierException, InterruptedException {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
-    Set<byte[]> traceIds = new CopyOnWriteArraySet<>();
-    Set<byte[]> spanIds = new CopyOnWriteArraySet<>();
+    Set<CharSequence> traceIds = new CopyOnWriteArraySet<>();
+    Set<CharSequence> spanIds = new CopyOnWriteArraySet<>();
     int threads = 8;
     int generations = 128;
     CyclicBarrier barrier = new CyclicBarrier(threads + 1);
@@ -81,15 +81,15 @@ class AwsXRayIdsGeneratorTest {
     private final int generations;
     private final IdsGenerator idsGenerator;
     private final CyclicBarrier barrier;
-    private final Set<byte[]> traceIds;
-    private final Set<byte[]> spanIds;
+    private final Set<CharSequence> traceIds;
+    private final Set<CharSequence> spanIds;
 
     GenerateRunner(
         int generations,
         IdsGenerator idsGenerator,
         CyclicBarrier barrier,
-        Set<byte[]> traceIds,
-        Set<byte[]> spanIds) {
+        Set<CharSequence> traceIds,
+        Set<CharSequence> spanIds) {
       this.generations = generations;
       this.idsGenerator = idsGenerator;
       this.barrier = barrier;

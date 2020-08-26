@@ -33,7 +33,6 @@ import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
@@ -60,7 +59,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
-  private final byte[] parentSpanId;
+  private final CharSequence parentSpanId;
   // True if the parent is on a different process.
   private final boolean hasRemoteParent;
   // Handler called when the span starts and ends.
@@ -112,7 +111,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      byte[] parentSpanId,
+      CharSequence parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -163,7 +162,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      @Nullable byte[] parentSpanId,
+      @Nullable CharSequence parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -507,7 +506,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
   }
 
-  byte[] getParentSpanId() {
+  CharSequence getParentSpanId() {
     return parentSpanId;
   }
 
@@ -609,9 +608,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     StringBuilder sb = new StringBuilder();
     sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceId());
+    sb.append(context.getTraceIdAsBase16());
     sb.append(", spanId=");
-    sb.append(context.getSpanId());
+    sb.append(context.getSpanIdAsBase16());
     sb.append(", parentSpanId=");
     sb.append(parentSpanId);
     sb.append(", name=");

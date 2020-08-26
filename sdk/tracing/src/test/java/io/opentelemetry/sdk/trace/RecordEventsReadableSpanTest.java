@@ -65,9 +65,9 @@ class RecordEventsReadableSpanTest {
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
-  private final byte[] traceId = idsGenerator.generateTraceId();
-  private final byte[] spanId = idsGenerator.generateSpanId();
-  private final byte[] parentSpanId = idsGenerator.generateSpanId();
+  private final CharSequence traceId = idsGenerator.generateTraceId();
+  private final CharSequence spanId = idsGenerator.generateSpanId();
+  private final CharSequence parentSpanId = idsGenerator.generateSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final Resource resource = Resource.getEmpty();
@@ -813,7 +813,7 @@ class RecordEventsReadableSpanTest {
   private RecordEventsReadableSpan createTestSpan(
       Kind kind,
       TraceConfig config,
-      @Nullable byte[] parentSpanId,
+      @Nullable CharSequence parentSpanId,
       @Nullable AttributesMap attributes,
       List<io.opentelemetry.trace.Link> links) {
 
@@ -862,9 +862,9 @@ class RecordEventsReadableSpanTest {
       long endEpochNanos,
       Status status,
       boolean hasEnded) {
-    assertThat(spanData.getTraceId()).isEqualTo(traceId);
-    assertThat(spanData.getSpanId()).isEqualTo(spanId);
-    assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
+    assertThat(spanData.getTraceId().toString()).isEqualTo(traceId.toString());
+    assertThat(spanData.getSpanId().toString()).isEqualTo(spanId.toString());
+    assertThat(spanData.getParentSpanId().toString()).isEqualTo(parentSpanId.toString());
     assertThat(spanData.getHasRemoteParent()).isEqualTo(EXPECTED_HAS_REMOTE_PARENT);
     assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
@@ -887,9 +887,9 @@ class RecordEventsReadableSpanTest {
   void testAsSpanData() {
     String name = "GreatSpan";
     Kind kind = Kind.SERVER;
-    byte[] traceId = this.traceId;
-    byte[] spanId = this.spanId;
-    byte[] parentSpanId = this.parentSpanId;
+    CharSequence traceId = this.traceId;
+    CharSequence spanId = this.spanId;
+    CharSequence parentSpanId = this.parentSpanId;
     TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();

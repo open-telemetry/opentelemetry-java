@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.RandomIdsGenerator.SpanIdWrapper;
+import io.opentelemetry.sdk.trace.RandomIdsGenerator.TraceIdWrapper;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -208,15 +210,15 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
-    byte[] traceId;
-    byte[] spanId = idsGenerator.generateSpanId();
+    CharSequence traceId;
+    CharSequence spanId = idsGenerator.generateSpanId();
     TraceState traceState = TraceState.getDefault();
     if (!parentContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
     } else {
       // New child span.
-      traceId = parentContext.traceId();
+      traceId = parentContext.getTraceIdAsBase16();
       traceState = parentContext.getTraceState();
     }
     List<io.opentelemetry.trace.Link> immutableLinks =
@@ -234,14 +236,9 @@ final class SpanBuilderSdk implements Span.Builder {
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
-    SpanContext spanContext =
-        SpanContext.create(
-            traceId,
-            spanId,
-            Samplers.isSampled(samplingDecision)
-                ? TRACE_OPTIONS_SAMPLED
-                : TRACE_OPTIONS_NOT_SAMPLED,
-            traceState);
+    TraceFlags traceFlags =
+        Samplers.isSampled(samplingDecision) ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED;
+    SpanContext spanContext = createSpanContext(traceId, spanId, traceState, traceFlags);
 
     if (!Samplers.isRecording(samplingDecision)) {
       return DefaultSpan.create(spanContext);
@@ -270,7 +267,7 @@ final class SpanBuilderSdk implements Span.Builder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentContext.spanId(),
+        parentContext.getSpanIdAsBase16(),
         parentContext.isRemote(),
         traceConfig,
         spanProcessor,
@@ -280,6 +277,34 @@ final class SpanBuilderSdk implements Span.Builder {
         immutableLinks,
         totalNumberOfLinksAdded,
         startEpochNanos);
+  }
+
+  private static SpanContext createSpanContext(
+      CharSequence traceId, CharSequence spanId, TraceState traceState, TraceFlags traceFlags) {
+    if (traceId instanceof TraceIdWrapper) {
+      if (spanId instanceof SpanIdWrapper) {
+        return SpanContext.create(
+            null,
+            ((TraceIdWrapper) traceId).getIdHi(),
+            ((TraceIdWrapper) traceId).getIdHi(),
+            null,
+            ((SpanIdWrapper) spanId).getId(),
+            traceFlags,
+            traceState,
+            /* remote=*/ false);
+      } else {
+        return SpanContext.create(
+            null,
+            ((TraceIdWrapper) traceId).getIdHi(),
+            ((TraceIdWrapper) traceId).getIdHi(),
+            spanId.toString(),
+            0,
+            traceFlags,
+            traceState,
+            /* remote=*/ false);
+      }
+    }
+    return SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 
   private static Clock getClock(Span parent, Clock clock) {

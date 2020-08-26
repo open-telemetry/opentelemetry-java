@@ -78,7 +78,7 @@ public class JaegerRemoteSampler implements Sampler {
   @Override
   public SamplingResult shouldSample(
       SpanContext parentContext,
-      byte[] traceId,
+      CharSequence traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,

@@ -94,10 +94,18 @@ public class JaegerPropagator implements TextMapPropagator {
     SpanContext spanContext = span.getContext();
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
-    TraceId.copyLowerBase16Into(spanContext.traceId(), chars, 0);
+
+    CharSequence traceId = spanContext.getTraceIdAsBase16();
+    for (int i = 0; i < traceId.length(); i++) {
+      chars[i] = traceId.charAt(i);
+    }
 
     chars[SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
-    SpanId.copyLowerBase16Into(spanContext.spanId(), chars, SPAN_ID_OFFSET);
+    CharSequence spanId = spanContext.getSpanIdAsBase16();
+    for (int i = 0; i < spanId.length(); i++) {
+      chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
+    }
+
     chars[PARENT_SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[PARENT_SPAN_ID_OFFSET] = DEPRECATED_PARENT_SPAN;
     chars[SAMPLED_FLAG_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
@@ -190,11 +198,13 @@ public class JaegerPropagator implements TextMapPropagator {
       int flagsInt = Integer.parseInt(flags);
       TraceFlags traceFlags = ((flagsInt & 1) == 1) ? SAMPLED_FLAGS : NOT_SAMPLED_FLAGS;
 
+      String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
+      String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);
+      if (!TraceId.isValid(otelTraceId) || !SpanId.isValid(otelSpanId)) {
+        return SpanContext.getInvalid();
+      }
       return SpanContext.createFromRemoteParent(
-          TraceId.bytesFromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
-          SpanId.bytesFromLowerBase16(StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH), 0),
-          traceFlags,
-          TraceState.getDefault());
+          otelTraceId, otelSpanId, traceFlags, TraceState.getDefault());
     } catch (Exception e) {
       logger.log(
           Level.FINE,

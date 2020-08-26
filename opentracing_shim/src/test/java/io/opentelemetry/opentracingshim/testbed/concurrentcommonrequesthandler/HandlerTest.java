@@ -18,7 +18,6 @@ package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByName;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -74,7 +73,8 @@ class HandlerTest {
       assertEquals(Kind.CLIENT, spanData.getKind());
     }
 
-    assertNotEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
+    assertNotEquals(
+        finished.get(0).getTraceId().toString(), finished.get(1).getTraceId().toString());
     assertFalse(SpanId.isValid(finished.get(0).getParentSpanId()));
     assertFalse(SpanId.isValid(finished.get(1).getParentSpanId()));
 
@@ -103,7 +103,7 @@ class HandlerTest {
 
     // Here check that there is no parent-child relation although it should be because child is
     // created when parent is active
-    assertNotEquals(parent.getSpanId(), child.getParentSpanId());
+    assertNotEquals(parent.getSpanId().toString(), child.getParentSpanId().toString());
   }
 
   /**
@@ -136,9 +136,9 @@ class HandlerTest {
     assertNotNull(parent);
 
     // now there is parent/child relation between first and second span:
-    assertArrayEquals(parent.getSpanId(), finished.get(1).getParentSpanId());
+    assertEquals(parent.getSpanId().toString(), finished.get(1).getParentSpanId().toString());
 
     // third span should not have parent, but it has, damn it
-    assertArrayEquals(parent.getSpanId(), finished.get(2).getParentSpanId());
+    assertEquals(parent.getSpanId().toString(), finished.get(2).getParentSpanId().toString());
   }
 }

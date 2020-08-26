@@ -17,6 +17,8 @@
 package io.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
+import com.google.auto.value.extension.memoized.Memoized;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -59,8 +61,65 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext create(
-      byte[] traceId, byte[] spanId, TraceFlags traceFlags, TraceState traceState) {
-    return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ false);
+      CharSequence traceId, CharSequence spanId, TraceFlags traceFlags, TraceState traceState) {
+    return create(traceId, 0, spanId, 0, traceFlags, traceState, /* remote=*/ false);
+  }
+
+  /**
+   * todo: javadoc me. This one has all the options for how ids are represented. The Strings taking
+   * precedence over the longs, if you're asking for the base16 versions
+   */
+  @SuppressWarnings("InconsistentOverloads")
+  public static SpanContext create(
+      @Nullable String traceIdString,
+      long traceIdHi,
+      long traceIdLo,
+      @Nullable String spanIdString,
+      long spanId,
+      TraceFlags traceFlags,
+      TraceState traceState,
+      boolean remote) {
+    return new AutoValue_SpanContext(
+        traceIdString,
+        traceIdHi,
+        traceIdLo,
+        spanIdString,
+        spanId,
+        traceFlags,
+        traceState, /* remote$=*/
+        remote);
+  }
+
+  /**
+   * Creates a new {@code SpanContext} with the given identifiers and options.
+   *
+   * @param traceId the trace identifier of the span context.
+   * @param traceIdOffset the offset at which the traceId starts.
+   * @param spanId the span identifier of the span context.
+   * @param spanIdOffset the offset at which the spanId starts.
+   * @param traceFlags the trace options for the span context.
+   * @param traceState the trace state for the span context.
+   * @return a new {@code SpanContext} with the given identifiers and options.
+   * @since 0.1.0
+   */
+  @SuppressWarnings("InconsistentOverloads")
+  public static SpanContext create(
+      CharSequence traceId,
+      int traceIdOffset,
+      CharSequence spanId,
+      int spanIdOffset,
+      TraceFlags traceFlags,
+      TraceState traceState,
+      boolean remote) {
+    return new AutoValue_SpanContext(
+        traceId.subSequence(traceIdOffset, traceIdOffset + 32).toString(),
+        0,
+        0,
+        spanId.subSequence(spanIdOffset, spanIdOffset + 16).toString(),
+        0,
+        traceFlags,
+        traceState,
+        /* remote$=*/ remote);
   }
 
   /**
@@ -75,8 +134,8 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      byte[] traceId, byte[] spanId, TraceFlags traceFlags, TraceState traceState) {
-    return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ true);
+      CharSequence traceId, CharSequence spanId, TraceFlags traceFlags, TraceState traceState) {
+    return create(traceId, 0, spanId, 0, traceFlags, traceState, /* remote=*/ true);
   }
 
   /**
@@ -85,34 +144,26 @@ public abstract class SpanContext {
    * @return the trace identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  @SuppressWarnings("mutable")
-  abstract byte[] getTraceId();
-
-  /**
-   * Returns the trace identifier associated with this {@code SpanContext}.
-   *
-   * @return the trace identifier associated with this {@code SpanContext}.
-   * @since 0.1.0
-   */
-  public byte[] traceId() {
-    byte[] result = new byte[16];
-    copyTraceId(result, 0);
-    return result;
+  @Memoized
+  public String getTraceIdAsBase16() {
+    String traceIdString = getTraceIdString();
+    if (traceIdString != null) {
+      return traceIdString;
+    }
+    return TraceId.fromLongs(getTraceIdHi(), getTraceIdLo()).toString();
   }
 
-  /** javadoc me. */
-  public void copyTraceId(byte[] destination, int destOffset) {
-    System.arraycopy(getTraceId(), 0, destination, destOffset, 16);
-  }
+  @Nullable
+  abstract String getTraceIdString();
 
-  /**
-   * Returns the span identifier associated with this {@code SpanContext}.
-   *
-   * @return the span identifier associated with this {@code SpanContext}.
-   * @since 0.1.0
-   */
-  @SuppressWarnings("mutable")
-  abstract byte[] getSpanId();
+  abstract long getTraceIdHi();
+
+  abstract long getTraceIdLo();
+
+  @Nullable
+  abstract String getSpanIdString();
+
+  abstract long getSpanIdLong();
 
   /**
    * Returns the span identifier associated with this {@code SpanContext}.
@@ -120,15 +171,13 @@ public abstract class SpanContext {
    * @return the span identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public byte[] spanId() {
-    byte[] result = new byte[8];
-    copySpanId(result, 0);
-    return result;
-  }
-
-  /** javadoc me. */
-  public void copySpanId(byte[] destination, int destOffset) {
-    System.arraycopy(getSpanId(), 0, destination, destOffset, 8);
+  @Memoized
+  public String getSpanIdAsBase16() {
+    String spanIdString = getSpanIdString();
+    if (spanIdString != null) {
+      return spanIdString;
+    }
+    return SpanId.fromLong(getSpanIdLong()).toString();
   }
 
   /**
@@ -154,7 +203,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public boolean isValid() {
-    return TraceId.isValid(getTraceId()) && SpanId.isValid(getSpanId());
+    return TraceId.isValid(getTraceIdAsBase16()) && SpanId.isValid(getSpanIdAsBase16());
   }
 
   /**

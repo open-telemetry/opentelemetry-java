@@ -33,9 +33,7 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceId;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -256,8 +254,8 @@ class OtlpGrpcSpanExporterTest {
     long endNs = startNs + duration;
     return TestSpanData.newBuilder()
         .setHasEnded(true)
-        .setTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0))
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
         .setName("GET /api/endpoint")
         .setStartEpochNanos(startNs)
         .setEndEpochNanos(endNs)

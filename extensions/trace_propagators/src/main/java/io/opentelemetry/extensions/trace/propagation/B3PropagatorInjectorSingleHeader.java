@@ -50,9 +50,13 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
     SpanContext spanContext = span.getContext();
 
     char[] chars = new char[COMBINED_HEADER_SIZE];
-    TraceId.copyLowerBase16Into(spanContext.traceId(), chars, 0);
+    String traceId = spanContext.getTraceIdAsBase16();
+    System.arraycopy(traceId.toCharArray(), 0, chars, 0, TRACE_ID_HEX_SIZE);
     chars[SPAN_ID_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
-    SpanId.copyLowerBase16Into(spanContext.spanId(), chars, SPAN_ID_OFFSET);
+
+    String spanId = spanContext.getSpanIdAsBase16();
+    System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getSize() * 2);
+
     chars[SAMPLED_FLAG_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
     chars[SAMPLED_FLAG_OFFSET] =
         spanContext.getTraceFlags().isSampled()

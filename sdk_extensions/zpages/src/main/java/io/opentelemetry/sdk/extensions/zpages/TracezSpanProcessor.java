@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -50,7 +49,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 final class TracezSpanProcessor implements SpanProcessor {
-  private final ConcurrentMap<SpanId, ReadableSpan> runningSpanCache;
+  private final ConcurrentMap<String, ReadableSpan> runningSpanCache;
   private final ConcurrentMap<String, TracezSpanBuckets> completedSpanCache;
   private final boolean sampled;
 
@@ -67,7 +66,7 @@ final class TracezSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(ReadWriteSpan span) {
-    runningSpanCache.put(span.getSpanContext().getSpanId(), span);
+    runningSpanCache.put(span.getSpanContext().getSpanIdAsBase16().toString(), span);
   }
 
   @Override
@@ -77,7 +76,7 @@ final class TracezSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    runningSpanCache.remove(span.getSpanContext().getSpanId());
+    runningSpanCache.remove(span.getSpanContext().getSpanIdAsBase16().toString());
     if (!sampled || span.getSpanContext().getTraceFlags().isSampled()) {
       completedSpanCache.putIfAbsent(span.getName(), new TracezSpanBuckets());
       completedSpanCache.get(span.getName()).addToBucket(span);

@@ -94,13 +94,19 @@ public class HttpTraceContext implements TextMapPropagator {
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
-    byte[] traceId = spanContext.traceId();
-    TraceId.copyLowerBase16Into(traceId, chars, TRACE_ID_OFFSET);
+
+    CharSequence traceId = spanContext.getTraceIdAsBase16();
+    for (int i = 0; i < traceId.length(); i++) {
+      chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
+    }
 
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
 
-    byte[] spanId = spanContext.spanId();
-    SpanId.copyLowerBase16Into(spanId, chars, SPAN_ID_OFFSET);
+    CharSequence spanId = spanContext.getSpanIdAsBase16();
+    for (int i = 0; i < spanId.length(); i++) {
+      chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
+    }
+
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
@@ -156,8 +162,8 @@ public class HttpTraceContext implements TextMapPropagator {
     try {
       TraceState traceState = extractTraceState(traceStateHeader);
       return SpanContext.createFromRemoteParent(
-          contextFromParentHeader.traceId(),
-          contextFromParentHeader.spanId(),
+          contextFromParentHeader.getTraceIdAsBase16(),
+          contextFromParentHeader.getSpanIdAsBase16(),
           contextFromParentHeader.getTraceFlags(),
           traceState);
     } catch (IllegalArgumentException e) {
@@ -182,10 +188,15 @@ public class HttpTraceContext implements TextMapPropagator {
     }
 
     try {
-      byte[] traceId = TraceId.bytesFromLowerBase16(traceparent, TRACE_ID_OFFSET);
-      byte[] spanId = SpanId.bytesFromLowerBase16(traceparent, SPAN_ID_OFFSET);
-      TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
-      return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+      String traceId =
+          traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + (TraceId.getSize() * 2));
+      String spanId =
+          traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + (SpanId.getSize() * 2));
+      if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
+        TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
+        return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+      }
+      return SpanContext.getInvalid();
     } catch (IllegalArgumentException e) {
       logger.info("Unparseable traceparent header. Returning INVALID span context.");
       return SpanContext.getInvalid();
