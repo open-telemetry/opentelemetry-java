@@ -249,13 +249,13 @@ public final class Samplers {
   @Immutable
   static class ParentBased implements Sampler {
     private final Sampler root;
-    private Sampler remoteParentSampled = alwaysOn();
-    private Sampler remoteParentNotSampled = alwaysOff();
-    private Sampler localParentSampled = alwaysOn();
-    private Sampler localParentNotSampled = alwaysOff();
+    private final Sampler remoteParentSampled;
+    private final Sampler remoteParentNotSampled;
+    private final Sampler localParentSampled;
+    private final Sampler localParentNotSampled;
 
     ParentBased(Sampler root) {
-      this.root = root;
+      this(root, alwaysOn(), alwaysOff(), alwaysOn(), alwaysOff());
     }
 
     ParentBased(
@@ -265,18 +265,12 @@ public final class Samplers {
         Sampler localParentSampled,
         Sampler localParentNotSampled) {
       this.root = root;
-      if (remoteParentSampled != null) {
-        this.remoteParentSampled = remoteParentSampled;
-      }
-      if (remoteParentNotSampled != null) {
-        this.remoteParentNotSampled = remoteParentNotSampled;
-      }
-      if (localParentSampled != null) {
-        this.localParentSampled = localParentSampled;
-      }
-      if (localParentNotSampled != null) {
-        this.localParentNotSampled = localParentNotSampled;
-      }
+      this.remoteParentSampled = remoteParentSampled == null ? alwaysOn() : remoteParentSampled;
+      this.remoteParentNotSampled =
+          remoteParentNotSampled == null ? alwaysOff() : remoteParentNotSampled;
+      this.localParentSampled = localParentSampled == null ? alwaysOn() : localParentSampled;
+      this.localParentNotSampled =
+          localParentNotSampled == null ? alwaysOff() : localParentNotSampled;
     }
 
     // If a parent is set, always follows the same sampling decision as the parent.
