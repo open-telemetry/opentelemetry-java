@@ -53,13 +53,15 @@ public class SizeOrLatencyBatchStrategyTest {
     strategy.setBatchHandler(c -> transmittedBatch.addAll(c));
 
     for (int i = 0; i < 7; i++) {
-      strategy.add(null);
+      LogRecord record = new LogRecord.Builder().build();
+      strategy.add(record);
     }
 
     assertThat(transmittedBatch.size()).isEqualTo(5);
 
     for (int i = 0; i < 3; i++) {
-      strategy.add(null);
+      LogRecord record = new LogRecord.Builder().build();
+      strategy.add(record);
     }
 
     assertThat(transmittedBatch.size()).isEqualTo(10);
@@ -77,7 +79,8 @@ public class SizeOrLatencyBatchStrategyTest {
     strategy.setBatchHandler(batchHandler);
 
     for (int i = 0; i < 7; i++) {
-      strategy.add(null);
+      LogRecord record = new LogRecord.Builder().build();
+      strategy.add(record);
       Thread.sleep(10);
     }
 
