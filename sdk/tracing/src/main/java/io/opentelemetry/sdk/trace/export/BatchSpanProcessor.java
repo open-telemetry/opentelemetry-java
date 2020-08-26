@@ -149,7 +149,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
               .longCounterBuilder("processedSpans")
               .setUnit("1")
               .setDescription(
-                  "The number of spans dropped by the BatchSpanProcessor due to high throughput.")
+                  "The number of spans processed by the BatchSpanProcessor. "
+                      + "[dropped=true if they were dropped due to high throughput]")
               .setConstantLabels(
                   Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName()))
               .build();
