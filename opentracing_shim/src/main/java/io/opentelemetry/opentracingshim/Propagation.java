@@ -17,7 +17,7 @@
 package io.opentelemetry.opentracingshim;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -33,7 +33,7 @@ final class Propagation extends BaseShimObject {
     super(telemetryInfo);
   }
 
-  public void injectTextFormat(SpanContextShim contextShim, TextMapInject carrier) {
+  public void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
     Context context =
         TracingContextUtils.withSpan(
             DefaultSpan.create(contextShim.getSpanContext()), Context.current());
@@ -41,11 +41,11 @@ final class Propagation extends BaseShimObject {
         CorrelationsContextUtils.withCorrelationContext(
             contextShim.getCorrelationContext(), context);
 
-    propagators().getHttpTextFormat().inject(context, carrier, TextMapSetter.INSTANCE);
+    propagators().getTextMapPropagator().inject(context, carrier, TextMapSetter.INSTANCE);
   }
 
   @Nullable
-  public SpanContextShim extractTextFormat(TextMapExtract carrier) {
+  public SpanContextShim extractTextMap(TextMapExtract carrier) {
     Map<String, String> carrierMap = new HashMap<>();
     for (Map.Entry<String, String> entry : carrier) {
       carrierMap.put(entry.getKey(), entry.getValue());
@@ -53,7 +53,7 @@ final class Propagation extends BaseShimObject {
 
     Context context =
         propagators()
-            .getHttpTextFormat()
+            .getTextMapPropagator()
             .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
 
     Span span = TracingContextUtils.getSpan(context);
@@ -65,7 +65,7 @@ final class Propagation extends BaseShimObject {
         telemetryInfo, span.getContext(), CorrelationsContextUtils.getCorrelationContext(context));
   }
 
-  static final class TextMapSetter implements HttpTextFormat.Setter<TextMapInject> {
+  static final class TextMapSetter implements TextMapPropagator.Setter<TextMapInject> {
     private TextMapSetter() {}
 
     public static final TextMapSetter INSTANCE = new TextMapSetter();
@@ -78,7 +78,7 @@ final class Propagation extends BaseShimObject {
 
   // We use Map<> instead of TextMap as we need to query a specified key, and iterating over
   // *all* values per key-query *might* be a bad idea.
-  static final class TextMapGetter implements HttpTextFormat.Getter<Map<String, String>> {
+  static final class TextMapGetter implements TextMapPropagator.Getter<Map<String, String>> {
     private TextMapGetter() {}
 
     public static final TextMapGetter INSTANCE = new TextMapGetter();

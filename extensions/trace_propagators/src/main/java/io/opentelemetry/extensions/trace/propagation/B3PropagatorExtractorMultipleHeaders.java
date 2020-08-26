@@ -21,7 +21,7 @@ import static io.opentelemetry.extensions.trace.propagation.B3Propagator.SPAN_ID
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.TRACE_ID_HEADER;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -35,7 +35,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       Logger.getLogger(B3PropagatorExtractorMultipleHeaders.class.getName());
 
   @Override
-  public <C> Context extract(Context context, C carrier, HttpTextFormat.Getter<C> getter) {
+  public <C> Context extract(Context context, C carrier, TextMapPropagator.Getter<C> getter) {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
     SpanContext spanContext = getSpanContextFromMultipleHeaders(carrier, getter);
@@ -47,7 +47,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
   }
 
   private static <C> SpanContext getSpanContextFromMultipleHeaders(
-      C carrier, HttpTextFormat.Getter<C> getter) {
+      C carrier, TextMapPropagator.Getter<C> getter) {
     String traceId = getter.get(carrier, TRACE_ID_HEADER);
     if (StringUtils.isNullOrEmpty(traceId)) {
       return SpanContext.getInvalid();

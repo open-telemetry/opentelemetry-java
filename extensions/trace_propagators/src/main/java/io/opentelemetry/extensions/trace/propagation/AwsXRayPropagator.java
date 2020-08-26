@@ -17,7 +17,7 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -43,12 +43,12 @@ import javax.annotation.Nullable;
  * OpenTelemetry.setPropagators(
  *   DefaultContextPropagators
  *     .builder()
- *     .addHttpTextFormat(new HttpTraceContext())
- *     .addHttpTextFormat(new AWSXRayPropagator())
+ *     .addTextMapPropagator(new HttpTraceContext())
+ *     .addTextMapPropagator(new AWSXRayPropagator())
  *     .build());
  * }</pre>
  */
-public class AwsXRayPropagator implements HttpTextFormat {
+public class AwsXRayPropagator implements TextMapPropagator {
 
   // Visible for testing
   static final String TRACE_HEADER_KEY = "X-Amzn-Trace-Id";
