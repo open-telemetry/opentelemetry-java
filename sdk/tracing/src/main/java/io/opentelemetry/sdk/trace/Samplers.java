@@ -147,14 +147,47 @@ public final class Samplers {
    * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate
    * to determine the sampling decision.
    *
-   * @param delegateSampler the {@code Sampler} which is used to make the sampling decisions if the
-   *     parent does not exist.
+   * @param root the {@code Sampler} which is used to make the sampling decisions if the parent does
+   *     not exist.
    * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
-   *     following the delegate sampler's decision.
+   *     following the root sampler's decision.
    * @since 0.7.0
    */
-  public static Sampler parentBased(Sampler delegateSampler) {
-    return new ParentBased(delegateSampler);
+  public static Sampler parentBased(Sampler root) {
+    return new ParentBased(root);
+  }
+
+  /**
+   * Returns a {@link Sampler} that always makes the same decision as the parent {@link Span} to
+   * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate
+   * to determine the sampling decision.
+   *
+   * @param root the required {@code Sampler} which is used to make the sampling decisions if the
+   *     parent does not exist.
+   * @param remoteParentSampled the optional {@code Sampler} which is used to make the sampling
+   *     decisions if the remote parent exist and is sampled.
+   * @param remoteParentNotSampled the optional {@code Sampler} which is used to make the sampling
+   *     decisions if the remote parent exist and is not sampled.
+   * @param localParentSampled the optional {@code Sampler} which is used to make the sampling
+   *     decisions if the local parent exist and is sampled.
+   * @param localParentNotSampled the optional {@code Sampler} which is used to make the sampling
+   *     decisions if the local parent exist and is not sampled.
+   * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
+   *     following the root sampler and other optional sampler's decision.
+   * @since 0.8.0
+   */
+  public static Sampler parentBased(
+      Sampler root,
+      Sampler remoteParentSampled,
+      Sampler remoteParentNotSampled,
+      Sampler localParentSampled,
+      Sampler localParentNotSampled) {
+    return new ParentBased(
+        root,
+        remoteParentSampled,
+        remoteParentNotSampled,
+        localParentSampled,
+        localParentNotSampled);
   }
 
   /**
@@ -215,10 +248,35 @@ public final class Samplers {
 
   @Immutable
   static class ParentBased implements Sampler {
-    private final Sampler delegateSampler;
+    private final Sampler root;
+    private Sampler remoteParentSampled = alwaysOn();
+    private Sampler remoteParentNotSampled = alwaysOff();
+    private Sampler localParentSampled = alwaysOn();
+    private Sampler localParentNotSampled = alwaysOff();
 
-    ParentBased(Sampler delegateSampler) {
-      this.delegateSampler = delegateSampler;
+    ParentBased(Sampler root) {
+      this.root = root;
+    }
+
+    ParentBased(
+        Sampler root,
+        Sampler remoteParentSampled,
+        Sampler remoteParentNotSampled,
+        Sampler localParentSampled,
+        Sampler localParentNotSampled) {
+      this.root = root;
+      if (remoteParentSampled != null) {
+        this.remoteParentSampled = remoteParentSampled;
+      }
+      if (remoteParentNotSampled != null) {
+        this.remoteParentNotSampled = remoteParentNotSampled;
+      }
+      if (localParentSampled != null) {
+        this.localParentSampled = localParentSampled;
+      }
+      if (localParentNotSampled != null) {
+        this.localParentNotSampled = localParentNotSampled;
+      }
     }
 
     // If a parent is set, always follows the same sampling decision as the parent.
@@ -231,19 +289,34 @@ public final class Samplers {
         Kind spanKind,
         ReadableAttributes attributes,
         List<Link> parentLinks) {
-      if (parentContext.isValid()) {
-        if (parentContext.getTraceFlags().isSampled()) {
-          return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-        }
-        return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
+      if (!parentContext.isValid()) {
+        return this.root.shouldSample(
+            parentContext, traceId, name, spanKind, attributes, parentLinks);
       }
-      return this.delegateSampler.shouldSample(
-          parentContext, traceId, name, spanKind, attributes, parentLinks);
+
+      if (parentContext.isRemote()) {
+        return parentContext.getTraceFlags().isSampled()
+            ? this.remoteParentSampled.shouldSample(
+                parentContext, traceId, name, spanKind, attributes, parentLinks)
+            : this.remoteParentNotSampled.shouldSample(
+                parentContext, traceId, name, spanKind, attributes, parentLinks);
+      }
+      return parentContext.getTraceFlags().isSampled()
+          ? this.localParentSampled.shouldSample(
+              parentContext, traceId, name, spanKind, attributes, parentLinks)
+          : this.localParentNotSampled.shouldSample(
+              parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
 
     @Override
     public String getDescription() {
-      return String.format("ParentBased{%s}", this.delegateSampler.getDescription());
+      return String.format(
+          "ParentBased{root:%s,remoteParentSampled:%s,remoteParentNotSampled:%s,localParentSampled:%s,localParentNotSampled:%s}",
+          this.root.getDescription(),
+          this.remoteParentSampled.getDescription(),
+          this.remoteParentNotSampled.getDescription(),
+          this.localParentSampled.getDescription(),
+          this.localParentNotSampled.getDescription());
     }
   }
 
