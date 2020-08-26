@@ -457,7 +457,9 @@ class SamplersTest {
   void parentBasedSampler_GetDescription() {
     assertThat(Samplers.parentBased(Samplers.alwaysOn()).getDescription())
         .isEqualTo(
-            "ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,localParentNotSampled:AlwaysOffSampler}");
+            "ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,"
+                + "remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,"
+                + "localParentNotSampled:AlwaysOffSampler}");
   }
 
   @Test
