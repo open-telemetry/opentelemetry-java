@@ -311,7 +311,8 @@ public final class Samplers {
     @Override
     public String getDescription() {
       return String.format(
-          "ParentBased{root:%s,remoteParentSampled:%s,remoteParentNotSampled:%s,localParentSampled:%s,localParentNotSampled:%s}",
+          "ParentBased{root:%s,remoteParentSampled:%s,remoteParentNotSampled:%s,"
+              + "localParentSampled:%s,localParentNotSampled:%s}",
           this.root.getDescription(),
           this.remoteParentSampled.getDescription(),
           this.remoteParentNotSampled.getDescription(),
