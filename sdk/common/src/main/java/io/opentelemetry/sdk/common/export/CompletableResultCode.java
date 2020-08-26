@@ -124,10 +124,8 @@ public class CompletableResultCode {
    * @return this {@link CompletableResultCode}
    */
   public CompletableResultCode join(long timeout, TimeUnit unit) {
-    synchronized (lock) {
-      if (succeeded != null) {
-        return this;
-      }
+    if (isDone()) {
+      return this;
     }
     final CountDownLatch latch = new CountDownLatch(1);
     whenComplete(
