@@ -187,7 +187,7 @@ final class BigendianEncoding {
 
   private BigendianEncoding() {}
 
-  public static CharSequence toLowerBase16(byte[] bytes) {
+  public static String toLowerBase16(byte[] bytes) {
     char[] chars = new char[bytes.length * 2];
     for (int i = 0; i < bytes.length; i++) {
       byteToBase16(bytes[i], chars, i * 2);

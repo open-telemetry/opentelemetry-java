@@ -111,7 +111,7 @@ public final class SpanId {
   }
 
   /** Encode the bytes as base-16 (hex), padded with '0's on the left. */
-  public static CharSequence toLowerBase16(byte[] spanId) {
+  public static String toLowerBase16(byte[] spanId) {
     return BigendianEncoding.toLowerBase16(spanId);
   }
 }

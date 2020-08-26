@@ -43,15 +43,14 @@ public interface SpanData {
    *
    * @return the trace id.
    */
-  @SuppressWarnings("mutable")
-  CharSequence getTraceId();
+  String getTraceId();
 
   /**
    * Gets the span id for this span.
    *
    * @return the span id.
    */
-  CharSequence getSpanId();
+  String getSpanId();
 
   /**
    * Gets the trace flags for this span.

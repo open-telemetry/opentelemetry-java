@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -91,14 +90,12 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  @Memoized
-  public CharSequence getTraceId() {
+  public String getTraceId() {
     return delegate().getContext().getTraceIdAsBase16();
   }
 
   @Override
-  @Memoized
-  public CharSequence getSpanId() {
+  public String getSpanId() {
     return delegate().getContext().getSpanIdAsBase16();
   }
 

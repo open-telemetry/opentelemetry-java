@@ -97,8 +97,7 @@ public abstract class TestSpanData implements SpanData {
      * @param traceId the trace id.
      * @return this builder (for chaining).
      */
-    @SuppressWarnings("mutable")
-    public abstract Builder setTraceId(CharSequence traceId);
+    public abstract Builder setTraceId(String traceId);
 
     /**
      * Set the span id on this builder.
@@ -106,8 +105,7 @@ public abstract class TestSpanData implements SpanData {
      * @param spanId the span id.
      * @return this builder (for chaining).
      */
-    @SuppressWarnings("mutable")
-    public abstract Builder setSpanId(CharSequence spanId);
+    public abstract Builder setSpanId(String spanId);
 
     /**
      * Set the {@link TraceFlags} on this builder.

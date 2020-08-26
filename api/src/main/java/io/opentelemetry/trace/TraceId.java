@@ -149,7 +149,7 @@ public final class TraceId {
    * @return the lowercase base16 encoding of this {@code TraceId}.
    * @since 0.1.0
    */
-  public static CharSequence toLowerBase16(byte[] traceId) {
+  public static String toLowerBase16(byte[] traceId) {
     char[] chars = new char[BASE16_SIZE];
     copyLowerBase16Into(traceId, chars, 0);
     return new String(chars);
