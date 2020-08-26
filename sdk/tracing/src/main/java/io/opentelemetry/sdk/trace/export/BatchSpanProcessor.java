@@ -144,25 +144,17 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     static {
       Meter meter = OpenTelemetry.getMeter("io.opentelemetry.sdk.trace");
-      LongCounter droppedSpansCounter =
+      LongCounter processedSpansCounter =
           meter
-              .longCounterBuilder("droppedSpans")
+              .longCounterBuilder("processedSpans")
               .setUnit("1")
               .setDescription(
                   "The number of spans dropped by the BatchSpanProcessor due to high throughput.")
+              .setConstantLabels(
+                  Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName()))
               .build();
-      droppedSpans =
-          droppedSpansCounter.bind(
-              Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName()));
-      LongCounter exportedSpansCounter =
-          meter
-              .longCounterBuilder("exportedSpans")
-              .setUnit("1")
-              .setDescription("The number of spans exported by the BatchSpanProcessor.")
-              .build();
-      exportedSpans =
-          exportedSpansCounter.bind(
-              Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName()));
+      droppedSpans = processedSpansCounter.bind(Labels.of("dropped", "true"));
+      exportedSpans = processedSpansCounter.bind(Labels.of("dropped", "false"));
     }
 
     private static final BoundLongCounter droppedSpans;

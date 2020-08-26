@@ -100,8 +100,8 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
 
     /** Burn, checkstyle, burn. */
     public double dropRatio() {
-      long exported = getMetric("exportedSpans");
-      long dropped = getMetric("droppedSpans");
+      long exported = getMetric(true);
+      long dropped = getMetric(false);
       long total = exported + dropped;
       if (total == 0) {
         return 0;
@@ -113,22 +113,28 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
     }
 
     public long exportedSpans() {
-      return getMetric("exportedSpans");
+      return getMetric(true);
     }
 
     public long droppedSpans() {
-      return getMetric("droppedSpans");
+      return getMetric(false);
     }
 
-    private long getMetric(String metricName) {
+    private long getMetric(boolean dropped) {
+      String labelValue = String.valueOf(dropped);
       for (MetricData metricData : allMetrics) {
-        if (metricData.getDescriptor().getName().equals(metricName)) {
+        if (metricData.getDescriptor().getName().equals("processedSpans")) {
           List<Point> points = new ArrayList<>(metricData.getPoints());
           if (points.isEmpty()) {
             return 0;
           } else {
-            LongPoint point = (LongPoint) points.get(points.size() - 1);
-            return point.getValue();
+            // Find latest point with given value of dropped label
+            for (int i = points.size() - 1; i >= 0; i--) {
+              LongPoint point = (LongPoint) points.get(i);
+              if (labelValue.equals(point.getLabels().get("dropped"))) {
+                return point.getValue();
+              }
+            }
           }
         }
       }
