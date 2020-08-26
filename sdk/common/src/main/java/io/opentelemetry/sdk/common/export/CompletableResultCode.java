@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.common.export;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -104,6 +106,42 @@ public class CompletableResultCode {
       } else {
         this.completionActions.add(action);
       }
+    }
+    return this;
+  }
+
+  /** Returns whether this {@link CompletableResultCode} has completed. */
+  public boolean isDone() {
+    synchronized (lock) {
+      return succeeded != null;
+    }
+  }
+
+  /**
+   * Waits for the specified amount of time for this {@link CompletableResultCode} to complete. If
+   * it times out or is interrupted, the {@link CompletableResultCode} is failed.
+   *
+   * @return this {@link CompletableResultCode}
+   */
+  public CompletableResultCode join(long timeout, TimeUnit unit) {
+    if (isDone()) {
+      return this;
+    }
+    final CountDownLatch latch = new CountDownLatch(1);
+    whenComplete(
+        new Runnable() {
+          @Override
+          public void run() {
+            latch.countDown();
+          }
+        });
+    try {
+      if (!latch.await(timeout, unit)) {
+        fail();
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      fail();
     }
     return this;
   }

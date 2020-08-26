@@ -17,7 +17,9 @@
 package io.opentelemetry.sdk.common.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -188,5 +190,50 @@ class CompletableResultCodeTest {
     completions.await(3, TimeUnit.SECONDS);
 
     assertThat(resultCode.isSuccess()).isTrue();
+  }
+
+  @Test
+  void isDone() {
+    CompletableResultCode result = new CompletableResultCode();
+    assertThat(result.isDone()).isFalse();
+    result.fail();
+    assertThat(result.isDone()).isTrue();
+  }
+
+  @Test
+  void join() {
+    CompletableResultCode result = new CompletableResultCode();
+    new Thread(
+            () -> {
+              Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
+              result.succeed();
+            })
+        .start();
+    assertThat(result.join(500, TimeUnit.MILLISECONDS).isSuccess()).isTrue();
+    // Already completed, synchronous call.
+    assertThat(result.join(0, TimeUnit.NANOSECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
+  void joinTimesOut() {
+    CompletableResultCode result = new CompletableResultCode();
+    assertThat(result.join(1, TimeUnit.MILLISECONDS).isSuccess()).isFalse();
+    assertThat(result.isDone()).isTrue();
+  }
+
+  @Test
+  void joinInterrupted() {
+    CompletableResultCode result = new CompletableResultCode();
+    Thread thread =
+        new Thread(
+            () -> {
+              result.join(10, TimeUnit.SECONDS);
+            });
+    thread.start();
+    thread.interrupt();
+    assertThat(thread.isInterrupted()).isTrue();
+    // Different thread so wait a bit for result to be propagated.
+    await().untilAsserted(() -> assertThat(result.isDone()).isTrue());
+    assertThat(result.isSuccess()).isFalse();
   }
 }
