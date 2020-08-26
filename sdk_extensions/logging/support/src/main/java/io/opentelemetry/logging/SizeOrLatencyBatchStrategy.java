@@ -45,7 +45,7 @@ public class SizeOrLatencyBatchStrategy implements LoggingBatchStrategy {
   private LoggingBatchExporter batchHandler;
   private Queue<LogRecord> batch = buildNewQueue();
 
-  private Queue<LogRecord> buildNewQueue() {
+  private static Queue<LogRecord> buildNewQueue() {
     return new LinkedBlockingQueue<>();
   }
 
