@@ -24,7 +24,7 @@ import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -187,7 +187,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     ReadableAttributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
-    AttributeValue serviceNameValue = resourceAttributes.get(ResourceConstants.SERVICE_NAME);
+    AttributeValue serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME.key());
     if (serviceNameValue == null) {
       return localEndpoint;
     }
@@ -311,7 +311,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * consistent. Many use a name from service discovery.
      *
      * <p>Note: this value, will be superseded by the value of {@link
-     * io.opentelemetry.sdk.resources.ResourceConstants#SERVICE_NAME} if it has been set in the
+     * io.opentelemetry.sdk.resources.ResourceAttributes#SERVICE_NAME} if it has been set in the
      * {@link io.opentelemetry.sdk.resources.Resource} associated with the Tracer that created the
      * spans.
      *
@@ -320,7 +320,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @param serviceName The service name. It defaults to "unknown".
      * @return this.
      * @see io.opentelemetry.sdk.resources.Resource
-     * @see io.opentelemetry.sdk.resources.ResourceConstants
+     * @see io.opentelemetry.sdk.resources.ResourceAttributes
      * @since 0.4.0
      */
     public Builder setServiceName(String serviceName) {

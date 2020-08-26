@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.util.ServiceLoader;
 import org.junit.Before;
@@ -81,14 +81,15 @@ public class Ec2ResourceTest {
 
     Attributes attributes = populator.getAttributes();
     Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_ID, "i-1234567890abcdef0");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, "us-west-2b");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_TYPE, "t2.micro");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, "ami-5fb8c835");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, "123456789012");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, "us-west-2");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, "ec2-1-2-3-4");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_NAME, "ec2-1-2-3-4");
+
+    ResourceAttributes.HOST_ID.set(expectedAttrBuilders, "i-1234567890abcdef0");
+    ResourceAttributes.CLOUD_ZONE.set(expectedAttrBuilders, "us-west-2b");
+    ResourceAttributes.HOST_TYPE.set(expectedAttrBuilders, "t2.micro");
+    ResourceAttributes.HOST_IMAGE_ID.set(expectedAttrBuilders, "ami-5fb8c835");
+    ResourceAttributes.CLOUD_ACCOUNT.set(expectedAttrBuilders, "123456789012");
+    ResourceAttributes.CLOUD_REGION.set(expectedAttrBuilders, "us-west-2");
+    ResourceAttributes.HOST_HOSTNAME.set(expectedAttrBuilders, "ec2-1-2-3-4");
+    ResourceAttributes.HOST_NAME.set(expectedAttrBuilders, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
     verify(
@@ -112,14 +113,15 @@ public class Ec2ResourceTest {
 
     Attributes attributes = populator.getAttributes();
     Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_ID, "i-1234567890abcdef0");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, "us-west-2b");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_TYPE, "t2.micro");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, "ami-5fb8c835");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, "123456789012");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, "us-west-2");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, "ec2-1-2-3-4");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_NAME, "ec2-1-2-3-4");
+
+    ResourceAttributes.HOST_ID.set(expectedAttrBuilders, "i-1234567890abcdef0");
+    ResourceAttributes.CLOUD_ZONE.set(expectedAttrBuilders, "us-west-2b");
+    ResourceAttributes.HOST_TYPE.set(expectedAttrBuilders, "t2.micro");
+    ResourceAttributes.HOST_IMAGE_ID.set(expectedAttrBuilders, "ami-5fb8c835");
+    ResourceAttributes.CLOUD_ACCOUNT.set(expectedAttrBuilders, "123456789012");
+    ResourceAttributes.CLOUD_REGION.set(expectedAttrBuilders, "us-west-2");
+    ResourceAttributes.HOST_HOSTNAME.set(expectedAttrBuilders, "ec2-1-2-3-4");
+    ResourceAttributes.HOST_NAME.set(expectedAttrBuilders, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
     verify(

@@ -22,7 +22,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -172,22 +172,22 @@ public class Ec2Resource extends ResourceProvider {
         String value = parser.nextTextValue();
         switch (parser.getCurrentName()) {
           case "instanceId":
-            attrBuilders.setAttribute(ResourceConstants.HOST_ID, value);
+            ResourceAttributes.HOST_ID.set(attrBuilders, value);
             break;
           case "availabilityZone":
-            attrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, value);
+            ResourceAttributes.CLOUD_ZONE.set(attrBuilders, value);
             break;
           case "instanceType":
-            attrBuilders.setAttribute(ResourceConstants.HOST_TYPE, value);
+            ResourceAttributes.HOST_TYPE.set(attrBuilders, value);
             break;
           case "imageId":
-            attrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, value);
+            ResourceAttributes.HOST_IMAGE_ID.set(attrBuilders, value);
             break;
           case "accountId":
-            attrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, value);
+            ResourceAttributes.CLOUD_ACCOUNT.set(attrBuilders, value);
             break;
           case "region":
-            attrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, value);
+            ResourceAttributes.CLOUD_REGION.set(attrBuilders, value);
             break;
           default:
             parser.skipChildren();
@@ -198,8 +198,8 @@ public class Ec2Resource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    attrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, hostname);
-    attrBuilders.setAttribute(ResourceConstants.HOST_NAME, hostname);
+    ResourceAttributes.HOST_HOSTNAME.set(attrBuilders, hostname);
+    ResourceAttributes.HOST_NAME.set(attrBuilders, hostname);
 
     return attrBuilders.build();
   }
