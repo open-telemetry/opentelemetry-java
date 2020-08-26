@@ -27,8 +27,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.RandomIdsGenerator.SpanIdWrapper;
-import io.opentelemetry.sdk.trace.RandomIdsGenerator.TraceIdWrapper;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -210,8 +208,8 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
-    CharSequence traceId;
-    CharSequence spanId = idsGenerator.generateSpanId();
+    String traceId;
+    String spanId = idsGenerator.generateSpanId();
     TraceState traceState = TraceState.getDefault();
     if (!parentContext.isValid()) {
       // New root span.
@@ -281,29 +279,6 @@ final class SpanBuilderSdk implements Span.Builder {
 
   private static SpanContext createSpanContext(
       CharSequence traceId, CharSequence spanId, TraceState traceState, TraceFlags traceFlags) {
-    if (traceId instanceof TraceIdWrapper) {
-      if (spanId instanceof SpanIdWrapper) {
-        return SpanContext.create(
-            null,
-            ((TraceIdWrapper) traceId).getIdHi(),
-            ((TraceIdWrapper) traceId).getIdHi(),
-            null,
-            ((SpanIdWrapper) spanId).getId(),
-            traceFlags,
-            traceState,
-            /* remote=*/ false);
-      } else {
-        return SpanContext.create(
-            null,
-            ((TraceIdWrapper) traceId).getIdHi(),
-            ((TraceIdWrapper) traceId).getIdHi(),
-            spanId.toString(),
-            0,
-            traceFlags,
-            traceState,
-            /* remote=*/ false);
-      }
-    }
     return SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 

@@ -21,7 +21,8 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Helper methods for dealing with a trace identifier. A valid trace identifier is a 16-byte array
- * with at least one non-zero byte.
+ * with at least one non-zero byte. In base-16 representation, a 32 character hex String, where at
+ * least one of the characters is not a '0'.
  *
  * @since 0.1.0
  */
@@ -46,12 +47,21 @@ public final class TraceId {
   }
 
   /**
+   * Returns the length of the base16 (hex) representation of the {@code TraceId}.
+   *
+   * @since 0.8.0
+   */
+  public static int getBase16Length() {
+    return BASE16_SIZE;
+  }
+
+  /**
    * Returns the invalid {@code TraceId}. All bytes are '\0'.
    *
    * @return the invalid {@code TraceId}.
    * @since 0.1.0
    */
-  public static CharSequence getInvalid() {
+  public static String getInvalid() {
     return INVALID;
   }
 
@@ -70,7 +80,7 @@ public final class TraceId {
    * @param idLo the lower part of the {@code TraceId}.
    * @since 0.1.0
    */
-  public static CharSequence fromLongs(long idHi, long idLo) {
+  public static String fromLongs(long idHi, long idLo) {
     char[] chars = getBuffer();
     BigendianEncoding.longToBase16String(idHi, chars, 0);
     BigendianEncoding.longToBase16String(idLo, chars, 16);

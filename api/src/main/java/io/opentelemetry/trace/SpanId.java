@@ -20,17 +20,21 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Helper methods for dealing with a span identifier. A valid span identifier is an 8-byte array
- * with at least one non-zero byte.
+ * with at least one non-zero byte. In base-16 representation, a 16 character hex String, where at
+ * least one of the characters is not a '0'.
  *
  * @since 0.1.0
  */
 @Immutable
 public final class SpanId {
-  private SpanId() {}
 
+  private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
   private static final int SIZE = 8;
   private static final int BASE16_SIZE = 2 * SIZE;
+
   public static final String INVALID = "0000000000000000";
+
+  private SpanId() {}
 
   /**
    * Returns the size in bytes of the {@code SpanId}.
@@ -43,20 +47,38 @@ public final class SpanId {
   }
 
   /**
+   * Returns the length of the base16 (hex) representation of the {@code SpanId}.
+   *
+   * @since 0.8.0
+   */
+  public static int getBase16Length() {
+    return BASE16_SIZE;
+  }
+
+  /**
    * Returns the invalid {@code SpanId}. All bytes are 0.
    *
    * @return the invalid {@code SpanId}.
    * @since 0.1.0
    */
-  public static CharSequence getInvalid() {
+  public static String getInvalid() {
     return INVALID;
   }
 
-  /** javadoc me. */
+  /** Generate a valid {@link SpanId} from the given long value. */
   public static String fromLong(long id) {
-    byte[] result = new byte[8];
-    BigendianEncoding.longToByteArray(id, result, 0);
-    return toLowerBase16(result).toString();
+    char[] result = getBuffer();
+    BigendianEncoding.longToBase16String(id, result, 0);
+    return new String(result);
+  }
+
+  private static char[] getBuffer() {
+    char[] chars = charBuffer.get();
+    if (chars == null) {
+      chars = new char[BASE16_SIZE];
+      charBuffer.set(chars);
+    }
+    return chars;
   }
 
   /**

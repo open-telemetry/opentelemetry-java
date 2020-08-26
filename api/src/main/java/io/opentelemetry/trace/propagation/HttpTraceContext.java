@@ -55,8 +55,8 @@ public class HttpTraceContext implements TextMapPropagator {
   private static final int VERSION_SIZE = 2;
   private static final char TRACEPARENT_DELIMITER = '-';
   private static final int TRACEPARENT_DELIMITER_SIZE = 1;
-  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
-  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
+  private static final int TRACE_ID_HEX_SIZE = TraceId.getBase16Length();
+  private static final int SPAN_ID_HEX_SIZE = SpanId.getBase16Length();
   private static final int TRACE_OPTION_HEX_SIZE = 2 * TraceFlags.getSize();
   private static final int TRACE_ID_OFFSET = VERSION_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int SPAN_ID_OFFSET =
@@ -189,9 +189,9 @@ public class HttpTraceContext implements TextMapPropagator {
 
     try {
       String traceId =
-          traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + (TraceId.getSize() * 2));
+          traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getBase16Length());
       String spanId =
-          traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + (SpanId.getSize() * 2));
+          traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getBase16Length());
       if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
         TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
         return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);

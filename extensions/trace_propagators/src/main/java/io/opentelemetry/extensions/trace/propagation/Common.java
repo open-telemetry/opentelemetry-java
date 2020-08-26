@@ -35,8 +35,8 @@ final class Common {
 
   static final String TRUE_INT = "1";
   static final String FALSE_INT = "0";
-  static final int MAX_TRACE_ID_LENGTH = 2 * TraceId.getSize();
-  static final int MAX_SPAN_ID_LENGTH = 2 * SpanId.getSize();
+  static final int MAX_TRACE_ID_LENGTH = TraceId.getBase16Length();
+  static final int MAX_SPAN_ID_LENGTH = SpanId.getBase16Length();
   static final int MIN_TRACE_ID_LENGTH = TraceId.getSize();
   private static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
   private static final TraceFlags NOT_SAMPLED_FLAGS =
