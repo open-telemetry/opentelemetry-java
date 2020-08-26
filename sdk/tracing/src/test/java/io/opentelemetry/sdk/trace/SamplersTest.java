@@ -199,7 +199,7 @@ class SamplersTest {
 
   @Test
   void parentBasedSampler_AlwaysOn() {
-    // Sampled not remote parent.
+    // Sampled parent.
     assertThat(
             Samplers.parentBased(Samplers.alwaysOn())
                 .shouldSample(
@@ -212,8 +212,25 @@ class SamplersTest {
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
+    // Not sampled parent.
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, null, Samplers.alwaysOff(), null)
+            Samplers.parentBased(Samplers.alwaysOn())
+                .shouldSample(
+                    notSampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.NOT_RECORD);
+  }
+
+  @Test
+  void parentBasedSampler_AlwaysOff() {
+    // Sampled parent.
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOff())
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
@@ -222,11 +239,11 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
-    // Not sampled not remote parent.
+    // Not sampled parent.
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn())
+            Samplers.parentBased(Samplers.alwaysOff())
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
@@ -236,72 +253,12 @@ class SamplersTest {
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
+  }
 
+  @Test
+  void parentBasedSampler_NotSampled_Remote_Parent() {
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, null, null, Samplers.alwaysOn())
-                .shouldSample(
-                    notSampledSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
-
-    // Invalid parent.
-    assertThat(
-            Samplers.parentBased(Samplers.alwaysOn())
-                .shouldSample(
-                    invalidSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
-
-    assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, null, null, Samplers.alwaysOn())
-                .shouldSample(
-                    invalidSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
-
-    // Sampled remote parent
-    assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), Samplers.alwaysOff(), null, null, null)
-                .shouldSample(
-                    sampledRemoteSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
-
-    assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), Samplers.alwaysOn(), null, null, null)
-                .shouldSample(
-                    sampledRemoteSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
-
-    // Not sampled remote parent
-    assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, Samplers.alwaysOn(), null, null)
+            Samplers.parentBased(Samplers.alwaysOff(), null, Samplers.alwaysOn(), null, null)
                 .shouldSample(
                     notSampledRemoteSpanContext,
                     traceId,
@@ -311,6 +268,18 @@ class SamplersTest {
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
+
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOff(), null, Samplers.alwaysOff(), null, null)
+                .shouldSample(
+                    notSampledRemoteSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
             Samplers.parentBased(Samplers.alwaysOn(), null, Samplers.alwaysOff(), null, null)
@@ -323,47 +292,22 @@ class SamplersTest {
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
+
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOn(), null, Samplers.alwaysOn(), null, null)
+                .shouldSample(
+                    notSampledRemoteSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.RECORD_AND_SAMPLED);
   }
 
   @Test
-  void parentBasedSampler_AlwaysOff() {
-    // Sampled not remote parent.
-    assertThat(
-            Samplers.parentBased(Samplers.alwaysOff())
-                .shouldSample(
-                    sampledSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
-
-    assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, null, Samplers.alwaysOff(), null)
-                .shouldSample(
-                    sampledSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
-
-    // Not sampled not remote parent.
-    assertThat(
-            Samplers.parentBased(Samplers.alwaysOff())
-                .shouldSample(
-                    notSampledSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+  void parentBasedSampler_NotSampled_NotRemote_Parent() {
 
     assertThat(
             Samplers.parentBased(Samplers.alwaysOff(), null, null, null, Samplers.alwaysOn())
@@ -377,11 +321,10 @@ class SamplersTest {
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
-    // Invalid parent.
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff())
+            Samplers.parentBased(Samplers.alwaysOff(), null, null, null, Samplers.alwaysOff())
                 .shouldSample(
-                    invalidSpanContext,
+                    notSampledSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -391,9 +334,9 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, null, null, Samplers.alwaysOn())
+            Samplers.parentBased(Samplers.alwaysOn(), null, null, null, Samplers.alwaysOff())
                 .shouldSample(
-                    invalidSpanContext,
+                    notSampledSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -402,7 +345,21 @@ class SamplersTest {
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
 
-    // Sampled remote parent
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOn(), null, null, null, Samplers.alwaysOn())
+                .shouldSample(
+                    notSampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+  }
+
+  @Test
+  void parentBasedSampler_Sampled_Remote_Parent() {
     assertThat(
             Samplers.parentBased(Samplers.alwaysOff(), Samplers.alwaysOff(), null, null, null)
                 .shouldSample(
@@ -427,11 +384,10 @@ class SamplersTest {
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
-    // Not sampled remote parent
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, Samplers.alwaysOn(), null, null)
+            Samplers.parentBased(Samplers.alwaysOn(), Samplers.alwaysOn(), null, null, null)
                 .shouldSample(
-                    notSampledRemoteSpanContext,
+                    sampledRemoteSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -441,9 +397,9 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, Samplers.alwaysOff(), null, null)
+            Samplers.parentBased(Samplers.alwaysOn(), Samplers.alwaysOff(), null, null, null)
                 .shouldSample(
-                    notSampledRemoteSpanContext,
+                    sampledRemoteSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -451,6 +407,113 @@ class SamplersTest {
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.NOT_RECORD);
+  }
+
+  @Test
+  void parentBasedSampler_Sampled_NotRemote_Parent() {
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOff(), null, null, Samplers.alwaysOn(), null)
+                .shouldSample(
+                    sampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOff(), null, null, Samplers.alwaysOff(), null)
+                .shouldSample(
+                    sampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.NOT_RECORD);
+
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOn(), null, null, Samplers.alwaysOff(), null)
+                .shouldSample(
+                    sampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.NOT_RECORD);
+
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOn(), null, null, Samplers.alwaysOn(), null)
+                .shouldSample(
+                    sampledSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+  }
+
+  @Test
+  void parentBasedSampler_invalid_Parent() {
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOff())
+                .shouldSample(
+                    invalidSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.NOT_RECORD);
+
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOff())
+                .shouldSample(
+                    invalidSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.NOT_RECORD);
+
+    assertThat(
+            Samplers.parentBased(
+                    Samplers.alwaysOff(),
+                    Samplers.alwaysOn(),
+                    Samplers.alwaysOn(),
+                    Samplers.alwaysOn(),
+                    Samplers.alwaysOn())
+                .shouldSample(
+                    invalidSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.NOT_RECORD);
+
+    assertThat(
+            Samplers.parentBased(Samplers.alwaysOn())
+                .shouldSample(
+                    invalidSpanContext,
+                    traceId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Attributes.empty(),
+                    Collections.emptyList())
+                .getDecision())
+        .isEqualTo(Decision.RECORD_AND_SAMPLED);
   }
 
   @Test
