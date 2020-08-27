@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 
 /**
  * A LogRecord is an implementation of the <a
- * href="https://github.com/open-telemetry/oteps/blob/master/text/logs/0097-log-data-model.md">
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/logs/data-model.md">
  * OpenTelemetry logging model</a>.
  */
 @AutoValue
