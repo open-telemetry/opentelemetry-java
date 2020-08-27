@@ -239,23 +239,25 @@ public final class BatchSpanProcessor implements SpanProcessor {
       final CompletableResultCode result = new CompletableResultCode();
 
       final CompletableResultCode flushResult = forceFlush();
-      flushResult.whenComplete(new Runnable() {
-        @Override
-        public void run() {
-          continueWork = false;
-          final CompletableResultCode shutdownResult = spanExporter.shutdown();
-          shutdownResult.whenComplete(new Runnable() {
+      flushResult.whenComplete(
+          new Runnable() {
             @Override
             public void run() {
-              if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
-                result.fail();
-              } else {
-                result.succeed();
-              }
+              continueWork = false;
+              final CompletableResultCode shutdownResult = spanExporter.shutdown();
+              shutdownResult.whenComplete(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
+                        result.fail();
+                      } else {
+                        result.succeed();
+                      }
+                    }
+                  });
             }
           });
-        }
-      });
 
       return result;
     }

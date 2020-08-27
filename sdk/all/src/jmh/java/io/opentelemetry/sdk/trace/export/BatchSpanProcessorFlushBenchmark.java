@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
@@ -76,7 +76,9 @@ public class BatchSpanProcessorFlushBenchmark {
     }
 
     @Override
-    public void shutdown() {}
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
   }
 
   @Param({"0", "1", "5"})

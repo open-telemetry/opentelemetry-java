@@ -46,8 +46,7 @@ final class DisruptorEventQueue {
   private static final EventTranslatorThreeArg<
           DisruptorEvent, EventType, Object, CompletableResultCode>
       TRANSLATOR_THREE_ARG =
-          new EventTranslatorThreeArg<
-              DisruptorEvent, EventType, Object, CompletableResultCode>() {
+          new EventTranslatorThreeArg<DisruptorEvent, EventType, Object, CompletableResultCode>() {
             @Override
             public void translateTo(
                 DisruptorEvent event,
@@ -147,8 +146,7 @@ final class DisruptorEventQueue {
   }
 
   // Enqueues an event on the {@link DisruptorEventQueue}.
-  private void enqueue(
-      EventType eventType, Object span, CompletableResultCode result) {
+  private void enqueue(EventType eventType, Object span, CompletableResultCode result) {
     if (blocking) {
       ringBuffer.publishEvent(TRANSLATOR_THREE_ARG, eventType, span, result);
     } else {
