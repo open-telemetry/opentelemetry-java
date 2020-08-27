@@ -298,11 +298,9 @@ public final class Samplers {
       private Sampler localParentNotSampled;
 
       /**
-       * Sets the remoteParentSampled. Optional.
+       * Sets the {@link Sampler} to use when there is a remote parent that was sampled.
        *
-       * @param remoteParentSampled used to make the sampling decisions if the remote parent exist
-       *     and is sampled.
-       * @return this.
+       * @return this Builder
        */
       public Builder withRemoteParentSampled(Sampler remoteParentSampled) {
         this.remoteParentSampled = remoteParentSampled;
@@ -310,11 +308,9 @@ public final class Samplers {
       }
 
       /**
-       * Sets the remoteParentNotSampled. Optional.
+       * Sets the {@link Sampler} to use when there is a remote parent that was not sampled.
        *
-       * @param remoteParentNotSampled used to make the sampling decisions if the remote parent
-       *     exist and is not sampled.
-       * @return this.
+       * @return this Builder
        */
       public Builder withRemoteParentNotSampled(Sampler remoteParentNotSampled) {
         this.remoteParentNotSampled = remoteParentNotSampled;
@@ -322,11 +318,9 @@ public final class Samplers {
       }
 
       /**
-       * Sets the localParentSampled. Optional.
+       * Sets the {@link Sampler} to use when there is a local parent that was sampled.
        *
-       * @param localParentSampled used to make the sampling decisions if the local parent exist and
-       *     is sampled.
-       * @return this.
+       * @return this Builder
        */
       public Builder withLocalParentSampled(Sampler localParentSampled) {
         this.localParentSampled = localParentSampled;
@@ -334,11 +328,9 @@ public final class Samplers {
       }
 
       /**
-       * Sets the localParentNotSampled. Optional.
+       * Sets the {@link Sampler} to use when there is a local parent that was not sampled.
        *
-       * @param localParentNotSampled used to make the sampling decisions if the local parent exist
-       *     and is not sampled.
-       * @return this.
+       * @return this Builder
        */
       public Builder withLocalParentNotSampled(Sampler localParentNotSampled) {
         this.localParentNotSampled = localParentNotSampled;
