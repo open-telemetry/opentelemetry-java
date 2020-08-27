@@ -259,7 +259,7 @@ class SamplersTest {
   void parentBasedSampler_NotSampled_Remote_Parent() {
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOff())
-                .withRemoteParentNotSampled(Samplers.alwaysOn())
+                .setRemoteParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
                     notSampledRemoteSpanContext,
@@ -273,7 +273,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOff())
-                .withRemoteParentNotSampled(Samplers.alwaysOff())
+                .setRemoteParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
                     notSampledRemoteSpanContext,
@@ -287,7 +287,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOn())
-                .withRemoteParentNotSampled(Samplers.alwaysOff())
+                .setRemoteParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
                     notSampledRemoteSpanContext,
@@ -301,7 +301,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOn())
-                .withRemoteParentNotSampled(Samplers.alwaysOn())
+                .setRemoteParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
                     notSampledRemoteSpanContext,
@@ -319,7 +319,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOff())
-                .withLocalParentNotSampled(Samplers.alwaysOn())
+                .setLocalParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
                     notSampledSpanContext,
@@ -333,7 +333,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOff())
-                .withLocalParentNotSampled(Samplers.alwaysOff())
+                .setLocalParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
                     notSampledSpanContext,
@@ -347,7 +347,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOn())
-                .withLocalParentNotSampled(Samplers.alwaysOff())
+                .setLocalParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
                     notSampledSpanContext,
@@ -361,7 +361,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOn())
-                .withLocalParentNotSampled(Samplers.alwaysOn())
+                .setLocalParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
                     notSampledSpanContext,
@@ -378,7 +378,7 @@ class SamplersTest {
   void parentBasedSampler_Sampled_Remote_Parent() {
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOff())
-                .withRemoteParentSampled(Samplers.alwaysOff())
+                .setRemoteParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
                     sampledRemoteSpanContext,
@@ -392,7 +392,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOff())
-                .withRemoteParentSampled(Samplers.alwaysOn())
+                .setRemoteParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
                     sampledRemoteSpanContext,
@@ -406,7 +406,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOn())
-                .withRemoteParentSampled(Samplers.alwaysOn())
+                .setRemoteParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
                     sampledRemoteSpanContext,
@@ -420,7 +420,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOn())
-                .withRemoteParentSampled(Samplers.alwaysOff())
+                .setRemoteParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
                     sampledRemoteSpanContext,
@@ -437,7 +437,7 @@ class SamplersTest {
   void parentBasedSampler_Sampled_NotRemote_Parent() {
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOff())
-                .withLocalParentSampled(Samplers.alwaysOn())
+                .setLocalParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
                     sampledSpanContext,
@@ -451,7 +451,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOff())
-                .withLocalParentSampled(Samplers.alwaysOff())
+                .setLocalParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
                     sampledSpanContext,
@@ -465,7 +465,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOn())
-                .withLocalParentSampled(Samplers.alwaysOff())
+                .setLocalParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
                     sampledSpanContext,
@@ -479,7 +479,7 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOn())
-                .withLocalParentSampled(Samplers.alwaysOn())
+                .setLocalParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
                     sampledSpanContext,
@@ -520,10 +520,10 @@ class SamplersTest {
 
     assertThat(
             Samplers.newParentBasedBuilder(Samplers.alwaysOff())
-                .withRemoteParentSampled(Samplers.alwaysOn())
-                .withRemoteParentNotSampled(Samplers.alwaysOn())
-                .withLocalParentSampled(Samplers.alwaysOn())
-                .withLocalParentNotSampled(Samplers.alwaysOn())
+                .setRemoteParentSampled(Samplers.alwaysOn())
+                .setRemoteParentNotSampled(Samplers.alwaysOn())
+                .setLocalParentSampled(Samplers.alwaysOn())
+                .setLocalParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
                     invalidSpanContext,

@@ -303,7 +303,7 @@ public final class Samplers {
        *
        * @return this Builder
        */
-      public Builder withRemoteParentSampled(Sampler remoteParentSampled) {
+      public Builder setRemoteParentSampled(Sampler remoteParentSampled) {
         this.remoteParentSampled = remoteParentSampled;
         return this;
       }
@@ -314,7 +314,7 @@ public final class Samplers {
        *
        * @return this Builder
        */
-      public Builder withRemoteParentNotSampled(Sampler remoteParentNotSampled) {
+      public Builder setRemoteParentNotSampled(Sampler remoteParentNotSampled) {
         this.remoteParentNotSampled = remoteParentNotSampled;
         return this;
       }
@@ -325,7 +325,7 @@ public final class Samplers {
        *
        * @return this Builder
        */
-      public Builder withLocalParentSampled(Sampler localParentSampled) {
+      public Builder setLocalParentSampled(Sampler localParentSampled) {
         this.localParentSampled = localParentSampled;
         return this;
       }
@@ -336,7 +336,7 @@ public final class Samplers {
        *
        * @return this Builder
        */
-      public Builder withLocalParentNotSampled(Sampler localParentNotSampled) {
+      public Builder setLocalParentNotSampled(Sampler localParentNotSampled) {
         this.localParentNotSampled = localParentNotSampled;
         return this;
       }
