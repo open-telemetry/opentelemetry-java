@@ -32,6 +32,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import zipkin2.Endpoint;
@@ -140,6 +141,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
     SpanData spanData = buildStandardSpan().build();
     CompletableResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
+    resultCode.join(10, TimeUnit.SECONDS);
 
     assertThat(resultCode.isSuccess()).isTrue();
     List<Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
