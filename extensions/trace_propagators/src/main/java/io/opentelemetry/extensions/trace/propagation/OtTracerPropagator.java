@@ -87,7 +87,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     String incomingTraceId = getter.get(carrier, TRACE_ID_HEADER);
     String traceId =
         incomingTraceId == null
-            ? TraceId.INVALID
+            ? TraceId.getInvalid()
             : StringUtils.padLeft(incomingTraceId, MAX_TRACE_ID_LENGTH);
     String spanId = getter.get(carrier, SPAN_ID_HEADER);
     String sampled = getter.get(carrier, SAMPLED_HEADER);
