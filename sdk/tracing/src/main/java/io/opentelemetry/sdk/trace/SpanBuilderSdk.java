@@ -216,7 +216,7 @@ final class SpanBuilderSdk implements Span.Builder {
       traceId = idsGenerator.generateTraceId();
     } else {
       // New child span.
-      traceId = parentContext.getTraceIdAsBase16();
+      traceId = parentContext.getTraceIdAsHexString();
       traceState = parentContext.getTraceState();
     }
     List<io.opentelemetry.trace.Link> immutableLinks =
@@ -265,7 +265,7 @@ final class SpanBuilderSdk implements Span.Builder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentContext.getSpanIdAsBase16(),
+        parentContext.getSpanIdAsHexString(),
         parentContext.isRemote(),
         traceConfig,
         spanProcessor,
@@ -278,7 +278,7 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   private static SpanContext createSpanContext(
-      CharSequence traceId, CharSequence spanId, TraceState traceState, TraceFlags traceFlags) {
+      String traceId, String spanId, TraceState traceState, TraceFlags traceFlags) {
     return SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 

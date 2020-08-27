@@ -60,7 +60,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext create(
-      CharSequence traceId, CharSequence spanId, TraceFlags traceFlags, TraceState traceState) {
+      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
     return create(traceId, 0, spanId, 0, traceFlags, traceState, /* remote=*/ false);
   }
 
@@ -76,16 +76,16 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      CharSequence traceId, CharSequence spanId, TraceFlags traceFlags, TraceState traceState) {
+      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
     return create(traceId, 0, spanId, 0, traceFlags, traceState, /* remote=*/ true);
   }
 
   /**
    * Creates a new {@code SpanContext} with the given identifiers and options.
    *
-   * @param traceId a CharSequence containing the trace identifier of the span context.
+   * @param traceId a String containing the trace identifier of the span context.
    * @param traceIdOffset the offset at which the traceId starts.
-   * @param spanId the CharSequence containing the the span identifier of the span context.
+   * @param spanId the String containing the the span identifier of the span context.
    * @param spanIdOffset the offset at which the spanId starts.
    * @param traceFlags the trace options for the span context.
    * @param traceState the trace state for the span context.
@@ -98,9 +98,9 @@ public abstract class SpanContext {
     "OverloadMethodsDeclarationOrder"
   })
   public static SpanContext create(
-      CharSequence traceId,
+      String traceId,
       int traceIdOffset,
-      CharSequence spanId,
+      String spanId,
       int spanIdOffset,
       TraceFlags traceFlags,
       TraceState traceState,
@@ -123,7 +123,7 @@ public abstract class SpanContext {
    * @return the trace identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public String getTraceIdAsBase16() {
+  public String getTraceIdAsHexString() {
     return getTraceId();
   }
 
@@ -144,7 +144,7 @@ public abstract class SpanContext {
    * @return the span identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public String getSpanIdAsBase16() {
+  public String getSpanIdAsHexString() {
     return getSpanId();
   }
 

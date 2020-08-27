@@ -108,7 +108,7 @@ public final class TraceId {
    *     srcOffset}.
    * @since 0.1.0
    */
-  public static byte[] bytesFromLowerBase16(CharSequence src, int srcOffset) {
+  public static byte[] bytesFromLowerBase16(String src, int srcOffset) {
     Utils.checkNotNull(src, "src");
     return BigendianEncoding.bytesFromBase16(src, srcOffset, BASE16_SIZE);
   }

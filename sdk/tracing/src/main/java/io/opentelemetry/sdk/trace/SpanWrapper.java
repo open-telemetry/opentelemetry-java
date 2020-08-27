@@ -91,12 +91,12 @@ abstract class SpanWrapper implements SpanData {
 
   @Override
   public String getTraceId() {
-    return delegate().getContext().getTraceIdAsBase16();
+    return delegate().getContext().getTraceIdAsHexString();
   }
 
   @Override
   public String getSpanId() {
-    return delegate().getContext().getSpanIdAsBase16();
+    return delegate().getContext().getSpanIdAsHexString();
   }
 
   @Override
@@ -110,7 +110,7 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public CharSequence getParentSpanId() {
+  public String getParentSpanId() {
     return delegate().getParentSpanId();
   }
 

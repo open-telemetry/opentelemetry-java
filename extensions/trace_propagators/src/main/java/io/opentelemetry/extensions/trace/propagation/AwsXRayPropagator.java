@@ -93,14 +93,14 @@ public class AwsXRayPropagator implements TextMapPropagator {
 
     SpanContext spanContext = span.getContext();
 
-    String otTraceId = spanContext.getTraceIdAsBase16();
+    String otTraceId = spanContext.getTraceIdAsHexString();
     String xrayTraceId =
         TRACE_ID_VERSION
             + TRACE_ID_DELIMITER
             + otTraceId.substring(0, TRACE_ID_FIRST_PART_LENGTH)
             + TRACE_ID_DELIMITER
             + otTraceId.substring(TRACE_ID_FIRST_PART_LENGTH);
-    CharSequence parentId = spanContext.getSpanIdAsBase16();
+    String parentId = spanContext.getSpanIdAsHexString();
     char samplingFlag = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 
@@ -138,8 +138,8 @@ public class AwsXRayPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
-    CharSequence traceId = TraceId.getInvalid();
-    CharSequence spanId = SpanId.getInvalid();
+    String traceId = TraceId.getInvalid();
+    String spanId = SpanId.getInvalid();
     TraceFlags traceFlags = TraceFlags.getDefault();
 
     int pos = 0;
@@ -208,7 +208,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
     return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
-  private static CharSequence parseTraceId(String xrayTraceId) {
+  private static String parseTraceId(String xrayTraceId) {
     if (xrayTraceId.length() != TRACE_ID_LENGTH) {
       return TraceId.getInvalid();
     }
@@ -232,7 +232,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
     return epochPart + uniquePart;
   }
 
-  private static CharSequence parseSpanId(String xrayParentId) {
+  private static String parseSpanId(String xrayParentId) {
     if (xrayParentId.length() != PARENT_ID_LENGTH) {
       return SpanId.getInvalid();
     }

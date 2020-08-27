@@ -130,7 +130,7 @@ public abstract class TestSpanData implements SpanData {
      * @return this.
      * @since 0.1.0
      */
-    public abstract Builder setParentSpanId(CharSequence parentSpanId);
+    public abstract Builder setParentSpanId(String parentSpanId);
 
     /**
      * Set the {@link Resource} associated with this span. Must not be null.

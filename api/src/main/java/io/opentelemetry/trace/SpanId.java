@@ -93,7 +93,7 @@ public final class SpanId {
    *     srcOffset}.
    * @since 0.1.0
    */
-  public static byte[] bytesFromLowerBase16(CharSequence src, int srcOffset) {
+  public static byte[] bytesFromLowerBase16(String src, int srcOffset) {
     return BigendianEncoding.bytesFromBase16(src, srcOffset, BASE16_SIZE);
   }
 
@@ -104,7 +104,7 @@ public final class SpanId {
    * @return {@code true} if the span identifier is valid.
    * @since 0.1.0
    */
-  public static boolean isValid(CharSequence spanId) {
+  public static boolean isValid(String spanId) {
     return (spanId.length() == BASE16_SIZE)
         && !INVALID.contentEquals(spanId)
         && BigendianEncoding.isValidBase16String(spanId);

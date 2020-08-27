@@ -59,7 +59,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
-  private final CharSequence parentSpanId;
+  private final String parentSpanId;
   // True if the parent is on a different process.
   private final boolean hasRemoteParent;
   // Handler called when the span starts and ends.
@@ -111,7 +111,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      CharSequence parentSpanId,
+      String parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -162,7 +162,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      @Nullable CharSequence parentSpanId,
+      @Nullable String parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -506,7 +506,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
   }
 
-  CharSequence getParentSpanId() {
+  String getParentSpanId() {
     return parentSpanId;
   }
 
@@ -608,9 +608,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     StringBuilder sb = new StringBuilder();
     sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceIdAsBase16());
+    sb.append(context.getTraceIdAsHexString());
     sb.append(", spanId=");
-    sb.append(context.getSpanIdAsBase16());
+    sb.append(context.getSpanIdAsHexString());
     sb.append(", parentSpanId=");
     sb.append(parentSpanId);
     sb.append(", name=");

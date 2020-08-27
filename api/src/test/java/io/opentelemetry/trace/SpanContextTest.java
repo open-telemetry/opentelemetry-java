@@ -24,15 +24,15 @@ import org.junit.jupiter.api.Test;
 class SpanContextTest {
   private static final byte[] firstTraceIdBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final CharSequence FIRST_TRACE_ID = TraceId.toLowerBase16(firstTraceIdBytes);
+  private static final String FIRST_TRACE_ID = TraceId.toLowerBase16(firstTraceIdBytes);
   private static final byte[] secondTraceIdBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, '0', 0, 0, 0, 0, 0, 0, 0, 0};
-  private static final CharSequence SECOND_TRACE_ID = TraceId.toLowerBase16(secondTraceIdBytes);
+  private static final String SECOND_TRACE_ID = TraceId.toLowerBase16(secondTraceIdBytes);
 
   private static final byte[] firstSpanIdBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final CharSequence FIRST_SPAN_ID = SpanId.toLowerBase16(firstSpanIdBytes);
+  private static final String FIRST_SPAN_ID = SpanId.toLowerBase16(firstSpanIdBytes);
   private static final byte[] secondSpanIdBytes = new byte[] {'0', 0, 0, 0, 0, 0, 0, 0};
-  private static final CharSequence SECOND_SPAN_ID = SpanId.toLowerBase16(secondSpanIdBytes);
+  private static final String SECOND_SPAN_ID = SpanId.toLowerBase16(secondSpanIdBytes);
   private static final TraceState FIRST_TRACE_STATE =
       TraceState.builder().set("foo", "bar").build();
   private static final TraceState SECOND_TRACE_STATE =
@@ -55,10 +55,8 @@ class SpanContextTest {
 
   @Test
   void invalidSpanContext() {
-    assertThat(SpanContext.getInvalid().getTraceIdAsBase16().toString())
-        .isEqualTo(TraceId.getInvalid().toString());
-    assertThat(SpanContext.getInvalid().getSpanIdAsBase16().toString())
-        .isEqualTo(SpanId.getInvalid().toString());
+    assertThat(SpanContext.getInvalid().getTraceIdAsHexString()).isEqualTo(TraceId.getInvalid());
+    assertThat(SpanContext.getInvalid().getSpanIdAsHexString()).isEqualTo(SpanId.getInvalid());
     assertThat(SpanContext.getInvalid().getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 
@@ -81,14 +79,14 @@ class SpanContextTest {
 
   @Test
   void getTraceId() {
-    assertThat(first.getTraceIdAsBase16().toString()).isEqualTo(FIRST_TRACE_ID.toString());
-    assertThat(second.getTraceIdAsBase16().toString()).isEqualTo(SECOND_TRACE_ID.toString());
+    assertThat(first.getTraceIdAsHexString()).isEqualTo(FIRST_TRACE_ID);
+    assertThat(second.getTraceIdAsHexString()).isEqualTo(SECOND_TRACE_ID);
   }
 
   @Test
   void getSpanId() {
-    assertThat(first.getSpanIdAsBase16().toString()).isEqualTo(FIRST_SPAN_ID.toString());
-    assertThat(second.getSpanIdAsBase16().toString()).isEqualTo(SECOND_SPAN_ID.toString());
+    assertThat(first.getSpanIdAsHexString()).isEqualTo(FIRST_SPAN_ID);
+    assertThat(second.getSpanIdAsHexString()).isEqualTo(SECOND_SPAN_ID);
   }
 
   @Test

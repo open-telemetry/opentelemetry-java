@@ -73,7 +73,7 @@ public interface SpanData {
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
    * @since 0.1.0
    */
-  CharSequence getParentSpanId();
+  String getParentSpanId();
 
   /**
    * Returns the resource of this {@code Span}.

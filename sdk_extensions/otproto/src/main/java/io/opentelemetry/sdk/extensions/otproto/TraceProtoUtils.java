@@ -34,7 +34,7 @@ public final class TraceProtoUtils {
    * @param spanId the spanId to convert.
    * @return a ByteString representation.
    */
-  public static ByteString toProtoSpanId(CharSequence spanId) {
+  public static ByteString toProtoSpanId(String spanId) {
     return ByteString.copyFrom(SpanId.bytesFromLowerBase16(spanId, 0));
   }
 
@@ -44,7 +44,7 @@ public final class TraceProtoUtils {
    * @param traceId the traceId to convert.
    * @return a ByteString representation.
    */
-  public static ByteString toProtoTraceId(CharSequence traceId) {
+  public static ByteString toProtoTraceId(String traceId) {
     return ByteString.copyFrom(TraceId.bytesFromLowerBase16(traceId, 0));
   }
 

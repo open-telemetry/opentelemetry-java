@@ -47,7 +47,7 @@ class PerOperationSampler implements Sampler {
   @Override
   public SamplingResult shouldSample(
       SpanContext parentContext,
-      CharSequence traceId,
+      String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
