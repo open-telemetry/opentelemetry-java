@@ -61,7 +61,12 @@ public abstract class SpanContext {
    */
   public static SpanContext create(
       String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
-    return create(traceId, 0, spanId, 0, traceFlags, traceState, /* remote=*/ false);
+    return create(traceId, spanId, traceFlags, traceState, /* remote=*/ false);
+  }
+
+  private static SpanContext create(
+      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState, boolean remote) {
+    return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote$=*/ remote);
   }
 
   /**
@@ -77,40 +82,7 @@ public abstract class SpanContext {
    */
   public static SpanContext createFromRemoteParent(
       String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
-    return create(traceId, 0, spanId, 0, traceFlags, traceState, /* remote=*/ true);
-  }
-
-  /**
-   * Creates a new {@code SpanContext} with the given identifiers and options.
-   *
-   * @param traceId a String containing the trace identifier of the span context.
-   * @param traceIdOffset the offset at which the traceId starts.
-   * @param spanId the String containing the the span identifier of the span context.
-   * @param spanIdOffset the offset at which the spanId starts.
-   * @param traceFlags the trace options for the span context.
-   * @param traceState the trace state for the span context.
-   * @return a new {@code SpanContext} with the given identifiers and options.
-   * @since 0.1.0
-   */
-  @SuppressWarnings({
-    "InconsistentOverloads",
-    "UngroupedOverloads",
-    "OverloadMethodsDeclarationOrder"
-  })
-  public static SpanContext create(
-      String traceId,
-      int traceIdOffset,
-      String spanId,
-      int spanIdOffset,
-      TraceFlags traceFlags,
-      TraceState traceState,
-      boolean remote) {
-    return new AutoValue_SpanContext(
-        traceId.subSequence(traceIdOffset, traceIdOffset + 32).toString(),
-        spanId.subSequence(spanIdOffset, spanIdOffset + 16).toString(),
-        traceFlags,
-        traceState,
-        /* remote$=*/ remote);
+    return create(traceId, spanId, traceFlags, traceState, /* remote=*/ true);
   }
 
   abstract String getTraceId();
