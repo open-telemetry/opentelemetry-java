@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -88,13 +89,15 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     // Do nothing.
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
-  public void forceFlush() {
+  public CompletableResultCode forceFlush() {
     // Do nothing.
+    return CompletableResultCode.ofSuccess();
   }
 
   /**

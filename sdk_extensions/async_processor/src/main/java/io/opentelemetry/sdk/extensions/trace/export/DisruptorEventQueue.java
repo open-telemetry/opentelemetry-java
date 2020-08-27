@@ -23,10 +23,10 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -42,16 +42,17 @@ final class DisruptorEventQueue {
   private static final Logger logger = Logger.getLogger(DisruptorEventQueue.class.getName());
   private static final String WORKER_THREAD_NAME = "DisruptorEventQueue_WorkerThread";
   private static final EventTranslatorThreeArg<
-          DisruptorEvent, EventType, ReadableSpan, CountDownLatch>
+          DisruptorEvent, EventType, ReadableSpan, CompletableResultCode>
       TRANSLATOR_THREE_ARG =
-          new EventTranslatorThreeArg<DisruptorEvent, EventType, ReadableSpan, CountDownLatch>() {
+          new EventTranslatorThreeArg<
+              DisruptorEvent, EventType, ReadableSpan, CompletableResultCode>() {
             @Override
             public void translateTo(
                 DisruptorEvent event,
                 long sequence,
                 EventType arg0,
                 ReadableSpan arg1,
-                CountDownLatch arg2) {
+                CompletableResultCode arg2) {
               event.setEntry(arg0, arg1, arg2);
             }
           };
@@ -67,12 +68,6 @@ final class DisruptorEventQueue {
   private final AtomicBoolean loggedShutdownMessage = new AtomicBoolean(false);
   private volatile boolean isShutdown = false;
   private final boolean blocking;
-
-  /**
-   * Only one consumer for {@link DisruptorEventQueue#forceFlush()} and {@link
-   * DisruptorEventQueue#shutdown()} invocation.
-   */
-  private static final byte NUM_CONSUMERS = 1;
 
   private enum EventType {
     ON_START,
@@ -121,47 +116,42 @@ final class DisruptorEventQueue {
 
   // Shuts down the underlying disruptor. Ensures that when this method returns the disruptor is
   // shutdown.
-  void shutdown() {
+  CompletableResultCode shutdown() {
     synchronized (this) {
       if (isShutdown) {
         // Race condition between two calls to shutdown. The other call already finished.
-        return;
+        return CompletableResultCode.ofSuccess();
       }
       isShutdown = true;
-      enqueueAndLock(EventType.ON_SHUTDOWN);
+      return enqueueWithResult(EventType.ON_SHUTDOWN);
     }
   }
 
   // Force to publish the ended spans to the SpanProcessor
-  void forceFlush() {
+  CompletableResultCode forceFlush() {
     if (isShutdown) {
       if (!loggedShutdownMessage.getAndSet(true)) {
         logger.info("Attempted to flush after Disruptor shutdown.");
       }
-      return;
+      return CompletableResultCode.ofFailure();
     }
-    enqueueAndLock(EventType.ON_FORCE_FLUSH);
+    return enqueueWithResult(EventType.ON_FORCE_FLUSH);
   }
 
-  private void enqueueAndLock(EventType event) {
-    CountDownLatch waitingCounter = new CountDownLatch(NUM_CONSUMERS); // only one processor.
-    enqueue(event, null, waitingCounter);
-    try {
-      waitingCounter.await();
-    } catch (InterruptedException e) {
-      // Preserve the interruption.
-      Thread.currentThread().interrupt();
-      logger.warning("Thread interrupted, shutdown may not finished.");
-    }
+  private CompletableResultCode enqueueWithResult(EventType event) {
+    CompletableResultCode result = new CompletableResultCode();
+    enqueue(event, null, result);
+    return result;
   }
 
   // Enqueues an event on the {@link DisruptorEventQueue}.
-  private void enqueue(EventType eventType, ReadableSpan readableSpan, CountDownLatch flushLatch) {
+  private void enqueue(
+      EventType eventType, ReadableSpan readableSpan, CompletableResultCode result) {
     if (blocking) {
-      ringBuffer.publishEvent(TRANSLATOR_THREE_ARG, eventType, readableSpan, flushLatch);
+      ringBuffer.publishEvent(TRANSLATOR_THREE_ARG, eventType, readableSpan, result);
     } else {
       // TODO: Record metrics if element not added.
-      ringBuffer.tryPublishEvent(TRANSLATOR_THREE_ARG, eventType, readableSpan, flushLatch);
+      ringBuffer.tryPublishEvent(TRANSLATOR_THREE_ARG, eventType, readableSpan, result);
     }
   }
 
@@ -169,15 +159,15 @@ final class DisruptorEventQueue {
   private static final class DisruptorEvent {
     @Nullable private ReadableSpan readableSpan = null;
     @Nullable private EventType eventType = null;
-    @Nullable private CountDownLatch waitingCounter = null;
+    @Nullable private CompletableResultCode result = null;
 
     void setEntry(
         @Nullable EventType eventType,
         @Nullable ReadableSpan readableSpan,
-        @Nullable CountDownLatch flushLatch) {
+        @Nullable CompletableResultCode result) {
       this.readableSpan = readableSpan;
       this.eventType = eventType;
-      this.waitingCounter = flushLatch;
+      this.result = result;
     }
 
     @Nullable
@@ -190,9 +180,15 @@ final class DisruptorEventQueue {
       return eventType;
     }
 
-    void countDownWaitingCounter() {
-      if (waitingCounter != null) {
-        waitingCounter.countDown();
+    void succeed() {
+      if (result != null) {
+        result.succeed();
+      }
+    }
+
+    void fail() {
+      if (result != null) {
+        result.fail();
       }
     }
   }
@@ -205,7 +201,7 @@ final class DisruptorEventQueue {
     }
 
     @Override
-    public void onEvent(DisruptorEvent event, long sequence, boolean endOfBatch) {
+    public void onEvent(final DisruptorEvent event, long sequence, boolean endOfBatch) {
       final ReadableSpan readableSpan = event.getReadableSpan();
       final EventType eventType = event.getEventType();
       if (eventType == null) {
@@ -221,12 +217,11 @@ final class DisruptorEventQueue {
             spanProcessor.onEnd(readableSpan);
             break;
           case ON_SHUTDOWN:
-            spanProcessor.shutdown();
-            event.countDownWaitingCounter();
+            propagateResult(spanProcessor.shutdown(), event);
             break;
           case ON_FORCE_FLUSH:
-            spanProcessor.forceFlush();
-            event.countDownWaitingCounter();
+            propagateResult(spanProcessor.forceFlush(), event);
+
             break;
         }
       } finally {
@@ -234,5 +229,20 @@ final class DisruptorEventQueue {
         event.setEntry(null, null, null);
       }
     }
+  }
+
+  private static void propagateResult(
+      final CompletableResultCode result, final DisruptorEvent event) {
+    result.whenComplete(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (result.isSuccess()) {
+              event.succeed();
+            } else {
+              event.fail();
+            }
+          }
+        });
   }
 }

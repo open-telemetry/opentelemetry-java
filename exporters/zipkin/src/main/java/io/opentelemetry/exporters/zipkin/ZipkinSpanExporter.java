@@ -21,8 +21,8 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -277,12 +277,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     try {
       sender.close();
     } catch (IOException e) {
       logger.log(Level.WARNING, "Exception while closing the Zipkin Sender instance", e);
     }
+    return CompletableResultCode.ofSuccess();
   }
 
   /**

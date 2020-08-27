@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.trace.Span;
 
 /**
@@ -60,17 +61,17 @@ public interface SpanProcessor {
   boolean isEndRequired();
 
   /**
-   * Called when {@link TracerSdkProvider#shutdown()} is called.
+   * Processes all span events that have not yet been processed and closes used resources.
    *
-   * <p>Implementations must ensure that all span events are processed before returning.
+   * @return a {@link CompletableResultCode} which completes when shutdown is finished.
    */
-  void shutdown();
+  CompletableResultCode shutdown();
 
   /**
    * Processes all span events that have not yet been processed.
    *
-   * <p>This method is executed synchronously on the calling thread, and should not throw
-   * exceptions.
+   * @return a {@link CompletableResultCode} which completes when currently queued spans are
+   *     finished processing.
    */
-  void forceFlush();
+  CompletableResultCode forceFlush();
 }

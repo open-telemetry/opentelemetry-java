@@ -21,8 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -151,8 +151,13 @@ class TracerSdkTest {
           StressTestRunner.Operation.create(2_000, 1, new SimpleSpanOperation(tracer)));
     }
 
+    // Needs to correlate with the BatchSpanProcessor.Builder's default, which is the only thing
+    // this test can guarantee
+    final int defaultMaxQueueSize = 2048;
+
     stressTestBuilder.build().run();
-    assertThat(countingSpanExporter.numberOfSpansExported.get()).isEqualTo(8_000);
+    assertThat(countingSpanExporter.numberOfSpansExported.get())
+        .isGreaterThanOrEqualTo(defaultMaxQueueSize);
   }
 
   private static class CountingSpanProcessor implements SpanProcessor {
@@ -180,13 +185,15 @@ class TracerSdkTest {
     }
 
     @Override
-    public void shutdown() {
+    public CompletableResultCode shutdown() {
       // no-op
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
-    public void forceFlush() {
+    public CompletableResultCode forceFlush() {
       // no-op
+      return CompletableResultCode.ofSuccess();
     }
   }
 
@@ -224,8 +231,9 @@ class TracerSdkTest {
     }
 
     @Override
-    public void shutdown() {
+    public CompletableResultCode shutdown() {
       // no-op
+      return CompletableResultCode.ofSuccess();
     }
   }
 }

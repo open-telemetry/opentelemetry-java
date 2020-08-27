@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.common.export;
+package io.opentelemetry.sdk.common;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -37,6 +42,35 @@ public class CompletableResultCode {
   /** Returns a {@link CompletableResultCode} that has been completed unsuccessfully. */
   public static CompletableResultCode ofFailure() {
     return FAILURE;
+  }
+
+  /**
+   * Returns a {@link CompletableResultCode} that completes after all the provided {@link
+   * CompletableResultCode}s complete. If any of the results fail, the result will be failed.
+   */
+  public static CompletableResultCode ofAll(final Collection<CompletableResultCode> codes) {
+    final CompletableResultCode result = new CompletableResultCode();
+    final AtomicInteger pending = new AtomicInteger(codes.size());
+    final AtomicBoolean failed = new AtomicBoolean();
+    for (final CompletableResultCode code : codes) {
+      code.whenComplete(
+          new Runnable() {
+            @Override
+            public void run() {
+              if (!code.isSuccess()) {
+                failed.set(true);
+              }
+              if (pending.decrementAndGet() == 0) {
+                if (failed.get()) {
+                  result.fail();
+                } else {
+                  result.succeed();
+                }
+              }
+            }
+          });
+    }
+    return result;
   }
 
   private static final CompletableResultCode SUCCESS = new CompletableResultCode().succeed();
@@ -91,6 +125,13 @@ public class CompletableResultCode {
     }
   }
 
+  /** Returns whether this {@link CompletableResultCode} has completed. */
+  public boolean isDone() {
+    synchronized (lock) {
+      return succeeded != null;
+    }
+  }
+
   /**
    * Perform an action on completion. Actions are guaranteed to be called only once.
    *
@@ -104,6 +145,37 @@ public class CompletableResultCode {
       } else {
         this.completionActions.add(action);
       }
+    }
+    return this;
+  }
+
+  /**
+   * Waits for the specified amount of time for this {@link CompletableResultCode} to complete. If
+   * it times out or is interrupted, the {@link CompletableResultCode} is failed.
+   *
+   * @return this {@link CompletableResultCode}
+   */
+  public CompletableResultCode join(long timeout, TimeUnit unit) {
+    synchronized (lock) {
+      if (succeeded != null) {
+        return this;
+      }
+    }
+    final CountDownLatch latch = new CountDownLatch(1);
+    whenComplete(
+        new Runnable() {
+          @Override
+          public void run() {
+            latch.countDown();
+          }
+        });
+    try {
+      if (!latch.await(timeout, unit)) {
+        fail();
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      fail();
     }
     return this;
   }

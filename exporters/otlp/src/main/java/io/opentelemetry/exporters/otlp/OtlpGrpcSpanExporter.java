@@ -22,6 +22,7 @@ import com.google.common.base.Splitter;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
@@ -30,7 +31,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc.TraceServiceFutureStub;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -163,15 +164,21 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
   /**
    * Initiates an orderly shutdown in which preexisting calls continue but new calls are immediately
-   * cancelled. The channel is forcefully closed after a timeout.
+   * cancelled.
    */
   @Override
-  public void shutdown() {
-    try {
-      managedChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      logger.log(Level.WARNING, "Failed to shutdown the gRPC channel", e);
-    }
+  public CompletableResultCode shutdown() {
+    final CompletableResultCode result = new CompletableResultCode();
+    managedChannel.notifyWhenStateChanged(
+        ConnectivityState.SHUTDOWN,
+        new Runnable() {
+          @Override
+          public void run() {
+            result.succeed();
+          }
+        });
+    managedChannel.shutdown();
+    return result;
   }
 
   /** Builder utility for this exporter. */

@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.sdk.common.CompletableResultCode;
+
 final class NoopSpanProcessor implements SpanProcessor {
   private static final NoopSpanProcessor INSTANCE = new NoopSpanProcessor();
 
@@ -40,10 +42,14 @@ final class NoopSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void shutdown() {}
+  public CompletableResultCode shutdown() {
+    return CompletableResultCode.ofSuccess();
+  }
 
   @Override
-  public void forceFlush() {}
+  public CompletableResultCode forceFlush() {
+    return CompletableResultCode.ofSuccess();
+  }
 
   private NoopSpanProcessor() {}
 }

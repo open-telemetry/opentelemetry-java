@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
@@ -54,7 +54,9 @@ public class MultiSpanExporterBenchmark {
     }
 
     @Override
-    public void shutdown() {}
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
   }
 
   @Param({"1", "3"})

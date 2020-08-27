@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.metrics.export;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;

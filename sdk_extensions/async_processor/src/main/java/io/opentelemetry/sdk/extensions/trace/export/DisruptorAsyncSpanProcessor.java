@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.extensions.trace.export;
 import com.google.common.base.Preconditions;
 import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -90,13 +91,13 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void shutdown() {
-    disruptorEventQueue.shutdown();
+  public CompletableResultCode shutdown() {
+    return disruptorEventQueue.shutdown();
   }
 
   @Override
-  public void forceFlush() {
-    disruptorEventQueue.forceFlush();
+  public CompletableResultCode forceFlush() {
+    return disruptorEventQueue.forceFlush();
   }
 
   /**

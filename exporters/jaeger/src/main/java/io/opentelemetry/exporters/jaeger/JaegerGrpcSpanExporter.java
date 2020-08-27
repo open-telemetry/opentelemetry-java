@@ -16,12 +16,13 @@
 
 package io.opentelemetry.exporters.jaeger;
 
+import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -155,15 +156,21 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
 
   /**
    * Initiates an orderly shutdown in which preexisting calls continue but new calls are immediately
-   * cancelled. The channel is forcefully closed after a timeout.
+   * cancelled.
    */
   @Override
-  public void shutdown() {
-    try {
-      managedChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      logger.log(Level.WARNING, "Failed to shutdown the gRPC channel", e);
-    }
+  public CompletableResultCode shutdown() {
+    final CompletableResultCode result = new CompletableResultCode();
+    managedChannel.notifyWhenStateChanged(
+        ConnectivityState.SHUTDOWN,
+        new Runnable() {
+          @Override
+          public void run() {
+            result.succeed();
+          }
+        });
+    managedChannel.shutdown();
+    return result;
   }
 
   /** Builder utility for this exporter. */
