@@ -138,7 +138,7 @@ final class BigendianEncoding {
     byteToBase16(value, dest, destOffset);
   }
 
-  static byte[] bytesFromBase16(CharSequence value, int srcOffset, int charactersToRead) {
+  static byte[] bytesFromBase16(CharSequence value, int offset, int length) {
     CharSequence part = value.subSequence(srcOffset, srcOffset + charactersToRead);
     byte[] result = new byte[charactersToRead / 2];
     for (int i = 0; i < charactersToRead; i += 2) {
