@@ -147,12 +147,20 @@ class BigendianEncodingTest {
   }
 
   @Test
-  void longFromBase16String_UnrecongnizedCharacters() {
+  void longFromBase16String_UnrecognizedCharacters() {
     // These contain bytes not in the decoding.
     assertThrows(
         IllegalArgumentException.class,
         () -> BigendianEncoding.longFromBase16String("0123456789gbcdef", 0),
         "invalid character g");
+  }
+
+  @Test
+  void validHex() {
+    assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890")).isTrue();
+    assertThat(BigendianEncoding.isValidBase16String("abcdefg1234567890")).isFalse();
+    assertThat(BigendianEncoding.isValidBase16String("<abcdef1234567890")).isFalse();
+    assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890B")).isFalse();
   }
 
   @Test

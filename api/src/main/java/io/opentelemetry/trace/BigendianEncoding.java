@@ -139,10 +139,9 @@ final class BigendianEncoding {
   }
 
   static byte[] bytesFromBase16(CharSequence value, int offset, int length) {
-    CharSequence part = value.subSequence(offset, offset + length);
     byte[] result = new byte[length / 2];
     for (int i = 0; i < length; i += 2) {
-      result[i / 2] = byteFromBase16String(part, i);
+      result[i / 2] = byteFromBase16String(value, offset + i);
     }
     return result;
   }
@@ -178,7 +177,7 @@ final class BigendianEncoding {
     for (int i = 0; i < value.length(); i++) {
       char b = value.charAt(i);
       // 48..57 && 97..102 are valid
-      if (!Character.isDigit(b) && (b < 97 || b > 102)) {
+      if ((b < 48 || b > 57) && (b < 97 || b > 102)) {
         return false;
       }
     }
