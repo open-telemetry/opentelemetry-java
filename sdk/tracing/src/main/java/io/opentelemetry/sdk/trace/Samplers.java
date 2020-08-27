@@ -356,7 +356,7 @@ public final class Samplers {
             this.remoteParentSampled,
             this.remoteParentNotSampled,
             this.localParentSampled,
-            localParentNotSampled);
+            this.localParentNotSampled);
       }
 
       private Builder(Sampler root) {
