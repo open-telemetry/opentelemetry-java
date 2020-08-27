@@ -18,6 +18,8 @@ package io.opentelemetry.exporters.zipkin;
 
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,6 +52,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zipkin2.Call;
+import zipkin2.Callback;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.SpanBytesEncoder;
@@ -245,10 +248,18 @@ class ZipkinSpanExporterTest {
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
+    doAnswer(
+            invocation -> {
+              Callback<Void> callback = invocation.getArgument(0);
+              callback.onSuccess(null);
+              return null;
+            })
+        .when(mockZipkinCall)
+        .enqueue(any());
+
     CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(buildStandardSpan().build()));
 
-    verify(mockZipkinCall).execute();
     assertThat(resultCode.isSuccess()).isTrue();
   }
 
@@ -260,7 +271,14 @@ class ZipkinSpanExporterTest {
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
-    when(mockZipkinCall.execute()).thenThrow(new IOException());
+    doAnswer(
+            invocation -> {
+              Callback<Void> callback = invocation.getArgument(0);
+              callback.onError(new IOException());
+              return null;
+            })
+        .when(mockZipkinCall)
+        .enqueue(any());
 
     CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(buildStandardSpan().build()));
