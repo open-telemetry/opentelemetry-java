@@ -28,7 +28,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -126,7 +126,8 @@ class ZipkinSpanExporterTest {
     final Resource resource =
         Resource.create(
             Attributes.of(
-                ResourceConstants.SERVICE_NAME, stringAttributeValue("super-zipkin-service")));
+                ResourceAttributes.SERVICE_NAME.key(),
+                stringAttributeValue("super-zipkin-service")));
     SpanData data = buildStandardSpan().setResource(resource).build();
 
     Endpoint expectedEndpoint = Endpoint.newBuilder().serviceName("super-zipkin-service").build();

@@ -20,7 +20,7 @@ import static io.opentelemetry.extensions.trace.propagation.AwsXRayPropagator.TR
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -45,9 +45,9 @@ class AwsXRayPropagatorTest {
   private static final TraceFlags SAMPLED_TRACE_FLAG =
       TraceFlags.builder().setIsSampled(true).build();
 
-  private static final HttpTextFormat.Setter<Map<String, String>> setter = Map::put;
-  private static final HttpTextFormat.Getter<Map<String, String>> getter =
-      new HttpTextFormat.Getter<Map<String, String>>() {
+  private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
+  private static final TextMapPropagator.Getter<Map<String, String>> getter =
+      new TextMapPropagator.Getter<Map<String, String>>() {
         @Nullable
         @Override
         public String get(Map<String, String> carrier, String key) {

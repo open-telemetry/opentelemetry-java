@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.extensions.resources;
 
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -46,7 +46,7 @@ public class ProcessResource extends ResourceProvider {
     }
 
     if (pid >= 0) {
-      attributes.setAttribute(ResourceConstants.PROCESS_PID, pid);
+      ResourceAttributes.PROCESS_PID.set(attributes, pid);
     }
 
     String javaHome = null;
@@ -68,13 +68,13 @@ public class ProcessResource extends ResourceProvider {
         executablePath.append(".exe");
       }
 
-      attributes.setAttribute(ResourceConstants.PROCESS_EXECUTABLE_PATH, executablePath.toString());
+      ResourceAttributes.PROCESS_EXECUTABLE_PATH.set(attributes, executablePath.toString());
 
       StringBuilder commandLine = new StringBuilder(executablePath);
       for (String arg : runtime.getInputArguments()) {
         commandLine.append(' ').append(arg);
       }
-      attributes.setAttribute(ResourceConstants.PROCESS_COMMAND_LINE, commandLine.toString());
+      ResourceAttributes.PROCESS_COMMAND_LINE.set(attributes, commandLine.toString());
     }
 
     return attributes.build();

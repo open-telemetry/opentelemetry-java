@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- BREAKING CHANGE: Renamed HttpTextFormat to TextMapPropagator and implementations
 
 ## 0.7.0 - 2020-08-02
 

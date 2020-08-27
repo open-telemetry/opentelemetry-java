@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
@@ -57,6 +58,7 @@ class SimpleSpanProcessorTest {
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private static final String SPAN_NAME = "MySpanName";
   @Mock private ReadableSpan readableSpan;
+  @Mock private ReadWriteSpan readWriteSpan;
   @Mock private SpanExporter spanExporter;
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SimpleSpanProcessor");
@@ -96,7 +98,7 @@ class SimpleSpanProcessorTest {
 
   @Test
   void onStartSync() {
-    simpleSampledSpansProcessor.onStart(readableSpan);
+    simpleSampledSpansProcessor.onStart(readWriteSpan);
     verifyNoInteractions(spanExporter);
   }
 

@@ -36,6 +36,7 @@ class MultiSpanProcessorTest {
   @Mock private SpanProcessor spanProcessor1;
   @Mock private SpanProcessor spanProcessor2;
   @Mock private ReadableSpan readableSpan;
+  @Mock private ReadWriteSpan readWriteSpan;
 
   @BeforeEach
   void setUp() {
@@ -53,7 +54,7 @@ class MultiSpanProcessorTest {
   @Test
   void empty() {
     SpanProcessor multiSpanProcessor = MultiSpanProcessor.create(Collections.emptyList());
-    multiSpanProcessor.onStart(readableSpan);
+    multiSpanProcessor.onStart(readWriteSpan);
     multiSpanProcessor.onEnd(readableSpan);
     multiSpanProcessor.shutdown();
   }
@@ -62,8 +63,8 @@ class MultiSpanProcessorTest {
   void oneSpanProcessor() {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Collections.singletonList(spanProcessor1));
-    multiSpanProcessor.onStart(readableSpan);
-    verify(spanProcessor1).onStart(same(readableSpan));
+    multiSpanProcessor.onStart(readWriteSpan);
+    verify(spanProcessor1).onStart(same(readWriteSpan));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1).onEnd(same(readableSpan));
@@ -88,7 +89,7 @@ class MultiSpanProcessorTest {
     assertThat(multiSpanProcessor.isStartRequired()).isFalse();
     assertThat(multiSpanProcessor.isEndRequired()).isFalse();
 
-    multiSpanProcessor.onStart(readableSpan);
+    multiSpanProcessor.onStart(readWriteSpan);
     verifyNoMoreInteractions(spanProcessor1);
 
     multiSpanProcessor.onEnd(readableSpan);
@@ -105,9 +106,9 @@ class MultiSpanProcessorTest {
   void twoSpanProcessor() {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Arrays.asList(spanProcessor1, spanProcessor2));
-    multiSpanProcessor.onStart(readableSpan);
-    verify(spanProcessor1).onStart(same(readableSpan));
-    verify(spanProcessor2).onStart(same(readableSpan));
+    multiSpanProcessor.onStart(readWriteSpan);
+    verify(spanProcessor1).onStart(same(readWriteSpan));
+    verify(spanProcessor2).onStart(same(readWriteSpan));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1).onEnd(same(readableSpan));
@@ -132,9 +133,9 @@ class MultiSpanProcessorTest {
     assertThat(multiSpanProcessor.isStartRequired()).isTrue();
     assertThat(multiSpanProcessor.isEndRequired()).isTrue();
 
-    multiSpanProcessor.onStart(readableSpan);
-    verify(spanProcessor1).onStart(same(readableSpan));
-    verify(spanProcessor2, times(0)).onStart(any(ReadableSpan.class));
+    multiSpanProcessor.onStart(readWriteSpan);
+    verify(spanProcessor1).onStart(same(readWriteSpan));
+    verify(spanProcessor2, times(0)).onStart(any(ReadWriteSpan.class));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1, times(0)).onEnd(any(ReadableSpan.class));

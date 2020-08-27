@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.trace.SpanId;
@@ -65,7 +66,7 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadableSpan span) {
+  public void onStart(ReadWriteSpan span) {
     runningSpanCache.put(span.getSpanContext().getSpanId(), span);
   }
 

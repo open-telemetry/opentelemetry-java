@@ -20,7 +20,7 @@ import static io.opentelemetry.internal.Utils.checkArgument;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.TemporaryBuffers;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -42,7 +42,7 @@ import javax.annotation.concurrent.Immutable;
  * href=https://github.com/w3c/distributed-tracing>w3c/distributed-tracing</a>.
  */
 @Immutable
-public class HttpTraceContext implements HttpTextFormat {
+public class HttpTraceContext implements TextMapPropagator {
   private static final Logger logger = Logger.getLogger(HttpTraceContext.class.getName());
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();

@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.extensions.trace.propagation;
+package io.opentelemetry.sdk.trace;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator;
-import javax.annotation.concurrent.Immutable;
+import io.opentelemetry.trace.Span;
 
-@Immutable
-interface B3PropagatorExtractor {
-
-  <C> Context extract(Context context, C carrier, TextMapPropagator.Getter<C> getter);
-}
+/**
+ * A combination of the write methods from the {@link Span} interface and the read methods from the
+ * {@link ReadableSpan} interface.
+ */
+public interface ReadWriteSpan extends Span, ReadableSpan {}

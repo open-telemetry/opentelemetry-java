@@ -17,7 +17,6 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.internal.Utils;
-import java.util.Random;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -73,20 +72,6 @@ public final class SpanId implements Comparable<SpanId> {
    */
   public static SpanId getInvalid() {
     return INVALID;
-  }
-
-  /**
-   * Generates a new random {@code SpanId}.
-   *
-   * @param random The random number generator.
-   * @return a valid new {@code SpanId}.
-   */
-  static SpanId generateRandomId(Random random) {
-    long id;
-    do {
-      id = random.nextLong();
-    } while (id == INVALID_ID);
-    return new SpanId(id);
   }
 
   /**

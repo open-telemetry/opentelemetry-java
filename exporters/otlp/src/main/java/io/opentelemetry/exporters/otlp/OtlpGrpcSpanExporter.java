@@ -82,6 +82,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
   private final TraceServiceFutureStub traceService;
   private final ManagedChannel managedChannel;
+  private final long deadlineMs;
 
   /**
    * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.
@@ -92,11 +93,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   private OtlpGrpcSpanExporter(ManagedChannel channel, long deadlineMs) {
     this.managedChannel = channel;
-    TraceServiceFutureStub stub = TraceServiceGrpc.newFutureStub(channel);
-    if (deadlineMs > 0) {
-      stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
-    }
-    this.traceService = stub;
+    this.deadlineMs = deadlineMs;
+    this.traceService = TraceServiceGrpc.newFutureStub(channel);
   }
 
   /**
@@ -113,8 +111,16 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
             .build();
 
     final CompletableResultCode result = new CompletableResultCode();
+
+    TraceServiceFutureStub exporter;
+    if (deadlineMs > 0) {
+      exporter = traceService.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    } else {
+      exporter = traceService;
+    }
+
     Futures.addCallback(
-        traceService.export(exportTraceServiceRequest),
+        exporter.export(exportTraceServiceRequest),
         new FutureCallback<ExportTraceServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportTraceServiceResponse response) {

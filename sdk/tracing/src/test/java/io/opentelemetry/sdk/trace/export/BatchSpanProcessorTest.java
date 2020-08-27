@@ -18,8 +18,6 @@ package io.opentelemetry.sdk.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -157,7 +155,7 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  void exportMoreSpansThanTheBufferSize() throws Exception {
+  void exportMoreSpansThanTheBufferSize() {
     CompletableSpanExporter spanExporter = new CompletableSpanExporter();
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.newBuilder(spanExporter)
@@ -174,9 +172,6 @@ class BatchSpanProcessorTest {
     ReadableSpan span4 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span5 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span6 = createSampledEndedSpan(SPAN_NAME_1);
-
-    // Give time for the BatchSpanProcessor to attempt to export spans.
-    Thread.sleep(500);
 
     spanExporter.succeed();
 
@@ -212,11 +207,12 @@ class BatchSpanProcessorTest {
     }
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
-    assertThat(exported.size()).isEqualTo(0);
+    assertThat(exported.size()).isEqualTo(98);
+
     batchSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     exported = waitingSpanExporter.getExported();
     assertThat(exported).isNotNull();
-    assertThat(exported.size()).isEqualTo(100);
+    assertThat(exported.size()).isEqualTo(2);
   }
 
   @Test
@@ -227,7 +223,7 @@ class BatchSpanProcessorTest {
         new WaitingSpanExporter(2, CompletableResultCode.ofSuccess());
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(
-                MultiSpanExporter.create(Arrays.asList(waitingSpanExporter, waitingSpanExporter2)))
+            MultiSpanExporter.create(Arrays.asList(waitingSpanExporter, waitingSpanExporter2)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
@@ -246,7 +242,7 @@ class BatchSpanProcessorTest {
         new WaitingSpanExporter(maxQueuedSpans, CompletableResultCode.ofSuccess());
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.newBuilder(
-                MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
+            MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .setMaxQueueSize(maxQueuedSpans)
             .setMaxExportBatchSize(maxQueuedSpans / 2)
@@ -309,22 +305,18 @@ class BatchSpanProcessorTest {
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockServiceHandler)
         .export(ArgumentMatchers.anyList());
-    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofFailure());
-    BatchSpanProcessor processor = BatchSpanProcessor.newBuilder(mockServiceHandler).build();
-    tracerSdkFactory.addSpanProcessor(processor);
-    createSampledEndedSpan(SPAN_NAME_1);
-    processor.forceFlush().join(1, TimeUnit.SECONDS);
-    List<SpanData> exported = waitingSpanExporter.getExported();
-    assertThat(exported).isEmpty();
-
-    doAnswer(invocation -> waitingSpanExporter.export(invocation.getArgument(0)))
-        .when(mockServiceHandler)
-        .export(anyList());
-
+    tracerSdkFactory.addSpanProcessor(
+        BatchSpanProcessor.newBuilder(
+            MultiSpanExporter.create(Arrays.asList(mockServiceHandler, waitingSpanExporter)))
+            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .build());
+    ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).containsExactly(span1.toSpanData());
+    waitingSpanExporter.reset();
     // Continue to export after the exception was received.
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
-    processor.forceFlush().join(1, TimeUnit.SECONDS);
-    exported = waitingSpanExporter.getExported();
+    exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span2.toSpanData());
   }
 

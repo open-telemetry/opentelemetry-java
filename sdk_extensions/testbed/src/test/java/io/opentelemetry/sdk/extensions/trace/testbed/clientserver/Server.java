@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.extensions.trace.testbed.clientserver;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
+import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -41,7 +41,7 @@ final class Server extends Thread {
   private void process(Message message) {
     Context context =
         OpenTelemetry.getPropagators()
-            .getHttpTextFormat()
+            .getTextMapPropagator()
             .extract(
                 Context.current(),
                 message,
