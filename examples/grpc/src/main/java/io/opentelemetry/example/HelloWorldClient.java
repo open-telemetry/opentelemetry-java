@@ -30,7 +30,7 @@ import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -50,19 +50,15 @@ public class HelloWorldClient {
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
   // OTel API
-  Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");;
+  Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text headers
-  HttpTextFormat textFormat = OpenTelemetry.getPropagators().getHttpTextFormat();
+  TextMapPropagator textFormat = OpenTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
-  HttpTextFormat.Setter<Metadata> setter =
-      new HttpTextFormat.Setter<Metadata>() {
-        @Override
-        public void set(Metadata carrier, String key, String value) {
+  TextMapPropagator.Setter<Metadata> setter =
+      (carrier, key, value) ->
           carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
-        }
-      };
 
   /** Construct client connecting to HelloWorld server at {@code host:port}. */
   public HelloWorldClient(String host, int port) {
@@ -115,7 +111,6 @@ public class HelloWorldClient {
         logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
         // TODO create mapping for io.grpc.Status<->io.opentelemetry.trace.Status
         span.setStatus(Status.UNKNOWN.withDescription("gRPC status: " + e.getStatus()));
-        return;
       }
     } finally {
       span.end();

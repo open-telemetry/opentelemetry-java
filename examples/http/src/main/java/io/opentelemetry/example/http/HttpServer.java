@@ -23,7 +23,7 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -49,7 +49,7 @@ public class HttpServer {
       // Extract the context from the HTTP request
       Context context =
           OpenTelemetry.getPropagators()
-              .getHttpTextFormat()
+              .getTextMapPropagator()
               .extract(Context.current(), exchange, getter);
 
       Span span =
@@ -112,15 +112,12 @@ public class HttpServer {
   // Export traces to log
   private static LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
   // Extract the context from http headers
-  private static HttpTextFormat.Getter<HttpExchange> getter =
-      new HttpTextFormat.Getter<HttpExchange>() {
-        @Override
-        public String get(HttpExchange carrier, String key) {
-          if (carrier.getRequestHeaders().containsKey(key)) {
-            return carrier.getRequestHeaders().get(key).get(0);
-          }
-          return "";
+  private static TextMapPropagator.Getter<HttpExchange> getter =
+      (carrier, key) -> {
+        if (carrier.getRequestHeaders().containsKey(key)) {
+          return carrier.getRequestHeaders().get(key).get(0);
         }
+        return "";
       };
 
   private HttpServer() throws IOException {
@@ -158,13 +155,6 @@ public class HttpServer {
   public static void main(String[] args) throws Exception {
     final HttpServer s = new HttpServer();
     // Gracefully close the server
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread() {
-              @Override
-              public void run() {
-                s.stop();
-              }
-            });
+    Runtime.getRuntime().addShutdownHook(new Thread(s::stop));
   }
 }

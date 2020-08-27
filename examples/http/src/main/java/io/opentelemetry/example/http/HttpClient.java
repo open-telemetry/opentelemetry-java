@@ -19,7 +19,7 @@ package io.opentelemetry.example.http;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -31,23 +31,19 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 
 public class HttpClient {
 
   // OTel API
-  private static Tracer tracer =
+  private static final Tracer tracer =
       OpenTelemetry.getTracer("io.opentelemetry.example.http.HttpClient");
   // Export traces to log
-  private static LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
+  private static final LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
   // Inject the span context into the request
-  private static HttpTextFormat.Setter<HttpURLConnection> setter =
-      new HttpTextFormat.Setter<HttpURLConnection>() {
-        @Override
-        public void set(HttpURLConnection carrier, String key, String value) {
-          carrier.setRequestProperty(key, value);
-        }
-      };
+  private static final TextMapPropagator.Setter<HttpURLConnection> setter =
+      URLConnection::setRequestProperty;
 
   private static void initTracerSdk() {
     // Get the tracer
@@ -84,7 +80,7 @@ public class HttpClient {
       span.setAttribute("http.url", url.toString());
 
       // Inject the request with the current Context/Span.
-      OpenTelemetry.getPropagators().getHttpTextFormat().inject(Context.current(), con, setter);
+      OpenTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), con, setter);
 
       try {
         // Process the request
@@ -123,19 +119,17 @@ public class HttpClient {
 
     // Perform request every 5s
     Thread t =
-        new Thread() {
-          @Override
-          public void run() {
-            while (true) {
-              try {
-                HttpClient c = new HttpClient();
-                Thread.sleep(5000);
-              } catch (Exception e) {
-                System.out.println(e.getMessage());
+        new Thread(
+            () -> {
+              while (true) {
+                try {
+                  HttpClient c = new HttpClient();
+                  Thread.sleep(5000);
+                } catch (Exception e) {
+                  System.out.println(e.getMessage());
+                }
               }
-            }
-          }
-        };
+            });
     t.start();
   }
 }
