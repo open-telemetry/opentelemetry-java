@@ -32,7 +32,7 @@ public final class SpanId {
   private static final int SIZE = 8;
   private static final int BASE16_SIZE = 2 * SIZE;
 
-  public static final String INVALID = "0000000000000000";
+  private static final String INVALID = "0000000000000000";
 
   private SpanId() {}
 
