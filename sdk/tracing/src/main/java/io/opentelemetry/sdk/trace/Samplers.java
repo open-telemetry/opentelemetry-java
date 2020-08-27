@@ -298,7 +298,8 @@ public final class Samplers {
       private Sampler localParentNotSampled;
 
       /**
-       * Sets the {@link Sampler} to use when there is a remote parent that was sampled.
+       * Sets the {@link Sampler} to use when there is a remote parent that was sampled. If not set,
+       * defaults to always sampling if the remote parent was sampled.
        *
        * @return this Builder
        */
@@ -308,7 +309,8 @@ public final class Samplers {
       }
 
       /**
-       * Sets the {@link Sampler} to use when there is a remote parent that was not sampled.
+       * Sets the {@link Sampler} to use when there is a remote parent that was not sampled. If not
+       * set, defaults to never sampling when the remote parent isn't sampled.
        *
        * @return this Builder
        */
@@ -318,7 +320,8 @@ public final class Samplers {
       }
 
       /**
-       * Sets the {@link Sampler} to use when there is a local parent that was sampled.
+       * Sets the {@link Sampler} to use when there is a local parent that was sampled. If not set,
+       * defaults to always sampling if the local parent was sampled.
        *
        * @return this Builder
        */
@@ -328,7 +331,8 @@ public final class Samplers {
       }
 
       /**
-       * Sets the {@link Sampler} to use when there is a local parent that was not sampled.
+       * Sets the {@link Sampler} to use when there is a local parent that was not sampled. If not
+       * set, defaults to never sampling when the local parent isn't sampled.
        *
        * @return this Builder
        */
