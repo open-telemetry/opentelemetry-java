@@ -32,7 +32,7 @@ public final class TraceId {
 
   private static final int SIZE_IN_BYTES = 16;
   private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
-  public static final String INVALID = "00000000000000000000000000000000";
+  private static final String INVALID = "00000000000000000000000000000000";
 
   private TraceId() {}
 
