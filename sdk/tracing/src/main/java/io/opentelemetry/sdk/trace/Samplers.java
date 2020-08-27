@@ -154,40 +154,20 @@ public final class Samplers {
    * @since 0.7.0
    */
   public static Sampler parentBased(Sampler root) {
-    return new ParentBased(root);
+    return newParentBasedBuilder(root).build();
   }
 
   /**
-   * Returns a {@link Sampler} that always makes the same decision as the parent {@link Span} to
-   * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate
-   * to determine the sampling decision.
+   * Returns a {@link ParentBased.Builder} that follows the parent's sampling decision if one
+   * exists, otherwise following the root sampler and other optional sampler's decision.
    *
    * @param root the required {@code Sampler} which is used to make the sampling decisions if the
    *     parent does not exist.
-   * @param remoteParentSampled the optional {@code Sampler} which is used to make the sampling
-   *     decisions if the remote parent exist and is sampled.
-   * @param remoteParentNotSampled the optional {@code Sampler} which is used to make the sampling
-   *     decisions if the remote parent exist and is not sampled.
-   * @param localParentSampled the optional {@code Sampler} which is used to make the sampling
-   *     decisions if the local parent exist and is sampled.
-   * @param localParentNotSampled the optional {@code Sampler} which is used to make the sampling
-   *     decisions if the local parent exist and is not sampled.
-   * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
-   *     following the root sampler and other optional sampler's decision.
+   * @return a {@code ParentBased.Builder}
    * @since 0.8.0
    */
-  public static Sampler parentBased(
-      Sampler root,
-      Sampler remoteParentSampled,
-      Sampler remoteParentNotSampled,
-      Sampler localParentSampled,
-      Sampler localParentNotSampled) {
-    return new ParentBased(
-        root,
-        remoteParentSampled,
-        remoteParentNotSampled,
-        localParentSampled,
-        localParentNotSampled);
+  public static ParentBased.Builder newParentBasedBuilder(Sampler root) {
+    return new ParentBased.Builder(root);
   }
 
   /**
@@ -254,11 +234,7 @@ public final class Samplers {
     private final Sampler localParentSampled;
     private final Sampler localParentNotSampled;
 
-    ParentBased(Sampler root) {
-      this(root, alwaysOn(), alwaysOff(), alwaysOn(), alwaysOff());
-    }
-
-    ParentBased(
+    private ParentBased(
         Sampler root,
         Sampler remoteParentSampled,
         Sampler remoteParentNotSampled,
@@ -312,6 +288,80 @@ public final class Samplers {
           this.remoteParentNotSampled.getDescription(),
           this.localParentSampled.getDescription(),
           this.localParentNotSampled.getDescription());
+    }
+
+    static class Builder {
+      private final Sampler root;
+      private Sampler remoteParentSampled;
+      private Sampler remoteParentNotSampled;
+      private Sampler localParentSampled;
+      private Sampler localParentNotSampled;
+
+      /**
+       * Sets the remoteParentSampled. Optional.
+       *
+       * @param remoteParentSampled used to make the sampling decisions if the remote parent exist
+       *     and is sampled.
+       * @return this.
+       */
+      public Builder withRemoteParentSampled(Sampler remoteParentSampled) {
+        this.remoteParentSampled = remoteParentSampled;
+        return this;
+      }
+
+      /**
+       * Sets the remoteParentNotSampled. Optional.
+       *
+       * @param remoteParentNotSampled used to make the sampling decisions if the remote parent
+       *     exist and is not sampled.
+       * @return this.
+       */
+      public Builder withRemoteParentNotSampled(Sampler remoteParentNotSampled) {
+        this.remoteParentNotSampled = remoteParentNotSampled;
+        return this;
+      }
+
+      /**
+       * Sets the localParentSampled. Optional.
+       *
+       * @param localParentSampled used to make the sampling decisions if the local parent exist and
+       *     is sampled.
+       * @return this.
+       */
+      public Builder withLocalParentSampled(Sampler localParentSampled) {
+        this.localParentSampled = localParentSampled;
+        return this;
+      }
+
+      /**
+       * Sets the localParentNotSampled. Optional.
+       *
+       * @param localParentNotSampled used to make the sampling decisions if the local parent exist
+       *     and is not sampled.
+       * @return this.
+       */
+      public Builder withLocalParentNotSampled(Sampler localParentNotSampled) {
+        this.localParentNotSampled = localParentNotSampled;
+        return this;
+      }
+
+      /**
+       * Builds the {@link ParentBased}.
+       *
+       * @return the ParentBased sampler.
+       */
+      public ParentBased build() {
+        return new ParentBased(
+            this.root,
+            this.remoteParentSampled,
+            this.remoteParentNotSampled,
+            this.localParentSampled,
+            localParentNotSampled);
+      }
+
+      private Builder(Sampler root) {
+        this.root = root;
+      }
     }
   }
 

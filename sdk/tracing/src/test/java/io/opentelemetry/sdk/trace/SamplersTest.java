@@ -258,7 +258,9 @@ class SamplersTest {
   @Test
   void parentBasedSampler_NotSampled_Remote_Parent() {
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, Samplers.alwaysOn(), null, null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+                .withRemoteParentNotSampled(Samplers.alwaysOn())
+                .build()
                 .shouldSample(
                     notSampledRemoteSpanContext,
                     traceId,
@@ -270,7 +272,9 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, Samplers.alwaysOff(), null, null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+                .withRemoteParentNotSampled(Samplers.alwaysOff())
+                .build()
                 .shouldSample(
                     notSampledRemoteSpanContext,
                     traceId,
@@ -282,7 +286,9 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, Samplers.alwaysOff(), null, null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+                .withRemoteParentNotSampled(Samplers.alwaysOff())
+                .build()
                 .shouldSample(
                     notSampledRemoteSpanContext,
                     traceId,
@@ -294,7 +300,9 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, Samplers.alwaysOn(), null, null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+                .withRemoteParentNotSampled(Samplers.alwaysOn())
+                .build()
                 .shouldSample(
                     notSampledRemoteSpanContext,
                     traceId,
@@ -310,7 +318,9 @@ class SamplersTest {
   void parentBasedSampler_NotSampled_NotRemote_Parent() {
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, null, null, Samplers.alwaysOn())
+            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+                .withLocalParentNotSampled(Samplers.alwaysOn())
+                .build()
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
@@ -322,7 +332,9 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, null, null, Samplers.alwaysOff())
+            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+                .withLocalParentNotSampled(Samplers.alwaysOff())
+                .build()
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
@@ -334,7 +346,9 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, null, null, Samplers.alwaysOff())
+            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+                .withLocalParentNotSampled(Samplers.alwaysOff())
+                .build()
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
@@ -346,7 +360,9 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, null, null, Samplers.alwaysOn())
+            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+                .withLocalParentNotSampled(Samplers.alwaysOn())
+                .build()
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
@@ -361,7 +377,9 @@ class SamplersTest {
   @Test
   void parentBasedSampler_Sampled_Remote_Parent() {
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), Samplers.alwaysOff(), null, null, null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+                .withRemoteParentSampled(Samplers.alwaysOff())
+                .build()
                 .shouldSample(
                     sampledRemoteSpanContext,
                     traceId,
@@ -373,7 +391,9 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), Samplers.alwaysOn(), null, null, null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+                .withRemoteParentSampled(Samplers.alwaysOn())
+                .build()
                 .shouldSample(
                     sampledRemoteSpanContext,
                     traceId,
@@ -385,7 +405,9 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), Samplers.alwaysOn(), null, null, null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+                .withRemoteParentSampled(Samplers.alwaysOn())
+                .build()
                 .shouldSample(
                     sampledRemoteSpanContext,
                     traceId,
@@ -397,7 +419,9 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), Samplers.alwaysOff(), null, null, null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+                .withRemoteParentSampled(Samplers.alwaysOff())
+                .build()
                 .shouldSample(
                     sampledRemoteSpanContext,
                     traceId,
@@ -412,7 +436,9 @@ class SamplersTest {
   @Test
   void parentBasedSampler_Sampled_NotRemote_Parent() {
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, null, Samplers.alwaysOn(), null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+                .withLocalParentSampled(Samplers.alwaysOn())
+                .build()
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
@@ -424,7 +450,9 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOff(), null, null, Samplers.alwaysOff(), null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+                .withLocalParentSampled(Samplers.alwaysOff())
+                .build()
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
@@ -436,7 +464,9 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, null, Samplers.alwaysOff(), null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+                .withLocalParentSampled(Samplers.alwaysOff())
+                .build()
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
@@ -448,7 +478,9 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.parentBased(Samplers.alwaysOn(), null, null, Samplers.alwaysOn(), null)
+            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+                .withLocalParentSampled(Samplers.alwaysOn())
+                .build()
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
@@ -487,12 +519,12 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.parentBased(
-                    Samplers.alwaysOff(),
-                    Samplers.alwaysOn(),
-                    Samplers.alwaysOn(),
-                    Samplers.alwaysOn(),
-                    Samplers.alwaysOn())
+            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+                .withRemoteParentSampled(Samplers.alwaysOn())
+                .withRemoteParentNotSampled(Samplers.alwaysOn())
+                .withLocalParentSampled(Samplers.alwaysOn())
+                .withLocalParentNotSampled(Samplers.alwaysOn())
+                .build()
                 .shouldSample(
                     invalidSpanContext,
                     traceId,
