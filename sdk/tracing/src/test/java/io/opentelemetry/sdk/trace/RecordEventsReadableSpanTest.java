@@ -733,7 +733,12 @@ class RecordEventsReadableSpanTest {
     long timestamp = testClock.now();
 
     span.recordException(
-        exception, Attributes.of("key1", stringAttributeValue("this is an additional attribute")));
+        exception,
+        Attributes.of(
+            "key1",
+            stringAttributeValue("this is an additional attribute"),
+            "exception.message",
+            stringAttributeValue("this is a precedence attribute")));
 
     List<Event> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
@@ -745,7 +750,7 @@ class RecordEventsReadableSpanTest {
             Attributes.newBuilder()
                 .setAttribute("key1", "this is an additional attribute")
                 .setAttribute("exception.type", "java.lang.IllegalStateException")
-                .setAttribute("exception.message", "there was an exception")
+                .setAttribute("exception.message", "this is a precedence attribute")
                 .setAttribute("exception.stacktrace", stacktrace)
                 .build());
   }
