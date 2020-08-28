@@ -16,10 +16,14 @@
 
 package io.opentelemetry.exporters.jaeger;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
+import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansResponse;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -33,6 +37,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
@@ -49,7 +54,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private static final String HOSTNAME_KEY = "hostname";
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
-  private final CollectorServiceGrpc.CollectorServiceBlockingStub blockingStub;
+  private final CollectorServiceGrpc.CollectorServiceFutureStub stub;
   private final Model.Process process;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
@@ -98,7 +103,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
             .build();
 
     this.managedChannel = channel;
-    this.blockingStub = CollectorServiceGrpc.newBlockingStub(channel);
+    this.stub = CollectorServiceGrpc.newFutureStub(channel);
     this.deadlineMs = deadlineMs;
   }
 
@@ -119,20 +124,28 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
                     .build())
             .build();
 
-    try {
-      CollectorServiceGrpc.CollectorServiceBlockingStub stub = this.blockingStub;
-      if (deadlineMs > 0) {
-        stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
-      }
-
-      // for now, there's nothing to check in the response object
-      //noinspection ResultOfMethodCallIgnored
-      stub.postSpans(request);
-      return CompletableResultCode.ofSuccess();
-    } catch (Throwable e) {
-      logger.log(Level.WARNING, "Failed to export spans", e);
-      return CompletableResultCode.ofFailure();
+    CollectorServiceGrpc.CollectorServiceFutureStub stub = this.stub;
+    if (deadlineMs > 0) {
+      stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
     }
+
+    final CompletableResultCode result = new CompletableResultCode();
+    Futures.addCallback(
+        stub.postSpans(request),
+        new FutureCallback<PostSpansResponse>() {
+          @Override
+          public void onSuccess(@Nullable Collector.PostSpansResponse response) {
+            result.succeed();
+          }
+
+          @Override
+          public void onFailure(Throwable t) {
+            logger.log(Level.WARNING, "Failed to export spans", t);
+            result.fail();
+          }
+        },
+        MoreExecutors.directExecutor());
+    return result;
   }
 
   /**

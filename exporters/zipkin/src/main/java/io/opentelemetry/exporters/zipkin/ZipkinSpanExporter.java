@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import zipkin2.Callback;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
@@ -261,13 +262,24 @@ public final class ZipkinSpanExporter implements SpanExporter {
     for (SpanData spanData : spanDataList) {
       encodedSpans.add(encoder.encode(generateSpan(spanData, localEndpoint)));
     }
-    try {
-      sender.sendSpans(encodedSpans).execute();
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Failed to export spans", e);
-      return CompletableResultCode.ofFailure();
-    }
-    return CompletableResultCode.ofSuccess();
+
+    final CompletableResultCode result = new CompletableResultCode();
+    sender
+        .sendSpans(encodedSpans)
+        .enqueue(
+            new Callback<Void>() {
+              @Override
+              public void onSuccess(Void value) {
+                result.succeed();
+              }
+
+              @Override
+              public void onError(Throwable t) {
+                logger.log(Level.WARNING, "Failed to export spans", t);
+                result.fail();
+              }
+            });
+    return result;
   }
 
   @Override

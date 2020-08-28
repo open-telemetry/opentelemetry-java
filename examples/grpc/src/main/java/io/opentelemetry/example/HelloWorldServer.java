@@ -29,7 +29,7 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -52,11 +52,11 @@ public class HelloWorldServer {
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text
-  HttpTextFormat textFormat = OpenTelemetry.getPropagators().getHttpTextFormat();;
+  TextMapPropagator textFormat = OpenTelemetry.getPropagators().getTextMapPropagator();;
 
   // Extract the Distributed Context from the gRPC metadata
-  HttpTextFormat.Getter<Metadata> getter =
-      new HttpTextFormat.Getter<Metadata>() {
+  TextMapPropagator.Getter<Metadata> getter =
+      new TextMapPropagator.Getter<Metadata>() {
         @Override
         public String get(Metadata carrier, String key) {
           Metadata.Key<String> k = Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER);
@@ -84,19 +84,17 @@ public class HelloWorldServer {
     logger.info("Server started, listening on " + port);
     Runtime.getRuntime()
         .addShutdownHook(
-            new Thread() {
-              @Override
-              public void run() {
-                // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-                System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                HelloWorldServer.this.stop();
-                System.err.println("*** server shut down");
-                System.err.println(
-                    "*** forcing also the Tracer Exporter to shutdown and process the remaining traces");
-                exporter.shutdown();
-                System.err.println("*** Trace Exporter shut down");
-              }
-            });
+            new Thread(
+                () -> {
+                  // Use stderr here since the logger may have been reset by its JVM shutdown hook.
+                  System.err.println("*** shutting down gRPC server since JVM is shutting down");
+                  HelloWorldServer.this.stop();
+                  System.err.println("*** server shut down");
+                  System.err.println(
+                      "*** forcing also the Tracer Exporter to shutdown and process the remaining traces");
+                  exporter.shutdown();
+                  System.err.println("*** Trace Exporter shut down");
+                }));
   }
 
   private void stop() {
@@ -119,7 +117,7 @@ public class HelloWorldServer {
     }
   }
 
-  class GreeterImpl extends GreeterGrpc.GreeterImplBase {
+  static class GreeterImpl extends GreeterGrpc.GreeterImplBase {
 
     // We serve a normal gRPC call
     @Override

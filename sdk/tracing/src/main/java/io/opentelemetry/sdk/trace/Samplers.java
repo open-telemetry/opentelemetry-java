@@ -245,6 +245,32 @@ public final class Samplers {
     public String getDescription() {
       return String.format("ParentOrElse{%s}", this.delegateSampler.getDescription());
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof ParentOrElse)) {
+        return false;
+      }
+
+      ParentOrElse that = (ParentOrElse) o;
+
+      return delegateSampler != null
+          ? delegateSampler.equals(that.delegateSampler)
+          : that.delegateSampler == null;
+    }
+
+    @Override
+    public int hashCode() {
+      return delegateSampler != null ? delegateSampler.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+      return "ParentOrElse{" + "delegateSampler=" + delegateSampler + '}';
+    }
   }
 
   /**
