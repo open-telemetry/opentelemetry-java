@@ -30,5 +30,7 @@ interface ReadableKeyedAttributes {
     void consume(StringArrayKey key, List<String> value);
 
     void consume(BooleanKey key, boolean value);
+
+    void consumeOther(KeyedAttributes.Key key, Object value);
   }
 }

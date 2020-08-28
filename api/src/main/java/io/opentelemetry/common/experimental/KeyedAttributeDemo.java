@@ -60,6 +60,11 @@ public class KeyedAttributeDemo {
           public void consume(BooleanKey key, boolean value) {
             System.out.println(key + " = " + value);
           }
+
+          @Override
+          public void consumeOther(KeyedAttributes.Key key, Object value) {
+            // ignore for now. I'm not using a custom key.
+          }
         });
   }
 }

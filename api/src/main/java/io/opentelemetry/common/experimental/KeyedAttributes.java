@@ -45,6 +45,8 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
         attributeConsumer.consume((BooleanKey) entry.getKey(), (boolean) entry.getValue());
       } else if (entry.getKey() instanceof StringArrayKey) {
         attributeConsumer.consume((StringArrayKey) entry.getKey(), (List<String>) entry.getValue());
+      } else {
+        attributeConsumer.consumeOther(entry.getKey(), entry.getValue());
       }
     }
   }
@@ -65,7 +67,7 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     return new StringArrayKey(key);
   }
 
-  interface Key {
+  public interface Key {
     String get();
   }
 
