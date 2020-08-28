@@ -16,6 +16,7 @@
 
 package io.opentelemetry.common.experimental;
 
+import io.opentelemetry.common.experimental.KeyedAttributes.BooleanArrayKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.BooleanKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.StringArrayKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.StringKey;
@@ -27,10 +28,12 @@ interface ReadableKeyedAttributes {
   interface AttributeConsumer {
     void consume(StringKey key, String value);
 
-    void consume(StringArrayKey key, List<String> value);
-
     void consume(BooleanKey key, boolean value);
 
-    void consumeOther(KeyedAttributes.Key key, Object value);
+    void consume(StringArrayKey key, List<String> value);
+
+    void consume(BooleanArrayKey key, List<Boolean> value);
+
+    <T> void consumeCustom(KeyedAttributes.Key<T> key, T value);
   }
 }

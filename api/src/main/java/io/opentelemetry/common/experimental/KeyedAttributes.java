@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /** javadoc me. */
+@SuppressWarnings("rawtypes")
 public class KeyedAttributes implements ReadableKeyedAttributes {
 
   // todo replace with the array-backed impl
@@ -34,7 +35,7 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     this.values = values;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public void forEach(AttributeConsumer attributeConsumer) {
     Set<Map.Entry<Key, Object>> entries = values.entrySet();
@@ -45,8 +46,11 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
         attributeConsumer.consume((BooleanKey) entry.getKey(), (boolean) entry.getValue());
       } else if (entry.getKey() instanceof StringArrayKey) {
         attributeConsumer.consume((StringArrayKey) entry.getKey(), (List<String>) entry.getValue());
+      } else if (entry.getKey() instanceof BooleanArrayKey) {
+        attributeConsumer.consume(
+            (BooleanArrayKey) entry.getKey(), (List<Boolean>) entry.getValue());
       } else {
-        attributeConsumer.consumeOther(entry.getKey(), entry.getValue());
+        attributeConsumer.consumeCustom(entry.getKey(), entry.getValue());
       }
     }
   }
@@ -67,21 +71,25 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     return new StringArrayKey(key);
   }
 
-  public interface Key {
+  public interface Key<T> {
     String get();
   }
 
   interface Builder {
     Builder set(StringKey key, String value);
 
+    Builder set(BooleanKey key, boolean value);
+
     Builder set(StringArrayKey key, String... value);
 
-    Builder set(BooleanKey key, boolean value);
+    Builder set(BooleanArrayKey key, Boolean... value);
+
+    <T> Builder setCustom(Key<T> key, T value);
 
     KeyedAttributes build();
   }
 
-  private abstract static class KeyImpl implements Key {
+  public abstract static class KeyImpl<T> implements Key<T> {
     private final String key;
 
     protected KeyImpl(String key) {
@@ -99,16 +107,23 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     }
   }
 
-  public static class StringKey extends KeyImpl {
+  public static class StringKey extends KeyImpl<String> {
 
     private StringKey(String key) {
       super(key);
     }
   }
 
-  public static class StringArrayKey extends KeyImpl {
+  public static class StringArrayKey extends KeyImpl<List<String>> {
 
     private StringArrayKey(String key) {
+      super(key);
+    }
+  }
+
+  public static class BooleanArrayKey extends KeyImpl<List<Boolean>> {
+
+    private BooleanArrayKey(String key) {
       super(key);
     }
   }
@@ -138,6 +153,18 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
 
     @Override
     public Builder set(BooleanKey key, boolean value) {
+      values.put(key, value);
+      return this;
+    }
+
+    @Override
+    public Builder set(BooleanArrayKey key, Boolean... value) {
+      values.put(key, Arrays.asList(value));
+      return this;
+    }
+
+    @Override
+    public <T> Builder setCustom(Key<T> key, T value) {
       values.put(key, value);
       return this;
     }

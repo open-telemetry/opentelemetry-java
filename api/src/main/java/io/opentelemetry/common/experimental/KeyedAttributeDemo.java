@@ -16,10 +16,13 @@
 
 package io.opentelemetry.common.experimental;
 
+import io.opentelemetry.common.experimental.KeyedAttributes.BooleanArrayKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.BooleanKey;
+import io.opentelemetry.common.experimental.KeyedAttributes.KeyImpl;
 import io.opentelemetry.common.experimental.KeyedAttributes.StringArrayKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.StringKey;
 import io.opentelemetry.common.experimental.ReadableKeyedAttributes.AttributeConsumer;
+import java.math.BigDecimal;
 import java.util.List;
 
 @SuppressWarnings("JavadocMethod")
@@ -32,6 +35,9 @@ public class KeyedAttributeDemo {
   static final BooleanKey ERROR_HINT = KeyedAttributes.booleanKey("error.hint");
   static final StringArrayKey HTTP_HEADERS = KeyedAttributes.stringArrayKey("http.headers");
 
+  static final KeyedAttributes.Key<BigDecimal> MONEY_VALUE =
+      new KeyImpl<BigDecimal>("money.value") {};
+
   public static void main(String[] args) {
     // here's how you build a full set of attributes. You can imagine the Span/Builder would look
     // similar
@@ -41,6 +47,7 @@ public class KeyedAttributeDemo {
             .set(HTTP_METHOD, "PUT")
             .set(ERROR_HINT, false)
             .set(NET_HOST_NAME, "localhost")
+            .setCustom(MONEY_VALUE, new BigDecimal(1_000_000L))
             .build();
 
     // iterate over them like this, using the readable interface.
@@ -62,8 +69,13 @@ public class KeyedAttributeDemo {
           }
 
           @Override
-          public void consumeOther(KeyedAttributes.Key key, Object value) {
-            // ignore for now. I'm not using a custom key.
+          public void consume(BooleanArrayKey key, List<Boolean> value) {
+            System.out.println(key + " = " + value);
+          }
+
+          @Override
+          public <T> void consumeCustom(KeyedAttributes.Key<T> key, T value) {
+            System.out.println(key + " = " + value);
           }
         });
   }
