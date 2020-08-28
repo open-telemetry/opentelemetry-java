@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.inmemory;
 
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayList;

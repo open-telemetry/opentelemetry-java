@@ -41,7 +41,7 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
-public class BatchSpanProcessorFlushBenchmark {
+public class BatchSpanProcessorBenchmark {
 
   private static class DelayingSpanExporter implements SpanExporter {
 

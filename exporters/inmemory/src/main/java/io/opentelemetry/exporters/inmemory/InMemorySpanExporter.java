@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.inmemory;
 
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
@@ -108,11 +108,12 @@ public final class InMemorySpanExporter implements SpanExporter {
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     synchronized (this) {
       finishedSpanItems.clear();
       isStopped = true;
     }
+    return CompletableResultCode.ofSuccess();
   }
 
   private InMemorySpanExporter() {}

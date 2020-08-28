@@ -23,8 +23,8 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -123,18 +123,12 @@ public final class BatchSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void shutdown() {
-    worker.shutdown();
+  public CompletableResultCode shutdown() {
+    return worker.shutdown();
   }
 
   @Override
-  public void forceFlush() {
-    worker.forceFlush();
-  }
-
-  // TODO remove this when this.forceFlush returns CompletableResultCode
-  @VisibleForTesting
-  CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     return worker.forceFlush();
   }
 
@@ -241,15 +235,31 @@ public final class BatchSpanProcessor implements SpanProcessor {
       nextExportTime = System.nanoTime() + scheduleDelayNanos;
     }
 
-    private void shutdown() {
-      long pendingBatchesCountInQueue = queue.size() / maxExportBatchSize + 1L;
-      long pendingBatchesCount = pendingBatchesCountInQueue + 1;
-      long shutdownTimeout = pendingBatchesCount * exporterTimeoutMillis;
+    private CompletableResultCode shutdown() {
+      final CompletableResultCode result = new CompletableResultCode();
 
-      forceFlush().join(shutdownTimeout, TimeUnit.MILLISECONDS);
+      final CompletableResultCode flushResult = forceFlush();
+      flushResult.whenComplete(
+          new Runnable() {
+            @Override
+            public void run() {
+              continueWork = false;
+              final CompletableResultCode shutdownResult = spanExporter.shutdown();
+              shutdownResult.whenComplete(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
+                        result.fail();
+                      } else {
+                        result.succeed();
+                      }
+                    }
+                  });
+            }
+          });
 
-      spanExporter.shutdown();
-      continueWork = false;
+      return result;
     }
 
     private CompletableResultCode forceFlush() {

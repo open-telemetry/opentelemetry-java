@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,8 +43,12 @@ class MultiSpanProcessorTest {
     MockitoAnnotations.initMocks(this);
     when(spanProcessor1.isStartRequired()).thenReturn(true);
     when(spanProcessor1.isEndRequired()).thenReturn(true);
+    when(spanProcessor1.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(spanProcessor1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor2.isStartRequired()).thenReturn(true);
     when(spanProcessor2.isEndRequired()).thenReturn(true);
+    when(spanProcessor2.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(spanProcessor2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test

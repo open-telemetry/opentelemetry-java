@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -58,7 +58,9 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
     }
 
     @Override
-    public void shutdown() {}
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
   }
 
   @State(Scope.Benchmark)

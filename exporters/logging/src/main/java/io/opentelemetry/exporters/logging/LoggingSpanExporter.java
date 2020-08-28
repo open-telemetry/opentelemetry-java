@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.logging;
 
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -55,7 +55,7 @@ public class LoggingSpanExporter implements SpanExporter {
   }
 
   @Override
-  public void shutdown() {
-    this.flush();
+  public CompletableResultCode shutdown() {
+    return flush();
   }
 }

@@ -19,8 +19,9 @@ package io.opentelemetry.sdk.trace.export;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
@@ -208,7 +209,7 @@ class BatchSpanProcessorTest {
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(98);
 
-    batchSpanProcessor.flush().join(10, TimeUnit.SECONDS);
+    batchSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     exported = waitingSpanExporter.getExported();
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(2);
@@ -450,6 +451,24 @@ class BatchSpanProcessorTest {
     assertThat(waitingSpanExporter.shutDownCalled.get()).isTrue();
   }
 
+  @Test
+  void shutdownPropagatesSuccess() {
+    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    BatchSpanProcessor processor = BatchSpanProcessor.newBuilder(mockServiceHandler).build();
+    CompletableResultCode result = processor.shutdown();
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isTrue();
+  }
+
+  @Test
+  void shutdownPropagatesFailure() {
+    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofFailure());
+    BatchSpanProcessor processor = BatchSpanProcessor.newBuilder(mockServiceHandler).build();
+    CompletableResultCode result = processor.shutdown();
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+  }
+
   private static final class BlockingSpanExporter implements SpanExporter {
 
     final Object monitor = new Object();
@@ -498,8 +517,9 @@ class BatchSpanProcessorTest {
     }
 
     @Override
-    public void shutdown() {
+    public CompletableResultCode shutdown() {
       // Do nothing;
+      return CompletableResultCode.ofSuccess();
     }
 
     private void unblock() {
@@ -548,8 +568,8 @@ class BatchSpanProcessorTest {
     }
 
     @Override
-    public void shutdown() {
-      flush();
+    public CompletableResultCode shutdown() {
+      return flush();
     }
   }
 
@@ -613,8 +633,9 @@ class BatchSpanProcessorTest {
     }
 
     @Override
-    public void shutdown() {
+    public CompletableResultCode shutdown() {
       shutDownCalled.set(true);
+      return CompletableResultCode.ofSuccess();
     }
 
     public void reset() {

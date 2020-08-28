@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.common.export;
+package io.opentelemetry.sdk.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -198,6 +199,36 @@ class CompletableResultCodeTest {
     assertThat(result.isDone()).isFalse();
     result.fail();
     assertThat(result.isDone()).isTrue();
+  }
+
+  @Test
+  void ofAll() {
+    CompletableResultCode result1 = new CompletableResultCode();
+    CompletableResultCode result2 = new CompletableResultCode();
+    CompletableResultCode result3 = new CompletableResultCode();
+
+    CompletableResultCode all =
+        CompletableResultCode.ofAll(Arrays.asList(result1, result2, result3));
+    assertThat(all.isDone()).isFalse();
+    result1.succeed();
+    assertThat(all.isDone()).isFalse();
+    result2.succeed();
+    assertThat(all.isDone()).isFalse();
+    result3.succeed();
+    assertThat(all.isDone()).isTrue();
+    assertThat(all.isSuccess()).isTrue();
+  }
+
+  @Test
+  void ofAllWithFailure() {
+    assertThat(
+            CompletableResultCode.ofAll(
+                    Arrays.asList(
+                        CompletableResultCode.ofSuccess(),
+                        CompletableResultCode.ofFailure(),
+                        CompletableResultCode.ofSuccess()))
+                .isSuccess())
+        .isFalse();
   }
 
   @Test
