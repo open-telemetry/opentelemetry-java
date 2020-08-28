@@ -112,12 +112,12 @@ class PromisePropagationTest {
 
       CharSequence parentId = parentSpanProto.getSpanId();
       for (SpanData span : successSpans) {
-        assertThat(span.getParentSpanId().toString()).isEqualTo(parentId.toString());
+        assertThat(span.getParentSpanId()).isEqualTo(parentId.toString());
       }
 
       SpanData errorSpan = TestUtils.getOneByAttr(finished, component, "error");
       assertThat(errorSpan).isNotNull();
-      assertThat(errorSpan.getParentSpanId().toString()).isEqualTo(parentId.toString());
+      assertThat(errorSpan.getParentSpanId()).isEqualTo(parentId.toString());
     }
   }
 }

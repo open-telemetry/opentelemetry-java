@@ -73,8 +73,7 @@ class HandlerTest {
       assertEquals(Kind.CLIENT, spanData.getKind());
     }
 
-    assertNotEquals(
-        finished.get(0).getTraceId().toString(), finished.get(1).getTraceId().toString());
+    assertNotEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
     assertFalse(SpanId.isValid(finished.get(0).getParentSpanId()));
     assertFalse(SpanId.isValid(finished.get(1).getParentSpanId()));
 
@@ -103,7 +102,7 @@ class HandlerTest {
 
     // Here check that there is no parent-child relation although it should be because child is
     // created when parent is active
-    assertNotEquals(parent.getSpanId().toString(), child.getParentSpanId().toString());
+    assertNotEquals(parent.getSpanId(), child.getParentSpanId());
   }
 
   /**
@@ -136,9 +135,9 @@ class HandlerTest {
     assertNotNull(parent);
 
     // now there is parent/child relation between first and second span:
-    assertEquals(parent.getSpanId().toString(), finished.get(1).getParentSpanId().toString());
+    assertEquals(parent.getSpanId(), finished.get(1).getParentSpanId());
 
     // third span should not have parent, but it has, damn it
-    assertEquals(parent.getSpanId().toString(), finished.get(2).getParentSpanId().toString());
+    assertEquals(parent.getSpanId(), finished.get(2).getParentSpanId());
   }
 }

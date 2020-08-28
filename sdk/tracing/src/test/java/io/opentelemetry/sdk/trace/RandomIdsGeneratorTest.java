@@ -31,10 +31,10 @@ class RandomIdsGeneratorTest {
     // Can't assert values but can assert they're valid, try a lot as a sort of fuzz check.
     for (int i = 0; i < 1000; i++) {
       CharSequence traceId = generator.generateTraceId();
-      assertThat(traceId.toString()).isNotEqualTo(TraceId.getInvalid().toString());
+      assertThat(traceId.toString()).isNotEqualTo(TraceId.getInvalid());
 
       CharSequence spanId = generator.generateSpanId();
-      assertThat(spanId.toString()).isNotEqualTo(SpanId.getInvalid().toString());
+      assertThat(spanId.toString()).isNotEqualTo(SpanId.getInvalid());
     }
   }
 }

@@ -864,7 +864,7 @@ class RecordEventsReadableSpanTest {
       boolean hasEnded) {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
-    assertThat(spanData.getParentSpanId().toString()).isEqualTo(parentSpanId);
+    assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
     assertThat(spanData.getHasRemoteParent()).isEqualTo(EXPECTED_HAS_REMOTE_PARENT);
     assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);

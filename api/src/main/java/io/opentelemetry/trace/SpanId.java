@@ -106,7 +106,7 @@ public final class SpanId {
    */
   public static boolean isValid(String spanId) {
     return (spanId.length() == BASE16_SIZE)
-        && !INVALID.contentEquals(spanId)
+        && !INVALID.equals(spanId)
         && BigendianEncoding.isValidBase16String(spanId);
   }
 

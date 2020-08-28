@@ -71,7 +71,7 @@ class TestClientServerTest {
     assertEquals(2, finished.size());
 
     finished = sortByStartTime(finished);
-    assertEquals(finished.get(0).getTraceId().toString(), finished.get(1).getTraceId().toString());
+    assertEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
     assertEquals(Kind.CLIENT, finished.get(0).getKind());
     assertEquals(Kind.SERVER, finished.get(1).getKind());
 

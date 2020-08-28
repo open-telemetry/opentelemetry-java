@@ -173,20 +173,28 @@ final class BigendianEncoding {
     dest[destOffset + 1] = ENCODING[b | 0x100];
   }
 
-  public static boolean isValidBase16String(CharSequence value) {
+  static boolean isValidBase16String(CharSequence value) {
     for (int i = 0; i < value.length(); i++) {
       char b = value.charAt(i);
       // 48..57 && 97..102 are valid
-      if ((b < 48 || b > 57) && (b < 97 || b > 102)) {
+      if (!isDigit(b) && !isLowercaseHexCharacter(b)) {
         return false;
       }
     }
     return true;
   }
 
+  private static boolean isLowercaseHexCharacter(char b) {
+    return 97 <= b && b <= 102;
+  }
+
+  private static boolean isDigit(char b) {
+    return 48 <= b && b <= 57;
+  }
+
   private BigendianEncoding() {}
 
-  public static String toLowerBase16(byte[] bytes) {
+  static String toLowerBase16(byte[] bytes) {
     char[] chars = new char[bytes.length * 2];
     for (int i = 0; i < bytes.length; i++) {
       byteToBase16(bytes[i], chars, i * 2);

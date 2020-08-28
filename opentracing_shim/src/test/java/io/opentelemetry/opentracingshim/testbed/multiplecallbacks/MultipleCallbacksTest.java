@@ -73,8 +73,8 @@ class MultipleCallbacksTest {
 
     SpanData parentSpan = spans.get(0);
     for (int i = 1; i < 4; i++) {
-      assertEquals(parentSpan.getTraceId().toString(), spans.get(i).getTraceId().toString());
-      assertEquals(parentSpan.getSpanId().toString(), spans.get(i).getParentSpanId().toString());
+      assertEquals(parentSpan.getTraceId(), spans.get(i).getTraceId());
+      assertEquals(parentSpan.getSpanId(), spans.get(i).getParentSpanId());
     }
 
     assertNull(tracer.scopeManager().activeSpan());
