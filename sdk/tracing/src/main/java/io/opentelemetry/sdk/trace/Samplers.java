@@ -154,7 +154,7 @@ public final class Samplers {
    * @since 0.7.0
    */
   public static Sampler parentBased(Sampler root) {
-    return newParentBasedBuilder(root).build();
+    return parentBasedBuilder(root).build();
   }
 
   /**
@@ -166,7 +166,7 @@ public final class Samplers {
    * @return a {@code ParentBased.Builder}
    * @since 0.8.0
    */
-  public static ParentBased.Builder newParentBasedBuilder(Sampler root) {
+  public static ParentBased.Builder parentBasedBuilder(Sampler root) {
     return new ParentBased.Builder(root);
   }
 

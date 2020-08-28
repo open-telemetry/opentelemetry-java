@@ -258,7 +258,7 @@ class SamplersTest {
   @Test
   void parentBasedSampler_NotSampled_Remote_Parent() {
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+            Samplers.parentBasedBuilder(Samplers.alwaysOff())
                 .setRemoteParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
@@ -272,7 +272,7 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+            Samplers.parentBasedBuilder(Samplers.alwaysOff())
                 .setRemoteParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
@@ -286,7 +286,7 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+            Samplers.parentBasedBuilder(Samplers.alwaysOn())
                 .setRemoteParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
@@ -300,7 +300,7 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+            Samplers.parentBasedBuilder(Samplers.alwaysOn())
                 .setRemoteParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
@@ -318,7 +318,7 @@ class SamplersTest {
   void parentBasedSampler_NotSampled_NotRemote_Parent() {
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+            Samplers.parentBasedBuilder(Samplers.alwaysOff())
                 .setLocalParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
@@ -332,7 +332,7 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+            Samplers.parentBasedBuilder(Samplers.alwaysOff())
                 .setLocalParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
@@ -346,7 +346,7 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+            Samplers.parentBasedBuilder(Samplers.alwaysOn())
                 .setLocalParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
@@ -360,7 +360,7 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+            Samplers.parentBasedBuilder(Samplers.alwaysOn())
                 .setLocalParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
@@ -377,7 +377,7 @@ class SamplersTest {
   @Test
   void parentBasedSampler_Sampled_Remote_Parent() {
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+            Samplers.parentBasedBuilder(Samplers.alwaysOff())
                 .setRemoteParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
@@ -391,7 +391,7 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+            Samplers.parentBasedBuilder(Samplers.alwaysOff())
                 .setRemoteParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
@@ -405,7 +405,7 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+            Samplers.parentBasedBuilder(Samplers.alwaysOn())
                 .setRemoteParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
@@ -419,7 +419,7 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+            Samplers.parentBasedBuilder(Samplers.alwaysOn())
                 .setRemoteParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
@@ -436,7 +436,7 @@ class SamplersTest {
   @Test
   void parentBasedSampler_Sampled_NotRemote_Parent() {
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+            Samplers.parentBasedBuilder(Samplers.alwaysOff())
                 .setLocalParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
@@ -450,7 +450,7 @@ class SamplersTest {
         .isEqualTo(Decision.RECORD_AND_SAMPLED);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+            Samplers.parentBasedBuilder(Samplers.alwaysOff())
                 .setLocalParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
@@ -464,7 +464,7 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+            Samplers.parentBasedBuilder(Samplers.alwaysOn())
                 .setLocalParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
@@ -478,7 +478,7 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOn())
+            Samplers.parentBasedBuilder(Samplers.alwaysOn())
                 .setLocalParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
@@ -519,7 +519,7 @@ class SamplersTest {
         .isEqualTo(Decision.NOT_RECORD);
 
     assertThat(
-            Samplers.newParentBasedBuilder(Samplers.alwaysOff())
+            Samplers.parentBasedBuilder(Samplers.alwaysOff())
                 .setRemoteParentSampled(Samplers.alwaysOn())
                 .setRemoteParentNotSampled(Samplers.alwaysOn())
                 .setLocalParentSampled(Samplers.alwaysOn())
