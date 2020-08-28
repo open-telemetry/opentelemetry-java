@@ -438,9 +438,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     long timestamp = clock.now();
     Attributes.Builder attributes =
-        additionalAttributes != null
-            ? Attributes.newBuilder(additionalAttributes)
-            : Attributes.newBuilder();
+        additionalAttributes != null ? additionalAttributes.toBuilder() : Attributes.newBuilder();
     SemanticAttributes.EXCEPTION_TYPE.set(attributes, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
       SemanticAttributes.EXCEPTION_MESSAGE.set(attributes, exception.getMessage());
