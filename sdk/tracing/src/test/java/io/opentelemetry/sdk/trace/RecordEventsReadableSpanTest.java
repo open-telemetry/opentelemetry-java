@@ -721,6 +721,36 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
+  void recordException_additionalAttributes() {
+    IllegalStateException exception = new IllegalStateException("there was an exception");
+    RecordEventsReadableSpan span = createTestRootSpan();
+
+    StringWriter writer = new StringWriter();
+    exception.printStackTrace(new PrintWriter(writer));
+    String stacktrace = writer.toString();
+
+    testClock.advanceNanos(1000);
+    long timestamp = testClock.now();
+
+    span.recordException(
+        exception, Attributes.of("key1", stringAttributeValue("this is an additional attribute")));
+
+    List<Event> events = span.toSpanData().getEvents();
+    assertThat(events).hasSize(1);
+    Event event = events.get(0);
+    assertThat(event.getName()).isEqualTo("exception");
+    assertThat(event.getEpochNanos()).isEqualTo(timestamp);
+    assertThat(event.getAttributes())
+        .isEqualTo(
+            Attributes.newBuilder()
+                .setAttribute("key1", "this is an additional attribute")
+                .setAttribute("exception.type", "java.lang.IllegalStateException")
+                .setAttribute("exception.message", "there was an exception")
+                .setAttribute("exception.stacktrace", stacktrace)
+                .build());
+  }
+
+  @Test
   void badArgsIgnored() {
     RecordEventsReadableSpan span = createTestRootSpan();
 
