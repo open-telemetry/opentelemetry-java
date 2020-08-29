@@ -365,25 +365,60 @@ public final class Samplers {
       if (this == o) {
         return true;
       }
-      if (!(o instanceof ParentOrElse)) {
+      if (!(o instanceof ParentBased)) {
         return false;
       }
 
-      ParentOrElse that = (ParentOrElse) o;
+      ParentBased that = (ParentBased) o;
 
-      return delegateSampler != null
-          ? delegateSampler.equals(that.delegateSampler)
-          : that.delegateSampler == null;
+      if (root != null ? !root.equals(that.root) : that.root != null) {
+        return false;
+      }
+      if (remoteParentSampled != null
+          ? !remoteParentSampled.equals(that.remoteParentSampled)
+          : that.remoteParentSampled != null) {
+        return false;
+      }
+      if (remoteParentNotSampled != null
+          ? !remoteParentNotSampled.equals(that.remoteParentNotSampled)
+          : that.remoteParentNotSampled != null) {
+        return false;
+      }
+      if (localParentSampled != null
+          ? !localParentSampled.equals(that.localParentSampled)
+          : that.localParentSampled != null) {
+        return false;
+      }
+      return localParentNotSampled != null
+          ? localParentNotSampled.equals(that.localParentNotSampled)
+          : that.localParentNotSampled == null;
     }
 
     @Override
     public int hashCode() {
-      return delegateSampler != null ? delegateSampler.hashCode() : 0;
+      int result = root != null ? root.hashCode() : 0;
+      result = 31 * result + (remoteParentSampled != null ? remoteParentSampled.hashCode() : 0);
+      result =
+          31 * result + (remoteParentNotSampled != null ? remoteParentNotSampled.hashCode() : 0);
+      result = 31 * result + (localParentSampled != null ? localParentSampled.hashCode() : 0);
+      result = 31 * result + (localParentNotSampled != null ? localParentNotSampled.hashCode() : 0);
+      return result;
     }
 
     @Override
     public String toString() {
-      return "ParentOrElse{" + "delegateSampler=" + delegateSampler + '}';
+      return "ParentBased{"
+          + "root="
+          + root
+          + ", remoteParentSampled="
+          + remoteParentSampled
+          + ", remoteParentNotSampled="
+          + remoteParentNotSampled
+          + ", localParentSampled="
+          + localParentSampled
+          + ", localParentNotSampled="
+          + localParentNotSampled
+          + '}';
     }
   }
 

@@ -103,7 +103,7 @@ class TraceConfigTest {
     TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().setSamplerProbability(1).build();
 
     Sampler sampler = traceConfig.getSampler();
-    assertThat(sampler).isEqualTo(Samplers.parentOrElse(Samplers.alwaysOn()));
+    assertThat(sampler).isEqualTo(Samplers.parentBased(Samplers.alwaysOn()));
   }
 
   @Test

@@ -296,11 +296,11 @@ public abstract class TraceConfig {
       Utils.checkArgument(
           samplerProbability <= 1, "samplerProbability must be lesser than or equal to 1.");
       if (samplerProbability == 1) {
-        setSampler(Samplers.parentOrElse(Samplers.alwaysOn()));
+        setSampler(Samplers.parentBased(Samplers.alwaysOn()));
       } else if (samplerProbability == 0) {
         setSampler(Samplers.alwaysOff());
       } else {
-        setSampler(Samplers.parentOrElse(Samplers.probability(samplerProbability)));
+        setSampler(Samplers.parentBased(Samplers.probability(samplerProbability)));
       }
       return this;
     }
