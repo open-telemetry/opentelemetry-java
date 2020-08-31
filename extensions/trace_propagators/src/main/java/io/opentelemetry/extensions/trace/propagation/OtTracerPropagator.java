@@ -76,7 +76,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     }
     setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceIdAsHexString());
     setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanIdAsHexString());
-    setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.getTraceFlags().isSampled()));
+    setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.isSampled()));
   }
 
   @Override

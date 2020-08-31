@@ -59,7 +59,7 @@ public abstract class TestSpanData implements SpanData {
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
-        .setTraceFlags(TraceFlags.getDefault())
+        .setSampled(TraceFlags.getDefault())
         .setHasRemoteParent(false)
         .setTotalAttributeCount(0);
   }
@@ -107,13 +107,7 @@ public abstract class TestSpanData implements SpanData {
      */
     public abstract Builder setSpanId(String spanId);
 
-    /**
-     * Set the {@link TraceFlags} on this builder.
-     *
-     * @param traceFlags the trace flags.
-     * @return this.
-     */
-    public abstract Builder setTraceFlags(TraceFlags traceFlags);
+    public abstract Builder setSampled(boolean isSampled);
 
     /**
      * Set the {@link TraceState} on this builder.

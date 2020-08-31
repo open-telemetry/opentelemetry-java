@@ -34,7 +34,6 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
@@ -45,11 +44,6 @@ import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
 final class SpanBuilderSdk implements Span.Builder {
-  private static final TraceFlags TRACE_OPTIONS_SAMPLED =
-      TraceFlags.builder().setIsSampled(true).build();
-  private static final TraceFlags TRACE_OPTIONS_NOT_SAMPLED =
-      TraceFlags.builder().setIsSampled(false).build();
-
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final SpanProcessor spanProcessor;
@@ -234,9 +228,8 @@ final class SpanBuilderSdk implements Span.Builder {
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
-    TraceFlags traceFlags =
-        Samplers.isSampled(samplingDecision) ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED;
-    SpanContext spanContext = createSpanContext(traceId, spanId, traceState, traceFlags);
+    SpanContext spanContext =
+        createSpanContext(traceId, spanId, traceState, Samplers.isSampled(samplingDecision));
 
     if (!Samplers.isRecording(samplingDecision)) {
       return DefaultSpan.create(spanContext);
@@ -278,8 +271,8 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   private static SpanContext createSpanContext(
-      String traceId, String spanId, TraceState traceState, TraceFlags traceFlags) {
-    return SpanContext.create(traceId, spanId, traceFlags, traceState);
+      String traceId, String spanId, TraceState traceState, boolean isSampled) {
+    return SpanContext.create(traceId, spanId, isSampled, traceState);
   }
 
   private static Clock getClock(Span parent, Clock clock) {

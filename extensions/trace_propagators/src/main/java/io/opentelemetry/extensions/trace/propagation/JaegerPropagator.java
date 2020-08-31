@@ -22,7 +22,6 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -70,9 +69,8 @@ public class JaegerPropagator implements TextMapPropagator {
       PARENT_SPAN_ID_OFFSET + PARENT_SPAN_ID_SIZE + PROPAGATION_HEADER_DELIMITER_SIZE;
   private static final int PROPAGATION_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
-  private static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
-  private static final TraceFlags NOT_SAMPLED_FLAGS =
-      TraceFlags.builder().setIsSampled(false).build();
+  private static final boolean SAMPLED_FLAGS = true;
+  private static final boolean NOT_SAMPLED_FLAGS = false;
 
   private static final List<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
 
@@ -119,7 +117,7 @@ public class JaegerPropagator implements TextMapPropagator {
     chars[PARENT_SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[PARENT_SPAN_ID_OFFSET] = DEPRECATED_PARENT_SPAN;
     chars[SAMPLED_FLAG_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
-    chars[SAMPLED_FLAG_OFFSET] = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
+    chars[SAMPLED_FLAG_OFFSET] = spanContext.isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     setter.set(carrier, PROPAGATION_HEADER, new String(chars));
   }
 
@@ -206,7 +204,7 @@ public class JaegerPropagator implements TextMapPropagator {
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
     try {
       int flagsInt = Integer.parseInt(flags);
-      TraceFlags traceFlags = ((flagsInt & 1) == 1) ? SAMPLED_FLAGS : NOT_SAMPLED_FLAGS;
+      boolean traceFlags = ((flagsInt & 1) == 1) ? SAMPLED_FLAGS : NOT_SAMPLED_FLAGS;
 
       String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
       String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);

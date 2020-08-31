@@ -18,7 +18,6 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.logging.Level;
@@ -38,15 +37,14 @@ final class Common {
   static final int MAX_TRACE_ID_LENGTH = TraceId.getHexLength();
   static final int MAX_SPAN_ID_LENGTH = SpanId.getHexLength();
   static final int MIN_TRACE_ID_LENGTH = TraceId.getSize();
-  private static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
-  private static final TraceFlags NOT_SAMPLED_FLAGS =
-      TraceFlags.builder().setIsSampled(false).build();
+  private static final boolean SAMPLED_FLAGS = true;
+  private static final boolean NOT_SAMPLED_FLAGS = false;
 
   private Common() {}
 
   static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
     try {
-      TraceFlags traceFlags =
+      boolean traceFlags =
           TRUE_INT.equals(sampled) || Boolean.parseBoolean(sampled) // accept either "1" or "true"
               ? SAMPLED_FLAGS
               : NOT_SAMPLED_FLAGS;

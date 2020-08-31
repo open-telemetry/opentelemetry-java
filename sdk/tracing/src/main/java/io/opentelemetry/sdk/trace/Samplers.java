@@ -265,7 +265,7 @@ public final class Samplers {
       }
 
       if (parentContext.isRemote()) {
-        return parentContext.getTraceFlags().isSampled()
+        return parentContext.isSampled()
             ? this.remoteParentSampled.shouldSample(
                 parentContext, traceId, name, spanKind, attributes, parentLinks)
             : this.remoteParentNotSampled.shouldSample(

@@ -59,9 +59,7 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
 
     chars[SAMPLED_FLAG_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
     chars[SAMPLED_FLAG_OFFSET] =
-        spanContext.getTraceFlags().isSampled()
-            ? B3Propagator.IS_SAMPLED
-            : B3Propagator.NOT_SAMPLED;
+        spanContext.isSampled() ? B3Propagator.IS_SAMPLED : B3Propagator.NOT_SAMPLED;
     setter.set(carrier, B3Propagator.COMBINED_HEADER, new String(chars));
   }
 }

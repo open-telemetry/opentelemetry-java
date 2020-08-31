@@ -38,8 +38,7 @@ class AwsXRayPropagatorTest {
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.getDefault();
 
   private static final String SPAN_ID_BASE16 = "53995c3f42cd8ad8";
-  private static final TraceFlags SAMPLED_TRACE_FLAG =
-      TraceFlags.builder().setIsSampled(true).build();
+  private static final boolean SAMPLED_TRACE_FLAG = true;
 
   private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
   private static final TextMapPropagator.Getter<Map<String, String>> getter =
@@ -57,8 +56,7 @@ class AwsXRayPropagatorTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     xrayPropagator.inject(
         withSpanContext(
-            SpanContext.create(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_FLAG, TRACE_STATE_DEFAULT),
+            SpanContext.create(TRACE_ID_BASE16, SPAN_ID_BASE16, true, TRACE_STATE_DEFAULT),
             Context.current()),
         carrier,
         setter);
@@ -74,8 +72,7 @@ class AwsXRayPropagatorTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     xrayPropagator.inject(
         withSpanContext(
-            SpanContext.create(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
+            SpanContext.create(TRACE_ID_BASE16, SPAN_ID_BASE16, false, TRACE_STATE_DEFAULT),
             Context.current()),
         carrier,
         setter);

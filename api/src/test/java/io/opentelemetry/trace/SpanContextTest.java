@@ -41,23 +41,15 @@ class SpanContextTest {
   private static final SpanContext first =
       SpanContext.create(FIRST_TRACE_ID, FIRST_SPAN_ID, TraceFlags.getDefault(), FIRST_TRACE_STATE);
   private static final SpanContext second =
-      SpanContext.create(
-          SECOND_TRACE_ID,
-          SECOND_SPAN_ID,
-          TraceFlags.builder().setIsSampled(true).build(),
-          SECOND_TRACE_STATE);
+      SpanContext.create(SECOND_TRACE_ID, SECOND_SPAN_ID, true, SECOND_TRACE_STATE);
   private static final SpanContext remote =
-      SpanContext.createFromRemoteParent(
-          SECOND_TRACE_ID,
-          SECOND_SPAN_ID,
-          TraceFlags.builder().setIsSampled(true).build(),
-          EMPTY_TRACE_STATE);
+      SpanContext.createFromRemoteParent(SECOND_TRACE_ID, SECOND_SPAN_ID, true, EMPTY_TRACE_STATE);
 
   @Test
   void invalidSpanContext() {
     assertThat(SpanContext.getInvalid().getTraceIdAsHexString()).isEqualTo(TraceId.getInvalid());
     assertThat(SpanContext.getInvalid().getSpanIdAsHexString()).isEqualTo(SpanId.getInvalid());
-    assertThat(SpanContext.getInvalid().getTraceFlags()).isEqualTo(TraceFlags.getDefault());
+    assertThat(SpanContext.getInvalid().isSampled()).isEqualTo(TraceFlags.getDefault());
   }
 
   @Test
@@ -91,8 +83,8 @@ class SpanContextTest {
 
   @Test
   void getTraceFlags() {
-    assertThat(first.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
-    assertThat(second.getTraceFlags()).isEqualTo(TraceFlags.builder().setIsSampled(true).build());
+    assertThat(first.isSampled()).isEqualTo(TraceFlags.getDefault());
+    assertThat(second.isSampled()).isEqualTo(true);
   }
 
   @Test

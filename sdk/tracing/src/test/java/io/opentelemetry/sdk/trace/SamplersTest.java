@@ -44,8 +44,7 @@ class SamplersTest {
   private final String parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
-      SpanContext.create(
-          traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), traceState);
+      SpanContext.create(traceId, parentSpanId, /* isSampled=*/ true, traceState);
   private final SpanContext notSampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
   private final SpanContext invalidSpanContext = SpanContext.getInvalid();

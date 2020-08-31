@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
@@ -39,11 +38,9 @@ class RateLimitingSamplerTest {
   private final String parentSpanId = SpanId.fromLong(250);
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
-      SpanContext.create(
-          traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), traceState);
+      SpanContext.create(traceId, parentSpanId, true, traceState);
   private final SpanContext notSampledSpanContext =
-      SpanContext.create(
-          traceId, parentSpanId, TraceFlags.builder().setIsSampled(false).build(), traceState);
+      SpanContext.create(traceId, parentSpanId, false, traceState);
 
   @Test
   void alwaysSampleSampledContext() {

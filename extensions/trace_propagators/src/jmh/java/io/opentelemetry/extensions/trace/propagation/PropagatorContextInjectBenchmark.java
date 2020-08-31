@@ -20,7 +20,6 @@ import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
@@ -87,10 +86,8 @@ public class PropagatorContextInjectBenchmark {
     }
 
     private static SpanContext createTestSpanContext(String traceId, String spanId) {
-      byte sampledTraceOptionsBytes = 1;
-      TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
       TraceState traceStateDefault = TraceState.builder().build();
-      return SpanContext.create(traceId, spanId, sampledTraceOptions, traceStateDefault);
+      return SpanContext.create(traceId, spanId, true, traceStateDefault);
     }
   }
 

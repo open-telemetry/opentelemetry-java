@@ -38,7 +38,7 @@ class DefaultTracerTest {
       SpanContext.create(
           TraceId.bytesToHex(firstBytes),
           SpanId.bytesToHex(spanBytes),
-          TraceFlags.getDefault(),
+          /* isSampled=*/ false,
           TraceState.getDefault());
 
   @Test

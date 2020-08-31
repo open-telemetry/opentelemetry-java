@@ -33,7 +33,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -49,7 +48,7 @@ class SpanBuilderSdkTest {
       SpanContext.create(
           TraceId.fromLongs(1000, 1000),
           SpanId.fromLong(3000),
-          TraceFlags.builder().setIsSampled(true).build(),
+          /* isSampled=*/ true,
           TraceState.getDefault());
 
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
@@ -164,7 +163,7 @@ class SpanBuilderSdkTest {
           SpanContext.create(
               TraceId.fromLongs(2000, 2000),
               SpanId.fromLong(4000),
-              TraceFlags.builder().setIsSampled(true).build(),
+              /* isSampled=*/ true,
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())
           .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
@@ -534,7 +533,7 @@ class SpanBuilderSdkTest {
         TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.alwaysOff())
             .startSpan();
     try {
-      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
+      assertThat(span.getContext().isSampled()).isFalse();
     } finally {
       span.end();
     }
@@ -581,7 +580,7 @@ class SpanBuilderSdkTest {
                         samplerAttributeName, AttributeValue.stringAttributeValue("none")))
                 .startSpan();
     try {
-      assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
+      assertThat(span.getContext().isSampled()).isTrue();
       assertThat(span.toSpanData().getAttributes().get(samplerAttributeName)).isNotNull();
     } finally {
       span.end();
@@ -596,7 +595,7 @@ class SpanBuilderSdkTest {
             .addLink(sampledSpanContext)
             .startSpan();
     try {
-      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
+      assertThat(span.getContext().isSampled()).isFalse();
     } finally {
       if (span != null) {
         span.end();
