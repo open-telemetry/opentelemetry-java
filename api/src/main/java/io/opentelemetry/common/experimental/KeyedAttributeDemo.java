@@ -16,13 +16,20 @@
 
 package io.opentelemetry.common.experimental;
 
+import static io.opentelemetry.common.experimental.KeyedAttributes.stringKey;
+
 import io.opentelemetry.common.experimental.KeyedAttributes.BooleanArrayKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.BooleanKey;
+import io.opentelemetry.common.experimental.KeyedAttributes.CompoundKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.KeyImpl;
+import io.opentelemetry.common.experimental.KeyedAttributes.MultiAttribute;
 import io.opentelemetry.common.experimental.KeyedAttributes.StringArrayKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.StringKey;
 import io.opentelemetry.common.experimental.ReadableKeyedAttributes.AttributeConsumer;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.List;
 
 @SuppressWarnings("JavadocMethod")
@@ -30,15 +37,18 @@ public class KeyedAttributeDemo {
   private KeyedAttributeDemo() {}
 
   // here are some semantic attributes examples:
-  static final StringKey HTTP_METHOD = KeyedAttributes.stringKey("http.method");
-  static final StringKey NET_HOST_NAME = KeyedAttributes.stringKey("net.host.name");
+  static final StringKey HTTP_METHOD = stringKey("http.method");
+  static final StringKey HTTP_SCHEME = stringKey("http.scheme");
+  static final StringKey HTTP_HOST = stringKey("http.host");
+  static final StringKey NET_HOST_NAME = stringKey("net.host.name");
   static final BooleanKey ERROR_HINT = KeyedAttributes.booleanKey("error.hint");
   static final StringArrayKey HTTP_HEADERS = KeyedAttributes.stringArrayKey("http.headers");
+  static final CompoundKey REQUEST_URL = KeyedAttributes.compoundKey("request.url");
 
   static final KeyedAttributes.Key<BigDecimal> MONEY_VALUE =
       new KeyImpl<BigDecimal>("money.value") {};
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws MalformedURLException {
     // here's how you build a full set of attributes. You can imagine the Span/Builder would look
     // similar
     KeyedAttributes keyedAttributes =
@@ -47,6 +57,7 @@ public class KeyedAttributeDemo {
             .set(HTTP_METHOD, "PUT")
             .set(ERROR_HINT, false)
             .set(NET_HOST_NAME, "localhost")
+            .set(REQUEST_URL, new UrlAttributes(URI.create("https://opentelemetry.io").toURL()))
             .setCustom(MONEY_VALUE, new BigDecimal(1_000_000L))
             .build();
 
@@ -74,9 +85,31 @@ public class KeyedAttributeDemo {
           }
 
           @Override
+          public void consume(CompoundKey key, MultiAttribute value) {
+            System.out.println(key + " = " + value.getAttributes());
+          }
+
+          @Override
           public <T> void consumeCustom(KeyedAttributes.Key<T> key, T value) {
             System.out.println(key + " = " + value);
           }
         });
+  }
+
+  private static class UrlAttributes implements MultiAttribute {
+    private final URL url;
+
+    public UrlAttributes(URL url) {
+      this.url = url;
+    }
+
+    @Override
+    public KeyedAttributes getAttributes() {
+      return KeyedAttributes.newBuilder()
+          .set(HTTP_SCHEME, url.getProtocol())
+          .set(HTTP_HOST, url.getHost())
+          // etc
+          .build();
+    }
   }
 }

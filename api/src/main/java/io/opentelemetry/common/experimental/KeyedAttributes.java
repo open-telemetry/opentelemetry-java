@@ -49,10 +49,17 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
       } else if (entry.getKey() instanceof BooleanArrayKey) {
         attributeConsumer.consume(
             (BooleanArrayKey) entry.getKey(), (List<Boolean>) entry.getValue());
+      } else if (entry.getKey() instanceof CompoundKey) {
+        attributeConsumer.consume((CompoundKey) entry.getKey(), (MultiAttribute) entry.getValue());
       } else {
         attributeConsumer.consumeCustom(entry.getKey(), entry.getValue());
       }
     }
+  }
+
+  @Override
+  public String toString() {
+    return "KeyedAttributes{" + "values=" + values + '}';
   }
 
   public static Builder newBuilder() {
@@ -71,6 +78,10 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     return new StringArrayKey(key);
   }
 
+  public static CompoundKey compoundKey(String key) {
+    return new CompoundKey(key);
+  }
+
   public interface Key<T> {
     String get();
   }
@@ -83,6 +94,8 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     Builder set(StringArrayKey key, String... value);
 
     Builder set(BooleanArrayKey key, Boolean... value);
+
+    Builder set(CompoundKey key, MultiAttribute value);
 
     <T> Builder setCustom(Key<T> key, T value);
 
@@ -128,11 +141,21 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     }
   }
 
-  public static class BooleanKey extends KeyImpl {
+  public static class BooleanKey extends KeyImpl<Boolean> {
 
     private BooleanKey(String key) {
       super(key);
     }
+  }
+
+  public static class CompoundKey extends KeyImpl<MultiAttribute> {
+    private CompoundKey(String key) {
+      super(key);
+    }
+  }
+
+  public interface MultiAttribute {
+    KeyedAttributes getAttributes();
   }
 
   private static class BuilderImpl implements Builder {
@@ -160,6 +183,12 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     @Override
     public Builder set(BooleanArrayKey key, Boolean... value) {
       values.put(key, Arrays.asList(value));
+      return this;
+    }
+
+    @Override
+    public Builder set(CompoundKey key, MultiAttribute value) {
+      values.put(key, value);
       return this;
     }
 
