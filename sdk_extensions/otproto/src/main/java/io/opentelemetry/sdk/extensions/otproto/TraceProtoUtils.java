@@ -35,7 +35,7 @@ public final class TraceProtoUtils {
    * @return a ByteString representation.
    */
   public static ByteString toProtoSpanId(String spanId) {
-    return ByteString.copyFrom(SpanId.bytesFromLowerBase16(spanId, 0));
+    return ByteString.copyFrom(SpanId.bytesFromHex(spanId, 0));
   }
 
   /**
@@ -45,7 +45,7 @@ public final class TraceProtoUtils {
    * @return a ByteString representation.
    */
   public static ByteString toProtoTraceId(String traceId) {
-    return ByteString.copyFrom(TraceId.bytesFromLowerBase16(traceId, 0));
+    return ByteString.copyFrom(TraceId.bytesFromHex(traceId, 0));
   }
 
   /**

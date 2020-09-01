@@ -28,38 +28,38 @@ class SpanIdTest {
   @Test
   void isValid() {
     assertThat(SpanId.isValid(SpanId.getInvalid())).isFalse();
-    assertThat(SpanId.isValid(SpanId.toLowerBase16(firstBytes))).isTrue();
-    assertThat(SpanId.isValid(SpanId.toLowerBase16(secondBytes))).isTrue();
+    assertThat(SpanId.isValid(SpanId.bytesToHex(firstBytes))).isTrue();
+    assertThat(SpanId.isValid(SpanId.bytesToHex(secondBytes))).isTrue();
     assertThat(SpanId.isValid("000000000000z000")).isFalse();
   }
 
   @Test
   void fromLowerBase16() {
-    assertThat(SpanId.toLowerBase16(SpanId.bytesFromLowerBase16("0000000000000000", 0)))
+    assertThat(SpanId.bytesToHex(SpanId.bytesFromHex("0000000000000000", 0)))
         .isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.bytesFromLowerBase16("0000000000000061", 0)).isEqualTo(firstBytes);
-    assertThat(SpanId.bytesFromLowerBase16("ff00000000000041", 0)).isEqualTo(secondBytes);
+    assertThat(SpanId.bytesFromHex("0000000000000061", 0)).isEqualTo(firstBytes);
+    assertThat(SpanId.bytesFromHex("ff00000000000041", 0)).isEqualTo(secondBytes);
   }
 
   @Test
   void fromLowerBase16_WithOffset() {
-    assertThat(SpanId.toLowerBase16(SpanId.bytesFromLowerBase16("XX0000000000000000AA", 2)))
+    assertThat(SpanId.bytesToHex(SpanId.bytesFromHex("XX0000000000000000AA", 2)))
         .isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.bytesFromLowerBase16("YY0000000000000061BB", 2)).isEqualTo(firstBytes);
-    assertThat(SpanId.bytesFromLowerBase16("ZZff00000000000041CC", 2)).isEqualTo(secondBytes);
+    assertThat(SpanId.bytesFromHex("YY0000000000000061BB", 2)).isEqualTo(firstBytes);
+    assertThat(SpanId.bytesFromHex("ZZff00000000000041CC", 2)).isEqualTo(secondBytes);
   }
 
   @Test
   public void toLowerBase16() {
     assertThat(SpanId.getInvalid()).isEqualTo("0000000000000000");
-    assertThat(SpanId.toLowerBase16(firstBytes)).isEqualTo("0000000000000061");
-    assertThat(SpanId.toLowerBase16(secondBytes)).isEqualTo("ff00000000000041");
+    assertThat(SpanId.bytesToHex(firstBytes)).isEqualTo("0000000000000061");
+    assertThat(SpanId.bytesToHex(secondBytes)).isEqualTo("ff00000000000041");
   }
 
   @Test
   void spanId_ToString() {
     assertThat(SpanId.getInvalid()).contains("0000000000000000");
-    assertThat(SpanId.toLowerBase16(firstBytes)).contains("0000000000000061");
-    assertThat(SpanId.toLowerBase16(secondBytes)).contains("ff00000000000041");
+    assertThat(SpanId.bytesToHex(firstBytes)).contains("0000000000000061");
+    assertThat(SpanId.bytesToHex(secondBytes)).contains("ff00000000000041");
   }
 }

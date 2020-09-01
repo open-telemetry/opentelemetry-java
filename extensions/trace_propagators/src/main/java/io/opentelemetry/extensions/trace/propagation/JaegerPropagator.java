@@ -50,16 +50,16 @@ public class JaegerPropagator implements TextMapPropagator {
   static final char DEPRECATED_PARENT_SPAN = '0';
   static final char PROPAGATION_HEADER_DELIMITER = ':';
 
-  private static final int MAX_TRACE_ID_LENGTH = TraceId.getBase16Length();
-  private static final int MAX_SPAN_ID_LENGTH = SpanId.getBase16Length();
+  private static final int MAX_TRACE_ID_LENGTH = TraceId.getHexLength();
+  private static final int MAX_SPAN_ID_LENGTH = SpanId.getHexLength();
   private static final int MAX_FLAGS_LENGTH = 2;
 
   private static final char IS_SAMPLED = '1';
   private static final char NOT_SAMPLED = '0';
   private static final int PROPAGATION_HEADER_DELIMITER_SIZE = 1;
 
-  private static final int TRACE_ID_HEX_SIZE = TraceId.getBase16Length();
-  private static final int SPAN_ID_HEX_SIZE = SpanId.getBase16Length();
+  private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
+  private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
   private static final int PARENT_SPAN_ID_SIZE = 1;
   private static final int SAMPLED_FLAG_SIZE = 1;
 

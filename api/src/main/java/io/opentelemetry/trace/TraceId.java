@@ -31,7 +31,7 @@ public final class TraceId {
   private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
 
   private static final int SIZE_IN_BYTES = 16;
-  private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
+  private static final int HEX_SIZE = 2 * BigendianEncoding.LONG_BASE16;
   private static final String INVALID = "00000000000000000000000000000000";
 
   private TraceId() {}
@@ -51,8 +51,8 @@ public final class TraceId {
    *
    * @since 0.8.0
    */
-  public static int getBase16Length() {
-    return BASE16_SIZE;
+  public static int getHexLength() {
+    return HEX_SIZE;
   }
 
   /**
@@ -73,24 +73,24 @@ public final class TraceId {
    * rules applying to {@code TraceId}. Specifying 0 for both values will effectively make the new
    * {@code TraceId} invalid.
    *
-   * <p>This is equivalent to calling {@link #toLowerBase16(byte[])} with the specified values
-   * stored as big-endian.
+   * <p>This is equivalent to calling {@link #bytesToHex(byte[])} with the specified values stored
+   * as big-endian.
    *
    * @param idHi the higher part of the {@code TraceId}.
    * @param idLo the lower part of the {@code TraceId}.
    * @since 0.1.0
    */
   public static String fromLongs(long idHi, long idLo) {
-    char[] chars = getBuffer();
+    char[] chars = getTemporaryBuffer();
     BigendianEncoding.longToBase16String(idHi, chars, 0);
     BigendianEncoding.longToBase16String(idLo, chars, 16);
     return new String(chars);
   }
 
-  private static char[] getBuffer() {
+  private static char[] getTemporaryBuffer() {
     char[] chars = charBuffer.get();
     if (chars == null) {
-      chars = new char[BASE16_SIZE];
+      chars = new char[HEX_SIZE];
       charBuffer.set(chars);
     }
     return chars;
@@ -108,9 +108,9 @@ public final class TraceId {
    *     srcOffset}.
    * @since 0.1.0
    */
-  public static byte[] bytesFromLowerBase16(String src, int srcOffset) {
+  public static byte[] bytesFromHex(String src, int srcOffset) {
     Utils.checkNotNull(src, "src");
-    return BigendianEncoding.bytesFromBase16(src, srcOffset, BASE16_SIZE);
+    return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
   }
 
   /**
@@ -123,7 +123,7 @@ public final class TraceId {
    *     {@code dest.length}.
    * @since 0.1.0
    */
-  public static void copyLowerBase16Into(byte[] traceId, char[] dest, int destOffset) {
+  public static void copyHexInto(byte[] traceId, char[] dest, int destOffset) {
     BigendianEncoding.longToBase16String(
         BigendianEncoding.longFromByteArray(traceId, 0), dest, destOffset);
     BigendianEncoding.longToBase16String(
@@ -138,7 +138,7 @@ public final class TraceId {
    * @since 0.1.0
    */
   public static boolean isValid(CharSequence traceId) {
-    return (traceId.length() == BASE16_SIZE)
+    return (traceId.length() == HEX_SIZE)
         && !INVALID.contentEquals(traceId)
         && BigendianEncoding.isValidBase16String(traceId);
   }
@@ -149,9 +149,9 @@ public final class TraceId {
    * @return the lowercase base16 encoding of this {@code TraceId}.
    * @since 0.1.0
    */
-  public static String toLowerBase16(byte[] traceId) {
-    char[] chars = new char[BASE16_SIZE];
-    copyLowerBase16Into(traceId, chars, 0);
+  public static String bytesToHex(byte[] traceId) {
+    char[] chars = new char[HEX_SIZE];
+    copyHexInto(traceId, chars, 0);
     return new String(chars);
   }
 

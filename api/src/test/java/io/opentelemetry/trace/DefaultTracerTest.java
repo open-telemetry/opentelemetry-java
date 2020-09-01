@@ -36,8 +36,8 @@ class DefaultTracerTest {
   private static final byte[] spanBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final SpanContext spanContext =
       SpanContext.create(
-          TraceId.toLowerBase16(firstBytes),
-          SpanId.toLowerBase16(spanBytes),
+          TraceId.bytesToHex(firstBytes),
+          SpanId.bytesToHex(spanBytes),
           TraceFlags.getDefault(),
           TraceState.getDefault());
 

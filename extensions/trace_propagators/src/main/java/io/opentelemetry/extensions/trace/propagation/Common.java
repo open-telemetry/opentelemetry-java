@@ -35,8 +35,8 @@ final class Common {
 
   static final String TRUE_INT = "1";
   static final String FALSE_INT = "0";
-  static final int MAX_TRACE_ID_LENGTH = TraceId.getBase16Length();
-  static final int MAX_SPAN_ID_LENGTH = SpanId.getBase16Length();
+  static final int MAX_TRACE_ID_LENGTH = TraceId.getHexLength();
+  static final int MAX_SPAN_ID_LENGTH = SpanId.getHexLength();
   static final int MIN_TRACE_ID_LENGTH = TraceId.getSize();
   private static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
   private static final TraceFlags NOT_SAMPLED_FLAGS =
@@ -65,7 +65,7 @@ final class Common {
   static boolean isTraceIdValid(String value) {
     return !(StringUtils.isNullOrEmpty(value)
         || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH)
-        || !TraceId.isValid(StringUtils.padLeft(value, TraceId.getBase16Length())));
+        || !TraceId.isValid(StringUtils.padLeft(value, TraceId.getHexLength())));
   }
 
   static boolean isSpanIdValid(String value) {

@@ -52,42 +52,47 @@ public abstract class SpanContext {
   /**
    * Creates a new {@code SpanContext} with the given identifiers and options.
    *
-   * @param traceId the trace identifier of the span context.
-   * @param spanId the span identifier of the span context.
+   * @param traceIdHex the trace identifier of the span context.
+   * @param spanIdHex the span identifier of the span context.
    * @param traceFlags the trace options for the span context.
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0
    */
   public static SpanContext create(
-      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
-    return create(traceId, spanId, traceFlags, traceState, /* remote=*/ false);
+      String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
+    return create(traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ false);
   }
 
   private static SpanContext create(
-      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState, boolean remote) {
-    return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote$=*/ remote);
+      String traceIdHex,
+      String spanIdHex,
+      TraceFlags traceFlags,
+      TraceState traceState,
+      boolean remote) {
+    return new AutoValue_SpanContext(
+        traceIdHex, spanIdHex, traceFlags, traceState, /* remote$=*/ remote);
   }
 
   /**
    * Creates a new {@code SpanContext} that was propagated from a remote parent, with the given
    * identifiers and options.
    *
-   * @param traceId the trace identifier of the span context.
-   * @param spanId the span identifier of the span context.
+   * @param traceIdHex the trace identifier of the span context.
+   * @param spanIdHex the span identifier of the span context.
    * @param traceFlags the trace options for the span context.
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
-    return create(traceId, spanId, traceFlags, traceState, /* remote=*/ true);
+      String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
+    return create(traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true);
   }
 
-  abstract String getTraceId();
+  abstract String getTraceIdHex();
 
-  abstract String getSpanId();
+  abstract String getSpanIdHex();
 
   /**
    * Returns the trace identifier associated with this {@code SpanContext}.
@@ -96,7 +101,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public String getTraceIdAsHexString() {
-    return getTraceId();
+    return getTraceIdHex();
   }
 
   /**
@@ -107,7 +112,7 @@ public abstract class SpanContext {
    */
   @Memoized
   public byte[] getTraceIdBytes() {
-    return TraceId.bytesFromLowerBase16(getTraceId(), 0);
+    return TraceId.bytesFromHex(getTraceIdHex(), 0);
   }
 
   /**
@@ -117,7 +122,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public String getSpanIdAsHexString() {
-    return getSpanId();
+    return getSpanIdHex();
   }
 
   /**
@@ -128,7 +133,7 @@ public abstract class SpanContext {
    */
   @Memoized
   public byte[] getSpanIdBytes() {
-    return SpanId.bytesFromLowerBase16(getSpanId(), 0);
+    return SpanId.bytesFromHex(getSpanIdHex(), 0);
   }
 
   /**
@@ -155,7 +160,7 @@ public abstract class SpanContext {
    */
   @Memoized
   public boolean isValid() {
-    return TraceId.isValid(getTraceId()) && SpanId.isValid(getSpanId());
+    return TraceId.isValid(getTraceIdHex()) && SpanId.isValid(getSpanIdHex());
   }
 
   /**

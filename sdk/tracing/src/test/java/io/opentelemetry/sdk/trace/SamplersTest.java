@@ -662,7 +662,7 @@ class SamplersTest {
     // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
     String notSampledtraceId =
-        TraceId.toLowerBase16(
+        TraceId.bytesToHex(
             new byte[] {
               0,
               0,
@@ -696,7 +696,7 @@ class SamplersTest {
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     String sampledtraceId =
-        TraceId.toLowerBase16(
+        TraceId.bytesToHex(
             new byte[] {
               (byte) 0x00,
               (byte) 0x00,

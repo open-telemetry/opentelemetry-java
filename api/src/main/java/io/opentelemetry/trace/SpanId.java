@@ -30,7 +30,7 @@ public final class SpanId {
 
   private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
   private static final int SIZE = 8;
-  private static final int BASE16_SIZE = 2 * SIZE;
+  private static final int HEX_SIZE = 2 * SIZE;
 
   private static final String INVALID = "0000000000000000";
 
@@ -51,8 +51,8 @@ public final class SpanId {
    *
    * @since 0.8.0
    */
-  public static int getBase16Length() {
-    return BASE16_SIZE;
+  public static int getHexLength() {
+    return HEX_SIZE;
   }
 
   /**
@@ -67,15 +67,15 @@ public final class SpanId {
 
   /** Generate a valid {@link SpanId} from the given long value. */
   public static String fromLong(long id) {
-    char[] result = getBuffer();
+    char[] result = getTemporaryBuffer();
     BigendianEncoding.longToBase16String(id, result, 0);
     return new String(result);
   }
 
-  private static char[] getBuffer() {
+  private static char[] getTemporaryBuffer() {
     char[] chars = charBuffer.get();
     if (chars == null) {
-      chars = new char[BASE16_SIZE];
+      chars = new char[HEX_SIZE];
       charBuffer.set(chars);
     }
     return chars;
@@ -93,8 +93,8 @@ public final class SpanId {
    *     srcOffset}.
    * @since 0.1.0
    */
-  public static byte[] bytesFromLowerBase16(String src, int srcOffset) {
-    return BigendianEncoding.bytesFromBase16(src, srcOffset, BASE16_SIZE);
+  public static byte[] bytesFromHex(String src, int srcOffset) {
+    return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
   }
 
   /**
@@ -105,13 +105,13 @@ public final class SpanId {
    * @since 0.1.0
    */
   public static boolean isValid(String spanId) {
-    return (spanId.length() == BASE16_SIZE)
+    return (spanId.length() == HEX_SIZE)
         && !INVALID.equals(spanId)
         && BigendianEncoding.isValidBase16String(spanId);
   }
 
   /** Encode the bytes as base-16 (hex), padded with '0's on the left. */
-  public static String toLowerBase16(byte[] spanId) {
+  public static String bytesToHex(byte[] spanId) {
     return BigendianEncoding.toLowerBase16(spanId);
   }
 }

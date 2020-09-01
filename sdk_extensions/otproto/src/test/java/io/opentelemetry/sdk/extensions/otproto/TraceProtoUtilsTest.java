@@ -48,15 +48,14 @@ class TraceProtoUtilsTest {
   @Test
   void toProtoTraceId() {
     ByteString expected = ByteString.copyFrom(TRACE_ID_BYTES);
-    assertThat(TraceProtoUtils.toProtoTraceId(TraceId.toLowerBase16(TRACE_ID_BYTES)))
+    assertThat(TraceProtoUtils.toProtoTraceId(TraceId.bytesToHex(TRACE_ID_BYTES)))
         .isEqualTo(expected);
   }
 
   @Test
   void toProtoSpanId() {
     ByteString expected = ByteString.copyFrom(SPAN_ID_BYTES);
-    assertThat(TraceProtoUtils.toProtoSpanId(SpanId.toLowerBase16(SPAN_ID_BYTES)))
-        .isEqualTo(expected);
+    assertThat(TraceProtoUtils.toProtoSpanId(SpanId.bytesToHex(SPAN_ID_BYTES))).isEqualTo(expected);
   }
 
   @Test
