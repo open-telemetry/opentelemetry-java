@@ -42,24 +42,28 @@ public class OtlpExporterExample {
     // this will make sure that a proper service.name attribute is set on all the spans/metrics.
     System.setProperty("otel.resource.attributes", "service.name=OtlpExporterExample");
 
-    //set up the span exporter and wire it into the SDK
+    // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.getDefault();
     SimpleSpanProcessor spanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
     OpenTelemetrySdk.getTracerProvider().addSpanProcessor(spanProcessor);
 
-    //set up the metric exporter and wire it into the SDK and a timed reader.
+    // set up the metric exporter and wire it into the SDK and a timed reader.
     OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.getDefault();
-    IntervalMetricReader intervalMetricReader = IntervalMetricReader.builder()
-        .setMetricExporter(metricExporter)
-        .setMetricProducers(
-            Collections.singleton(OpenTelemetrySdk.getMeterProvider().getMetricProducer()))
-        .setExportIntervalMillis(1000)
-        .build();
+    IntervalMetricReader intervalMetricReader =
+        IntervalMetricReader.builder()
+            .setMetricExporter(metricExporter)
+            .setMetricProducers(
+                Collections.singleton(OpenTelemetrySdk.getMeterProvider().getMetricProducer()))
+            .setExportIntervalMillis(1000)
+            .build();
 
     Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example");
     Meter meter = OpenTelemetry.getMeter("io.opentelemetry.example");
-    LongCounter counter = meter.longCounterBuilder("example_counter")
-        .setConstantLabels(Labels.of("good", "true")).build();
+    LongCounter counter =
+        meter
+            .longCounterBuilder("example_counter")
+            .setConstantLabels(Labels.of("good", "true"))
+            .build();
 
     for (int i = 0; i < 10; i++) {
       Span exampleSpan = tracer.spanBuilder("exampleSpan").startSpan();
@@ -73,7 +77,7 @@ public class OtlpExporterExample {
       }
     }
 
-    //sleep for a bit to let everything settle
+    // sleep for a bit to let everything settle
     Thread.sleep(2000);
     OpenTelemetrySdk.getTracerProvider().shutdown();
     intervalMetricReader.shutdown();
