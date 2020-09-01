@@ -16,6 +16,12 @@
 
 package io.opentelemetry.exporters.otlp;
 
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CLIENT;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
+
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
@@ -124,15 +130,15 @@ final class SpanAdapter {
   static Span.SpanKind toProtoSpanKind(Kind kind) {
     switch (kind) {
       case INTERNAL:
-        return SpanKind.INTERNAL;
+        return SPAN_KIND_INTERNAL;
       case SERVER:
-        return SpanKind.SERVER;
+        return SPAN_KIND_SERVER;
       case CLIENT:
-        return SpanKind.CLIENT;
+        return SPAN_KIND_CLIENT;
       case PRODUCER:
-        return SpanKind.PRODUCER;
+        return SPAN_KIND_PRODUCER;
       case CONSUMER:
-        return SpanKind.CONSUMER;
+        return SPAN_KIND_CONSUMER;
     }
     return SpanKind.UNRECOGNIZED;
   }
