@@ -218,11 +218,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return getContext();
   }
 
-  @Override
-  public Context getParent() {
-    return parent;
-  }
-
   /**
    * Returns the name of the {@code Span}.
    *
@@ -527,6 +522,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   int getTotalRecordedLinks() {
     return totalRecordedLinks;
+  }
+
+  Context getParent() {
+    return parent;
   }
 
   @GuardedBy("lock")

@@ -155,12 +155,19 @@ public abstract class TestSpanData implements SpanData {
      */
     public Builder setParent(SpanId parentSpanId, boolean hasRemoteParent) {
       return setParent(
-          DefaultSpan.createInContext(
-              hasRemoteParent
-                  ? SpanContext.createFromRemoteParent(
-                      getTraceId(), parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())
-                  : SpanContext.create(
-                      getTraceId(), parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()),
+          TracingContextUtils.withSpan(
+              DefaultSpan.create(
+                  hasRemoteParent
+                      ? SpanContext.createFromRemoteParent(
+                          getTraceId(),
+                          parentSpanId,
+                          TraceFlags.getDefault(),
+                          TraceState.getDefault())
+                      : SpanContext.create(
+                          getTraceId(),
+                          parentSpanId,
+                          TraceFlags.getDefault(),
+                          TraceState.getDefault())),
               Context.current()));
     }
 

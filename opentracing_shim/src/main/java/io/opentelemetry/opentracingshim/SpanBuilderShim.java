@@ -186,15 +186,15 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      // TODO: We ignore current() here
-      builder.setParent(
-          TracingContextUtils.withSpan(parentSpan.getSpan(), parentSpan.getSpan().getParent()));
+      // Note: We ignore the (potentially stored) parentSpan's (grand)parent context here.
+      builder.setParent(TracingContextUtils.withSpan(parentSpan.getSpan(), Context.current()));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
       distContext = contextShim == null ? null : contextShim.getCorrelationContext();
     } else if (parentSpanContext != null) {
       // TODO: This might be wonky
       builder.setParent(
-          DefaultSpan.createInContext(parentSpanContext.getSpanContext(), Context.current()));
+          TracingContextUtils.withSpan(
+              DefaultSpan.create(parentSpanContext.getSpanContext()), Context.current()));
       distContext = parentSpanContext.getCorrelationContext();
     }
 

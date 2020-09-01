@@ -40,6 +40,7 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -828,12 +829,13 @@ class RecordEventsReadableSpanTest {
             kind,
             parentSpanId == null
                 ? Context.ROOT
-                : DefaultSpan.createInContext(
-                    SpanContext.createFromRemoteParent(
-                        spanContext.getTraceId(),
-                        parentSpanId,
-                        spanContext.getTraceFlags(),
-                        spanContext.getTraceState()),
+                : TracingContextUtils.withSpan(
+                    DefaultSpan.create(
+                        SpanContext.createFromRemoteParent(
+                            spanContext.getTraceId(),
+                            parentSpanId,
+                            spanContext.getTraceFlags(),
+                            spanContext.getTraceState())),
                     Context.current()),
             config,
             spanProcessor,
@@ -931,7 +933,7 @@ class RecordEventsReadableSpanTest {
             name,
             instrumentationLibraryInfo,
             kind,
-            DefaultSpan.createInContext(parentSpanContext, Context.current()),
+            TracingContextUtils.withSpan(DefaultSpan.create(parentSpanContext), Context.current()),
             traceConfig,
             spanProcessor,
             clock,

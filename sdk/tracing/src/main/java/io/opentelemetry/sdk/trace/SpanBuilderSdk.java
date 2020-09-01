@@ -195,7 +195,7 @@ final class SpanBuilderSdk implements Span.Builder {
     final Context originalParent = parent == null ? Context.current() : parent;
     final Context parentContext =
         isRootSpan
-            ? DefaultSpan.createInContext(SpanContext.getInvalid(), originalParent)
+            ? TracingContextUtils.withSpan(DefaultSpan.getInvalid(), originalParent)
             : originalParent;
     final Span parentSpan = TracingContextUtils.getSpan(parentContext);
     final SpanContext parentSpanContext = parentSpan.getContext();
@@ -240,7 +240,7 @@ final class SpanBuilderSdk implements Span.Builder {
             traceState);
 
     if (!Samplers.isRecording(samplingDecision)) {
-      return DefaultSpan.create(spanContext, parentContext);
+      return DefaultSpan.create(spanContext);
     }
     ReadableAttributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {

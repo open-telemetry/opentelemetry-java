@@ -33,7 +33,7 @@ class SpanBuilderTest {
   void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(DefaultSpan.createInContext(null, Context.ROOT));
+    spanBuilder.setParent(TracingContextUtils.withSpan(DefaultSpan.create(null), Context.ROOT));
     spanBuilder.setParent(Context.ROOT);
     spanBuilder.setNoParent();
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
@@ -62,7 +62,7 @@ class SpanBuilderTest {
   }
 
   @Test
-  void setParent_EmptyContext() {
+  void setParent_NullContext() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     assertThrows(NullPointerException.class, () -> spanBuilder.setParent(null));
   }

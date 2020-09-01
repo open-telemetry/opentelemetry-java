@@ -56,7 +56,7 @@ class OtTracerPropagatorTest {
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return DefaultSpan.createInContext(spanContext, context);
+    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
   }
 
   @Test

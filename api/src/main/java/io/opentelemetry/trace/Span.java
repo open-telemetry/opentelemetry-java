@@ -284,14 +284,6 @@ public interface Span {
   SpanContext getContext();
 
   /**
-   * Returns the parent {@code Context} associated with this {@code Span}.
-   *
-   * @return the parent {@code Context} associated with this {@code Span}.
-   * @since 0.8.0
-   */
-  Context getParent();
-
-  /**
    * Returns {@code true} if this {@code Span} records tracing events (e.g. {@link
    * #addEvent(String)}, {@link #setAttribute(String, long)}).
    *

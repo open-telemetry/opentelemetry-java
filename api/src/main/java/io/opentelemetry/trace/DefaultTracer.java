@@ -78,7 +78,7 @@ public final class DefaultTracer implements Tracer {
         parent = TracingContextUtils.withSpan(DefaultSpan.getInvalid(), parent);
       }
 
-      return new DefaultSpan(TracingContextUtils.getSpan(parent).getContext(), parent);
+      return new DefaultSpan(TracingContextUtils.getSpan(parent).getContext());
     }
 
     @Override

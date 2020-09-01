@@ -24,6 +24,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -92,7 +93,7 @@ public class HttpTraceContextInjectBenchmark {
   private static List<Context> createContexts(List<SpanContext> spanContexts) {
     List<Context> contexts = new ArrayList<>();
     for (SpanContext context : spanContexts) {
-      contexts.add(DefaultSpan.createInContext(context, Context.ROOT));
+      contexts.add(TracingContextUtils.withSpan(DefaultSpan.create(context), Context.ROOT));
     }
     return contexts;
   }
