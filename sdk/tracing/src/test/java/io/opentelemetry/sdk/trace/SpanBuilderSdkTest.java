@@ -736,6 +736,7 @@ class SpanBuilderSdkTest {
       try {
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
         assertThat(span.toSpanData().getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
+        assertThat(span.toSpanData().getParent()).isSameAs(Context.current());
       } finally {
         span.end();
       }
