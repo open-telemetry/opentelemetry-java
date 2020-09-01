@@ -138,7 +138,9 @@ We plan to merge projects and pave the path for future improvements as a unified
 community of tracing vendors, users and library authors who wants apps be
 managed better. We are open to feedback and suggestions from all of you!
 
-## Owners
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
@@ -157,6 +159,10 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 - [John Watson](https://github.com/jkwatson), New Relic
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
+
+### Thanks to all the people who have contributed
+
+[![contributors](https://contributors-img.web.app/image?repo=open-telemetry/opentelemetry-java)](https://github.com/open-telemetry/opentelemetry-java/graphs/contributors)
 
 [circleci-image]: https://circleci.com/gh/open-telemetry/opentelemetry-java.svg?style=svg 
 [circleci-url]: https://circleci.com/gh/open-telemetry/opentelemetry-java
