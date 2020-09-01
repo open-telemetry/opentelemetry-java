@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Span.Kind;
@@ -32,8 +33,8 @@ class SpanBuilderTest {
   void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(DefaultSpan.getInvalid());
-    spanBuilder.setParent(DefaultSpan.getInvalid().getContext());
+    spanBuilder.setParent(DefaultSpan.createInContext(null, Context.ROOT));
+    spanBuilder.setParent(Context.ROOT);
     spanBuilder.setNoParent();
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
@@ -61,15 +62,9 @@ class SpanBuilderTest {
   }
 
   @Test
-  void setParent_NullSpan() {
+  void setParent_EmptyContext() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    assertThrows(NullPointerException.class, () -> spanBuilder.setParent((Span) null));
-  }
-
-  @Test
-  void setParent_NullSpanContext() {
-    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    assertThrows(NullPointerException.class, () -> spanBuilder.setParent((SpanContext) null));
+    assertThrows(NullPointerException.class, () -> spanBuilder.setParent(null));
   }
 
   @Test

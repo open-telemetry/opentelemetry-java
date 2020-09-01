@@ -34,9 +34,7 @@ final class Propagation extends BaseShimObject {
   }
 
   public void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
-    Context context =
-        TracingContextUtils.withSpan(
-            DefaultSpan.create(contextShim.getSpanContext()), Context.current());
+    Context context = DefaultSpan.createInContext(contextShim.getSpanContext(), Context.current());
     context =
         CorrelationsContextUtils.withCorrelationContext(
             contextShim.getCorrelationContext(), context);

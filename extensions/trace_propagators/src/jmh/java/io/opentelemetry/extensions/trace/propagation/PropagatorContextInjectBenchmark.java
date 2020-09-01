@@ -24,7 +24,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -75,8 +74,7 @@ public class PropagatorContextInjectBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Map<String, String> measureInject() {
-      Context context =
-          TracingContextUtils.withSpan(DefaultSpan.create(contextToTest), Context.current());
+      Context context = DefaultSpan.createInContext(contextToTest, Context.current());
       doInject(context, carrier);
       return carrier;
     }

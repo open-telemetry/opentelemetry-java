@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import javax.annotation.concurrent.Immutable;
@@ -31,8 +32,10 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class DefaultSpan implements Span {
 
-  private static final DefaultSpan INVALID = new DefaultSpan(SpanContext.getInvalid());
+  private static final DefaultSpan INVALID =
+      new DefaultSpan(SpanContext.getInvalid(), Context.ROOT);
 
+  // TODO: Do we need to change this to getInvalid(Context parent)?
   /**
    * Returns a {@link DefaultSpan} with an invalid {@link SpanContext}.
    *
@@ -44,20 +47,27 @@ public final class DefaultSpan implements Span {
   }
 
   /**
-   * Creates an instance of this class with the {@link SpanContext}.
+   * Creates an instance of this class with a (parent) {@link Context}.
    *
-   * @param spanContext the {@code SpanContext}.
+   * @param spanContext the {@link SpanContext}.
+   * @param parent the (parent) {@link Context}.
    * @return a {@link DefaultSpan}.
    * @since 0.1.0
    */
-  public static Span create(SpanContext spanContext) {
-    return new DefaultSpan(spanContext);
+  public static Span create(SpanContext spanContext, Context parent) {
+    return new DefaultSpan(spanContext, parent);
+  }
+
+  public static Context createInContext(SpanContext spanContext, Context parent) {
+    return TracingContextUtils.withSpan(create(spanContext, parent), parent);
   }
 
   private final SpanContext spanContext;
+  private final Context parent;
 
-  DefaultSpan(SpanContext spanContext) {
+  DefaultSpan(SpanContext spanContext, Context parent) {
     this.spanContext = spanContext;
+    this.parent = parent;
   }
 
   @Override
@@ -114,6 +124,11 @@ public final class DefaultSpan implements Span {
   @Override
   public SpanContext getContext() {
     return spanContext;
+  }
+
+  @Override
+  public Context getParent() {
+    return parent;
   }
 
   @Override

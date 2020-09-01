@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthan
 
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 
 /**
@@ -30,13 +29,13 @@ final class RequestHandler {
 
   private final Tracer tracer;
 
-  private final SpanContext parentContext;
+  private final io.grpc.Context parentContext;
 
   public RequestHandler(Tracer tracer) {
     this(tracer, null);
   }
 
-  public RequestHandler(Tracer tracer, SpanContext parentContext) {
+  public RequestHandler(Tracer tracer, io.grpc.Context parentContext) {
     this.tracer = tracer;
     this.parentContext = parentContext;
   }

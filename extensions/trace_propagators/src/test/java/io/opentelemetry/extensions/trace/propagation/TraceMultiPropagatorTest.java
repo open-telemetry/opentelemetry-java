@@ -53,7 +53,8 @@ class TraceMultiPropagatorTest {
               new TraceId(1245, 67890),
               new SpanId(12345),
               TraceFlags.getDefault(),
-              TraceState.getDefault()));
+              TraceState.getDefault()),
+          Context.ROOT);
 
   @BeforeEach
   void init() {

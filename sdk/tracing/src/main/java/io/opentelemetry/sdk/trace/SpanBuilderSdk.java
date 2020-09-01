@@ -60,14 +60,13 @@ final class SpanBuilderSdk implements Span.Builder {
   private final IdsGenerator idsGenerator;
   private final Clock clock;
 
-  @Nullable private Span parent;
-  @Nullable private SpanContext remoteParent;
+  @Nullable private Context parent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private AttributesMap attributes;
   @Nullable private List<io.opentelemetry.trace.Link> links;
   private int totalNumberOfLinksAdded = 0;
-  private ParentType parentType = ParentType.CURRENT_CONTEXT;
   private long startEpochNanos = 0;
+  private boolean isRootSpan;
 
   SpanBuilderSdk(
       String spanName,
@@ -87,33 +86,17 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder setParent(Span parent) {
-    this.parent = Objects.requireNonNull(parent, "parent");
-    this.remoteParent = null;
-    this.parentType = ParentType.EXPLICIT_PARENT;
-    return this;
-  }
-
-  @Override
-  public Span.Builder setParent(SpanContext remoteParent) {
-    this.remoteParent = Objects.requireNonNull(remoteParent, "remoteParent");
-    this.parent = null;
-    this.parentType = ParentType.EXPLICIT_REMOTE_PARENT;
-    return this;
-  }
-
-  @Override
   public Span.Builder setParent(Context context) {
     Objects.requireNonNull(context, "context");
-    setParent(TracingContextUtils.getSpan(context));
+    this.isRootSpan = false;
+    this.parent = context;
     return this;
   }
 
   @Override
   public Span.Builder setNoParent() {
-    this.parentType = ParentType.NO_PARENT;
+    this.isRootSpan = true;
     this.parent = null;
-    this.remoteParent = null;
     return this;
   }
 
@@ -209,17 +192,23 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span startSpan() {
-    SpanContext parentContext = parent(parentType, parent, remoteParent);
+    final Context originalParent = parent == null ? Context.current() : parent;
+    final Context parentContext =
+        isRootSpan
+            ? DefaultSpan.createInContext(SpanContext.getInvalid(), originalParent)
+            : originalParent;
+    final Span parentSpan = TracingContextUtils.getSpan(parentContext);
+    final SpanContext parentSpanContext = parentSpan.getContext();
     TraceId traceId;
     SpanId spanId = idsGenerator.generateSpanId();
     TraceState traceState = TraceState.getDefault();
-    if (!parentContext.isValid()) {
+    if (!parentSpanContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
     } else {
       // New child span.
-      traceId = parentContext.getTraceId();
-      traceState = parentContext.getTraceState();
+      traceId = parentSpanContext.getTraceId();
+      traceState = parentSpanContext.getTraceState();
     }
     List<io.opentelemetry.trace.Link> immutableLinks =
         links == null
@@ -233,7 +222,12 @@ final class SpanBuilderSdk implements Span.Builder {
         traceConfig
             .getSampler()
             .shouldSample(
-                parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
+                parentSpanContext,
+                traceId,
+                spanName,
+                spanKind,
+                immutableAttributes,
+                immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
     SpanContext spanContext =
@@ -246,7 +240,7 @@ final class SpanBuilderSdk implements Span.Builder {
             traceState);
 
     if (!Samplers.isRecording(samplingDecision)) {
-      return DefaultSpan.create(spanContext);
+      return DefaultSpan.create(spanContext, parentContext);
     }
     ReadableAttributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
@@ -272,11 +266,10 @@ final class SpanBuilderSdk implements Span.Builder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentContext.getSpanId(),
-        parentContext.isRemote(),
+        parentContext,
         traceConfig,
         spanProcessor,
-        getClock(parentSpan(parentType, parent), clock),
+        getClock(parentSpan, clock),
         resource,
         recordedAttributes,
         immutableLinks,
@@ -291,39 +284,5 @@ final class SpanBuilderSdk implements Span.Builder {
     } else {
       return MonotonicClock.create(clock);
     }
-  }
-
-  private static SpanContext parent(
-      ParentType parentType, Span explicitParent, SpanContext remoteParent) {
-    switch (parentType) {
-      case NO_PARENT:
-        return SpanContext.getInvalid();
-      case CURRENT_CONTEXT:
-        return TracingContextUtils.getCurrentSpan().getContext();
-      case EXPLICIT_PARENT:
-        return explicitParent.getContext();
-      case EXPLICIT_REMOTE_PARENT:
-        return remoteParent;
-    }
-    throw new IllegalStateException("Unknown parent type");
-  }
-
-  @Nullable
-  private static Span parentSpan(ParentType parentType, Span explicitParent) {
-    switch (parentType) {
-      case CURRENT_CONTEXT:
-        return TracingContextUtils.getSpanWithoutDefault(Context.current());
-      case EXPLICIT_PARENT:
-        return explicitParent;
-      default:
-        return null;
-    }
-  }
-
-  private enum ParentType {
-    CURRENT_CONTEXT,
-    EXPLICIT_PARENT,
-    EXPLICIT_REMOTE_PARENT,
-    NO_PARENT,
   }
 }

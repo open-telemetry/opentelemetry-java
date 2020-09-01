@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
+import io.grpc.Context;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -114,6 +115,11 @@ abstract class SpanWrapper implements SpanData {
   @Override
   public SpanId getParentSpanId() {
     return delegate().getParentSpanId();
+  }
+
+  @Override
+  public Context getParent() {
+    return delegate().getParent();
   }
 
   @Override

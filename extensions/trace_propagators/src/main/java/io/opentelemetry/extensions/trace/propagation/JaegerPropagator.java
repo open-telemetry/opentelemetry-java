@@ -114,7 +114,7 @@ public class JaegerPropagator implements TextMapPropagator {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return DefaultSpan.createInContext(spanContext, context);
   }
 
   @SuppressWarnings("StringSplitter")

@@ -24,7 +24,6 @@ import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -43,7 +42,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return DefaultSpan.createInContext(spanContext, context);
   }
 
   private static <C> SpanContext getSpanContextFromMultipleHeaders(

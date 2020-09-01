@@ -16,10 +16,13 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
@@ -183,11 +186,15 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      builder.setParent(parentSpan.getSpan());
+      // TODO: We ignore current() here
+      builder.setParent(
+          TracingContextUtils.withSpan(parentSpan.getSpan(), parentSpan.getSpan().getParent()));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
       distContext = contextShim == null ? null : contextShim.getCorrelationContext();
     } else if (parentSpanContext != null) {
-      builder.setParent(parentSpanContext.getSpanContext());
+      // TODO: This might be wonky
+      builder.setParent(
+          DefaultSpan.createInContext(parentSpanContext.getSpanContext(), Context.current()));
       distContext = parentSpanContext.getCorrelationContext();
     }
 

@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.common.collect.EvictingQueue;
+import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
@@ -36,6 +37,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -59,10 +61,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final TraceConfig traceConfig;
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
-  // The parent SpanId of this span. Invalid if this is a root span.
-  private final SpanId parentSpanId;
-  // True if the parent is on a different process.
-  private final boolean hasRemoteParent;
+  // Parent context.
+  private final Context parent;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
@@ -112,8 +112,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      SpanId parentSpanId,
-      boolean hasRemoteParent,
+      Context parent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
@@ -124,8 +123,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       long startEpochNanos) {
     this.context = context;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.parentSpanId = parentSpanId;
-    this.hasRemoteParent = hasRemoteParent;
+    this.parent = parent;
     this.links = links;
     this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
@@ -146,10 +144,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
    * @param kind the span kind.
-   * @param parentSpanId the span_id of the parent span, or {@code Span.INVALID} if the new span is
-   *     a root span.
-   * @param hasRemoteParent {@code true} if the parentContext is remote. {@code false} if this is a
-   *     root span.
+   * @param parent parent Context.
    * @param traceConfig trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
    * @param clock the clock used to get the time.
@@ -163,8 +158,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      SpanId parentSpanId,
-      boolean hasRemoteParent,
+      Context parent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
@@ -179,8 +173,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             name,
             instrumentationLibraryInfo,
             kind,
-            parentSpanId,
-            hasRemoteParent,
+            parent,
             traceConfig,
             spanProcessor,
             clock,
@@ -223,6 +216,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   @Override
   public SpanContext getSpanContext() {
     return getContext();
+  }
+
+  @Override
+  public Context getParent() {
+    return parent;
   }
 
   /**
@@ -508,7 +506,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   SpanId getParentSpanId() {
-    return parentSpanId;
+    return TracingContextUtils.getSpan(parent).getContext().getSpanId();
   }
 
   Resource getResource() {
@@ -524,7 +522,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   boolean hasRemoteParent() {
-    return hasRemoteParent;
+    return TracingContextUtils.getSpan(parent).getContext().isRemote();
   }
 
   int getTotalRecordedLinks() {
@@ -613,7 +611,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     sb.append(", spanId=");
     sb.append(context.getSpanId());
     sb.append(", parentSpanId=");
-    sb.append(parentSpanId);
+    sb.append(getParentSpanId());
     sb.append(", name=");
     sb.append(name);
     sb.append(", kind=");

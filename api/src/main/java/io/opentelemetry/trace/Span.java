@@ -284,6 +284,14 @@ public interface Span {
   SpanContext getContext();
 
   /**
+   * Returns the parent {@code Context} associated with this {@code Span}.
+   *
+   * @return the parent {@code Context} associated with this {@code Span}.
+   * @since 0.8.0
+   */
+  Context getParent();
+
+  /**
    * Returns {@code true} if this {@code Span} records tracing events (e.g. {@link
    * #addEvent(String)}, {@link #setAttribute(String, long)}).
    *
@@ -382,51 +390,6 @@ public interface Span {
    * @since 0.1.0
    */
   interface Builder {
-
-    /**
-     * Sets the parent {@code Span} to use. If not set, the value of {@code Tracer.getCurrentSpan()}
-     * at {@link #startSpan()} time will be used as parent.
-     *
-     * <p>This <b>must</b> be used to create a {@code Span} when manual Context propagation is used
-     * OR when creating a root {@code Span} with a parent with an invalid {@link SpanContext}.
-     *
-     * <p>Observe this is the preferred method when the parent is a {@code Span} created within the
-     * process. Using its {@code SpanContext} as parent remains as a valid, albeit inefficient,
-     * operation.
-     *
-     * <p>If called multiple times, only the last specified value will be used. Observe that the
-     * state defined by a previous call to {@link #setNoParent()} will be discarded.
-     *
-     * @param parent the {@code Span} used as parent.
-     * @return this.
-     * @throws NullPointerException if {@code parent} is {@code null}.
-     * @see #setNoParent()
-     * @since 0.1.0
-     */
-    Builder setParent(Span parent);
-
-    /**
-     * Sets the parent {@link SpanContext} to use. If not set, the value of {@code
-     * Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
-     *
-     * <p>Similar to {@link #setParent(Span parent)} but this <b>must</b> be used to create a {@code
-     * Span} when the parent is in a different process. This is only intended for use by RPC systems
-     * or similar.
-     *
-     * <p>If no {@link SpanContext} is available, users must call {@link #setNoParent()} in order to
-     * create a root {@code Span} for a new trace.
-     *
-     * <p>If called multiple times, only the last specified value will be used. Observe that the
-     * state defined by a previous call to {@link #setNoParent()} will be discarded.
-     *
-     * @param remoteParent the {@link SpanContext} used as parent.
-     * @return this.
-     * @throws NullPointerException if {@code remoteParent} is {@code null}.
-     * @see #setParent(Span parent)
-     * @see #setNoParent()
-     * @since 0.1.0
-     */
-    Builder setParent(SpanContext remoteParent);
 
     /**
      * Sets the parent to use from the specified {@code Context}. If not set, the value of {@code

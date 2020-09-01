@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
+import io.grpc.Context;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -76,6 +77,15 @@ public interface SpanData {
    * @since 0.1.0
    */
   SpanId getParentSpanId();
+
+  /**
+   * Returns the parent {@code Context}. If the {@code Span} is a root {@code Span}, the Context
+   * will contain no Span or an invalid span.
+   *
+   * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
+   * @since 0.8.0
+   */
+  Context getParent();
 
   /**
    * Returns the resource of this {@code Span}.

@@ -19,17 +19,21 @@ package io.opentelemetry.exporters.zipkin;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import io.grpc.Context;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -155,11 +159,17 @@ public class ZipkinSpanExporterEndToEndHttpTest {
     return TestSpanData.newBuilder()
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
+        .setParent(
+            DefaultSpan.createInContext(
+                SpanContext.createFromRemoteParent(
+                    TraceId.fromLowerBase16(TRACE_ID, 0),
+                    SpanId.fromLowerBase16(PARENT_SPAN_ID, 0),
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                Context.current()))
         .setTraceFlags(TraceFlags.builder().setIsSampled(true).build())
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)
-        .setHasRemoteParent(true)
         .setName(SPAN_NAME)
         .setStartEpochNanos(START_EPOCH_NANOS)
         .setAttributes(attributes)

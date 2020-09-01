@@ -67,43 +67,32 @@ public final class DefaultTracer implements Tracer {
     }
 
     private boolean isRootSpan;
-    @Nullable private SpanContext spanContext;
+    @Nullable private Context parent;
 
     @Override
     public Span startSpan() {
-      if (spanContext == null && !isRootSpan) {
-        spanContext = TracingContextUtils.getCurrentSpan().getContext();
+      if (parent == null) {
+        parent = Context.current();
+      }
+      if (isRootSpan) {
+        parent = TracingContextUtils.withSpan(DefaultSpan.getInvalid(), parent);
       }
 
-      return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
-          ? new DefaultSpan(spanContext)
-          : DefaultSpan.getInvalid();
-    }
-
-    @Override
-    public NoopSpanBuilder setParent(Span parent) {
-      Utils.checkNotNull(parent, "parent");
-      spanContext = parent.getContext();
-      return this;
-    }
-
-    @Override
-    public NoopSpanBuilder setParent(SpanContext remoteParent) {
-      Utils.checkNotNull(remoteParent, "remoteParent");
-      spanContext = remoteParent;
-      return this;
+      return new DefaultSpan(TracingContextUtils.getSpan(parent).getContext(), parent);
     }
 
     @Override
     public NoopSpanBuilder setParent(Context context) {
       Utils.checkNotNull(context, "context");
-      spanContext = TracingContextUtils.getSpan(context).getContext();
+      isRootSpan = false; // TODO port this fix to mainline
+      parent = context;
       return this;
     }
 
     @Override
     public NoopSpanBuilder setNoParent() {
       isRootSpan = true;
+      parent = null;
       return this;
     }
 

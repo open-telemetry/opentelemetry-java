@@ -68,7 +68,7 @@ class B3PropagatorTest {
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return DefaultSpan.createInContext(spanContext, context);
   }
 
   @Test
