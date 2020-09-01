@@ -49,6 +49,6 @@ service:
       processors: [batch, queued_retry]
       exporters: [logging, zipkin, jaeger]
     metrics:
-      receivers: [opencensus]
+      receivers: [opencensus, otlp]
       processors: [batch]
       exporters: [logging,prometheus]

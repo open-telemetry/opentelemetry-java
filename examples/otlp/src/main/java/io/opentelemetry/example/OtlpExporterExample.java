@@ -17,12 +17,18 @@
 package io.opentelemetry.example;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter;
+import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
+import java.util.Collections;
 
 /**
  * Example code for setting up the OTLP exporters.
@@ -35,25 +41,30 @@ public class OtlpExporterExample {
   public static void main(String[] args) throws InterruptedException {
     // this will make sure that a proper service.name attribute is set on all the spans/metrics.
     System.setProperty("otel.resource.attributes", "service.name=OtlpExporterExample");
-    OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.getDefault();
 
+    //set up the span exporter and wire it into the SDK
+    OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.getDefault();
     SimpleSpanProcessor spanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
     OpenTelemetrySdk.getTracerProvider().addSpanProcessor(spanProcessor);
 
-    // todo: uncomment when OTLP metrics are enabled in the collector
-    //    OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.getDefault();
-    //    IntervalMetricReader intervalMetricReader = IntervalMetricReader.builder()
-    //        .setMetricExporter(metricExporter)
-    //        .setMetricProducers(
-    //            Collections.singleton(OpenTelemetrySdk.getMeterProvider().getMetricProducer()))
-    //        .setExportIntervalMillis(5000)
-    //        .build();
+    //set up the metric exporter and wire it into the SDK and a timed reader.
+    OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.getDefault();
+    IntervalMetricReader intervalMetricReader = IntervalMetricReader.builder()
+        .setMetricExporter(metricExporter)
+        .setMetricProducers(
+            Collections.singleton(OpenTelemetrySdk.getMeterProvider().getMetricProducer()))
+        .setExportIntervalMillis(1000)
+        .build();
 
     Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example");
+    Meter meter = OpenTelemetry.getMeter("io.opentelemetry.example");
+    LongCounter counter = meter.longCounterBuilder("example_counter")
+        .setConstantLabels(Labels.of("good", "true")).build();
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 10; i++) {
       Span exampleSpan = tracer.spanBuilder("exampleSpan").startSpan();
       try (Scope scope = tracer.withSpan(exampleSpan)) {
+        counter.add(1);
         exampleSpan.setAttribute("good", "true");
         exampleSpan.setAttribute("exampleNumber", i);
         Thread.sleep(100);
@@ -62,7 +73,9 @@ public class OtlpExporterExample {
       }
     }
 
+    //sleep for a bit to let everything settle
+    Thread.sleep(2000);
     OpenTelemetrySdk.getTracerProvider().shutdown();
-    //    intervalMetricReader.shutdown();
+    intervalMetricReader.shutdown();
   }
 }
