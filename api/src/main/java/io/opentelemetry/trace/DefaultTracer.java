@@ -71,13 +71,12 @@ public final class DefaultTracer implements Tracer {
 
     @Override
     public Span startSpan() {
+      if (isRootSpan) {
+        return DefaultSpan.getInvalid();
+      }
       if (parent == null) {
         parent = Context.current();
       }
-      if (isRootSpan) {
-        parent = TracingContextUtils.withSpan(DefaultSpan.getInvalid(), parent);
-      }
-
       return new DefaultSpan(TracingContextUtils.getSpan(parent).getContext());
     }
 
