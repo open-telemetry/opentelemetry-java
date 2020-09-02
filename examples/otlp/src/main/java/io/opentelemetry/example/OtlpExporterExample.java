@@ -25,6 +25,7 @@ import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -40,11 +41,16 @@ import java.util.Collections;
 public class OtlpExporterExample {
   public static void main(String[] args) throws InterruptedException {
     // this will make sure that a proper service.name attribute is set on all the spans/metrics.
+    // note: this is not something you should generally do in code, but should be provided on the
+    // command-line. This is here to make the example more self-contained.
     System.setProperty("otel.resource.attributes", "service.name=OtlpExporterExample");
 
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.getDefault();
-    SimpleSpanProcessor spanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    BatchSpanProcessor spanProcessor = BatchSpanProcessor
+        .newBuilder(spanExporter)
+        .setScheduleDelayMillis(100)
+        .build();
     OpenTelemetrySdk.getTracerProvider().addSpanProcessor(spanProcessor);
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
@@ -54,7 +60,7 @@ public class OtlpExporterExample {
             .setMetricExporter(metricExporter)
             .setMetricProducers(
                 Collections.singleton(OpenTelemetrySdk.getMeterProvider().getMetricProducer()))
-            .setExportIntervalMillis(1000)
+            .setExportIntervalMillis(500)
             .build();
 
     Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example");
@@ -79,6 +85,7 @@ public class OtlpExporterExample {
 
     // sleep for a bit to let everything settle
     Thread.sleep(2000);
+
     OpenTelemetrySdk.getTracerProvider().shutdown();
     intervalMetricReader.shutdown();
   }

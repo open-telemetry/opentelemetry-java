@@ -3,10 +3,6 @@ receivers:
   otlp:
     protocols:
         grpc:
-  otlp/withendpoint:
-    protocols:
-        grpc:
-            endpoint: 127.0.0.1:55680
 
 exporters:
   prometheus:
@@ -45,10 +41,10 @@ service:
   extensions: [pprof, zpages, health_check]
   pipelines:
     traces:
-      receivers: [opencensus, otlp]
+      receivers: [otlp]
       processors: [batch, queued_retry]
       exporters: [logging, zipkin, jaeger]
     metrics:
-      receivers: [opencensus, otlp]
+      receivers: [otlp]
       processors: [batch]
       exporters: [logging,prometheus]
