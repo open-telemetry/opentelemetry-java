@@ -16,6 +16,7 @@
 
 package io.opentelemetry.common.experimental;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.experimental.KeyedAttributes.BooleanArrayKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.BooleanKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.CompoundKey;
@@ -26,6 +27,12 @@ import java.util.List;
 
 interface ReadableKeyedAttributes {
   void forEach(AttributeConsumer attributeConsumer);
+
+  void forEachRaw(RawAttributeConsumer rawAttributeConsumer);
+
+  interface RawAttributeConsumer {
+    <T> void consume(KeyedAttributes.Key<T> key, AttributeValue.Type type, T value);
+  }
 
   interface AttributeConsumer {
     void consume(StringKey key, String value);

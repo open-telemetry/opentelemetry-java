@@ -16,6 +16,7 @@
 
 package io.opentelemetry.common.experimental;
 
+import io.opentelemetry.common.AttributeValue;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /** javadoc me. */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class KeyedAttributes implements ReadableKeyedAttributes {
 
   // todo replace with the array-backed impl
@@ -54,6 +55,23 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
       } else {
         attributeConsumer.consumeCustom(entry.getKey(), entry.getValue());
       }
+    }
+  }
+
+  @Override
+  public void forEachRaw(RawAttributeConsumer rawAttributeConsumer) {
+    Set<Map.Entry<Key, Object>> entries = values.entrySet();
+    for (Map.Entry<Key, Object> entry : entries) {
+      AttributeValue.Type type = AttributeValue.Type.STRING_ARRAY;
+      Key key = entry.getKey();
+      if (key instanceof StringKey) {
+        type = AttributeValue.Type.STRING;
+      } else if (key instanceof StringArrayKey) {
+        type = AttributeValue.Type.STRING_ARRAY;
+      } else if (key instanceof BooleanArrayKey) {
+        type = AttributeValue.Type.BOOLEAN_ARRAY;
+      }
+      rawAttributeConsumer.consume(key, type, entry.getValue());
     }
   }
 

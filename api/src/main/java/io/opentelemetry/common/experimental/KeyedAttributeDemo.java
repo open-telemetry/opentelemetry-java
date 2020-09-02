@@ -16,8 +16,12 @@
 
 package io.opentelemetry.common.experimental;
 
+import static io.opentelemetry.common.experimental.KeyedAttributes.booleanKey;
+import static io.opentelemetry.common.experimental.KeyedAttributes.compoundKey;
+import static io.opentelemetry.common.experimental.KeyedAttributes.stringArrayKey;
 import static io.opentelemetry.common.experimental.KeyedAttributes.stringKey;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.experimental.KeyedAttributes.BooleanArrayKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.BooleanKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.CompoundKey;
@@ -26,11 +30,13 @@ import io.opentelemetry.common.experimental.KeyedAttributes.MultiAttribute;
 import io.opentelemetry.common.experimental.KeyedAttributes.StringArrayKey;
 import io.opentelemetry.common.experimental.KeyedAttributes.StringKey;
 import io.opentelemetry.common.experimental.ReadableKeyedAttributes.AttributeConsumer;
+import io.opentelemetry.common.experimental.ReadableKeyedAttributes.RawAttributeConsumer;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import javax.annotation.Nullable;
 
 @SuppressWarnings("JavadocMethod")
 public class KeyedAttributeDemo {
@@ -41,25 +47,32 @@ public class KeyedAttributeDemo {
   static final StringKey HTTP_SCHEME = stringKey("http.scheme");
   static final StringKey HTTP_HOST = stringKey("http.host");
   static final StringKey NET_HOST_NAME = stringKey("net.host.name");
-  static final BooleanKey ERROR_HINT = KeyedAttributes.booleanKey("error.hint");
-  static final StringArrayKey HTTP_HEADERS = KeyedAttributes.stringArrayKey("http.headers");
-  static final CompoundKey REQUEST_URL = KeyedAttributes.compoundKey("request.url");
+  static final BooleanKey ERROR_HINT = booleanKey("error.hint");
+  static final StringArrayKey HTTP_HEADERS = stringArrayKey("http.headers");
+  static final CompoundKey REQUEST_URL = compoundKey("request.url");
 
   static final KeyedAttributes.Key<BigDecimal> MONEY_VALUE =
       new KeyImpl<BigDecimal>("money.value") {};
 
-  public static void main(String[] args) throws MalformedURLException {
+  public static void main(String[] args) {
     // here's how you build a full set of attributes. You can imagine the Span/Builder would look
     // similar
     KeyedAttributes keyedAttributes =
         KeyedAttributes.newBuilder()
             .set(HTTP_HEADERS, "x-stuff", "x-api-key")
-            .set(HTTP_METHOD, "PUT")
             .set(ERROR_HINT, false)
             .set(NET_HOST_NAME, "localhost")
-            .set(REQUEST_URL, new UrlAttributes(URI.create("https://opentelemetry.io").toURL()))
+            .set(REQUEST_URL, new UrlAttributes("https://opentelemetry.io"))
             .setCustom(MONEY_VALUE, new BigDecimal(1_000_000L))
             .build();
+
+    keyedAttributes.forEachRaw(
+        new RawAttributeConsumer() {
+          @Override
+          public <T> void consume(KeyedAttributes.Key<T> key, AttributeValue.Type type, T value) {
+            System.out.println(key.get() + " = " + value);
+          }
+        });
 
     // iterate over them like this, using the readable interface.
     keyedAttributes.forEach(
@@ -97,19 +110,32 @@ public class KeyedAttributeDemo {
   }
 
   private static class UrlAttributes implements MultiAttribute {
-    private final URL url;
+    private final String url;
+    @Nullable private volatile KeyedAttributes parsedAttributes = null;
 
-    public UrlAttributes(URL url) {
+    public UrlAttributes(String url) {
       this.url = url;
     }
 
     @Override
     public KeyedAttributes getAttributes() {
-      return KeyedAttributes.newBuilder()
-          .set(HTTP_SCHEME, url.getProtocol())
-          .set(HTTP_HOST, url.getHost())
-          // etc
-          .build();
+      if (parsedAttributes != null) {
+        return parsedAttributes;
+      }
+      URL url = null;
+      try {
+        url = URI.create(this.url).toURL();
+      } catch (MalformedURLException e) {
+        // ignore me
+      }
+      KeyedAttributes attributes =
+          KeyedAttributes.newBuilder()
+              .set(HTTP_SCHEME, url.getProtocol())
+              .set(HTTP_HOST, url.getHost())
+              // etc
+              .build();
+      parsedAttributes = attributes;
+      return attributes;
     }
   }
 }
