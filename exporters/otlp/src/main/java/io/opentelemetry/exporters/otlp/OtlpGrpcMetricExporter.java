@@ -119,7 +119,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
           @Override
           public void onFailure(Throwable t) {
-            logger.log(Level.WARNING, "Failed to export spans", t);
+            logger.log(Level.WARNING, "Failed to export metrics", t);
             result.fail();
           }
         },

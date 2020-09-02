@@ -123,6 +123,22 @@ class DefaultTracerTest {
   }
 
   @Test
+  void testSpanContextPropagation_fromContextAfterNoParent() {
+    Context context = TracingContextUtils.withSpan(new DefaultSpan(spanContext), Context.current());
+
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
+    assertThat(span.getContext()).isSameAs(spanContext);
+  }
+
+  @Test
+  void testSpanContextPropagation_fromContextThenNoParent() {
+    Context context = TracingContextUtils.withSpan(new DefaultSpan(spanContext), Context.current());
+
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
+    assertThat(span.getContext()).isEqualTo(SpanContext.getInvalid());
+  }
+
+  @Test
   void testSpanContextPropagationCurrentSpan() {
     DefaultSpan parent = new DefaultSpan(spanContext);
     try (Scope scope = defaultTracer.withSpan(parent)) {
