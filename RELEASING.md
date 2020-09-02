@@ -12,7 +12,11 @@ In this section upstream repository refers to the main opentelemetry-java github
 Before any push to the upstream repository you need to create a
 [personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line).
 
-1.  Create the release branch and push it to GitHub:
+Note: The scripts referenced in here may or may not work as-is, depending on your operating system
+and command-line shell of choice. In all cases, a description of what needs to be done is also
+provided, for clarity.
+
+1.  Create the new version series (eg. `v0.10.x`) branch and push it to GitHub:
 
     ```bash
     $ MAJOR=0 MINOR=3 PATCH=0 # Set appropriately for new release
@@ -25,55 +29,58 @@ Before any push to the upstream repository you need to create a
     The branch will be automatically protected by the GitHub branch protection rule for release
     branches.
 
-2.  For `master` branch:
+2.  Back on the `master` branch:
 
-    -   Change root build files to the next minor snapshot (e.g.
-        `0.4.0-SNAPSHOT`).
+    -   Change the version in the root `build.gradle` to the next minor snapshot (e.g.
+        `0.11.0-SNAPSHOT`).
 
     ```bash
     $ git checkout -b bump-version master
-    # Change version to next minor (and keep -SNAPSHOT)
+    # Change version to next minor (but keep the `-SNAPSHOT` suffix)
     $ sed -i "" 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/'$MAJOR.$((MINOR+1)).0'\1/' \
       "${VERSION_FILES[@]}"
     $ ./gradlew build
     $ git commit -a -m "Start $MAJOR.$((MINOR+1)).0 development cycle"
     ```
 
-    -   Go through PR review and push the master branch to GitHub.
+    -   Go through the normal PR review against master, and merge to the master branch on GitHub.
        
-3.  For `vMajor.Minor.x` branch:
+3.  From the `vMajor.Minor.x` branch:
 
-    -   Change root build files to remove "-SNAPSHOT" for the next release
-        version (e.g. `0.3.0`). Commit the result and make a tag:
+    -   Create a new branch called 'release'; change the version in the root build.gradle to remove "-SNAPSHOT" for the next release
+        version (eg. `0.10.0`). Commit the result and tag it with the version being released (eg. "v0.10.0"):
 
     ```bash
     $ git checkout -b release v$MAJOR.$MINOR.x
-    # Change version to remove -SNAPSHOT
+    # Change the version to remove -SNAPSHOT
     $ sed -i "" 's/-SNAPSHOT\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/\1/' "${VERSION_FILES[@]}"
     $ ./gradlew build
     $ git commit -a -m "Bump version to $MAJOR.$MINOR.$PATCH"
     $ git tag -a v$MAJOR.$MINOR.$PATCH -m "Version $MAJOR.$MINOR.$PATCH"
     ```
 
-    -   Change root build files to the next snapshot version (e.g.
-        `0.3.1-SNAPSHOT`). Commit the result:
+    -   Change the version in the root `build.gradle` to the next patch level snapshot version (e.g.
+        `0.10.1-SNAPSHOT`). Commit the result:
 
     ```bash
-    # Change version to next patch and add -SNAPSHOT
+    # Change version to the next patch level and add -SNAPSHOT
     $ sed -i "" 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/'$MAJOR.$MINOR.$((PATCH+1))-SNAPSHOT'\1/' \
      "${VERSION_FILES[@]}"
     $ ./gradlew build
     $ git commit -a -m "Bump version to $MAJOR.$MINOR.$((PATCH+1))-SNAPSHOT"
     ```
 
-    -   Go through PR review and push the release tag and updated release branch
+    -   Create a PR with the current state of your 'release' branch against the `v.M.m.x` branch.
+        *Do not merge this PR to the master branch!*
+        Go through PR review and after approval, manually push the release tag and updated `v.M.m.x` branch
         to GitHub (note: do not squash the commits when you merge otherwise you
-        will lose the release tag):
+        will lose the release tag!):
 
     ```bash
     $ git checkout v$MAJOR.$MINOR.x
     $ git merge --ff-only release
     $ git push upstream v$MAJOR.$MINOR.x
+    ### this next step, pushing the tag, is what triggers the build that publishes the release:
     $ git push upstream v$MAJOR.$MINOR.$PATCH
     ```
 
