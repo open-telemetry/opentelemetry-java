@@ -66,12 +66,11 @@ public final class DefaultTracer implements Tracer {
       return new NoopSpanBuilder(spanName);
     }
 
-    private boolean isRootSpan;
     @Nullable private SpanContext spanContext;
 
     @Override
     public Span startSpan() {
-      if (spanContext == null && !isRootSpan) {
+      if (spanContext == null) {
         spanContext = TracingContextUtils.getCurrentSpan().getContext();
       }
 
@@ -103,7 +102,7 @@ public final class DefaultTracer implements Tracer {
 
     @Override
     public NoopSpanBuilder setNoParent() {
-      isRootSpan = true;
+      spanContext = SpanContext.getInvalid();
       return this;
     }
 
