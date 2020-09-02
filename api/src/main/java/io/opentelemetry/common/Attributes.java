@@ -50,6 +50,11 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
     public Builder toBuilder() {
       return new Builder(new ArrayList<>(data()));
     }
+
+    @Override
+    public AttributeValue getValue(String key) {
+      return get(key);
+    }
   }
 
   /** Returns a {@link Attributes} instance with no attributes. */

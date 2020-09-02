@@ -62,7 +62,7 @@ class OsResourceTest {
   @Test
   void inDefault() {
     ReadableAttributes attributes = Resource.getDefault().getAttributes();
-    assertThat(attributes.get(ResourceAttributes.OS_NAME.key())).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION.key())).isNotNull();
+    assertThat(attributes.getValue(ResourceAttributes.OS_NAME.key())).isNotNull();
+    assertThat(attributes.getValue(ResourceAttributes.OS_DESCRIPTION.key())).isNotNull();
   }
 }

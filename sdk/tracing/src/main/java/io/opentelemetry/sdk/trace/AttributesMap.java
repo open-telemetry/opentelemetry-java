@@ -73,7 +73,7 @@ final class AttributesMap implements ReadableAttributes {
 
   @Nullable
   @Override
-  public AttributeValue get(String key) {
+  public AttributeValue getValue(String key) {
     return data.get(key);
   }
 

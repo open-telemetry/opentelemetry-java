@@ -156,14 +156,14 @@ public final class ZipkinSpanExporter implements SpanExporter {
         });
     Status status = spanData.getStatus();
     // for GRPC spans, include status code & description.
-    if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE.key()) != null) {
+    if (status != null && spanAttributes.getValue(SemanticAttributes.RPC_SERVICE.key()) != null) {
       spanBuilder.putTag(GRPC_STATUS_CODE, status.getCanonicalCode().toString());
       if (status.getDescription() != null) {
         spanBuilder.putTag(GRPC_STATUS_DESCRIPTION, status.getDescription());
       }
     }
     // add the error tag, if it isn't already in the source span.
-    if (status != null && !status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
+    if (status != null && !status.isOk() && spanAttributes.getValue(STATUS_ERROR) == null) {
       spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
     }
 
@@ -189,7 +189,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
     ReadableAttributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
-    AttributeValue serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME.key());
+    AttributeValue serviceNameValue =
+        resourceAttributes.getValue(ResourceAttributes.SERVICE_NAME.key());
     if (serviceNameValue == null) {
       return localEndpoint;
     }
