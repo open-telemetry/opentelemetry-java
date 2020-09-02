@@ -21,9 +21,9 @@ import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.SpanId;
@@ -394,7 +394,7 @@ final class TracezZPageHandler extends ZPageHandler {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           private boolean first = true;
 
           @Override

@@ -20,8 +20,8 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
 
+import io.opentelemetry.common.LabelConsumer;
 import io.opentelemetry.common.Labels;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
@@ -260,7 +260,7 @@ final class MetricAdapter {
     }
     final List<StringKeyValue> result = new ArrayList<>(labels.size());
     labels.forEach(
-        new KeyValueConsumer<String>() {
+        new LabelConsumer() {
           @Override
           public void consume(String key, String value) {
             result.add(StringKeyValue.newBuilder().setKey(key).setValue(value).build());

@@ -18,10 +18,10 @@ package io.opentelemetry.sdk.resources;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Objects;
@@ -162,7 +162,7 @@ public abstract class Resource {
     return new AutoValue_Resource(attrBuilder.build());
   }
 
-  private static final class Merger implements KeyValueConsumer<AttributeValue> {
+  private static final class Merger implements AttributeConsumer {
     private final Attributes.Builder attrBuilder;
 
     private Merger(Attributes.Builder attrBuilder) {
@@ -177,7 +177,7 @@ public abstract class Resource {
 
   private static void checkAttributes(ReadableAttributes attributes) {
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
           public void consume(String key, AttributeValue value) {
             Utils.checkArgument(

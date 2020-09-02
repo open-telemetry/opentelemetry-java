@@ -14,21 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.resources;
+package io.opentelemetry.common;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 
-import io.opentelemetry.common.AttributeValue;
-import org.junit.jupiter.api.Test;
-
-class ResourceProvidersTest {
-
-  @Test
-  void default_resource_includes_attributes_from_providers() {
-    Resource resource = Resource.getDefault();
-
-    AttributeValue providerAttribute = resource.getAttributes().getValue("providerAttribute");
-    assertThat(providerAttribute).isNotNull();
-    assertThat(providerAttribute.getLongValue()).isEqualTo(42);
-  }
-}
+/** Convenience interface for consuming {@link Labels}. */
+public interface LabelConsumer extends KeyValueConsumer<String, String> {}

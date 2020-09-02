@@ -86,7 +86,7 @@ final class AttributesMap extends HashMap<String, AttributeValue> implements Rea
   }
 
   @Override
-  public void forEach(KeyValueConsumer<AttributeValue> consumer) {
+  public void forEach(KeyValueConsumer<String, AttributeValue> consumer) {
     for (Entry<String, AttributeValue> entry : entrySet()) {
       consumer.consume(entry.getKey(), entry.getValue());
     }
@@ -94,7 +94,7 @@ final class AttributesMap extends HashMap<String, AttributeValue> implements Rea
 
   @Nullable
   @Override
-  public AttributeValue get(String key) {
+  public AttributeValue getValue(String key) {
     return super.get(key);
   }
 }

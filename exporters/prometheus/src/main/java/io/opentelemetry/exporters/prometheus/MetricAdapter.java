@@ -18,7 +18,7 @@ package io.opentelemetry.exporters.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+import io.opentelemetry.common.LabelConsumer;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
@@ -137,7 +137,7 @@ final class MetricAdapter {
     return Collector.sanitizeMetricName(labelKey);
   }
 
-  private static final class Consumer implements KeyValueConsumer<String> {
+  private static final class Consumer implements LabelConsumer {
     final List<String> labelNames;
     final List<String> labelValues;
 

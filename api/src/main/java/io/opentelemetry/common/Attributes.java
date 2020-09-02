@@ -50,6 +50,11 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
     public Builder toBuilder() {
       return new Builder(new ArrayList<>(data()));
     }
+
+    @Override
+    public AttributeValue getValue(String key) {
+      return get(key);
+    }
   }
 
   /** Returns a {@link Attributes} instance with no attributes. */
@@ -137,7 +142,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
   public static Builder newBuilder(ReadableAttributes attributes) {
     final Builder builder = new Builder();
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
           public void consume(String key, AttributeValue value) {
             builder.setAttribute(key, value);

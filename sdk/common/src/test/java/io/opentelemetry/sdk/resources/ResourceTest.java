@@ -242,10 +242,10 @@ class ResourceTest {
   void testSdkTelemetryResources() {
     Resource resource = Resource.getTelemetrySdk();
     ReadableAttributes attributes = resource.getAttributes();
-    assertThat(attributes.get("telemetry.sdk.name"))
+    assertThat(attributes.getValue("telemetry.sdk.name"))
         .isEqualTo(AttributeValue.stringAttributeValue("opentelemetry"));
-    assertThat(attributes.get("telemetry.sdk.language"))
+    assertThat(attributes.getValue("telemetry.sdk.language"))
         .isEqualTo(AttributeValue.stringAttributeValue("java"));
-    assertThat(attributes.get("telemetry.sdk.version").getStringValue()).isNotNull();
+    assertThat(attributes.getValue("telemetry.sdk.version").getStringValue()).isNotNull();
   }
 }

@@ -44,8 +44,8 @@ class ProcessResourceTest {
   @Test
   void inDefault() {
     ReadableAttributes attributes = Resource.getDefault().getAttributes();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_PID.key())).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH.key())).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE.key())).isNotNull();
+    assertThat(attributes.getValue(ResourceAttributes.PROCESS_PID.key())).isNotNull();
+    assertThat(attributes.getValue(ResourceAttributes.PROCESS_EXECUTABLE_PATH.key())).isNotNull();
+    assertThat(attributes.getValue(ResourceAttributes.PROCESS_COMMAND_LINE.key())).isNotNull();
   }
 }

@@ -61,7 +61,7 @@ public final class NestedCallbacksTest {
     ReadableAttributes attrs = spans.get(0).getAttributes();
     assertThat(attrs.size()).isEqualTo(3);
     for (int i = 1; i <= 3; i++) {
-      assertThat(attrs.get("key" + i).getStringValue()).isEqualTo(Integer.toString(i));
+      assertThat(attrs.getValue("key" + i).getStringValue()).isEqualTo(Integer.toString(i));
     }
 
     assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());

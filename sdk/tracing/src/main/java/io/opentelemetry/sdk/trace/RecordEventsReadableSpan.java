@@ -17,10 +17,10 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.common.collect.EvictingQueue;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -633,7 +633,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return sb.toString();
   }
 
-  private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
+  private static class LimitingAttributeConsumer implements AttributeConsumer {
     private final int limit;
     private final Attributes.Builder builder;
     private int added;

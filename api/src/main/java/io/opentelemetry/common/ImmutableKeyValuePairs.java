@@ -35,7 +35,7 @@ import javax.annotation.concurrent.Immutable;
  * @see Attributes
  */
 @Immutable
-abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
+abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<String, V> {
 
   List<Object> data() {
     return Collections.emptyList();
@@ -53,13 +53,12 @@ abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
 
   @Override
   @SuppressWarnings("unchecked")
-  public void forEach(KeyValueConsumer<V> consumer) {
+  public void forEach(KeyValueConsumer<String, V> consumer) {
     for (int i = 0; i < data().size(); i += 2) {
       consumer.consume((String) data().get(i), (V) data().get(i + 1));
     }
   }
 
-  @Override
   @Nullable
   @SuppressWarnings("unchecked")
   public V get(String key) {
@@ -133,7 +132,7 @@ abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
   public String toString() {
     final StringBuilder sb = new StringBuilder("{");
     forEach(
-        new KeyValueConsumer<V>() {
+        new KeyValueConsumer<String, V>() {
           @Override
           public void consume(String key, V value) {
             sb.append(key).append("=").append(value).append(", ");
