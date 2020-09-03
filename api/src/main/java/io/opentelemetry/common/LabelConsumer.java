@@ -18,5 +18,15 @@ package io.opentelemetry.common;
 
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 
-/** Convenience interface for consuming {@link Labels}. */
-public interface LabelConsumer extends KeyValueConsumer<String, String> {}
+/**
+ * Convenience interface for consuming {@link Labels}.
+ *
+ * <p>This interface should be considered to be a FunctionalInterface in the java 8+ meaning of that
+ * term.
+ *
+ * @since 0.9.0
+ */
+public interface LabelConsumer extends KeyValueConsumer<String, String> {
+  @Override
+  void consume(String key, String value);
+}

@@ -16,6 +16,10 @@
 
 package io.opentelemetry.common;
 
-/** Convenience interface for consuming {@link ReadableAttributes}. */
+/**
+ * Convenience interface for consuming {@link ReadableAttributes}.
+ *
+ * @since 0.9.0
+ */
 public interface AttributeConsumer
     extends ReadableKeyValuePairs.KeyValueConsumer<String, AttributeValue> {}
