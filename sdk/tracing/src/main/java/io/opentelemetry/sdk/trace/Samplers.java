@@ -473,18 +473,6 @@ public final class Samplers {
         Kind spanKind,
         ReadableAttributes attributes,
         @Nullable List<Link> parentLinks) {
-      // If the parent is sampled keep the sampling samplingResult.
-      if (parentContext.getTraceFlags().isSampled()) {
-        return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-      }
-      if (parentLinks != null) {
-        // If any parent link is sampled keep the sampling samplingResult.
-        for (Link parentLink : parentLinks) {
-          if (parentLink.getContext().getTraceFlags().isSampled()) {
-            return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-          }
-        }
-      }
       // Always sample if we are within probability range. This is true even for child spans (that
       // may have had a different sampling samplingResult made) to allow for different sampling
       // policies,

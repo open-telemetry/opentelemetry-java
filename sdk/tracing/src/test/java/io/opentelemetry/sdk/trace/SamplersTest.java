@@ -614,47 +614,77 @@ class SamplersTest {
 
   @Test
   void probabilitySampler_DifferentProbabilities_NotSampledParent() {
-    final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
+    assertProbabilitySampler_NotSampledParent(Samplers.Probability.create(0.5), 0.5);
+    assertProbabilitySampler_NotSampledParent(Samplers.Probability.create(0.2), 0.2);
+    assertProbabilitySampler_NotSampledParent(Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
+    // Probability sampler will respect parent sampling decision, i.e. NOT sampling, if wrapped
+    // around ParentBased
+    assertProbabilitySampler_NotSampledParent(Samplers.parentBased(Samplers.probability(0.5)), 0);
+    assertProbabilitySampler_NotSampledParent(Samplers.parentBased(Samplers.probability(0.2)), 0);
+    assertProbabilitySampler_NotSampledParent(
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 0);
+  }
+
+  private void assertProbabilitySampler_NotSampledParent(Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample, notSampledSpanContext, Collections.emptyList(), 0.5);
-    final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
-    assertSamplerSamplesWithProbability(
-        twentyPercentSample, notSampledSpanContext, Collections.emptyList(), 0.2);
-    final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
-    assertSamplerSamplesWithProbability(
-        twoThirdsSample, notSampledSpanContext, Collections.emptyList(), 2.0 / 3.0);
+        sampler, notSampledSpanContext, Collections.emptyList(), probability);
   }
 
   @Test
   void probabilitySampler_DifferentProbabilities_SampledParent() {
-    final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
+    assertProbabilitySampler_SampledParent(Samplers.Probability.create(0.5), 0.5);
+    assertProbabilitySampler_SampledParent(Samplers.Probability.create(0.2), 0.2);
+    assertProbabilitySampler_SampledParent(Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
+    // Probability sampler will respect parent sampling decision, i.e. sampling, if wrapped around
+    // ParentBased
+    assertProbabilitySampler_SampledParent(Samplers.parentBased(Samplers.probability(0.5)), 1);
+    assertProbabilitySampler_SampledParent(Samplers.parentBased(Samplers.probability(0.2)), 1);
+    assertProbabilitySampler_SampledParent(
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 1);
+  }
+
+  private void assertProbabilitySampler_SampledParent(Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample, sampledSpanContext, Collections.emptyList(), 1.0);
-    final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
-    assertSamplerSamplesWithProbability(
-        twentyPercentSample, sampledSpanContext, Collections.emptyList(), 1.0);
-    final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
-    assertSamplerSamplesWithProbability(
-        twoThirdsSample, sampledSpanContext, Collections.emptyList(), 1.0);
+        sampler, sampledSpanContext, Collections.emptyList(), probability);
   }
 
   @Test
   void probabilitySampler_DifferentProbabilities_SampledParentLink() {
-    final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
+    // Parent NOT sampled
+    assertProbabilitySampler_SampledParentLink(Samplers.Probability.create(0.5), 0.5);
+    assertProbabilitySampler_SampledParentLink(Samplers.Probability.create(0.2), 0.2);
+    assertProbabilitySampler_SampledParentLink(Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
+    // Probability sampler will respect parent sampling decision, i.e. NOT sampling, if wrapped
+    // around ParentBased
+    assertProbabilitySampler_SampledParentLink(Samplers.parentBased(Samplers.probability(0.5)), 0);
+    assertProbabilitySampler_SampledParentLink(Samplers.parentBased(Samplers.probability(0.2)), 0);
+    assertProbabilitySampler_SampledParentLink(
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 0);
+
+    // Parent Sampled
+    assertProbabilitySampler_SampledParentLinkContext(Samplers.Probability.create(0.5), 0.5);
+    assertProbabilitySampler_SampledParentLinkContext(Samplers.Probability.create(0.2), 0.2);
+    assertProbabilitySampler_SampledParentLinkContext(
+        Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
+    // Probability sampler will respect parent sampling decision, i.e. sampling, if wrapped around
+    // ParentBased
+    assertProbabilitySampler_SampledParentLinkContext(
+        Samplers.parentBased(Samplers.probability(0.5)), 1);
+    assertProbabilitySampler_SampledParentLinkContext(
+        Samplers.parentBased(Samplers.probability(0.2)), 1);
+    assertProbabilitySampler_SampledParentLinkContext(
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 1);
+  }
+
+  private void assertProbabilitySampler_SampledParentLink(Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample,
-        notSampledSpanContext,
-        Collections.singletonList(sampledParentLink),
-        1.0);
-    final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
+        sampler, notSampledSpanContext, Collections.singletonList(sampledParentLink), probability);
+  }
+
+  private void assertProbabilitySampler_SampledParentLinkContext(
+      Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        twentyPercentSample,
-        notSampledSpanContext,
-        Collections.singletonList(sampledParentLink),
-        1.0);
-    final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
-    assertSamplerSamplesWithProbability(
-        twoThirdsSample, notSampledSpanContext, Collections.singletonList(sampledParentLink), 1.0);
+        sampler, sampledSpanContext, Collections.singletonList(sampledParentLink), probability);
   }
 
   @Test
