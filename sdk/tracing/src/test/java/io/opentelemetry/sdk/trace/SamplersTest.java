@@ -618,11 +618,11 @@ class SamplersTest {
     assertProbabilitySampler_NotSampledParent(Samplers.Probability.create(0.2), 0.2);
     assertProbabilitySampler_NotSampledParent(Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
     // Probability sampler will respect parent sampling decision, i.e. NOT sampling, if wrapped
-    // around ParentOrElse
-    assertProbabilitySampler_NotSampledParent(Samplers.parentOrElse(Samplers.probability(0.5)), 0);
-    assertProbabilitySampler_NotSampledParent(Samplers.parentOrElse(Samplers.probability(0.2)), 0);
+    // around ParentBased
+    assertProbabilitySampler_NotSampledParent(Samplers.parentBased(Samplers.probability(0.5)), 0);
+    assertProbabilitySampler_NotSampledParent(Samplers.parentBased(Samplers.probability(0.2)), 0);
     assertProbabilitySampler_NotSampledParent(
-        Samplers.parentOrElse(Samplers.probability(0.2 / 0.3)), 0);
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 0);
   }
 
   private void assertProbabilitySampler_NotSampledParent(Sampler sampler, double probability) {
@@ -636,11 +636,11 @@ class SamplersTest {
     assertProbabilitySampler_SampledParent(Samplers.Probability.create(0.2), 0.2);
     assertProbabilitySampler_SampledParent(Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
     // Probability sampler will respect parent sampling decision, i.e. sampling, if wrapped around
-    // ParentOrElse
-    assertProbabilitySampler_SampledParent(Samplers.parentOrElse(Samplers.probability(0.5)), 1);
-    assertProbabilitySampler_SampledParent(Samplers.parentOrElse(Samplers.probability(0.2)), 1);
+    // ParentBased
+    assertProbabilitySampler_SampledParent(Samplers.parentBased(Samplers.probability(0.5)), 1);
+    assertProbabilitySampler_SampledParent(Samplers.parentBased(Samplers.probability(0.2)), 1);
     assertProbabilitySampler_SampledParent(
-        Samplers.parentOrElse(Samplers.probability(0.2 / 0.3)), 1);
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 1);
   }
 
   private void assertProbabilitySampler_SampledParent(Sampler sampler, double probability) {
@@ -655,11 +655,11 @@ class SamplersTest {
     assertProbabilitySampler_SampledParentLink(Samplers.Probability.create(0.2), 0.2);
     assertProbabilitySampler_SampledParentLink(Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
     // Probability sampler will respect parent sampling decision, i.e. NOT sampling, if wrapped
-    // around ParentOrElse
-    assertProbabilitySampler_SampledParentLink(Samplers.parentOrElse(Samplers.probability(0.5)), 0);
-    assertProbabilitySampler_SampledParentLink(Samplers.parentOrElse(Samplers.probability(0.2)), 0);
+    // around ParentBased
+    assertProbabilitySampler_SampledParentLink(Samplers.parentBased(Samplers.probability(0.5)), 0);
+    assertProbabilitySampler_SampledParentLink(Samplers.parentBased(Samplers.probability(0.2)), 0);
     assertProbabilitySampler_SampledParentLink(
-        Samplers.parentOrElse(Samplers.probability(0.2 / 0.3)), 0);
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 0);
 
     // Parent Sampled
     assertProbabilitySampler_SampledParentLinkContext(Samplers.Probability.create(0.5), 0.5);
@@ -667,13 +667,13 @@ class SamplersTest {
     assertProbabilitySampler_SampledParentLinkContext(
         Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
     // Probability sampler will respect parent sampling decision, i.e. sampling, if wrapped around
-    // ParentOrElse
+    // ParentBased
     assertProbabilitySampler_SampledParentLinkContext(
-        Samplers.parentOrElse(Samplers.probability(0.5)), 1);
+        Samplers.parentBased(Samplers.probability(0.5)), 1);
     assertProbabilitySampler_SampledParentLinkContext(
-        Samplers.parentOrElse(Samplers.probability(0.2)), 1);
+        Samplers.parentBased(Samplers.probability(0.2)), 1);
     assertProbabilitySampler_SampledParentLinkContext(
-        Samplers.parentOrElse(Samplers.probability(0.2 / 0.3)), 1);
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 1);
   }
 
   private void assertProbabilitySampler_SampledParentLink(Sampler sampler, double probability) {
