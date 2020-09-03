@@ -33,7 +33,6 @@ import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
@@ -60,7 +59,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
-  private final SpanId parentSpanId;
+  private final String parentSpanId;
   // True if the parent is on a different process.
   private final boolean hasRemoteParent;
   // Handler called when the span starts and ends.
@@ -112,7 +111,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      SpanId parentSpanId,
+      String parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -163,7 +162,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      SpanId parentSpanId,
+      @Nullable String parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -507,7 +506,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
   }
 
-  SpanId getParentSpanId() {
+  String getParentSpanId() {
     return parentSpanId;
   }
 
@@ -609,9 +608,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     StringBuilder sb = new StringBuilder();
     sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceId());
+    sb.append(context.getTraceIdAsHexString());
     sb.append(", spanId=");
-    sb.append(context.getSpanId());
+    sb.append(context.getSpanIdAsHexString());
     sb.append(", parentSpanId=");
     sb.append(parentSpanId);
     sb.append(", name=");

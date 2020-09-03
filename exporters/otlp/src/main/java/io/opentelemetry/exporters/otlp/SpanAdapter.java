@@ -38,6 +38,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -97,7 +98,7 @@ final class SpanAdapter {
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(spanData.getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(spanData.getSpanId()));
     // TODO: Set TraceState;
-    if (spanData.getParentSpanId().isValid()) {
+    if (SpanId.isValid(spanData.getParentSpanId())) {
       builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(spanData.getParentSpanId()));
     }
     builder.setName(spanData.getName());
@@ -163,8 +164,8 @@ final class SpanAdapter {
 
   static Span.Link toProtoSpanLink(Link link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
-    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceId()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanId()));
+    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsHexString()));
+    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsHexString()));
     // TODO: Set TraceState;
     Attributes attributes = link.getAttributes();
     attributes.forEach(

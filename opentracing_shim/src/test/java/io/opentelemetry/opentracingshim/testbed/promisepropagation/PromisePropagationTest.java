@@ -115,14 +115,14 @@ class PromisePropagationTest {
 
       assertThat(getByAttr(finished, component, "success")).hasSize(2);
 
-      SpanId parentId = spanExamplePromise.get(0).getSpanId();
+      CharSequence parentId = spanExamplePromise.get(0).getSpanId();
       for (SpanData span : getByAttr(finished, component, "success")) {
-        assertThat(span.getParentSpanId()).isEqualTo(parentId);
+        assertThat(span.getParentSpanId()).isEqualTo(parentId.toString());
       }
 
       List<SpanData> spanError = getByAttr(finished, component, "error");
       assertThat(spanError).hasSize(1);
-      assertThat(spanError.get(0).getParentSpanId()).isEqualTo(parentId);
+      assertThat(spanError.get(0).getParentSpanId()).isEqualTo(parentId.toString());
     }
   }
 }

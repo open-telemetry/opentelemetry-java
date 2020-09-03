@@ -35,8 +35,8 @@ final class Common {
 
   static final String TRUE_INT = "1";
   static final String FALSE_INT = "0";
-  static final int MAX_TRACE_ID_LENGTH = 2 * TraceId.getSize();
-  static final int MAX_SPAN_ID_LENGTH = 2 * SpanId.getSize();
+  static final int MAX_TRACE_ID_LENGTH = TraceId.getHexLength();
+  static final int MAX_SPAN_ID_LENGTH = SpanId.getHexLength();
   static final int MIN_TRACE_ID_LENGTH = TraceId.getSize();
   private static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
   private static final TraceFlags NOT_SAMPLED_FLAGS =
@@ -52,8 +52,8 @@ final class Common {
               : NOT_SAMPLED_FLAGS;
 
       return SpanContext.createFromRemoteParent(
-          TraceId.fromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
-          SpanId.fromLowerBase16(spanId, 0),
+          StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH),
+          spanId,
           traceFlags,
           TraceState.getDefault());
     } catch (Exception e) {
@@ -62,24 +62,13 @@ final class Common {
     }
   }
 
-  private static boolean isHex(String value) {
-    for (int i = 0; i < value.length(); i++) {
-      if (Character.digit(value.charAt(i), 16) == -1) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   static boolean isTraceIdValid(String value) {
     return !(StringUtils.isNullOrEmpty(value)
         || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH)
-        || !isHex(value));
+        || !TraceId.isValid(StringUtils.padLeft(value, TraceId.getHexLength())));
   }
 
   static boolean isSpanIdValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value)
-        || value.length() != MAX_SPAN_ID_LENGTH
-        || !isHex(value));
+    return !StringUtils.isNullOrEmpty(value) && SpanId.isValid(value);
   }
 }
