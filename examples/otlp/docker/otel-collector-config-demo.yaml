@@ -1,5 +1,4 @@
 receivers:
-  opencensus:
   otlp:
     protocols:
         grpc:
