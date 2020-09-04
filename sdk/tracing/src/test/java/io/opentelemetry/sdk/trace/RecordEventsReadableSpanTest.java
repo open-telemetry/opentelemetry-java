@@ -38,7 +38,6 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.io.PrintWriter;
@@ -69,9 +68,9 @@ class RecordEventsReadableSpanTest {
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
-  private final TraceId traceId = idsGenerator.generateTraceId();
-  private final SpanId spanId = idsGenerator.generateSpanId();
-  private final SpanId parentSpanId = idsGenerator.generateSpanId();
+  private final String traceId = idsGenerator.generateTraceId();
+  private final String spanId = idsGenerator.generateSpanId();
+  private final String parentSpanId = idsGenerator.generateSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final Resource resource = Resource.getEmpty();
@@ -239,7 +238,7 @@ class RecordEventsReadableSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(spanData.getParentSpanId().isValid()).isFalse();
+    assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
   }
 
   @Test
@@ -817,7 +816,7 @@ class RecordEventsReadableSpanTest {
   private RecordEventsReadableSpan createTestSpan(
       Kind kind,
       TraceConfig config,
-      @Nullable SpanId parentSpanId,
+      @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
       List<io.opentelemetry.trace.Link> links) {
 
@@ -899,9 +898,9 @@ class RecordEventsReadableSpanTest {
   void testAsSpanData() {
     String name = "GreatSpan";
     Kind kind = Kind.SERVER;
-    TraceId traceId = this.traceId;
-    SpanId spanId = this.spanId;
-    SpanId parentSpanId = this.parentSpanId;
+    String traceId = this.traceId;
+    String spanId = this.spanId;
+    String parentSpanId = this.parentSpanId;
     TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();

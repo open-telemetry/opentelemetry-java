@@ -190,7 +190,7 @@ public final class Samplers {
     @Override
     public SamplingResult shouldSample(
         SpanContext parentContext,
-        TraceId traceId,
+        String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -212,7 +212,7 @@ public final class Samplers {
     @Override
     public SamplingResult shouldSample(
         SpanContext parentContext,
-        TraceId traceId,
+        String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -254,7 +254,7 @@ public final class Samplers {
     @Override
     public SamplingResult shouldSample(
         SpanContext parentContext,
-        TraceId traceId,
+        String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -468,23 +468,11 @@ public final class Samplers {
     @Override
     public final SamplingResult shouldSample(
         SpanContext parentContext,
-        TraceId traceId,
+        String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
         @Nullable List<Link> parentLinks) {
-      // If the parent is sampled keep the sampling samplingResult.
-      if (parentContext.getTraceFlags().isSampled()) {
-        return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-      }
-      if (parentLinks != null) {
-        // If any parent link is sampled keep the sampling samplingResult.
-        for (Link parentLink : parentLinks) {
-          if (parentLink.getContext().getTraceFlags().isSampled()) {
-            return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-          }
-        }
-      }
       // Always sample if we are within probability range. This is true even for child spans (that
       // may have had a different sampling samplingResult made) to allow for different sampling
       // policies,
@@ -493,7 +481,7 @@ public final class Samplers {
       // while allowing for a (very) small chance of *not* sampling if the id == Long.MAX_VALUE.
       // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
       // code is executed in-line for every Span creation).
-      return Math.abs(traceId.getTraceRandomPart()) < getIdUpperBound()
+      return Math.abs(TraceId.getTraceIdRandomPart(traceId)) < getIdUpperBound()
           ? getPositiveSamplingResult()
           : getNegativeSamplingResult();
     }

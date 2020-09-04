@@ -34,9 +34,7 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
@@ -199,15 +197,15 @@ final class SpanBuilderSdk implements Span.Builder {
             : originalParent;
     final Span parentSpan = TracingContextUtils.getSpan(parentContext);
     final SpanContext parentSpanContext = parentSpan.getContext();
-    TraceId traceId;
-    SpanId spanId = idsGenerator.generateSpanId();
+    String traceId;
+    String spanId = idsGenerator.generateSpanId();
     TraceState traceState = TraceState.getDefault();
     if (!parentSpanContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
     } else {
       // New child span.
-      traceId = parentSpanContext.getTraceId();
+      traceId = parentSpanContext.getTraceIdAsHexString();
       traceState = parentSpanContext.getTraceState();
     }
     List<io.opentelemetry.trace.Link> immutableLinks =
@@ -230,14 +228,9 @@ final class SpanBuilderSdk implements Span.Builder {
                 immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
-    SpanContext spanContext =
-        SpanContext.create(
-            traceId,
-            spanId,
-            Samplers.isSampled(samplingDecision)
-                ? TRACE_OPTIONS_SAMPLED
-                : TRACE_OPTIONS_NOT_SAMPLED,
-            traceState);
+    TraceFlags traceFlags =
+        Samplers.isSampled(samplingDecision) ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED;
+    SpanContext spanContext = createSpanContext(traceId, spanId, traceState, traceFlags);
 
     if (!Samplers.isRecording(samplingDecision)) {
       return DefaultSpan.create(spanContext);
@@ -275,6 +268,11 @@ final class SpanBuilderSdk implements Span.Builder {
         immutableLinks,
         totalNumberOfLinksAdded,
         startEpochNanos);
+  }
+
+  private static SpanContext createSpanContext(
+      String traceId, String spanId, TraceState traceState, TraceFlags traceFlags) {
+    return SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 
   private static Clock getClock(Span parent, Clock clock) {

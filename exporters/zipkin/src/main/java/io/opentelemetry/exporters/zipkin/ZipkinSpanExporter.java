@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
@@ -133,16 +134,16 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     final Span.Builder spanBuilder =
         Span.newBuilder()
-            .traceId(spanData.getTraceId().toLowerBase16())
-            .id(spanData.getSpanId().toLowerBase16())
+            .traceId(spanData.getTraceId())
+            .id(spanData.getSpanId())
             .kind(toSpanKind(spanData))
             .name(spanData.getName())
             .timestamp(toEpochMicros(spanData.getStartEpochNanos()))
             .duration(endTimestamp - startTimestamp)
             .localEndpoint(endpoint);
 
-    if (spanData.getParentSpanId().isValid()) {
-      spanBuilder.parentId(spanData.getParentSpanId().toLowerBase16());
+    if (SpanId.isValid(spanData.getParentSpanId())) {
+      spanBuilder.parentId(spanData.getParentSpanId());
     }
 
     ReadableAttributes spanAttributes = spanData.getAttributes();

@@ -30,7 +30,6 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
@@ -92,7 +91,7 @@ public abstract class TestSpanData implements SpanData {
 
     abstract List<Link> getLinks();
 
-    abstract TraceId getTraceId();
+    abstract String getTraceId();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -113,7 +112,7 @@ public abstract class TestSpanData implements SpanData {
      * @param traceId the trace id.
      * @return this builder (for chaining).
      */
-    public abstract Builder setTraceId(TraceId traceId);
+    public abstract Builder setTraceId(String traceId);
 
     /**
      * Set the span id on this builder.
@@ -121,7 +120,7 @@ public abstract class TestSpanData implements SpanData {
      * @param spanId the span id.
      * @return this builder (for chaining).
      */
-    public abstract Builder setSpanId(SpanId spanId);
+    public abstract Builder setSpanId(String spanId);
 
     /**
      * Set the {@link TraceFlags} on this builder.
@@ -153,7 +152,7 @@ public abstract class TestSpanData implements SpanData {
      *
      * @see #setParent(Context)
      */
-    public Builder setParent(SpanId parentSpanId, boolean hasRemoteParent) {
+    public Builder setParent(String parentSpanId, boolean hasRemoteParent) {
       return setParent(
           TracingContextUtils.withSpan(
               DefaultSpan.create(

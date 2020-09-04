@@ -93,14 +93,14 @@ public class AwsXRayPropagator implements TextMapPropagator {
 
     SpanContext spanContext = span.getContext();
 
-    String otTraceId = spanContext.getTraceId().toLowerBase16();
+    String otTraceId = spanContext.getTraceIdAsHexString();
     String xrayTraceId =
         TRACE_ID_VERSION
             + TRACE_ID_DELIMITER
             + otTraceId.substring(0, TRACE_ID_FIRST_PART_LENGTH)
             + TRACE_ID_DELIMITER
             + otTraceId.substring(TRACE_ID_FIRST_PART_LENGTH);
-    String parentId = spanContext.getSpanId().toLowerBase16();
+    String parentId = spanContext.getSpanIdAsHexString();
     char samplingFlag = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 
@@ -138,8 +138,8 @@ public class AwsXRayPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
-    TraceId traceId = TraceId.getInvalid();
-    SpanId spanId = SpanId.getInvalid();
+    String traceId = TraceId.getInvalid();
+    String spanId = SpanId.getInvalid();
     TraceFlags traceFlags = TraceFlags.getDefault();
 
     int pos = 0;
@@ -175,8 +175,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
       }
       // TODO: Put the arbitrary TraceHeader keys in OT trace state
     }
-
-    if (!traceId.isValid()) {
+    if (!TraceId.isValid(traceId)) {
       logger.fine(
           "Invalid TraceId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -186,7 +185,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
-    if (!spanId.isValid()) {
+    if (!SpanId.isValid(spanId)) {
       logger.fine(
           "Invalid ParentId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -209,7 +208,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
     return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
-  private static TraceId parseTraceId(String xrayTraceId) {
+  private static String parseTraceId(String xrayTraceId) {
     if (xrayTraceId.length() != TRACE_ID_LENGTH) {
       return TraceId.getInvalid();
     }
@@ -229,24 +228,16 @@ public class AwsXRayPropagator implements TextMapPropagator {
         xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_1 + 1, TRACE_ID_DELIMITER_INDEX_2);
     String uniquePart = xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_2 + 1, TRACE_ID_LENGTH);
 
-    try {
-      // X-Ray trace id format is 1-{8 digit hex}-{24 digit hex}
-      return TraceId.fromLowerBase16(epochPart + uniquePart, 0);
-    } catch (Exception e) {
-      return TraceId.getInvalid();
-    }
+    // X-Ray trace id format is 1-{8 digit hex}-{24 digit hex}
+    return epochPart + uniquePart;
   }
 
-  private static SpanId parseSpanId(String xrayParentId) {
+  private static String parseSpanId(String xrayParentId) {
     if (xrayParentId.length() != PARENT_ID_LENGTH) {
       return SpanId.getInvalid();
     }
 
-    try {
-      return SpanId.fromLowerBase16(xrayParentId, 0);
-    } catch (Exception e) {
-      return SpanId.getInvalid();
-    }
+    return xrayParentId;
   }
 
   @Nullable

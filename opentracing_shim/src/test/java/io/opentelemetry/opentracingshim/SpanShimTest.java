@@ -59,8 +59,8 @@ class SpanShimTest {
     SpanContextShim contextShim = (SpanContextShim) spanShim.context();
     assertNotNull(contextShim);
     assertEquals(contextShim.getSpanContext(), span.getContext());
-    assertEquals(contextShim.toTraceId(), span.getContext().getTraceId().toString());
-    assertEquals(contextShim.toSpanId(), span.getContext().getSpanId().toString());
+    assertEquals(contextShim.toTraceId(), span.getContext().getTraceIdAsHexString().toString());
+    assertEquals(contextShim.toSpanId(), span.getContext().getSpanIdAsHexString().toString());
     assertFalse(contextShim.baggageItems().iterator().hasNext());
   }
 

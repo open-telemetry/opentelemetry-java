@@ -16,11 +16,14 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
+import static io.opentelemetry.extensions.trace.propagation.Common.MAX_TRACE_ID_LENGTH;
+
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,8 +74,8 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (!spanContext.isValid()) {
       return;
     }
-    setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceId().toLowerBase16());
-    setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanId().toLowerBase16());
+    setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceIdAsHexString());
+    setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanIdAsHexString());
     setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.getTraceFlags().isSampled()));
   }
 
@@ -81,7 +84,11 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (context == null || getter == null) {
       return context;
     }
-    String traceId = getter.get(carrier, TRACE_ID_HEADER);
+    String incomingTraceId = getter.get(carrier, TRACE_ID_HEADER);
+    String traceId =
+        incomingTraceId == null
+            ? TraceId.getInvalid()
+            : StringUtils.padLeft(incomingTraceId, MAX_TRACE_ID_LENGTH);
     String spanId = getter.get(carrier, SPAN_ID_HEADER);
     String sampled = getter.get(carrier, SAMPLED_HEADER);
     SpanContext spanContext = buildSpanContext(traceId, spanId, sampled);

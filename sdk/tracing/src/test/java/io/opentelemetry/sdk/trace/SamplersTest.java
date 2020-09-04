@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
@@ -41,8 +40,8 @@ class SamplersTest {
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
-  private final TraceId traceId = idsGenerator.generateTraceId();
-  private final SpanId parentSpanId = idsGenerator.generateSpanId();
+  private final String traceId = idsGenerator.generateTraceId();
+  private final String parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
       SpanContext.create(
@@ -614,47 +613,77 @@ class SamplersTest {
 
   @Test
   void probabilitySampler_DifferentProbabilities_NotSampledParent() {
-    final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
+    assertProbabilitySampler_NotSampledParent(Samplers.Probability.create(0.5), 0.5);
+    assertProbabilitySampler_NotSampledParent(Samplers.Probability.create(0.2), 0.2);
+    assertProbabilitySampler_NotSampledParent(Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
+    // Probability sampler will respect parent sampling decision, i.e. NOT sampling, if wrapped
+    // around ParentBased
+    assertProbabilitySampler_NotSampledParent(Samplers.parentBased(Samplers.probability(0.5)), 0);
+    assertProbabilitySampler_NotSampledParent(Samplers.parentBased(Samplers.probability(0.2)), 0);
+    assertProbabilitySampler_NotSampledParent(
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 0);
+  }
+
+  private void assertProbabilitySampler_NotSampledParent(Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample, notSampledSpanContext, Collections.emptyList(), 0.5);
-    final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
-    assertSamplerSamplesWithProbability(
-        twentyPercentSample, notSampledSpanContext, Collections.emptyList(), 0.2);
-    final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
-    assertSamplerSamplesWithProbability(
-        twoThirdsSample, notSampledSpanContext, Collections.emptyList(), 2.0 / 3.0);
+        sampler, notSampledSpanContext, Collections.emptyList(), probability);
   }
 
   @Test
   void probabilitySampler_DifferentProbabilities_SampledParent() {
-    final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
+    assertProbabilitySampler_SampledParent(Samplers.Probability.create(0.5), 0.5);
+    assertProbabilitySampler_SampledParent(Samplers.Probability.create(0.2), 0.2);
+    assertProbabilitySampler_SampledParent(Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
+    // Probability sampler will respect parent sampling decision, i.e. sampling, if wrapped around
+    // ParentBased
+    assertProbabilitySampler_SampledParent(Samplers.parentBased(Samplers.probability(0.5)), 1);
+    assertProbabilitySampler_SampledParent(Samplers.parentBased(Samplers.probability(0.2)), 1);
+    assertProbabilitySampler_SampledParent(
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 1);
+  }
+
+  private void assertProbabilitySampler_SampledParent(Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample, sampledSpanContext, Collections.emptyList(), 1.0);
-    final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
-    assertSamplerSamplesWithProbability(
-        twentyPercentSample, sampledSpanContext, Collections.emptyList(), 1.0);
-    final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
-    assertSamplerSamplesWithProbability(
-        twoThirdsSample, sampledSpanContext, Collections.emptyList(), 1.0);
+        sampler, sampledSpanContext, Collections.emptyList(), probability);
   }
 
   @Test
   void probabilitySampler_DifferentProbabilities_SampledParentLink() {
-    final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
+    // Parent NOT sampled
+    assertProbabilitySampler_SampledParentLink(Samplers.Probability.create(0.5), 0.5);
+    assertProbabilitySampler_SampledParentLink(Samplers.Probability.create(0.2), 0.2);
+    assertProbabilitySampler_SampledParentLink(Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
+    // Probability sampler will respect parent sampling decision, i.e. NOT sampling, if wrapped
+    // around ParentBased
+    assertProbabilitySampler_SampledParentLink(Samplers.parentBased(Samplers.probability(0.5)), 0);
+    assertProbabilitySampler_SampledParentLink(Samplers.parentBased(Samplers.probability(0.2)), 0);
+    assertProbabilitySampler_SampledParentLink(
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 0);
+
+    // Parent Sampled
+    assertProbabilitySampler_SampledParentLinkContext(Samplers.Probability.create(0.5), 0.5);
+    assertProbabilitySampler_SampledParentLinkContext(Samplers.Probability.create(0.2), 0.2);
+    assertProbabilitySampler_SampledParentLinkContext(
+        Samplers.Probability.create(0.2 / 0.3), 0.2 / 0.3);
+    // Probability sampler will respect parent sampling decision, i.e. sampling, if wrapped around
+    // ParentBased
+    assertProbabilitySampler_SampledParentLinkContext(
+        Samplers.parentBased(Samplers.probability(0.5)), 1);
+    assertProbabilitySampler_SampledParentLinkContext(
+        Samplers.parentBased(Samplers.probability(0.2)), 1);
+    assertProbabilitySampler_SampledParentLinkContext(
+        Samplers.parentBased(Samplers.probability(0.2 / 0.3)), 1);
+  }
+
+  private void assertProbabilitySampler_SampledParentLink(Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample,
-        notSampledSpanContext,
-        Collections.singletonList(sampledParentLink),
-        1.0);
-    final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
+        sampler, notSampledSpanContext, Collections.singletonList(sampledParentLink), probability);
+  }
+
+  private void assertProbabilitySampler_SampledParentLinkContext(
+      Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        twentyPercentSample,
-        notSampledSpanContext,
-        Collections.singletonList(sampledParentLink),
-        1.0);
-    final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
-    assertSamplerSamplesWithProbability(
-        twoThirdsSample, notSampledSpanContext, Collections.singletonList(sampledParentLink), 1.0);
+        sampler, sampledSpanContext, Collections.singletonList(sampledParentLink), probability);
   }
 
   @Test
@@ -662,8 +691,8 @@ class SamplersTest {
     final Sampler defaultProbability = Samplers.Probability.create(0.0001);
     // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
-    TraceId notSampledtraceId =
-        TraceId.fromBytes(
+    String notSampledtraceId =
+        TraceId.bytesToHex(
             new byte[] {
               0,
               0,
@@ -681,8 +710,7 @@ class SamplersTest {
               (byte) 0xFF,
               (byte) 0xFF,
               (byte) 0xFF
-            },
-            0);
+            });
     SamplingResult samplingResult1 =
         defaultProbability.shouldSample(
             invalidSpanContext,
@@ -697,8 +725,8 @@ class SamplersTest {
             Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
-    TraceId sampledtraceId =
-        TraceId.fromBytes(
+    String sampledtraceId =
+        TraceId.bytesToHex(
             new byte[] {
               (byte) 0x00,
               (byte) 0x00,
@@ -716,8 +744,7 @@ class SamplersTest {
               0,
               0,
               0
-            },
-            0);
+            });
     SamplingResult samplingResult2 =
         defaultProbability.shouldSample(
             invalidSpanContext,

@@ -29,17 +29,17 @@ public final class RandomIdsGenerator implements IdsGenerator {
   private static final long INVALID_ID = 0;
 
   @Override
-  public SpanId generateSpanId() {
+  public String generateSpanId() {
     long id;
     ThreadLocalRandom random = ThreadLocalRandom.current();
     do {
       id = random.nextLong();
     } while (id == INVALID_ID);
-    return new SpanId(id);
+    return SpanId.fromLong(id);
   }
 
   @Override
-  public TraceId generateTraceId() {
+  public String generateTraceId() {
     long idHi;
     long idLo;
     ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -47,6 +47,6 @@ public final class RandomIdsGenerator implements IdsGenerator {
       idHi = random.nextLong();
       idLo = random.nextLong();
     } while (idHi == INVALID_ID && idLo == INVALID_ID);
-    return new TraceId(idHi, idLo);
+    return TraceId.fromLongs(idHi, idLo);
   }
 }

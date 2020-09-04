@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+description = 'OpenTelemetry Example for OTLP Exporters'
+ext.moduleName = "io.opentelemetry.examples.otlp"
+
+dependencies {
+    compile("io.opentelemetry:opentelemetry-api:${opentelemetryVersion}")
+    compile("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
+    compile("io.opentelemetry:opentelemetry-exporters-otlp:${opentelemetryVersion}")
+    compile "io.grpc:grpc-netty-shaded:${grpcVersion}"
+}

@@ -25,10 +25,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -46,14 +44,14 @@ public interface SpanData {
    *
    * @return the trace id.
    */
-  TraceId getTraceId();
+  String getTraceId();
 
   /**
    * Gets the span id for this span.
    *
    * @return the span id.
    */
-  SpanId getSpanId();
+  String getSpanId();
 
   /**
    * Gets the trace flags for this span.
@@ -76,7 +74,7 @@ public interface SpanData {
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
    * @since 0.1.0
    */
-  SpanId getParentSpanId();
+  String getParentSpanId();
 
   /**
    * Returns the parent {@code Context}. If the {@code Span} is a root {@code Span}, the Context

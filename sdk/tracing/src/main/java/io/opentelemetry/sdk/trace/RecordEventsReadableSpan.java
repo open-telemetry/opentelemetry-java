@@ -34,7 +34,6 @@ import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -500,8 +499,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
   }
 
-  SpanId getParentSpanId() {
-    return TracingContextUtils.getSpan(parent).getContext().getSpanId();
+  String getParentSpanId() {
+    return TracingContextUtils.getSpan(parent).getContext().getSpanIdAsHexString();
   }
 
   Resource getResource() {
@@ -606,9 +605,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     StringBuilder sb = new StringBuilder();
     sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceId());
+    sb.append(context.getTraceIdAsHexString());
     sb.append(", spanId=");
-    sb.append(context.getSpanId());
+    sb.append(context.getSpanIdAsHexString());
     sb.append(", parentSpanId=");
     sb.append(getParentSpanId());
     sb.append(", name=");

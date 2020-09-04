@@ -26,10 +26,8 @@ import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -153,9 +151,9 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
   private static TestSpanData.Builder buildStandardSpan() {
     return TestSpanData.newBuilder()
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setParent(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0), false)
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
+        .setParent(PARENT_SPAN_ID, false)
         .setTraceFlags(TraceFlags.builder().setIsSampled(true).build())
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)

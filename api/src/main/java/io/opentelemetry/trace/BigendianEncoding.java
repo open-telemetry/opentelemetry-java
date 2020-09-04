@@ -138,6 +138,14 @@ final class BigendianEncoding {
     byteToBase16(value, dest, destOffset);
   }
 
+  static byte[] bytesFromBase16(CharSequence value, int offset, int length) {
+    byte[] result = new byte[length / 2];
+    for (int i = 0; i < length; i += 2) {
+      result[i / 2] = byteFromBase16String(value, offset + i);
+    }
+    return result;
+  }
+
   /**
    * Decodes the specified two character sequence, and returns the resulting {@code byte}.
    *
@@ -165,5 +173,32 @@ final class BigendianEncoding {
     dest[destOffset + 1] = ENCODING[b | 0x100];
   }
 
+  static boolean isValidBase16String(CharSequence value) {
+    for (int i = 0; i < value.length(); i++) {
+      char b = value.charAt(i);
+      // 48..57 && 97..102 are valid
+      if (!isDigit(b) && !isLowercaseHexCharacter(b)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean isLowercaseHexCharacter(char b) {
+    return 97 <= b && b <= 102;
+  }
+
+  private static boolean isDigit(char b) {
+    return 48 <= b && b <= 57;
+  }
+
   private BigendianEncoding() {}
+
+  static String toLowerBase16(byte[] bytes) {
+    char[] chars = new char[bytes.length * 2];
+    for (int i = 0; i < bytes.length; i++) {
+      byteToBase16(bytes[i], chars, i * 2);
+    }
+    return new String(chars);
+  }
 }

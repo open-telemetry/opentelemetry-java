@@ -55,8 +55,8 @@ public class HttpTraceContext implements TextMapPropagator {
   private static final int VERSION_SIZE = 2;
   private static final char TRACEPARENT_DELIMITER = '-';
   private static final int TRACEPARENT_DELIMITER_SIZE = 1;
-  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
-  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
+  private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
+  private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
   private static final int TRACE_OPTION_HEX_SIZE = 2 * TraceFlags.getSize();
   private static final int TRACE_ID_OFFSET = VERSION_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int SPAN_ID_OFFSET =
@@ -94,9 +94,19 @@ public class HttpTraceContext implements TextMapPropagator {
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
-    spanContext.getTraceId().copyLowerBase16To(chars, TRACE_ID_OFFSET);
+
+    String traceId = spanContext.getTraceIdAsHexString();
+    for (int i = 0; i < traceId.length(); i++) {
+      chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
+    }
+
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
-    spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
+
+    String spanId = spanContext.getSpanIdAsHexString();
+    for (int i = 0; i < spanId.length(); i++) {
+      chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
+    }
+
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
@@ -152,8 +162,8 @@ public class HttpTraceContext implements TextMapPropagator {
     try {
       TraceState traceState = extractTraceState(traceStateHeader);
       return SpanContext.createFromRemoteParent(
-          contextFromParentHeader.getTraceId(),
-          contextFromParentHeader.getSpanId(),
+          contextFromParentHeader.getTraceIdAsHexString(),
+          contextFromParentHeader.getSpanIdAsHexString(),
           contextFromParentHeader.getTraceFlags(),
           traceState);
     } catch (IllegalArgumentException e) {
@@ -178,10 +188,14 @@ public class HttpTraceContext implements TextMapPropagator {
     }
 
     try {
-      TraceId traceId = TraceId.fromLowerBase16(traceparent, TRACE_ID_OFFSET);
-      SpanId spanId = SpanId.fromLowerBase16(traceparent, SPAN_ID_OFFSET);
-      TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
-      return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+      String traceId =
+          traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getHexLength());
+      String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getHexLength());
+      if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
+        TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
+        return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+      }
+      return SpanContext.getInvalid();
     } catch (IllegalArgumentException e) {
       logger.info("Unparseable traceparent header. Returning INVALID span context.");
       return SpanContext.getInvalid();

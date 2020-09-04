@@ -23,10 +23,8 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -93,13 +91,13 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public TraceId getTraceId() {
-    return delegate().getContext().getTraceId();
+  public String getTraceId() {
+    return delegate().getContext().getTraceIdAsHexString();
   }
 
   @Override
-  public SpanId getSpanId() {
-    return delegate().getContext().getSpanId();
+  public String getSpanId() {
+    return delegate().getContext().getSpanIdAsHexString();
   }
 
   @Override
@@ -113,7 +111,7 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public SpanId getParentSpanId() {
+  public String getParentSpanId() {
     return delegate().getParentSpanId();
   }
 

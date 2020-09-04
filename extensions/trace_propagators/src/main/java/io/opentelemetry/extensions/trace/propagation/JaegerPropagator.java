@@ -50,16 +50,16 @@ public class JaegerPropagator implements TextMapPropagator {
   static final char DEPRECATED_PARENT_SPAN = '0';
   static final char PROPAGATION_HEADER_DELIMITER = ':';
 
-  private static final int MAX_TRACE_ID_LENGTH = 2 * TraceId.getSize();
-  private static final int MAX_SPAN_ID_LENGTH = 2 * SpanId.getSize();
+  private static final int MAX_TRACE_ID_LENGTH = TraceId.getHexLength();
+  private static final int MAX_SPAN_ID_LENGTH = SpanId.getHexLength();
   private static final int MAX_FLAGS_LENGTH = 2;
 
   private static final char IS_SAMPLED = '1';
   private static final char NOT_SAMPLED = '0';
   private static final int PROPAGATION_HEADER_DELIMITER_SIZE = 1;
 
-  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
-  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
+  private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
+  private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
   private static final int PARENT_SPAN_ID_SIZE = 1;
   private static final int SAMPLED_FLAG_SIZE = 1;
 
@@ -94,9 +94,18 @@ public class JaegerPropagator implements TextMapPropagator {
     SpanContext spanContext = span.getContext();
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
-    spanContext.getTraceId().copyLowerBase16To(chars, 0);
+
+    String traceId = spanContext.getTraceIdAsHexString();
+    for (int i = 0; i < traceId.length(); i++) {
+      chars[i] = traceId.charAt(i);
+    }
+
     chars[SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
-    spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
+    String spanId = spanContext.getSpanIdAsHexString();
+    for (int i = 0; i < spanId.length(); i++) {
+      chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
+    }
+
     chars[PARENT_SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[PARENT_SPAN_ID_OFFSET] = DEPRECATED_PARENT_SPAN;
     chars[SAMPLED_FLAG_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
@@ -189,11 +198,13 @@ public class JaegerPropagator implements TextMapPropagator {
       int flagsInt = Integer.parseInt(flags);
       TraceFlags traceFlags = ((flagsInt & 1) == 1) ? SAMPLED_FLAGS : NOT_SAMPLED_FLAGS;
 
+      String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
+      String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);
+      if (!TraceId.isValid(otelTraceId) || !SpanId.isValid(otelSpanId)) {
+        return SpanContext.getInvalid();
+      }
       return SpanContext.createFromRemoteParent(
-          TraceId.fromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
-          SpanId.fromLowerBase16(StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH), 0),
-          traceFlags,
-          TraceState.getDefault());
+          otelTraceId, otelSpanId, traceFlags, TraceState.getDefault());
     } catch (Exception e) {
       logger.log(
           Level.FINE,
