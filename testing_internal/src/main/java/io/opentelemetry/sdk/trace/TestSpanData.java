@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
@@ -73,8 +72,8 @@ public abstract class TestSpanData implements SpanData {
   }
 
   @Override
-  public SpanId getParentSpanId() {
-    return TracingContextUtils.getSpan(getParent()).getContext().getSpanId();
+  public String getParentSpanId() {
+    return TracingContextUtils.getSpan(getParent()).getContext().getSpanIdAsHexString();
   }
 
   /**

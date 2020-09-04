@@ -831,7 +831,7 @@ class RecordEventsReadableSpanTest {
                 : TracingContextUtils.withSpan(
                     DefaultSpan.create(
                         SpanContext.createFromRemoteParent(
-                            spanContext.getTraceId(),
+                            spanContext.getTraceIdAsHexString(),
                             parentSpanId,
                             spanContext.getTraceFlags(),
                             spanContext.getTraceState())),
@@ -917,12 +917,12 @@ class RecordEventsReadableSpanTest {
     final SpanContext parentSpanContext =
         EXPECTED_HAS_REMOTE_PARENT
             ? SpanContext.createFromRemoteParent(
-                context.getTraceId(),
+                context.getTraceIdAsHexString(),
                 parentSpanId,
                 context.getTraceFlags(),
                 context.getTraceState())
             : SpanContext.create(
-                context.getTraceId(),
+                context.getTraceIdAsHexString(),
                 parentSpanId,
                 context.getTraceFlags(),
                 context.getTraceState());
