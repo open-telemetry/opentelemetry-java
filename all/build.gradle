@@ -26,7 +26,6 @@ def subprojects = [
         project(':opentelemetry-sdk-tracing'),
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-extension-async-processor'),
-        project(':opentelemetry-sdk-extension-auto-config'),
         project(':opentelemetry-sdk-extension-otproto'),
         project(':opentelemetry-sdk-extension-testbed'),
         project(':opentelemetry-sdk-extension-jaeger-remote-sampler'),
