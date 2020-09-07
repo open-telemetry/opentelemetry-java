@@ -50,7 +50,7 @@ class AwsXRayPropagatorTest {
           return carrier.get(key);
         }
       };
-  private final AwsXRayPropagator xrayPropagator = new AwsXRayPropagator();
+  private final AwsXRayPropagator xrayPropagator = AwsXRayPropagator.getInstance();
 
   @Test
   void inject_SampledContext() {

@@ -70,7 +70,7 @@ class JaegerPropagatorTest {
         }
       };
 
-  private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
+  private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
     return TracingContextUtils.getSpan(context).getContext();

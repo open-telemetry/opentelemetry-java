@@ -76,6 +76,16 @@ public class AwsXRayPropagator implements TextMapPropagator {
 
   private static final List<String> FIELDS = Collections.singletonList(TRACE_HEADER_KEY);
 
+  private static final AwsXRayPropagator INSTANCE = new AwsXRayPropagator();
+
+  private AwsXRayPropagator() {
+    // singleton
+  }
+
+  public static AwsXRayPropagator getInstance() {
+    return INSTANCE;
+  }
+
   @Override
   public List<String> fields() {
     return FIELDS;
