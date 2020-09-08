@@ -218,11 +218,11 @@ class SpanBuilderSdkTest {
       SpanData spanData = span.toSpanData();
       ReadableAttributes attrs = spanData.getAttributes();
       assertThat(attrs.size()).isEqualTo(5);
-      assertThat(attrs.getValue("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
-      assertThat(attrs.getValue("long")).isEqualTo(AttributeValue.longAttributeValue(12345L));
-      assertThat(attrs.getValue("double")).isEqualTo(AttributeValue.doubleAttributeValue(0.12345));
-      assertThat(attrs.getValue("boolean")).isEqualTo(AttributeValue.booleanAttributeValue(true));
-      assertThat(attrs.getValue("stringAttribute"))
+      assertThat(attrs.get("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
+      assertThat(attrs.get("long")).isEqualTo(AttributeValue.longAttributeValue(12345L));
+      assertThat(attrs.get("double")).isEqualTo(AttributeValue.doubleAttributeValue(0.12345));
+      assertThat(attrs.get("boolean")).isEqualTo(AttributeValue.booleanAttributeValue(true));
+      assertThat(attrs.get("stringAttribute"))
           .isEqualTo(AttributeValue.stringAttributeValue("attrvalue"));
       assertThat(spanData.getTotalAttributeCount()).isEqualTo(5);
     } finally {
@@ -243,11 +243,11 @@ class SpanBuilderSdkTest {
     try {
       ReadableAttributes attrs = span.toSpanData().getAttributes();
       assertThat(attrs.size()).isEqualTo(5);
-      assertThat(attrs.getValue("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
-      assertThat(attrs.getValue("long")).isEqualTo(AttributeValue.longAttributeValue(12345L));
-      assertThat(attrs.getValue("double")).isEqualTo(AttributeValue.doubleAttributeValue(.12345));
-      assertThat(attrs.getValue("boolean")).isEqualTo(AttributeValue.booleanAttributeValue(true));
-      assertThat(attrs.getValue("stringAttribute"))
+      assertThat(attrs.get("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
+      assertThat(attrs.get("long")).isEqualTo(AttributeValue.longAttributeValue(12345L));
+      assertThat(attrs.get("double")).isEqualTo(AttributeValue.doubleAttributeValue(.12345));
+      assertThat(attrs.get("boolean")).isEqualTo(AttributeValue.booleanAttributeValue(true));
+      assertThat(attrs.get("stringAttribute"))
           .isEqualTo(AttributeValue.stringAttributeValue("attrvalue"));
     } finally {
       span.end();
@@ -261,11 +261,11 @@ class SpanBuilderSdkTest {
 
     ReadableAttributes attrs = span.toSpanData().getAttributes();
     assertThat(attrs.size()).isEqualTo(5);
-    assertThat(attrs.getValue("string2")).isNull();
-    assertThat(attrs.getValue("long2")).isNull();
-    assertThat(attrs.getValue("double2")).isNull();
-    assertThat(attrs.getValue("boolean2")).isNull();
-    assertThat(attrs.getValue("stringAttribute2")).isNull();
+    assertThat(attrs.get("string2")).isNull();
+    assertThat(attrs.get("long2")).isNull();
+    assertThat(attrs.get("double2")).isNull();
+    assertThat(attrs.get("boolean2")).isNull();
+    assertThat(attrs.get("stringAttribute2")).isNull();
   }
 
   @Test
@@ -313,18 +313,18 @@ class SpanBuilderSdkTest {
 
     ReadableAttributes beforeAttributes = span.toSpanData().getAttributes();
     assertThat(beforeAttributes.size()).isEqualTo(2);
-    assertThat(beforeAttributes.getValue("key1"))
+    assertThat(beforeAttributes.get("key1"))
         .isEqualTo(AttributeValue.stringAttributeValue("value1"));
-    assertThat(beforeAttributes.getValue("key2"))
+    assertThat(beforeAttributes.get("key2"))
         .isEqualTo(AttributeValue.stringAttributeValue("value2"));
 
     spanBuilder.setAttribute("key3", "value3");
 
     ReadableAttributes afterAttributes = span.toSpanData().getAttributes();
     assertThat(afterAttributes.size()).isEqualTo(2);
-    assertThat(afterAttributes.getValue("key1"))
+    assertThat(afterAttributes.get("key1"))
         .isEqualTo(AttributeValue.stringAttributeValue("value1"));
-    assertThat(afterAttributes.getValue("key2"))
+    assertThat(afterAttributes.get("key2"))
         .isEqualTo(AttributeValue.stringAttributeValue("value2"));
   }
 
@@ -406,7 +406,7 @@ class SpanBuilderSdkTest {
       ReadableAttributes attrs = span.toSpanData().getAttributes();
       assertThat(attrs.size()).isEqualTo(maxNumberOfAttrs);
       for (int i = 0; i < maxNumberOfAttrs; i++) {
-        assertThat(attrs.getValue("key" + i)).isEqualTo(AttributeValue.longAttributeValue(i));
+        assertThat(attrs.get("key" + i)).isEqualTo(AttributeValue.longAttributeValue(i));
       }
     } finally {
       span.end();
@@ -448,25 +448,25 @@ class SpanBuilderSdkTest {
 
     try {
       ReadableAttributes attrs = span.toSpanData().getAttributes();
-      assertThat(attrs.getValue("builderStringNull")).isEqualTo(null);
-      assertThat(attrs.getValue("builderStringSmall"))
+      assertThat(attrs.get("builderStringNull")).isEqualTo(null);
+      assertThat(attrs.get("builderStringSmall"))
           .isEqualTo(AttributeValue.stringAttributeValue("small"));
-      assertThat(attrs.getValue("builderStringLarge"))
+      assertThat(attrs.get("builderStringLarge"))
           .isEqualTo(AttributeValue.stringAttributeValue("very large"));
-      assertThat(attrs.getValue("builderLong")).isEqualTo(AttributeValue.longAttributeValue(42L));
-      assertThat(attrs.getValue("builderStringLargeValue"))
+      assertThat(attrs.get("builderLong")).isEqualTo(AttributeValue.longAttributeValue(42L));
+      assertThat(attrs.get("builderStringLargeValue"))
           .isEqualTo(AttributeValue.stringAttributeValue("very large"));
-      assertThat(attrs.getValue("builderStringArray"))
+      assertThat(attrs.get("builderStringArray"))
           .isEqualTo(AttributeValue.arrayAttributeValue("small", null, "very large"));
 
-      assertThat(attrs.getValue("spanStringSmall"))
+      assertThat(attrs.get("spanStringSmall"))
           .isEqualTo(AttributeValue.stringAttributeValue("small"));
-      assertThat(attrs.getValue("spanStringLarge"))
+      assertThat(attrs.get("spanStringLarge"))
           .isEqualTo(AttributeValue.stringAttributeValue("very large"));
-      assertThat(attrs.getValue("spanLong")).isEqualTo(AttributeValue.longAttributeValue(42L));
-      assertThat(attrs.getValue("spanStringLarge"))
+      assertThat(attrs.get("spanLong")).isEqualTo(AttributeValue.longAttributeValue(42L));
+      assertThat(attrs.get("spanStringLarge"))
           .isEqualTo(AttributeValue.stringAttributeValue("very large"));
-      assertThat(attrs.getValue("spanStringArray"))
+      assertThat(attrs.get("spanStringArray"))
           .isEqualTo(AttributeValue.arrayAttributeValue("small", null, "very large"));
     } finally {
       span.end();
@@ -487,7 +487,7 @@ class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
-      assertThat(span.toSpanData().getAttributes().getValue(Samplers.SAMPLING_PROBABILITY.key()))
+      assertThat(span.toSpanData().getAttributes().get(Samplers.SAMPLING_PROBABILITY.key()))
           .isEqualTo(AttributeValue.doubleAttributeValue(1));
     } finally {
       span.end();
@@ -582,7 +582,7 @@ class SpanBuilderSdkTest {
                 .startSpan();
     try {
       assertThat(span.getContext().isSampled()).isTrue();
-      assertThat(span.toSpanData().getAttributes().getValue(samplerAttributeName)).isNotNull();
+      assertThat(span.toSpanData().getAttributes().get(samplerAttributeName)).isNotNull();
     } finally {
       span.end();
     }

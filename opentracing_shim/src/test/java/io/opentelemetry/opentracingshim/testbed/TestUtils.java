@@ -45,7 +45,7 @@ public final class TestUtils {
     return getByCondition(
         spans,
         spanData -> {
-          AttributeValue attrValue = spanData.getAttributes().getValue(key);
+          AttributeValue attrValue = spanData.getAttributes().get(key);
           if (attrValue == null) {
             return false;
           }
