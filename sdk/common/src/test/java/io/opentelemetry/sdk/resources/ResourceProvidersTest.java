@@ -27,7 +27,7 @@ class ResourceProvidersTest {
   void default_resource_includes_attributes_from_providers() {
     Resource resource = Resource.getDefault();
 
-    AttributeValue providerAttribute = resource.getAttributes().getValue("providerAttribute");
+    AttributeValue providerAttribute = resource.getAttributes().get("providerAttribute");
     assertThat(providerAttribute).isNotNull();
     assertThat(providerAttribute.getLongValue()).isEqualTo(42);
   }

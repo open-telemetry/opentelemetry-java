@@ -265,7 +265,7 @@ class RecordEventsReadableSpanTest {
     // Assert that the snapshot does not reflect the modified state, but the state of the time when
     // toSpanData was called.
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size());
-    assertThat(spanData.getAttributes().getValue("anotherKey")).isNull();
+    assertThat(spanData.getAttributes().get("anotherKey")).isNull();
     assertThat(spanData.getHasEnded()).isFalse();
     assertThat(spanData.getEndEpochNanos()).isEqualTo(0);
     assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
@@ -275,7 +275,7 @@ class RecordEventsReadableSpanTest {
     // state.
     spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size() + 1);
-    assertThat(spanData.getAttributes().getValue("anotherKey"))
+    assertThat(spanData.getAttributes().get("anotherKey"))
         .isEqualTo(AttributeValue.stringAttributeValue("anotherValue"));
     assertThat(spanData.getHasEnded()).isTrue();
     assertThat(spanData.getEndEpochNanos()).isGreaterThan(0);
@@ -405,27 +405,27 @@ class RecordEventsReadableSpanTest {
     }
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(14);
-    assertThat(spanData.getAttributes().getValue("StringKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("EmptyStringKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("EmptyStringAttributeValue")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("LongKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("DoubleKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("BooleanKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("ArrayStringKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("ArrayLongKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("ArrayDoubleKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("ArrayBooleanKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("ArrayWithNullLongKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("ArrayWithNullStringKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("ArrayWithNullDoubleKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("ArrayWithNullBooleanKey")).isNotNull();
-    assertThat(spanData.getAttributes().getValue("ArrayStringKey").getStringArrayValue().size())
+    assertThat(spanData.getAttributes().get("StringKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("EmptyStringKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("EmptyStringAttributeValue")).isNotNull();
+    assertThat(spanData.getAttributes().get("LongKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("DoubleKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("BooleanKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayStringKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayLongKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayDoubleKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayBooleanKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayWithNullLongKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayWithNullStringKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayWithNullDoubleKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayWithNullBooleanKey")).isNotNull();
+    assertThat(spanData.getAttributes().get("ArrayStringKey").getStringArrayValue().size())
         .isEqualTo(4);
-    assertThat(spanData.getAttributes().getValue("ArrayLongKey").getLongArrayValue().size())
+    assertThat(spanData.getAttributes().get("ArrayLongKey").getLongArrayValue().size())
         .isEqualTo(5);
-    assertThat(spanData.getAttributes().getValue("ArrayDoubleKey").getDoubleArrayValue().size())
+    assertThat(spanData.getAttributes().get("ArrayDoubleKey").getDoubleArrayValue().size())
         .isEqualTo(5);
-    assertThat(spanData.getAttributes().getValue("ArrayBooleanKey").getBooleanArrayValue().size())
+    assertThat(spanData.getAttributes().get("ArrayBooleanKey").getBooleanArrayValue().size())
         .isEqualTo(4);
   }
 
@@ -606,13 +606,13 @@ class RecordEventsReadableSpanTest {
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         int val = i + maxNumberOfAttributes * 3 / 2;
         AttributeValue expectedValue = AttributeValue.longAttributeValue(val);
-        assertThat(spanData.getAttributes().getValue("MyStringAttributeKey" + i))
+        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + i))
             .isEqualTo(expectedValue);
       }
       // Test that we have the newest re-added initial entries.
       for (int i = maxNumberOfAttributes / 2; i < maxNumberOfAttributes; i++) {
         AttributeValue expectedValue = AttributeValue.longAttributeValue(i);
-        assertThat(spanData.getAttributes().getValue("MyStringAttributeKey" + i))
+        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + i))
             .isEqualTo(expectedValue);
       }
     } finally {
@@ -698,7 +698,7 @@ class RecordEventsReadableSpanTest {
     List<Event> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     Event event = events.get(0);
-    assertThat(event.getAttributes().getValue("exception.message")).isNull();
+    assertThat(event.getAttributes().get("exception.message")).isNull();
   }
 
   private static class InnerClassException extends Exception {}
@@ -713,7 +713,7 @@ class RecordEventsReadableSpanTest {
     List<Event> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     Event event = events.get(0);
-    assertThat(event.getAttributes().getValue("exception.type"))
+    assertThat(event.getAttributes().get("exception.type"))
         .isEqualTo(
             stringAttributeValue(
                 "io.opentelemetry.sdk.trace.RecordEventsReadableSpanTest.InnerClassException"));
@@ -782,7 +782,7 @@ class RecordEventsReadableSpanTest {
       Map<String, AttributeValue> attributes) {
     AttributesMap attributesMap =
         new AttributesMap(TraceConfig.getDefault().getMaxNumberOfAttributes());
-    attributesMap.putAll(attributes);
+    attributes.forEach(attributesMap::put);
     return createTestSpan(
         Kind.INTERNAL,
         TraceConfig.getDefault(),
@@ -880,8 +880,7 @@ class RecordEventsReadableSpanTest {
     // verify equality manually, since the implementations don't all equals with each other.
     ReadableAttributes spanDataAttributes = spanData.getAttributes();
     assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
-    spanDataAttributes.forEach(
-        (key, value) -> assertThat(attributes.getValue(key)).isEqualTo(value));
+    spanDataAttributes.forEach((key, value) -> assertThat(attributes.get(key)).isEqualTo(value));
   }
 
   @Test

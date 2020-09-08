@@ -22,5 +22,5 @@ package io.opentelemetry.common;
  * <p>See {@link Attributes} for the public API implementation.
  */
 public interface ReadableAttributes extends ReadableKeyValuePairs<String, AttributeValue> {
-  AttributeValue getValue(String key);
+  AttributeValue get(String key);
 }

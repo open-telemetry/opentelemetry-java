@@ -41,7 +41,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -585,11 +584,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return attributes;
     }
     // otherwise, make a copy of the data into an immutable container.
-    Attributes.Builder builder = Attributes.newBuilder();
-    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      builder.setAttribute(entry.getKey(), entry.getValue());
-    }
-    return builder.build();
+    return attributes.immutableCopy();
   }
 
   @Override
