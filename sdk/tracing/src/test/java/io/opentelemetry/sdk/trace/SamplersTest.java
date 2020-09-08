@@ -50,8 +50,7 @@ class SamplersTest {
   private final SpanContext invalidSpanContext = SpanContext.getInvalid();
   private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpanContext);
   private final SpanContext sampledRemoteSpanContext =
-      SpanContext.createFromRemoteParent(
-          traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), traceState);
+      SpanContext.createFromRemoteParent(traceId, parentSpanId, /* isSampled= */ true, traceState);
   private final SpanContext notSampledRemoteSpanContext =
       SpanContext.createFromRemoteParent(
           traceId, parentSpanId, TraceFlags.getDefault(), traceState);
@@ -690,7 +689,7 @@ class SamplersTest {
     final Sampler defaultProbability = Samplers.Probability.create(0.0001);
     // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
-    String notSampledtraceId =
+    String notSampledTraceId =
         TraceId.bytesToHex(
             new byte[] {
               0,
@@ -713,7 +712,7 @@ class SamplersTest {
     SamplingResult samplingResult1 =
         defaultProbability.shouldSample(
             invalidSpanContext,
-            notSampledtraceId,
+            notSampledTraceId,
             SPAN_NAME,
             SPAN_KIND,
             Attributes.empty(),
@@ -724,7 +723,7 @@ class SamplersTest {
             Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
-    String sampledtraceId =
+    String sampledTraceId =
         TraceId.bytesToHex(
             new byte[] {
               (byte) 0x00,
@@ -747,7 +746,7 @@ class SamplersTest {
     SamplingResult samplingResult2 =
         defaultProbability.shouldSample(
             invalidSpanContext,
-            sampledtraceId,
+            sampledTraceId,
             SPAN_NAME,
             SPAN_KIND,
             Attributes.empty(),
