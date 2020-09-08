@@ -29,8 +29,14 @@ import java.util.concurrent.ConcurrentMap;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class KeyedAttributes implements ReadableKeyedAttributes {
 
+  private static final KeyedAttributes EMPTY = KeyedAttributes.newBuilder().build();
+
   // todo replace with the array-backed impl
   private final ConcurrentMap<Key, Object> values;
+
+  public static KeyedAttributes empty() {
+    return EMPTY;
+  }
 
   private KeyedAttributes(ConcurrentMap<Key, Object> values) {
     this.values = values;
@@ -92,6 +98,10 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     return new BooleanKey(key);
   }
 
+  public static BooleanArrayKey booleanArrayKey(String key) {
+    return new BooleanArrayKey(key);
+  }
+
   public static StringArrayKey stringArrayKey(String key) {
     return new StringArrayKey(key);
   }
@@ -105,15 +115,18 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
   }
 
   interface Builder {
-    Builder set(StringKey key, String value);
+    // use this one, for most cases, since you can statically allocate the key
+    <T> Builder set(Key<T> key, T value);
 
-    Builder set(BooleanKey key, boolean value);
+    Builder set(String key, String value);
 
-    Builder set(StringArrayKey key, String... value);
+    Builder set(String key, boolean value);
 
-    Builder set(BooleanArrayKey key, Boolean... value);
+    Builder set(String key, String... value);
 
-    Builder set(CompoundKey key, MultiAttribute value);
+    Builder set(String key, Boolean... value);
+
+    Builder set(String key, MultiAttribute value);
 
     <T> Builder setCustom(Key<T> key, T value);
 
@@ -181,32 +194,38 @@ public class KeyedAttributes implements ReadableKeyedAttributes {
     private final Map<Key, Object> values = new HashMap<>();
 
     @Override
-    public Builder set(StringKey key, String value) {
+    public <T> Builder set(Key<T> key, T value) {
       values.put(key, value);
       return this;
     }
 
     @Override
-    public Builder set(StringArrayKey key, String... value) {
-      values.put(key, Arrays.asList(value));
+    public Builder set(String key, String value) {
+      values.put(stringKey(key), value);
       return this;
     }
 
     @Override
-    public Builder set(BooleanKey key, boolean value) {
-      values.put(key, value);
+    public Builder set(String key, String... value) {
+      values.put(stringArrayKey(key), Arrays.asList(value));
       return this;
     }
 
     @Override
-    public Builder set(BooleanArrayKey key, Boolean... value) {
-      values.put(key, Arrays.asList(value));
+    public Builder set(String key, boolean value) {
+      values.put(booleanKey(key), value);
       return this;
     }
 
     @Override
-    public Builder set(CompoundKey key, MultiAttribute value) {
-      values.put(key, value);
+    public Builder set(String key, Boolean... value) {
+      values.put(booleanArrayKey(key), Arrays.asList(value));
+      return this;
+    }
+
+    @Override
+    public Builder set(String key, MultiAttribute value) {
+      values.put(compoundKey(key), value);
       return this;
     }
 

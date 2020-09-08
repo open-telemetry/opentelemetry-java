@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -59,7 +60,7 @@ public class KeyedAttributeDemo {
     // similar
     KeyedAttributes keyedAttributes =
         KeyedAttributes.newBuilder()
-            .set(HTTP_HEADERS, "x-stuff", "x-api-key")
+            .set(HTTP_HEADERS, Arrays.asList("x-stuff", "x-api-key"))
             .set(ERROR_HINT, false)
             .set(NET_HOST_NAME, "localhost")
             .set(REQUEST_URL, new UrlAttributes("https://opentelemetry.io"))
@@ -122,20 +123,24 @@ public class KeyedAttributeDemo {
       if (parsedAttributes != null) {
         return parsedAttributes;
       }
-      URL url = null;
       try {
-        url = URI.create(this.url).toURL();
+        URL url = URI.create(this.url).toURL();
+        KeyedAttributes attributes =
+            KeyedAttributes.newBuilder()
+                .set(HTTP_SCHEME, url.getProtocol())
+                .set(HTTP_HOST, url.getHost())
+                // etc
+                .build();
+        parsedAttributes = attributes;
+        return attributes;
       } catch (MalformedURLException e) {
-        // ignore me
+        return KeyedAttributes.empty();
       }
-      KeyedAttributes attributes =
-          KeyedAttributes.newBuilder()
-              .set(HTTP_SCHEME, url.getProtocol())
-              .set(HTTP_HOST, url.getHost())
-              // etc
-              .build();
-      parsedAttributes = attributes;
-      return attributes;
+    }
+
+    @Override
+    public String toString() {
+      return getAttributes().toString();
     }
   }
 }
