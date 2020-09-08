@@ -15,7 +15,7 @@ which try-with-resources does not allow. Take this example:
 Span span = tracer.buildSpan("someWork").start();
 try (Scope scope = tracer.scopeManager().activate(span)) {
     // Do things.
-} catch(Exception ex) {
+} catch (Exception ex) {
     span.recordException(ex);
 } finally {
     span.finish();
