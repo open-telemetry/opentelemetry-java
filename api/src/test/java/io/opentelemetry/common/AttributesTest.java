@@ -43,7 +43,7 @@ class AttributesTest {
 
     Attributes attributes = Attributes.of(stringKey("key1"), "value1", longKey("key2"), 333L);
 
-    attributes.forEach(entriesSeen::put);
+    attributes.forEach((AttributeConsumer) entriesSeen::put);
 
     assertThat(entriesSeen)
         .containsExactly(entry(stringKey("key1"), "value1"), entry(stringKey("key2"), 333L));
@@ -54,7 +54,7 @@ class AttributesTest {
     final Map<AttributeKey, Object> entriesSeen = new HashMap<>();
 
     Attributes attributes = Attributes.of(stringKey("key"), "value");
-    attributes.forEach(entriesSeen::put);
+    attributes.forEach((AttributeConsumer) entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(stringKey("key"), "value"));
   }
 
@@ -62,7 +62,13 @@ class AttributesTest {
   void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();
-    emptyAttributes.forEach((key, value) -> sawSomething.set(true));
+    emptyAttributes.forEach(
+        new AttributeConsumer() {
+          @Override
+          public <T> void consume(AttributeKey<T> key, T value) {
+            sawSomething.set(true);
+          }
+        });
     assertThat(sawSomething.get()).isFalse();
   }
 

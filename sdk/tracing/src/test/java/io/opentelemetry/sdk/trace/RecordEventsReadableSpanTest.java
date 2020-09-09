@@ -27,10 +27,10 @@ import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.RawAttributeConsumer;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -393,10 +393,10 @@ class RecordEventsReadableSpanTest {
       span.setAttribute(
           booleanArrayKey("ArrayBooleanKey"), Arrays.asList(true, false, false, true));
       // These should be dropped
-      span.setAttribute(stringArrayKey("NullArrayStringKey"), Arrays.asList((String[]) null));
-      span.setAttribute(longArrayKey("NullArrayLongKey"), Arrays.asList((Long[]) null));
-      span.setAttribute(doubleArrayKey("NullArrayDoubleKey"), Arrays.asList((Double[]) null));
-      span.setAttribute(booleanArrayKey("NullArrayBooleanKey"), Arrays.asList((Boolean[]) null));
+      span.setAttribute(stringArrayKey("NullArrayStringKey"), null);
+      span.setAttribute(longArrayKey("NullArrayLongKey"), null);
+      span.setAttribute(doubleArrayKey("NullArrayDoubleKey"), null);
+      span.setAttribute(booleanArrayKey("NullArrayBooleanKey"), null);
       // These should be maintained
       span.setAttribute(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}));
       span.setAttribute(
@@ -463,19 +463,19 @@ class RecordEventsReadableSpanTest {
   @Test
   void setAttribute_emptyArrayAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    span.setAttribute(stringArrayKey("stringArrayAttribute"), Arrays.asList((String[]) null));
+    span.setAttribute(stringArrayKey("stringArrayAttribute"), null);
     assertThat(span.toSpanData().getAttributes().size()).isZero();
     span.setAttribute(stringArrayKey("stringArrayAttribute"), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
-    span.setAttribute(booleanArrayKey("boolArrayAttribute"), Arrays.asList((Boolean[]) null));
+    span.setAttribute(booleanArrayKey("boolArrayAttribute"), null);
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
     span.setAttribute(booleanArrayKey("boolArrayAttribute"), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
-    span.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList((Long[]) null));
+    span.setAttribute(longArrayKey("longArrayAttribute"), null);
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
     span.setAttribute(longArrayKey("longArrayAttribute"), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(3);
-    span.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList((Double[]) null));
+    span.setAttribute(doubleArrayKey("doubleArrayAttribute"), null);
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(3);
     span.setAttribute(doubleArrayKey("doubleArrayAttribute"), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(4);
@@ -875,8 +875,8 @@ class RecordEventsReadableSpanTest {
     // verify equality manually, since the implementations don't all equals with each other.
     ReadableAttributes spanDataAttributes = spanData.getAttributes();
     assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
-    spanDataAttributes.forEachRaw(
-        new RawAttributeConsumer() {
+    spanDataAttributes.forEach(
+        new AttributeConsumer() {
           @Override
           public <T> void consume(AttributeKey<T> key, T value) {
             assertThat(attributes.get(key)).isEqualTo(value);
@@ -897,7 +897,7 @@ class RecordEventsReadableSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     final AttributesMap attributesWithCapacity = new AttributesMap(32);
-    attributes.forEach(attributesWithCapacity::put);
+    attributes.forEach((AttributeConsumer) attributesWithCapacity::put);
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =

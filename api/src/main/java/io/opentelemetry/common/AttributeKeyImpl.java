@@ -18,6 +18,7 @@ package io.opentelemetry.common;
 
 import java.util.List;
 
+@SuppressWarnings("rawtypes")
 public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   private final String key;
 
@@ -52,6 +53,11 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   @Override
   public String toString() {
     return "AttributeKeyImpl{" + "key='" + key + '\'' + '}';
+  }
+
+  @Override
+  public int compareTo(AttributeKey o) {
+    return get().compareTo(o.get());
   }
 
   public static StringKey stringKey(String key) {

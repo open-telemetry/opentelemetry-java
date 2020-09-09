@@ -22,19 +22,11 @@ import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.AttributeKeyImpl.BooleanArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
-import io.opentelemetry.common.AttributeKeyImpl.DoubleArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.DoubleKey;
-import io.opentelemetry.common.AttributeKeyImpl.LongArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.LongKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringArrayKey;
 import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -192,42 +184,7 @@ public abstract class Resource {
     }
 
     @Override
-    public void consume(StringKey key, String value) {
-      attrBuilder.setAttribute(key, value);
-    }
-
-    @Override
-    public void consume(BooleanKey key, boolean value) {
-      attrBuilder.setAttribute(key, value);
-    }
-
-    @Override
-    public void consume(DoubleKey key, double value) {
-      attrBuilder.setAttribute(key, value);
-    }
-
-    @Override
-    public void consume(LongKey key, long value) {
-      attrBuilder.setAttribute(key, value);
-    }
-
-    @Override
-    public void consume(StringArrayKey key, List<String> value) {
-      attrBuilder.setAttribute(key, value);
-    }
-
-    @Override
-    public void consume(BooleanArrayKey key, List<Boolean> value) {
-      attrBuilder.setAttribute(key, value);
-    }
-
-    @Override
-    public void consume(DoubleArrayKey key, List<Double> value) {
-      attrBuilder.setAttribute(key, value);
-    }
-
-    @Override
-    public void consume(LongArrayKey key, List<Long> value) {
+    public <T> void consume(AttributeKey<T> key, T value) {
       attrBuilder.setAttribute(key, value);
     }
   }
@@ -236,46 +193,7 @@ public abstract class Resource {
     attributes.forEach(
         new AttributeConsumer() {
           @Override
-          public void consume(StringKey key, String value) {
-            check(key, value);
-          }
-
-          @Override
-          public void consume(BooleanKey key, boolean value) {
-            check(key, value);
-          }
-
-          @Override
-          public void consume(DoubleKey key, double value) {
-            check(key, value);
-          }
-
-          @Override
-          public void consume(LongKey key, long value) {
-            check(key, value);
-          }
-
-          @Override
-          public void consume(StringArrayKey key, List<String> value) {
-            check(key, value);
-          }
-
-          @Override
-          public void consume(BooleanArrayKey key, List<Boolean> value) {
-            check(key, value);
-          }
-
-          @Override
-          public void consume(DoubleArrayKey key, List<Double> value) {
-            check(key, value);
-          }
-
-          @Override
-          public void consume(LongArrayKey key, List<Long> value) {
-            check(key, value);
-          }
-
-          private <T> void check(AttributeKey<T> key, T value) {
+          public <T> void consume(AttributeKey<T> key, T value) {
             Utils.checkArgument(
                 isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
             Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);

@@ -18,6 +18,7 @@ package io.opentelemetry.internal;
 
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.AttributeKeyImpl;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -88,10 +89,9 @@ public final class StringUtils {
         return value;
       }
 
-      String[] newStrings = new String[strings.size()];
-      for (int i = 0; i < strings.size(); i++) {
-        String string = strings.get(i);
-        newStrings[i] = truncateToSize(string, limit);
+      List<String> newStrings = new ArrayList<>(strings.size());
+      for (String string : strings) {
+        newStrings.add(truncateToSize(string, limit));
       }
 
       return (T) newStrings;

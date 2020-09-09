@@ -22,10 +22,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.RawAttributeConsumer;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
@@ -185,8 +185,8 @@ final class Adapter {
   @VisibleForTesting
   static Collection<Model.KeyValue> toKeyValues(ReadableAttributes attributes) {
     final List<Model.KeyValue> tags = new ArrayList<>(attributes.size());
-    attributes.forEachRaw(
-        new RawAttributeConsumer() {
+    attributes.forEach(
+        new AttributeConsumer() {
           @Override
           public <T> void consume(AttributeKey<T> key, T value) {
             tags.add(toKeyValue(key, value));

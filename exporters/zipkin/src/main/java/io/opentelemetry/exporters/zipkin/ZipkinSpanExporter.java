@@ -19,10 +19,10 @@ package io.opentelemetry.exporters.zipkin;
 import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.RawAttributeConsumer;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -150,8 +150,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
 
     ReadableAttributes spanAttributes = spanData.getAttributes();
-    spanAttributes.forEachRaw(
-        new RawAttributeConsumer() {
+    spanAttributes.forEach(
+        new AttributeConsumer() {
           @Override
           public <T> void consume(AttributeKey<T> key, T value) {
             spanBuilder.putTag(key.get(), attributeValueToString(key, value));

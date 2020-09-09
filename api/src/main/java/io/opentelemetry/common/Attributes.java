@@ -26,14 +26,6 @@ import static io.opentelemetry.common.AttributeKeyImpl.stringArrayKey;
 import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeKeyImpl.BooleanArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
-import io.opentelemetry.common.AttributeKeyImpl.DoubleArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.DoubleKey;
-import io.opentelemetry.common.AttributeKeyImpl.LongArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.LongKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -73,37 +65,10 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
   @SuppressWarnings("unchecked")
   @Override
-  public void forEachRaw(RawAttributeConsumer consumer) {
-    List<Object> data = data();
-    for (int i = 0; i < data.size(); i += 2) {
-      consumer.consume((AttributeKey) data.get(i), data.get(i + 1));
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
   public void forEach(AttributeConsumer consumer) {
     List<Object> data = data();
     for (int i = 0; i < data.size(); i += 2) {
-      Object key = data.get(i);
-      Object value = data.get(i + 1);
-      if (key instanceof StringKey) {
-        consumer.consume((StringKey) key, (String) value);
-      } else if (key instanceof BooleanKey) {
-        consumer.consume((BooleanKey) key, (boolean) value);
-      } else if (key instanceof LongKey) {
-        consumer.consume((LongKey) key, (long) value);
-      } else if (key instanceof DoubleKey) {
-        consumer.consume((DoubleKey) key, (double) value);
-      } else if (key instanceof StringArrayKey) {
-        consumer.consume((StringArrayKey) key, (List<String>) value);
-      } else if (key instanceof BooleanArrayKey) {
-        consumer.consume((BooleanArrayKey) key, (List<Boolean>) value);
-      } else if (key instanceof LongArrayKey) {
-        consumer.consume((LongArrayKey) key, (List<Long>) value);
-      } else if (key instanceof DoubleArrayKey) {
-        consumer.consume((DoubleArrayKey) key, (List<Double>) value);
-      }
+      consumer.consume((AttributeKey) data.get(i), data.get(i + 1));
     }
   }
 
@@ -194,42 +159,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     attributes.forEach(
         new AttributeConsumer() {
           @Override
-          public void consume(StringKey key, String value) {
-            builder.setAttribute(key, value);
-          }
-
-          @Override
-          public void consume(BooleanKey key, boolean value) {
-            builder.setAttribute(key, value);
-          }
-
-          @Override
-          public void consume(DoubleKey key, double value) {
-            builder.setAttribute(key, value);
-          }
-
-          @Override
-          public void consume(LongKey key, long value) {
-            builder.setAttribute(key, value);
-          }
-
-          @Override
-          public void consume(StringArrayKey key, List<String> value) {
-            builder.setAttribute(key, value);
-          }
-
-          @Override
-          public void consume(BooleanArrayKey key, List<Boolean> value) {
-            builder.setAttribute(key, value);
-          }
-
-          @Override
-          public void consume(DoubleArrayKey key, List<Double> value) {
-            builder.setAttribute(key, value);
-          }
-
-          @Override
-          public void consume(LongArrayKey key, List<Long> value) {
+          public <T> void consume(AttributeKey<T> key, T value) {
             builder.setAttribute(key, value);
           }
         });
@@ -332,7 +262,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
      * @return this Builder
      */
     public Builder setAttribute(String key, String... value) {
-      return setAttribute(stringArrayKey(key), Arrays.asList(value));
+      return setAttribute(stringArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
@@ -341,7 +271,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
      * @return this Builder
      */
     public Builder setAttribute(String key, Long... value) {
-      return setAttribute(longArrayKey(key), Arrays.asList(value));
+      return setAttribute(longArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
@@ -350,7 +280,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
      * @return this Builder
      */
     public Builder setAttribute(String key, Double... value) {
-      return setAttribute(doubleArrayKey(key), Arrays.asList(value));
+      return setAttribute(doubleArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
@@ -359,7 +289,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
      * @return this Builder
      */
     public Builder setAttribute(String key, Boolean... value) {
-      return setAttribute(booleanArrayKey(key), Arrays.asList(value));
+      return setAttribute(booleanArrayKey(key), value == null ? null : Arrays.asList(value));
     }
   }
 }

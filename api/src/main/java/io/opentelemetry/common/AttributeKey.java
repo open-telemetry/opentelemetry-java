@@ -22,7 +22,8 @@ package io.opentelemetry.common;
  *
  * @param <T> The type of value that can be set with the key.
  */
-public interface AttributeKey<T> {
+@SuppressWarnings("rawtypes")
+public interface AttributeKey<T> extends Comparable<AttributeKey> {
   /** Returns the underlying String representation of the key. */
   String get();
 

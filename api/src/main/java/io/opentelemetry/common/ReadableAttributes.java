@@ -32,7 +32,4 @@ public interface ReadableAttributes {
 
   /** Iterates over all the key-value pairs of attributes contained by this instance. */
   void forEach(AttributeConsumer consumer);
-
-  /** Iterates over all the key-value pairs of attributes contained by this instance. */
-  void forEachRaw(RawAttributeConsumer consumer);
 }

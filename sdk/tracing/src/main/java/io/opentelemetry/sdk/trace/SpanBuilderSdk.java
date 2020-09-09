@@ -22,9 +22,9 @@ import static io.opentelemetry.common.AttributeKeyImpl.longKey;
 import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 
 import io.grpc.Context;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.RawAttributeConsumer;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
@@ -244,8 +244,8 @@ final class SpanBuilderSdk implements Span.Builder {
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
-      samplingAttributes.forEachRaw(
-          new RawAttributeConsumer() {
+      samplingAttributes.forEach(
+          new AttributeConsumer() {
             @Override
             public <T> void consume(AttributeKey<T> key, T value) {
               attributes.put(key, value);

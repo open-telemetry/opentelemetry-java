@@ -21,8 +21,8 @@ import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.RawAttributeConsumer;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -393,8 +393,8 @@ final class TracezZPageHandler extends ZPageHandler {
   private static String renderAttributes(ReadableAttributes attributes) {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
-    attributes.forEachRaw(
-        new RawAttributeConsumer() {
+    attributes.forEach(
+        new AttributeConsumer() {
           private boolean first = true;
 
           @Override

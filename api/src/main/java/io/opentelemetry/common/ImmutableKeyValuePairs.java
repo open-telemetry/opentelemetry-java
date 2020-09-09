@@ -34,6 +34,7 @@ import javax.annotation.concurrent.Immutable;
  * @see Labels
  * @see Attributes
  */
+@SuppressWarnings("rawtypes")
 @Immutable
 abstract class ImmutableKeyValuePairs<K, V> implements ReadableKeyValuePairs<K, V> {
 
@@ -70,6 +71,7 @@ abstract class ImmutableKeyValuePairs<K, V> implements ReadableKeyValuePairs<K, 
     return null;
   }
 
+  @SuppressWarnings("unchecked")
   static List<Object> sortAndFilter(Object[] data) {
     checkArgument(
         data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
@@ -78,17 +80,20 @@ abstract class ImmutableKeyValuePairs<K, V> implements ReadableKeyValuePairs<K, 
     return dedupe(data);
   }
 
-  private static void quickSort(Object[] data, int leftIndex, int rightIndex) {
+  @SuppressWarnings("unchecked")
+  private static <K extends Comparable<K>> void quickSort(
+      Object[] data, int leftIndex, int rightIndex) {
     if (leftIndex >= rightIndex) {
       return;
     }
 
-    String pivotKey = data[rightIndex] == null ? "" : (String) data[rightIndex];
+    K pivotKey = (data[rightIndex] == null) ? null : (K) data[rightIndex];
     int counter = leftIndex;
 
     for (int i = leftIndex; i <= rightIndex; i += 2) {
-      String value = data[i] == null ? "" : (String) data[i];
-      if (value.compareTo(pivotKey) <= 0) {
+      K value = data[i] == null ? null : (K) data[i];
+
+      if (compareTo(value, pivotKey) <= 0) {
         swap(data, counter, i);
         counter += 2;
       }
@@ -98,6 +103,16 @@ abstract class ImmutableKeyValuePairs<K, V> implements ReadableKeyValuePairs<K, 
     quickSort(data, counter, rightIndex);
   }
 
+  private static <K extends Comparable<K>> int compareTo(K value, K pivotKey) {
+    if (value == null) {
+      return pivotKey == null ? 0 : -1;
+    }
+    if (pivotKey == null) {
+      return 1;
+    }
+    return value.compareTo(pivotKey);
+  }
+
   private static List<Object> dedupe(Object[] data) {
     List<Object> result = new ArrayList<>(data.length);
     Object previousKey = null;
@@ -105,8 +120,18 @@ abstract class ImmutableKeyValuePairs<K, V> implements ReadableKeyValuePairs<K, 
     for (int i = 0; i < data.length; i += 2) {
       Object key = data[i];
       Object value = data[i + 1];
-      if (key == null || "".equals(key)) {
+      if (key == null) {
         continue;
+      }
+      // ugh
+      if (key instanceof String) {
+        if ("".equals(key)) {
+          continue;
+        }
+      } else if (key instanceof AttributeKey) {
+        if ("".equals(((AttributeKey) key).get())) {
+          continue;
+        }
       }
       if (key.equals(previousKey)) {
         continue;
