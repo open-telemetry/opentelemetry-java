@@ -16,10 +16,10 @@
 
 package io.opentelemetry.exporters.logging;
 
+import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
@@ -72,7 +72,7 @@ class LoggingSpanExporterTest {
                     EventImpl.create(
                         epochNanos + 500,
                         "somethingHappenedHere",
-                        Attributes.of("important", AttributeValue.booleanAttributeValue(true)))))
+                        Attributes.of(booleanKey("important"), true))))
             .setTotalRecordedEvents(1)
             .setTotalRecordedLinks(0)
             .build();

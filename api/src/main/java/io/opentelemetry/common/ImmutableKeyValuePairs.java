@@ -61,7 +61,7 @@ abstract class ImmutableKeyValuePairs<K, V> implements ReadableKeyValuePairs<K, 
 
   @Nullable
   @SuppressWarnings("unchecked")
-  public V get(String key) {
+  public V get(K key) {
     for (int i = 0; i < data().size(); i += 2) {
       if (key.equals(data().get(i))) {
         return (V) data().get(i + 1);

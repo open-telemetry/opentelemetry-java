@@ -16,14 +16,25 @@
 
 package io.opentelemetry.sdk.resources;
 
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.AttributeKeyImpl.BooleanArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
+import io.opentelemetry.common.AttributeKeyImpl.DoubleArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.DoubleKey;
+import io.opentelemetry.common.AttributeKeyImpl.LongArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.LongKey;
+import io.opentelemetry.common.AttributeKeyImpl.StringArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -45,13 +56,24 @@ public abstract class Resource {
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
-  private static final Resource TELEMETRY_SDK =
-      create(
-          Attributes.newBuilder()
-              .setAttribute("telemetry.sdk.name", "opentelemetry")
-              .setAttribute("telemetry.sdk.language", "java")
-              .setAttribute("telemetry.sdk.version", readVersion())
-              .build());
+
+  // todo: move to ResourceAttributes
+  private static final StringKey SDK_NAME = stringKey("telemetry.sdk.name");
+  private static final StringKey SDK_LANGUAGE = stringKey("telemetry.sdk.language");
+  private static final StringKey SDK_VERSION = stringKey("telemetry.sdk.version");
+
+  private static final Resource TELEMETRY_SDK;
+
+  static {
+    TELEMETRY_SDK =
+        create(
+            Attributes.newBuilder()
+                .setAttribute(SDK_NAME, "opentelemetry")
+                .setAttribute(SDK_LANGUAGE, "java")
+                .setAttribute(SDK_VERSION, readVersion())
+                .build());
+  }
+
   private static final Resource DEFAULT =
       new EnvAutodetectResource.Builder()
           .readEnvironmentVariables()
@@ -170,7 +192,42 @@ public abstract class Resource {
     }
 
     @Override
-    public void consume(String key, AttributeValue value) {
+    public void consume(StringKey key, String value) {
+      attrBuilder.setAttribute(key, value);
+    }
+
+    @Override
+    public void consume(BooleanKey key, boolean value) {
+      attrBuilder.setAttribute(key, value);
+    }
+
+    @Override
+    public void consume(DoubleKey key, double value) {
+      attrBuilder.setAttribute(key, value);
+    }
+
+    @Override
+    public void consume(LongKey key, long value) {
+      attrBuilder.setAttribute(key, value);
+    }
+
+    @Override
+    public void consume(StringArrayKey key, List<String> value) {
+      attrBuilder.setAttribute(key, value);
+    }
+
+    @Override
+    public void consume(BooleanArrayKey key, List<Boolean> value) {
+      attrBuilder.setAttribute(key, value);
+    }
+
+    @Override
+    public void consume(DoubleArrayKey key, List<Double> value) {
+      attrBuilder.setAttribute(key, value);
+    }
+
+    @Override
+    public void consume(LongArrayKey key, List<Long> value) {
       attrBuilder.setAttribute(key, value);
     }
   }
@@ -179,7 +236,46 @@ public abstract class Resource {
     attributes.forEach(
         new AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue value) {
+          public void consume(StringKey key, String value) {
+            check(key, value);
+          }
+
+          @Override
+          public void consume(BooleanKey key, boolean value) {
+            check(key, value);
+          }
+
+          @Override
+          public void consume(DoubleKey key, double value) {
+            check(key, value);
+          }
+
+          @Override
+          public void consume(LongKey key, long value) {
+            check(key, value);
+          }
+
+          @Override
+          public void consume(StringArrayKey key, List<String> value) {
+            check(key, value);
+          }
+
+          @Override
+          public void consume(BooleanArrayKey key, List<Boolean> value) {
+            check(key, value);
+          }
+
+          @Override
+          public void consume(DoubleArrayKey key, List<Double> value) {
+            check(key, value);
+          }
+
+          @Override
+          public void consume(LongArrayKey key, List<Long> value) {
+            check(key, value);
+          }
+
+          private <T> void check(AttributeKey<T> key, T value) {
             Utils.checkArgument(
                 isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
             Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
@@ -205,7 +301,7 @@ public abstract class Resource {
    * @param name the name to be validated.
    * @return whether the name is valid.
    */
-  private static boolean isValidAndNotEmpty(String name) {
-    return !name.isEmpty() && isValid(name);
+  private static boolean isValidAndNotEmpty(AttributeKey<?> name) {
+    return !name.get().isEmpty() && isValid(name.get());
   }
 }

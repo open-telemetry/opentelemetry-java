@@ -16,9 +16,10 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 
+import io.opentelemetry.common.AttributeKeyImpl;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -47,6 +48,8 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanPipelineBenchmark {
 
+  private static final AttributeKeyImpl.StringKey LINK_ATTRIBUTE_KEY = stringKey("linkAttr");
+  private static final AttributeKeyImpl.BooleanKey FINALIZED_KEY = booleanKey("finalized");
   private final TracerSdk tracerSdk = OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
 
   @Setup(Level.Trial)
@@ -74,7 +77,7 @@ public class SpanPipelineBenchmark {
             .setAttribute("key", "value")
             .addLink(new TestLink())
             .startSpan();
-    span.addEvent("started", Attributes.of("operation", stringAttributeValue("some_work")));
+    span.addEvent("started", Attributes.of(stringKey("operation"), "some_work"));
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
     span.setAttribute("doubleAttribute", 4844.44d);
@@ -112,7 +115,7 @@ public class SpanPipelineBenchmark {
 
     @Override
     public Attributes getAttributes() {
-      return Attributes.of("linkAttr", stringAttributeValue("linkValue"));
+      return Attributes.of(LINK_ATTRIBUTE_KEY, "linkValue");
     }
   }
 
@@ -124,7 +127,7 @@ public class SpanPipelineBenchmark {
 
     @Override
     public Attributes getAttributes() {
-      return Attributes.of("finalized", booleanAttributeValue(true));
+      return Attributes.of(FINALIZED_KEY, true);
     }
   }
 }

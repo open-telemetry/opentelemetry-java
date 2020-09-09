@@ -16,7 +16,8 @@
 
 package io.opentelemetry.internal;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.AttributeKeyImpl;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -71,17 +72,18 @@ public final class StringUtils {
    *
    * @throws IllegalArgumentException if limit is zero or negative
    */
-  public static AttributeValue truncateToSize(AttributeValue value, int limit) {
+  @SuppressWarnings("unchecked")
+  public static <T> T truncateToSize(AttributeKey<T> key, T value, int limit) {
     Utils.checkArgument(limit > 0, "attribute value limit must be positive, got %d", limit);
 
     if (value == null
-        || (value.getType() != AttributeValue.Type.STRING
-            && value.getType() != AttributeValue.Type.STRING_ARRAY)) {
+        || (!(key instanceof AttributeKeyImpl.StringKey)
+            && !(key instanceof AttributeKeyImpl.StringArrayKey))) {
       return value;
     }
 
-    if (value.getType() == AttributeValue.Type.STRING_ARRAY) {
-      List<String> strings = value.getStringArrayValue();
+    if (key instanceof AttributeKeyImpl.StringArrayKey) {
+      List<String> strings = (List<String>) value;
       if (strings.isEmpty()) {
         return value;
       }
@@ -92,14 +94,10 @@ public final class StringUtils {
         newStrings[i] = truncateToSize(string, limit);
       }
 
-      return AttributeValue.arrayAttributeValue(newStrings);
+      return (T) newStrings;
     }
 
-    String string = value.getStringValue();
-    // Don't allocate new AttributeValue if not needed
-    return (string == null || string.length() <= limit)
-        ? value
-        : AttributeValue.stringAttributeValue(string.substring(0, limit));
+    return (T) truncateToSize((String) value, limit);
   }
 
   @Nullable

@@ -16,9 +16,15 @@
 
 package io.opentelemetry.trace;
 
+import static io.opentelemetry.common.AttributeKeyImpl.booleanArrayKey;
+import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
+import static io.opentelemetry.common.AttributeKeyImpl.doubleArrayKey;
+import static io.opentelemetry.common.AttributeKeyImpl.longArrayKey;
+import static io.opentelemetry.common.AttributeKeyImpl.longKey;
+import static io.opentelemetry.common.AttributeKeyImpl.stringArrayKey;
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import org.junit.jupiter.api.Test;
 
@@ -35,26 +41,20 @@ class DefaultSpanTest {
   @Test
   void doNotCrash() {
     Span span = DefaultSpan.getInvalid();
-    span.setAttribute(
-        "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
-    span.setAttribute("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
-    span.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
-    span.setAttribute("NullString", (String) null);
+    span.setAttribute(stringKey("MyStringAttributeKey"), "MyStringAttributeValue");
+    span.setAttribute(booleanKey("MyBooleanAttributeKey"), true);
+    span.setAttribute(longKey("MyLongAttributeKey"), 123L);
+    span.setAttribute("NullString", null);
     span.setAttribute("EmptyString", "");
-    span.setAttribute("NullArrayString", AttributeValue.arrayAttributeValue((String[]) null));
-    span.setAttribute("NullArrayBoolean", AttributeValue.arrayAttributeValue((Boolean[]) null));
-    span.setAttribute("NullArrayLong", AttributeValue.arrayAttributeValue((Long[]) null));
-    span.setAttribute("NullArrayDouble", AttributeValue.arrayAttributeValue((Double[]) null));
-    span.setAttribute(null, (String) null);
+    span.setAttribute(stringArrayKey("NullArrayString"), null);
+    span.setAttribute(booleanArrayKey("NullArrayBoolean"), null);
+    span.setAttribute(longArrayKey("NullArrayLong"), null);
+    span.setAttribute(doubleArrayKey("NullArrayDouble"), null);
+    span.setAttribute((String) null, null);
     span.addEvent("event");
     span.addEvent("event", 0);
-    span.addEvent(
-        "event",
-        Attributes.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
-    span.addEvent(
-        "event",
-        Attributes.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)),
-        0);
+    span.addEvent("event", Attributes.of(booleanKey("MyBooleanAttributeKey"), true));
+    span.addEvent("event", Attributes.of(booleanKey("MyBooleanAttributeKey"), true), 0);
     span.addEvent(new TestEvent());
     span.addEvent(new TestEvent(), 0);
     span.addEvent((Event) null);

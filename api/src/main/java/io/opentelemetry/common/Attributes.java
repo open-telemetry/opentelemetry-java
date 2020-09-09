@@ -16,14 +16,26 @@
 
 package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
-import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
-import static io.opentelemetry.common.AttributeValue.longAttributeValue;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributeKeyImpl.booleanArrayKey;
+import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
+import static io.opentelemetry.common.AttributeKeyImpl.doubleArrayKey;
+import static io.opentelemetry.common.AttributeKeyImpl.doubleKey;
+import static io.opentelemetry.common.AttributeKeyImpl.longArrayKey;
+import static io.opentelemetry.common.AttributeKeyImpl.longKey;
+import static io.opentelemetry.common.AttributeKeyImpl.stringArrayKey;
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.AttributeKeyImpl.BooleanArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
+import io.opentelemetry.common.AttributeKeyImpl.DoubleArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.DoubleKey;
+import io.opentelemetry.common.AttributeKeyImpl.LongArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.LongKey;
+import io.opentelemetry.common.AttributeKeyImpl.StringArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -33,8 +45,9 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>The keys are {@link String}s and the values are {@link AttributeValue} instances.
  */
+@SuppressWarnings("rawtypes")
 @Immutable
-public abstract class Attributes extends ImmutableKeyValuePairs<String, AttributeValue>
+public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Object>
     implements ReadableAttributes {
   private static final Attributes EMPTY = Attributes.newBuilder().build();
 
@@ -52,13 +65,55 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
     }
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T> T get(AttributeKey<T> key) {
+    return (T) super.get(key);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public void forEachRaw(RawAttributeConsumer consumer) {
+    List<Object> data = data();
+    for (int i = 0; i < data.size(); i += 2) {
+      consumer.consume((AttributeKey) data.get(i), data.get(i + 1));
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public void forEach(AttributeConsumer consumer) {
+    List<Object> data = data();
+    for (int i = 0; i < data.size(); i += 2) {
+      Object key = data.get(i);
+      Object value = data.get(i + 1);
+      if (key instanceof StringKey) {
+        consumer.consume((StringKey) key, (String) value);
+      } else if (key instanceof BooleanKey) {
+        consumer.consume((BooleanKey) key, (boolean) value);
+      } else if (key instanceof LongKey) {
+        consumer.consume((LongKey) key, (long) value);
+      } else if (key instanceof DoubleKey) {
+        consumer.consume((DoubleKey) key, (double) value);
+      } else if (key instanceof StringArrayKey) {
+        consumer.consume((StringArrayKey) key, (List<String>) value);
+      } else if (key instanceof BooleanArrayKey) {
+        consumer.consume((BooleanArrayKey) key, (List<Boolean>) value);
+      } else if (key instanceof LongArrayKey) {
+        consumer.consume((LongArrayKey) key, (List<Long>) value);
+      } else if (key instanceof DoubleArrayKey) {
+        consumer.consume((DoubleArrayKey) key, (List<Double>) value);
+      }
+    }
+  }
+
   /** Returns a {@link Attributes} instance with no attributes. */
   public static Attributes empty() {
     return EMPTY;
   }
 
   /** Returns a {@link Attributes} instance with a single key-value pair. */
-  public static Attributes of(String key, AttributeValue value) {
+  public static <T> Attributes of(AttributeKey<T> key, T value) {
     return sortAndFilterToAttributes(key, value);
   }
 
@@ -66,8 +121,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
    * Returns a {@link Attributes} instance with two key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Attributes of(
-      String key1, AttributeValue value1, String key2, AttributeValue value2) {
+  public static <T, U> Attributes of(
+      AttributeKey<T> key1, T value1, AttributeKey<U> key2, U value2) {
     return sortAndFilterToAttributes(key1, value1, key2, value2);
   }
 
@@ -75,13 +130,13 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
    * Returns a {@link Attributes} instance with three key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3) {
+  public static <T, U, V> Attributes of(
+      AttributeKey<T> key1,
+      T value1,
+      AttributeKey<U> key2,
+      U value2,
+      AttributeKey<V> key3,
+      V value3) {
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3);
   }
 
@@ -89,15 +144,15 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
    * Returns a {@link Attributes} instance with four key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3,
-      String key4,
-      AttributeValue value4) {
+  public static <T, U, V, W> Attributes of(
+      AttributeKey<T> key1,
+      T value1,
+      AttributeKey<U> key2,
+      U value2,
+      AttributeKey<V> key3,
+      V value3,
+      AttributeKey<W> key4,
+      W value4) {
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3, key4, value4);
   }
 
@@ -105,17 +160,17 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
    * Returns a {@link Attributes} instance with five key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3,
-      String key4,
-      AttributeValue value4,
-      String key5,
-      AttributeValue value5) {
+  public static <T, U, V, W, X> Attributes of(
+      AttributeKey<T> key1,
+      T value1,
+      AttributeKey<U> key2,
+      U value2,
+      AttributeKey<V> key3,
+      V value3,
+      AttributeKey<W> key4,
+      W value4,
+      AttributeKey<X> key5,
+      X value5) {
     return sortAndFilterToAttributes(
         key1, value1,
         key2, value2,
@@ -139,7 +194,42 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
     attributes.forEach(
         new AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue value) {
+          public void consume(StringKey key, String value) {
+            builder.setAttribute(key, value);
+          }
+
+          @Override
+          public void consume(BooleanKey key, boolean value) {
+            builder.setAttribute(key, value);
+          }
+
+          @Override
+          public void consume(DoubleKey key, double value) {
+            builder.setAttribute(key, value);
+          }
+
+          @Override
+          public void consume(LongKey key, long value) {
+            builder.setAttribute(key, value);
+          }
+
+          @Override
+          public void consume(StringArrayKey key, List<String> value) {
+            builder.setAttribute(key, value);
+          }
+
+          @Override
+          public void consume(BooleanArrayKey key, List<Boolean> value) {
+            builder.setAttribute(key, value);
+          }
+
+          @Override
+          public void consume(DoubleArrayKey key, List<Double> value) {
+            builder.setAttribute(key, value);
+          }
+
+          @Override
+          public void consume(LongArrayKey key, List<Long> value) {
             builder.setAttribute(key, value);
           }
         });
@@ -174,15 +264,15 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, AttributeValue value) {
-      if (key == null || key.length() == 0) {
+    public <T> Builder setAttribute(AttributeKey<T> key, T value) {
+      if (key == null || key.get().length() == 0) {
         return this;
       }
-      if (value == null || value.isNull()) {
+      if (value == null) {
         // Remove key/value pairs
         Iterator<Object> itr = data.iterator();
         while (itr.hasNext()) {
-          String k = (String) itr.next();
+          AttributeKey k = (AttributeKey) itr.next();
           if (key.equals(k)) {
             // delete key and value
             itr.remove();
@@ -206,8 +296,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
      * @return this Builder
      */
     public Builder setAttribute(String key, String value) {
-      AttributeValue v = stringAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(stringKey(key), value);
     }
 
     /**
@@ -216,8 +305,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
      * @return this Builder
      */
     public Builder setAttribute(String key, long value) {
-      AttributeValue v = longAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(longKey(key), value);
     }
 
     /**
@@ -226,8 +314,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
      * @return this Builder
      */
     public Builder setAttribute(String key, double value) {
-      AttributeValue v = doubleAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(doubleKey(key), value);
     }
 
     /**
@@ -236,8 +323,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
      * @return this Builder
      */
     public Builder setAttribute(String key, boolean value) {
-      AttributeValue v = booleanAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(booleanKey(key), value);
     }
 
     /**
@@ -246,8 +332,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
      * @return this Builder
      */
     public Builder setAttribute(String key, String... value) {
-      AttributeValue v = arrayAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(stringArrayKey(key), Arrays.asList(value));
     }
 
     /**
@@ -256,8 +341,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
      * @return this Builder
      */
     public Builder setAttribute(String key, Long... value) {
-      AttributeValue v = arrayAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(longArrayKey(key), Arrays.asList(value));
     }
 
     /**
@@ -266,8 +350,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
      * @return this Builder
      */
     public Builder setAttribute(String key, Double... value) {
-      AttributeValue v = arrayAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(doubleArrayKey(key), Arrays.asList(value));
     }
 
     /**
@@ -276,8 +359,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<String, Attribut
      * @return this Builder
      */
     public Builder setAttribute(String key, Boolean... value) {
-      AttributeValue v = arrayAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(booleanArrayKey(key), Arrays.asList(value));
     }
   }
 }

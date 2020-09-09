@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.resources;
+package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributeKeyImpl.longKey;
-
-import io.opentelemetry.common.Attributes;
-
-public class TestResourceProvider extends ResourceProvider {
-
-  @Override
-  protected Attributes getAttributes() {
-    return Attributes.of(longKey("providerAttribute"), 42L);
-  }
+public interface RawAttributeConsumer {
+  <T> void consume(AttributeKey<T> key, T value);
 }

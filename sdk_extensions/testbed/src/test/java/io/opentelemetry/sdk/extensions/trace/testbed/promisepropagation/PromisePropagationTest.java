@@ -16,8 +16,10 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.promisepropagation;
 
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
@@ -103,7 +105,7 @@ class PromisePropagationTest {
       List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(4);
 
-      String component = "component";
+      StringKey component = stringKey("component");
       SpanData parentSpanProto = TestUtils.getOneByAttr(finished, component, "example-promises");
       assertThat(parentSpanProto).isNotNull();
       assertThat(SpanId.isValid(parentSpanProto.getParentSpanId())).isFalse();

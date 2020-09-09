@@ -16,9 +16,9 @@
 
 package io.opentelemetry.exporters.logging;
 
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -58,8 +58,7 @@ class LoggingMetricExporterTest {
   void testExport() {
 
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
-    Resource resource =
-        Resource.create(Attributes.of("host", AttributeValue.stringAttributeValue("localhost")));
+    Resource resource = Resource.create(Attributes.of(stringKey("host"), "localhost"));
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
     exporter.export(

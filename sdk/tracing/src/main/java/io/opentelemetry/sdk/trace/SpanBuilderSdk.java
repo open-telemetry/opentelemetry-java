@@ -16,10 +16,15 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
+import static io.opentelemetry.common.AttributeKeyImpl.doubleKey;
+import static io.opentelemetry.common.AttributeKeyImpl.longKey;
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+
 import io.grpc.Context;
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.RawAttributeConsumer;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
@@ -153,29 +158,28 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setAttribute(String key, String value) {
-    return setAttribute(key, AttributeValue.stringAttributeValue(value));
+    return setAttribute(stringKey(key), value);
   }
 
   @Override
   public Span.Builder setAttribute(String key, long value) {
-    return setAttribute(key, AttributeValue.longAttributeValue(value));
+    return setAttribute(longKey(key), value);
   }
 
   @Override
   public Span.Builder setAttribute(String key, double value) {
-    return setAttribute(key, AttributeValue.doubleAttributeValue(value));
+    return setAttribute(doubleKey(key), value);
   }
 
   @Override
   public Span.Builder setAttribute(String key, boolean value) {
-    return setAttribute(key, AttributeValue.booleanAttributeValue(value));
+    return setAttribute(booleanKey(key), value);
   }
 
   @Override
-  public Span.Builder setAttribute(String key, AttributeValue value) {
+  public <T> Span.Builder setAttribute(AttributeKey<T> key, T value) {
     Objects.requireNonNull(key, "key");
-    if (value == null
-        || (value.getType() == AttributeValue.Type.STRING && value.getStringValue() == null)) {
+    if (value == null) {
       if (attributes != null) {
         attributes.remove(key);
       }
@@ -186,7 +190,7 @@ final class SpanBuilderSdk implements Span.Builder {
     }
 
     if (traceConfig.shouldTruncateStringAttributeValues()) {
-      value = StringUtils.truncateToSize(value, traceConfig.getMaxLengthOfAttributeValues());
+      value = StringUtils.truncateToSize(key, value, traceConfig.getMaxLengthOfAttributeValues());
     }
 
     attributes.put(key, value);
@@ -240,10 +244,10 @@ final class SpanBuilderSdk implements Span.Builder {
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
-      samplingAttributes.forEach(
-          new AttributeConsumer() {
+      samplingAttributes.forEachRaw(
+          new RawAttributeConsumer() {
             @Override
-            public void consume(String key, AttributeValue value) {
+            public <T> void consume(AttributeKey<T> key, T value) {
               attributes.put(key, value);
             }
           });

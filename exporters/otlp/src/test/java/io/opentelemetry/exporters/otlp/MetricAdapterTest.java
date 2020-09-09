@@ -16,12 +16,12 @@
 
 package io.opentelemetry.exporters.otlp;
 
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.proto.common.v1.AnyValue;
@@ -337,8 +337,7 @@ class MetricAdapterTest {
     Descriptor descriptor =
         Descriptor.create(
             "name", "description", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.of("k", "v"));
-    Resource resource =
-        Resource.create(Attributes.of("ka", AttributeValue.stringAttributeValue("va")));
+    Resource resource = Resource.create(Attributes.of(stringKey("ka"), "va"));
     io.opentelemetry.proto.resource.v1.Resource resourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder()
             .addAllAttributes(

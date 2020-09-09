@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.AttributeValue;
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -42,9 +43,7 @@ public final class TestUtils {
    * @return some {@link io.opentelemetry.common.Attributes}
    */
   static Attributes generateRandomAttributes() {
-    return Attributes.of(
-        UUID.randomUUID().toString(),
-        AttributeValue.stringAttributeValue(UUID.randomUUID().toString()));
+    return Attributes.of(stringKey(UUID.randomUUID().toString()), UUID.randomUUID().toString());
   }
 
   /**
@@ -91,15 +90,13 @@ public final class TestUtils {
       Tracer tracer,
       String spanName,
       Sampler sampler,
-      Map<String, AttributeValue> attributes) {
+      Map<String, String> attributes) {
     TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
     tracerSdkFactory.updateActiveTraceConfig(
         originalConfig.toBuilder().setSampler(sampler).build());
     try {
       Span.Builder builder = tracer.spanBuilder(spanName);
-      for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-        builder.setAttribute(entry.getKey(), entry.getValue());
-      }
+      attributes.forEach(builder::setAttribute);
 
       return builder;
     } finally {

@@ -17,7 +17,7 @@
 package io.opentelemetry.trace;
 
 import io.grpc.Context;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
@@ -146,7 +146,7 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setAttribute(String key, AttributeValue value) {
+    public <T> NoopSpanBuilder setAttribute(AttributeKey<T> key, T value) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
       return this;

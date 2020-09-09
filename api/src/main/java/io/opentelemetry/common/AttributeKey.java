@@ -25,4 +25,7 @@ package io.opentelemetry.common;
 public interface AttributeKey<T> {
   /** Returns the underlying String representation of the key. */
   String get();
+
+  /** Returns the type of attribute for this key. Useful for building switch statements. */
+  AttributeValue.Type getType();
 }

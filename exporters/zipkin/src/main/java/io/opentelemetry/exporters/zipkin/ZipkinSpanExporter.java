@@ -16,10 +16,13 @@
 
 package io.opentelemetry.exporters.zipkin;
 
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.RawAttributeConsumer;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -85,7 +88,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   // Note: these 3 fields are non-private for testing
   static final String GRPC_STATUS_CODE = "grpc.status_code";
   static final String GRPC_STATUS_DESCRIPTION = "grpc.status_description";
-  static final String STATUS_ERROR = "error";
+  static final StringKey STATUS_ERROR = stringKey("error");
 
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.instrumentation_library.name";
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.instrumentation_library.version";
@@ -147,16 +150,16 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
 
     ReadableAttributes spanAttributes = spanData.getAttributes();
-    spanAttributes.forEach(
-        new AttributeConsumer() {
+    spanAttributes.forEachRaw(
+        new RawAttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue value) {
-            spanBuilder.putTag(key, attributeValueToString(value));
+          public <T> void consume(AttributeKey<T> key, T value) {
+            spanBuilder.putTag(key.get(), attributeValueToString(key, value));
           }
         });
     Status status = spanData.getStatus();
     // for GRPC spans, include status code & description.
-    if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE.key()) != null) {
+    if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE) != null) {
       spanBuilder.putTag(GRPC_STATUS_CODE, status.getCanonicalCode().toString());
       if (status.getDescription() != null) {
         spanBuilder.putTag(GRPC_STATUS_DESCRIPTION, status.getDescription());
@@ -164,7 +167,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
     // add the error tag, if it isn't already in the source span.
     if (status != null && !status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
-      spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
+      spanBuilder.putTag(STATUS_ERROR.get(), status.getCanonicalCode().toString());
     }
 
     InstrumentationLibraryInfo instrumentationLibraryInfo =
@@ -189,11 +192,11 @@ public final class ZipkinSpanExporter implements SpanExporter {
     ReadableAttributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
-    AttributeValue serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME.key());
+    String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
     if (serviceNameValue == null) {
       return localEndpoint;
     }
-    return Endpoint.newBuilder().serviceName(serviceNameValue.getStringValue()).build();
+    return Endpoint.newBuilder().serviceName(serviceNameValue).build();
   }
 
   @Nullable
@@ -223,25 +226,19 @@ public final class ZipkinSpanExporter implements SpanExporter {
     return NANOSECONDS.toMicros(epochNanos);
   }
 
-  private static String attributeValueToString(AttributeValue attributeValue) {
-    AttributeValue.Type type = attributeValue.getType();
+  private static <T> String attributeValueToString(AttributeKey<T> key, T attributeValue) {
+    AttributeValue.Type type = key.getType();
     switch (type) {
       case STRING:
-        return attributeValue.getStringValue();
       case BOOLEAN:
-        return String.valueOf(attributeValue.getBooleanValue());
       case LONG:
-        return String.valueOf(attributeValue.getLongValue());
       case DOUBLE:
-        return String.valueOf(attributeValue.getDoubleValue());
+        return String.valueOf(attributeValue);
       case STRING_ARRAY:
-        return commaSeparated(attributeValue.getStringArrayValue());
       case BOOLEAN_ARRAY:
-        return commaSeparated(attributeValue.getBooleanArrayValue());
       case LONG_ARRAY:
-        return commaSeparated(attributeValue.getLongArrayValue());
       case DOUBLE_ARRAY:
-        return commaSeparated(attributeValue.getDoubleArrayValue());
+        return commaSeparated((List<?>) attributeValue);
     }
     throw new IllegalStateException("Unknown attribute type: " + type);
   }

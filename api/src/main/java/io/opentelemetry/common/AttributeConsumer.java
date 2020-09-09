@@ -16,10 +16,35 @@
 
 package io.opentelemetry.common;
 
+import io.opentelemetry.common.AttributeKeyImpl.BooleanArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
+import io.opentelemetry.common.AttributeKeyImpl.DoubleArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.DoubleKey;
+import io.opentelemetry.common.AttributeKeyImpl.LongArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.LongKey;
+import io.opentelemetry.common.AttributeKeyImpl.StringArrayKey;
+import io.opentelemetry.common.AttributeKeyImpl.StringKey;
+import java.util.List;
+
 /**
  * Convenience interface for consuming {@link ReadableAttributes}.
  *
  * @since 0.9.0
  */
-public interface AttributeConsumer
-    extends ReadableKeyValuePairs.KeyValueConsumer<String, AttributeValue> {}
+public interface AttributeConsumer {
+  void consume(StringKey key, String value);
+
+  void consume(BooleanKey key, boolean value);
+
+  void consume(DoubleKey key, double value);
+
+  void consume(LongKey key, long value);
+
+  void consume(StringArrayKey key, List<String> value);
+
+  void consume(BooleanArrayKey key, List<Boolean> value);
+
+  void consume(DoubleArrayKey key, List<Double> value);
+
+  void consume(LongArrayKey key, List<Long> value);
+}

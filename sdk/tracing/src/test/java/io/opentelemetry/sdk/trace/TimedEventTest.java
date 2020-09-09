@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Event;
 import org.junit.jupiter.api.Test;
@@ -28,10 +28,8 @@ class TimedEventTest {
 
   private static final String NAME = "event";
   private static final String NAME_2 = "event2";
-  private static final Attributes ATTRIBUTES =
-      Attributes.of("attribute", AttributeValue.stringAttributeValue("value"));
-  private static final Attributes ATTRIBUTES_2 =
-      Attributes.of("attribute2", AttributeValue.stringAttributeValue("value2"));
+  private static final Attributes ATTRIBUTES = Attributes.of(stringKey("attribute"), "value");
+  private static final Attributes ATTRIBUTES_2 = Attributes.of(stringKey("attribute2"), "value2");
   private static final Event EVENT =
       new Event() {
         @Override

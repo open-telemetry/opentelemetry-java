@@ -18,7 +18,7 @@ package io.opentelemetry.common;
 
 import java.util.List;
 
-class AttributeKeyImpl<T> implements AttributeKey<T> {
+public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   private final String key;
 
   AttributeKeyImpl(String key) {
@@ -30,51 +30,147 @@ class AttributeKeyImpl<T> implements AttributeKey<T> {
     return key;
   }
 
-  static class StringKey extends AttributeKeyImpl<String> {
-    public StringKey(String key) {
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof AttributeKeyImpl)) {
+      return false;
+    }
+
+    AttributeKeyImpl<?> that = (AttributeKeyImpl<?>) o;
+
+    return key != null ? key.equals(that.key) : that.key == null;
+  }
+
+  @Override
+  public int hashCode() {
+    return key != null ? key.hashCode() : 0;
+  }
+
+  @Override
+  public String toString() {
+    return "AttributeKeyImpl{" + "key='" + key + '\'' + '}';
+  }
+
+  public static StringKey stringKey(String key) {
+    return new StringKey(key);
+  }
+
+  public static class StringKey extends AttributeKeyImpl<String> {
+    private StringKey(String key) {
       super(key);
+    }
+
+    @Override
+    public AttributeValue.Type getType() {
+      return AttributeValue.Type.STRING;
     }
   }
 
-  static class BooleanKey extends AttributeKeyImpl<Boolean> {
-    BooleanKey(String key) {
+  public static BooleanKey booleanKey(String key) {
+    return new BooleanKey(key);
+  }
+
+  public static class BooleanKey extends AttributeKeyImpl<Boolean> {
+    private BooleanKey(String key) {
       super(key);
+    }
+
+    @Override
+    public AttributeValue.Type getType() {
+      return AttributeValue.Type.BOOLEAN;
     }
   }
 
-  static class LongKey extends AttributeKeyImpl<Long> {
-    LongKey(String key) {
+  public static LongKey longKey(String key) {
+    return new LongKey(key);
+  }
+
+  public static class LongKey extends AttributeKeyImpl<Long> {
+    private LongKey(String key) {
       super(key);
+    }
+
+    @Override
+    public AttributeValue.Type getType() {
+      return AttributeValue.Type.LONG;
     }
   }
 
-  static class DoubleKey extends AttributeKeyImpl<Double> {
-    DoubleKey(String key) {
+  public static DoubleKey doubleKey(String key) {
+    return new DoubleKey(key);
+  }
+
+  public static class DoubleKey extends AttributeKeyImpl<Double> {
+    private DoubleKey(String key) {
       super(key);
+    }
+
+    @Override
+    public AttributeValue.Type getType() {
+      return AttributeValue.Type.DOUBLE;
     }
   }
 
-  static class StringArrayKey extends AttributeKeyImpl<List<String>> {
-    public StringArrayKey(String key) {
+  public static StringArrayKey stringArrayKey(String key) {
+    return new StringArrayKey(key);
+  }
+
+  public static class StringArrayKey extends AttributeKeyImpl<List<String>> {
+    private StringArrayKey(String key) {
       super(key);
+    }
+
+    @Override
+    public AttributeValue.Type getType() {
+      return AttributeValue.Type.STRING_ARRAY;
     }
   }
 
-  static class BooleanArrayKey extends AttributeKeyImpl<List<Boolean>> {
-    BooleanArrayKey(String key) {
+  public static BooleanArrayKey booleanArrayKey(String key) {
+    return new BooleanArrayKey(key);
+  }
+
+  public static class BooleanArrayKey extends AttributeKeyImpl<List<Boolean>> {
+    private BooleanArrayKey(String key) {
       super(key);
+    }
+
+    @Override
+    public AttributeValue.Type getType() {
+      return AttributeValue.Type.BOOLEAN_ARRAY;
     }
   }
 
-  static class LongArrayKey extends AttributeKeyImpl<List<Long>> {
-    LongArrayKey(String key) {
+  public static LongArrayKey longArrayKey(String key) {
+    return new LongArrayKey(key);
+  }
+
+  public static class LongArrayKey extends AttributeKeyImpl<List<Long>> {
+    private LongArrayKey(String key) {
       super(key);
+    }
+
+    @Override
+    public AttributeValue.Type getType() {
+      return AttributeValue.Type.LONG_ARRAY;
     }
   }
 
-  static class DoubleArrayKey extends AttributeKeyImpl<List<Double>> {
-    DoubleArrayKey(String key) {
+  public static DoubleArrayKey doubleArrayKey(String key) {
+    return new DoubleArrayKey(key);
+  }
+
+  public static class DoubleArrayKey extends AttributeKeyImpl<List<Double>> {
+    private DoubleArrayKey(String key) {
       super(key);
+    }
+
+    @Override
+    public AttributeValue.Type getType() {
+      return AttributeValue.Type.DOUBLE_ARRAY;
     }
   }
 }

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.nestedcallbacks;
 
+import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -61,7 +62,7 @@ public final class NestedCallbacksTest {
     ReadableAttributes attrs = spans.get(0).getAttributes();
     assertThat(attrs.size()).isEqualTo(3);
     for (int i = 1; i <= 3; i++) {
-      assertThat(attrs.get("key" + i).getStringValue()).isEqualTo(Integer.toString(i));
+      assertThat(attrs.get(stringKey("key" + i))).isEqualTo(Integer.toString(i));
     }
 
     assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
