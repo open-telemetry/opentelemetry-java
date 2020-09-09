@@ -379,7 +379,7 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
       span.setAttribute("StringKey", "StringVal");
-      span.setAttribute("NullStringKey", (String) null);
+      span.setAttribute("NullStringKey", null);
       span.setAttribute("EmptyStringKey", "");
       span.setAttribute(stringKey("NullStringAttributeValue"), null);
       span.setAttribute(stringKey("EmptyStringAttributeValue"), "");
@@ -489,13 +489,13 @@ class RecordEventsReadableSpanTest {
   @Test
   void setAttribute_nullStringValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    span.setAttribute("nullString", (String) null);
+    span.setAttribute("nullString", null);
     span.setAttribute("emptyString", "");
     span.setAttribute(stringKey("nullStringAttributeValue"), null);
     span.setAttribute(stringKey("emptyStringAttributeValue"), "");
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
-    span.setAttribute("emptyString", (String) null);
-    span.setAttribute("emptyStringAttributeValue", (String) null);
+    span.setAttribute("emptyString", null);
+    span.setAttribute("emptyStringAttributeValue", null);
     assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
@@ -608,15 +608,12 @@ class RecordEventsReadableSpanTest {
       // Test that we still have in the attributes map the latest maxNumberOfAttributes / 2 entries.
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         int val = i + maxNumberOfAttributes * 3 / 2;
-        AttributeValue expectedValue = AttributeValue.longAttributeValue(val);
         assertThat(spanData.getAttributes().get(longKey("MyStringAttributeKey" + i)))
-            .isEqualTo(expectedValue);
+            .isEqualTo(val);
       }
       // Test that we have the newest re-added initial entries.
       for (int i = maxNumberOfAttributes / 2; i < maxNumberOfAttributes; i++) {
-        AttributeValue expectedValue = AttributeValue.longAttributeValue(i);
-        assertThat(spanData.getAttributes().get(longKey("MyStringAttributeKey" + i)))
-            .isEqualTo(expectedValue);
+        assertThat(spanData.getAttributes().get(longKey("MyStringAttributeKey" + i))).isEqualTo(i);
       }
     } finally {
       span.end();
@@ -840,9 +837,7 @@ class RecordEventsReadableSpanTest {
 
   private void spanDoWork(RecordEventsReadableSpan span, @Nullable Status status) {
     span.setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
-    attributes
-        .entrySet()
-        .forEach(attribute -> span.setAttribute(attribute.getKey(), attribute.getValue()));
+    attributes.forEach(span::setAttribute);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addEvent("event2", Attributes.empty());
     testClock.advanceMillis(MILLIS_PER_SECOND);
