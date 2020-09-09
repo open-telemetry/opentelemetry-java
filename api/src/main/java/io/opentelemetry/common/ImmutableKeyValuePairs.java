@@ -76,13 +76,13 @@ abstract class ImmutableKeyValuePairs<K, V> {
       return;
     }
 
-    K pivotKey = (data[rightIndex] == null) ? null : (K) data[rightIndex];
+    K pivotKey = (K) data[rightIndex];
     int counter = leftIndex;
 
     for (int i = leftIndex; i <= rightIndex; i += 2) {
-      K value = data[i] == null ? null : (K) data[i];
+      K value = (K) data[i];
 
-      if (compareTo(value, pivotKey) <= 0) {
+      if (compareToNullSafe(value, pivotKey) <= 0) {
         swap(data, counter, i);
         counter += 2;
       }
@@ -92,14 +92,14 @@ abstract class ImmutableKeyValuePairs<K, V> {
     quickSort(data, counter, rightIndex);
   }
 
-  private static <K extends Comparable<K>> int compareTo(K value, K pivotKey) {
-    if (value == null) {
+  private static <K extends Comparable<K>> int compareToNullSafe(K key, K pivotKey) {
+    if (key == null) {
       return pivotKey == null ? 0 : -1;
     }
     if (pivotKey == null) {
       return 1;
     }
-    return value.compareTo(pivotKey);
+    return key.compareTo(pivotKey);
   }
 
   private static List<Object> dedupe(Object[] data) {
@@ -111,18 +111,6 @@ abstract class ImmutableKeyValuePairs<K, V> {
       Object value = data[i + 1];
       if (key == null) {
         continue;
-      }
-      // TODO: this is super ugly. It needs to be fixed.
-      // Obviously, this isn't truly generic if we have to peek into the key types for these empty
-      // checks.
-      if (key instanceof String) {
-        if ("".equals(key)) {
-          continue;
-        }
-      } else if (key instanceof AttributeKey) {
-        if ("".equals(((AttributeKey) key).get())) {
-          continue;
-        }
       }
       if (key.equals(previousKey)) {
         continue;

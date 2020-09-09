@@ -145,6 +145,13 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   }
 
   private static Attributes sortAndFilterToAttributes(Object... data) {
+    // null out any empty keys
+    for (int i = 0; i < data.length; i += 2) {
+      AttributeKey<?> key = (AttributeKey<?>) data[i];
+      if (key != null && (key.get() == null || "".equals(key.get()))) {
+        data[i] = null;
+      }
+    }
     return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
   }
 

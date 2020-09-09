@@ -17,7 +17,7 @@
 package io.opentelemetry.internal;
 
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.AttributeKeyImpl;
+import io.opentelemetry.common.AttributeType;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -78,12 +78,12 @@ public final class StringUtils {
     Utils.checkArgument(limit > 0, "attribute value limit must be positive, got %d", limit);
 
     if (value == null
-        || (!(key instanceof AttributeKeyImpl.StringKey)
-            && !(key instanceof AttributeKeyImpl.StringArrayKey))) {
+        || ((key.getType() != AttributeType.STRING)
+            && (key.getType() != AttributeType.STRING_ARRAY))) {
       return value;
     }
 
-    if (key instanceof AttributeKeyImpl.StringArrayKey) {
+    if (key.getType() == AttributeType.STRING_ARRAY) {
       List<String> strings = (List<String>) value;
       if (strings.isEmpty()) {
         return value;
