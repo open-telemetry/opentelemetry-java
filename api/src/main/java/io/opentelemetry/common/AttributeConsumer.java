@@ -17,10 +17,9 @@
 package io.opentelemetry.common;
 
 /**
- * A read-only container for String-keyed attributes.
+ * Convenience interface for consuming {@link ReadableAttributes}.
  *
- * <p>See {@link Attributes} for the public API implementation.
+ * @since 0.9.0
  */
-public interface ReadableAttributes extends ReadableKeyValuePairs<String, AttributeValue> {
-  AttributeValue get(String key);
-}
+public interface AttributeConsumer
+    extends ReadableKeyValuePairs.KeyValueConsumer<String, AttributeValue> {}

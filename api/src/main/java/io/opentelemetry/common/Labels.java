@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
 
 /** An immutable container for labels, which are pairs of {@link String}. */
 @Immutable
-public abstract class Labels extends ImmutableKeyValuePairs<String> {
+public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
 
   private static final Labels EMPTY = Labels.newBuilder().build();
 

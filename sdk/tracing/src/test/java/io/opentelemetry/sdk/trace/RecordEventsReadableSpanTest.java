@@ -782,7 +782,7 @@ class RecordEventsReadableSpanTest {
       Map<String, AttributeValue> attributes) {
     AttributesMap attributesMap =
         new AttributesMap(TraceConfig.getDefault().getMaxNumberOfAttributes());
-    attributesMap.putAll(attributes);
+    attributes.forEach(attributesMap::put);
     return createTestSpan(
         Kind.INTERNAL,
         TraceConfig.getDefault(),
