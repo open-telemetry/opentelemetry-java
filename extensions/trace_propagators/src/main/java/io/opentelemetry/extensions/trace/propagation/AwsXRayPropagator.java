@@ -150,7 +150,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
 
     String traceId = TraceId.getInvalid();
     String spanId = SpanId.getInvalid();
-    boolean isSampled = TraceFlags.getDefault();
+    Boolean isSampled = TraceFlags.getDefault();
 
     int pos = 0;
     while (pos < traceHeader.length()) {
