@@ -40,7 +40,7 @@ public final class TraceFlags {
    *
    * @since 0.9.0
    */
-  public static int getBase16Size() {
+  public static int getHexLength() {
     return BASE16_SIZE;
   }
 

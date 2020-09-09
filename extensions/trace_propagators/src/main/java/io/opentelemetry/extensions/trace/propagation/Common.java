@@ -35,10 +35,9 @@ final class Common {
   static final String TRUE_INT = "1";
   static final String FALSE_INT = "0";
   static final int MAX_TRACE_ID_LENGTH = TraceId.getHexLength();
-  static final int MAX_SPAN_ID_LENGTH = SpanId.getHexLength();
   static final int MIN_TRACE_ID_LENGTH = TraceId.getSize();
-  private static final boolean SAMPLED_FLAGS = true;
-  private static final boolean NOT_SAMPLED_FLAGS = false;
+  private static final boolean SAMPLED = true;
+  private static final boolean NOT_SAMPLED = false;
 
   private Common() {}
 
@@ -46,8 +45,8 @@ final class Common {
     try {
       boolean traceFlags =
           TRUE_INT.equals(sampled) || Boolean.parseBoolean(sampled) // accept either "1" or "true"
-              ? SAMPLED_FLAGS
-              : NOT_SAMPLED_FLAGS;
+              ? SAMPLED
+              : NOT_SAMPLED;
 
       return SpanContext.createFromRemoteParent(
           StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH),

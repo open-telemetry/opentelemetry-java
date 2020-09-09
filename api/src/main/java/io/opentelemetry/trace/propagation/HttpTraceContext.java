@@ -57,7 +57,7 @@ public class HttpTraceContext implements TextMapPropagator {
   private static final int TRACEPARENT_DELIMITER_SIZE = 1;
   private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
   private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
-  private static final int TRACE_OPTION_HEX_SIZE = TraceFlags.getBase16Size();
+  private static final int TRACE_OPTION_HEX_SIZE = TraceFlags.getHexLength();
   private static final int TRACE_ID_OFFSET = VERSION_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int SPAN_ID_OFFSET =
       TRACE_ID_OFFSET + TRACE_ID_HEX_SIZE + TRACEPARENT_DELIMITER_SIZE;
