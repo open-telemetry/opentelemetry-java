@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -173,12 +172,12 @@ public abstract class TestSpanData implements SpanData {
     public abstract Builder setEndEpochNanos(long epochNanos);
 
     /**
-     * Set the attributes that are associated with this span, as a Map of String keys to
-     * AttributeValue instances. Must not be null, may be empty.
+     * Set the attributes that are associated with this span, in the form of {@link
+     * ReadableAttributes}.
      *
-     * @param attributes a Map&lt;String, AttributeValue&gt; of attributes.
+     * @param attributes {@link ReadableAttributes} for this span.
      * @return this
-     * @see AttributeValue
+     * @see ReadableAttributes
      * @since 0.1.0
      */
     public abstract Builder setAttributes(ReadableAttributes attributes);

@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -449,7 +448,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void setAttribute_nullKeys() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    span.setAttribute(null, AttributeValue.stringAttributeValue(""));
+    span.setAttribute(stringKey(null), "");
     span.setAttribute(null, 1000L);
     span.setAttribute(null, 10.0);
     span.setAttribute(null, false);

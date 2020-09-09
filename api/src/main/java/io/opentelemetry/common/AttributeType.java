@@ -17,16 +17,18 @@
 package io.opentelemetry.common;
 
 /**
- * This interface provides a handle for setting the values of {@link Attributes}. The type of value
- * that can be set with an implementation of this key is denoted by the type parameter.
+ * An enum that represents all the possible value types for an {@code AttributeKey} and hence the
+ * types of values that are allowed for {@link Attributes}.
  *
- * @param <T> The type of value that can be set with the key.
+ * @since 0.1.0
  */
-@SuppressWarnings("rawtypes")
-public interface AttributeKey<T> extends Comparable<AttributeKey> {
-  /** Returns the underlying String representation of the key. */
-  String get();
-
-  /** Returns the type of attribute for this key. Useful for building switch statements. */
-  AttributeType getType();
+public enum AttributeType {
+  STRING,
+  BOOLEAN,
+  LONG,
+  DOUBLE,
+  STRING_ARRAY,
+  BOOLEAN_ARRAY,
+  LONG_ARRAY,
+  DOUBLE_ARRAY
 }

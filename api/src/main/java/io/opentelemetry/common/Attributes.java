@@ -35,7 +35,7 @@ import javax.annotation.concurrent.Immutable;
 /**
  * An immutable container for attributes.
  *
- * <p>The keys are {@link String}s and the values are {@link AttributeValue} instances.
+ * <p>The keys are {@link AttributeKey}s and the values are Object instances.
  */
 @SuppressWarnings("rawtypes")
 @Immutable
@@ -189,11 +189,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
       return sortAndFilterToAttributes(data.toArray());
     }
 
-    /**
-     * Sets a bare {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
+    /** Sets a {@link AttributeKey} with associated value into this. */
     public <T> Builder setAttribute(AttributeKey<T> key, T value) {
       if (key == null || key.get().length() == 0) {
         return this;
@@ -221,7 +217,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /**
-     * Sets a String {@link AttributeValue} into this.
+     * Sets a String attribute into this.
      *
      * @return this Builder
      */
@@ -230,7 +226,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /**
-     * Sets a long {@link AttributeValue} into this.
+     * Sets a long attribute into this.
      *
      * @return this Builder
      */
@@ -239,7 +235,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /**
-     * Sets a double {@link AttributeValue} into this.
+     * Sets a double attribute into this.
      *
      * @return this Builder
      */
@@ -248,7 +244,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /**
-     * Sets a boolean {@link AttributeValue} into this.
+     * Sets a boolean attribute into this.
      *
      * @return this Builder
      */
@@ -257,7 +253,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /**
-     * Sets a String array {@link AttributeValue} into this.
+     * Sets a String array attribute into this.
      *
      * @return this Builder
      */
@@ -266,7 +262,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /**
-     * Sets a Long array {@link AttributeValue} into this.
+     * Sets a Long array attribute into this.
      *
      * @return this Builder
      */
@@ -275,7 +271,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /**
-     * Sets a Double array {@link AttributeValue} into this.
+     * Sets a Double array attribute into this.
      *
      * @return this Builder
      */
@@ -284,7 +280,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /**
-     * Sets a Boolean array {@link AttributeValue} into this.
+     * Sets a Boolean array attribute into this.
      *
      * @return this Builder
      */

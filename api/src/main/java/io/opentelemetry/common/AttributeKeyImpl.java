@@ -70,8 +70,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
 
     @Override
-    public AttributeValue.Type getType() {
-      return AttributeValue.Type.STRING;
+    public AttributeType getType() {
+      return AttributeType.STRING;
     }
   }
 
@@ -85,8 +85,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
 
     @Override
-    public AttributeValue.Type getType() {
-      return AttributeValue.Type.BOOLEAN;
+    public AttributeType getType() {
+      return AttributeType.BOOLEAN;
     }
   }
 
@@ -100,8 +100,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
 
     @Override
-    public AttributeValue.Type getType() {
-      return AttributeValue.Type.LONG;
+    public AttributeType getType() {
+      return AttributeType.LONG;
     }
   }
 
@@ -115,8 +115,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
 
     @Override
-    public AttributeValue.Type getType() {
-      return AttributeValue.Type.DOUBLE;
+    public AttributeType getType() {
+      return AttributeType.DOUBLE;
     }
   }
 
@@ -130,8 +130,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
 
     @Override
-    public AttributeValue.Type getType() {
-      return AttributeValue.Type.STRING_ARRAY;
+    public AttributeType getType() {
+      return AttributeType.STRING_ARRAY;
     }
   }
 
@@ -145,8 +145,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
 
     @Override
-    public AttributeValue.Type getType() {
-      return AttributeValue.Type.BOOLEAN_ARRAY;
+    public AttributeType getType() {
+      return AttributeType.BOOLEAN_ARRAY;
     }
   }
 
@@ -160,8 +160,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
 
     @Override
-    public AttributeValue.Type getType() {
-      return AttributeValue.Type.LONG_ARRAY;
+    public AttributeType getType() {
+      return AttributeType.LONG_ARRAY;
     }
   }
 
@@ -175,8 +175,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
 
     @Override
-    public AttributeValue.Type getType() {
-      return AttributeValue.Type.DOUBLE_ARRAY;
+    public AttributeType getType() {
+      return AttributeType.DOUBLE_ARRAY;
     }
   }
 }

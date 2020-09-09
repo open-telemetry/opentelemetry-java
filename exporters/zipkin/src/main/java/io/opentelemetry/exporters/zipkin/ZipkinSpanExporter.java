@@ -22,7 +22,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.AttributeKeyImpl.StringKey;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeType;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -154,7 +154,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
         new AttributeConsumer() {
           @Override
           public <T> void consume(AttributeKey<T> key, T value) {
-            spanBuilder.putTag(key.get(), attributeValueToString(key, value));
+            spanBuilder.putTag(key.get(), valueToString(key, value));
           }
         });
     Status status = spanData.getStatus();
@@ -226,8 +226,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
     return NANOSECONDS.toMicros(epochNanos);
   }
 
-  private static <T> String attributeValueToString(AttributeKey<T> key, T attributeValue) {
-    AttributeValue.Type type = key.getType();
+  private static <T> String valueToString(AttributeKey<T> key, T attributeValue) {
+    AttributeType type = key.getType();
     switch (type) {
       case STRING:
       case BOOLEAN:

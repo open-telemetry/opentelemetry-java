@@ -25,7 +25,6 @@ import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
@@ -196,7 +195,7 @@ final class Adapter {
   }
 
   /**
-   * Converts the given key and {@link AttributeValue} into Jaeger's {@link Model.KeyValue}.
+   * Converts the given {@link AttributeKey} and value into Jaeger's {@link Model.KeyValue}.
    *
    * @param key the entry key as string
    * @param value the entry value

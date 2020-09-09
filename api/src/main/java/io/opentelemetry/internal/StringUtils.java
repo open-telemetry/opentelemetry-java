@@ -64,10 +64,10 @@ public final class StringUtils {
 
   /**
    * If given attribute is of type STRING and has more characters than given {@code limit} then
-   * return new AttributeValue with string truncated to {@code limit} characters.
+   * return new value with string truncated to {@code limit} characters.
    *
-   * <p>If given attribute is of type STRING_ARRAY and non-empty then return new AttributeValue with
-   * every element truncated to {@code limit} characters.
+   * <p>If given attribute is of type STRING_ARRAY and non-empty then return new value with every
+   * element truncated to {@code limit} characters.
    *
    * <p>Otherwise return given {@code value}
    *
