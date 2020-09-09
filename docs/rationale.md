@@ -12,13 +12,13 @@ construct. However, `Span`s are unique in that they must still be alive when han
 which try-with-resources does not allow. Take this example:
 
 ```java
-Span span = tracer.buildSpan("someWork").start();
-try (Scope scope = tracer.scopeManager().activate(span)) {
+Span span = tracer.spanBuilder("someWork").startSpan();
+try (Scope scope = tracer.withSpan(span)) {
     // Do things.
 } catch (Exception ex) {
     span.recordException(ex);
 } finally {
-    span.finish();
+    span.end();
 }
 ```
 
