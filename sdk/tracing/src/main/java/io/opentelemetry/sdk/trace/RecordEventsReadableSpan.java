@@ -22,10 +22,10 @@ import static io.opentelemetry.common.AttributeKeyImpl.longKey;
 import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
 
 import com.google.common.collect.EvictingQueue;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -635,8 +635,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private static class LimitingAttributeConsumer
-      implements ReadableKeyValuePairs.KeyValueConsumer<AttributeKey, Object> {
+  private static class LimitingAttributeConsumer implements AttributeConsumer {
     private final int limit;
     private final Attributes.Builder builder;
     private int added;

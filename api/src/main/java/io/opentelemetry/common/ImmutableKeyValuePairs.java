@@ -25,8 +25,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An immutable set of key-value pairs. Keys are only {@link String} typed. Can be iterated over
- * using the {@link #forEach(KeyValueConsumer)} method.
+ * An immutable set of key-value pairs. Keys are only {@link String} typed.
  *
  * <p>Key-value pairs are dropped for {@code null} or empty keys.
  *
@@ -36,28 +35,18 @@ import javax.annotation.concurrent.Immutable;
  */
 @SuppressWarnings("rawtypes")
 @Immutable
-abstract class ImmutableKeyValuePairs<K, V> implements ReadableKeyValuePairs<K, V> {
+abstract class ImmutableKeyValuePairs<K, V> {
 
   List<Object> data() {
     return Collections.emptyList();
   }
 
-  @Override
   public int size() {
     return data().size() / 2;
   }
 
-  @Override
   public boolean isEmpty() {
     return data().isEmpty();
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public void forEach(KeyValueConsumer<K, V> consumer) {
-    for (int i = 0; i < data().size(); i += 2) {
-      consumer.consume((K) data().get(i), (V) data().get(i + 1));
-    }
   }
 
   @Nullable
@@ -156,13 +145,10 @@ abstract class ImmutableKeyValuePairs<K, V> implements ReadableKeyValuePairs<K, 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("{");
-    forEach(
-        new KeyValueConsumer<K, V>() {
-          @Override
-          public void consume(K key, V value) {
-            sb.append(key).append("=").append(value).append(", ");
-          }
-        });
+    List<Object> data = data();
+    for (int i = 0; i < data.size(); i += 2) {
+      sb.append(data.get(i)).append("=").append(data.get(i + 1)).append(", ");
+    }
     // get rid of that last pesky comma
     if (sb.length() > 1) {
       sb.setLength(sb.length() - 2);

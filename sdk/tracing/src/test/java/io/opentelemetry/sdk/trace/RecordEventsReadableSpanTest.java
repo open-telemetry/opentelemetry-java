@@ -896,7 +896,7 @@ class RecordEventsReadableSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     final AttributesMap attributesWithCapacity = new AttributesMap(32);
-    attributes.forEach((AttributeConsumer) attributesWithCapacity::put);
+    attributes.forEach(attributesWithCapacity::put);
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
