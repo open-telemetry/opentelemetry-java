@@ -112,7 +112,9 @@ abstract class ImmutableKeyValuePairs<K, V> {
       if (key == null) {
         continue;
       }
-      // ugh
+      // TODO: this is super ugly. It needs to be fixed.
+      // Obviously, this isn't truly generic if we have to peek into the key types for these empty
+      // checks.
       if (key instanceof String) {
         if ("".equals(key)) {
           continue;
