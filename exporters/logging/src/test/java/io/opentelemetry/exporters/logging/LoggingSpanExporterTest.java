@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -60,8 +60,8 @@ class LoggingSpanExporterTest {
     SpanData spanData =
         TestSpanData.newBuilder()
             .setHasEnded(true)
-            .setTraceId(new TraceId(1234L, 6789L))
-            .setSpanId(new SpanId(9876L))
+            .setTraceId(TraceId.fromLongs(1234L, 6789L))
+            .setSpanId(SpanId.fromLong(9876L))
             .setStartEpochNanos(epochNanos)
             .setEndEpochNanos(epochNanos + 1000)
             .setStatus(Status.OK)

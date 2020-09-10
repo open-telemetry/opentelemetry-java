@@ -17,7 +17,7 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -29,8 +29,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
   private static final int SAMPLED_FLAG_SIZE = 1;
-  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
-  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
+  private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
+  private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
   private static final int COMBINED_HEADER_DELIMITER_SIZE = 1;
   private static final int SPAN_ID_OFFSET = TRACE_ID_HEX_SIZE + COMBINED_HEADER_DELIMITER_SIZE;
   private static final int SAMPLED_FLAG_OFFSET =
@@ -38,7 +38,7 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
   private static final int COMBINED_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
   @Override
-  public <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter) {
+  public <C> void inject(Context context, C carrier, TextMapPropagator.Setter<C> setter) {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
@@ -50,9 +50,13 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
     SpanContext spanContext = span.getContext();
 
     char[] chars = new char[COMBINED_HEADER_SIZE];
-    spanContext.getTraceId().copyLowerBase16To(chars, 0);
+    String traceId = spanContext.getTraceIdAsHexString();
+    traceId.getChars(0, traceId.length(), chars, 0);
     chars[SPAN_ID_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
-    spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
+
+    String spanId = spanContext.getSpanIdAsHexString();
+    System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getHexLength());
+
     chars[SAMPLED_FLAG_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
     chars[SAMPLED_FLAG_OFFSET] =
         spanContext.getTraceFlags().isSampled()

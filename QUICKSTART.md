@@ -178,8 +178,8 @@ The following presents an example of an outgoing HTTP request using `HttpURLConn
  
 ```java
 // Tell OpenTelemetry to inject the context in the HTTP headers
-HttpTextFormat.Setter<HttpURLConnection> setter =
-  new HttpTextFormat.Setter<HttpURLConnection>() {
+TextMapPropagator.Setter<HttpURLConnection> setter =
+  new TextMapPropagator.Setter<HttpURLConnection>() {
     @Override
     public void put(HttpURLConnection carrier, String key, String value) {
         // Insert the context as Header
@@ -196,7 +196,7 @@ try (Scope scope = tracer.withSpan(outGoing)) {
   outGoing.setAttribute("http.url", url.toString());
   HttpURLConnection transportLayer = (HttpURLConnection) url.openConnection();
   // Inject the request with the *current*  Context, which contains our current Span.
-  OpenTelemetry.getPropagators().getHttpTextFormat().inject(Context.current(), transportLayer, setter);
+  OpenTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), transportLayer, setter);
   // Make outgoing call
 } finally {
   outGoing.end();
@@ -209,8 +209,8 @@ The following presents an example of processing an incoming HTTP request using
 [HttpExchange](https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpExchange.html).
 
 ```java
-HttpTextFormat.Getter<HttpExchange> getter =
-  new HttpTextFormat.Getter<HttpExchange>() {
+TextMapPropagator.Getter<HttpExchange> getter =
+  new TextMapPropagator.Getter<HttpExchange>() {
     @Override
     public String get(HttpExchange carrier, String key) {
       if (carrier.getRequestHeaders().containsKey(key)) {
@@ -222,7 +222,7 @@ HttpTextFormat.Getter<HttpExchange> getter =
 ...
 public void handle(HttpExchange httpExchange) {
   // Extract the SpanContext and other elements from the request.
-  Context extractedContext = OpenTelemetry.getPropagators().getHttpTextFormat()
+  Context extractedContext = OpenTelemetry.getPropagators().getTextMapPropagator()
         .extract(Context.current(), httpExchange, getter);
   Span serverSpan = null;
   try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {

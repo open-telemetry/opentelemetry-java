@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
 import java.util.List;
 
 /**
@@ -63,7 +62,7 @@ class RateLimitingSampler implements Sampler {
   @Override
   public SamplingResult shouldSample(
       SpanContext parentContext,
-      TraceId traceId,
+      String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,

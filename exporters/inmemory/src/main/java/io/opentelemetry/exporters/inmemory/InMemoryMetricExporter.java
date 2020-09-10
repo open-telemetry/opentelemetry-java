@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.inmemory;
 
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayList;
@@ -127,7 +127,7 @@ public class InMemoryMetricExporter implements MetricExporter {
    * Clears the internal {@code List} of finished {@code Metric}s.
    *
    * <p>Any subsequent call to export() function on this MetricExporter, will return {@code
-   * ResultCode.FAILURE}
+   * CompletableResultCode.ofFailure()}
    */
   @Override
   public void shutdown() {

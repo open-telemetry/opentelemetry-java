@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -66,17 +67,21 @@ public final class MultiSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
+    List<CompletableResultCode> results = new ArrayList<>(spanProcessorsAll.size());
     for (SpanProcessor spanProcessor : spanProcessorsAll) {
-      spanProcessor.shutdown();
+      results.add(spanProcessor.shutdown());
     }
+    return CompletableResultCode.ofAll(results);
   }
 
   @Override
-  public void forceFlush() {
+  public CompletableResultCode forceFlush() {
+    List<CompletableResultCode> results = new ArrayList<>(spanProcessorsAll.size());
     for (SpanProcessor spanProcessor : spanProcessorsAll) {
-      spanProcessor.forceFlush();
+      results.add(spanProcessor.forceFlush());
     }
+    return CompletableResultCode.ofAll(results);
   }
 
   private MultiSpanProcessor(List<SpanProcessor> spanProcessors) {

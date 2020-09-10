@@ -18,17 +18,18 @@ package io.opentelemetry.exporters.zipkin;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
@@ -42,6 +43,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import zipkin2.Callback;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
@@ -132,21 +134,21 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     final Span.Builder spanBuilder =
         Span.newBuilder()
-            .traceId(spanData.getTraceId().toLowerBase16())
-            .id(spanData.getSpanId().toLowerBase16())
+            .traceId(spanData.getTraceId())
+            .id(spanData.getSpanId())
             .kind(toSpanKind(spanData))
             .name(spanData.getName())
             .timestamp(toEpochMicros(spanData.getStartEpochNanos()))
             .duration(endTimestamp - startTimestamp)
             .localEndpoint(endpoint);
 
-    if (spanData.getParentSpanId().isValid()) {
-      spanBuilder.parentId(spanData.getParentSpanId().toLowerBase16());
+    if (SpanId.isValid(spanData.getParentSpanId())) {
+      spanBuilder.parentId(spanData.getParentSpanId());
     }
 
     ReadableAttributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
           public void consume(String key, AttributeValue value) {
             spanBuilder.putTag(key, attributeValueToString(value));
@@ -187,7 +189,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     ReadableAttributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
-    AttributeValue serviceNameValue = resourceAttributes.get(ResourceConstants.SERVICE_NAME);
+    AttributeValue serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME.key());
     if (serviceNameValue == null) {
       return localEndpoint;
     }
@@ -261,13 +263,24 @@ public final class ZipkinSpanExporter implements SpanExporter {
     for (SpanData spanData : spanDataList) {
       encodedSpans.add(encoder.encode(generateSpan(spanData, localEndpoint)));
     }
-    try {
-      sender.sendSpans(encodedSpans).execute();
-    } catch (Exception e) {
-      logger.log(Level.WARNING, "Failed to export spans", e);
-      return CompletableResultCode.ofFailure();
-    }
-    return CompletableResultCode.ofSuccess();
+
+    final CompletableResultCode result = new CompletableResultCode();
+    sender
+        .sendSpans(encodedSpans)
+        .enqueue(
+            new Callback<Void>() {
+              @Override
+              public void onSuccess(Void value) {
+                result.succeed();
+              }
+
+              @Override
+              public void onError(Throwable t) {
+                logger.log(Level.WARNING, "Failed to export spans", t);
+                result.fail();
+              }
+            });
+    return result;
   }
 
   @Override
@@ -277,12 +290,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     try {
       sender.close();
     } catch (IOException e) {
       logger.log(Level.WARNING, "Exception while closing the Zipkin Sender instance", e);
     }
+    return CompletableResultCode.ofSuccess();
   }
 
   /**
@@ -311,7 +325,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * consistent. Many use a name from service discovery.
      *
      * <p>Note: this value, will be superseded by the value of {@link
-     * io.opentelemetry.sdk.resources.ResourceConstants#SERVICE_NAME} if it has been set in the
+     * io.opentelemetry.sdk.resources.ResourceAttributes#SERVICE_NAME} if it has been set in the
      * {@link io.opentelemetry.sdk.resources.Resource} associated with the Tracer that created the
      * spans.
      *
@@ -320,7 +334,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @param serviceName The service name. It defaults to "unknown".
      * @return this.
      * @see io.opentelemetry.sdk.resources.Resource
-     * @see io.opentelemetry.sdk.resources.ResourceConstants
+     * @see io.opentelemetry.sdk.resources.ResourceAttributes
      * @since 0.4.0
      */
     public Builder setServiceName(String serviceName) {

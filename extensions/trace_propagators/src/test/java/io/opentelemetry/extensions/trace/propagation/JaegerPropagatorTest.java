@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.grpc.Context;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
-import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -48,20 +48,21 @@ class JaegerPropagatorTest {
   private static final long TRACE_ID_HI = 77L;
   private static final long TRACE_ID_LOW = 22L;
   private static final String TRACE_ID_BASE16 = "000000000000004d0000000000000016";
-  private static final TraceId TRACE_ID = new TraceId(TRACE_ID_HI, TRACE_ID_LOW);
+  private static final String TRACE_ID = TraceId.fromLongs(TRACE_ID_HI, TRACE_ID_LOW);
   private static final long SHORT_TRACE_ID_HI = 0L;
   private static final long SHORT_TRACE_ID_LOW = 2322222L;
-  private static final TraceId SHORT_TRACE_ID = new TraceId(SHORT_TRACE_ID_HI, SHORT_TRACE_ID_LOW);
+  private static final String SHORT_TRACE_ID =
+      TraceId.fromLongs(SHORT_TRACE_ID_HI, SHORT_TRACE_ID_LOW);
   private static final String SPAN_ID_BASE16 = "0000000000017c29";
   private static final long SPAN_ID_LONG = 97321L;
-  private static final SpanId SPAN_ID = new SpanId(SPAN_ID_LONG);
+  private static final String SPAN_ID = SpanId.fromLong(SPAN_ID_LONG);
   private static final long DEPRECATED_PARENT_SPAN_LONG = 0L;
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
   private static final TraceFlags SAMPLED_TRACE_OPTIONS =
       TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
-  private static final HttpTextFormat.Setter<Map<String, String>> setter = Map::put;
-  private static final HttpTextFormat.Getter<Map<String, String>> getter =
-      new HttpTextFormat.Getter<Map<String, String>>() {
+  private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
+  private static final TextMapPropagator.Getter<Map<String, String>> getter =
+      new TextMapPropagator.Getter<Map<String, String>>() {
         @Nullable
         @Override
         public String get(Map<String, String> carrier, String key) {
@@ -69,7 +70,7 @@ class JaegerPropagatorTest {
         }
       };
 
-  private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
+  private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
     return TracingContextUtils.getSpan(context).getContext();

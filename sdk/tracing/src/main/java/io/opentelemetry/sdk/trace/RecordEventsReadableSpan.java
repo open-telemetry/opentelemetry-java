@@ -17,10 +17,10 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.common.collect.EvictingQueue;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -33,7 +33,6 @@ import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
@@ -42,7 +41,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -60,7 +58,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
-  private final SpanId parentSpanId;
+  private final String parentSpanId;
   // True if the parent is on a different process.
   private final boolean hasRemoteParent;
   // Handler called when the span starts and ends.
@@ -112,7 +110,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      SpanId parentSpanId,
+      String parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -163,7 +161,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      SpanId parentSpanId,
+      @Nullable String parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -428,11 +426,17 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public void recordException(Throwable exception) {
+    recordException(exception, null);
+  }
+
+  @Override
+  public void recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
       return;
     }
     long timestamp = clock.now();
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes =
+        additionalAttributes != null ? additionalAttributes.toBuilder() : Attributes.newBuilder();
     SemanticAttributes.EXCEPTION_TYPE.set(attributes, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
       SemanticAttributes.EXCEPTION_MESSAGE.set(attributes, exception.getMessage());
@@ -501,7 +505,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
   }
 
-  SpanId getParentSpanId() {
+  String getParentSpanId() {
     return parentSpanId;
   }
 
@@ -580,11 +584,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return attributes;
     }
     // otherwise, make a copy of the data into an immutable container.
-    Attributes.Builder builder = Attributes.newBuilder();
-    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      builder.setAttribute(entry.getKey(), entry.getValue());
-    }
-    return builder.build();
+    return attributes.immutableCopy();
   }
 
   @Override
@@ -603,9 +603,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     StringBuilder sb = new StringBuilder();
     sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceId());
+    sb.append(context.getTraceIdAsHexString());
     sb.append(", spanId=");
-    sb.append(context.getSpanId());
+    sb.append(context.getSpanIdAsHexString());
     sb.append(", parentSpanId=");
     sb.append(parentSpanId);
     sb.append(", name=");
@@ -628,7 +628,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return sb.toString();
   }
 
-  private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
+  private static class LimitingAttributeConsumer implements AttributeConsumer {
     private final int limit;
     private final Attributes.Builder builder;
     private int added;

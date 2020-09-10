@@ -33,10 +33,11 @@ class DefaultTracerTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final byte[] firstBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
+  private static final byte[] spanBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final SpanContext spanContext =
       SpanContext.create(
-          TraceId.fromBytes(firstBytes, 0),
-          SpanId.fromBytes(firstBytes, 8),
+          TraceId.bytesToHex(firstBytes),
+          SpanId.bytesToHex(spanBytes),
           TraceFlags.getDefault(),
           TraceState.getDefault());
 
@@ -112,6 +113,22 @@ class DefaultTracerTest {
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
+  }
+
+  @Test
+  void testSpanContextPropagation_fromContextAfterNoParent() {
+    Context context = TracingContextUtils.withSpan(new DefaultSpan(spanContext), Context.current());
+
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
+    assertThat(span.getContext()).isSameAs(spanContext);
+  }
+
+  @Test
+  void testSpanContextPropagation_fromContextThenNoParent() {
+    Context context = TracingContextUtils.withSpan(new DefaultSpan(spanContext), Context.current());
+
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
+    assertThat(span.getContext()).isEqualTo(SpanContext.getInvalid());
   }
 
   @Test

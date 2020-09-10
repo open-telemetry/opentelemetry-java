@@ -32,7 +32,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.resources.ResourceProvider;
+import java.util.ServiceLoader;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -77,16 +79,17 @@ public class Ec2ResourceTest {
             .willReturn(okJson(IDENTITY_DOCUMENT)));
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
-    Attributes attributes = populator.createAttributes();
+    Attributes attributes = populator.getAttributes();
     Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_ID, "i-1234567890abcdef0");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, "us-west-2b");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_TYPE, "t2.micro");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, "ami-5fb8c835");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, "123456789012");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, "us-west-2");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, "ec2-1-2-3-4");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_NAME, "ec2-1-2-3-4");
+
+    ResourceAttributes.HOST_ID.set(expectedAttrBuilders, "i-1234567890abcdef0");
+    ResourceAttributes.CLOUD_ZONE.set(expectedAttrBuilders, "us-west-2b");
+    ResourceAttributes.HOST_TYPE.set(expectedAttrBuilders, "t2.micro");
+    ResourceAttributes.HOST_IMAGE_ID.set(expectedAttrBuilders, "ami-5fb8c835");
+    ResourceAttributes.CLOUD_ACCOUNT.set(expectedAttrBuilders, "123456789012");
+    ResourceAttributes.CLOUD_REGION.set(expectedAttrBuilders, "us-west-2");
+    ResourceAttributes.HOST_HOSTNAME.set(expectedAttrBuilders, "ec2-1-2-3-4");
+    ResourceAttributes.HOST_NAME.set(expectedAttrBuilders, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
     verify(
@@ -108,16 +111,17 @@ public class Ec2ResourceTest {
             .willReturn(okJson(IDENTITY_DOCUMENT)));
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
-    Attributes attributes = populator.createAttributes();
+    Attributes attributes = populator.getAttributes();
     Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_ID, "i-1234567890abcdef0");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, "us-west-2b");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_TYPE, "t2.micro");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, "ami-5fb8c835");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, "123456789012");
-    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, "us-west-2");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, "ec2-1-2-3-4");
-    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_NAME, "ec2-1-2-3-4");
+
+    ResourceAttributes.HOST_ID.set(expectedAttrBuilders, "i-1234567890abcdef0");
+    ResourceAttributes.CLOUD_ZONE.set(expectedAttrBuilders, "us-west-2b");
+    ResourceAttributes.HOST_TYPE.set(expectedAttrBuilders, "t2.micro");
+    ResourceAttributes.HOST_IMAGE_ID.set(expectedAttrBuilders, "ami-5fb8c835");
+    ResourceAttributes.CLOUD_ACCOUNT.set(expectedAttrBuilders, "123456789012");
+    ResourceAttributes.CLOUD_REGION.set(expectedAttrBuilders, "us-west-2");
+    ResourceAttributes.HOST_HOSTNAME.set(expectedAttrBuilders, "ec2-1-2-3-4");
+    ResourceAttributes.HOST_NAME.set(expectedAttrBuilders, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
     verify(
@@ -135,7 +139,7 @@ public class Ec2ResourceTest {
         any(urlPathEqualTo("/latest/dynamic/instance-identity/document"))
             .willReturn(okJson("I'm not JSON")));
 
-    Attributes attributes = populator.createAttributes();
+    Attributes attributes = populator.getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
 
     verify(
@@ -144,5 +148,12 @@ public class Ec2ResourceTest {
     verify(
         getRequestedFor(urlEqualTo("/latest/dynamic/instance-identity/document"))
             .withoutHeader("X-aws-ec2-metadata-token"));
+  }
+
+  @Test
+  public void inServiceLoader() {
+    // No practical way to test the attributes themselves so at least check the service loader picks
+    // it up.
+    assertThat(ServiceLoader.load(ResourceProvider.class)).anyMatch(Ec2Resource.class::isInstance);
   }
 }

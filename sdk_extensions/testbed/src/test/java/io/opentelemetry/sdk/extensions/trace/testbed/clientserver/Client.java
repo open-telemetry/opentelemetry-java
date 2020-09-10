@@ -42,7 +42,7 @@ final class Client {
 
     try (Scope ignored = tracer.withSpan(span)) {
       OpenTelemetry.getPropagators()
-          .getHttpTextFormat()
+          .getTextMapPropagator()
           .inject(Context.current(), message, Message::put);
       queue.put(message);
     } finally {

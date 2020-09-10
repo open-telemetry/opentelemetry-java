@@ -18,26 +18,26 @@ package io.opentelemetry.exporters.zipkin;
 
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Collections;
@@ -50,6 +50,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zipkin2.Call;
+import zipkin2.Callback;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.SpanBytesEncoder;
@@ -126,7 +127,8 @@ class ZipkinSpanExporterTest {
     final Resource resource =
         Resource.create(
             Attributes.of(
-                ResourceConstants.SERVICE_NAME, stringAttributeValue("super-zipkin-service")));
+                ResourceAttributes.SERVICE_NAME.key(),
+                stringAttributeValue("super-zipkin-service")));
     SpanData data = buildStandardSpan().setResource(resource).build();
 
     Endpoint expectedEndpoint = Endpoint.newBuilder().serviceName("super-zipkin-service").build();
@@ -244,10 +246,18 @@ class ZipkinSpanExporterTest {
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
+    doAnswer(
+            invocation -> {
+              Callback<Void> callback = invocation.getArgument(0);
+              callback.onSuccess(null);
+              return null;
+            })
+        .when(mockZipkinCall)
+        .enqueue(any());
+
     CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(buildStandardSpan().build()));
 
-    verify(mockZipkinCall).execute();
     assertThat(resultCode.isSuccess()).isTrue();
   }
 
@@ -259,7 +269,14 @@ class ZipkinSpanExporterTest {
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
-    when(mockZipkinCall.execute()).thenThrow(new IOException());
+    doAnswer(
+            invocation -> {
+              Callback<Void> callback = invocation.getArgument(0);
+              callback.onError(new IOException());
+              return null;
+            })
+        .when(mockZipkinCall)
+        .enqueue(any());
 
     CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(buildStandardSpan().build()));
@@ -292,9 +309,9 @@ class ZipkinSpanExporterTest {
 
   private static TestSpanData.Builder buildStandardSpan() {
     return TestSpanData.newBuilder()
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
+        .setParentSpanId(PARENT_SPAN_ID)
         .setTraceFlags(TraceFlags.builder().setIsSampled(true).build())
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)

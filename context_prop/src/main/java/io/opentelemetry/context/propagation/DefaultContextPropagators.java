@@ -31,11 +31,11 @@ import java.util.List;
  * @since 0.3.0
  */
 public final class DefaultContextPropagators implements ContextPropagators {
-  private final HttpTextFormat textFormat;
+  private final TextMapPropagator textMapPropagator;
 
   @Override
-  public HttpTextFormat getHttpTextFormat() {
-    return textFormat;
+  public TextMapPropagator getTextMapPropagator() {
+    return textMapPropagator;
   }
 
   /**
@@ -49,8 +49,8 @@ public final class DefaultContextPropagators implements ContextPropagators {
     return new Builder();
   }
 
-  private DefaultContextPropagators(HttpTextFormat textFormat) {
-    this.textFormat = textFormat;
+  private DefaultContextPropagators(TextMapPropagator textMapPropagator) {
+    this.textMapPropagator = textMapPropagator;
   }
 
   /**
@@ -61,34 +61,34 @@ public final class DefaultContextPropagators implements ContextPropagators {
    *
    * <pre>{@code
    * ContextPropagators propagators = DefaultContextPropagators.builder()
-   *     .addHttpTextFormat(new HttpTraceContext())
-   *     .addHttpTextFormat(new HttpCorrelationContext())
-   *     .addHttpTextFormat(new MyCustomContextPropagator())
+   *     .addTextMapPropagator(new HttpTraceContext())
+   *     .addTextMapPropagator(new HttpCorrelationContext())
+   *     .addTextMapPropagator(new MyCustomContextPropagator())
    *     .build();
    * }</pre>
    *
    * @since 0.3.0
    */
   public static final class Builder {
-    List<HttpTextFormat> textPropagators = new ArrayList<>();
+    List<TextMapPropagator> textPropagators = new ArrayList<>();
 
     /**
-     * Adds a {@link HttpTextFormat} propagator.
+     * Adds a {@link TextMapPropagator} propagator.
      *
      * <p>One propagator per concern (traces, correlations, etc) should be added if this format is
      * supported.
      *
-     * @param textFormat the propagator to be added.
+     * @param textMapPropagator the propagator to be added.
      * @return this.
-     * @throws NullPointerException if {@code textFormat} is {@code null}.
+     * @throws NullPointerException if {@code textMapPropagator} is {@code null}.
      * @since 0.3.0
      */
-    public Builder addHttpTextFormat(HttpTextFormat textFormat) {
-      if (textFormat == null) {
-        throw new NullPointerException("textFormat");
+    public Builder addTextMapPropagator(TextMapPropagator textMapPropagator) {
+      if (textMapPropagator == null) {
+        throw new NullPointerException("textMapPropagator");
       }
 
-      textPropagators.add(textFormat);
+      textPropagators.add(textMapPropagator);
       return this;
     }
 
@@ -100,19 +100,19 @@ public final class DefaultContextPropagators implements ContextPropagators {
      */
     public ContextPropagators build() {
       if (textPropagators.isEmpty()) {
-        return new DefaultContextPropagators(NoopHttpTextFormat.INSTANCE);
+        return new DefaultContextPropagators(NoopTextMapPropagator.INSTANCE);
       }
 
-      return new DefaultContextPropagators(new MultiHttpTextFormat(textPropagators));
+      return new DefaultContextPropagators(new MultiTextMapPropagator(textPropagators));
     }
   }
 
-  private static final class MultiHttpTextFormat implements HttpTextFormat {
-    private final HttpTextFormat[] textPropagators;
+  private static final class MultiTextMapPropagator implements TextMapPropagator {
+    private final TextMapPropagator[] textPropagators;
     private final List<String> allFields;
 
-    private MultiHttpTextFormat(List<HttpTextFormat> textPropagators) {
-      this.textPropagators = new HttpTextFormat[textPropagators.size()];
+    private MultiTextMapPropagator(List<TextMapPropagator> textPropagators) {
+      this.textPropagators = new TextMapPropagator[textPropagators.size()];
       textPropagators.toArray(this.textPropagators);
       this.allFields = getAllFields(this.textPropagators);
     }
@@ -122,7 +122,7 @@ public final class DefaultContextPropagators implements ContextPropagators {
       return allFields;
     }
 
-    private static List<String> getAllFields(HttpTextFormat[] textPropagators) {
+    private static List<String> getAllFields(TextMapPropagator[] textPropagators) {
       List<String> fields = new ArrayList<>();
       for (int i = 0; i < textPropagators.length; i++) {
         fields.addAll(textPropagators[i].fields());
@@ -147,8 +147,8 @@ public final class DefaultContextPropagators implements ContextPropagators {
     }
   }
 
-  private static final class NoopHttpTextFormat implements HttpTextFormat {
-    private static final NoopHttpTextFormat INSTANCE = new NoopHttpTextFormat();
+  private static final class NoopTextMapPropagator implements TextMapPropagator {
+    private static final NoopTextMapPropagator INSTANCE = new NoopTextMapPropagator();
 
     @Override
     public List<String> fields() {

@@ -21,13 +21,18 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class BeanstalkResource extends AwsResource {
+/**
+ * A {@link ResourceProvider} which provides information about the current EC2 instance if running
+ * on AWS Elastic Beanstalk.
+ */
+public class BeanstalkResource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(BeanstalkResource.class.getName());
 
@@ -39,7 +44,11 @@ class BeanstalkResource extends AwsResource {
 
   private final String configPath;
 
-  BeanstalkResource() {
+  /**
+   * Returns a {@link BeanstalkResource} which attempts to compute information about the Beanstalk
+   * environment if available.
+   */
+  public BeanstalkResource() {
     this(BEANSTALK_CONF_PATH);
   }
 
@@ -49,7 +58,7 @@ class BeanstalkResource extends AwsResource {
   }
 
   @Override
-  Attributes createAttributes() {
+  public Attributes getAttributes() {
     File configFile = new File(configPath);
     if (!configFile.exists()) {
       return Attributes.empty();
@@ -69,13 +78,13 @@ class BeanstalkResource extends AwsResource {
         String value = parser.getText();
         switch (parser.getCurrentName()) {
           case DEVELOPMENT_ID:
-            attrBuilders.setAttribute(ResourceConstants.SERVICE_INSTANCE, value);
+            ResourceAttributes.SERVICE_INSTANCE.set(attrBuilders, value);
             break;
           case VERSION_LABEL:
-            attrBuilders.setAttribute(ResourceConstants.SERVICE_VERSION, value);
+            ResourceAttributes.SERVICE_VERSION.set(attrBuilders, value);
             break;
           case ENVIRONMENT_NAME:
-            attrBuilders.setAttribute(ResourceConstants.SERVICE_NAMESPACE, value);
+            ResourceAttributes.SERVICE_NAMESPACE.set(attrBuilders, value);
             break;
           default:
             parser.skipChildren();

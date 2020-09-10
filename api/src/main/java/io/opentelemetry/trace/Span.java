@@ -230,6 +230,15 @@ public interface Span {
   void recordException(Throwable exception);
 
   /**
+   * Records information about the {@link Throwable} to the {@link Span}.
+   *
+   * @param exception the {@link Throwable} to record.
+   * @param additionalAttributes the additional {@link Attributes} to record.
+   * @since 0.8.0
+   */
+  void recordException(Throwable exception, Attributes additionalAttributes);
+
+  /**
    * Updates the {@code Span} name.
    *
    * <p>If used, this will override the name provided via {@code Span.Builder}.

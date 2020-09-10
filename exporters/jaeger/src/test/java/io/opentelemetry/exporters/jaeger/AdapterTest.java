@@ -34,10 +34,8 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collection;
 import java.util.Collections;
@@ -226,10 +224,8 @@ class AdapterTest {
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
 
     // verify
-    assertEquals(
-        TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(SPAN_ID, 0)), spanRef.getSpanId());
-    assertEquals(
-        TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)), spanRef.getTraceId());
+    assertEquals(TraceProtoUtils.toProtoSpanId(SPAN_ID), spanRef.getSpanId());
+    assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), spanRef.getTraceId());
     assertEquals(Model.SpanRefType.FOLLOWS_FROM, spanRef.getRefType());
   }
 
@@ -240,8 +236,8 @@ class AdapterTest {
     SpanData span =
         TestSpanData.newBuilder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -267,8 +263,8 @@ class AdapterTest {
     SpanData span =
         TestSpanData.newBuilder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -303,9 +299,9 @@ class AdapterTest {
 
     return TestSpanData.newBuilder()
         .setHasEnded(true)
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
+        .setParentSpanId(PARENT_SPAN_ID)
         .setName("GET /api/endpoint")
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -322,10 +318,7 @@ class AdapterTest {
 
   private static SpanContext createSpanContext(String traceId, String spanId) {
     return SpanContext.create(
-        TraceId.fromLowerBase16(traceId, 0),
-        SpanId.fromLowerBase16(spanId, 0),
-        TraceFlags.builder().build(),
-        TraceState.builder().build());
+        traceId, spanId, TraceFlags.builder().build(), TraceState.builder().build());
   }
 
   @Nullable
@@ -342,12 +335,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
-        assertEquals(
-            TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(LINK_TRACE_ID, 0)),
-            spanRef.getTraceId());
-        assertEquals(
-            TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(LINK_SPAN_ID, 0)),
-            spanRef.getSpanId());
+        assertEquals(TraceProtoUtils.toProtoTraceId(LINK_TRACE_ID), spanRef.getTraceId());
+        assertEquals(TraceProtoUtils.toProtoSpanId(LINK_SPAN_ID), spanRef.getSpanId());
         found = true;
       }
     }
@@ -358,12 +347,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
-        assertEquals(
-            TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)),
-            spanRef.getTraceId());
-        assertEquals(
-            TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0)),
-            spanRef.getSpanId());
+        assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), spanRef.getTraceId());
+        assertEquals(TraceProtoUtils.toProtoSpanId(PARENT_SPAN_ID), spanRef.getSpanId());
         found = true;
       }
     }

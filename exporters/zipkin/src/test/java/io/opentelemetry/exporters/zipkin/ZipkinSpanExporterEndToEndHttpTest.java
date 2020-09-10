@@ -20,18 +20,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import zipkin2.Endpoint;
@@ -140,6 +139,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
     SpanData spanData = buildStandardSpan().build();
     CompletableResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
+    resultCode.join(10, TimeUnit.SECONDS);
 
     assertThat(resultCode.isSuccess()).isTrue();
     List<Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
@@ -151,9 +151,9 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
   private static TestSpanData.Builder buildStandardSpan() {
     return TestSpanData.newBuilder()
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
+        .setParentSpanId(PARENT_SPAN_ID)
         .setTraceFlags(TraceFlags.builder().setIsSampled(true).build())
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)

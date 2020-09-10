@@ -33,9 +33,7 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceId;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -122,6 +120,28 @@ class OtlpGrpcSpanExporterTest {
       assertThat(exporter.export(spans).isSuccess()).isTrue();
       assertThat(fakeCollector.getReceivedSpans())
           .isEqualTo(SpanAdapter.toProtoResourceSpans(spans));
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void testExport_DeadlineSetPerExport() throws InterruptedException {
+    int deadlineMs = 500;
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.newBuilder()
+            .setChannel(inProcessChannel)
+            .setDeadlineMs(deadlineMs)
+            .build();
+
+    try {
+      TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isTrue();
+
+      TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isTrue();
     } finally {
       exporter.shutdown();
     }
@@ -234,8 +254,8 @@ class OtlpGrpcSpanExporterTest {
     long endNs = startNs + duration;
     return TestSpanData.newBuilder()
         .setHasEnded(true)
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
         .setName("GET /api/endpoint")
         .setStartEpochNanos(startNs)
         .setEndEpochNanos(endNs)

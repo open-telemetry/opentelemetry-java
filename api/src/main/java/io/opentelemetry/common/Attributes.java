@@ -34,7 +34,7 @@ import javax.annotation.concurrent.Immutable;
  * <p>The keys are {@link String}s and the values are {@link AttributeValue} instances.
  */
 @Immutable
-public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
+public abstract class Attributes extends ImmutableKeyValuePairs<String, AttributeValue>
     implements ReadableAttributes {
   private static final Attributes EMPTY = Attributes.newBuilder().build();
 
@@ -137,7 +137,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
   public static Builder newBuilder(ReadableAttributes attributes) {
     final Builder builder = new Builder();
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
           public void consume(String key, AttributeValue value) {
             builder.setAttribute(key, value);

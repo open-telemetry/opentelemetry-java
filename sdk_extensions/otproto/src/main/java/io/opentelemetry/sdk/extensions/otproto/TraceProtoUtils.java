@@ -34,10 +34,8 @@ public final class TraceProtoUtils {
    * @param spanId the spanId to convert.
    * @return a ByteString representation.
    */
-  public static ByteString toProtoSpanId(SpanId spanId) {
-    byte[] spanIdBytes = new byte[SpanId.getSize()];
-    spanId.copyBytesTo(spanIdBytes, 0);
-    return ByteString.copyFrom(spanIdBytes);
+  public static ByteString toProtoSpanId(String spanId) {
+    return ByteString.copyFrom(SpanId.bytesFromHex(spanId, 0));
   }
 
   /**
@@ -46,10 +44,8 @@ public final class TraceProtoUtils {
    * @param traceId the traceId to convert.
    * @return a ByteString representation.
    */
-  public static ByteString toProtoTraceId(TraceId traceId) {
-    byte[] traceIdBytes = new byte[TraceId.getSize()];
-    traceId.copyBytesTo(traceIdBytes, 0);
-    return ByteString.copyFrom(traceIdBytes);
+  public static ByteString toProtoTraceId(String traceId) {
+    return ByteString.copyFrom(TraceId.bytesFromHex(traceId, 0));
   }
 
   /**

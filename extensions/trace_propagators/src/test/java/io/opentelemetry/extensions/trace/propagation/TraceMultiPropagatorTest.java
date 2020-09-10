@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -43,15 +43,15 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 class TraceMultiPropagatorTest {
-  private static final HttpTextFormat PROPAGATOR1 = B3Propagator.getSingleHeaderPropagator();
-  private static final HttpTextFormat PROPAGATOR2 = B3Propagator.getMultipleHeaderPropagator();
-  private static final HttpTextFormat PROPAGATOR3 = new HttpTraceContext();
+  private static final TextMapPropagator PROPAGATOR1 = B3Propagator.getSingleHeaderPropagator();
+  private static final TextMapPropagator PROPAGATOR2 = B3Propagator.getMultipleHeaderPropagator();
+  private static final TextMapPropagator PROPAGATOR3 = HttpTraceContext.getInstance();
 
   private static final Span SPAN =
       DefaultSpan.create(
           SpanContext.createFromRemoteParent(
-              new TraceId(1245, 67890),
-              new SpanId(12345),
+              TraceId.fromLongs(1245, 67890),
+              SpanId.fromLong(12345),
               TraceFlags.getDefault(),
               TraceState.getDefault()));
 
@@ -68,7 +68,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void fields() {
-    HttpTextFormat prop =
+    TextMapPropagator prop =
         TraceMultiPropagator.builder()
             .addPropagator(new EmptyPropagator("foo", "bar"))
             .addPropagator(new EmptyPropagator("hello", "world"))
@@ -81,7 +81,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void fields_readOnly() {
-    HttpTextFormat prop =
+    TextMapPropagator prop =
         TraceMultiPropagator.builder()
             .addPropagator(new EmptyPropagator("foo", "bar"))
             .addPropagator(new EmptyPropagator("hello", "world"))
@@ -93,7 +93,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void inject_noPropagators() {
-    HttpTextFormat prop = TraceMultiPropagator.builder().build();
+    TextMapPropagator prop = TraceMultiPropagator.builder().build();
     Map<String, String> carrier = new HashMap<>();
 
     Context context = Context.current();
@@ -103,7 +103,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void inject_allFormats() {
-    HttpTextFormat prop =
+    TextMapPropagator prop =
         TraceMultiPropagator.builder()
             .addPropagator(PROPAGATOR1)
             .addPropagator(PROPAGATOR2)
@@ -123,7 +123,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void extract_noPropagators() {
-    HttpTextFormat prop = TraceMultiPropagator.builder().build();
+    TextMapPropagator prop = TraceMultiPropagator.builder().build();
     Map<String, String> carrier = new HashMap<>();
 
     Context context = Context.current();
@@ -133,7 +133,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void extract_found() {
-    HttpTextFormat prop =
+    TextMapPropagator prop =
         TraceMultiPropagator.builder()
             .addPropagator(PROPAGATOR1)
             .addPropagator(PROPAGATOR2)
@@ -148,7 +148,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void extract_notFound() {
-    HttpTextFormat prop = TraceMultiPropagator.builder().addPropagator(PROPAGATOR1).build();
+    TextMapPropagator prop = TraceMultiPropagator.builder().addPropagator(PROPAGATOR1).build();
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR3.inject(withSpan(SPAN, Context.current()), carrier, Map::put);
@@ -157,8 +157,8 @@ class TraceMultiPropagatorTest {
 
   @Test
   void extract_stopWhenFound() {
-    HttpTextFormat mockPropagator = Mockito.mock(HttpTextFormat.class);
-    HttpTextFormat prop =
+    TextMapPropagator mockPropagator = Mockito.mock(TextMapPropagator.class);
+    TextMapPropagator prop =
         TraceMultiPropagator.builder()
             .addPropagator(mockPropagator)
             .addPropagator(PROPAGATOR3)
@@ -172,7 +172,7 @@ class TraceMultiPropagatorTest {
     verifyNoMoreInteractions(mockPropagator);
   }
 
-  private static class EmptyPropagator implements HttpTextFormat {
+  private static class EmptyPropagator implements TextMapPropagator {
     List<String> fields;
 
     public EmptyPropagator(String... fields) {

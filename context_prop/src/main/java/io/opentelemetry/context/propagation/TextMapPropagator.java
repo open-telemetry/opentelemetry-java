@@ -36,7 +36,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * public static final Context.Key CONCERN_KEY = Context.key("my-concern-key");
- * public MyConcernPropagator implements HttpTextFormat {
+ * public MyConcernPropagator implements TextMapPropagator {
  *   public <C> void inject(Context context, C carrier, Setter<C> setter) {
  *     Object concern = CONCERN_KEY.get(context);
  *     // Use concern in the specified context to propagate data.
@@ -51,7 +51,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface HttpTextFormat {
+public interface TextMapPropagator {
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
    * before calling {@link #inject(Context, Object, Setter)} )}.
@@ -82,7 +82,7 @@ public interface HttpTextFormat {
   <C> void inject(Context context, @Nullable C carrier, Setter<C> setter);
 
   /**
-   * Class that allows a {@code HttpTextFormat} to set propagated fields into a carrier.
+   * Class that allows a {@code TextMapPropagator} to set propagated fields into a carrier.
    *
    * <p>{@code Setter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.
@@ -124,7 +124,7 @@ public interface HttpTextFormat {
   <C> Context extract(Context context, C carrier, Getter<C> getter);
 
   /**
-   * Interface that allows a {@code HttpTextFormat} to read propagated fields from a carrier.
+   * Interface that allows a {@code TextMapPropagator} to read propagated fields from a carrier.
    *
    * <p>{@code Getter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.

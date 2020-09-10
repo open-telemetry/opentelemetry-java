@@ -17,12 +17,10 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
@@ -92,20 +90,16 @@ public class PropagatorContextInjectBenchmark {
       byte sampledTraceOptionsBytes = 1;
       TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
       TraceState traceStateDefault = TraceState.builder().build();
-      return SpanContext.create(
-          TraceId.fromLowerBase16(traceId, 0),
-          SpanId.fromLowerBase16(spanId, 0),
-          sampledTraceOptions,
-          traceStateDefault);
+      return SpanContext.create(traceId, spanId, sampledTraceOptions, traceStateDefault);
     }
   }
 
   /** Benchmark for injecting trace context into Jaeger headers. */
   public static class JaegerContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
-    private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
-    private final HttpTextFormat.Setter<Map<String, String>> setter =
-        new HttpTextFormat.Setter<Map<String, String>>() {
+    private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
+    private final TextMapPropagator.Setter<Map<String, String>> setter =
+        new TextMapPropagator.Setter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);
@@ -122,8 +116,8 @@ public class PropagatorContextInjectBenchmark {
   public static class B3SingleHeaderContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
     private final B3Propagator b3Propagator = B3Propagator.getSingleHeaderPropagator();
-    private final HttpTextFormat.Setter<Map<String, String>> setter =
-        new HttpTextFormat.Setter<Map<String, String>>() {
+    private final TextMapPropagator.Setter<Map<String, String>> setter =
+        new TextMapPropagator.Setter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);
@@ -141,8 +135,8 @@ public class PropagatorContextInjectBenchmark {
       extends AbstractContextInjectBenchmark {
 
     private final B3Propagator b3Propagator = B3Propagator.getMultipleHeaderPropagator();
-    private final HttpTextFormat.Setter<Map<String, String>> setter =
-        new HttpTextFormat.Setter<Map<String, String>>() {
+    private final TextMapPropagator.Setter<Map<String, String>> setter =
+        new TextMapPropagator.Setter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);

@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.GuardedBy;
 
 // Represents the shared state/config between all Tracers created by the same TracerProvider.
@@ -113,7 +114,7 @@ final class TracerSharedState {
       if (isStopped) {
         return;
       }
-      activeSpanProcessor.shutdown();
+      activeSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
       isStopped = true;
     }
   }

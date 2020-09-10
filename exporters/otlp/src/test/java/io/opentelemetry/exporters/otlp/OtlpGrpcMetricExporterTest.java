@@ -123,6 +123,28 @@ class OtlpGrpcMetricExporterTest {
   }
 
   @Test
+  void testExport_DeadlineSetPerExport() {
+    int deadlineMs = 1000;
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder()
+            .setChannel(inProcessChannel)
+            .setDeadlineMs(deadlineMs)
+            .build();
+
+    try {
+      fakeCollector.setCollectorDelay(2000);
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
+          .isFalse();
+
+      fakeCollector.setCollectorDelay(0);
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
+          .isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
   void testExport_AfterShutdown() {
     MetricData span = generateFakeMetric();
     OtlpGrpcMetricExporter exporter =
@@ -247,11 +269,22 @@ class OtlpGrpcMetricExporterTest {
   private static final class FakeCollector extends MetricsServiceGrpc.MetricsServiceImplBase {
     private final List<ResourceMetrics> receivedMetrics = new ArrayList<>();
     private Status returnedStatus = Status.OK;
+    private long delayMs = 0;
 
     @Override
     public void export(
         ExportMetricsServiceRequest request,
         StreamObserver<ExportMetricsServiceResponse> responseObserver) {
+
+      if (delayMs > 0) {
+        try {
+          // add a delay to simulate export taking a long time
+          TimeUnit.MILLISECONDS.sleep(delayMs);
+        } catch (InterruptedException e) {
+          // do nothing
+        }
+      }
+
       receivedMetrics.addAll(request.getResourceMetricsList());
       responseObserver.onNext(ExportMetricsServiceResponse.newBuilder().build());
       if (!returnedStatus.isOk()) {
@@ -271,6 +304,10 @@ class OtlpGrpcMetricExporterTest {
 
     void setReturnedStatus(Status returnedStatus) {
       this.returnedStatus = returnedStatus;
+    }
+
+    void setCollectorDelay(long delayMs) {
+      this.delayMs = delayMs;
     }
   }
 }

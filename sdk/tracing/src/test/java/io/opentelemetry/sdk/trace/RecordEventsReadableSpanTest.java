@@ -36,7 +36,6 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -66,9 +65,9 @@ class RecordEventsReadableSpanTest {
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
-  private final TraceId traceId = idsGenerator.generateTraceId();
-  private final SpanId spanId = idsGenerator.generateSpanId();
-  private final SpanId parentSpanId = idsGenerator.generateSpanId();
+  private final String traceId = idsGenerator.generateTraceId();
+  private final String spanId = idsGenerator.generateSpanId();
+  private final String parentSpanId = idsGenerator.generateSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final Resource resource = Resource.getEmpty();
@@ -236,7 +235,7 @@ class RecordEventsReadableSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(spanData.getParentSpanId().isValid()).isFalse();
+    assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
   }
 
   @Test
@@ -721,6 +720,41 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
+  void recordException_additionalAttributes() {
+    IllegalStateException exception = new IllegalStateException("there was an exception");
+    RecordEventsReadableSpan span = createTestRootSpan();
+
+    StringWriter writer = new StringWriter();
+    exception.printStackTrace(new PrintWriter(writer));
+    String stacktrace = writer.toString();
+
+    testClock.advanceNanos(1000);
+    long timestamp = testClock.now();
+
+    span.recordException(
+        exception,
+        Attributes.of(
+            "key1",
+            stringAttributeValue("this is an additional attribute"),
+            "exception.message",
+            stringAttributeValue("this is a precedence attribute")));
+
+    List<Event> events = span.toSpanData().getEvents();
+    assertThat(events).hasSize(1);
+    Event event = events.get(0);
+    assertThat(event.getName()).isEqualTo("exception");
+    assertThat(event.getEpochNanos()).isEqualTo(timestamp);
+    assertThat(event.getAttributes())
+        .isEqualTo(
+            Attributes.newBuilder()
+                .setAttribute("key1", "this is an additional attribute")
+                .setAttribute("exception.type", "java.lang.IllegalStateException")
+                .setAttribute("exception.message", "this is a precedence attribute")
+                .setAttribute("exception.stacktrace", stacktrace)
+                .build());
+  }
+
+  @Test
   void badArgsIgnored() {
     RecordEventsReadableSpan span = createTestRootSpan();
 
@@ -748,7 +782,7 @@ class RecordEventsReadableSpanTest {
       Map<String, AttributeValue> attributes) {
     AttributesMap attributesMap =
         new AttributesMap(TraceConfig.getDefault().getMaxNumberOfAttributes());
-    attributesMap.putAll(attributes);
+    attributes.forEach(attributesMap::put);
     return createTestSpan(
         Kind.INTERNAL,
         TraceConfig.getDefault(),
@@ -779,7 +813,7 @@ class RecordEventsReadableSpanTest {
   private RecordEventsReadableSpan createTestSpan(
       Kind kind,
       TraceConfig config,
-      @Nullable SpanId parentSpanId,
+      @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
       List<io.opentelemetry.trace.Link> links) {
 
@@ -853,9 +887,9 @@ class RecordEventsReadableSpanTest {
   void testAsSpanData() {
     String name = "GreatSpan";
     Kind kind = Kind.SERVER;
-    TraceId traceId = this.traceId;
-    SpanId spanId = this.spanId;
-    SpanId parentSpanId = this.parentSpanId;
+    String traceId = this.traceId;
+    String spanId = this.spanId;
+    String parentSpanId = this.parentSpanId;
     TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();

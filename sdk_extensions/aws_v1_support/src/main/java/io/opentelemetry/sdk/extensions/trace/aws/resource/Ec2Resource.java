@@ -22,7 +22,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +36,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class Ec2Resource extends AwsResource {
+/**
+ * A {@link ResourceProvider} which provides information about the current EC2 instance if running
+ * on AWS EC2.
+ */
+public class Ec2Resource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());
 
@@ -49,7 +54,11 @@ class Ec2Resource extends AwsResource {
   private final URL hostnameUrl;
   private final URL tokenUrl;
 
-  Ec2Resource() {
+  /**
+   * Returns a {@link Ec2Resource} which attempts to compute information about this instance if
+   * available.
+   */
+  public Ec2Resource() {
     // This is only for testing e.g., with a mock IMDS server and never in production so we just
     // read from a system property. This is similar to the AWS SDK.
     this(System.getProperty("otel.aws.imds.endpointOverride", DEFAULT_IMDS_ENDPOINT));
@@ -137,7 +146,7 @@ class Ec2Resource extends AwsResource {
   }
 
   @Override
-  Attributes createAttributes() {
+  public Attributes getAttributes() {
     String token = fetchToken();
 
     // If token is empty, either IMDSv2 isn't enabled or an unexpected failure happened. We can
@@ -163,22 +172,22 @@ class Ec2Resource extends AwsResource {
         String value = parser.nextTextValue();
         switch (parser.getCurrentName()) {
           case "instanceId":
-            attrBuilders.setAttribute(ResourceConstants.HOST_ID, value);
+            ResourceAttributes.HOST_ID.set(attrBuilders, value);
             break;
           case "availabilityZone":
-            attrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, value);
+            ResourceAttributes.CLOUD_ZONE.set(attrBuilders, value);
             break;
           case "instanceType":
-            attrBuilders.setAttribute(ResourceConstants.HOST_TYPE, value);
+            ResourceAttributes.HOST_TYPE.set(attrBuilders, value);
             break;
           case "imageId":
-            attrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, value);
+            ResourceAttributes.HOST_IMAGE_ID.set(attrBuilders, value);
             break;
           case "accountId":
-            attrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, value);
+            ResourceAttributes.CLOUD_ACCOUNT.set(attrBuilders, value);
             break;
           case "region":
-            attrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, value);
+            ResourceAttributes.CLOUD_REGION.set(attrBuilders, value);
             break;
           default:
             parser.skipChildren();
@@ -189,8 +198,8 @@ class Ec2Resource extends AwsResource {
       return Attributes.empty();
     }
 
-    attrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, hostname);
-    attrBuilders.setAttribute(ResourceConstants.HOST_NAME, hostname);
+    ResourceAttributes.HOST_HOSTNAME.set(attrBuilders, hostname);
+    ResourceAttributes.HOST_NAME.set(attrBuilders, hostname);
 
     return attrBuilders.build();
   }

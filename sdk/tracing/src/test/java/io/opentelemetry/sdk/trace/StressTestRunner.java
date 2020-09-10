@@ -60,7 +60,8 @@ abstract class StressTestRunner {
     for (Thread thread : operationThreads) {
       Uninterruptibles.joinUninterruptibly(thread);
     }
-    getSpanProcessor().shutdown();
+
+    getSpanProcessor().shutdown().join(1, TimeUnit.MINUTES);
   }
 
   static Builder builder() {

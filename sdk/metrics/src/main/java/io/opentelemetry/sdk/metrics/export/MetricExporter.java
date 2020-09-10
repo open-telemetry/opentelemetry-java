@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 

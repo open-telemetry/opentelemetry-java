@@ -147,14 +147,27 @@ public final class Samplers {
    * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate
    * to determine the sampling decision.
    *
-   * @param delegateSampler the {@code Sampler} which is used to make the sampling decisions if the
-   *     parent does not exist.
+   * @param root the {@code Sampler} which is used to make the sampling decisions if the parent does
+   *     not exist.
    * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
-   *     following the delegate sampler's decision.
+   *     following the root sampler's decision.
    * @since 0.7.0
    */
-  public static Sampler parentOrElse(Sampler delegateSampler) {
-    return new ParentOrElse(delegateSampler);
+  public static Sampler parentBased(Sampler root) {
+    return parentBasedBuilder(root).build();
+  }
+
+  /**
+   * Returns a {@link ParentBased.Builder} that follows the parent's sampling decision if one
+   * exists, otherwise following the root sampler and other optional sampler's decision.
+   *
+   * @param root the required {@code Sampler} which is used to make the sampling decisions if the
+   *     parent does not exist.
+   * @return a {@code ParentBased.Builder}
+   * @since 0.8.0
+   */
+  public static ParentBased.Builder parentBasedBuilder(Sampler root) {
+    return new ParentBased.Builder(root);
   }
 
   /**
@@ -177,7 +190,7 @@ public final class Samplers {
     @Override
     public SamplingResult shouldSample(
         SpanContext parentContext,
-        TraceId traceId,
+        String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -199,7 +212,7 @@ public final class Samplers {
     @Override
     public SamplingResult shouldSample(
         SpanContext parentContext,
-        TraceId traceId,
+        String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -214,11 +227,26 @@ public final class Samplers {
   }
 
   @Immutable
-  static class ParentOrElse implements Sampler {
-    private final Sampler delegateSampler;
+  static class ParentBased implements Sampler {
+    private final Sampler root;
+    private final Sampler remoteParentSampled;
+    private final Sampler remoteParentNotSampled;
+    private final Sampler localParentSampled;
+    private final Sampler localParentNotSampled;
 
-    ParentOrElse(Sampler delegateSampler) {
-      this.delegateSampler = delegateSampler;
+    private ParentBased(
+        Sampler root,
+        Sampler remoteParentSampled,
+        Sampler remoteParentNotSampled,
+        Sampler localParentSampled,
+        Sampler localParentNotSampled) {
+      this.root = root;
+      this.remoteParentSampled = remoteParentSampled == null ? alwaysOn() : remoteParentSampled;
+      this.remoteParentNotSampled =
+          remoteParentNotSampled == null ? alwaysOff() : remoteParentNotSampled;
+      this.localParentSampled = localParentSampled == null ? alwaysOn() : localParentSampled;
+      this.localParentNotSampled =
+          localParentNotSampled == null ? alwaysOff() : localParentNotSampled;
     }
 
     // If a parent is set, always follows the same sampling decision as the parent.
@@ -226,24 +254,171 @@ public final class Samplers {
     @Override
     public SamplingResult shouldSample(
         SpanContext parentContext,
-        TraceId traceId,
+        String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
         List<Link> parentLinks) {
-      if (parentContext.isValid()) {
-        if (parentContext.getTraceFlags().isSampled()) {
-          return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-        }
-        return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
+      if (!parentContext.isValid()) {
+        return this.root.shouldSample(
+            parentContext, traceId, name, spanKind, attributes, parentLinks);
       }
-      return this.delegateSampler.shouldSample(
-          parentContext, traceId, name, spanKind, attributes, parentLinks);
+
+      if (parentContext.isRemote()) {
+        return parentContext.getTraceFlags().isSampled()
+            ? this.remoteParentSampled.shouldSample(
+                parentContext, traceId, name, spanKind, attributes, parentLinks)
+            : this.remoteParentNotSampled.shouldSample(
+                parentContext, traceId, name, spanKind, attributes, parentLinks);
+      }
+      return parentContext.getTraceFlags().isSampled()
+          ? this.localParentSampled.shouldSample(
+              parentContext, traceId, name, spanKind, attributes, parentLinks)
+          : this.localParentNotSampled.shouldSample(
+              parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
 
     @Override
     public String getDescription() {
-      return String.format("ParentOrElse{%s}", this.delegateSampler.getDescription());
+      return String.format(
+          "ParentBased{root:%s,remoteParentSampled:%s,remoteParentNotSampled:%s,"
+              + "localParentSampled:%s,localParentNotSampled:%s}",
+          this.root.getDescription(),
+          this.remoteParentSampled.getDescription(),
+          this.remoteParentNotSampled.getDescription(),
+          this.localParentSampled.getDescription(),
+          this.localParentNotSampled.getDescription());
+    }
+
+    static class Builder {
+      private final Sampler root;
+      private Sampler remoteParentSampled;
+      private Sampler remoteParentNotSampled;
+      private Sampler localParentSampled;
+      private Sampler localParentNotSampled;
+
+      /**
+       * Sets the {@link Sampler} to use when there is a remote parent that was sampled. If not set,
+       * defaults to always sampling if the remote parent was sampled.
+       *
+       * @return this Builder
+       */
+      public Builder setRemoteParentSampled(Sampler remoteParentSampled) {
+        this.remoteParentSampled = remoteParentSampled;
+        return this;
+      }
+
+      /**
+       * Sets the {@link Sampler} to use when there is a remote parent that was not sampled. If not
+       * set, defaults to never sampling when the remote parent isn't sampled.
+       *
+       * @return this Builder
+       */
+      public Builder setRemoteParentNotSampled(Sampler remoteParentNotSampled) {
+        this.remoteParentNotSampled = remoteParentNotSampled;
+        return this;
+      }
+
+      /**
+       * Sets the {@link Sampler} to use when there is a local parent that was sampled. If not set,
+       * defaults to always sampling if the local parent was sampled.
+       *
+       * @return this Builder
+       */
+      public Builder setLocalParentSampled(Sampler localParentSampled) {
+        this.localParentSampled = localParentSampled;
+        return this;
+      }
+
+      /**
+       * Sets the {@link Sampler} to use when there is a local parent that was not sampled. If not
+       * set, defaults to never sampling when the local parent isn't sampled.
+       *
+       * @return this Builder
+       */
+      public Builder setLocalParentNotSampled(Sampler localParentNotSampled) {
+        this.localParentNotSampled = localParentNotSampled;
+        return this;
+      }
+
+      /**
+       * Builds the {@link ParentBased}.
+       *
+       * @return the ParentBased sampler.
+       */
+      public ParentBased build() {
+        return new ParentBased(
+            this.root,
+            this.remoteParentSampled,
+            this.remoteParentNotSampled,
+            this.localParentSampled,
+            this.localParentNotSampled);
+      }
+
+      private Builder(Sampler root) {
+        this.root = root;
+      }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof ParentBased)) {
+        return false;
+      }
+
+      ParentBased that = (ParentBased) o;
+
+      if (root != null ? !root.equals(that.root) : that.root != null) {
+        return false;
+      }
+      if (remoteParentSampled != null
+          ? !remoteParentSampled.equals(that.remoteParentSampled)
+          : that.remoteParentSampled != null) {
+        return false;
+      }
+      if (remoteParentNotSampled != null
+          ? !remoteParentNotSampled.equals(that.remoteParentNotSampled)
+          : that.remoteParentNotSampled != null) {
+        return false;
+      }
+      if (localParentSampled != null
+          ? !localParentSampled.equals(that.localParentSampled)
+          : that.localParentSampled != null) {
+        return false;
+      }
+      return localParentNotSampled != null
+          ? localParentNotSampled.equals(that.localParentNotSampled)
+          : that.localParentNotSampled == null;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = root != null ? root.hashCode() : 0;
+      result = 31 * result + (remoteParentSampled != null ? remoteParentSampled.hashCode() : 0);
+      result =
+          31 * result + (remoteParentNotSampled != null ? remoteParentNotSampled.hashCode() : 0);
+      result = 31 * result + (localParentSampled != null ? localParentSampled.hashCode() : 0);
+      result = 31 * result + (localParentNotSampled != null ? localParentNotSampled.hashCode() : 0);
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "ParentBased{"
+          + "root="
+          + root
+          + ", remoteParentSampled="
+          + remoteParentSampled
+          + ", remoteParentNotSampled="
+          + remoteParentNotSampled
+          + ", localParentSampled="
+          + localParentSampled
+          + ", localParentNotSampled="
+          + localParentNotSampled
+          + '}';
     }
   }
 
@@ -293,23 +468,11 @@ public final class Samplers {
     @Override
     public final SamplingResult shouldSample(
         SpanContext parentContext,
-        TraceId traceId,
+        String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
         @Nullable List<Link> parentLinks) {
-      // If the parent is sampled keep the sampling samplingResult.
-      if (parentContext.getTraceFlags().isSampled()) {
-        return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-      }
-      if (parentLinks != null) {
-        // If any parent link is sampled keep the sampling samplingResult.
-        for (Link parentLink : parentLinks) {
-          if (parentLink.getContext().getTraceFlags().isSampled()) {
-            return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-          }
-        }
-      }
       // Always sample if we are within probability range. This is true even for child spans (that
       // may have had a different sampling samplingResult made) to allow for different sampling
       // policies,
@@ -318,7 +481,7 @@ public final class Samplers {
       // while allowing for a (very) small chance of *not* sampling if the id == Long.MAX_VALUE.
       // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
       // code is executed in-line for every Span creation).
-      return Math.abs(traceId.getTraceRandomPart()) < getIdUpperBound()
+      return Math.abs(TraceId.getTraceIdRandomPart(traceId)) < getIdUpperBound()
           ? getPositiveSamplingResult()
           : getNegativeSamplingResult();
     }

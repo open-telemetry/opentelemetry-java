@@ -30,7 +30,7 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc.MetricsServiceFutureStub;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -73,6 +73,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   private final MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
+  private final long deadlineMs;
 
   /**
    * Creates a new OTLP gRPC Metric Reporter with the given name, using the given channel.
@@ -83,11 +84,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    */
   private OtlpGrpcMetricExporter(ManagedChannel channel, long deadlineMs) {
     this.managedChannel = channel;
-    MetricsServiceFutureStub stub = MetricsServiceGrpc.newFutureStub(channel);
-    if (deadlineMs > 0) {
-      stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
-    }
-    metricsService = stub;
+    this.deadlineMs = deadlineMs;
+    metricsService = MetricsServiceGrpc.newFutureStub(channel);
   }
 
   /**
@@ -104,8 +102,15 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
             .build();
 
     final CompletableResultCode result = new CompletableResultCode();
+    MetricsServiceFutureStub exporter;
+    if (deadlineMs > 0) {
+      exporter = metricsService.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    } else {
+      exporter = metricsService;
+    }
+
     Futures.addCallback(
-        metricsService.export(exportMetricsServiceRequest),
+        exporter.export(exportMetricsServiceRequest),
         new FutureCallback<ExportMetricsServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportMetricsServiceResponse response) {
@@ -114,7 +119,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
           @Override
           public void onFailure(Throwable t) {
-            logger.log(Level.WARNING, "Failed to export spans", t);
+            logger.log(Level.WARNING, "Failed to export metrics", t);
             result.fail();
           }
         },

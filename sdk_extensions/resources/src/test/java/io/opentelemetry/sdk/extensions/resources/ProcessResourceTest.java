@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import org.junit.jupiter.api.Test;
 
 class ProcessResourceTest {
@@ -32,18 +32,20 @@ class ProcessResourceTest {
   void normal() {
     Attributes attributes = RESOURCE.getAttributes();
 
-    assertThat(attributes.get(ResourceConstants.PROCESS_PID).getLongValue()).isGreaterThan(1);
-    assertThat(attributes.get(ResourceConstants.PROCESS_EXECUTABLE_PATH).getStringValue())
+    assertThat(attributes.get(ResourceAttributes.PROCESS_PID.key()).getLongValue())
+        .isGreaterThan(1);
+    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH.key()).getStringValue())
         .contains("java");
-    assertThat(attributes.get(ResourceConstants.PROCESS_COMMAND_LINE).getStringValue())
-        .contains(attributes.get(ResourceConstants.PROCESS_EXECUTABLE_PATH).getStringValue());
+    assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE.key()).getStringValue())
+        .contains(
+            attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH.key()).getStringValue());
   }
 
   @Test
   void inDefault() {
     ReadableAttributes attributes = Resource.getDefault().getAttributes();
-    assertThat(attributes.get(ResourceConstants.PROCESS_PID)).isNotNull();
-    assertThat(attributes.get(ResourceConstants.PROCESS_EXECUTABLE_PATH)).isNotNull();
-    assertThat(attributes.get(ResourceConstants.PROCESS_COMMAND_LINE)).isNotNull();
+    assertThat(attributes.get(ResourceAttributes.PROCESS_PID.key())).isNotNull();
+    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH.key())).isNotNull();
+    assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE.key())).isNotNull();
   }
 }

@@ -17,12 +17,10 @@
 package io.opentelemetry.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
+import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
@@ -53,7 +51,7 @@ public class HttpTraceContextInjectBenchmark {
           createTestSpanContext("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
           createTestSpanContext("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
   private static final int COUNT = 5; // spanContexts.size()
-  private final HttpTraceContext httpTraceContext = new HttpTraceContext();
+  private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
   private final Map<String, String> carrier = new HashMap<>();
   private final Setter<Map<String, String>> setter =
       new Setter<Map<String, String>>() {
@@ -83,11 +81,7 @@ public class HttpTraceContextInjectBenchmark {
     byte sampledTraceOptionsBytes = 1;
     TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
     TraceState traceStateDefault = TraceState.builder().build();
-    return SpanContext.create(
-        TraceId.fromLowerBase16(traceId, 0),
-        SpanId.fromLowerBase16(spanId, 0),
-        sampledTraceOptions,
-        traceStateDefault);
+    return SpanContext.create(traceId, spanId, sampledTraceOptions, traceStateDefault);
   }
 
   private static List<Context> createContexts(List<SpanContext> spanContexts) {

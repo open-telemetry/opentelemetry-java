@@ -16,9 +16,15 @@
 
 package io.opentelemetry.exporters.otlp;
 
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CLIENT;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
+
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -32,6 +38,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -91,7 +98,7 @@ final class SpanAdapter {
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(spanData.getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(spanData.getSpanId()));
     // TODO: Set TraceState;
-    if (spanData.getParentSpanId().isValid()) {
+    if (SpanId.isValid(spanData.getParentSpanId())) {
       builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(spanData.getParentSpanId()));
     }
     builder.setName(spanData.getName());
@@ -101,7 +108,7 @@ final class SpanAdapter {
     spanData
         .getAttributes()
         .forEach(
-            new KeyValueConsumer<AttributeValue>() {
+            new AttributeConsumer() {
               @Override
               public void consume(String key, AttributeValue value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
@@ -124,15 +131,15 @@ final class SpanAdapter {
   static Span.SpanKind toProtoSpanKind(Kind kind) {
     switch (kind) {
       case INTERNAL:
-        return SpanKind.INTERNAL;
+        return SPAN_KIND_INTERNAL;
       case SERVER:
-        return SpanKind.SERVER;
+        return SPAN_KIND_SERVER;
       case CLIENT:
-        return SpanKind.CLIENT;
+        return SPAN_KIND_CLIENT;
       case PRODUCER:
-        return SpanKind.PRODUCER;
+        return SPAN_KIND_PRODUCER;
       case CONSUMER:
-        return SpanKind.CONSUMER;
+        return SPAN_KIND_CONSUMER;
     }
     return SpanKind.UNRECOGNIZED;
   }
@@ -144,7 +151,7 @@ final class SpanAdapter {
     event
         .getAttributes()
         .forEach(
-            new KeyValueConsumer<AttributeValue>() {
+            new AttributeConsumer() {
               @Override
               public void consume(String key, AttributeValue value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
@@ -157,12 +164,12 @@ final class SpanAdapter {
 
   static Span.Link toProtoSpanLink(Link link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
-    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceId()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanId()));
+    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsHexString()));
+    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsHexString()));
     // TODO: Set TraceState;
     Attributes attributes = link.getAttributes();
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
           public void consume(String key, AttributeValue value) {
             builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));

@@ -87,7 +87,7 @@ import javax.annotation.concurrent.Immutable;
 public abstract class TraceConfig {
   // These values are the default values for all the global parameters.
   // TODO: decide which default sampler to use
-  private static final Sampler DEFAULT_SAMPLER = Samplers.parentOrElse(Samplers.alwaysOn());
+  private static final Sampler DEFAULT_SAMPLER = Samplers.parentBased(Samplers.alwaysOn());
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
   private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
@@ -296,11 +296,11 @@ public abstract class TraceConfig {
       Utils.checkArgument(
           samplerProbability <= 1, "samplerProbability must be lesser than or equal to 1.");
       if (samplerProbability == 1) {
-        setSampler(Samplers.alwaysOn());
+        setSampler(Samplers.parentBased(Samplers.alwaysOn()));
       } else if (samplerProbability == 0) {
         setSampler(Samplers.alwaysOff());
       } else {
-        setSampler(Samplers.probability(samplerProbability));
+        setSampler(Samplers.parentBased(Samplers.probability(samplerProbability)));
       }
       return this;
     }

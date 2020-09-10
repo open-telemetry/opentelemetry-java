@@ -52,7 +52,7 @@ Published releases are available on maven central.
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.7.0</version>
+      <version>0.8.0</version>
     </dependency>
   </dependencies>
 ```
@@ -61,7 +61,7 @@ Published releases are available on maven central.
 
 ```groovy
 dependencies {
-	compile('io.opentelemetry:opentelemetry-api:0.7.0')
+	compile('io.opentelemetry:opentelemetry-api:0.8.0')
 }
 ```
 
@@ -83,7 +83,7 @@ Snapshots based out the `master` branch are available for `opentelemetry-api`, `
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.8.0-SNAPSHOT</version>
+      <version>0.9.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -109,23 +109,23 @@ OpenTelemetry Java is under active development. Releases aren't guaranteed
 to conform to a specific version of the specification. Future releases will
 not attempt to maintain backwards compatibility with previous releases.
 
-The latest version of the libraries were released on August 3rd, 2020.
-See the [v0.7.0 beta release](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v0.7.0).
+The latest version of the libraries were released on September 1st, 2020.
+See the [v0.8.0 beta release](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v0.8.0).
 
 This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Tracing API                 | v0.7.0  |
-| Tracing SDK                 | v0.7.0  |
-| Metrics API                 | v0.7.0  |
-| Metrics SDK                 | v0.7.0  |
-| OTLP Exporter               | v0.7.0  |
-| Jaeger Trace Exporter       | v0.7.0  |
-| Zipkin Trace Exporter       | v0.7.0  |
-| Prometheus Metrics Exporter | v0.7.0  |
-| Context Propagation         | v0.7.0  |
-| OpenTracing Bridge          | v0.7.0  |
+| Tracing API                 | v0.8.0  |
+| Tracing SDK                 | v0.8.0  |
+| Metrics API                 | v0.8.0  |
+| Metrics SDK                 | v0.8.0  |
+| OTLP Exporter               | v0.8.0  |
+| Jaeger Trace Exporter       | v0.8.0  |
+| Zipkin Trace Exporter       | v0.8.0  |
+| Prometheus Metrics Exporter | v0.8.0  |
+| Context Propagation         | v0.8.0  |
+| OpenTracing Bridge          | v0.8.0  |
 | OpenCensus Bridge           | N/A     |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
@@ -138,7 +138,9 @@ We plan to merge projects and pave the path for future improvements as a unified
 community of tracing vendors, users and library authors who wants apps be
 managed better. We are open to feedback and suggestions from all of you!
 
-## Owners
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
@@ -157,6 +159,10 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 - [John Watson](https://github.com/jkwatson), New Relic
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
+
+### Thanks to all the people who have contributed
+
+[![contributors](https://contributors-img.web.app/image?repo=open-telemetry/opentelemetry-java)](https://github.com/open-telemetry/opentelemetry-java/graphs/contributors)
 
 [circleci-image]: https://circleci.com/gh/open-telemetry/opentelemetry-java.svg?style=svg 
 [circleci-url]: https://circleci.com/gh/open-telemetry/opentelemetry-java

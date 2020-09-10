@@ -16,14 +16,12 @@
 
 package io.opentelemetry.common;
 
-import javax.annotation.Nullable;
-
 /**
  * A read-only container for String-keyed attributes.
  *
  * @param <V> The type of the values contained in this.
  */
-public interface ReadableKeyValuePairs<V> {
+public interface ReadableKeyValuePairs<K, V> {
   /** The number of attributes contained in this. */
   int size();
 
@@ -31,16 +29,7 @@ public interface ReadableKeyValuePairs<V> {
   boolean isEmpty();
 
   /** Iterates over all the key-value pairs of attributes contained by this instance. */
-  void forEach(KeyValueConsumer<V> consumer);
-
-  /**
-   * Returns the value of the given key, or null if the key does not exist.
-   *
-   * <p>Currently may be implemented via a linear search, depending on implementation, so O(n)
-   * performance in the worst case.
-   */
-  @Nullable
-  V get(String key);
+  void forEach(KeyValueConsumer<K, V> consumer);
 
   /**
    * Used for iterating over the key-value pairs in a key-value pair container, such as {@link
@@ -48,7 +37,7 @@ public interface ReadableKeyValuePairs<V> {
    *
    * @param <V> The type of the values contained in the key-value pairs.
    */
-  interface KeyValueConsumer<V> {
-    void consume(String key, V value);
+  interface KeyValueConsumer<K, V> {
+    void consume(K key, V value);
   }
 }

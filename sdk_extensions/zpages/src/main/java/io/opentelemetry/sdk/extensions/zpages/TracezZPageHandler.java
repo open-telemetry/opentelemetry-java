@@ -21,9 +21,9 @@ import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.SpanId;
@@ -309,11 +309,9 @@ final class TracezZPageHandler extends ZPageHandler {
             + "TraceId: <b style=\"color:%s;\">%s</b> "
             + " | SpanId: %s | ParentSpanId: %s</b></pre></td>",
         span.getTraceFlags().isSampled() ? SAMPLED_TRACE_ID_COLOR : NOT_SAMPLED_TRACE_ID_COLOR,
-        span.getTraceId().toLowerBase16(),
-        span.getSpanId().toLowerBase16(),
-        (span.getParentSpanId() == null
-            ? SpanId.getInvalid().toLowerBase16()
-            : span.getParentSpanId().toLowerBase16()));
+        span.getTraceId(),
+        span.getSpanId(),
+        (span.getParentSpanId() == null ? SpanId.getInvalid() : span.getParentSpanId()));
     out.print("</tr>");
     zebraStripe = !zebraStripe;
 
@@ -396,7 +394,7 @@ final class TracezZPageHandler extends ZPageHandler {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           private boolean first = true;
 
           @Override
