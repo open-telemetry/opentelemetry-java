@@ -27,8 +27,7 @@ public class LogSinkSdkProvider {
   private final LogSink logSink = new SdkLogSink();
   private final List<LogProcessor> processors = new ArrayList<>();
 
-  private LogSinkSdkProvider() {
-  }
+  private LogSinkSdkProvider() {}
 
   public LogSink get(String instrumentationName, String instrumentationVersion) {
     // Currently there is no differentiation by instrumentation library
@@ -39,6 +38,7 @@ public class LogSinkSdkProvider {
     processors.add(Utils.checkNotNull(processor, "Processor can not be null"));
   }
 
+  /** Flushes all attached processors. */
   public void forceFlush() {
     for (LogProcessor processor : processors) {
       processor.forceFlush();

@@ -25,8 +25,8 @@ import io.opentelemetry.logging.api.LogRecord;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,8 +60,9 @@ public class BatchLogProcessor implements LogProcessor {
       int maxExportBatchSize,
       long exporterTimeout,
       Exporter exporter) {
-    this.worker = new Worker(maxQueueSize, scheduleDelayMillis, maxExportBatchSize, exporterTimeout,
-        exporter);
+    this.worker =
+        new Worker(
+            maxQueueSize, scheduleDelayMillis, maxExportBatchSize, exporterTimeout, exporter);
     this.workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     this.workerThread.start();
   }
@@ -93,20 +94,14 @@ public class BatchLogProcessor implements LogProcessor {
           meter
               .longCounterBuilder("logProcessorErrors")
               .setUnit("1")
-              .setDescription(
-                  "Number of errors encountered while processing logs")
+              .setDescription("Number of errors encountered while processing logs")
               .build();
-      Labels.Builder builder = Labels.of("logProcessorType", BatchLogProcessor.class.getName())
-          .toBuilder();
+      Labels.Builder builder =
+          Labels.of("logProcessorType", BatchLogProcessor.class.getName()).toBuilder();
       exporterFailureCounter =
-          logProcessorErrors.bind(
-              builder.setLabel("errorType", "exporter failure").build());
-//      exporterExceptionCounter =
-//          logProcessorErrors.bind(
-//              builder.setLabel("errorType", "exporter exception").build());
+          logProcessorErrors.bind(builder.setLabel("errorType", "exporter failure").build());
       exporterBusyCounter =
-          logProcessorErrors.bind(
-              builder.setLabel("errorType", "exporter busy").build());
+          logProcessorErrors.bind(builder.setLabel("errorType", "exporter busy").build());
       droppedRecordCounter =
           logProcessorErrors.bind(
               builder.setLabel("errorType", "dropped record - queue full").build());
@@ -124,8 +119,7 @@ public class BatchLogProcessor implements LogProcessor {
     private final int maxExportBatchSize;
     private final ExecutorService executor;
     private final Exporter exporter;
-    private final Timer timer = new Timer(TIMER_THREAD_NAME, true);
-//    private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
+    private final Timer timer = new Timer(TIMER_THREAD_NAME, /* isDaemon= */ true);
     private final long exporterTimeout;
 
     private Worker(
@@ -143,14 +137,21 @@ public class BatchLogProcessor implements LogProcessor {
       this.logRecords = new ArrayList<>(maxQueueSize);
       // We should be able to drain a full queue without dropping a batch
       int exportQueueSize = maxQueueSize / maxExportBatchSize;
-      RejectedExecutionHandler h = new RejectedExecutionHandler() {
-        @Override
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-          exporterBusyCounter.add(1);
-        }
-      };
-      this.executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
-          new LinkedBlockingQueue<Runnable>(exportQueueSize), h);
+      RejectedExecutionHandler h =
+          new RejectedExecutionHandler() {
+            @Override
+            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+              exporterBusyCounter.add(1);
+            }
+          };
+      this.executor =
+          new ThreadPoolExecutor(
+              1,
+              1,
+              0L,
+              TimeUnit.MILLISECONDS,
+              new LinkedBlockingQueue<Runnable>(exportQueueSize),
+              h);
     }
 
     @Override
@@ -184,51 +185,14 @@ public class BatchLogProcessor implements LogProcessor {
     }
 
     private void onBatchExport(final List<LogRecord> logDataForExport) {
-      // The call to exporter.accept(logDataForExport) is presumed to be asynchronous
-      // but we ensure that the call takes less than exporterSubmissionTimeout time
-      // to enqueue the action. We then monitor completion of the CompletableResultCode
-      // and ensure that execution occurs within the exporterTimeout time frame.
-      final Future<CompletableResultCode> f = executor.submit(
-          new Callable<CompletableResultCode>() {
-            @Override
-            public CompletableResultCode call() {
-              return exporter.accept(logDataForExport);
-            }
-          });
-//      final CompletableResultCode result;
-//      try {
-//        // This may block the worker thread for up to exporterSubmissionTimeout. This
-//        // means that there is at most a single call to exporter.accept() happening at
-//        // a time, and that they are in order. Ideally exporter.accept() should be
-//        // enqueuing the work and returning immediately to be completed asynchronously.
-//        result = f.get(exporterSubmissionTimeout, TimeUnit.MILLISECONDS);
-//      } catch (InterruptedException e) {
-//        logger.warning("log exporter interruption:" + e.getLocalizedMessage());
-//        f.cancel(true);
-//        return;
-//      } catch (ExecutionException e) {
-//        logger.warning("log exporter exception:" + e.getLocalizedMessage());
-//        exporterFailureCounter.add(1);
-//        return;
-//      } catch (TimeoutException e) {
-//        logger.warning("log exporter submission timeout");
-//        exporterTimeoutCounter.add(1);
-//        f.cancel(true);
-//        return;
-//      }
-//
-//      result.whenComplete(
-//          new Runnable() {
-//            @Override
-//            public void run() {
-//              if (!result.isSuccess()) {
-//                exporterFailureCounter.add(1);
-//                // TODO: would be nice to be able to capture an error in CompletableResultCode
-//                logger.warning("Error encountered while exporting log batch");
-//              }
-//              exportAvailable.set(true);
-//            }
-//          });
+      final Future<CompletableResultCode> f =
+          executor.submit(
+              new Callable<CompletableResultCode>() {
+                @Override
+                public CompletableResultCode call() {
+                  return exporter.accept(logDataForExport);
+                }
+              });
 
       timer.schedule(
           new TimerTask() {
@@ -316,10 +280,9 @@ public class BatchLogProcessor implements LogProcessor {
     }
 
     public BatchLogProcessor build() {
-      return new BatchLogProcessor(maxQueueSize, scheduleDelayMillis, maxExportBatchSize,
-          exporterTimeoutMillis, exporter);
+      return new BatchLogProcessor(
+          maxQueueSize, scheduleDelayMillis, maxExportBatchSize, exporterTimeoutMillis, exporter);
     }
-
 
     /**
      * Sets the delay interval between two consecutive exports. The actual interval may be shorter
@@ -400,12 +363,10 @@ public class BatchLogProcessor implements LogProcessor {
       return maxExportBatchSize;
     }
 
-
     @Override
-    protected Builder fromConfigMap(Map<String, String> configMap,
-        NamingConvention namingConvention) {
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
       return null;
     }
   }
-
 }

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.logging.api;
 
-import io.opentelemetry.sdk.common.export.CompletableResultCode;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Collection;
 
 /**
