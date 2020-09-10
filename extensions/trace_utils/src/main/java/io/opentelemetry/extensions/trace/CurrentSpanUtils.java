@@ -16,7 +16,7 @@
 
 package io.opentelemetry.extensions.trace;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -65,8 +65,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public void run() {
-      Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
-      try {
+      try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
         runnable.run();
       } catch (Throwable t) {
         setErrorStatus(span, t);
@@ -77,7 +76,6 @@ public final class CurrentSpanUtils {
         }
         throw new IllegalStateException("unexpected", t);
       } finally {
-        Context.current().detach(origContext);
         if (endSpan) {
           span.end();
         }
@@ -98,8 +96,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public V call() throws Exception {
-      Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
-      try {
+      try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
         return callable.call();
       } catch (Exception e) {
         setErrorStatus(span, e);
@@ -111,7 +108,6 @@ public final class CurrentSpanUtils {
         }
         throw new IllegalStateException("unexpected", t);
       } finally {
-        Context.current().detach(origContext);
         if (endSpan) {
           span.end();
         }

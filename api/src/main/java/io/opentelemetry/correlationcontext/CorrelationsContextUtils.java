@@ -91,8 +91,7 @@ public final class CorrelationsContextUtils {
    * @since 0.1.0
    */
   public static Scope currentContextWith(CorrelationContext corrContext) {
-    Context context = withCorrelationContext(corrContext, Context.current());
-    return ContextUtils.withScopedContext(context);
+    return ContextUtils.withScopedContext(withCorrelationContext(corrContext, Context.current()));
   }
 
   private CorrelationsContextUtils() {}

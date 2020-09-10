@@ -16,6 +16,8 @@
 
 package io.opentelemetry;
 
+import io.opentelemetry.context.ContextManager;
+import io.opentelemetry.context.interceptor.ContextChangeInterceptors;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
@@ -186,6 +188,10 @@ public final class OpenTelemetry {
   public static void setPropagators(ContextPropagators propagators) {
     Utils.checkNotNull(propagators, "propagators");
     getInstance().propagators = propagators;
+  }
+
+  public static ContextChangeInterceptors getContextChangeInterceptors() {
+    return ContextManager.getInstance().getContextChangeInterceptors();
   }
 
   /** Lazy loads an instance. */

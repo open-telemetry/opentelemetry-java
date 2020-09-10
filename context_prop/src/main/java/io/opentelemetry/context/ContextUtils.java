@@ -35,26 +35,7 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static Scope withScopedContext(Context context) {
-    if (context == null) {
-      throw new NullPointerException("context");
-    }
-
-    return new ContextInScope(context);
-  }
-
-  private static final class ContextInScope implements Scope {
-    private final Context context;
-    private final Context previous;
-
-    public ContextInScope(Context context) {
-      this.context = context;
-      this.previous = context.attach();
-    }
-
-    @Override
-    public void close() {
-      context.detach(previous);
-    }
+    return ContextManager.getInstance().withScopedContext(context);
   }
 
   private ContextUtils() {}
