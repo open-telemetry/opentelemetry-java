@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collection;
@@ -43,7 +44,10 @@ class TracezSpanProcessorTest {
   private static final String SPAN_NAME = "span";
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
-          TraceId.getInvalid(), SpanId.getInvalid(), true, TraceState.builder().build());
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
+          TraceFlags.getSampled(),
+          TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
   private static final Status SPAN_STATUS = Status.UNKNOWN;
 

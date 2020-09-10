@@ -33,6 +33,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -48,7 +49,7 @@ class SpanBuilderSdkTest {
       SpanContext.create(
           TraceId.fromLongs(1000, 1000),
           SpanId.fromLong(3000),
-          /* isSampled=*/ true,
+          TraceFlags.getSampled(),
           TraceState.getDefault());
 
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
@@ -163,7 +164,7 @@ class SpanBuilderSdkTest {
           SpanContext.create(
               TraceId.fromLongs(2000, 2000),
               SpanId.fromLong(4000),
-              /* isSampled=*/ true,
+              TraceFlags.getSampled(),
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())
           .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));

@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +58,7 @@ public abstract class TestSpanData implements SpanData {
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
-        .setSampled(TraceFlags.getDefault())
+        .setSampled(false)
         .setHasRemoteParent(false)
         .setTotalAttributeCount(0);
   }

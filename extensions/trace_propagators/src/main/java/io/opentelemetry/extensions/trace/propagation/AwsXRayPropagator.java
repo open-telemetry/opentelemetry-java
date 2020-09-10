@@ -150,7 +150,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
 
     String traceId = TraceId.getInvalid();
     String spanId = SpanId.getInvalid();
-    Boolean isSampled = TraceFlags.getDefault();
+    Boolean isSampled = false;
 
     int pos = 0;
     while (pos < traceHeader.length()) {
@@ -215,7 +215,8 @@ public class AwsXRayPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
-    return SpanContext.createFromRemoteParent(traceId, spanId, isSampled, TraceState.getDefault());
+    byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
+    return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
   private static String parseTraceId(String xrayTraceId) {

@@ -22,6 +22,7 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -69,8 +70,8 @@ public class JaegerPropagator implements TextMapPropagator {
       PARENT_SPAN_ID_OFFSET + PARENT_SPAN_ID_SIZE + PROPAGATION_HEADER_DELIMITER_SIZE;
   private static final int PROPAGATION_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
-  private static final boolean SAMPLED = true;
-  private static final boolean NOT_SAMPLED = false;
+  private static final byte SAMPLED = TraceFlags.getSampled();
+  private static final byte NOT_SAMPLED = TraceFlags.getDefault();
 
   private static final List<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
 
@@ -204,7 +205,7 @@ public class JaegerPropagator implements TextMapPropagator {
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
     try {
       int flagsInt = Integer.parseInt(flags);
-      boolean traceFlags = ((flagsInt & 1) == 1) ? SAMPLED : NOT_SAMPLED;
+      byte traceFlags = ((flagsInt & 1) == 1) ? SAMPLED : NOT_SAMPLED;
 
       String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
       String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);

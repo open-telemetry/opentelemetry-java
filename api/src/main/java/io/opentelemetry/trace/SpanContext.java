@@ -37,7 +37,7 @@ public abstract class SpanContext {
       create(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
-          /* isSampled=*/ false,
+          TraceFlags.getDefault(),
           TraceState.getDefault());
 
   /**
@@ -54,24 +54,20 @@ public abstract class SpanContext {
    *
    * @param traceIdHex the trace identifier of the span context.
    * @param spanIdHex the span identifier of the span context.
-   * @param isSampled if the underlying span should be sampled.
+   * @param traceFlags the byte representation of the {@link TraceFlags}
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0
    */
   public static SpanContext create(
-      String traceIdHex, String spanIdHex, boolean isSampled, TraceState traceState) {
-    return create(traceIdHex, spanIdHex, isSampled, traceState, /* remote=*/ false);
+      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
+    return create(traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ false);
   }
 
   private static SpanContext create(
-      String traceIdHex,
-      String spanIdHex,
-      boolean isSampled,
-      TraceState traceState,
-      boolean remote) {
+      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState, boolean remote) {
     return new AutoValue_SpanContext(
-        traceIdHex, spanIdHex, isSampled, traceState, /* remote$=*/ remote);
+        traceIdHex, spanIdHex, traceFlags, traceState, /* remote$=*/ remote);
   }
 
   /**
@@ -80,14 +76,14 @@ public abstract class SpanContext {
    *
    * @param traceIdHex the trace identifier of the span context.
    * @param spanIdHex the span identifier of the span context.
-   * @param isSampled if the underlying span should be sampled.
+   * @param traceFlags the byte representation of the {@link TraceFlags}
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      String traceIdHex, String spanIdHex, boolean isSampled, TraceState traceState) {
-    return create(traceIdHex, spanIdHex, isSampled, traceState, /* remote=*/ true);
+      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
+    return create(traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true);
   }
 
   abstract String getTraceIdHex();
@@ -137,7 +133,12 @@ public abstract class SpanContext {
   }
 
   /** Whether the span in this context is sampled. */
-  public abstract boolean isSampled();
+  public boolean isSampled() {
+    return (getTraceFlags() & 1) == 1;
+  }
+
+  /** The byte-representation of {@link TraceFlags}. */
+  public abstract byte getTraceFlags();
 
   public void copyTraceFlagsHexTo(char[] dest, int destOffset) {
     dest[destOffset] = '0';

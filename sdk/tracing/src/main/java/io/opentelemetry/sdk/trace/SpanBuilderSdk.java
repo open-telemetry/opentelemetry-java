@@ -34,6 +34,7 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
@@ -272,7 +273,8 @@ final class SpanBuilderSdk implements Span.Builder {
 
   private static SpanContext createSpanContext(
       String traceId, String spanId, TraceState traceState, boolean isSampled) {
-    return SpanContext.create(traceId, spanId, isSampled, traceState);
+    byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
+    return SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 
   private static Clock getClock(Span parent, Clock clock) {

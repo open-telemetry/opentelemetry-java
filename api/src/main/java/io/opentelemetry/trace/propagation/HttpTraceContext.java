@@ -174,7 +174,7 @@ public class HttpTraceContext implements TextMapPropagator {
       return SpanContext.createFromRemoteParent(
           contextFromParentHeader.getTraceIdAsHexString(),
           contextFromParentHeader.getSpanIdAsHexString(),
-          contextFromParentHeader.isSampled(),
+          contextFromParentHeader.getTraceFlags(),
           traceState);
     } catch (IllegalArgumentException e) {
       logger.info("Unparseable tracestate header. Returning span context without state.");
@@ -202,7 +202,7 @@ public class HttpTraceContext implements TextMapPropagator {
           traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getHexLength());
       String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getHexLength());
       if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
-        boolean isSampled = TraceFlags.isSampledFromHex(traceparent, TRACE_OPTION_OFFSET);
+        byte isSampled = TraceFlags.byteFromHex(traceparent, TRACE_OPTION_OFFSET);
         return SpanContext.createFromRemoteParent(traceId, spanId, isSampled, TRACE_STATE_DEFAULT);
       }
       return SpanContext.getInvalid();

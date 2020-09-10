@@ -35,6 +35,7 @@ import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collection;
 import java.util.Collections;
@@ -316,7 +317,8 @@ class AdapterTest {
   }
 
   private static SpanContext createSpanContext(String traceId, String spanId) {
-    return SpanContext.create(traceId, spanId, false, TraceState.builder().build());
+    return SpanContext.create(
+        traceId, spanId, TraceFlags.getDefault(), TraceState.builder().build());
   }
 
   @Nullable

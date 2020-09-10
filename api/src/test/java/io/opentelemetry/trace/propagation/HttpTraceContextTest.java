@@ -45,7 +45,7 @@ class HttpTraceContextTest {
       TraceState.builder().set("foo", "bar").set("bar", "baz").build();
   private static final String TRACE_ID_BASE16 = "ff000000000000000000000000000041";
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
-  private static final boolean SAMPLED_TRACE_OPTIONS = true;
+  private static final byte SAMPLED_TRACE_OPTIONS = TraceFlags.getSampled();
   private static final String TRACEPARENT_HEADER_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01";
   private static final String TRACEPARENT_HEADER_NOT_SAMPLED =

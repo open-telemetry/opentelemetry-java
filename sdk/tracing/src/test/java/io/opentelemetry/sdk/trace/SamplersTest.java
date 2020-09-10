@@ -44,13 +44,14 @@ class SamplersTest {
   private final String parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, /* isSampled=*/ true, traceState);
+      SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState);
   private final SpanContext notSampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
   private final SpanContext invalidSpanContext = SpanContext.getInvalid();
   private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpanContext);
   private final SpanContext sampledRemoteSpanContext =
-      SpanContext.createFromRemoteParent(traceId, parentSpanId, /* isSampled= */ true, traceState);
+      SpanContext.createFromRemoteParent(
+          traceId, parentSpanId, TraceFlags.getSampled(), traceState);
   private final SpanContext notSampledRemoteSpanContext =
       SpanContext.createFromRemoteParent(
           traceId, parentSpanId, TraceFlags.getDefault(), traceState);

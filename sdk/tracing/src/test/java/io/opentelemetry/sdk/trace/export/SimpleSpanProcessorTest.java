@@ -34,6 +34,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExpor
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.Tracer;
@@ -65,7 +66,7 @@ class SimpleSpanProcessorTest {
       SpanContext.create(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
-          /* isSampled=*/ true,
+          TraceFlags.getSampled(),
           TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
 

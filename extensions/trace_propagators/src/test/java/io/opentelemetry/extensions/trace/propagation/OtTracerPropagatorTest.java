@@ -41,7 +41,7 @@ class OtTracerPropagatorTest {
   private static final String SHORT_TRACE_ID = "ff00000000000000";
   private static final String SHORT_TRACE_ID_FULL = "0000000000000000ff00000000000000";
   private static final String SPAN_ID = "ff00000000000041";
-  private static final boolean SAMPLED_TRACE_OPTIONS = true;
+  private static final byte SAMPLED_TRACE_OPTIONS = TraceFlags.getSampled();
   private static final Setter<Map<String, String>> setter = Map::put;
   private static final Getter<Map<String, String>> getter = Map::get;
   private final OtTracerPropagator propagator = OtTracerPropagator.getInstance();

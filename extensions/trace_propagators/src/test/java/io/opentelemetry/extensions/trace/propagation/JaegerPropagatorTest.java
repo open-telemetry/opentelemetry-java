@@ -57,7 +57,7 @@ class JaegerPropagatorTest {
   private static final long SPAN_ID_LONG = 97321L;
   private static final String SPAN_ID = SpanId.fromLong(SPAN_ID_LONG);
   private static final long DEPRECATED_PARENT_SPAN_LONG = 0L;
-  private static final boolean SAMPLED_TRACE_OPTIONS = true;
+  private static final byte SAMPLED_TRACE_OPTIONS = TraceFlags.getSampled();
   private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
   private static final TextMapPropagator.Getter<Map<String, String>> getter =
       new TextMapPropagator.Getter<Map<String, String>>() {
