@@ -14,20 +14,26 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.logging;
+package io.opentelemetry.logging.api;
 
-import io.opentelemetry.logging.api.LogRecord;
-import java.util.Collection;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 
-/**
- * A LoggingBatchExporter accepts a batch of records and handles the transmission of those records
- * to a remote system.
- */
-public interface LoggingBatchExporter {
+public interface LogProcessor {
+
+  void addLogRecord(LogRecord record);
+
   /**
-   * Accept a batch of records for transmission or export.
+   * Called when {@link TracerSdkProvider#shutdown()} is called.
    *
-   * @param batch list of records ready for transport
+   * <p>Implementations must ensure that all span events are processed before returning.
    */
-  void handleLogRecordBatch(Collection<LogRecord> batch);
+  void shutdown();
+
+  /**
+   * Processes all span events that have not yet been processed.
+   *
+   * <p>This method is executed synchronously on the calling thread, and should not throw
+   * exceptions.
+   */
+  void forceFlush();
 }

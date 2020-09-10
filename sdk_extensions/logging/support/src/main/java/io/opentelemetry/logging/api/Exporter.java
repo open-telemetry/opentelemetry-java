@@ -16,6 +16,7 @@
 
 package io.opentelemetry.logging.api;
 
+import io.opentelemetry.sdk.common.export.CompletableResultCode;
 import java.util.Collection;
 
 /**
@@ -23,5 +24,7 @@ import java.util.Collection;
  * ultimate destination.
  */
 public interface Exporter {
-  void accept(Collection<LogRecord> records);
+  CompletableResultCode accept(Collection<LogRecord> records);
+
+  void shutdown();
 }
