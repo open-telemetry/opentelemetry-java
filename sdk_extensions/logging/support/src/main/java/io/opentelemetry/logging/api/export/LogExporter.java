@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.logging.api;
+package io.opentelemetry.logging.api.export;
 
+import io.opentelemetry.logging.api.LogRecord;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Collection;
 
@@ -23,8 +24,8 @@ import java.util.Collection;
  * An exporter is responsible for taking a list of {@link LogRecord}s and transmitting them to their
  * ultimate destination.
  */
-public interface Exporter {
-  CompletableResultCode accept(Collection<LogRecord> records);
+public interface LogExporter {
+  CompletableResultCode export(Collection<LogRecord> records);
 
-  void shutdown();
+  CompletableResultCode shutdown();
 }

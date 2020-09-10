@@ -19,9 +19,9 @@ package io.opentelemetry.logging;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.logging.api.Exporter;
 import io.opentelemetry.logging.api.LogProcessor;
 import io.opentelemetry.logging.api.LogRecord;
+import io.opentelemetry.logging.api.export.LogExporter;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
@@ -59,16 +59,16 @@ public class BatchLogProcessor implements LogProcessor {
       long scheduleDelayMillis,
       int maxExportBatchSize,
       long exporterTimeout,
-      Exporter exporter) {
+      LogExporter logExporter) {
     this.worker =
         new Worker(
-            maxQueueSize, scheduleDelayMillis, maxExportBatchSize, exporterTimeout, exporter);
+            maxQueueSize, scheduleDelayMillis, maxExportBatchSize, exporterTimeout, logExporter);
     this.workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     this.workerThread.start();
   }
 
-  public static Builder builder(Exporter exporter) {
-    return new Builder(exporter);
+  public static Builder builder(LogExporter logExporter) {
+    return new Builder(logExporter);
   }
 
   @Override
@@ -118,7 +118,7 @@ public class BatchLogProcessor implements LogProcessor {
     private final ArrayList<LogRecord> logRecords;
     private final int maxExportBatchSize;
     private final ExecutorService executor;
-    private final Exporter exporter;
+    private final LogExporter logExporter;
     private final Timer timer = new Timer(TIMER_THREAD_NAME, /* isDaemon= */ true);
     private final long exporterTimeout;
 
@@ -127,13 +127,13 @@ public class BatchLogProcessor implements LogProcessor {
         long scheduleDelayMillis,
         int maxExportBatchSize,
         long exporterTimeout,
-        Exporter exporter) {
+        LogExporter logExporter) {
       this.maxQueueSize = maxQueueSize;
       this.maxExportBatchSize = maxExportBatchSize;
 
       this.exporterTimeout = exporterTimeout;
       this.scheduleDelayMillis = scheduleDelayMillis;
-      this.exporter = exporter;
+      this.logExporter = logExporter;
       this.logRecords = new ArrayList<>(maxQueueSize);
       // We should be able to drain a full queue without dropping a batch
       int exportQueueSize = maxQueueSize / maxExportBatchSize;
@@ -190,7 +190,7 @@ public class BatchLogProcessor implements LogProcessor {
               new Callable<CompletableResultCode>() {
                 @Override
                 public CompletableResultCode call() {
-                  return exporter.accept(logDataForExport);
+                  return logExporter.export(logDataForExport);
                 }
               });
 
@@ -246,7 +246,7 @@ public class BatchLogProcessor implements LogProcessor {
     private void shutdown() {
       forceFlush();
       timer.cancel();
-      exporter.shutdown();
+      logExporter.shutdown();
     }
 
     private void forceFlush() {
@@ -260,35 +260,39 @@ public class BatchLogProcessor implements LogProcessor {
   }
 
   static class Builder extends ConfigBuilder<Builder> {
-    /* @VisibleForTesting */ static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
+    static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 200;
     static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
     static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
     static final long DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
 
-    private final Exporter exporter;
+    private final LogExporter logExporter;
     private long scheduleDelayMillis = DEFAULT_SCHEDULE_DELAY_MILLIS;
     private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
     private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
     private long exporterTimeoutMillis = DEFAULT_EXPORT_TIMEOUT_MILLIS;
 
-    private Builder(Exporter exporter) {
-      this.exporter = Utils.checkNotNull(exporter, "Exporter argument can not be null");
+    private Builder(LogExporter logExporter) {
+      this.logExporter = Utils.checkNotNull(logExporter, "Exporter argument can not be null");
     }
 
-    public Builder newBuilder(Exporter exporter) {
-      return new Builder(exporter);
+    public Builder newBuilder(LogExporter logExporter) {
+      return new Builder(logExporter);
     }
 
     public BatchLogProcessor build() {
       return new BatchLogProcessor(
-          maxQueueSize, scheduleDelayMillis, maxExportBatchSize, exporterTimeoutMillis, exporter);
+          maxQueueSize,
+          scheduleDelayMillis,
+          maxExportBatchSize,
+          exporterTimeoutMillis,
+          logExporter);
     }
 
     /**
      * Sets the delay interval between two consecutive exports. The actual interval may be shorter
      * if the batch size is getting larger than {@code maxQueuedSpans / 2}.
      *
-     * <p>Default value is {@code 5000}ms.
+     * <p>Default value is {@code 250}ms.
      *
      * @param scheduleDelayMillis the delay interval between two consecutive exports.
      * @return this.

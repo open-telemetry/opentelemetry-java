@@ -20,11 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 
-import io.opentelemetry.logging.api.Exporter;
 import io.opentelemetry.logging.api.LogProcessor;
 import io.opentelemetry.logging.api.LogRecord;
 import io.opentelemetry.logging.api.LogRecord.Severity;
 import io.opentelemetry.logging.api.LogSink;
+import io.opentelemetry.logging.api.export.LogExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,13 +36,13 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class LogSinkSdkProviderTest {
-  private static class TestExporter implements Exporter {
+  private static class TestLogExporter implements LogExporter {
     private final ArrayList<LogRecord> records = new ArrayList<>();
     @Nullable private Runnable onCall = null;
     private int callCount = 0;
 
     @Override
-    public CompletableResultCode accept(Collection<LogRecord> records) {
+    public CompletableResultCode export(Collection<LogRecord> records) {
       this.records.addAll(records);
       callCount++;
       if (onCall != null) {
@@ -52,7 +52,9 @@ public class LogSinkSdkProviderTest {
     }
 
     @Override
-    public void shutdown() {}
+    public CompletableResultCode shutdown() {
+      return new CompletableResultCode().succeed();
+    }
   }
 
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
@@ -65,7 +67,7 @@ public class LogSinkSdkProviderTest {
 
   @Test
   public void testLogSinkSdkProvider() {
-    TestExporter exporter = new TestExporter();
+    TestLogExporter exporter = new TestLogExporter();
     LogProcessor processor = BatchLogProcessor.builder(exporter).build();
     LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
     provider.addLogProcessor(processor);
@@ -78,7 +80,7 @@ public class LogSinkSdkProviderTest {
 
   @Test
   public void testBatchSize() {
-    TestExporter exporter = new TestExporter();
+    TestLogExporter exporter = new TestLogExporter();
     LogProcessor processor =
         BatchLogProcessor.builder(exporter)
             .setScheduleDelayMillis(3000) // Long enough to not be in play
@@ -93,16 +95,16 @@ public class LogSinkSdkProviderTest {
       sink.offer(createLog(Severity.WARN, "test #" + i));
     }
     // Ensure that more than batch size kicks off a flush
-    await().atMost(120, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() > 0);
+    await().atMost(500, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() > 0);
     // Ensure that everything gets through
     provider.forceFlush();
-    await().atMost(120, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() == 7);
-    assertThat(exporter.callCount).isEqualTo(2);
+    await().atMost(500, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() == 7);
+    assertThat(exporter.callCount).isGreaterThanOrEqualTo(2);
   }
 
   @Test
   public void testNoBlocking() {
-    TestExporter exporter = new TestExporter();
+    TestLogExporter exporter = new TestLogExporter();
     exporter.onCall =
         () -> {
           try {
@@ -127,7 +129,7 @@ public class LogSinkSdkProviderTest {
     }
     long end = System.currentTimeMillis();
     assertThat(end - start).isLessThan(250L);
-    await().atMost(510, TimeUnit.MILLISECONDS).until(() -> exporter.callCount == 2);
+    await().atMost(1000, TimeUnit.MILLISECONDS).until(() -> exporter.callCount == 2);
     assertThat(exporter.records.size()) // Two exporter batches
         .isGreaterThan(5)
         .isLessThanOrEqualTo(10);

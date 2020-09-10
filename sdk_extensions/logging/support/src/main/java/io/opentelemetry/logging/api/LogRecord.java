@@ -33,11 +33,9 @@ import javax.annotation.Nullable;
 public abstract class LogRecord {
   abstract long getTimeUnixNano();
 
-  @SuppressWarnings("mutable")
-  abstract byte[] getTraceId();
+  abstract String getTraceId();
 
-  @SuppressWarnings("mutable")
-  abstract byte[] getSpanId();
+  abstract String getSpanId();
 
   abstract int getFlags();
 
@@ -94,8 +92,8 @@ public abstract class LogRecord {
 
   public static class Builder {
     private long timeUnixNano;
-    private byte[] traceId = new byte[0];
-    private byte[] spanId = new byte[0];
+    private String traceId = "";
+    private String spanId = "";
     private int flags;
     private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
     private String severityText;
@@ -112,12 +110,12 @@ public abstract class LogRecord {
       return withUnixTimeNano(TimeUnit.MILLISECONDS.toNanos(timestamp));
     }
 
-    public Builder withTraceId(byte[] traceId) {
+    public Builder withTraceId(String traceId) {
       this.traceId = traceId;
       return this;
     }
 
-    public Builder withSpanId(byte[] spanId) {
+    public Builder withSpanId(String spanId) {
       this.spanId = spanId;
       return this;
     }
