@@ -37,7 +37,7 @@ public abstract class AnyValue {
   public enum Type {
     STRING,
     BOOL,
-    INT,
+    INT64,
     DOUBLE,
     ARRAY,
     KVLIST
@@ -67,14 +67,14 @@ public abstract class AnyValue {
   /**
    * Returns an {@code AnyValue} with an int value.
    *
-   * @param intValue The new value.
+   * @param longValue The new value.
    * @return an {@code AnyValue} with a int value.
    */
-  public static AnyValue intAnyValue(int intValue) {
-    return AnyValueInt.create(intValue);
+  public static AnyValue longAnyValue(long longValue) {
+    return AnyValueLong.create(longValue);
   }
 
-  public int getIntValue() {
+  public long getLongValue() {
     throw new UnsupportedOperationException(
         String.format("This type can only return %s data", getType().name()));
   }
@@ -186,20 +186,20 @@ public abstract class AnyValue {
 
   @Immutable
   @AutoValue
-  abstract static class AnyValueInt extends AnyValue {
-    AnyValueInt() {}
+  abstract static class AnyValueLong extends AnyValue {
+    AnyValueLong() {}
 
-    static AnyValue create(int intValue) {
-      return new AutoValue_AnyValue_AnyValueInt(intValue);
+    static AnyValue create(long longValue) {
+      return new AutoValue_AnyValue_AnyValueLong(longValue);
     }
 
     @Override
     public final Type getType() {
-      return Type.INT;
+      return Type.INT64;
     }
 
     @Override
-    public abstract int getIntValue();
+    public abstract long getLongValue();
   }
 
   @Immutable
