@@ -16,13 +16,12 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.internal.StringUtils;
@@ -50,9 +49,9 @@ public abstract class Resource {
   private static final Resource EMPTY = create(Attributes.empty());
 
   // todo: move to ResourceAttributes
-  private static final StringKey SDK_NAME = stringKey("telemetry.sdk.name");
-  private static final StringKey SDK_LANGUAGE = stringKey("telemetry.sdk.language");
-  private static final StringKey SDK_VERSION = stringKey("telemetry.sdk.version");
+  private static final AttributeKey<String> SDK_NAME = stringKey("telemetry.sdk.name");
+  private static final AttributeKey<String> SDK_LANGUAGE = stringKey("telemetry.sdk.language");
+  private static final AttributeKey<String> SDK_VERSION = stringKey("telemetry.sdk.version");
 
   private static final Resource TELEMETRY_SDK;
 
@@ -220,6 +219,6 @@ public abstract class Resource {
    * @return whether the name is valid.
    */
   private static boolean isValidAndNotEmpty(AttributeKey<?> name) {
-    return !name.get().isEmpty() && isValid(name.get());
+    return !name.getKey().isEmpty() && isValid(name.getKey());
   }
 }

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.logging;
 
-import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -16,21 +16,21 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKeyImpl.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
-import static io.opentelemetry.common.AttributeKeyImpl.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.doubleKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longArrayKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
-import io.opentelemetry.common.AttributeKeyImpl.StringKey;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.context.Scope;
@@ -527,7 +527,7 @@ class SpanBuilderSdkTest {
   @Test
   void sampler_decisionAttributes() {
     final String samplerAttributeName = "sampler-attribute";
-    StringKey samplerAttributeKey = stringKey(samplerAttributeName);
+    AttributeKey<String> samplerAttributeKey = stringKey(samplerAttributeName);
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
             TestUtils.startSpanWithSampler(
@@ -561,7 +561,7 @@ class SpanBuilderSdkTest {
                         return "test sampler";
                       }
                     },
-                    Collections.singletonMap(samplerAttributeKey.get(), "none"))
+                    Collections.singletonMap(samplerAttributeKey.getKey(), "none"))
                 .startSpan();
     try {
       assertThat(span.getContext().isSampled()).isTrue();

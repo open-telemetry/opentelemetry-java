@@ -16,10 +16,10 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 
-import io.opentelemetry.common.AttributeKeyImpl;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -48,8 +48,8 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanPipelineBenchmark {
 
-  private static final AttributeKeyImpl.StringKey LINK_ATTRIBUTE_KEY = stringKey("linkAttr");
-  private static final AttributeKeyImpl.BooleanKey FINALIZED_KEY = booleanKey("finalized");
+  private static final AttributeKey<String> LINK_ATTRIBUTE_KEY = stringKey("linkAttr");
+  private static final AttributeKey<Boolean> FINALIZED_KEY = booleanKey("finalized");
   private final TracerSdk tracerSdk = OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
 
   @Setup(Level.Trial)

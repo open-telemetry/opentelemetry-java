@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;

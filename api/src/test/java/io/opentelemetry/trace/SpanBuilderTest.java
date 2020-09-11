@@ -16,7 +16,7 @@
 
 package io.opentelemetry.trace;
 
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

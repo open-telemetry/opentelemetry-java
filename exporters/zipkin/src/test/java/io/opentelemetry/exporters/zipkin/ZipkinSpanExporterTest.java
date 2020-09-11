@@ -16,14 +16,14 @@
 
 package io.opentelemetry.exporters.zipkin;
 
-import static io.opentelemetry.common.AttributeKeyImpl.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
-import static io.opentelemetry.common.AttributeKeyImpl.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.doubleKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longArrayKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -210,8 +210,8 @@ class ZipkinSpanExporterTest {
             buildZipkinSpan(Span.Kind.CLIENT)
                 .toBuilder()
                 .clearTags()
-                .putTag(SemanticAttributes.HTTP_STATUS_CODE.get(), "404")
-                .putTag(SemanticAttributes.HTTP_STATUS_TEXT.get(), "NOT FOUND")
+                .putTag(SemanticAttributes.HTTP_STATUS_CODE.getKey(), "404")
+                .putTag(SemanticAttributes.HTTP_STATUS_TEXT.getKey(), "NOT FOUND")
                 .putTag("error", "A user provided error")
                 .build());
   }
@@ -233,9 +233,9 @@ class ZipkinSpanExporterTest {
             buildZipkinSpan(Span.Kind.SERVER)
                 .toBuilder()
                 .putTag(ZipkinSpanExporter.GRPC_STATUS_DESCRIPTION, errorMessage)
-                .putTag(SemanticAttributes.RPC_SERVICE.get(), "my service name")
+                .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .putTag(ZipkinSpanExporter.GRPC_STATUS_CODE, "DEADLINE_EXCEEDED")
-                .putTag(ZipkinSpanExporter.STATUS_ERROR.get(), "DEADLINE_EXCEEDED")
+                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "DEADLINE_EXCEEDED")
                 .build());
   }
 

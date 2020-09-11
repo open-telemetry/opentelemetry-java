@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.nestedcallbacks;
 
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;

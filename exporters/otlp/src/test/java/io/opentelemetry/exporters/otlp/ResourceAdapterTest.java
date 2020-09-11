@@ -16,10 +16,10 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
-import static io.opentelemetry.common.AttributeKeyImpl.doubleKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Attributes;

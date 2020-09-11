@@ -16,11 +16,10 @@
 
 package io.opentelemetry.extensions.trace;
 
-import static io.opentelemetry.common.AttributeKeyImpl.longKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 
-import io.opentelemetry.common.AttributeKeyImpl.LongKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringKey;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Event;
 import javax.annotation.concurrent.Immutable;
@@ -39,10 +38,10 @@ import javax.annotation.concurrent.Immutable;
 public final class MessageEvent implements Event {
 
   private static final String EVENT_NAME = "message";
-  private static final StringKey TYPE = stringKey("message.type");
-  private static final LongKey ID = longKey("message.id");
-  private static final LongKey COMPRESSED_SIZE = longKey("message.compressed_size");
-  private static final LongKey UNCOMPRESSED_SIZE = longKey("message.uncompressed_size");
+  private static final AttributeKey<String> TYPE = stringKey("message.type");
+  private static final AttributeKey<Long> ID = longKey("message.id");
+  private static final AttributeKey<Long> COMPRESSED_SIZE = longKey("message.compressed_size");
+  private static final AttributeKey<Long> UNCOMPRESSED_SIZE = longKey("message.uncompressed_size");
 
   /**
    * Available types for a {@code MessageEvent}.

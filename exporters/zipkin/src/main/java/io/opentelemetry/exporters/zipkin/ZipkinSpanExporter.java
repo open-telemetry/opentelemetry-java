@@ -16,12 +16,11 @@
 
 package io.opentelemetry.exporters.zipkin;
 
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import io.opentelemetry.common.AttributeType;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -88,7 +87,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   // Note: these 3 fields are non-private for testing
   static final String GRPC_STATUS_CODE = "grpc.status_code";
   static final String GRPC_STATUS_DESCRIPTION = "grpc.status_description";
-  static final StringKey STATUS_ERROR = stringKey("error");
+  static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.instrumentation_library.name";
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.instrumentation_library.version";
@@ -154,7 +153,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
         new AttributeConsumer() {
           @Override
           public <T> void consume(AttributeKey<T> key, T value) {
-            spanBuilder.putTag(key.get(), valueToString(key, value));
+            spanBuilder.putTag(key.getKey(), valueToString(key, value));
           }
         });
     Status status = spanData.getStatus();
@@ -167,7 +166,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
     // add the error tag, if it isn't already in the source span.
     if (status != null && !status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
-      spanBuilder.putTag(STATUS_ERROR.get(), status.getCanonicalCode().toString());
+      spanBuilder.putTag(STATUS_ERROR.getKey(), status.getCanonicalCode().toString());
     }
 
     InstrumentationLibraryInfo instrumentationLibraryInfo =

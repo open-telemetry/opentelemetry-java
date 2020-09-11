@@ -19,7 +19,7 @@ package io.opentelemetry.common;
 import java.util.List;
 
 @SuppressWarnings("rawtypes")
-public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
+abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   private final String key;
 
   AttributeKeyImpl(String key) {
@@ -27,7 +27,7 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   }
 
   @Override
-  public String get() {
+  public String getKey() {
     return key;
   }
 
@@ -57,15 +57,11 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
 
   @Override
   public int compareTo(AttributeKey o) {
-    return get().compareTo(o.get());
+    return getKey().compareTo(o.getKey());
   }
 
-  public static StringKey stringKey(String key) {
-    return new StringKey(key);
-  }
-
-  public static class StringKey extends AttributeKeyImpl<String> {
-    private StringKey(String key) {
+  static class StringKey extends AttributeKeyImpl<String> {
+    StringKey(String key) {
       super(key);
     }
 
@@ -75,12 +71,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
   }
 
-  public static BooleanKey booleanKey(String key) {
-    return new BooleanKey(key);
-  }
-
-  public static class BooleanKey extends AttributeKeyImpl<Boolean> {
-    private BooleanKey(String key) {
+  static class BooleanKey extends AttributeKeyImpl<Boolean> {
+    BooleanKey(String key) {
       super(key);
     }
 
@@ -90,12 +82,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
   }
 
-  public static LongKey longKey(String key) {
-    return new LongKey(key);
-  }
-
-  public static class LongKey extends AttributeKeyImpl<Long> {
-    private LongKey(String key) {
+  static class LongKey extends AttributeKeyImpl<Long> {
+    LongKey(String key) {
       super(key);
     }
 
@@ -105,12 +93,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
   }
 
-  public static DoubleKey doubleKey(String key) {
-    return new DoubleKey(key);
-  }
-
-  public static class DoubleKey extends AttributeKeyImpl<Double> {
-    private DoubleKey(String key) {
+  static class DoubleKey extends AttributeKeyImpl<Double> {
+    DoubleKey(String key) {
       super(key);
     }
 
@@ -120,12 +104,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
   }
 
-  public static StringArrayKey stringArrayKey(String key) {
-    return new StringArrayKey(key);
-  }
-
-  public static class StringArrayKey extends AttributeKeyImpl<List<String>> {
-    private StringArrayKey(String key) {
+  static class StringArrayKey extends AttributeKeyImpl<List<String>> {
+    StringArrayKey(String key) {
       super(key);
     }
 
@@ -135,12 +115,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
   }
 
-  public static BooleanArrayKey booleanArrayKey(String key) {
-    return new BooleanArrayKey(key);
-  }
-
-  public static class BooleanArrayKey extends AttributeKeyImpl<List<Boolean>> {
-    private BooleanArrayKey(String key) {
+  static class BooleanArrayKey extends AttributeKeyImpl<List<Boolean>> {
+    BooleanArrayKey(String key) {
       super(key);
     }
 
@@ -150,12 +126,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
   }
 
-  public static LongArrayKey longArrayKey(String key) {
-    return new LongArrayKey(key);
-  }
-
-  public static class LongArrayKey extends AttributeKeyImpl<List<Long>> {
-    private LongArrayKey(String key) {
+  static class LongArrayKey extends AttributeKeyImpl<List<Long>> {
+    LongArrayKey(String key) {
       super(key);
     }
 
@@ -165,12 +137,8 @@ public abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
     }
   }
 
-  public static DoubleArrayKey doubleArrayKey(String key) {
-    return new DoubleArrayKey(key);
-  }
-
-  public static class DoubleArrayKey extends AttributeKeyImpl<List<Double>> {
-    private DoubleArrayKey(String key) {
+  static class DoubleArrayKey extends AttributeKeyImpl<List<Double>> {
+    DoubleArrayKey(String key) {
       super(key);
     }
 

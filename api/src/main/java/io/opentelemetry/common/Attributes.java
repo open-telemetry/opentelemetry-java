@@ -16,14 +16,14 @@
 
 package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributeKeyImpl.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
-import static io.opentelemetry.common.AttributeKeyImpl.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.doubleKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longArrayKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
@@ -35,7 +35,8 @@ import javax.annotation.concurrent.Immutable;
 /**
  * An immutable container for attributes.
  *
- * <p>The keys are {@link AttributeKey}s and the values are Object instances.
+ * <p>The keys are {@link AttributeKey}s and the values are Object instances that match the type of
+ * the provided key.
  */
 @SuppressWarnings("rawtypes")
 @Immutable
@@ -148,7 +149,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     // null out any empty keys
     for (int i = 0; i < data.length; i += 2) {
       AttributeKey<?> key = (AttributeKey<?>) data[i];
-      if (key != null && (key.get() == null || "".equals(key.get()))) {
+      if (key != null && (key.getKey() == null || "".equals(key.getKey()))) {
         data[i] = null;
       }
     }
@@ -198,7 +199,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
     /** Sets a {@link AttributeKey} with associated value into this. */
     public <T> Builder setAttribute(AttributeKey<T> key, T value) {
-      if (key == null || key.get().length() == 0) {
+      if (key == null || key.getKey().length() == 0) {
         return this;
       }
       if (value == null) {

@@ -16,13 +16,13 @@
 
 package io.opentelemetry.trace;
 
-import static io.opentelemetry.common.AttributeKeyImpl.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
-import static io.opentelemetry.common.AttributeKeyImpl.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringArrayKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
+import static io.opentelemetry.common.AttributesKeys.longArrayKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Attributes;

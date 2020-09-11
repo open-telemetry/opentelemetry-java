@@ -16,10 +16,10 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
-import static io.opentelemetry.common.AttributeKeyImpl.doubleKey;
-import static io.opentelemetry.common.AttributeKeyImpl.longKey;
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeConsumer;
@@ -308,7 +308,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public <T> void setAttribute(AttributeKey<T> key, T value) {
-    if (key == null || key.get() == null || key.get().length() == 0) {
+    if (key == null || key.getKey() == null || key.getKey().length() == 0) {
       return;
     }
     synchronized (lock) {

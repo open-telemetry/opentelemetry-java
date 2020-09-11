@@ -17,14 +17,6 @@
 package io.opentelemetry.exporters.otlp;
 
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.AttributeKeyImpl.BooleanArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
-import io.opentelemetry.common.AttributeKeyImpl.DoubleArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.DoubleKey;
-import io.opentelemetry.common.AttributeKeyImpl.LongArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.LongKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
@@ -35,95 +27,95 @@ import java.util.List;
 final class CommonAdapter {
   @SuppressWarnings("unchecked")
   public static <T> KeyValue toProtoAttribute(AttributeKey<T> key, T value) {
-    KeyValue.Builder builder = KeyValue.newBuilder().setKey(key.get());
+    KeyValue.Builder builder = KeyValue.newBuilder().setKey(key.getKey());
     switch (key.getType()) {
       case STRING:
-        return makeStringKeyValue((StringKey) key, (String) value);
+        return makeStringKeyValue(key, (String) value);
       case BOOLEAN:
-        return makeBooleanKeyValue((BooleanKey) key, (boolean) value);
+        return makeBooleanKeyValue(key, (boolean) value);
       case LONG:
-        return makeLongKeyValue((LongKey) key, (Long) value);
+        return makeLongKeyValue(key, (Long) value);
       case DOUBLE:
-        return makeDoubleKeyValue((DoubleKey) key, (Double) value);
+        return makeDoubleKeyValue(key, (Double) value);
       case BOOLEAN_ARRAY:
-        return makeBooleanArrayKeyValue((BooleanArrayKey) key, (List<Boolean>) value);
+        return makeBooleanArrayKeyValue(key, (List<Boolean>) value);
       case LONG_ARRAY:
-        return makeLongArrayKeyValue((LongArrayKey) key, (List<Long>) value);
+        return makeLongArrayKeyValue(key, (List<Long>) value);
       case DOUBLE_ARRAY:
-        return makeDoubleArrayKeyValue((DoubleArrayKey) key, (List<Double>) value);
+        return makeDoubleArrayKeyValue(key, (List<Double>) value);
       case STRING_ARRAY:
-        return makeStringArrayKeyValue((StringArrayKey) key, (List<String>) value);
+        return makeStringArrayKeyValue(key, (List<String>) value);
     }
     return builder.setValue(AnyValue.getDefaultInstance()).build();
   }
 
-  private static KeyValue makeLongArrayKeyValue(LongArrayKey key, List<Long> value) {
+  private static KeyValue makeLongArrayKeyValue(AttributeKey<?> key, List<Long> value) {
     KeyValue.Builder keyValueBuilder =
         KeyValue.newBuilder()
-            .setKey(key.get())
+            .setKey(key.getKey())
             .setValue(AnyValue.newBuilder().setArrayValue(makeLongArrayAnyValue(value)).build());
 
     return keyValueBuilder.build();
   }
 
-  private static KeyValue makeDoubleArrayKeyValue(DoubleArrayKey key, List<Double> value) {
+  private static KeyValue makeDoubleArrayKeyValue(AttributeKey<?> key, List<Double> value) {
     KeyValue.Builder keyValueBuilder =
         KeyValue.newBuilder()
-            .setKey(key.get())
+            .setKey(key.getKey())
             .setValue(AnyValue.newBuilder().setArrayValue(makeDoubleArrayAnyValue(value)).build());
 
     return keyValueBuilder.build();
   }
 
-  private static KeyValue makeBooleanArrayKeyValue(BooleanArrayKey key, List<Boolean> value) {
+  private static KeyValue makeBooleanArrayKeyValue(AttributeKey<?> key, List<Boolean> value) {
     KeyValue.Builder keyValueBuilder =
         KeyValue.newBuilder()
-            .setKey(key.get())
+            .setKey(key.getKey())
             .setValue(AnyValue.newBuilder().setArrayValue(makeBooleanArrayAnyValue(value)).build());
 
     return keyValueBuilder.build();
   }
 
-  private static KeyValue makeStringArrayKeyValue(StringArrayKey key, List<String> value) {
+  private static KeyValue makeStringArrayKeyValue(AttributeKey<?> key, List<String> value) {
     KeyValue.Builder keyValueBuilder =
         KeyValue.newBuilder()
-            .setKey(key.get())
+            .setKey(key.getKey())
             .setValue(AnyValue.newBuilder().setArrayValue(makeStringArrayAnyValue(value)).build());
 
     return keyValueBuilder.build();
   }
 
-  private static KeyValue makeLongKeyValue(LongKey key, long value) {
+  private static KeyValue makeLongKeyValue(AttributeKey<?> key, long value) {
     KeyValue.Builder keyValueBuilder =
         KeyValue.newBuilder()
-            .setKey(key.get())
+            .setKey(key.getKey())
             .setValue(AnyValue.newBuilder().setIntValue(value).build());
 
     return keyValueBuilder.build();
   }
 
-  private static KeyValue makeDoubleKeyValue(DoubleKey key, double value) {
+  private static KeyValue makeDoubleKeyValue(AttributeKey<?> key, double value) {
     KeyValue.Builder keyValueBuilder =
         KeyValue.newBuilder()
-            .setKey(key.get())
+            .setKey(key.getKey())
             .setValue(AnyValue.newBuilder().setDoubleValue(value).build());
 
     return keyValueBuilder.build();
   }
 
-  private static KeyValue makeBooleanKeyValue(BooleanKey key, boolean value) {
+  private static KeyValue makeBooleanKeyValue(AttributeKey<?> key, boolean value) {
     KeyValue.Builder keyValueBuilder =
         KeyValue.newBuilder()
-            .setKey(key.get())
+            .setKey(key.getKey())
             .setValue(AnyValue.newBuilder().setBoolValue(value).build());
 
     return keyValueBuilder.build();
   }
 
-  private static KeyValue makeStringKeyValue(StringKey key, String value) {
+  private static KeyValue makeStringKeyValue(AttributeKey<?> key, String value) {
     KeyValue.Builder keyValueBuilder =
         KeyValue.newBuilder()
-            .setKey(key.get())
+            .setKey(key.getKey())
             .setValue(AnyValue.newBuilder().setStringValue(value).build());
 
     return keyValueBuilder.build();

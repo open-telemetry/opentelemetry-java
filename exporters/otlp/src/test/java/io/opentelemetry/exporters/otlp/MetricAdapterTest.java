@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static io.opentelemetry.common.AttributeKeyImpl.stringKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;

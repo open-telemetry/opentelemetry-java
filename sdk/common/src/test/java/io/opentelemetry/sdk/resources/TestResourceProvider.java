@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.common.AttributeKeyImpl.longKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
 
 import io.opentelemetry.common.Attributes;
 

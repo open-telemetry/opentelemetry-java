@@ -16,11 +16,11 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKeyImpl.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
-import io.opentelemetry.common.AttributeKeyImpl.DoubleKey;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
@@ -48,7 +48,7 @@ public final class Samplers {
    * <p>See https://github.com/open-telemetry/opentelemetry-specification/pull/570
    */
   // Visible for tests.
-  static final DoubleKey SAMPLING_PROBABILITY = doubleKey("sampling.probability");
+  static final AttributeKey<Double> SAMPLING_PROBABILITY = doubleKey("sampling.probability");
 
   private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
       SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLED);

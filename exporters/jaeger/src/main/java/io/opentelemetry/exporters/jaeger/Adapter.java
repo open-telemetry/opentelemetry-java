@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import static io.opentelemetry.common.AttributeKeyImpl.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
@@ -24,7 +24,6 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
@@ -41,7 +40,7 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Adapts OpenTelemetry objects to Jaeger objects. */
 @ThreadSafe
 final class Adapter {
-  static final BooleanKey KEY_ERROR = booleanKey("error");
+  static final AttributeKey<Boolean> KEY_ERROR = booleanKey("error");
   static final String KEY_LOG_MESSAGE = "message";
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
@@ -204,7 +203,7 @@ final class Adapter {
   @VisibleForTesting
   static <T> Model.KeyValue toKeyValue(AttributeKey<T> key, T value) {
     Model.KeyValue.Builder builder = Model.KeyValue.newBuilder();
-    builder.setKey(key.get());
+    builder.setKey(key.getKey());
 
     switch (key.getType()) {
       case STRING:
