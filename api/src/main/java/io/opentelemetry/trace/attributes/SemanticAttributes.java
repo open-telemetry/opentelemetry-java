@@ -310,27 +310,31 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter FAAS_INVOKED_REGION =
       StringAttributeSetter.create("faas.invoked_region");
 
-  // faas.trigger == datasource
-  /** The name of the source on which the operation was perfomed. */
+  /** For faas.trigger == datasource, the name of the source on which the operation was perfomed. */
   public static final StringAttributeSetter FAAS_DOCUMENT_COLLECTION =
       StringAttributeSetter.create("faas.document.collection");
-  /** Describes the type of the operation that was performed on the data. */
+  /**
+   * For faas.trigger == datasource, describes the type of the operation that was performed on the
+   * data.
+   */
   public static final StringAttributeSetter FAAS_DOCUMENT_OPERATION =
       StringAttributeSetter.create("faas.document.operation");
   /**
-   * A string containing the time when the data was accessed in the ISO 8601 format expressed in
-   * UTC.
+   * For faas.trigger == datasource, a string containing the time when the data was accessed in the
+   * ISO 8601 format expressed in UTC.
    */
   public static final StringAttributeSetter FAAS_DOCUMENT_TIME =
       StringAttributeSetter.create("faas.document.time");
-  /** The document name/table subjected to the operation. */
+  /** For faas.trigger == datasource, the document name/table subjected to the operation. */
   public static final StringAttributeSetter FAAS_DOCUMENT_NAME =
       StringAttributeSetter.create("faas.document.name");
 
-  // faas.trigger == timer
-  /** A string containing the function invocation time in the ISO 8601 format expressed in UTC. */
+  /**
+   * For faas.trigger == time, a string containing the function invocation time in the ISO 8601
+   * format expressed in UTC.
+   */
   public static final StringAttributeSetter FAAS_TIME = StringAttributeSetter.create("faas.time");
-  /** A string containing the schedule period as Cron Expression. */
+  /** For faas.trigger == time, a string containing the schedule period as Cron Expression. */
   public static final StringAttributeSetter FAAS_CRON = StringAttributeSetter.create("faas.cron");
 
   private SemanticAttributes() {}
