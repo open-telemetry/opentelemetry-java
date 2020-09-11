@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.logging;
+package io.opentelemetry.sdk.logging;
 
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.logging.api.LogProcessor;
-import io.opentelemetry.logging.api.LogRecord;
-import io.opentelemetry.logging.api.LogSink;
+import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
 import java.util.List;
 

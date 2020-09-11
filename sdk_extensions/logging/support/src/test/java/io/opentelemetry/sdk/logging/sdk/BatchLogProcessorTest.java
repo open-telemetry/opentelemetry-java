@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.logging;
+package io.opentelemetry.sdk.logging.sdk;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-import io.opentelemetry.logging.api.LogRecord;
-import io.opentelemetry.logging.api.export.LogExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
+import io.opentelemetry.sdk.logging.export.LogExporter;
 import java.util.Collection;
 import java.util.Properties;
 import org.junit.Test;

@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry Contrib Logging Support'
-ext.moduleName = "io.opentelemetry.extensions.logging.support"
+ext.moduleName = "io.opentelemetry.sdk.extensions.logging"
 
 dependencies {
     api project(':opentelemetry-sdk')

@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.logging;
+package io.opentelemetry.sdk.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 
-import io.opentelemetry.logging.api.LogProcessor;
-import io.opentelemetry.logging.api.LogRecord;
-import io.opentelemetry.logging.api.LogRecord.Severity;
-import io.opentelemetry.logging.api.LogSink;
-import io.opentelemetry.logging.api.export.LogExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.data.LogRecord.Severity;
+import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
+import io.opentelemetry.sdk.logging.export.LogExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +73,7 @@ public class LogSinkSdkProviderTest {
     LogSink sink = provider.get("test", "0.1a");
     sink.offer(createLog(Severity.ERROR, "test"));
     provider.forceFlush();
-    await().atMost(120, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() > 0);
+    await().atMost(500, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() > 0);
     assertThat(exporter.records.size()).isEqualTo(1);
   }
 

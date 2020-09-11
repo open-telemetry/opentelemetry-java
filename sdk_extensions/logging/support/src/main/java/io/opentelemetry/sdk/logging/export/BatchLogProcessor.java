@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.logging;
+package io.opentelemetry.sdk.logging.export;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.logging.api.LogProcessor;
-import io.opentelemetry.logging.api.LogRecord;
-import io.opentelemetry.logging.api.export.LogExporter;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.logging.LogProcessor;
+import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -258,7 +257,7 @@ public class BatchLogProcessor implements LogProcessor {
     }
   }
 
-  static class Builder extends ConfigBuilder<Builder> {
+  public static class Builder extends ConfigBuilder<Builder> {
     private static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 200;
     private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
     private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
@@ -275,7 +274,7 @@ public class BatchLogProcessor implements LogProcessor {
     private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
     private long exporterTimeoutMillis = DEFAULT_EXPORT_TIMEOUT_MILLIS;
 
-    private Builder(LogExporter logExporter) {
+    public Builder(LogExporter logExporter) {
       this.logExporter = Utils.checkNotNull(logExporter, "Exporter argument can not be null");
     }
 
@@ -283,6 +282,11 @@ public class BatchLogProcessor implements LogProcessor {
       return new Builder(logExporter);
     }
 
+    /**
+     * Build a BatchLogProcessor.
+     *
+     * @return configured processor
+     */
     public BatchLogProcessor build() {
       return new BatchLogProcessor(
           maxQueueSize,
@@ -307,7 +311,7 @@ public class BatchLogProcessor implements LogProcessor {
       return this;
     }
 
-    long getScheduleDelayMillis() {
+    public long getScheduleDelayMillis() {
       return scheduleDelayMillis;
     }
 
@@ -325,7 +329,7 @@ public class BatchLogProcessor implements LogProcessor {
       return this;
     }
 
-    long getExporterTimeoutMillis() {
+    public long getExporterTimeoutMillis() {
       return exporterTimeoutMillis;
     }
 
@@ -347,7 +351,7 @@ public class BatchLogProcessor implements LogProcessor {
       return this;
     }
 
-    int getMaxQueueSize() {
+    public int getMaxQueueSize() {
       return maxQueueSize;
     }
 
@@ -367,7 +371,7 @@ public class BatchLogProcessor implements LogProcessor {
       return this;
     }
 
-    int getMaxExportBatchSize() {
+    public int getMaxExportBatchSize() {
       return maxExportBatchSize;
     }
 

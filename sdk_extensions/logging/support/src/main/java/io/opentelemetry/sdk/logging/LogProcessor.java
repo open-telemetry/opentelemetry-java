@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.logging.api;
+package io.opentelemetry.sdk.logging;
 
+import io.opentelemetry.sdk.logging.data.LogRecord;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 
 public interface LogProcessor {

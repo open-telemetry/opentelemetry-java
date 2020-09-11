@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.common;
+package io.opentelemetry.sdk.logging.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.List;

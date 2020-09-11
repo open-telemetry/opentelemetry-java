@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.logging.api;
+package io.opentelemetry.sdk.logging.export;
 
-/** A LogSink accepts logging records for transmission to an aggregator or log processing system. */
-public interface LogSink {
-  /**
-   * Pass a record to the SDK for transmission to a logging exporter.
-   *
-   * @param record record to transmit
-   */
-  void offer(LogRecord record);
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logging.data.LogRecord;
+import java.util.Collection;
 
-  /**
-   * Convenience method for creating a record to be transmitted.
-   *
-   * @return builder instance
-   */
-  LogRecord.Builder buildRecord();
+/**
+ * An exporter is responsible for taking a list of {@link LogRecord}s and transmitting them to their
+ * ultimate destination.
+ */
+public interface LogExporter {
+  CompletableResultCode export(Collection<LogRecord> records);
+
+  CompletableResultCode shutdown();
 }
