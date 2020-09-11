@@ -69,6 +69,8 @@ class AbstractInstrumentBuilderTest {
     new TestInstrumentBuilder("METRIC_name", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
     new TestInstrumentBuilder("metric.name_01", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
     new TestInstrumentBuilder("metric_name.01", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
+    new TestInstrumentBuilder("metric/name.01", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
+    new TestInstrumentBuilder("metric/name_01", METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
     assertThrows(
         IllegalArgumentException.class,
         () ->

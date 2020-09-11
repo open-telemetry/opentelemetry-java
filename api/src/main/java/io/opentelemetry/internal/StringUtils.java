@@ -56,7 +56,7 @@ public final class StringUtils {
     if (metricName.isEmpty() || metricName.length() > NAME_MAX_LENGTH) {
       return false;
     }
-    String pattern = "[aA-zZ][aA-zZ0-9_\\-.]*";
+    String pattern = "[aA-zZ][aA-zZ0-9_\\-\\/.]*";
     return metricName.matches(pattern);
   }
 
