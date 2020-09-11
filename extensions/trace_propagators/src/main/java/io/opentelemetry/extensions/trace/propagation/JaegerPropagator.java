@@ -76,6 +76,16 @@ public class JaegerPropagator implements TextMapPropagator {
 
   private static final List<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
 
+  private static final JaegerPropagator INSTANCE = new JaegerPropagator();
+
+  private JaegerPropagator() {
+    // singleton
+  }
+
+  public static JaegerPropagator getInstance() {
+    return INSTANCE;
+  }
+
   @Override
   public List<String> fields() {
     return FIELDS;

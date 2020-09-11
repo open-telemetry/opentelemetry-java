@@ -16,11 +16,17 @@
 
 package io.opentelemetry.common;
 
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+
 /**
- * A read-only container for String-keyed attributes.
+ * Convenience interface for consuming {@link Labels}.
  *
- * <p>See {@link Attributes} for the public API implementation.
+ * <p>This interface should be considered to be a FunctionalInterface in the java 8+ meaning of that
+ * term.
+ *
+ * @since 0.9.0
  */
-public interface ReadableAttributes extends ReadableKeyValuePairs<String, AttributeValue> {
-  AttributeValue get(String key);
+public interface LabelConsumer extends KeyValueConsumer<String, String> {
+  @Override
+  void consume(String key, String value);
 }

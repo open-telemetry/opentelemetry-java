@@ -51,7 +51,7 @@ public class HttpTraceContextInjectBenchmark {
           createTestSpanContext("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
           createTestSpanContext("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
   private static final int COUNT = 5; // spanContexts.size()
-  private final HttpTraceContext httpTraceContext = new HttpTraceContext();
+  private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
   private final Map<String, String> carrier = new HashMap<>();
   private final Setter<Map<String, String>> setter =
       new Setter<Map<String, String>>() {

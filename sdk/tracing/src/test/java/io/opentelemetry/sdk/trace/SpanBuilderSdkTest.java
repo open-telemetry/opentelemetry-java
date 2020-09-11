@@ -716,7 +716,7 @@ class SpanBuilderSdkTest {
     Context emptyContext = Context.current();
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
-      RecordEventsReadableSpan span = null;
+      RecordEventsReadableSpan span;
       try (Scope scope = TracingContextUtils.currentContextWith(parent)) {
         span =
             (RecordEventsReadableSpan)

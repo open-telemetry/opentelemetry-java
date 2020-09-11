@@ -58,7 +58,7 @@ class HttpTraceContextTest {
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING = "bar=baz,foo=bar";
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING_WITH_SPACES =
       "bar=baz   ,    foo=bar";
-  private final HttpTraceContext httpTraceContext = new HttpTraceContext();
+  private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
     return TracingContextUtils.getSpan(context).getContext();

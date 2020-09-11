@@ -18,10 +18,10 @@ package io.opentelemetry.sdk.trace;
 
 import com.google.common.collect.EvictingQueue;
 import io.grpc.Context;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -43,7 +43,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -582,11 +581,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return attributes;
     }
     // otherwise, make a copy of the data into an immutable container.
-    Attributes.Builder builder = Attributes.newBuilder();
-    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      builder.setAttribute(entry.getKey(), entry.getValue());
-    }
-    return builder.build();
+    return attributes.immutableCopy();
   }
 
   @Override
@@ -630,7 +625,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return sb.toString();
   }
 
-  private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
+  private static class LimitingAttributeConsumer implements AttributeConsumer {
     private final int limit;
     private final Attributes.Builder builder;
     private int added;

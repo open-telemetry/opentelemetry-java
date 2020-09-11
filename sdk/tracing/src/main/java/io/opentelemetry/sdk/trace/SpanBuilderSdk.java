@@ -17,10 +17,10 @@
 package io.opentelemetry.sdk.trace;
 
 import io.grpc.Context;
+import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
@@ -241,7 +241,7 @@ final class SpanBuilderSdk implements Span.Builder {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
       samplingAttributes.forEach(
-          new KeyValueConsumer<AttributeValue>() {
+          new AttributeConsumer() {
             @Override
             public void consume(String key, AttributeValue value) {
               attributes.put(key, value);
