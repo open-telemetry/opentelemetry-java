@@ -16,14 +16,6 @@
 
 package io.opentelemetry.common;
 
-import io.opentelemetry.common.AttributeKeyImpl.BooleanArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.BooleanKey;
-import io.opentelemetry.common.AttributeKeyImpl.DoubleArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.DoubleKey;
-import io.opentelemetry.common.AttributeKeyImpl.LongArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.LongKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringArrayKey;
-import io.opentelemetry.common.AttributeKeyImpl.StringKey;
 import java.util.List;
 
 /**
@@ -36,41 +28,41 @@ public class AttributesKeys {
 
   /** Create a new AttributeKey for String valued attributes. */
   public static AttributeKey<String> stringKey(String key) {
-    return new StringKey(key);
+    return AttributeKeyImpl.create(key, AttributeType.STRING);
   }
 
   /** Create a new AttributeKey for Boolean valued attributes. */
   public static AttributeKey<Boolean> booleanKey(String key) {
-    return new BooleanKey(key);
+    return AttributeKeyImpl.create(key, AttributeType.BOOLEAN);
   }
 
   /** Create a new AttributeKey for Long valued attributes. */
   public static AttributeKey<Long> longKey(String key) {
-    return new LongKey(key);
+    return AttributeKeyImpl.create(key, AttributeType.LONG);
   }
 
   /** Create a new AttributeKey for Double valued attributes. */
   public static AttributeKey<Double> doubleKey(String key) {
-    return new DoubleKey(key);
+    return AttributeKeyImpl.create(key, AttributeType.DOUBLE);
   }
 
   /** Create a new AttributeKey for List&lt;String> valued attributes. */
   public static AttributeKey<List<String>> stringArrayKey(String key) {
-    return new StringArrayKey(key);
+    return AttributeKeyImpl.create(key, AttributeType.STRING_ARRAY);
   }
 
   /** Create a new AttributeKey for List&lt;Boolean> valued attributes. */
   public static AttributeKey<List<Boolean>> booleanArrayKey(String key) {
-    return new BooleanArrayKey(key);
+    return AttributeKeyImpl.create(key, AttributeType.BOOLEAN_ARRAY);
   }
 
   /** Create a new AttributeKey for List&lt;Long> valued attributes. */
   public static AttributeKey<List<Long>> longArrayKey(String key) {
-    return new LongArrayKey(key);
+    return AttributeKeyImpl.create(key, AttributeType.LONG_ARRAY);
   }
 
   /** Create a new AttributeKey for List&lt;Double> valued attributes. */
   public static AttributeKey<List<Double>> doubleArrayKey(String key) {
-    return new DoubleArrayKey(key);
+    return AttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
 }

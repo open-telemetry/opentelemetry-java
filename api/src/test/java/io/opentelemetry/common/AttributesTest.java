@@ -46,7 +46,7 @@ class AttributesTest {
     attributes.forEach(entriesSeen::put);
 
     assertThat(entriesSeen)
-        .containsExactly(entry(stringKey("key1"), "value1"), entry(stringKey("key2"), 333L));
+        .containsExactly(entry(stringKey("key1"), "value1"), entry(longKey("key2"), 333L));
   }
 
   @Test

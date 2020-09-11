@@ -16,23 +16,23 @@
 
 package io.opentelemetry.common;
 
-import java.util.List;
+import com.google.auto.value.AutoValue;
 
 @SuppressWarnings("rawtypes")
+@AutoValue
 abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
-  private final String key;
 
-  AttributeKeyImpl(String key) {
-    this.key = key;
+  static <T> AttributeKeyImpl<T> create(String key, AttributeType type) {
+    return new AutoValue_AttributeKeyImpl<>(key, type);
   }
 
-  @Override
-  public String getKey() {
-    return key;
-  }
+  //////////////////////////////////
+  // IMPORTANT: the equals/hashcode/compareTo *only* include the key, and not the type,
+  // so that de-duping of attributes is based on the key, and not also based on the type.
+  //////////////////////////////////
 
   @Override
-  public boolean equals(Object o) {
+  public final boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -42,109 +42,16 @@ abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
 
     AttributeKeyImpl<?> that = (AttributeKeyImpl<?>) o;
 
-    return key != null ? key.equals(that.key) : that.key == null;
+    return getKey() != null ? getKey().equals(that.getKey()) : that.getKey() == null;
   }
 
   @Override
-  public int hashCode() {
-    return key != null ? key.hashCode() : 0;
-  }
-
-  @Override
-  public String toString() {
-    return "AttributeKeyImpl{" + "key='" + key + '\'' + '}';
+  public final int hashCode() {
+    return getKey() != null ? getKey().hashCode() : 0;
   }
 
   @Override
   public int compareTo(AttributeKey o) {
     return getKey().compareTo(o.getKey());
-  }
-
-  static class StringKey extends AttributeKeyImpl<String> {
-    StringKey(String key) {
-      super(key);
-    }
-
-    @Override
-    public AttributeType getType() {
-      return AttributeType.STRING;
-    }
-  }
-
-  static class BooleanKey extends AttributeKeyImpl<Boolean> {
-    BooleanKey(String key) {
-      super(key);
-    }
-
-    @Override
-    public AttributeType getType() {
-      return AttributeType.BOOLEAN;
-    }
-  }
-
-  static class LongKey extends AttributeKeyImpl<Long> {
-    LongKey(String key) {
-      super(key);
-    }
-
-    @Override
-    public AttributeType getType() {
-      return AttributeType.LONG;
-    }
-  }
-
-  static class DoubleKey extends AttributeKeyImpl<Double> {
-    DoubleKey(String key) {
-      super(key);
-    }
-
-    @Override
-    public AttributeType getType() {
-      return AttributeType.DOUBLE;
-    }
-  }
-
-  static class StringArrayKey extends AttributeKeyImpl<List<String>> {
-    StringArrayKey(String key) {
-      super(key);
-    }
-
-    @Override
-    public AttributeType getType() {
-      return AttributeType.STRING_ARRAY;
-    }
-  }
-
-  static class BooleanArrayKey extends AttributeKeyImpl<List<Boolean>> {
-    BooleanArrayKey(String key) {
-      super(key);
-    }
-
-    @Override
-    public AttributeType getType() {
-      return AttributeType.BOOLEAN_ARRAY;
-    }
-  }
-
-  static class LongArrayKey extends AttributeKeyImpl<List<Long>> {
-    LongArrayKey(String key) {
-      super(key);
-    }
-
-    @Override
-    public AttributeType getType() {
-      return AttributeType.LONG_ARRAY;
-    }
-  }
-
-  static class DoubleArrayKey extends AttributeKeyImpl<List<Double>> {
-    DoubleArrayKey(String key) {
-      super(key);
-    }
-
-    @Override
-    public AttributeType getType() {
-      return AttributeType.DOUBLE_ARRAY;
-    }
   }
 }
