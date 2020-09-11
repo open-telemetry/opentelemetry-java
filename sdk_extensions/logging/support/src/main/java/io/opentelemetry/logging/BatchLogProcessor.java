@@ -234,7 +234,6 @@ public class BatchLogProcessor implements LogProcessor {
       synchronized (monitor) {
         if (logRecords.size() >= maxQueueSize) {
           droppedRecordCounter.add(1);
-          // FIXME: call callback
         }
         logRecords.add(record);
         if (logRecords.size() >= maxExportBatchSize) {
@@ -260,10 +259,15 @@ public class BatchLogProcessor implements LogProcessor {
   }
 
   static class Builder extends ConfigBuilder<Builder> {
-    static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 200;
-    static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
-    static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
-    static final long DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+    private static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 200;
+    private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
+    private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
+    private static final long DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+
+    private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.log.schedule.delay";
+    private static final String KEY_MAX_QUEUE_SIZE = "otel.log.max.queue";
+    private static final String KEY_MAX_EXPORT_BATCH_SIZE = "otel.log.max.export.batch";
+    private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.log.export.timeout";
 
     private final LogExporter logExporter;
     private long scheduleDelayMillis = DEFAULT_SCHEDULE_DELAY_MILLIS;
@@ -370,7 +374,24 @@ public class BatchLogProcessor implements LogProcessor {
     @Override
     protected Builder fromConfigMap(
         Map<String, String> configMap, NamingConvention namingConvention) {
-      return null;
+      configMap = namingConvention.normalize(configMap);
+      Long longValue = getLongProperty(KEY_SCHEDULE_DELAY_MILLIS, configMap);
+      if (longValue != null) {
+        this.setScheduleDelayMillis(longValue);
+      }
+      Integer intValue = getIntProperty(KEY_MAX_QUEUE_SIZE, configMap);
+      if (intValue != null) {
+        this.setMaxQueueSize(intValue);
+      }
+      intValue = getIntProperty(KEY_MAX_EXPORT_BATCH_SIZE, configMap);
+      if (intValue != null) {
+        this.setMaxExportBatchSize(intValue);
+      }
+      intValue = getIntProperty(KEY_EXPORT_TIMEOUT_MILLIS, configMap);
+      if (intValue != null) {
+        this.setExporterTimeoutMillis(intValue);
+      }
+      return this;
     }
   }
 }
