@@ -291,5 +291,47 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter THREAD_NAME =
       StringAttributeSetter.create("thread.name");
 
+  /** Type of the trigger on which the function is executed. */
+  public static final StringAttributeSetter FAAS_TRIGGER =
+      StringAttributeSetter.create("faas.trigger");
+  /** String containing the execution id of the function. */
+  public static final StringAttributeSetter FAAS_EXECUTION =
+      StringAttributeSetter.create("faas.execution");
+  /** Indicates that the serverless function is executed for the first time (aka cold start). */
+  public static final BooleanAttributeSetter FAAS_COLDSTART =
+      BooleanAttributeSetter.create("faas.coldstart");
+  /** The name of the invoked function. */
+  public static final StringAttributeSetter FAAS_INVOKED_NAME =
+      StringAttributeSetter.create("faas.invoked_name");
+  /** The cloud provider of the invoked function. */
+  public static final StringAttributeSetter FAAS_INVOKED_PROVIDER =
+      StringAttributeSetter.create("faas.invoked_provider");
+  /** The cloud region of the invoked function. */
+  public static final StringAttributeSetter FAAS_INVOKED_REGION =
+      StringAttributeSetter.create("faas.invoked_region");
+
+  // faas.trigger == datasource
+  /** The name of the source on which the operation was perfomed. */
+  public static final StringAttributeSetter FAAS_DOCUMENT_COLLECTION =
+      StringAttributeSetter.create("faas.document.collection");
+  /** Describes the type of the operation that was performed on the data. */
+  public static final StringAttributeSetter FAAS_DOCUMENT_OPERATION =
+      StringAttributeSetter.create("faas.document.operation");
+  /**
+   * A string containing the time when the data was accessed in the ISO 8601 format expressed in
+   * UTC.
+   */
+  public static final StringAttributeSetter FAAS_DOCUMENT_TIME =
+      StringAttributeSetter.create("faas.document.time");
+  /** The document name/table subjected to the operation. */
+  public static final StringAttributeSetter FAAS_DOCUMENT_NAME =
+      StringAttributeSetter.create("faas.document.name");
+
+  // faas.trigger == timer
+  /** A string containing the function invocation time in the ISO 8601 format expressed in UTC. */
+  public static final StringAttributeSetter FAAS_TIME = StringAttributeSetter.create("faas.time");
+  /** A string containing the schedule period as Cron Expression. */
+  public static final StringAttributeSetter FAAS_CRON = StringAttributeSetter.create("faas.cron");
+
   private SemanticAttributes() {}
 }
