@@ -127,15 +127,13 @@ public final class ResourceAttributes {
   public static final StringKey CLOUD_ZONE = stringKey("cloud.zone");
 
   /** The name of the function being executed. */
-  public static final StringAttributeSetter FAAS_NAME = StringAttributeSetter.create("faas.name");
+  public static final StringKey FAAS_NAME = stringKey("faas.name");
   /** The unique ID of the function being executed. */
-  public static final StringAttributeSetter FAAS_ID = StringAttributeSetter.create("faas.id");
+  public static final StringKey FAAS_ID = stringKey("faas.id");
   /** The version string of the function being executed. */
-  public static final StringAttributeSetter FAAS_VERSION =
-      StringAttributeSetter.create("faas.version");
+  public static final StringKey FAAS_VERSION = stringKey("faas.version");
   /** The execution environment ID as a string. */
-  public static final StringAttributeSetter FAAS_INSTANCE =
-      StringAttributeSetter.create("faas.instance");
+  public static final StringKey FAAS_INSTANCE = stringKey("faas.instance");
 
   private ResourceAttributes() {}
 }

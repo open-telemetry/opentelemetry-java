@@ -255,50 +255,40 @@ public final class SemanticAttributes {
   public static final StringKey THREAD_NAME = stringKey("thread.name");
 
   /** Type of the trigger on which the function is executed. */
-  public static final StringAttributeSetter FAAS_TRIGGER =
-      StringAttributeSetter.create("faas.trigger");
+  public static final StringKey FAAS_TRIGGER = stringKey("faas.trigger");
   /** String containing the execution id of the function. */
-  public static final StringAttributeSetter FAAS_EXECUTION =
-      StringAttributeSetter.create("faas.execution");
+  public static final StringKey FAAS_EXECUTION = stringKey("faas.execution");
   /** Indicates that the serverless function is executed for the first time (aka cold start). */
-  public static final BooleanAttributeSetter FAAS_COLDSTART =
-      BooleanAttributeSetter.create("faas.coldstart");
+  public static final BooleanKey FAAS_COLDSTART = booleanKey("faas.coldstart");
   /** The name of the invoked function. */
-  public static final StringAttributeSetter FAAS_INVOKED_NAME =
-      StringAttributeSetter.create("faas.invoked_name");
+  public static final StringKey FAAS_INVOKED_NAME = stringKey("faas.invoked_name");
   /** The cloud provider of the invoked function. */
-  public static final StringAttributeSetter FAAS_INVOKED_PROVIDER =
-      StringAttributeSetter.create("faas.invoked_provider");
+  public static final StringKey FAAS_INVOKED_PROVIDER = stringKey("faas.invoked_provider");
   /** The cloud region of the invoked function. */
-  public static final StringAttributeSetter FAAS_INVOKED_REGION =
-      StringAttributeSetter.create("faas.invoked_region");
+  public static final StringKey FAAS_INVOKED_REGION = stringKey("faas.invoked_region");
 
   /** For faas.trigger == datasource, the name of the source on which the operation was perfomed. */
-  public static final StringAttributeSetter FAAS_DOCUMENT_COLLECTION =
-      StringAttributeSetter.create("faas.document.collection");
+  public static final StringKey FAAS_DOCUMENT_COLLECTION = stringKey("faas.document.collection");
   /**
    * For faas.trigger == datasource, describes the type of the operation that was performed on the
    * data.
    */
-  public static final StringAttributeSetter FAAS_DOCUMENT_OPERATION =
-      StringAttributeSetter.create("faas.document.operation");
+  public static final StringKey FAAS_DOCUMENT_OPERATION = stringKey("faas.document.operation");
   /**
    * For faas.trigger == datasource, a string containing the time when the data was accessed in the
    * ISO 8601 format expressed in UTC.
    */
-  public static final StringAttributeSetter FAAS_DOCUMENT_TIME =
-      StringAttributeSetter.create("faas.document.time");
+  public static final StringKey FAAS_DOCUMENT_TIME = stringKey("faas.document.time");
   /** For faas.trigger == datasource, the document name/table subjected to the operation. */
-  public static final StringAttributeSetter FAAS_DOCUMENT_NAME =
-      StringAttributeSetter.create("faas.document.name");
+  public static final StringKey FAAS_DOCUMENT_NAME = stringKey("faas.document.name");
 
   /**
    * For faas.trigger == time, a string containing the function invocation time in the ISO 8601
    * format expressed in UTC.
    */
-  public static final StringAttributeSetter FAAS_TIME = StringAttributeSetter.create("faas.time");
+  public static final StringKey FAAS_TIME = stringKey("faas.time");
   /** For faas.trigger == time, a string containing the schedule period as Cron Expression. */
-  public static final StringAttributeSetter FAAS_CRON = StringAttributeSetter.create("faas.cron");
+  public static final StringKey FAAS_CRON = stringKey("faas.cron");
 
   private SemanticAttributes() {}
 }
