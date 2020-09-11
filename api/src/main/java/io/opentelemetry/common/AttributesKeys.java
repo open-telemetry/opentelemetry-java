@@ -46,22 +46,22 @@ public class AttributesKeys {
     return AttributeKeyImpl.create(key, AttributeType.DOUBLE);
   }
 
-  /** Create a new AttributeKey for List&lt;String> valued attributes. */
+  /** Create a new AttributeKey for List&lt;String&gt; valued attributes. */
   public static AttributeKey<List<String>> stringArrayKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.STRING_ARRAY);
   }
 
-  /** Create a new AttributeKey for List&lt;Boolean> valued attributes. */
+  /** Create a new AttributeKey for List&lt;Boolean&gt; valued attributes. */
   public static AttributeKey<List<Boolean>> booleanArrayKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.BOOLEAN_ARRAY);
   }
 
-  /** Create a new AttributeKey for List&lt;Long> valued attributes. */
+  /** Create a new AttributeKey for List&lt;Long&gt; valued attributes. */
   public static AttributeKey<List<Long>> longArrayKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.LONG_ARRAY);
   }
 
-  /** Create a new AttributeKey for List&lt;Double> valued attributes. */
+  /** Create a new AttributeKey for List&lt;Double&gt; valued attributes. */
   public static AttributeKey<List<Double>> doubleArrayKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
