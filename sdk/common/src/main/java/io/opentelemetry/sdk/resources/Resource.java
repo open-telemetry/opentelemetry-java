@@ -61,6 +61,11 @@ public abstract class Resource {
           .build()
           .merge(TELEMETRY_SDK)
           .merge(readResourceFromProviders());
+  private static final ResourcesConfig RESOURCES_CONFIG =
+      ResourcesConfig.getDefault().toBuilder()
+          .readEnvironmentVariables()
+          .readSystemProperties()
+          .build();
 
   @Nullable
   private static String readVersion() {
@@ -78,6 +83,9 @@ public abstract class Resource {
   private static Resource readResourceFromProviders() {
     Resource result = Resource.EMPTY;
     for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
+      if (RESOURCES_CONFIG.getDisabledResourceProviders().contains(resourceProvider.toString())) {
+        continue;
+      }
       result = result.merge(resourceProvider.create());
     }
     return result;
