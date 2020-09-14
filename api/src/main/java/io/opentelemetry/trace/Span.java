@@ -88,6 +88,9 @@ public interface Span {
    * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
    * dropped. Note: this behavior could change in the future.
    *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @since 0.1.0
@@ -97,6 +100,9 @@ public interface Span {
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
@@ -108,6 +114,9 @@ public interface Span {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @since 0.1.0
@@ -117,6 +126,9 @@ public interface Span {
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
@@ -501,6 +513,9 @@ public interface Span {
      * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
      * dropped. Note: this behavior could change in the future.
      *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
+     *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
      * @return this.
@@ -512,6 +527,9 @@ public interface Span {
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
@@ -525,6 +543,9 @@ public interface Span {
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
      *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
+     *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
      * @return this.
@@ -536,6 +557,9 @@ public interface Span {
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @param key the key for this attribute.
      * @param value the value for this attribute.

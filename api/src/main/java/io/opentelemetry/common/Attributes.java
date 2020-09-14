@@ -227,6 +227,9 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     /**
      * Sets a String attribute into this.
      *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
+     *
      * @return this Builder
      */
     public Builder setAttribute(String key, String value) {
@@ -235,6 +238,9 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
     /**
      * Sets a long attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
@@ -245,6 +251,9 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     /**
      * Sets a double attribute into this.
      *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
+     *
      * @return this Builder
      */
     public Builder setAttribute(String key, double value) {
@@ -253,6 +262,9 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
     /**
      * Sets a boolean attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
@@ -263,6 +275,9 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     /**
      * Sets a String array attribute into this.
      *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
+     *
      * @return this Builder
      */
     public Builder setAttribute(String key, String... value) {
@@ -271,6 +286,9 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
     /**
      * Sets a Long array attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
@@ -281,6 +299,9 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     /**
      * Sets a Double array attribute into this.
      *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
+     *
      * @return this Builder
      */
     public Builder setAttribute(String key, Double... value) {
@@ -289,6 +310,9 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
     /**
      * Sets a Boolean array attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
