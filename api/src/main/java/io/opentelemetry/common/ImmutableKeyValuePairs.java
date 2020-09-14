@@ -29,6 +29,10 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>Key-value pairs are dropped for {@code null} or empty keys.
  *
+ * <p>Note: for subclasses of this, null keys will be removed, but if your key has another concept
+ * of being "empty", you'll need to remove them before calling {@link #sortAndFilter(Object[])},
+ * assuming you don't want the "empty" keys to be kept in your collection.
+ *
  * @param <V> The type of the values contained in this.
  * @see Labels
  * @see Attributes
