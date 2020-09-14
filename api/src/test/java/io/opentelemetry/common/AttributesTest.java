@@ -59,6 +59,12 @@ class AttributesTest {
   }
 
   @Test
+  void builder_nullKey() {
+    Attributes attributes = Attributes.newBuilder().setAttribute(stringKey(null), "value").build();
+    assertThat(attributes).isEqualTo(Attributes.empty());
+  }
+
+  @Test
   void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();

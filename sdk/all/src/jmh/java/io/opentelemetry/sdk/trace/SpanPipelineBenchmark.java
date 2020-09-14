@@ -17,6 +17,8 @@
 package io.opentelemetry.sdk.trace;
 
 import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
 import static io.opentelemetry.common.AttributesKeys.stringKey;
 
 import io.opentelemetry.common.AttributeKey;
@@ -50,6 +52,11 @@ public class SpanPipelineBenchmark {
 
   private static final AttributeKey<String> LINK_ATTRIBUTE_KEY = stringKey("linkAttr");
   private static final AttributeKey<Boolean> FINALIZED_KEY = booleanKey("finalized");
+  private static final AttributeKey<String> OPERATION_KEY = stringKey("operation");
+  private static final AttributeKey<Long> LONG_ATTRIBUTE_KEY = longKey("longAttribute");
+  private static final AttributeKey<String> STRING_ATTRIBUTE_KEY = stringKey("stringAttribute");
+  private static final AttributeKey<Double> DOUBLE_ATTRIBUTE_KEY = doubleKey("doubleAttribute");
+  private static final AttributeKey<Boolean> BOOLEAN_ATTRIBUTE_KEY = booleanKey("booleanAttribute");
   private final TracerSdk tracerSdk = OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
 
   @Setup(Level.Trial)
@@ -77,11 +84,11 @@ public class SpanPipelineBenchmark {
             .setAttribute("key", "value")
             .addLink(new TestLink())
             .startSpan();
-    span.addEvent("started", Attributes.of(stringKey("operation"), "some_work"));
-    span.setAttribute("longAttribute", 33L);
-    span.setAttribute("stringAttribute", "test_value");
-    span.setAttribute("doubleAttribute", 4844.44d);
-    span.setAttribute("booleanAttribute", false);
+    span.addEvent("started", Attributes.of(OPERATION_KEY, "some_work"));
+    span.setAttribute(LONG_ATTRIBUTE_KEY, 33L);
+    span.setAttribute(STRING_ATTRIBUTE_KEY, "test_value");
+    span.setAttribute(DOUBLE_ATTRIBUTE_KEY, 4844.44d);
+    span.setAttribute(BOOLEAN_ATTRIBUTE_KEY, false);
     span.setStatus(Status.OK);
 
     span.addEvent("testEvent");
