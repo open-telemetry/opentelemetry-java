@@ -38,14 +38,14 @@ import javax.annotation.concurrent.Immutable;
  * the following names:
  *
  * <ul>
- *   <li>{@code otel.config.resources.providers.disable}: to set the ResourceProvider service
+ *   <li>{@code otel.java.disable.resources.providers}: to set the ResourceProvider service
  *       providers found on the classpath to be disabled.
  * </ul>
  *
  * <p>For environment variables, {@link ResourcesConfig} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_CONFIG_RESOURCES_PROVIDERS_DISABLE}: to set the ResourceProvider service
+ *   <li>{@code OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS}: to set the ResourceProvider service
  *       providers found on the classpath to be disabled.
  * </ul>
  */
@@ -53,13 +53,13 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class ResourcesConfig {
   // These values are the default values for all the global parameters.
-  private static final ImmutableSet<String> DEFAULT_RESOURCES_PROVIDERS_DISABLE = ImmutableSet.of();
+  private static final ImmutableSet<String> OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS = ImmutableSet.of();
 
   /**
    * Returns the default {@code ResourcesConfig}.
    *
    * @return the default {@code ResourcesConfig}.
-   * @since 0.1.0
+   * @since 0.9.0
    */
   public static ResourcesConfig getDefault() {
     return DEFAULT;
@@ -79,9 +79,9 @@ public abstract class ResourcesConfig {
    *
    * @return a new {@link Builder}.
    */
-  private static Builder newBuilder() {
+  public static Builder newBuilder() {
     return new AutoValue_ResourcesConfig.Builder()
-        .setDisabledResourceProviders(DEFAULT_RESOURCES_PROVIDERS_DISABLE);
+        .setDisabledResourceProviders(OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS);
   }
 
   /**
@@ -95,8 +95,8 @@ public abstract class ResourcesConfig {
   @AutoValue.Builder
   public abstract static class Builder extends ConfigBuilder<Builder> {
 
-    private static final String OTEL_CONFIG_RESOURCES_PROVIDERS_DISABLE =
-        "otel.config.resources.providers.disable";
+    private static final String OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS =
+        "otel.java.disable.resources.providers";
 
     Builder() {}
 
@@ -112,42 +112,11 @@ public abstract class ResourcesConfig {
         Map<String, String> configMap, NamingConvention namingConvention) {
       configMap = namingConvention.normalize(configMap);
 
-      String stringValue = getStringProperty(OTEL_CONFIG_RESOURCES_PROVIDERS_DISABLE, configMap);
+      String stringValue = getStringProperty(OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS, configMap);
       if (stringValue != null) {
         this.setDisabledResourceProviders(ImmutableSet.copyOf(stringValue.split(",")));
       }
       return this;
-    }
-
-    /**
-     * * Sets the configuration values from the given properties object for only the available keys.
-     *
-     * @param properties {@link Properties} holding the configuration values.
-     * @return this
-     */
-    @Override
-    public Builder readProperties(Properties properties) {
-      return super.readProperties(properties);
-    }
-
-    /**
-     * * Sets the configuration values from environment variables for only the available keys.
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readEnvironmentVariables() {
-      return super.readEnvironmentVariables();
-    }
-
-    /**
-     * * Sets the configuration values from system properties for only the available keys.
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readSystemProperties() {
-      return super.readSystemProperties();
     }
 
     /**

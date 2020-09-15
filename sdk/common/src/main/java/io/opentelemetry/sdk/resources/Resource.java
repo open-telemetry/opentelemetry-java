@@ -62,7 +62,7 @@ public abstract class Resource {
           .merge(TELEMETRY_SDK)
           .merge(readResourceFromProviders());
   private static final ResourcesConfig RESOURCES_CONFIG =
-      ResourcesConfig.getDefault().toBuilder()
+      ResourcesConfig.newBuilder()
           .readEnvironmentVariables()
           .readSystemProperties()
           .build();
@@ -83,7 +83,7 @@ public abstract class Resource {
   private static Resource readResourceFromProviders() {
     Resource result = Resource.EMPTY;
     for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
-      if (RESOURCES_CONFIG.getDisabledResourceProviders().contains(resourceProvider.toString())) {
+      if (RESOURCES_CONFIG.getDisabledResourceProviders().contains(resourceProvider.getName())) {
         continue;
       }
       result = result.merge(resourceProvider.create());

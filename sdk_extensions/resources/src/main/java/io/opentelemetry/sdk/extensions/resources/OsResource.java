@@ -24,6 +24,8 @@ import javax.annotation.Nullable;
 /** {@link ResourceProvider} which provides information about the current operating system. */
 public class OsResource extends ResourceProvider {
 
+  private static final String RESOURCE_PROVIDER_NAME = "OsResource";
+
   @Override
   protected Attributes getAttributes() {
     final String os;
@@ -55,6 +57,11 @@ public class OsResource extends ResourceProvider {
     attributes.setAttribute(ResourceAttributes.OS_DESCRIPTION.key(), osDescription);
 
     return attributes.build();
+  }
+
+  @Override
+  public String getName() {
+    return RESOURCE_PROVIDER_NAME;
   }
 
   @Nullable

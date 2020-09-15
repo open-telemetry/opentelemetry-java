@@ -21,8 +21,15 @@ import io.opentelemetry.common.Attributes;
 
 public class TestResourceProvider extends ResourceProvider {
 
+  private static final String RESOURCE_PROVIDER_NAME = "TestResourceProvider";
+
   @Override
   protected Attributes getAttributes() {
     return Attributes.of("providerAttribute", AttributeValue.longAttributeValue(42));
+  }
+
+  @Override
+  public String getName() {
+    return RESOURCE_PROVIDER_NAME;
   }
 }

@@ -35,6 +35,8 @@ public class EcsResource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(EcsResource.class.getName());
 
+  private static final String RESOURCE_PROVIDER_NAME = "EcsResource";
+
   private static final String ECS_METADATA_KEY_V4 = "ECS_CONTAINER_METADATA_URI_V4";
   private static final String ECS_METADATA_KEY_V3 = "ECS_CONTAINER_METADATA_URI";
 
@@ -80,5 +82,10 @@ public class EcsResource extends ResourceProvider {
   private boolean isOnEcs() {
     return (!Strings.isNullOrEmpty(sysEnv.get(ECS_METADATA_KEY_V3))
         || !Strings.isNullOrEmpty(sysEnv.get(ECS_METADATA_KEY_V4)));
+  }
+
+  @Override
+  public String getName() {
+    return RESOURCE_PROVIDER_NAME;
   }
 }
