@@ -88,10 +88,9 @@ abstract class AbstractInstrument implements Instrument {
 
   abstract static class Builder<B extends AbstractInstrument.Builder<?>>
       implements Instrument.Builder {
-    /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
     /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
         "Name should be a ASCII string with a length no greater than "
-            + NAME_MAX_LENGTH
+            + StringUtils.NAME_MAX_LENGTH
             + " characters.";
 
     private final String name;
@@ -109,9 +108,7 @@ abstract class AbstractInstrument implements Instrument {
         MeterSdk meterSdk) {
       this.meterSdk = meterSdk;
       Objects.requireNonNull(name, "name");
-      Utils.checkArgument(
-          StringUtils.isValidMetricName(name) && name.length() <= NAME_MAX_LENGTH,
-          ERROR_MESSAGE_INVALID_NAME);
+      Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
       this.name = name;
       this.meterProviderSharedState = meterProviderSharedState;
       this.meterSharedState = meterSharedState;
