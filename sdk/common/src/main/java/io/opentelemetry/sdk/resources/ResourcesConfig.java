@@ -123,6 +123,9 @@ public abstract class ResourcesConfig {
     }
 
     /**
+     * Sets the fully qualified class names of {@link ResourceProvider} implementations that are
+     * found on the classpath but should be disabled.
+     *
      * @param disabledResourceProviders the fully qualified class names of {@link ResourceProvider}
      *     implementations that are found on the classpath but should be disabled.
      * @return this.
