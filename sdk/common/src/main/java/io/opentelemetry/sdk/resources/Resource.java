@@ -82,7 +82,7 @@ public abstract class Resource {
     for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
       if (RESOURCES_CONFIG
           .getDisabledResourceProviders()
-          .contains(resourceProvider.getClass().getSimpleName())) {
+          .contains(resourceProvider.getClass().getName())) {
         continue;
       }
       result = result.merge(resourceProvider.create());

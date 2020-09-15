@@ -45,8 +45,9 @@ import javax.annotation.concurrent.Immutable;
  * <p>For environment variables, {@link ResourcesConfig} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS}: to set the ResourceProvider service
- *       providers found on the classpath to be disabled.
+ *   <li>{@code OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS}: to set the fully qualified class names of
+ *       {@link ResourceProvider} implementations that are found on the classpath but should be
+ *       disabled.
  * </ul>
  */
 @AutoValue
@@ -66,9 +67,11 @@ public abstract class ResourcesConfig {
   private static final ResourcesConfig DEFAULT = ResourcesConfig.newBuilder().build();
 
   /**
-   * Returns the ResourceProvider service providers found on the classpath to be disabled.
+   * Returns the fully qualified class names of {@link ResourceProvider} implementations that are
+   * found on the classpath but should be disabled.
    *
-   * @return the ResourceProvider service providers found on the classpath to be disabled.
+   * @return the fully qualified class names of {@link ResourceProvider} implementations that are
+   *     found on the classpath but should be disabled.
    */
   public abstract Set<String> getDisabledResourceProviders();
 
@@ -120,8 +123,8 @@ public abstract class ResourcesConfig {
     }
 
     /**
-     * @param disabledResourceProviders the ResourceProvider service providers found on the
-     *     classpath to be disabled.
+     * @param disabledResourceProviders the fully qualified class names of {@link ResourceProvider}
+     *     implementations that are found on the classpath but should be disabled.
      * @return this.
      */
     public abstract Builder setDisabledResourceProviders(Set<String> disabledResourceProviders);
