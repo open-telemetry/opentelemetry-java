@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubl
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
+/** @since 0.1.0 */
 final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
     implements DoubleSumObserver {
 

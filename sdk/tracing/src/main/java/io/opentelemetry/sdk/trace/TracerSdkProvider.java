@@ -35,6 +35,8 @@ import java.util.logging.Logger;
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}. However, if you need a custom implementation of the factory, you
  * can create one as needed.
+ *
+ * @since 0.1.0
  */
 public class TracerSdkProvider implements TracerProvider {
   private static final Logger logger = Logger.getLogger(TracerProvider.class.getName());
@@ -55,11 +57,13 @@ public class TracerSdkProvider implements TracerProvider {
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
 
+  /** @since 0.1.0 */
   @Override
   public TracerSdk get(String instrumentationName) {
     return tracerSdkComponentRegistry.get(instrumentationName);
   }
 
+  /** @since 0.1.0 */
   @Override
   public TracerSdk get(String instrumentationName, String instrumentationVersion) {
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);

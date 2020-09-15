@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.LongValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
+/** @since 0.1.0 */
 final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInstrument>
     implements LongValueRecorder {
 
@@ -33,6 +34,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
     super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
+  /** @since 0.3.0 */
   @Override
   public void record(long value, Labels labels) {
     BoundInstrument boundInstrument = bind(labels);
@@ -40,6 +42,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
     boundInstrument.unbind();
   }
 
+  /** @since 0.8.0 */
   @Override
   public void record(long value) {
     record(value, Labels.empty());
@@ -50,6 +53,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
     return new BoundInstrument(batcher);
   }
 
+  /** @since 0.1.0 */
   static final class BoundInstrument extends AbstractBoundInstrument
       implements BoundLongValueRecorder {
 
@@ -57,6 +61,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
       super(batcher.getAggregator());
     }
 
+    /** @since 0.1.0 */
     @Override
     public void record(long value) {
       recordLong(value);

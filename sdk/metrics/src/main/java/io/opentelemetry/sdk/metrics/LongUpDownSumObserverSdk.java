@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongA
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
+/** @since 0.1.0 */
 final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
     implements LongUpDownSumObserver {
   LongUpDownSumObserverSdk(

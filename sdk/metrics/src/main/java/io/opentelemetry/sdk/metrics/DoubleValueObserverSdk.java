@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubl
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
+/** @since 0.5.0 */
 final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
     implements DoubleValueObserver {
 

@@ -23,6 +23,8 @@ import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 
 /**
  * {@link CorrelationContextManagerSdk} is SDK implementation of {@link CorrelationContextManager}.
+ *
+ * @since 0.1.0
  */
 public class CorrelationContextManagerSdk implements CorrelationContextManager {
 

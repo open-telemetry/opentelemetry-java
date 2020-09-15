@@ -31,6 +31,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+/** @since 0.1.0 */
 @Immutable
 // TODO: Migrate to AutoValue
 // @AutoValue

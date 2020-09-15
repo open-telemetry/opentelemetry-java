@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
+/** @since 0.1.0 */
 final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
     implements LongCounter {
 
@@ -33,6 +34,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
     super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
+  /** @since 0.1.0 */
   @Override
   public void add(long increment, Labels labels) {
     BoundInstrument boundInstrument = bind(labels);
@@ -43,6 +45,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
     }
   }
 
+  /** @since 0.8.0 */
   @Override
   public void add(long increment) {
     add(increment, Labels.empty());
@@ -53,6 +56,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
     return new BoundInstrument(batcher);
   }
 
+  /** @since 0.1.0 */
   static final class BoundInstrument extends AbstractBoundInstrument
       implements LongCounter.BoundLongCounter {
 
@@ -60,6 +64,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
       super(batcher.getAggregator());
     }
 
+    /** @since 0.1.0 */
     @Override
     public void add(long increment) {
       if (increment < 0) {
