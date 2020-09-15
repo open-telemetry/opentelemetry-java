@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.resources;
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
@@ -36,23 +37,21 @@ import javax.annotation.concurrent.Immutable;
  * the following names:
  *
  * <ul>
- *   <li>{@code otel.java.disable.resources.providers}: to set the ResourceProvider service
- *       providers found on the classpath to be disabled.
+ *   <li>{@code otel.java.disabled.resource_providers}: to set the fully qualified class names of
+ *       {@link ResourceProvider} implementations that are found on the classpath but should be
+ *       disabled.
  * </ul>
  *
  * <p>For environment variables, {@link ResourcesConfig} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS}: to set the ResourceProvider service
+ *   <li>{@code OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS}: to set the ResourceProvider service
  *       providers found on the classpath to be disabled.
  * </ul>
  */
 @AutoValue
 @Immutable
 public abstract class ResourcesConfig {
-  // These values are the default values for all the global parameters.
-  private static final ImmutableSet<String> OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS =
-      ImmutableSet.of();
 
   /**
    * Returns the default {@code ResourcesConfig}.
@@ -80,7 +79,7 @@ public abstract class ResourcesConfig {
    */
   public static Builder newBuilder() {
     return new AutoValue_ResourcesConfig.Builder()
-        .setDisabledResourceProviders(OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS);
+        .setDisabledResourceProviders(ImmutableSet.<String>of());
   }
 
   /**
@@ -94,8 +93,8 @@ public abstract class ResourcesConfig {
   @AutoValue.Builder
   public abstract static class Builder extends ConfigBuilder<Builder> {
 
-    private static final String OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS =
-        "otel.java.disable.resources.providers";
+    private static final String OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS =
+        "otel.java.disabled.resource_providers";
 
     Builder() {}
 
@@ -111,9 +110,11 @@ public abstract class ResourcesConfig {
         Map<String, String> configMap, NamingConvention namingConvention) {
       configMap = namingConvention.normalize(configMap);
 
-      String stringValue = getStringProperty(OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS, configMap);
+      String stringValue = getStringProperty(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS, configMap);
       if (stringValue != null) {
-        this.setDisabledResourceProviders(ImmutableSet.copyOf(stringValue.split(",")));
+        this.setDisabledResourceProviders(
+            ImmutableSet.copyOf(
+                Splitter.on(',').omitEmptyStrings().trimResults().split(stringValue)));
       }
       return this;
     }

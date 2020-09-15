@@ -25,7 +25,6 @@ import java.lang.management.RuntimeMXBean;
 
 /** {@link ResourceProvider} which provides information about the current running process. */
 public class ProcessResource extends ResourceProvider {
-  private static final String RESOURCE_PROVIDER_NAME = "ProcessResource";
 
   @Override
   protected Attributes getAttributes() {
@@ -80,10 +79,5 @@ public class ProcessResource extends ResourceProvider {
     }
 
     return attributes.build();
-  }
-
-  @Override
-  public String getName() {
-    return RESOURCE_PROVIDER_NAME;
   }
 }

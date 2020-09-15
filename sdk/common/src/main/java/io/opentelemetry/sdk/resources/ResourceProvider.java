@@ -37,6 +37,4 @@ public abstract class ResourceProvider {
   }
 
   protected abstract Attributes getAttributes();
-
-  public abstract String getName();
 }

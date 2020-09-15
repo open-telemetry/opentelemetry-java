@@ -36,8 +36,6 @@ public class BeanstalkResource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(BeanstalkResource.class.getName());
 
-  private static final String RESOURCE_PROVIDER_NAME = "BeanstalkResource";
-
   private static final String DEVELOPMENT_ID = "deployment_id";
   private static final String VERSION_LABEL = "version_label";
   private static final String ENVIRONMENT_NAME = "environment_name";
@@ -98,10 +96,5 @@ public class BeanstalkResource extends ResourceProvider {
     }
 
     return attrBuilders.build();
-  }
-
-  @Override
-  public String getName() {
-    return RESOURCE_PROVIDER_NAME;
   }
 }

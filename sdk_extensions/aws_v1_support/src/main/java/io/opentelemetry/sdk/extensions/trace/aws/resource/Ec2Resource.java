@@ -44,8 +44,6 @@ public class Ec2Resource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());
 
-  private static final String RESOURCE_PROVIDER_NAME = "Ec2Resource";
-
   private static final int TIMEOUT_MILLIS = 2000;
 
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
@@ -204,11 +202,6 @@ public class Ec2Resource extends ResourceProvider {
     ResourceAttributes.HOST_NAME.set(attrBuilders, hostname);
 
     return attrBuilders.build();
-  }
-
-  @Override
-  public String getName() {
-    return RESOURCE_PROVIDER_NAME;
   }
 
   private String fetchToken() {

@@ -80,7 +80,9 @@ public abstract class Resource {
   private static Resource readResourceFromProviders() {
     Resource result = Resource.EMPTY;
     for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
-      if (RESOURCES_CONFIG.getDisabledResourceProviders().contains(resourceProvider.getName())) {
+      if (RESOURCES_CONFIG
+          .getDisabledResourceProviders()
+          .contains(resourceProvider.getClass().getSimpleName())) {
         continue;
       }
       result = result.merge(resourceProvider.create());
