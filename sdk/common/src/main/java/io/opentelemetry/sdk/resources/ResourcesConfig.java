@@ -21,7 +21,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
-import io.opentelemetry.trace.Span;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -120,8 +119,6 @@ public abstract class ResourcesConfig {
     }
 
     /**
-     * Sets the global default max number of attributes per {@link Span}.
-     *
      * @param disabledResourceProviders the ResourceProvider service providers found on the
      *     classpath to be disabled.
      * @return this.
@@ -131,9 +128,9 @@ public abstract class ResourcesConfig {
     abstract ResourcesConfig autoBuild();
 
     /**
-     * Builds and returns a {@code TraceConfig} with the desired values.
+     * Builds and returns a {@code ResourcesConfig} with the desired values.
      *
-     * @return a {@code TraceConfig} with the desired values.
+     * @return a {@code ResourcesConfig} with the desired values.
      */
     public ResourcesConfig build() {
       ResourcesConfig resourcesConfig = autoBuild();
