@@ -52,6 +52,12 @@ abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
 
   @Override
   public int compareTo(AttributeKey o) {
+    if (getKey() == null) {
+      return o.getKey() == null ? 0 : -1;
+    }
+    if (o.getKey() == null) {
+      return 1;
+    }
     return getKey().compareTo(o.getKey());
   }
 }
