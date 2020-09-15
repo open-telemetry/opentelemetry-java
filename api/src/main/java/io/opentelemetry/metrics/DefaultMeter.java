@@ -9,6 +9,9 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Objects;
+import io.opentelemetry.metrics.AsynchronousInstrument.Observation;
+import io.opentelemetry.metrics.AsynchronousInstrument.ObservationType;
+import io.opentelemetry.metrics.BatchObserver.BatchObserverFunction;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -126,6 +129,12 @@ public final class DefaultMeter implements Meter {
   public BatchRecorder newBatchRecorder(String... keyValuePairs) {
     Utils.validateLabelPairs(keyValuePairs);
     return NoopBatchRecorder.INSTANCE;
+  }
+
+  @Override
+  public BatchObserver newBatchObserver(String name, BatchObserverFunction function) {
+    Utils.checkNotNull(function, "function");
+    return NoopBatchObserver.INSTANCE;
   }
 
   private DefaultMeter() {}
@@ -424,6 +433,15 @@ public final class DefaultMeter implements Meter {
     }
   }
 
+  private static final class NoopObservation implements Observation {
+    @Override
+    public ObservationType getType() {
+      return null;
+    }
+  }
+
+  private static final NoopObservation noopObservation = new NoopObservation();
+
   /** No-op implementation of {@link DoubleSumObserver} interface. */
   @Immutable
   private static final class NoopDoubleSumObserver implements DoubleSumObserver {
@@ -435,8 +453,13 @@ public final class DefaultMeter implements Meter {
       Objects.requireNonNull(callback, "callback");
     }
 
+    @Override
+    public Observation observation(Double observation) {
+      return noopObservation;
+    }
+
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements DoubleSumObserver.Builder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -455,6 +478,11 @@ public final class DefaultMeter implements Meter {
   private static final class NoopLongSumObserver implements LongSumObserver {
 
     private NoopLongSumObserver() {}
+
+    @Override
+    public Observation observation(Long observation) {
+      return noopObservation;
+    }
 
     @Override
     public void setCallback(Callback<LongResult> callback) {
@@ -479,6 +507,10 @@ public final class DefaultMeter implements Meter {
   /** No-op implementation of {@link DoubleUpDownSumObserver} interface. */
   @Immutable
   private static final class NoopDoubleUpDownSumObserver implements DoubleUpDownSumObserver {
+    @Override
+    public Observation observation(Double observation) {
+      return noopObservation;
+    }
 
     private NoopDoubleUpDownSumObserver() {}
 
@@ -505,6 +537,10 @@ public final class DefaultMeter implements Meter {
   /** No-op implementation of {@link LongUpDownSumObserver} interface. */
   @Immutable
   private static final class NoopLongUpDownSumObserver implements LongUpDownSumObserver {
+    @Override
+    public Observation observation(Long observation) {
+      return noopObservation;
+    }
 
     private NoopLongUpDownSumObserver() {}
 
@@ -532,6 +568,11 @@ public final class DefaultMeter implements Meter {
   @Immutable
   private static final class NoopDoubleValueObserver implements DoubleValueObserver {
 
+    @Override
+    public Observation observation(Double observation) {
+      return noopObservation;
+    }
+
     private NoopDoubleValueObserver() {}
 
     @Override
@@ -558,6 +599,11 @@ public final class DefaultMeter implements Meter {
   @Immutable
   private static final class NoopLongValueObserver implements LongValueObserver {
 
+    @Override
+    public Observation observation(Long observation) {
+      return noopObservation;
+    }
+
     private NoopLongValueObserver() {}
 
     @Override
@@ -577,6 +623,40 @@ public final class DefaultMeter implements Meter {
       public LongValueObserver build() {
         return new NoopLongValueObserver();
       }
+    }
+  }
+
+  private enum NoopBatchObserver implements BatchObserver {
+    INSTANCE;
+
+    @Override
+    public DoubleSumObserver.Builder doubleSumObserverBuilder(String name) {
+      return DefaultMeter.INSTANCE.doubleSumObserverBuilder(name);
+    }
+
+    @Override
+    public LongSumObserver.Builder longSumObserverBuilder(String name) {
+      return DefaultMeter.INSTANCE.longSumObserverBuilder(name);
+    }
+
+    @Override
+    public DoubleUpDownSumObserver.Builder doubleUpDownSumObserverBuilder(String name) {
+      return DefaultMeter.INSTANCE.doubleUpDownSumObserverBuilder(name);
+    }
+
+    @Override
+    public LongUpDownSumObserver.Builder longUpDownSumObserverBuilder(String name) {
+      return DefaultMeter.INSTANCE.longUpDownSumObserverBuilder(name);
+    }
+
+    @Override
+    public DoubleValueObserver.Builder doubleValueObserverBuilder(String name) {
+      return DefaultMeter.INSTANCE.doubleValueObserverBuilder(name);
+    }
+
+    @Override
+    public LongValueObserver.Builder longValueObserverBuilder(String name) {
+      return DefaultMeter.INSTANCE.longValueObserverBuilder(name);
     }
   }
 

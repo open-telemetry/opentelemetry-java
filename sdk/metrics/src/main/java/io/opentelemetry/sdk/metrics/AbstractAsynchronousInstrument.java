@@ -7,16 +7,20 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument;
+import io.opentelemetry.sdk.metrics.BatchObserverSdk.DoubleObservation;
+import io.opentelemetry.sdk.metrics.BatchObserverSdk.LongObservation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
-abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.Result>
-    extends AbstractInstrument implements AsynchronousInstrument<T> {
+abstract class AbstractAsynchronousInstrument<
+        T extends AsynchronousInstrument.Result, U extends Number>
+    extends AbstractInstrument implements AsynchronousInstrument<T, U> {
   @Nullable private volatile Callback<T> metricUpdater = null;
   private final ReentrantLock collectLock = new ReentrantLock();
 
@@ -63,7 +67,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
   }
 
   static class AbstractLongAsynchronousInstrument
-      extends AbstractAsynchronousInstrument<LongResult> {
+      extends AbstractAsynchronousInstrument<LongResult, Long> {
     AbstractLongAsynchronousInstrument(
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
@@ -75,6 +79,41 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     @Override
     LongResultSdk newResult(ActiveBatcher activeBatcher) {
       return new LongResultSdk(activeBatcher);
+    }
+
+    @Override
+    public Observation observation(Long observation) {
+      return new LongObservationSdk(this.getActiveBatcher(), observation);
+    }
+
+    private static final class LongObservationSdk implements LongObservation {
+      private final ActiveBatcher activeBatcher;
+      private final long value;
+
+      private LongObservationSdk(ActiveBatcher activeBatcher, long value) {
+        this.activeBatcher = activeBatcher;
+        this.value = value;
+      }
+
+      @Override
+      public ObservationType getType() {
+        return ObservationType.LONG_OBSERVATION;
+      }
+
+      @Override
+      public Aggregator getAggregator() {
+        return this.activeBatcher.getAggregator();
+      }
+
+      @Override
+      public Descriptor getDescription() {
+        return this.activeBatcher.getDescriptor();
+      }
+
+      @Override
+      public long getValue() {
+        return this.value;
+      }
     }
 
     private static final class LongResultSdk implements LongResult {
@@ -95,7 +134,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
   }
 
   static class AbstractDoubleAsynchronousInstrument
-      extends AbstractAsynchronousInstrument<DoubleResult> {
+      extends AbstractAsynchronousInstrument<DoubleResult, Double> {
     AbstractDoubleAsynchronousInstrument(
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
@@ -107,6 +146,42 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     @Override
     DoubleResultSdk newResult(ActiveBatcher activeBatcher) {
       return new DoubleResultSdk(activeBatcher);
+    }
+
+    @Override
+    public Observation observation(Double observation) {
+      return new DoubleObservationSdk(this.getActiveBatcher(), observation);
+    }
+
+    private static final class DoubleObservationSdk implements DoubleObservation {
+
+      private final ActiveBatcher activeBatcher;
+      private final double value;
+
+      private DoubleObservationSdk(ActiveBatcher activeBatcher, double value) {
+        this.activeBatcher = activeBatcher;
+        this.value = value;
+      }
+
+      @Override
+      public ObservationType getType() {
+        return ObservationType.DOUBLE_OBSERVATION;
+      }
+
+      @Override
+      public Aggregator getAggregator() {
+        return this.activeBatcher.getAggregator();
+      }
+
+      @Override
+      public Descriptor getDescription() {
+        return this.activeBatcher.getDescriptor();
+      }
+
+      @Override
+      public double getValue() {
+        return this.value;
+      }
     }
 
     private static final class DoubleResultSdk implements DoubleResult {

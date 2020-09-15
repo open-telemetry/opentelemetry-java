@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import java.util.List;
 
 /**
@@ -28,6 +29,11 @@ final class ActiveBatcher implements Batcher {
   @Override
   public Aggregator getAggregator() {
     return batcher.getAggregator();
+  }
+
+  @Override
+  public Descriptor getDescriptor() {
+    return batcher.getDescriptor();
   }
 
   @Override

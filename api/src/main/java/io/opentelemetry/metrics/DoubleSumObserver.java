@@ -49,7 +49,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleSumObserver extends AsynchronousInstrument<DoubleResult> {
+public interface DoubleSumObserver extends AsynchronousInstrument<DoubleResult, Double> {
   @Override
   void setCallback(Callback<DoubleResult> callback);
 

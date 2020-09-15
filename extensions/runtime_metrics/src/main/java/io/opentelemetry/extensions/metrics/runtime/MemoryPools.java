@@ -7,15 +7,23 @@ package io.opentelemetry.extensions.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
+import io.opentelemetry.exporters.logging.LoggingMetricExporter;
 import io.opentelemetry.metrics.AsynchronousInstrument;
 import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
+import io.opentelemetry.metrics.BatchObserver.BatchObserverFunction;
+import io.opentelemetry.metrics.BatchObserver.BatchObserverResult;
+import io.opentelemetry.metrics.DoubleSumObserver;
+import io.opentelemetry.metrics.LongSumObserver;
 import io.opentelemetry.metrics.LongUpDownSumObserver;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,6 +62,12 @@ public final class MemoryPools {
     this.memoryBean = ManagementFactory.getMemoryMXBean();
     this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
     this.meter = OpenTelemetry.getMeter("io.opentelemetry.extensions.metrics.runtime.memory");
+    IntervalMetricReader.builder()
+        .setExportIntervalMillis(10000)
+        .setMetricExporter(new LoggingMetricExporter())
+        .setMetricProducers(
+            Collections.singletonList(OpenTelemetrySdk.getMeterProvider().getMetricProducer()))
+        .build();
   }
 
   /** Export only the "area" metric. */
@@ -123,5 +137,33 @@ public final class MemoryPools {
   public void exportAll() {
     exportMemoryAreaMetric();
     exportMemoryPoolMetric();
+  }
+
+  public static void main(String[] args) {
+    MemoryPools m = new MemoryPools();
+    // m.exportAll();
+    m.test();
+    new LoggingMetricExporter()
+        .export(OpenTelemetrySdk.getMeterProvider().getMetricProducer().collectAllMetrics());
+  }
+
+  private void test() {
+    final LongSumObserver observer =
+        this.meter.longSumObserverBuilder("observer").setUnit("banana").build();
+    final DoubleSumObserver doubleObs =
+        this.meter.doubleSumObserverBuilder("doubleObs").setUnit("apple").build();
+    this.meter.newBatchObserver(
+        "test",
+        new BatchObserverFunction() {
+          @Override
+          public void observe(BatchObserverResult result) {
+            MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
+            result.observe(
+                Labels.of("key", "value"),
+                observer.observation(heapUsage.getInit()),
+                observer.observation(heapUsage.getMax()),
+                doubleObs.observation(30d));
+          }
+        });
   }
 }

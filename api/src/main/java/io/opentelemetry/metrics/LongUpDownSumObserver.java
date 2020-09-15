@@ -49,7 +49,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongUpDownSumObserver extends AsynchronousInstrument<LongResult> {
+public interface LongUpDownSumObserver extends AsynchronousInstrument<LongResult, Long> {
   @Override
   void setCallback(Callback<LongResult> callback);
 

@@ -74,6 +74,11 @@ final class Batchers {
     }
 
     @Override
+    public Descriptor getDescriptor() {
+      return Descriptor.create("", "", "", MetricData.Descriptor.Type.SUMMARY, Labels.empty());
+    }
+
+    @Override
     public void batch(Labels labelSet, Aggregator aggregator, boolean mappedAggregator) {}
 
     @Override
@@ -114,6 +119,11 @@ final class Batchers {
     @Override
     public final Aggregator getAggregator() {
       return aggregatorFactory.getAggregator();
+    }
+
+    @Override
+    public Descriptor getDescriptor() {
+      return descriptor;
     }
 
     @Override

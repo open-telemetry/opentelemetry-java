@@ -22,7 +22,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface AsynchronousInstrument<R extends Result> extends Instrument {
+public interface AsynchronousInstrument<R extends Result, T extends Number> extends Instrument {
   /**
    * A {@code Callback} for a {@code AsynchronousInstrument}.
    *
@@ -43,10 +43,12 @@ public interface AsynchronousInstrument<R extends Result> extends Instrument {
    */
   void setCallback(Callback<R> callback);
 
+  Observation observation(T observation);
+
   /** Builder class for {@link AsynchronousInstrument}. */
   interface Builder extends Instrument.Builder {
     @Override
-    AsynchronousInstrument<?> build();
+    AsynchronousInstrument<?, ?> build();
   }
 
   interface Result {}
@@ -59,5 +61,14 @@ public interface AsynchronousInstrument<R extends Result> extends Instrument {
   /** The result for the {@link Callback}. */
   interface DoubleResult extends Result {
     void observe(double value, Labels labels);
+  }
+
+  interface Observation {
+    ObservationType getType();
+  }
+
+  enum ObservationType {
+    LONG_OBSERVATION,
+    DOUBLE_OBSERVATION,
   }
 }
