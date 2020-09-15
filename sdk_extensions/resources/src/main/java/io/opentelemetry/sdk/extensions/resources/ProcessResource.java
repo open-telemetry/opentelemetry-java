@@ -25,7 +25,6 @@ import java.lang.management.RuntimeMXBean;
 
 /** {@link ResourceProvider} which provides information about the current running process. */
 public class ProcessResource extends ResourceProvider {
-
   @Override
   protected Attributes getAttributes() {
     Attributes.Builder attributes = Attributes.newBuilder();
