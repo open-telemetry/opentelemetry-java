@@ -62,10 +62,7 @@ public abstract class Resource {
           .merge(TELEMETRY_SDK)
           .merge(readResourceFromProviders());
   private static final ResourcesConfig RESOURCES_CONFIG =
-      ResourcesConfig.newBuilder()
-          .readEnvironmentVariables()
-          .readSystemProperties()
-          .build();
+      ResourcesConfig.newBuilder().readEnvironmentVariables().readSystemProperties().build();
 
   @Nullable
   private static String readVersion() {

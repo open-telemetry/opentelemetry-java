@@ -25,7 +25,6 @@ import io.opentelemetry.trace.Span;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -53,7 +52,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class ResourcesConfig {
   // These values are the default values for all the global parameters.
-  private static final ImmutableSet<String> OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS = ImmutableSet.of();
+  private static final ImmutableSet<String> OTEL_JAVA_DISABLE_RESOURCES_PROVIDERS =
+      ImmutableSet.of();
 
   /**
    * Returns the default {@code ResourcesConfig}.
