@@ -150,5 +150,16 @@ public final class ResourceAttributes {
   /** Zones are a sub set of the region connected through low-latency links. */
   public static final StringAttributeSetter CLOUD_ZONE = StringAttributeSetter.create("cloud.zone");
 
+  /** The name of the function being executed. */
+  public static final StringAttributeSetter FAAS_NAME = StringAttributeSetter.create("faas.name");
+  /** The unique ID of the function being executed. */
+  public static final StringAttributeSetter FAAS_ID = StringAttributeSetter.create("faas.id");
+  /** The version string of the function being executed. */
+  public static final StringAttributeSetter FAAS_VERSION =
+      StringAttributeSetter.create("faas.version");
+  /** The execution environment ID as a string. */
+  public static final StringAttributeSetter FAAS_INSTANCE =
+      StringAttributeSetter.create("faas.instance");
+
   private ResourceAttributes() {}
 }

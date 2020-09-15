@@ -28,7 +28,6 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ public abstract class TestSpanData implements SpanData {
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
-        .setTraceFlags(TraceFlags.getDefault())
+        .setSampled(false)
         .setTotalAttributeCount(0);
   }
 
@@ -121,13 +120,7 @@ public abstract class TestSpanData implements SpanData {
      */
     public abstract Builder setSpanId(String spanId);
 
-    /**
-     * Set the {@link TraceFlags} on this builder.
-     *
-     * @param traceFlags the trace flags.
-     * @return this.
-     */
-    public abstract Builder setTraceFlags(TraceFlags traceFlags);
+    public abstract Builder setSampled(boolean isSampled);
 
     /**
      * Set the {@link TraceState} on this builder.

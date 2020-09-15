@@ -41,8 +41,8 @@ import javax.annotation.concurrent.ThreadSafe;
  *     Object concern = CONCERN_KEY.get(context);
  *     // Use concern in the specified context to propagate data.
  *   }
- *   public <C> Context extract(Context context, C carrier, Getter<C> setter) {
- *     // Use setter to get the data from the carrier.
+ *   public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+ *     // Use getter to get the data from the carrier.
  *     return context.withValue(CONCERN_KEY, concern);
  *   }
  * }

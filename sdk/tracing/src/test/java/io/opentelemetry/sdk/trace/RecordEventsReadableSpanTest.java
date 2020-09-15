@@ -972,7 +972,7 @@ class RecordEventsReadableSpanTest {
         Status.OK,
         /* hasEnded= */ true);
     assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
-    assertThat(result.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
+    assertThat(result.isSampled()).isEqualTo(false);
   }
 
   @Test

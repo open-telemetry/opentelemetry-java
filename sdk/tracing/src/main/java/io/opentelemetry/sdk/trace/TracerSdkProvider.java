@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.MillisClock;
@@ -119,12 +120,13 @@ public class TracerSdkProvider implements TracerProvider {
   }
 
   /**
-   * Requests the active span processor to process all span events that have not yet been processed.
+   * Requests the active span processor to process all span events that have not yet been processed
+   * and returns a {@link CompletableResultCode} which is completed when the flush is finished.
    *
    * @see SpanProcessor#forceFlush()
    */
-  public void forceFlush() {
-    sharedState.getActiveSpanProcessor().forceFlush();
+  public CompletableResultCode forceFlush() {
+    return sharedState.getActiveSpanProcessor().forceFlush();
   }
 
   /**
