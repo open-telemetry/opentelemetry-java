@@ -37,7 +37,7 @@ import javax.annotation.Nonnull;
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 public final class MeterSdkProvider implements MeterProvider {
 
@@ -51,13 +51,13 @@ public final class MeterSdkProvider implements MeterProvider {
     this.metricProducer = new MetricProducerSdk(this.registry);
   }
 
-  /** @since 0.1.0 */
+  /** @since 0.3.0 */
   @Override
   public MeterSdk get(String instrumentationName) {
     return registry.get(instrumentationName);
   }
 
-  /** @since 0.1.0 */
+  /** @since 0.3.0 */
   @Override
   public MeterSdk get(String instrumentationName, String instrumentationVersion) {
     return registry.get(instrumentationName, instrumentationVersion);

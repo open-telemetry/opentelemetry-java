@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
+/** @since 0.3.0 */
 @AutoValue
 @Immutable
 abstract class MeterProviderSharedState {
@@ -28,7 +29,9 @@ abstract class MeterProviderSharedState {
     return new AutoValue_MeterProviderSharedState(clock, resource);
   }
 
+  /** @since 0.3.0 */
   abstract Clock getClock();
 
+  /** @since 0.3.0 */
   abstract Resource getResource();
 }

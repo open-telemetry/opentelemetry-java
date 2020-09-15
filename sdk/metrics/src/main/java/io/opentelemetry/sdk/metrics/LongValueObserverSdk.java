@@ -45,11 +45,13 @@ final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
       super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
+    /** @since 0.5.0 */
     @Override
     Builder getThis() {
       return this;
     }
 
+    /** @since 0.5.0 */
     @Override
     public LongValueObserverSdk build() {
       InstrumentDescriptor instrumentDescriptor =

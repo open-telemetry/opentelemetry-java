@@ -128,6 +128,8 @@ public class TracerSdkProvider implements TracerProvider {
    * and returns a {@link CompletableResultCode} which is completed when the flush is finished.
    *
    * @see SpanProcessor#forceFlush()
+   *
+   * @since 0.4.0
    */
   public CompletableResultCode forceFlush() {
     return sharedState.getActiveSpanProcessor().forceFlush();

@@ -51,6 +51,8 @@ import java.util.logging.Logger;
  * <ul>
  *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
  * </ul>
+ *
+ * @since 0.5.0
  */
 public final class SimpleSpanProcessor implements SpanProcessor {
 
@@ -64,16 +66,19 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     this.sampled = sampled;
   }
 
+  /** @since 0.5.0 */
   @Override
   public void onStart(ReadWriteSpan span) {
     // Do nothing.
   }
 
+  /** @since 0.5.0 */
   @Override
   public boolean isStartRequired() {
     return false;
   }
 
+  /** @since 0.5.0 */
   @Override
   public void onEnd(ReadableSpan span) {
     if (sampled && !span.getSpanContext().isSampled()) {
@@ -96,16 +101,19 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     }
   }
 
+  /** @since 0.5.0 */
   @Override
   public boolean isEndRequired() {
     return true;
   }
 
+  /** @since 0.5.0 */
   @Override
   public CompletableResultCode shutdown() {
     return spanExporter.shutdown();
   }
 
+  /** @since 0.5.0 */
   @Override
   public CompletableResultCode forceFlush() {
     // Do nothing.
@@ -118,6 +126,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
    * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
    * @return a new {@link SimpleSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
+   * @since 0.5.0
    */
   public static Builder newBuilder(SpanExporter spanExporter) {
     return new Builder(spanExporter);
@@ -146,6 +155,8 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      *
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
+     *
+     * @since 0.5.0
      */
     @Override
     protected Builder fromConfigMap(
@@ -165,6 +176,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      *
      * @param exportOnlySampled if {@code true} report only sampled spans.
      * @return this.
+     * @since 0.5.0
      */
     public Builder setExportOnlySampled(boolean exportOnlySampled) {
       this.exportOnlySampled = exportOnlySampled;
@@ -185,6 +197,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      *
      * @return a new {@link SimpleSpanProcessor}.
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
+     * @since 0.5.0
      */
     public SimpleSpanProcessor build() {
       return new SimpleSpanProcessor(spanExporter, exportOnlySampled);

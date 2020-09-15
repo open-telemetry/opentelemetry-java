@@ -45,11 +45,13 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
       super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
+    /** @since 0.5.0 */
     @Override
     Builder getThis() {
       return this;
     }
 
+    /** @since 0.5.0 */
     @Override
     public DoubleValueObserverSdk build() {
       InstrumentDescriptor instrumentDescriptor =

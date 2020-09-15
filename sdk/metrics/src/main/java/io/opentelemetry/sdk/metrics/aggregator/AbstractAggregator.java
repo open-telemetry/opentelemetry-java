@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+/** since 0.3.0 */
 abstract class AbstractAggregator implements Aggregator {
   // Note: This is not 100% thread-safe. There is a race condition where recordings can
   // be made in the moment between the reset and the setting of this field's value. In those
@@ -40,9 +41,12 @@ abstract class AbstractAggregator implements Aggregator {
    * self-type.
    *
    * @param aggregator The aggregator to merge with.
+   *
+   * @since 0.3.0
    */
   abstract void doMergeAndReset(Aggregator aggregator);
 
+  /** since 0.3.0 */
   @Override
   public final void recordLong(long value) {
     doRecordLong(value);
@@ -58,6 +62,7 @@ abstract class AbstractAggregator implements Aggregator {
         "This aggregator does not support recording long values.");
   }
 
+  /** since 0.3.0 */
   @Override
   public final void recordDouble(double value) {
     doRecordDouble(value);

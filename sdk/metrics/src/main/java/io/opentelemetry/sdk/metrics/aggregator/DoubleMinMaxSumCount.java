@@ -26,6 +26,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
+/** @since 0.3.0 */
 @ThreadSafe
 public final class DoubleMinMaxSumCount extends AbstractAggregator {
 
@@ -53,12 +54,14 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
     current.mergeAndReset(other.current);
   }
 
+  /** @since 0.3.0 */
   @Nullable
   @Override
   public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
     return current.toPoint(startEpochNanos, epochNanos, labels);
   }
 
+  /** @since 0.3.0 */
   @Override
   public void doRecordDouble(double value) {
     current.record(value);
@@ -92,6 +95,7 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
       }
     }
 
+    /** @since 0.3.0 */
     public void mergeAndReset(DoubleSummary other) {
       long myCount;
       double mySum;
@@ -124,6 +128,7 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
       }
     }
 
+    /** @since 0.6.0 */
     @Nullable
     private SummaryPoint toPoint(long startEpochNanos, long epochNanos, Labels labels) {
       lock.readLock().lock();

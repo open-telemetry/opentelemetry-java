@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Objects;
 
+/** @since 0.3.0 */
 abstract class AbstractInstrument implements Instrument {
 
   private final InstrumentDescriptor descriptor;
@@ -45,18 +46,22 @@ abstract class AbstractInstrument implements Instrument {
     this.activeBatcher = activeBatcher;
   }
 
+  /** @since 0.3.0 */
   final InstrumentDescriptor getDescriptor() {
     return descriptor;
   }
 
+  /** @since 0.3.0 */
   final MeterProviderSharedState getMeterProviderSharedState() {
     return meterProviderSharedState;
   }
 
+  /** @since 0.3.0 */
   final MeterSharedState getMeterSharedState() {
     return meterSharedState;
   }
 
+  /** @since 0.3.0 */
   final ActiveBatcher getActiveBatcher() {
     return activeBatcher;
   }
@@ -64,9 +69,12 @@ abstract class AbstractInstrument implements Instrument {
   /**
    * Collects records from all the entries (labelSet, Bound) that changed since the last {@link
    * AbstractInstrument#collectAll()} call.
+   *
+   * @since 0.3.0
    */
   abstract List<MetricData> collectAll();
 
+  /** @since 0.3.0 */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -81,11 +89,13 @@ abstract class AbstractInstrument implements Instrument {
     return descriptor.equals(that.descriptor);
   }
 
+  /** @since 0.3.0 */
   @Override
   public int hashCode() {
     return descriptor.hashCode();
   }
 
+  /** @since 0.3.0 */
   abstract static class Builder<B extends AbstractInstrument.Builder<?>>
       implements Instrument.Builder {
     /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
@@ -117,43 +127,52 @@ abstract class AbstractInstrument implements Instrument {
       this.meterSharedState = meterSharedState;
     }
 
+    /** @since 0.3.0 */
     @Override
     public final B setDescription(String description) {
       this.description = Objects.requireNonNull(description, "description");
       return getThis();
     }
 
+    /** @since 0.3.0 */
     @Override
     public final B setUnit(String unit) {
       this.unit = Objects.requireNonNull(unit, "unit");
       return getThis();
     }
 
+    /** @since 0.6.0 */
     @Override
     public final B setConstantLabels(Labels constantLabels) {
       this.constantLabels = constantLabels;
       return getThis();
     }
 
+    /** @since 0.3.0 */
     final MeterProviderSharedState getMeterProviderSharedState() {
       return meterProviderSharedState;
     }
 
+    /** @since 0.3.0 */
     final MeterSharedState getMeterSharedState() {
       return meterSharedState;
     }
 
+    /** @since 0.3.0 */
     final InstrumentDescriptor getInstrumentDescriptor(
         InstrumentType type, InstrumentValueType valueType) {
       return InstrumentDescriptor.create(name, description, unit, constantLabels, type, valueType);
     }
 
+    /** @since 0.3.0 */
     abstract B getThis();
 
+    /** @since 0.3.0 */
     final <I extends AbstractInstrument> I register(I instrument) {
       return getMeterSharedState().getInstrumentRegistry().register(instrument);
     }
 
+    /** @since 0.7.0 */
     protected Batcher getBatcher(InstrumentDescriptor descriptor) {
       return meterSdk.createBatcher(descriptor, meterProviderSharedState, meterSharedState);
     }

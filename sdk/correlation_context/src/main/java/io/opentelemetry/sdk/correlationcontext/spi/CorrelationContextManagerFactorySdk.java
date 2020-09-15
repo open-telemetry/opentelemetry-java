@@ -26,9 +26,12 @@ import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
+ *
+ * @since 0.3.0
  */
 public final class CorrelationContextManagerFactorySdk implements CorrelationContextManagerFactory {
 
+  /** since 0.3.0 */
   @Override
   public CorrelationContextManager create() {
     return new CorrelationContextManagerSdk();

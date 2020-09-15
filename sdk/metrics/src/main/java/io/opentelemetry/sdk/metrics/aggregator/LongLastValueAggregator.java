@@ -29,6 +29,8 @@ import javax.annotation.Nullable;
  * merging multiple LastValueAggregators will not preserve the ordering of records. This is not a
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
+ *
+ * @since 0.3.0
  */
 public final class LongLastValueAggregator extends AbstractAggregator {
 
@@ -47,17 +49,21 @@ public final class LongLastValueAggregator extends AbstractAggregator {
    * Returns an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.
    *
    * @return an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.
+   *
+   * @since 0.3.0
    */
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
+  /** @since 0.3.0 */
   @Override
   void doMergeAndReset(Aggregator aggregator) {
     LongLastValueAggregator other = (LongLastValueAggregator) aggregator;
     other.current.set(this.current.getAndSet(DEFAULT_VALUE));
   }
 
+  /** @since 0.3.0 */
   @Override
   @Nullable
   public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {

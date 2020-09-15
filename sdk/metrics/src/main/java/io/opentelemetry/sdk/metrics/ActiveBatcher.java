@@ -28,6 +28,8 @@ import java.util.List;
  * <p>TODO: Add support for multiple "Batchers" in the same time.
  *
  * <p>TODO: Consider if support for changing batchers at runtime is needed.
+ *
+ * @since 0.3.0
  */
 final class ActiveBatcher implements Batcher {
   private final Batcher batcher;
@@ -36,11 +38,13 @@ final class ActiveBatcher implements Batcher {
     this.batcher = batcher;
   }
 
+  /** @since 0.3.0 */
   @Override
   public Aggregator getAggregator() {
     return batcher.getAggregator();
   }
 
+  /** @since 0.6.0 */
   @Override
   public void batch(Labels labelSet, Aggregator aggregator, boolean mappedAggregator) {
     if (aggregator.hasRecordings()) {
@@ -48,6 +52,7 @@ final class ActiveBatcher implements Batcher {
     }
   }
 
+  /** @since 0.3.0 */
   @Override
   public List<MetricData> completeCollectionCycle() {
     return batcher.completeCollectionCycle();

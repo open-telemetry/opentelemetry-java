@@ -146,6 +146,7 @@ public abstract class ConfigBuilder<T> {
    * @param name The property name
    * @param map The map where to look for the property
    * @return the {@link String} value of the property, {@code null} if the property cannot be found.
+   * @since 0.5.0
    */
   @Nullable
   protected static String getStringProperty(String name, Map<String, String> map) {
@@ -159,6 +160,7 @@ public abstract class ConfigBuilder<T> {
    * @param map The map where to look for the property
    * @return the {@link Double} value of the property, {@code null} in case of error or if the
    *     property cannot be found.
+   * @since 0.5.0
    */
   @Nullable
   protected static Double getDoubleProperty(String name, Map<String, String> map) {

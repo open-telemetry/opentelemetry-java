@@ -23,6 +23,8 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * The default {@link IdsGenerator} which generates IDs as random numbers using {@link
  * ThreadLocalRandom}.
+ *
+ * @since 0.5.0
  */
 public final class RandomIdsGenerator implements IdsGenerator {
 

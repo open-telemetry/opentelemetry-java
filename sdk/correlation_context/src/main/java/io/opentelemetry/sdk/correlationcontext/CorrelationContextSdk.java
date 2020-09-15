@@ -31,7 +31,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** @since 0.1.0 */
+/** @since 0.3.0 */
 @Immutable
 // TODO: Migrate to AutoValue
 // @AutoValue
@@ -53,6 +53,7 @@ class CorrelationContextSdk implements CorrelationContext {
     this.parent = parent;
   }
 
+  /** @since 0.1.0 */
   @Override
   public Collection<Entry> getEntries() {
     Map<String, Entry> combined = new HashMap<>(entries);
@@ -73,6 +74,7 @@ class CorrelationContextSdk implements CorrelationContext {
     return Collections.unmodifiableCollection(combined.values());
   }
 
+  /** @since 0.1.0 */
   @Nullable
   @Override
   public String getEntryValue(String entryKey) {
@@ -84,6 +86,7 @@ class CorrelationContextSdk implements CorrelationContext {
     }
   }
 
+  /** @since 0.1.0 */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -101,6 +104,7 @@ class CorrelationContextSdk implements CorrelationContext {
     return parent != null ? parent.equals(distContextSdk.parent) : distContextSdk.parent == null;
   }
 
+  /** @since 0.1.0 */
   @Override
   public int hashCode() {
     int result = entries.hashCode();
@@ -108,6 +112,7 @@ class CorrelationContextSdk implements CorrelationContext {
     return result;
   }
 
+  /** @since 0.3.0 */
   // TODO: Migrate to AutoValue.Builder
   // @AutoValue.Builder
   static class Builder implements CorrelationContext.Builder {
@@ -120,12 +125,14 @@ class CorrelationContextSdk implements CorrelationContext {
       this.entries = new HashMap<>();
     }
 
+    /** @since 0.3.0 */
     @Override
     public CorrelationContext.Builder setParent(CorrelationContext parent) {
       this.parent = Objects.requireNonNull(parent, "parent");
       return this;
     }
 
+    /** @since 0.3.0 */
     @Override
     public CorrelationContext.Builder setParent(Context context) {
       Objects.requireNonNull(context, "context");
@@ -133,6 +140,7 @@ class CorrelationContextSdk implements CorrelationContext {
       return this;
     }
 
+    /** @since 0.3.0 */
     @Override
     public CorrelationContext.Builder setNoParent() {
       this.parent = null;
@@ -140,6 +148,7 @@ class CorrelationContextSdk implements CorrelationContext {
       return this;
     }
 
+    /** @since 0.3.0 */
     @Override
     public CorrelationContext.Builder put(String key, String value, EntryMetadata entryMetadata) {
       entries.put(
@@ -151,6 +160,7 @@ class CorrelationContextSdk implements CorrelationContext {
       return this;
     }
 
+    /** @since 0.6.0 */
     @Override
     public CorrelationContext.Builder remove(String key) {
       entries.remove(Objects.requireNonNull(key, "key"));
@@ -160,6 +170,7 @@ class CorrelationContextSdk implements CorrelationContext {
       return this;
     }
 
+    /** @since 0.3.0 */
     @Override
     public CorrelationContextSdk build() {
       if (parent == null && !noImplicitParent) {

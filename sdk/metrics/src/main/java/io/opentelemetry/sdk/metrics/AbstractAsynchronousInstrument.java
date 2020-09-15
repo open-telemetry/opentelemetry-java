@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
+/** @since 0.5.0 */
 abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.Result>
     extends AbstractInstrument implements AsynchronousInstrument<T> {
   @Nullable private volatile Callback<T> metricUpdater = null;
@@ -39,6 +40,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
   }
 
+  /** @since 0.5.0 */
   @Override
   List<MetricData> collectAll() {
     Callback<T> currentMetricUpdater = metricUpdater;
@@ -55,13 +57,16 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     }
   }
 
+  /** @since 0.5.0 */
   @Override
   public void setCallback(Callback<T> callback) {
     this.metricUpdater = Objects.requireNonNull(callback, "callback");
   }
 
+  /** @since 0.5.0 */
   abstract T newResult(ActiveBatcher activeBatcher);
 
+  /** @since 0.5.0 */
   abstract static class Builder<B extends AbstractInstrument.Builder<?>>
       extends AbstractInstrument.Builder<B> {
     Builder(
@@ -73,6 +78,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     }
   }
 
+  /** @since 0.6.0 */
   static class AbstractLongAsynchronousInstrument
       extends AbstractAsynchronousInstrument<LongResult> {
     AbstractLongAsynchronousInstrument(
@@ -96,6 +102,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
         this.activeBatcher = activeBatcher;
       }
 
+      /** @since 0.6.0 */
       @Override
       public void observe(long sum, Labels labels) {
         Aggregator aggregator = activeBatcher.getAggregator();
@@ -105,6 +112,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     }
   }
 
+  /** @since 0.6.0 */
   static class AbstractDoubleAsynchronousInstrument
       extends AbstractAsynchronousInstrument<DoubleResult> {
     AbstractDoubleAsynchronousInstrument(
@@ -128,6 +136,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
         this.activeBatcher = activeBatcher;
       }
 
+      /** @since 0.6.0 */
       @Override
       public void observe(double sum, Labels labels) {
         Aggregator aggregator = activeBatcher.getAggregator();

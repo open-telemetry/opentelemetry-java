@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongA
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
-/** @since 0.1.0 */
+/** @since 0.5.0 */
 final class LongSumObserverSdk extends AbstractLongAsynchronousInstrument
     implements LongSumObserver {
   LongSumObserverSdk(
@@ -44,11 +44,13 @@ final class LongSumObserverSdk extends AbstractLongAsynchronousInstrument
       super(name, meterProviderSharedState, meterSharedState, meterSdk);
     }
 
+    /** @since 0.5.0 */
     @Override
     Builder getThis() {
       return this;
     }
 
+    /** @since 0.5.0 */
     @Override
     public LongSumObserverSdk build() {
       InstrumentDescriptor instrumentDescriptor =
