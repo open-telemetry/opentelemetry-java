@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import static io.opentelemetry.internal.StringUtils.NAME_MAX_LENGTH;
+import static io.opentelemetry.internal.StringUtils.METRIC_NAME_MAX_LENGTH;
 import static io.opentelemetry.metrics.DefaultMeter.ERROR_MESSAGE_INVALID_NAME;
 import static java.util.Arrays.fill;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,7 +58,7 @@ class LongValueObserverTest {
 
   @Test
   void preventTooLongName() {
-    char[] chars = new char[NAME_MAX_LENGTH + 1];
+    char[] chars = new char[METRIC_NAME_MAX_LENGTH + 1];
     fill(chars, 'a');
     String longName = String.valueOf(chars);
     assertThrows(
