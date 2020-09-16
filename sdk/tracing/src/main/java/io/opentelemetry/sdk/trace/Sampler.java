@@ -69,9 +69,9 @@ public interface Sampler {
 
   /** A decision on whether a span should be recorded, recorded and sampled or not recorded. */
   enum Decision {
-    NOT_RECORD,
-    RECORD,
-    RECORD_AND_SAMPLED,
+    DROP,
+    RECORD_ONLY,
+    RECORD_AND_SAMPLE,
   }
 
   /**
@@ -94,8 +94,8 @@ public interface Sampler {
      * Return tags which will be attached to the span.
      *
      * @return attributes added to span. These attributes should be added to the span only when
-     *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD} or {@link
-     *     Decision#RECORD_AND_SAMPLED}.
+     *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD_ONLY} or {@link
+     *     Decision#RECORD_AND_SAMPLE}.
      * @since 0.1.0
      */
     Attributes getAttributes();
