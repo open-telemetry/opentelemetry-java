@@ -18,6 +18,8 @@ EXAMPLE_SERVER_PID=$!
 sleep 5
 onshutdown()
 {
+    # sleep for printing test results
+    sleep 2
     kill $EXAMPLE_SERVER_PID
 }
 trap onshutdown EXIT
