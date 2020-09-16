@@ -52,21 +52,21 @@ public final class Samplers {
       DoubleAttributeSetter.create("sampling.probability");
 
   private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
-      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLED);
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLE);
   private static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT =
-      SamplingResultImpl.createWithoutAttributes(Decision.NOT_RECORD);
+      SamplingResultImpl.createWithoutAttributes(Decision.DROP);
   private static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
-      SamplingResultImpl.createWithoutAttributes(Decision.RECORD);
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_ONLY);
 
   // No instance of this class.
   private Samplers() {}
 
   static boolean isRecording(Decision decision) {
-    return Decision.RECORD.equals(decision) || Decision.RECORD_AND_SAMPLED.equals(decision);
+    return Decision.RECORD_ONLY.equals(decision) || Decision.RECORD_AND_SAMPLE.equals(decision);
   }
 
   static boolean isSampled(Decision decision) {
-    return Decision.RECORD_AND_SAMPLED.equals(decision);
+    return Decision.RECORD_AND_SAMPLE.equals(decision);
   }
 
   /**
@@ -104,11 +104,11 @@ public final class Samplers {
    */
   public static SamplingResult emptySamplingResult(Decision decision) {
     switch (decision) {
-      case RECORD_AND_SAMPLED:
+      case RECORD_AND_SAMPLE:
         return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-      case RECORD:
+      case RECORD_ONLY:
         return EMPTY_RECORDED_SAMPLING_RESULT;
-      case NOT_RECORD:
+      case DROP:
         return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
     }
     throw new AssertionError("unrecognised samplingResult");
@@ -445,8 +445,8 @@ public final class Samplers {
       return new AutoValue_Samplers_Probability(
           probability,
           idUpperBound,
-          SamplingResultImpl.createWithProbability(Decision.RECORD_AND_SAMPLED, probability),
-          SamplingResultImpl.createWithProbability(Decision.NOT_RECORD, probability));
+          SamplingResultImpl.createWithProbability(Decision.RECORD_AND_SAMPLE, probability),
+          SamplingResultImpl.createWithProbability(Decision.DROP, probability));
     }
 
     abstract double getProbability();

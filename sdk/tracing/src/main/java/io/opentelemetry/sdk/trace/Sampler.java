@@ -63,9 +63,9 @@ public interface Sampler {
 
   /** A decision on whether a span should be recorded, recorded and sampled or not recorded. */
   enum Decision {
-    NOT_RECORD,
-    RECORD,
-    RECORD_AND_SAMPLED,
+    DROP,
+    RECORD_ONLY,
+    RECORD_AND_SAMPLE,
   }
 
   /**
