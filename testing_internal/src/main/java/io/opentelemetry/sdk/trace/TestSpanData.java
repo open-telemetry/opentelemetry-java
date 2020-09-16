@@ -17,20 +17,16 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +49,7 @@ public abstract class TestSpanData implements SpanData {
    */
   public static Builder newBuilder() {
     return new AutoValue_TestSpanData.Builder()
-        .setParent(Context.ROOT)
+        .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
@@ -63,17 +59,8 @@ public abstract class TestSpanData implements SpanData {
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
         .setSampled(false)
+        .setHasRemoteParent(false)
         .setTotalAttributeCount(0);
-  }
-
-  @Override
-  public boolean getHasRemoteParent() {
-    return TracingContextUtils.getSpan(getParent()).getContext().isRemote();
-  }
-
-  @Override
-  public String getParentSpanId() {
-    return TracingContextUtils.getSpan(getParent()).getContext().getSpanIdAsHexString();
   }
 
   /**
@@ -89,8 +76,6 @@ public abstract class TestSpanData implements SpanData {
     abstract List<Event> getEvents();
 
     abstract List<Link> getLinks();
-
-    abstract String getTraceId();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -132,36 +117,13 @@ public abstract class TestSpanData implements SpanData {
     public abstract Builder setTraceState(TraceState traceState);
 
     /**
-     * The parent Context associated for this span, which may be empty.
+     * The parent span id associated for this span, which may be null.
      *
-     * @param parent the parent Context of the parent
+     * @param parentSpanId the SpanId of the parent
      * @return this.
      * @since 0.1.0
      */
-    public abstract Builder setParent(Context parent);
-
-    /**
-     * Utility function to set a parent context based on the current one.
-     *
-     * @see #setParent(Context)
-     */
-    public Builder setParent(String parentSpanId, boolean hasRemoteParent) {
-      return setParent(
-          TracingContextUtils.withSpan(
-              DefaultSpan.create(
-                  hasRemoteParent
-                      ? SpanContext.createFromRemoteParent(
-                          getTraceId(),
-                          parentSpanId,
-                          TraceFlags.getDefault(),
-                          TraceState.getDefault())
-                      : SpanContext.create(
-                          getTraceId(),
-                          parentSpanId,
-                          TraceFlags.getDefault(),
-                          TraceState.getDefault())),
-              Context.current()));
-    }
+    public abstract Builder setParentSpanId(String parentSpanId);
 
     /**
      * Set the {@link Resource} associated with this span. Must not be null.
@@ -258,6 +220,15 @@ public abstract class TestSpanData implements SpanData {
      * @since 0.1.0
      */
     public abstract Builder setLinks(List<Link> links);
+
+    /**
+     * Sets to true if the span has a parent on a different process.
+     *
+     * @param hasRemoteParent A boolean indicating if the span has a remote parent.
+     * @return this
+     * @since 0.3.0
+     */
+    public abstract Builder setHasRemoteParent(boolean hasRemoteParent);
 
     /**
      * Sets to true if the span has been ended.

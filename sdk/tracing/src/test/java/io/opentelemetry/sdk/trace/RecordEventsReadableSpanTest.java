@@ -20,7 +20,6 @@ import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
@@ -32,14 +31,12 @@ import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -826,16 +823,8 @@ class RecordEventsReadableSpanTest {
             SPAN_NAME,
             instrumentationLibraryInfo,
             kind,
-            parentSpanId == null
-                ? Context.ROOT
-                : TracingContextUtils.withSpan(
-                    DefaultSpan.create(
-                        SpanContext.createFromRemoteParent(
-                            spanContext.getTraceIdAsHexString(),
-                            parentSpanId,
-                            spanContext.getTraceFlags(),
-                            spanContext.getTraceState())),
-                    Context.current()),
+            parentSpanId,
+            /* hasRemoteParent= */ true,
             config,
             spanProcessor,
             testClock,
@@ -914,25 +903,14 @@ class RecordEventsReadableSpanTest {
         SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
     Link link1 = Link.create(context, TestUtils.generateRandomAttributes());
 
-    final SpanContext parentSpanContext =
-        EXPECTED_HAS_REMOTE_PARENT
-            ? SpanContext.createFromRemoteParent(
-                context.getTraceIdAsHexString(),
-                parentSpanId,
-                context.getTraceFlags(),
-                context.getTraceState())
-            : SpanContext.create(
-                context.getTraceIdAsHexString(),
-                parentSpanId,
-                context.getTraceFlags(),
-                context.getTraceState());
     RecordEventsReadableSpan readableSpan =
         RecordEventsReadableSpan.startSpan(
             context,
             name,
             instrumentationLibraryInfo,
             kind,
-            TracingContextUtils.withSpan(DefaultSpan.create(parentSpanContext), Context.current()),
+            parentSpanId,
+            /* hasRemoteParent= */ EXPECTED_HAS_REMOTE_PARENT,
             traceConfig,
             spanProcessor,
             clock,

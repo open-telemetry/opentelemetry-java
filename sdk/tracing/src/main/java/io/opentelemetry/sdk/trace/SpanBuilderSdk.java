@@ -185,11 +185,8 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span startSpan() {
-    final Context originalParent = parent == null ? Context.current() : parent;
     final Context parentContext =
-        isRootSpan
-            ? TracingContextUtils.withSpan(DefaultSpan.getInvalid(), originalParent)
-            : originalParent;
+        isRootSpan ? Context.ROOT : parent == null ? Context.current() : parent;
     final Span parentSpan = TracingContextUtils.getSpan(parentContext);
     final SpanContext parentSpanContext = parentSpan.getContext();
     String traceId;
@@ -253,7 +250,8 @@ final class SpanBuilderSdk implements Span.Builder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentContext,
+        parentSpanContext.getSpanIdAsHexString(),
+        parentSpanContext.isRemote(),
         traceConfig,
         spanProcessor,
         getClock(parentSpan, clock),

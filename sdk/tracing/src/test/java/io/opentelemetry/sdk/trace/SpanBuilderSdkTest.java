@@ -747,7 +747,6 @@ class SpanBuilderSdkTest {
             .isEqualTo(parent.getContext().getTraceIdAsHexString());
         assertThat(span.toSpanData().getParentSpanId())
             .isEqualTo(parent.getContext().getSpanIdAsHexString());
-        assertThat(span.toSpanData().getParent()).isSameAs(Context.current());
       } finally {
         span.end();
       }
