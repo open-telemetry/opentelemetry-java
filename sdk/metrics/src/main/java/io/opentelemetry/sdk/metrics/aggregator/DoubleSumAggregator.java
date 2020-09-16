@@ -21,7 +21,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 
-/** @since 0.3.0 */
 public final class DoubleSumAggregator extends AbstractAggregator {
 
   private static final double DEFAULT_VALUE = 0.0;
@@ -40,27 +39,22 @@ public final class DoubleSumAggregator extends AbstractAggregator {
    * Returns an {@link AggregatorFactory} that produces {@link DoubleSumAggregator} instances.
    *
    * @return an {@link AggregatorFactory} that produces {@link DoubleSumAggregator} instances.
-   *
-   * @since 0.3.0
    */
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
-  /** @since 0.3.0 */
   @Override
   void doMergeAndReset(Aggregator aggregator) {
     DoubleSumAggregator other = (DoubleSumAggregator) aggregator;
     other.current.getAndAdd(this.current.getAndSet(DEFAULT_VALUE));
   }
 
-  /** @since 0.6.0 */
   @Override
   public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
     return DoublePoint.create(startEpochNanos, epochNanos, labels, current.get());
   }
 
-  /** @since 0.3.0 */
   @Override
   public void doRecordDouble(double value) {
     current.getAndAdd(value);

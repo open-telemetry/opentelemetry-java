@@ -25,8 +25,6 @@ import java.util.Collection;
  * export metrics to the OpenTelemetry exporters.
  *
  * <p>All OpenTelemetry exporters should allow access to a {@code MetricExporter} instance.
- *
- * @since 0.1.0
  */
 public interface MetricExporter {
 

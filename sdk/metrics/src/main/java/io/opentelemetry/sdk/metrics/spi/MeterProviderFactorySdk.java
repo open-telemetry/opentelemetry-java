@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.metrics.MeterSdkProvider;
  */
 public final class MeterProviderFactorySdk implements MeterProviderFactory {
 
-  /** @since 0.1.0 */
   @Override
   public MeterSdkProvider create() {
     return MeterSdkProvider.builder().build();

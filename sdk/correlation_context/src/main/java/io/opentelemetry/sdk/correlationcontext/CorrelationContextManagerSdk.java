@@ -23,24 +23,19 @@ import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 
 /**
  * {@link CorrelationContextManagerSdk} is SDK implementation of {@link CorrelationContextManager}.
- *
- * @since 0.3.0
  */
 public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
-  /** @since 0.3.0 */
   @Override
   public CorrelationContext getCurrentContext() {
     return CorrelationsContextUtils.getCurrentCorrelationContext();
   }
 
-  /** @since 0.3.0 */
   @Override
   public CorrelationContext.Builder contextBuilder() {
     return new CorrelationContextSdk.Builder();
   }
 
-  /** @since 0.3.0 */
   @Override
   public Scope withContext(CorrelationContext distContext) {
     return CorrelationsContextUtils.currentContextWith(distContext);

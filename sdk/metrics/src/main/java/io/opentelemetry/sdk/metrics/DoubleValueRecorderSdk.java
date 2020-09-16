@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.DoubleValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
-/** @since 0.5.0 */
 final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundInstrument>
     implements DoubleValueRecorder {
 
@@ -34,7 +33,6 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
-  /** @since 0.6.0 */
   @Override
   public void record(double value, Labels labels) {
     BoundInstrument boundInstrument = bind(labels);
@@ -42,7 +40,6 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     boundInstrument.unbind();
   }
 
-  /** @since 0.8.0 */
   @Override
   public void record(double value) {
     record(value, Labels.empty());
@@ -53,7 +50,6 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     return new BoundInstrument(batcher);
   }
 
-  /** @since 0.5.0 */
   static final class BoundInstrument extends AbstractBoundInstrument
       implements BoundDoubleValueRecorder {
 
@@ -61,7 +57,6 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
       super(batcher.getAggregator());
     }
 
-    /** @since 0.5.0 */
     @Override
     public void record(double value) {
       recordDouble(value);

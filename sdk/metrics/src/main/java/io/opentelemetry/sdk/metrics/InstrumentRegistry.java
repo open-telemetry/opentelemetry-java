@@ -26,10 +26,8 @@ import java.util.concurrent.ConcurrentMap;
  * Basic registry class for metrics instruments. The current implementation allows instruments to be
  * registered only once for a given name.
  *
- * TODO: Discuss what is the right behavior when an already registered Instrument with the same name is present.
- * TODO: Decide what is the identifier for an Instrument? Only name?
- *
- * @since 0.3.0
+ * <p>TODO: Discuss what is the right behavior when an already registered Instrument with the same
+ * name is present. TODO: Decide what is the identifier for an Instrument? Only name?
  */
 final class InstrumentRegistry {
   private final ConcurrentMap<String, AbstractInstrument> registry = new ConcurrentHashMap<>();
@@ -43,8 +41,6 @@ final class InstrumentRegistry {
    * @return the given instrument if no instrument with same name already registered, otherwise the
    *     previous registered instrument.
    * @throws IllegalArgumentException if instrument cannot be registered.
-   *
-   * @since 0.3.0
    */
   @SuppressWarnings("unchecked")
   <I extends AbstractInstrument> I register(I instrument) {
@@ -64,8 +60,6 @@ final class InstrumentRegistry {
    * Returns a {@code Collection} view of the registered instruments.
    *
    * @return a {@code Collection} view of the registered instruments.
-   *
-   * @since 0.3.0
    */
   Collection<AbstractInstrument> getInstruments() {
     return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));

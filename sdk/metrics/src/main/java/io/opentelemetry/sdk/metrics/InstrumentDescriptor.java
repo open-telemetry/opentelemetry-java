@@ -23,7 +23,6 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import javax.annotation.concurrent.Immutable;
 
-/** since 0.3.0 */
 @AutoValue
 @Immutable
 abstract class InstrumentDescriptor {
@@ -38,25 +37,18 @@ abstract class InstrumentDescriptor {
         name, description, unit, constantLabels, type, valueType);
   }
 
-  /** since 0.3.0 */
   abstract String getName();
 
-  /** since 0.3.0 */
   abstract String getDescription();
 
-  /** since 0.3.0 */
   abstract String getUnit();
 
-  /** since 0.6.0 */
   abstract Labels getConstantLabels();
 
-  /** since 0.5.0 */
   abstract InstrumentType getType();
 
-  /** since 0.5.0 */
   abstract InstrumentValueType getValueType();
 
-  /** since 0.5.0 */
   @Memoized
   @Override
   public abstract int hashCode();

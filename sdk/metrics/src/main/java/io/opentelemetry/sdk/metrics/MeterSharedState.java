@@ -20,7 +20,6 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import javax.annotation.concurrent.Immutable;
 
-/** @since 0.3.0 */
 @AutoValue
 @Immutable
 abstract class MeterSharedState {
@@ -28,9 +27,7 @@ abstract class MeterSharedState {
     return new AutoValue_MeterSharedState(instrumentationLibraryInfo, new InstrumentRegistry());
   }
 
-  /** @since 0.3.0 */
   abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 
-  /** @since 0.3.0 */
   abstract InstrumentRegistry getInstrumentRegistry();
 }

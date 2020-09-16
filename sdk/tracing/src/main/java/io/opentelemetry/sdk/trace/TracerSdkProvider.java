@@ -35,8 +35,6 @@ import java.util.logging.Logger;
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}. However, if you need a custom implementation of the factory, you
  * can create one as needed.
- *
- * @since 0.1.0
  */
 public class TracerSdkProvider implements TracerProvider {
   private static final Logger logger = Logger.getLogger(TracerProvider.class.getName());
@@ -57,13 +55,11 @@ public class TracerSdkProvider implements TracerProvider {
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
 
-  /** @since 0.1.0 */
   @Override
   public TracerSdk get(String instrumentationName) {
     return tracerSdkComponentRegistry.get(instrumentationName);
   }
 
-  /** @since 0.1.0 */
   @Override
   public TracerSdk get(String instrumentationName, String instrumentationVersion) {
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
@@ -128,8 +124,6 @@ public class TracerSdkProvider implements TracerProvider {
    * and returns a {@link CompletableResultCode} which is completed when the flush is finished.
    *
    * @see SpanProcessor#forceFlush()
-   *
-   * @since 0.4.0
    */
   public CompletableResultCode forceFlush() {
     return sharedState.getActiveSpanProcessor().forceFlush();
@@ -138,8 +132,6 @@ public class TracerSdkProvider implements TracerProvider {
   /**
    * Builder class for the TracerSdkFactory. Has fully functional default implementations of all
    * three required interfaces.
-   *
-   * @since 0.4.0
    */
   public static class Builder {
 

@@ -33,10 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** A collection of available Batchers.
- *
- * @since 0.3.0
- */
+/** A collection of available Batchers. */
 final class Batchers {
 
   static Batcher getNoop() {
@@ -65,8 +62,6 @@ final class Batchers {
   /**
    * Create a Batcher that uses the "delta" Temporality and uses all labels for aggregation. "Delta"
    * means that all metrics that are generated are only for the most recent collection interval.
-   *
-   * @since 0.5.0
    */
   static Batcher getDeltaAllLabels(
       InstrumentDescriptor descriptor,
@@ -82,28 +77,23 @@ final class Batchers {
         /* delta= */ true);
   }
 
-  /** @since 0.3.0 */
   private static final class Noop implements Batcher {
     private static final Noop INSTANCE = new Noop();
 
-    /** @since 0.3.0 */
     @Override
     public Aggregator getAggregator() {
       return NoopAggregator.getFactory().getAggregator();
     }
 
-    /** @since 0.3.0 */
     @Override
     public void batch(Labels labelSet, Aggregator aggregator, boolean mappedAggregator) {}
 
-    /** @since 0.3.0 */
     @Override
     public List<MetricData> completeCollectionCycle() {
       return Collections.emptyList();
     }
   }
 
-  /** @since 0.3.0 */
   private static final class AllLabels implements Batcher {
     private final Descriptor descriptor;
     private final Resource resource;
@@ -131,13 +121,11 @@ final class Batchers {
       startEpochNanos = clock.now();
     }
 
-    /** @since 0.3.0 */
     @Override
     public final Aggregator getAggregator() {
       return aggregatorFactory.getAggregator();
     }
 
-    /** @since 0.6.0 */
     @Override
     public final void batch(Labels labelSet, Aggregator aggregator, boolean unmappedAggregator) {
       Aggregator currentAggregator = aggregatorMap.get(labelSet);
@@ -153,7 +141,6 @@ final class Batchers {
       aggregator.mergeToAndReset(currentAggregator);
     }
 
-    /** @since 0.3.0 */
     @Override
     public final List<MetricData> completeCollectionCycle() {
       List<Point> points = new ArrayList<>(aggregatorMap.size());

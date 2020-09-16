@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.DoubleUpDownCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
-/** @since 0.5.0 */
 final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
     implements DoubleUpDownCounter {
 
@@ -34,7 +33,6 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
   }
 
-  /** @since 0.6.0 */
   @Override
   public void add(double increment, Labels labels) {
     BoundInstrument boundInstrument = bind(labels);
@@ -42,7 +40,6 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     boundInstrument.unbind();
   }
 
-  /** @since 0.8.0 */
   @Override
   public void add(double increment) {
     add(increment, Labels.empty());
@@ -53,7 +50,6 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     return new BoundInstrument(batcher);
   }
 
-  /** @since 0.5.0 */
   static final class BoundInstrument extends AbstractBoundInstrument
       implements BoundDoubleUpDownCounter {
 
@@ -61,7 +57,6 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
       super(batcher.getAggregator());
     }
 
-    /** @since 0.5.0 */
     @Override
     public void add(double increment) {
       recordDouble(increment);

@@ -30,8 +30,6 @@ import io.opentelemetry.metrics.LongValueRecorder;
  * instruments.
  *
  * <p>TODO: Add an async queue processing to process batch records.
- *
- * @since 0.3.0
  */
 final class BatchRecorderSdk implements BatchRecorder {
   private final Labels labelSet;
@@ -40,49 +38,42 @@ final class BatchRecorderSdk implements BatchRecorder {
     this.labelSet = Labels.of(keyValuePairs);
   }
 
-  /** @since 0.3.0 */
   @Override
   public BatchRecorder put(LongValueRecorder valueRecorder, long value) {
     ((LongValueRecorderSdk) valueRecorder).record(value, labelSet);
     return this;
   }
 
-  /** @since 0.3.0 */
   @Override
   public BatchRecorder put(DoubleValueRecorder valueRecorder, double value) {
     ((DoubleValueRecorderSdk) valueRecorder).record(value, labelSet);
     return this;
   }
 
-  /** @since 0.3.0 */
   @Override
   public BatchRecorder put(LongCounter counter, long value) {
     ((LongCounterSdk) counter).add(value, labelSet);
     return this;
   }
 
-  /** @since 0.3.0 */
   @Override
   public BatchRecorder put(DoubleCounter counter, double value) {
     ((DoubleCounterSdk) counter).add(value, labelSet);
     return this;
   }
 
-  /** @since 0.5.0 */
   @Override
   public BatchRecorder put(LongUpDownCounter upDownCounter, long value) {
     ((LongUpDownCounterSdk) upDownCounter).add(value, labelSet);
     return this;
   }
 
-  /** @since 0.5.0 */
   @Override
   public BatchRecorder put(DoubleUpDownCounter upDownCounter, double value) {
     ((DoubleUpDownCounterSdk) upDownCounter).add(value, labelSet);
     return this;
   }
 
-  /** @since 0.3.0 */
   @Override
   public void record() {
     // No-op in this minimal implementation.

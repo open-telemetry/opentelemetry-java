@@ -20,7 +20,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import javax.annotation.Nullable;
 
-/** @since 0.3.0 */
 public final class NoopAggregator implements Aggregator {
   private static final Aggregator NOOP_AGGREGATOR = new NoopAggregator();
   private static final AggregatorFactory AGGREGATOR_FACTORY =
@@ -35,26 +34,22 @@ public final class NoopAggregator implements Aggregator {
     return AGGREGATOR_FACTORY;
   }
 
-  /** @since 0.3.0 */
   @Override
   public void mergeToAndReset(Aggregator aggregator) {
     // Noop
   }
 
-  /** @since 0.6.0 */
   @Nullable
   @Override
   public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
     return null;
   }
 
-  /** @since 0.3.0 */
   @Override
   public void recordLong(long value) {
     // Noop
   }
 
-  /** @since 0.3.0 */
   @Override
   public void recordDouble(double value) {
     // Noop

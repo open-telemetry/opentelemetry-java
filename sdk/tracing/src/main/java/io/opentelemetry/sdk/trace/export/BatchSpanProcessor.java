@@ -331,8 +331,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
      *
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
-     *
-     * @since 0.4.0
      */
     @Override
     protected Builder fromConfigMap(
@@ -371,8 +369,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
      * @param exportOnlySampled if {@code true} report only sampled spans.
      * @return this.
      * @see BatchSpanProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
-     *
-     * @since 0.4.0
      */
     public Builder setExportOnlySampled(boolean exportOnlySampled) {
       this.exportOnlySampled = exportOnlySampled;
@@ -393,8 +389,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
      * @param scheduleDelayMillis the delay interval between two consecutive exports.
      * @return this.
      * @see BatchSpanProcessor.Builder#DEFAULT_SCHEDULE_DELAY_MILLIS
-     *
-     * @since 0.4.0
      */
     public Builder setScheduleDelayMillis(long scheduleDelayMillis) {
       this.scheduleDelayMillis = scheduleDelayMillis;
@@ -414,8 +408,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
      * @param exporterTimeoutMillis the timeout for exports in milliseconds.
      * @return this
      * @see BatchSpanProcessor.Builder#DEFAULT_EXPORT_TIMEOUT_MILLIS
-     *
-     * @since 0.4.0
      */
     public Builder setExporterTimeoutMillis(int exporterTimeoutMillis) {
       this.exporterTimeoutMillis = exporterTimeoutMillis;
@@ -439,8 +431,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
      *     dropping.
      * @return this.
      * @see BatchSpanProcessor.Builder#DEFAULT_MAX_QUEUE_SIZE
-     *
-     * @since 0.4.0
      */
     public Builder setMaxQueueSize(int maxQueueSize) {
       this.maxQueueSize = maxQueueSize;
@@ -461,8 +451,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
      * @param maxExportBatchSize the maximum batch size for every export.
      * @return this.
      * @see BatchSpanProcessor.Builder#DEFAULT_MAX_EXPORT_BATCH_SIZE
-     *
-     * @since 0.4.0
      */
     public Builder setMaxExportBatchSize(int maxExportBatchSize) {
       Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");

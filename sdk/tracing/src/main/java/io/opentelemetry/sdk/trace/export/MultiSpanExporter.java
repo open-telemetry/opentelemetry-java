@@ -68,8 +68,6 @@ public final class MultiSpanExporter implements SpanExporter {
    * Flushes the data of all registered {@link SpanExporter}s.
    *
    * @return the result of the operation
-   *
-   * @since 0.4.0
    */
   @Override
   public CompletableResultCode flush() {

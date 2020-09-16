@@ -23,11 +23,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracingContextUtils;
 
-/**
- * {@link TracerSdk} is SDK implementation of {@link Tracer}.
- *
- * @since 0.1.0
- * */
+/** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 final class TracerSdk implements Tracer {
   private final TracerSharedState sharedState;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
@@ -37,19 +33,16 @@ final class TracerSdk implements Tracer {
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
   }
 
-  /** @since 0.1.0 */
   @Override
   public Span getCurrentSpan() {
     return TracingContextUtils.getCurrentSpan();
   }
 
-  /** @since 0.1.0 */
   @Override
   public Scope withSpan(Span span) {
     return TracingContextUtils.currentContextWith(span);
   }
 
-  /** @since 0.1.0 */
   @Override
   public Span.Builder spanBuilder(String spanName) {
     if (sharedState.isStopped()) {

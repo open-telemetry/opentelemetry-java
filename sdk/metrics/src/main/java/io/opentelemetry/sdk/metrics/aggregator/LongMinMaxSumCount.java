@@ -26,7 +26,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** @since 0.3.0 */
 @ThreadSafe
 public final class LongMinMaxSumCount extends AbstractAggregator {
 
@@ -42,7 +41,6 @@ public final class LongMinMaxSumCount extends AbstractAggregator {
   // try to use its fields directly.
   private final LongSummary current = new LongSummary();
 
-  /** @since 0.3.0 */
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
   }
@@ -56,7 +54,6 @@ public final class LongMinMaxSumCount extends AbstractAggregator {
     current.mergeAndReset(other.current);
   }
 
-  /** @since 0.3.0 */
   @Nullable
   @Override
   public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {

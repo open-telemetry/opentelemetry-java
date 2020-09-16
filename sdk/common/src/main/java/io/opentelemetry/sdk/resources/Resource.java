@@ -33,8 +33,6 @@ import javax.annotation.concurrent.Immutable;
 /**
  * {@link Resource} represents a resource, which capture identifying information about the entities
  * for which signals (stats or traces) are reported.
- *
- * @since 0.1.0
  */
 @Immutable
 @AutoValue
@@ -89,7 +87,6 @@ public abstract class Resource {
    * Returns an empty {@link Resource}.
    *
    * @return an empty {@code Resource}.
-   * @since 0.1.0
    */
   public static Resource getEmpty() {
     return EMPTY;
@@ -99,7 +96,6 @@ public abstract class Resource {
    * Returns the telemetry sdk {@link Resource}.
    *
    * @return a {@code Resource} with telemetry sdk attributes.
-   * @since 0.6.0
    */
   public static Resource getTelemetrySdk() {
     return TELEMETRY_SDK;
@@ -109,7 +105,6 @@ public abstract class Resource {
    * Returns a map of attributes that describe the resource.
    *
    * @return a map of attributes.
-   * @since 0.1.0
    */
   public abstract ReadableAttributes getAttributes();
 
@@ -125,7 +120,6 @@ public abstract class Resource {
    * @throws NullPointerException if {@code attributes} is null.
    * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
    *     ASCII string or exceed {@link #MAX_LENGTH} characters.
-   * @since 0.1.0
    */
   public static Resource create(Attributes attributes) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
@@ -148,7 +142,6 @@ public abstract class Resource {
    *
    * @param other the {@code Resource} that will be merged with {@code this}.
    * @return the newly merged {@code Resource}.
-   * @since 0.1.0
    */
   public Resource merge(@Nullable Resource other) {
     if (other == null) {

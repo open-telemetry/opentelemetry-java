@@ -27,8 +27,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * mapped/unmapped into an external map. It uses an atomic value where the least significant bit is
  * used to keep the state of mapping ('1' is used for unmapped and '0' is for mapped) and the rest
  * of the bits are used for reference (usage) counting.
- *
- * @since 0.3.0
  */
 abstract class AbstractBoundInstrument implements BoundInstrument {
   // Atomically counts the number of references (usages) while also keeping a state of
@@ -53,7 +51,6 @@ abstract class AbstractBoundInstrument implements BoundInstrument {
     return (refCountMapped.addAndGet(2L) & 1L) == 0;
   }
 
-  /** @since 0.3.0 */
   @Override
   public final void unbind() {
     // Every reference adds/removes 2 instead of 1 to avoid changing the mapping bit.
