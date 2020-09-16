@@ -17,11 +17,11 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.ERROR_MESSAGE_INVALID_NAME;
-import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.NAME_MAX_LENGTH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Labels;
+import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -88,7 +88,7 @@ class AbstractInstrumentBuilderTest {
 
   @Test
   void preventTooLongName() {
-    char[] chars = new char[NAME_MAX_LENGTH + 1];
+    char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     assertThrows(

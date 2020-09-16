@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -52,12 +51,8 @@ public interface SpanData {
    */
   String getSpanId();
 
-  /**
-   * Gets the trace flags for this span.
-   *
-   * @return the trace flags for this span.
-   */
-  TraceFlags getTraceFlags();
+  /** Whether the 'sampled' option set on this span. */
+  boolean isSampled();
 
   /**
    * Gets the {@code TraceState} for this span.
