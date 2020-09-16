@@ -44,7 +44,7 @@ final class InstrumentRegistry {
   @SuppressWarnings("unchecked")
   <I extends AbstractInstrument> I register(I instrument) {
     AbstractInstrument oldInstrument =
-        registry.putIfAbsent(instrument.getDescriptor().getName(), instrument);
+        registry.putIfAbsent(instrument.getDescriptor().getName().toLowerCase(), instrument);
     if (oldInstrument != null) {
       if (!instrument.getClass().isInstance(oldInstrument) || !instrument.equals(oldInstrument)) {
         throw new IllegalArgumentException(

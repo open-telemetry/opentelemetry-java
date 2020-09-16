@@ -76,8 +76,15 @@ public abstract class Resource {
   }
 
   private static Resource readResourceFromProviders() {
+    ResourcesConfig resourcesConfig =
+        ResourcesConfig.newBuilder().readEnvironmentVariables().readSystemProperties().build();
     Resource result = Resource.EMPTY;
     for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
+      if (resourcesConfig
+          .getDisabledResourceProviders()
+          .contains(resourceProvider.getClass().getName())) {
+        continue;
+      }
       result = result.merge(resourceProvider.create());
     }
     return result;
