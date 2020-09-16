@@ -25,7 +25,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class StringUtils {
 
-  public static final int NAME_MAX_LENGTH = 255;
+  public static final int METRIC_NAME_MAX_LENGTH = 255;
 
   /**
    * Determines whether the {@code String} contains only printable characters.
@@ -53,7 +53,7 @@ public final class StringUtils {
    * @return whether the metricName contains a valid name.
    */
   public static boolean isValidMetricName(String metricName) {
-    if (metricName.isEmpty() || metricName.length() > NAME_MAX_LENGTH) {
+    if (metricName.isEmpty() || metricName.length() > METRIC_NAME_MAX_LENGTH) {
       return false;
     }
     String pattern = "[aA-zZ][aA-zZ0-9_\\-.]*";

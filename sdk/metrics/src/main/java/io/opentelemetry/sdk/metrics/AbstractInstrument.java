@@ -90,7 +90,7 @@ abstract class AbstractInstrument implements Instrument {
       implements Instrument.Builder {
     /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
         "Name should be a ASCII string with a length no greater than "
-            + StringUtils.NAME_MAX_LENGTH
+            + StringUtils.METRIC_NAME_MAX_LENGTH
             + " characters.";
 
     private final String name;
