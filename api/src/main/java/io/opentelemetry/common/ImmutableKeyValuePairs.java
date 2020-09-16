@@ -110,7 +110,7 @@ abstract class ImmutableKeyValuePairs<K, V> {
     List<Object> result = new ArrayList<>(data.length);
     Object previousKey = null;
 
-    //iterate in reverse, to implement the "last one in wins" behavior.
+    // iterate in reverse, to implement the "last one in wins" behavior.
     for (int i = data.length - 2; i >= 0; i -= 2) {
       Object key = data[i];
       Object value = data[i + 1];
