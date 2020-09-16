@@ -170,8 +170,8 @@ public abstract class Resource {
 
     Attributes.Builder attrBuilder = Attributes.newBuilder();
     Merger merger = new Merger(attrBuilder);
-    this.getAttributes().forEach(merger);
     other.getAttributes().forEach(merger);
+    this.getAttributes().forEach(merger);
     return new AutoValue_Resource(attrBuilder.build());
   }
 
