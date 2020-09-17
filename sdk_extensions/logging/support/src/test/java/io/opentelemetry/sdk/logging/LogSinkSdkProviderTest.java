@@ -58,9 +58,9 @@ public class LogSinkSdkProviderTest {
 
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
     return new LogRecord.Builder()
-        .withUnixTimeMillis(System.currentTimeMillis())
-        .withSeverity(severity)
-        .withBody(message)
+        .setUnixTimeMillis(System.currentTimeMillis())
+        .setSeverity(severity)
+        .setBody(message)
         .build();
   }
 
@@ -72,8 +72,7 @@ public class LogSinkSdkProviderTest {
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
     sink.offer(createLog(Severity.ERROR, "test"));
-    provider.forceFlush();
-    await().atMost(500, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() > 0);
+    provider.forceFlush().join(500, TimeUnit.MILLISECONDS);
     assertThat(exporter.records.size()).isEqualTo(1);
   }
 
@@ -96,8 +95,8 @@ public class LogSinkSdkProviderTest {
     // Ensure that more than batch size kicks off a flush
     await().atMost(500, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() > 0);
     // Ensure that everything gets through
-    provider.forceFlush();
-    await().atMost(500, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() == 7);
+    CompletableResultCode result = provider.forceFlush();
+    result.join(1, TimeUnit.SECONDS);
     assertThat(exporter.callCount).isGreaterThanOrEqualTo(2);
   }
 
@@ -123,14 +122,13 @@ public class LogSinkSdkProviderTest {
     LogSink sink = provider.get("test", "0.1a");
 
     long start = System.currentTimeMillis();
-    for (int i = 0; i < 700; i++) {
+    int testRecordCount = 700;
+    for (int i = 0; i < testRecordCount; i++) {
       sink.offer(createLog(Severity.WARN, "test #" + i));
     }
     long end = System.currentTimeMillis();
     assertThat(end - start).isLessThan(250L);
-    await().atMost(1000, TimeUnit.MILLISECONDS).until(() -> exporter.callCount == 2);
-    assertThat(exporter.records.size()) // Two exporter batches
-        .isGreaterThan(5)
-        .isLessThanOrEqualTo(10);
+    provider.forceFlush().join(1, TimeUnit.SECONDS);
+    assertThat(exporter.records.size()).isLessThan(testRecordCount); // We dropped records
   }
 }

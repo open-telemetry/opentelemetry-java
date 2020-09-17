@@ -26,11 +26,4 @@ public interface LogSink {
    * @param record record to transmit
    */
   void offer(LogRecord record);
-
-  /**
-   * Convenience method for creating a record to be transmitted.
-   *
-   * @return builder instance
-   */
-  LogRecord.Builder buildRecord();
 }

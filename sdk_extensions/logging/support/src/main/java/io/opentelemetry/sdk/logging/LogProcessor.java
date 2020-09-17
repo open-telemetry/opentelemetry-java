@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.logging;
 
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 
@@ -26,15 +27,14 @@ public interface LogProcessor {
   /**
    * Called when {@link TracerSdkProvider#shutdown()} is called.
    *
-   * <p>Implementations must ensure that all span events are processed before returning.
+   * @return result
    */
-  void shutdown();
+  CompletableResultCode shutdown();
 
   /**
    * Processes all span events that have not yet been processed.
    *
-   * <p>This method is executed synchronously on the calling thread, and should not throw
-   * exceptions.
+   * @return result
    */
-  void forceFlush();
+  CompletableResultCode forceFlush();
 }

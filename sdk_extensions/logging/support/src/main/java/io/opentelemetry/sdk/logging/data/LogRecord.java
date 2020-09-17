@@ -100,56 +100,56 @@ public abstract class LogRecord {
     private AnyValue body = AnyValue.stringAnyValue("");
     private final Map<String, AttributeValue> attributes = new HashMap<>();
 
-    public Builder withUnixTimeNano(long timestamp) {
+    public Builder setUnixTimeNano(long timestamp) {
       this.timeUnixNano = timestamp;
       return this;
     }
 
-    public Builder withUnixTimeMillis(long timestamp) {
-      return withUnixTimeNano(TimeUnit.MILLISECONDS.toNanos(timestamp));
+    public Builder setUnixTimeMillis(long timestamp) {
+      return setUnixTimeNano(TimeUnit.MILLISECONDS.toNanos(timestamp));
     }
 
-    public Builder withTraceId(String traceId) {
+    public Builder setTraceId(String traceId) {
       this.traceId = traceId;
       return this;
     }
 
-    public Builder withSpanId(String spanId) {
+    public Builder setSpanId(String spanId) {
       this.spanId = spanId;
       return this;
     }
 
-    public Builder withFlags(int flags) {
+    public Builder setFlags(int flags) {
       this.flags = flags;
       return this;
     }
 
-    public Builder withSeverity(Severity severity) {
+    public Builder setSeverity(Severity severity) {
       this.severity = severity;
       return this;
     }
 
-    public Builder withSeverityText(String severityText) {
+    public Builder setSeverityText(String severityText) {
       this.severityText = severityText;
       return this;
     }
 
-    public Builder withName(String name) {
+    public Builder setName(String name) {
       this.name = name;
       return this;
     }
 
-    public Builder withBody(AnyValue body) {
+    public Builder setBody(AnyValue body) {
       this.body = body;
       return this;
     }
 
-    public Builder withBody(String body) {
+    public Builder setBody(String body) {
       this.body = AnyValue.stringAnyValue(body);
       return this;
     }
 
-    public Builder withAttributes(Map<String, AttributeValue> attributes) {
+    public Builder setAttributes(Map<String, AttributeValue> attributes) {
       this.attributes.putAll(attributes);
       return this;
     }

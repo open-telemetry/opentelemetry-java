@@ -28,27 +28,15 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.logging.LogProcessor;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class BatchLogProcessor implements LogProcessor {
   private static final String WORKER_THREAD_NAME =
       BatchLogProcessor.class.getSimpleName() + "_WorkerThread";
-  private static final String TIMER_THREAD_NAME =
-      BatchLogProcessor.class.getSimpleName() + "_TimerThread";
 
   private final Worker worker;
   private final Thread workerThread;
@@ -57,11 +45,15 @@ public class BatchLogProcessor implements LogProcessor {
       int maxQueueSize,
       long scheduleDelayMillis,
       int maxExportBatchSize,
-      long exporterTimeout,
+      long exporterTimeoutMillis,
       LogExporter logExporter) {
     this.worker =
         new Worker(
-            maxQueueSize, scheduleDelayMillis, maxExportBatchSize, exporterTimeout, logExporter);
+            logExporter,
+            scheduleDelayMillis,
+            maxExportBatchSize,
+            exporterTimeoutMillis,
+            new ArrayBlockingQueue<LogRecord>(maxQueueSize));
     this.workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     this.workerThread.start();
   }
@@ -76,184 +68,164 @@ public class BatchLogProcessor implements LogProcessor {
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     workerThread.interrupt();
-    worker.shutdown();
+    return worker.shutdown();
   }
 
   @Override
-  public void forceFlush() {
-    worker.forceFlush();
+  public CompletableResultCode forceFlush() {
+    return worker.forceFlush();
   }
 
   private static class Worker implements Runnable {
     static {
       Meter meter = OpenTelemetry.getMeter("io.opentelemetry.sdk.logging");
-      LongCounter logProcessorErrors =
+      LongCounter logRecordsProcessed =
           meter
-              .longCounterBuilder("logProcessorErrors")
+              .longCounterBuilder("logRecordsProcessed")
               .setUnit("1")
-              .setDescription("Number of errors encountered while processing logs")
+              .setDescription("Number of records processed")
               .build();
-      Labels.Builder builder =
-          Labels.of("logProcessorType", BatchLogProcessor.class.getName()).toBuilder();
+      successCounter = logRecordsProcessed.bind(Labels.of("result", "success"));
       exporterFailureCounter =
-          logProcessorErrors.bind(builder.setLabel("errorType", "exporter failure").build());
-      exporterBusyCounter =
-          logProcessorErrors.bind(builder.setLabel("errorType", "exporter busy").build());
-      droppedRecordCounter =
-          logProcessorErrors.bind(
-              builder.setLabel("errorType", "dropped record - queue full").build());
+          logRecordsProcessed.bind(
+              Labels.of("result", "dropped record", "cause", "exporter failure"));
+      queueFullRecordCounter =
+          logRecordsProcessed.bind(Labels.of("result", "dropped record", "cause", "queue full"));
     }
 
     private static final BoundLongCounter exporterFailureCounter;
-    private static final BoundLongCounter exporterBusyCounter;
-    private static final BoundLongCounter droppedRecordCounter;
-    private static final Logger logger = Logger.getLogger(Worker.class.getName());
+    private static final BoundLongCounter queueFullRecordCounter;
+    private static final BoundLongCounter successCounter;
 
-    private final Object monitor = new Object();
-    private final int maxQueueSize;
-    private final long scheduleDelayMillis;
-    private final ArrayList<LogRecord> logRecords;
+    private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
-    private final ExecutorService executor;
     private final LogExporter logExporter;
-    private final Timer timer = new Timer(TIMER_THREAD_NAME, /* isDaemon= */ true);
-    private final long exporterTimeout;
+    private final long exporterTimeoutMillis;
+    private final ArrayList<LogRecord> batch;
+    private final BlockingQueue<LogRecord> queue;
+
+    private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
+    private volatile boolean continueWork = true;
+    private long nextExportTime;
 
     private Worker(
-        int maxQueueSize,
+        LogExporter logExporter,
         long scheduleDelayMillis,
         int maxExportBatchSize,
-        long exporterTimeout,
-        LogExporter logExporter) {
-      this.maxQueueSize = maxQueueSize;
-      this.maxExportBatchSize = maxExportBatchSize;
-
-      this.exporterTimeout = exporterTimeout;
-      this.scheduleDelayMillis = scheduleDelayMillis;
+        long exporterTimeoutMillis,
+        BlockingQueue<LogRecord> queue) {
       this.logExporter = logExporter;
-      this.logRecords = new ArrayList<>(maxQueueSize);
-      // We should be able to drain a full queue without dropping a batch
-      int exportQueueSize = maxQueueSize / maxExportBatchSize;
-      RejectedExecutionHandler h =
-          new RejectedExecutionHandler() {
-            @Override
-            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-              exporterBusyCounter.add(1);
-            }
-          };
-      this.executor =
-          new ThreadPoolExecutor(
-              1,
-              1,
-              0L,
-              TimeUnit.MILLISECONDS,
-              new LinkedBlockingQueue<Runnable>(exportQueueSize),
-              h);
+      this.maxExportBatchSize = maxExportBatchSize;
+      this.exporterTimeoutMillis = exporterTimeoutMillis;
+      this.scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(scheduleDelayMillis);
+      this.queue = queue;
+      this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
     @Override
     public void run() {
-      ArrayList<LogRecord> logsCopy;
-      while (!Thread.currentThread().isInterrupted()) {
-        synchronized (monitor) {
-          if (this.logRecords.size() < maxExportBatchSize) {
-            do {
-              try {
-                monitor.wait(scheduleDelayMillis);
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-              }
-            } while (this.logRecords.isEmpty());
-          }
-          logsCopy = new ArrayList<>(this.logRecords);
-          logRecords.clear();
+      updateNextExportTime();
+
+      while (continueWork) {
+        if (flushRequested.get() != null) {
+          flush();
         }
-        exportBatches(logsCopy);
+
+        try {
+          LogRecord lastElement = queue.poll(100, TimeUnit.MILLISECONDS);
+          if (lastElement != null) {
+            batch.add(lastElement);
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+
+        if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
+          exportCurrentBatch();
+          updateNextExportTime();
+        }
       }
     }
 
-    private void exportBatches(ArrayList<LogRecord> recordsToShip) {
-      for (int i = 0; i < recordsToShip.size(); ) {
-        int lastIndexToTake = Math.min(i + maxExportBatchSize, recordsToShip.size());
-        onBatchExport(createLogDataForExport(recordsToShip, i, lastIndexToTake));
-        i = lastIndexToTake;
+    private void flush() {
+      int recordsToFlush = queue.size();
+      while (recordsToFlush > 0) {
+        LogRecord record = queue.poll();
+        assert record != null;
+        batch.add(record);
+        recordsToFlush--;
+        if (batch.size() >= maxExportBatchSize) {
+          exportCurrentBatch();
+        }
+      }
+      exportCurrentBatch();
+      CompletableResultCode result = flushRequested.get();
+      assert result != null;
+      flushRequested.set(null);
+    }
+
+    private void updateNextExportTime() {
+      nextExportTime = System.nanoTime() + scheduleDelayNanos;
+    }
+
+    private void exportCurrentBatch() {
+      if (batch.isEmpty()) {
+        return;
+      }
+
+      try {
+        final CompletableResultCode result = logExporter.export(batch);
+        result.join(exporterTimeoutMillis, TimeUnit.MILLISECONDS);
+        if (result.isSuccess()) {
+          successCounter.add(batch.size());
+        } else {
+          exporterFailureCounter.add(1);
+        }
+      } catch (Exception t) {
+        exporterFailureCounter.add(batch.size());
+      } finally {
+        batch.clear();
       }
     }
 
-    private void onBatchExport(final List<LogRecord> logDataForExport) {
-      final Future<CompletableResultCode> f =
-          executor.submit(
-              new Callable<CompletableResultCode>() {
-                @Override
-                public CompletableResultCode call() {
-                  return logExporter.export(logDataForExport);
-                }
-              });
-
-      timer.schedule(
-          new TimerTask() {
+    private CompletableResultCode shutdown() {
+      final CompletableResultCode result = new CompletableResultCode();
+      final CompletableResultCode flushResult = forceFlush();
+      flushResult.whenComplete(
+          new Runnable() {
             @Override
             public void run() {
-              if (f.isDone()) {
-                try {
-                  final CompletableResultCode result = f.get(0, TimeUnit.MILLISECONDS);
-                  if (!result.isSuccess()) {
-                    // This may mean that the export process has failed, or that it's still running
-                    // but it's at the end of it's timeout.
-                    logger.warning("log exporter has failed or timed out");
-                    exporterFailureCounter.add(1);
-                  }
-                } catch (InterruptedException | ExecutionException e) {
-                  logger.warning("log exporter failure:" + e.getLocalizedMessage());
-                  exporterFailureCounter.add(1);
-                } catch (TimeoutException e) {
-                  logger.warning("log exporter has failed to return async result");
-                  exporterFailureCounter.add(1);
-                }
-              }
+              continueWork = false;
+              final CompletableResultCode shutdownResult = logExporter.shutdown();
+              shutdownResult.whenComplete(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      if (flushResult.isSuccess() && shutdownResult.isSuccess()) {
+                        result.succeed();
+                      } else {
+                        result.fail();
+                      }
+                    }
+                  });
             }
-          },
-          exporterTimeout);
+          });
+      return result;
     }
 
-    private static List<LogRecord> createLogDataForExport(
-        ArrayList<LogRecord> recordsToShip, int startIndex, int endIndex) {
-      List<LogRecord> logDataBuffer = new ArrayList<>(endIndex - startIndex);
-      for (int i = startIndex; i < endIndex; i++) {
-        logDataBuffer.add(recordsToShip.get(i));
-        recordsToShip.set(i, null);
-      }
-      return Collections.unmodifiableList(logDataBuffer);
+    private CompletableResultCode forceFlush() {
+      CompletableResultCode flushResult = new CompletableResultCode();
+      this.flushRequested.compareAndSet(null, flushResult);
+      return this.flushRequested.get();
     }
 
     public void addLogRecord(LogRecord record) {
-      synchronized (monitor) {
-        if (logRecords.size() >= maxQueueSize) {
-          droppedRecordCounter.add(1);
-        }
-        logRecords.add(record);
-        if (logRecords.size() >= maxExportBatchSize) {
-          monitor.notifyAll();
-        }
+      if (!queue.offer(record)) {
+        queueFullRecordCounter.add(1);
       }
-    }
-
-    private void shutdown() {
-      forceFlush();
-      timer.cancel();
-      logExporter.shutdown();
-    }
-
-    private void forceFlush() {
-      ArrayList<LogRecord> logsCopy;
-      synchronized (monitor) {
-        logsCopy = new ArrayList<>(this.logRecords);
-        logRecords.clear();
-      }
-      exportBatches(logsCopy);
     }
   }
 

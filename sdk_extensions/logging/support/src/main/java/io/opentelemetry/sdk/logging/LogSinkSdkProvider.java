@@ -17,8 +17,10 @@
 package io.opentelemetry.sdk.logging;
 
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class LogSinkSdkProvider {
@@ -36,11 +38,30 @@ public class LogSinkSdkProvider {
     processors.add(Utils.checkNotNull(processor, "Processor can not be null"));
   }
 
-  /** Flushes all attached processors. */
-  public void forceFlush() {
+  /**
+   * Flushes all attached processors.
+   *
+   * @return result
+   */
+  public CompletableResultCode forceFlush() {
+    final List<CompletableResultCode> processorResults = new ArrayList<>(processors.size());
     for (LogProcessor processor : processors) {
-      processor.forceFlush();
+      processorResults.add(processor.forceFlush());
     }
+    return CompletableResultCode.ofAll(processorResults);
+  }
+
+  /**
+   * Shut down of provider and associated processors.
+   *
+   * @return result
+   */
+  public CompletableResultCode shutdown() {
+    Collection<CompletableResultCode> processorResults = new ArrayList<>(processors.size());
+    for (LogProcessor processor : processors) {
+      processorResults.add(processor.shutdown());
+    }
+    return CompletableResultCode.ofAll(processorResults);
   }
 
   private class SdkLogSink implements LogSink {
@@ -50,15 +71,9 @@ public class LogSinkSdkProvider {
         processor.addLogRecord(record);
       }
     }
-
-    @Override
-    public LogRecord.Builder buildRecord() {
-      return new LogRecord.Builder();
-    }
   }
 
   public static class Builder {
-
     public LogSinkSdkProvider build() {
       return new LogSinkSdkProvider();
     }
