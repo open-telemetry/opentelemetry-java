@@ -52,7 +52,7 @@ class MetricAdapterTest {
     assertThat(MetricAdapter.toProtoLabels(Labels.of("k", "v")))
         .containsExactly(StringKeyValue.newBuilder().setKey("k").setValue("v").build());
     assertThat(MetricAdapter.toProtoLabels(Labels.of("k1", "v1", "k2", "v2")))
-        .containsExactlyInAnyOrder(
+        .containsExactly(
             StringKeyValue.newBuilder().setKey("k1").setValue("v1").build(),
             StringKeyValue.newBuilder().setKey("k2").setValue("v2").build());
   }
