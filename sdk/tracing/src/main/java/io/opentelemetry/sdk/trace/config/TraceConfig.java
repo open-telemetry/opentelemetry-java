@@ -101,7 +101,6 @@ public abstract class TraceConfig {
    * Returns the default {@code TraceConfig}.
    *
    * @return the default {@code TraceConfig}.
-   * @since 0.1.0
    */
   public static TraceConfig getDefault() {
     return DEFAULT;

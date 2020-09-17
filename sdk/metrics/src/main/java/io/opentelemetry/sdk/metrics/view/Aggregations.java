@@ -35,7 +35,6 @@ public class Aggregations {
    * Returns an {@code Aggregation} that calculates sum of recorded measurements.
    *
    * @return an {@code Aggregation} that calculates sum of recorded measurements.
-   * @since 0.1.0
    */
   public static Aggregation sum() {
     return Sum.INSTANCE;
@@ -47,7 +46,6 @@ public class Aggregations {
    *
    * @return an {@code Aggregation} that calculates count of recorded measurements (the number of
    *     recorded * measurements).
-   * @since 0.1.0
    */
   public static Aggregation count() {
     return Count.INSTANCE;
@@ -61,7 +59,6 @@ public class Aggregations {
    *
    * @param bucketBoundaries bucket boundaries to use for distribution.
    * @return an {@code Aggregation} that calculates distribution stats on recorded measurements.
-   * @since 0.1.0
    */
   public static Aggregation distributionWithExplicitBounds(Double... bucketBoundaries) {
     return new Distribution(bucketBoundaries);
@@ -71,7 +68,6 @@ public class Aggregations {
    * Returns an {@code Aggregation} that calculates the last value of all recorded measurements.
    *
    * @return an {@code Aggregation} that calculates the last value of all recorded measurements.
-   * @since 0.1.0
    */
   public static Aggregation lastValue() {
     return LastValue.INSTANCE;
@@ -83,7 +79,6 @@ public class Aggregations {
    * value recorded and the minimum value recorded.
    *
    * @return an {@code Aggregation} that calculates a simple summary of all recorded measurements.
-   * @since 0.3.0
    */
   public static Aggregation minMaxSumCount() {
     return MinMaxSumCount.INSTANCE;

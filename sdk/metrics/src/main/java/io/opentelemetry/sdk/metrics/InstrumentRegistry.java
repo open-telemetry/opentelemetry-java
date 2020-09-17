@@ -22,12 +22,13 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-// Basic registry class for metrics instruments. The current implementation allows instruments to be
-// registered only once for a given name.
-//
-// TODO: Discuss what is the right behavior when an already registered Instrument with the same name
-//  is present.
-// TODO: Decide what is the identifier for an Instrument? Only name?
+/**
+ * Basic registry class for metrics instruments. The current implementation allows instruments to be
+ * registered only once for a given name.
+ *
+ * <p>TODO: Discuss what is the right behavior when an already registered Instrument with the same
+ * name is present. TODO: Decide what is the identifier for an Instrument? Only name?
+ */
 final class InstrumentRegistry {
   private final ConcurrentMap<String, AbstractInstrument> registry = new ConcurrentHashMap<>();
 

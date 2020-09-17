@@ -35,11 +35,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * Static class to access a set of pre-defined {@link Sampler Samplers}.
- *
- * @since 0.1.0
- */
+/** Static class to access a set of pre-defined {@link Sampler Samplers}. */
 @Immutable
 public final class Samplers {
 
@@ -124,7 +120,6 @@ public final class Samplers {
    *
    * @return a {@code Sampler} that always makes a "yes" {@link SamplingResult} for {@code Span}
    *     sampling.
-   * @since 0.1.0
    */
   public static Sampler alwaysOn() {
     return AlwaysOnSampler.INSTANCE;
@@ -136,7 +131,6 @@ public final class Samplers {
    *
    * @return a {@code Sampler} that always makes a "no" {@link SamplingResult} for {@code Span}
    *     sampling.
-   * @since 0.1.0
    */
   public static Sampler alwaysOff() {
     return AlwaysOffSampler.INSTANCE;
@@ -151,7 +145,6 @@ public final class Samplers {
    *     not exist.
    * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
    *     following the root sampler's decision.
-   * @since 0.7.0
    */
   public static Sampler parentBased(Sampler root) {
     return parentBasedBuilder(root).build();
@@ -164,7 +157,6 @@ public final class Samplers {
    * @param root the required {@code Sampler} which is used to make the sampling decisions if the
    *     parent does not exist.
    * @return a {@code ParentBased.Builder}
-   * @since 0.8.0
    */
   public static ParentBased.Builder parentBasedBuilder(Sampler root) {
     return new ParentBased.Builder(root);

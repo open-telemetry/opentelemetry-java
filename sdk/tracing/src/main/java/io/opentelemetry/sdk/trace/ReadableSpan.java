@@ -30,7 +30,6 @@ public interface ReadableSpan {
    * <p>Equivalent with {@link Span#getContext()}.
    *
    * @return the {@link SpanContext} of the {@code Span}.
-   * @since 0.1.0
    */
   SpanContext getSpanContext();
 
@@ -41,7 +40,6 @@ public interface ReadableSpan {
    * Span#updateName(String)} so this value cannot be cached.
    *
    * @return the name of the {@code Span}.
-   * @since 0.1.0
    */
   String getName();
 
@@ -49,7 +47,6 @@ public interface ReadableSpan {
    * This converts this instance into an immutable SpanData instance, for use in export.
    *
    * @return an immutable {@link SpanData} instance.
-   * @since 0.1.0
    */
   SpanData toSpanData();
 
@@ -66,7 +63,6 @@ public interface ReadableSpan {
    * Returns whether this Span has already been ended.
    *
    * @return {@code true} if the span has already been ended, {@code false} if not.
-   * @since 0.4.0
    */
   boolean hasEnded();
 
@@ -75,7 +71,6 @@ public interface ReadableSpan {
    * time.
    *
    * @return the latency of the {@code Span} in nanos.
-   * @since 0.4.0
    */
   long getLatencyNanos();
 }

@@ -27,11 +27,7 @@ import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * Sampler is used to make decisions on {@link Span} sampling.
- *
- * @since 0.1.0
- */
+/** Sampler is used to make decisions on {@link Span} sampling. */
 @ThreadSafe
 public interface Sampler {
   /**
@@ -46,7 +42,6 @@ public interface Sampler {
    * @param attributes list of {@link AttributeValue} with their keys.
    * @param parentLinks the parentLinks associated with the new {@code Span}.
    * @return sampling samplingResult whether span should be sampled or not.
-   * @since 0.1.0
    */
   SamplingResult shouldSample(
       SpanContext parentContext,
@@ -63,7 +58,6 @@ public interface Sampler {
    * <p>Example: "ProbabilitySampler{0.000100}"
    *
    * @return the description of this {@code Sampler}.
-   * @since 0.1.0
    */
   String getDescription();
 
@@ -77,8 +71,6 @@ public interface Sampler {
   /**
    * Sampling result returned by {@link Sampler#shouldSample(SpanContext, String, String, Kind,
    * ReadableAttributes, List)}.
-   *
-   * @since 0.1.0
    */
   interface SamplingResult {
 
@@ -86,7 +78,6 @@ public interface Sampler {
      * Return decision on whether a span should be recorded, recorded and sampled or not recorded.
      *
      * @return sampling result.
-     * @since 0.7.0
      */
     Decision getDecision();
 
@@ -96,7 +87,6 @@ public interface Sampler {
      * @return attributes added to span. These attributes should be added to the span only when
      *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD} or {@link
      *     Decision#RECORD_AND_SAMPLED}.
-     * @since 0.1.0
      */
     Attributes getAttributes();
   }
