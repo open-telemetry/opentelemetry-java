@@ -26,8 +26,6 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * A {@link MetricData} represents the data exported as part of aggregating one {@code Instrument}.
- *
- * @since 0.1.0
  */
 @Immutable
 @AutoValue
@@ -38,7 +36,6 @@ public abstract class MetricData {
    * Returns the {@link Descriptor} of this metric.
    *
    * @return the {@code Descriptor} of this metric.
-   * @since 0.1.0
    */
   public abstract Descriptor getDescriptor();
 
@@ -46,7 +43,6 @@ public abstract class MetricData {
    * Returns the resource of this {@code MetricData}.
    *
    * @return the resource of this {@code MetricData}.
-   * @since 0.1.0
    */
   public abstract Resource getResource();
 
@@ -65,7 +61,6 @@ public abstract class MetricData {
    * is determined by the {@link Descriptor.Type}.
    *
    * @return the data {@link Point}s for this metric, or empty {@code Collection} if no points.
-   * @since 0.3.0
    */
   public abstract Collection<Point> getPoints();
 
@@ -86,7 +81,6 @@ public abstract class MetricData {
      * the metric was created or an aggregation was enabled.
      *
      * @return the start epoch timestamp in nanos.
-     * @since 0.3.0
      */
     public abstract long getStartEpochNanos();
 
@@ -95,7 +89,6 @@ public abstract class MetricData {
      * moment when {@code Instrument.getData()} was called.
      *
      * @return the epoch timestamp in nanos.
-     * @since 0.3.0
      */
     public abstract long getEpochNanos();
 
@@ -221,50 +214,26 @@ public abstract class MetricData {
     }
   }
 
-  /**
-   * {@link Descriptor} defines metadata about the {@code MetricData} type and its schema.
-   *
-   * @since 0.1.0
-   */
+  /** {@link Descriptor} defines metadata about the {@code MetricData} type and its schema. */
   @Immutable
   @AutoValue
   public abstract static class Descriptor {
 
     Descriptor() {}
 
-    /**
-     * The kind of metric. It describes how the data is reported.
-     *
-     * @since 0.1.0
-     */
+    /** The kind of metric. It describes how the data is reported. */
     public enum Type {
 
-      /**
-       * An instantaneous measurement of a long (int64) value. Reports {@link LongPoint} points.
-       *
-       * @since 0.1.0
-       */
+      /** An instantaneous measurement of a long (int64) value. Reports {@link LongPoint} points. */
       NON_MONOTONIC_LONG,
 
-      /**
-       * An instantaneous measurement of a double value. Reports {@link DoublePoint} points.
-       *
-       * @since 0.1.0
-       */
+      /** An instantaneous measurement of a double value. Reports {@link DoublePoint} points. */
       NON_MONOTONIC_DOUBLE,
 
-      /**
-       * An cumulative measurement of an long (int64) value. Reports {@link LongPoint} points.
-       *
-       * @since 0.1.0
-       */
+      /** An cumulative measurement of an long (int64) value. Reports {@link LongPoint} points. */
       MONOTONIC_LONG,
 
-      /**
-       * An cumulative measurement of a double value. Reports {@link DoublePoint} points.
-       *
-       * @since 0.1.0
-       */
+      /** An cumulative measurement of a double value. Reports {@link DoublePoint} points. */
       MONOTONIC_DOUBLE,
 
       /**
@@ -279,7 +248,6 @@ public abstract class MetricData {
      * Returns the metric descriptor name.
      *
      * @return the metric descriptor name.
-     * @since 0.1.0
      */
     public abstract String getName();
 
@@ -287,7 +255,6 @@ public abstract class MetricData {
      * Returns the description of this metric descriptor.
      *
      * @return the description of this metric descriptor.
-     * @since 0.1.0
      */
     public abstract String getDescription();
 
@@ -295,7 +262,6 @@ public abstract class MetricData {
      * Returns the unit of this metric descriptor.
      *
      * @return the unit of this metric descriptor.
-     * @since 0.1.0
      */
     public abstract String getUnit();
 
@@ -303,7 +269,6 @@ public abstract class MetricData {
      * Returns the type of this metric descriptor.
      *
      * @return the type of this metric descriptor.
-     * @since 0.1.0
      */
     public abstract Type getType();
 
@@ -311,7 +276,6 @@ public abstract class MetricData {
      * Returns the constant labels associated with this metric descriptor.
      *
      * @return the constant labels associated with this metric descriptor.
-     * @since 0.1.0
      */
     public abstract Labels getConstantLabels();
 

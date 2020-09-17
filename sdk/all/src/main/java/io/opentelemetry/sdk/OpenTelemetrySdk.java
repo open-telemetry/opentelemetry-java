@@ -38,7 +38,6 @@ public final class OpenTelemetrySdk {
    * Returns a {@link TracerSdkProvider}.
    *
    * @return TracerProvider returned by {@link OpenTelemetry#getTracerProvider()}.
-   * @since 0.1.0
    */
   public static TracerSdkProvider getTracerProvider() {
     return (TracerSdkProvider) ((Obfuscated<?>) OpenTelemetry.getTracerProvider()).unobfuscate();
@@ -48,7 +47,6 @@ public final class OpenTelemetrySdk {
    * Returns a {@link MeterSdkProvider}.
    *
    * @return MeterProvider returned by {@link OpenTelemetry#getMeterProvider()}.
-   * @since 0.1.0
    */
   public static MeterSdkProvider getMeterProvider() {
     return (MeterSdkProvider) OpenTelemetry.getMeterProvider();
@@ -58,7 +56,6 @@ public final class OpenTelemetrySdk {
    * Returns a {@link CorrelationContextManagerSdk}.
    *
    * @return context manager returned by {@link OpenTelemetry#getCorrelationContextManager()}.
-   * @since 0.1.0
    */
   public static CorrelationContextManagerSdk getCorrelationContextManager() {
     return (CorrelationContextManagerSdk) OpenTelemetry.getCorrelationContextManager();

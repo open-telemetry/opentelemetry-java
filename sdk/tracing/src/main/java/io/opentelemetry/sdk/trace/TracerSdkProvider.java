@@ -132,8 +132,6 @@ public class TracerSdkProvider implements TracerProvider {
   /**
    * Builder class for the TracerSdkFactory. Has fully functional default implementations of all
    * three required interfaces.
-   *
-   * @since 0.4.0
    */
   public static class Builder {
 

@@ -21,11 +21,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * A mutable {@link Clock} that allows the time to be set for testing.
- *
- * @since 0.1.0
- */
+/** A mutable {@link Clock} that allows the time to be set for testing. */
 @ThreadSafe
 public class TestClock implements Clock {
 
@@ -40,7 +36,6 @@ public class TestClock implements Clock {
    * Creates a clock initialized to a constant non-zero time.
    *
    * @return a clock initialized to a constant non-zero time.
-   * @since 0.1.0
    */
   public static TestClock create() {
     // Set Time to Tuesday, May 7, 2019 12:00:00 AM GMT-07:00 DST
@@ -52,7 +47,6 @@ public class TestClock implements Clock {
    *
    * @param epochNanos the initial time in nanos since epoch.
    * @return a new {@code TestClock} with the given time.
-   * @since 0.1.0
    */
   public static TestClock create(long epochNanos) {
     return new TestClock(epochNanos);
@@ -62,7 +56,6 @@ public class TestClock implements Clock {
    * Sets the time.
    *
    * @param epochNanos the new time.
-   * @since 0.1.0
    */
   public synchronized void setTime(long epochNanos) {
     currentEpochNanos = epochNanos;
@@ -72,7 +65,6 @@ public class TestClock implements Clock {
    * Advances the time by millis and mutates this instance.
    *
    * @param millis the increase in time.
-   * @since 0.1.0
    */
   public synchronized void advanceMillis(long millis) {
     long nanos = TimeUnit.MILLISECONDS.toNanos(millis);
@@ -83,7 +75,6 @@ public class TestClock implements Clock {
    * Advances the time by nanos and mutates this instance.
    *
    * @param nanos the increase in time.
-   * @since 0.1.0
    */
   public synchronized void advanceNanos(long nanos) {
     currentEpochNanos += nanos;
