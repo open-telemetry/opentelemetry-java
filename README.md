@@ -22,6 +22,7 @@ This project contains the following top level components:
 * [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
 * [sdk_extensions](sdk_extensions/): Additional extensions to SDK.
 * [OpenTracing shim](opentracing_shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
+* [Examples](examples/): Various examples on how to use the APIs, SDK, and standard exporters.
 
 We would love to hear from the larger community: please provide feedback proactively.
 
