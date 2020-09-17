@@ -85,8 +85,8 @@ public interface Sampler {
      * Return tags which will be attached to the span.
      *
      * @return attributes added to span. These attributes should be added to the span only when
-     *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD_ONLY} or {@link
-     *     Decision#RECORD_AND_SAMPLE}.
+     *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD_ONLY} or
+     *     {@link Decision#RECORD_AND_SAMPLE}.
      */
     Attributes getAttributes();
   }
