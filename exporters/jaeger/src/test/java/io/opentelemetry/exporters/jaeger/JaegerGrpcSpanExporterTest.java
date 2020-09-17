@@ -167,8 +167,8 @@ class JaegerGrpcSpanExporterTest {
     Map<String, String> options = new HashMap<>();
     String serviceName = "myGreatService";
     String endpoint = "127.0.0.1:9090";
-    options.put("otel.jaeger.service.name", serviceName);
-    options.put("otel.jaeger.endpoint", endpoint);
+    options.put("otel.exporter.jaeger.service.name", serviceName);
+    options.put("otel.exporter.jaeger.endpoint", endpoint);
     JaegerGrpcSpanExporter.Builder config = JaegerGrpcSpanExporter.newBuilder();
     JaegerGrpcSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();

@@ -62,15 +62,15 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
  * will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.zipkin.service.name}: to set the service name.
- *   <li>{@code otel.zipkin.endpoint}: to set the endpoint URL.
+ *   <li>{@code otel.exporter.zipkin.service.name}: to set the service name.
+ *   <li>{@code otel.exporter.zipkin.endpoint}: to set the endpoint URL.
  * </ul>
  *
  * <p>For environment variables, {@link ZipkinSpanExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_ZIPKIN_SERVICE_NAME}: to set the service name.
- *   <li>{@code OTEL_ZIPKIN_ENDPOINT}: to set the endpoint URL.
+ *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the service name.
+ *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the endpoint URL.
  * </ul>
  */
 public final class ZipkinSpanExporter implements SpanExporter {
@@ -310,8 +310,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   /** Builder class for {@link ZipkinSpanExporter}. */
   public static final class Builder extends ConfigBuilder<Builder> {
-    private static final String KEY_SERVICE_NAME = "otel.zipkin.service.name";
-    private static final String KEY_ENDPOINT = "otel.zipkin.endpoint";
+    private static final String KEY_SERVICE_NAME = "otel.exporter.zipkin.service.name";
+    private static final String KEY_ENDPOINT = "otel.exporter.zipkin.endpoint";
     private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
     private Sender sender;
     private String serviceName = DEFAULT_SERVICE_NAME;
