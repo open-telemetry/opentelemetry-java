@@ -17,17 +17,19 @@
 package io.opentelemetry.sdk.logging.sdk;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.export.LogExporter;
+import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 public class BatchLogProcessorTest {
-
   @Test
   public void testBuilder() {
     Properties props = new Properties();
@@ -60,5 +62,26 @@ public class BatchLogProcessorTest {
     assertThat(builder.getMaxQueueSize()).isEqualTo(queue);
     assertThat(builder.getMaxExportBatchSize()).isEqualTo(batch);
     assertThat(builder.getExporterTimeoutMillis()).isEqualTo(timeout);
+  }
+
+  @Test
+  public void testForceExport() {
+    int batchSize = 10;
+    int testRecordsToSend = 17; // greater than, but not a multiple of batch
+    TestLogExporter exporter = new TestLogExporter();
+    BatchLogProcessor processor =
+        BatchLogProcessor.builder(exporter)
+            .setMaxExportBatchSize(batchSize)
+            .setMaxQueueSize(20) // more than we will send
+            .setScheduleDelayMillis(2000) // longer than test
+            .build();
+    for (int i = 0; i < 17; i++) {
+      LogRecord record = LogRecord.builder().setBody(Integer.toString(i)).build();
+      processor.addLogRecord(record);
+    }
+    await().until(() -> exporter.getCallCount() > 0);
+    assertThat(exporter.getRecords().size()).isEqualTo(batchSize);
+    processor.forceFlush().join(500, TimeUnit.MILLISECONDS);
+    assertThat(exporter.getRecords().size()).isEqualTo(testRecordsToSend);
   }
 }

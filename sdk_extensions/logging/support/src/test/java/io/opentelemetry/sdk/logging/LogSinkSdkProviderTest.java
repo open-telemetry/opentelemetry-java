@@ -24,37 +24,15 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import io.opentelemetry.sdk.logging.data.LogRecord.Severity;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
-import io.opentelemetry.sdk.logging.export.LogExporter;
-import java.util.ArrayList;
-import java.util.Collection;
+import io.opentelemetry.sdk.logging.util.TestLogExporter;
+import io.opentelemetry.sdk.logging.util.TestLogProcessor;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class LogSinkSdkProviderTest {
-  private static class TestLogExporter implements LogExporter {
-    private final ArrayList<LogRecord> records = new ArrayList<>();
-    @Nullable private Runnable onCall = null;
-    private int callCount = 0;
-
-    @Override
-    public CompletableResultCode export(Collection<LogRecord> records) {
-      this.records.addAll(records);
-      callCount++;
-      if (onCall != null) {
-        onCall.run();
-      }
-      return null;
-    }
-
-    @Override
-    public CompletableResultCode shutdown() {
-      return new CompletableResultCode().succeed();
-    }
-  }
 
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
     return new LogRecord.Builder()
@@ -73,7 +51,7 @@ public class LogSinkSdkProviderTest {
     LogSink sink = provider.get("test", "0.1a");
     sink.offer(createLog(Severity.ERROR, "test"));
     provider.forceFlush().join(500, TimeUnit.MILLISECONDS);
-    assertThat(exporter.records.size()).isEqualTo(1);
+    assertThat(exporter.getRecords().size()).isEqualTo(1);
   }
 
   @Test
@@ -93,24 +71,24 @@ public class LogSinkSdkProviderTest {
       sink.offer(createLog(Severity.WARN, "test #" + i));
     }
     // Ensure that more than batch size kicks off a flush
-    await().atMost(500, TimeUnit.MILLISECONDS).until(() -> exporter.records.size() > 0);
+    await().atMost(500, TimeUnit.MILLISECONDS).until(() -> exporter.getRecords().size() > 0);
     // Ensure that everything gets through
     CompletableResultCode result = provider.forceFlush();
     result.join(1, TimeUnit.SECONDS);
-    assertThat(exporter.callCount).isGreaterThanOrEqualTo(2);
+    assertThat(exporter.getCallCount()).isGreaterThanOrEqualTo(2);
   }
 
   @Test
   public void testNoBlocking() {
     TestLogExporter exporter = new TestLogExporter();
-    exporter.onCall =
+    exporter.setOnCall(
         () -> {
           try {
             Thread.sleep(250);
           } catch (InterruptedException ex) {
             fail("Exporter wait interrupted", ex);
           }
-        };
+        });
     LogProcessor processor =
         BatchLogProcessor.builder(exporter)
             .setScheduleDelayMillis(3000) // Long enough to not be in play
@@ -129,6 +107,32 @@ public class LogSinkSdkProviderTest {
     long end = System.currentTimeMillis();
     assertThat(end - start).isLessThan(250L);
     provider.forceFlush().join(1, TimeUnit.SECONDS);
-    assertThat(exporter.records.size()).isLessThan(testRecordCount); // We dropped records
+    assertThat(exporter.getRecords().size()).isLessThan(testRecordCount); // We dropped records
+  }
+
+  @Test
+  public void testMultipleProcessors() {
+    TestLogProcessor processorOne = new TestLogProcessor();
+    TestLogProcessor processorTwo = new TestLogProcessor();
+    LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
+    provider.addLogProcessor(processorOne);
+    provider.addLogProcessor(processorTwo);
+    LogSink sink = provider.get("test", "0.1");
+    LogRecord record = LogRecord.builder().setBody("test").build();
+    sink.offer(record);
+    assertThat(processorOne.getRecords().size()).isEqualTo(1);
+    assertThat(processorTwo.getRecords().size()).isEqualTo(1);
+    assertThat(processorOne.getRecords().get(0)).isEqualTo(record);
+    assertThat(processorTwo.getRecords().get(0)).isEqualTo(record);
+
+    CompletableResultCode flushResult = provider.forceFlush();
+    flushResult.join(1, TimeUnit.SECONDS);
+    assertThat(processorOne.getFlushes()).isEqualTo(1);
+    assertThat(processorTwo.getFlushes()).isEqualTo(1);
+
+    CompletableResultCode shutdownResult = provider.shutdown();
+    shutdownResult.join(1, TimeUnit.SECONDS);
+    assertThat(processorOne.shutdownHasBeenCalled()).isEqualTo(true);
+    assertThat(processorTwo.shutdownHasBeenCalled()).isEqualTo(true);
   }
 }

@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
  */
 @AutoValue
 public abstract class LogRecord {
+
   abstract long getTimeUnixNano();
 
   abstract String getTraceId();
@@ -87,6 +88,10 @@ public abstract class LogRecord {
     public int getSeverityNumber() {
       return severityNumber;
     }
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   public static class Builder {
