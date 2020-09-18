@@ -71,7 +71,7 @@ class BatchSpanProcessorTest {
     tracerSdkFactory.shutdown();
   }
 
-  // TODO(bdrutu): Fix this when Sampler return RECORD option.
+  // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
   /*
   private ReadableSpan createNotSampledRecordingEventsEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
@@ -400,7 +400,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void exportNotSampledSpans_recordingEvents() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD option.
+    // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
     /*
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
@@ -416,7 +416,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void exportNotSampledSpans_reportOnlySampled() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD option.
+    // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
     /*
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
