@@ -9,8 +9,8 @@ git clone https://github.com/w3c/trace-context ./target/trace-context
 cd ./target/trace-context && git checkout $TRACECONTEXT_GIT_TAG && cd -
 pip3 install setuptools;
 pip3 install aiohttp;
-../../gradlew build
-../../gradlew run 1>&2 &
+../../gradlew fatJar
+java -jar build/libs/tracecontext-tests.jar 1>&2 &
 EXAMPLE_SERVER_PID=$!
 # give the app server a little time to start up. Not adding some sort
 # of delay would cause many of the tracecontext tests to fail being
