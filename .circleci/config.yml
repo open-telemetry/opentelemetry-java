@@ -114,7 +114,7 @@ jobs:
       _JAVA_OPTIONS: "-Xmx1g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
       docker:
-        - image: elancapital/docker-java-python3
+        - image: openkbs/jdk-mvn-py3
       steps:
         - checkout
         - restore_cache:
