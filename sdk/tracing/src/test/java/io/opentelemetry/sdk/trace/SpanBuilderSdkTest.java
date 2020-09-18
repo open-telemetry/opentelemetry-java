@@ -561,7 +561,7 @@ class SpanBuilderSdkTest {
                         return new SamplingResult() {
                           @Override
                           public Decision getDecision() {
-                            return Decision.RECORD_AND_SAMPLED;
+                            return Decision.RECORD_AND_SAMPLE;
                           }
 
                           @Override

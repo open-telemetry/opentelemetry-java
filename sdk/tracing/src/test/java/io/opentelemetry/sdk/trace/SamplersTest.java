@@ -58,30 +58,30 @@ class SamplersTest {
 
   @Test
   void emptySamplingDecision() {
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED))
-        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD))
-        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE))
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE));
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP))
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.DROP));
 
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED).getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE).getDecision())
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(
-            Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED)
+            Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE)
                 .getAttributes()
                 .isEmpty())
         .isTrue();
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD).getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD).getAttributes().isEmpty())
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP).getDecision())
+        .isEqualTo(Decision.DROP);
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP).getAttributes().isEmpty())
         .isTrue();
   }
 
   @Test
   void samplingDecisionEmpty() {
-    assertThat(Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLED, Attributes.empty()))
-        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLED));
-    assertThat(Samplers.samplingResult(Sampler.Decision.NOT_RECORD, Attributes.empty()))
-        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.NOT_RECORD));
+    assertThat(Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLE, Attributes.empty()))
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE));
+    assertThat(Samplers.samplingResult(Sampler.Decision.DROP, Attributes.empty()))
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.DROP));
   }
 
   @Test
@@ -91,13 +91,13 @@ class SamplersTest {
             "foo", AttributeValue.longAttributeValue(42),
             "bar", AttributeValue.stringAttributeValue("baz"));
     final SamplingResult sampledSamplingResult =
-        Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLED, attrs);
-    assertThat(sampledSamplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLED);
+        Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLE, attrs);
+    assertThat(sampledSamplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(sampledSamplingResult.getAttributes()).isEqualTo(attrs);
 
     final SamplingResult notSampledSamplingResult =
-        Samplers.samplingResult(Sampler.Decision.NOT_RECORD, attrs);
-    assertThat(notSampledSamplingResult.getDecision()).isEqualTo(Decision.NOT_RECORD);
+        Samplers.samplingResult(Sampler.Decision.DROP, attrs);
+    assertThat(notSampledSamplingResult.getDecision()).isEqualTo(Decision.DROP);
     assertThat(notSampledSamplingResult.getAttributes()).isEqualTo(attrs);
   }
 
@@ -114,7 +114,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
 
     // Not sampled parent.
     assertThat(
@@ -127,7 +127,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
 
     // Null parent.
     assertThat(
@@ -140,7 +140,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -161,7 +161,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     // Not sampled parent.
     assertThat(
@@ -174,7 +174,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     // Null parent.
     assertThat(
@@ -187,7 +187,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
   }
 
   @Test
@@ -208,7 +208,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
 
     // Not sampled parent.
     assertThat(
@@ -221,7 +221,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
   }
 
   @Test
@@ -237,7 +237,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
 
     // Not sampled parent.
     assertThat(
@@ -250,7 +250,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
   }
 
   @Test
@@ -267,7 +267,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOff())
@@ -281,7 +281,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOn())
@@ -295,7 +295,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOn())
@@ -309,7 +309,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -327,7 +327,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOff())
@@ -341,7 +341,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOn())
@@ -355,7 +355,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOn())
@@ -369,7 +369,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -386,7 +386,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOff())
@@ -400,7 +400,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOn())
@@ -414,7 +414,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOn())
@@ -428,7 +428,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
   }
 
   @Test
@@ -445,7 +445,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOff())
@@ -459,7 +459,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOn())
@@ -473,7 +473,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOn())
@@ -487,7 +487,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -502,7 +502,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBased(Samplers.alwaysOff())
@@ -514,7 +514,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBasedBuilder(Samplers.alwaysOff())
@@ -531,7 +531,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
 
     assertThat(
             Samplers.parentBased(Samplers.alwaysOn())
@@ -543,7 +543,7 @@ class SamplersTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -724,7 +724,7 @@ class SamplersTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertThat(samplingResult1.getDecision()).isEqualTo(Decision.NOT_RECORD);
+    assertThat(samplingResult1.getDecision()).isEqualTo(Decision.DROP);
     assertThat(samplingResult1.getAttributes())
         .isEqualTo(
             Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
@@ -758,7 +758,7 @@ class SamplersTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertThat(samplingResult2.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLED);
+    assertThat(samplingResult2.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(samplingResult1.getAttributes())
         .isEqualTo(
             Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
@@ -766,15 +766,15 @@ class SamplersTest {
 
   @Test
   void isSampled() {
-    assertThat(Samplers.isSampled(Decision.NOT_RECORD)).isFalse();
-    assertThat(Samplers.isSampled(Decision.RECORD)).isFalse();
-    assertThat(Samplers.isSampled(Decision.RECORD_AND_SAMPLED)).isTrue();
+    assertThat(Samplers.isSampled(Decision.DROP)).isFalse();
+    assertThat(Samplers.isSampled(Decision.RECORD_ONLY)).isFalse();
+    assertThat(Samplers.isSampled(Decision.RECORD_AND_SAMPLE)).isTrue();
   }
 
   @Test
   void isRecording() {
-    assertThat(Samplers.isRecording(Decision.NOT_RECORD)).isFalse();
-    assertThat(Samplers.isRecording(Decision.RECORD)).isTrue();
-    assertThat(Samplers.isRecording(Decision.RECORD_AND_SAMPLED)).isTrue();
+    assertThat(Samplers.isRecording(Decision.DROP)).isFalse();
+    assertThat(Samplers.isRecording(Decision.RECORD_ONLY)).isTrue();
+    assertThat(Samplers.isRecording(Decision.RECORD_AND_SAMPLE)).isTrue();
   }
 }

@@ -172,7 +172,7 @@ class SimpleSpanProcessorTest {
 
   @Test
   void tracerSdk_NotSampled_RecordingEventsSpan() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD option.
+    // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
     /*
     tracer.addSpanProcessor(
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
