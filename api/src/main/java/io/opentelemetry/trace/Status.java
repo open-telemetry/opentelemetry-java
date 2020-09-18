@@ -444,8 +444,7 @@ public final class Status {
     }
 
     Status that = (Status) obj;
-    return canonicalCode == that.canonicalCode
-        && Objects.equals(description, that.description);
+    return canonicalCode == that.canonicalCode && Objects.equals(description, that.description);
   }
 
   /**
