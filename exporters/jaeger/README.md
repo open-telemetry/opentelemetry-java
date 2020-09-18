@@ -43,7 +43,7 @@ The Jaeger gRPC span exporter will look for the following environment variables 
 
 ## Compatibility
 
-As with the OpenTelemetry SDK itself, this exporter is compatible with Java 7+ and Android API level 24+.
+As with the OpenTelemetry SDK itself, this exporter is compatible with Java 8+ and Android API level 24+.
 
 ## Proto files
 
