@@ -114,12 +114,13 @@ jobs:
       _JAVA_OPTIONS: "-Xmx1g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     docker:
-      - image: openkbs/jdk-mvn-py3
+      - image: circleci/openjdk:8-jdk
     steps:
       - checkout
       - restore_cache:
           keys:
             - gradle-w3c-{{ checksum "build.gradle" }}
+      - run: sudo apt-get update && sudo apt-get install python3 && sudo apt-get install python3-pip
       - run:
           name: Integration Tests
           command: cd integration_tests/tracecontext && ./tracecontext-integration-test.sh
