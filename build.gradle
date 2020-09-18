@@ -146,15 +146,13 @@ configure(opentelemetryProjects) {
         mavenLocal()
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-
     java {
         withJavadocJar()
         withSourcesJar()
     }
 
     tasks.withType(JavaCompile) {
+        it.options.release = 8
         it.options.compilerArgs += [
                 "-Xlint:all",
                 // We suppress the "try" warning because it disallows managing an auto-closeable with

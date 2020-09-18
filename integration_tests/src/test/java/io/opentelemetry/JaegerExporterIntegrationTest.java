@@ -43,7 +43,7 @@ import org.testcontainers.utility.MountableFile;
  * verifies that the trace is received by Jaeger.
  */
 @Testcontainers
-class JavaSevenCompatibilityIntegrationTest {
+class JaegerExporterIntegrationTest {
 
   private static final String ARCHIVE_NAME = System.getProperty("archive.name");
   private static final String APP_NAME = "SendTraceToJaeger.jar";
@@ -69,7 +69,7 @@ class JavaSevenCompatibilityIntegrationTest {
   @SuppressWarnings("rawtypes")
   @Container
   public static GenericContainer jaegerExampleAppContainer =
-      new GenericContainer("openjdk:7u111-jre-alpine")
+      new GenericContainer("adoptopenjdk/alpine-jre")
           .withNetwork(network)
           .withCopyFileToContainer(MountableFile.forHostPath(ARCHIVE_NAME), "/app/" + APP_NAME)
           .withCommand(
@@ -86,7 +86,7 @@ class JavaSevenCompatibilityIntegrationTest {
   void testJaegerExampleAppIntegration() {
     Awaitility.await()
         .atMost(30, TimeUnit.SECONDS)
-        .until(JavaSevenCompatibilityIntegrationTest::assertJaegerHaveTrace);
+        .until(JaegerExporterIntegrationTest::assertJaegerHaveTrace);
   }
 
   private static Boolean assertJaegerHaveTrace() {
