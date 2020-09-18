@@ -61,7 +61,7 @@ public interface Sampler {
    */
   String getDescription();
 
-  /** A decision on whether a span should be recorded, recorded and sampled or not recorded. */
+  /** A decision on whether a span should be recorded, recorded and sampled or dropped. */
   enum Decision {
     DROP,
     RECORD_ONLY,
