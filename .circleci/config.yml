@@ -120,7 +120,7 @@ jobs:
       - restore_cache:
           keys:
             - gradle-it-{{ checksum "build.gradle" }}
-      - run
+      - run:
           name: Upgrade pip
           command: pip install --upgrade pip
       - run:
