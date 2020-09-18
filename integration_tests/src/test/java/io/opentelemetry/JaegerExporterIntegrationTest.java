@@ -69,7 +69,7 @@ class JaegerExporterIntegrationTest {
   @SuppressWarnings("rawtypes")
   @Container
   public static GenericContainer jaegerExampleAppContainer =
-      new GenericContainer("adoptopenjdk/alpine-jre")
+      new GenericContainer("adoptopenjdk/openjdk8")
           .withNetwork(network)
           .withCopyFileToContainer(MountableFile.forHostPath(ARCHIVE_NAME), "/app/" + APP_NAME)
           .withCommand(
