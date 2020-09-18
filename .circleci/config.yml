@@ -121,8 +121,8 @@ jobs:
           keys:
             - gradle-it-{{ checksum "build.gradle" }}
       - run:
-          name: Upgrade pip
-          command: pip install --upgrade pip
+          name: Install pip3
+          command: sudo apt-get install python3-pip
       - run:
           name: Integration Tests
           command: cd integration_tests/tracecontext && ./tracecontext-integration-test.sh
