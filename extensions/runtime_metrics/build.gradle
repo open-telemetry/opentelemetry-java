@@ -13,5 +13,5 @@ dependencies {
 
     annotationProcessor libraries.auto_value
 
-    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
 }
