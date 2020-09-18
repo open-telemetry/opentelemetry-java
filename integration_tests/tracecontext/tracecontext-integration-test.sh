@@ -7,8 +7,8 @@ mkdir -p target
 rm -rf ./target/trace-context
 git clone https://github.com/w3c/trace-context ./target/trace-context
 cd ./target/trace-context && git checkout $TRACECONTEXT_GIT_TAG && cd -
-pip3 install setuptools;
-pip3 install aiohttp;
+pip install setuptools;
+pip install aiohttp;
 ../../gradlew fatJar
 java -jar build/libs/tracecontext-tests.jar 1>&2 &
 EXAMPLE_SERVER_PID=$!
