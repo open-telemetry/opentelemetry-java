@@ -33,13 +33,7 @@ import javax.annotation.Nullable;
 public final class DoubleLastValueAggregator extends AbstractAggregator {
 
   @Nullable private static final Double DEFAULT_VALUE = null;
-  private static final AggregatorFactory AGGREGATOR_FACTORY =
-      new AggregatorFactory() {
-        @Override
-        public Aggregator getAggregator() {
-          return new DoubleLastValueAggregator();
-        }
-      };
+  private static final AggregatorFactory AGGREGATOR_FACTORY = DoubleLastValueAggregator::new;
 
   private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 

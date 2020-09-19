@@ -8,7 +8,7 @@ We hold regular meetings. See details at [community page](https://github.com/ope
 
 ## Overview
 
-OpenTelemetry is a working name of a combined OpenCensus and OpenTracing
+OpenTelemetry is the merging of OpenCensus and OpenTracing into one
 project.
 
 This project contains the following top level components:
