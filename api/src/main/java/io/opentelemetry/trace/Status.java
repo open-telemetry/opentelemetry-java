@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -390,7 +391,7 @@ public final class Status {
    * @since 0.1.0
    */
   public Status withDescription(@Nullable String description) {
-    if (Utils.equalsObjects(this.description, description)) {
+    if (Objects.equals(this.description, description)) {
       return this;
     }
     return new Status(this.canonicalCode, description);
@@ -443,8 +444,7 @@ public final class Status {
     }
 
     Status that = (Status) obj;
-    return canonicalCode == that.canonicalCode
-        && Utils.equalsObjects(description, that.description);
+    return canonicalCode == that.canonicalCode && Objects.equals(description, that.description);
   }
 
   /**
