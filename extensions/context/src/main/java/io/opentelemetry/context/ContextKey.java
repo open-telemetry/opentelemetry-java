@@ -15,7 +15,7 @@
  */
 package io.opentelemetry.context;
 
-/** Key for indexing values of type {@link T} stored in a {@link Context}. */
+/** Key for indexing values of type {@link T} stored in a {@link DefaultContext}. */
 public final class ContextKey<T> {
 
   /**

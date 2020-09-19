@@ -23,17 +23,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
 
   private static final Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
 
-  private static final Context ROOT = new Context();
   private static final ThreadLocal<Context> THREAD_LOCAL_STORAGE = new ThreadLocal<>();
-
-  static {
-    THREAD_LOCAL_STORAGE.set(INSTANCE.rootContext());
-  }
-
-  @Override
-  public Context rootContext() {
-    return ROOT;
-  }
 
   @Override
   public Context attach(Context toPush) {

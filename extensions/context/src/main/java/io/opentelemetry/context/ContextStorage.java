@@ -31,11 +31,11 @@
 package io.opentelemetry.context;
 
 /**
- * The storage for storing and retrieving the current {@link Context}.
+ * The storage for storing and retrieving the current {@link DefaultContext}.
  *
- * <p>If you want to implement your own storage or add some hooks when a {@link Context} is attached
+ * <p>If you want to implement your own storage or add some hooks when a {@link DefaultContext} is attached
  * and restored, you should use {@link ContextStorageProvider}. Here's an example that sets MDC
- * before {@link Context} is attached:
+ * before {@link DefaultContext} is attached:
  *
  * <pre>{@code
  * > public class MyStorage implements ContextStorageProvider {
@@ -74,33 +74,26 @@ package io.opentelemetry.context;
 public interface ContextStorage {
 
   /**
-   * Returns the root context from which all other contexts are derived from. The default {@link
-   * ContextStorage} provides an empty root context, but this method can be overridden to set values
-   * into the root context, which will be available in all descendant {@link Context}s.
-   */
-  Context rootContext();
-
-  /**
-   * Sets the specified {@link Context} into the storage.
+   * Sets the specified {@link DefaultContext} into the storage.
    *
-   * @return the old {@link Context} which was in the storage before the specified {@code toPush} is
-   *     pushed. {@code null}, if there was no {@link Context} previously.
+   * @return the old {@link DefaultContext} which was in the storage before the specified {@code toPush} is
+   *     pushed. {@code null}, if there was no {@link DefaultContext} previously.
    */
   Context attach(Context toPush);
 
   /**
-   * Removes the {@code current} {@link Context} from the storage and sets back the specified {@code
-   * toRestore}. {@code toRestore} is the {@link Context} returned from the call to {@link
+   * Removes the {@code current} {@link DefaultContext} from the storage and sets back the specified {@code
+   * toRestore}. {@code toRestore} is the {@link DefaultContext} returned from the call to {@link
    * #attach(Context)} which set {@code current}.
    *
-   * <p>The specified {@code current} must be the current {@link Context} in the storage. If it is
+   * <p>The specified {@code current} must be the current {@link DefaultContext} in the storage. If it is
    * not, it means that {@link Scope#close()} was not called properly and the current state of the
    * context is invalid. A warning will be logged for this case.
    */
   void detach(Context current, Context toRestore);
 
   /**
-   * Returns the current {@link Context}. If no {@link Context} has been attached yet, this will be
+   * Returns the current {@link DefaultContext}. If no {@link DefaultContext} has been attached yet, this will be
    * the {@linkplain #rootContext() root context}.
    */
   Context current();

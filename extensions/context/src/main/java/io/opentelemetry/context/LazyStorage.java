@@ -63,7 +63,11 @@ final class LazyStorage {
 
   private static final Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
 
-  static final ContextStorage storage;
+  static ContextStorage get() {
+    return LazyStorage.storage;
+  }
+
+  private static final ContextStorage storage;
 
   static {
     AtomicReference<Throwable> deferredStorageFailure = new AtomicReference<>();
@@ -85,7 +89,7 @@ final class LazyStorage {
     }
 
     if (providers.isEmpty()) {
-      return Context.threadLocalStorage();
+      return DefaultContext.threadLocalStorage();
     }
 
     if (providers.size() == 1) {
@@ -94,7 +98,7 @@ final class LazyStorage {
         return provider.get();
       } catch (Throwable t) {
         deferredStorageFailure.set(t);
-        return Context.threadLocalStorage();
+        return DefaultContext.threadLocalStorage();
       }
     }
 
@@ -103,7 +107,7 @@ final class LazyStorage {
           new IllegalStateException(
               "Found multiple ContextStorageProvider. Set the io.opentelemetry.context.ContextStorageProvider property to the fully qualified class name of the provider to use. Falling back to default ContextStorage. Found providers: "
                   + providers));
-      return Context.threadLocalStorage();
+      return DefaultContext.threadLocalStorage();
     }
 
     for (ContextStorageProvider provider : providers) {
@@ -118,6 +122,6 @@ final class LazyStorage {
                 + providerClassName
                 + " but found providers: "
                 + providers));
-    return Context.threadLocalStorage();
+    return DefaultContext.threadLocalStorage();
   }
 }

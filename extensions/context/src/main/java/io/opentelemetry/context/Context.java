@@ -1,33 +1,3 @@
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- * Copyright 2015 The gRPC Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package io.opentelemetry.context;
 
 import java.util.concurrent.Callable;
@@ -71,39 +41,11 @@ import javax.annotation.Nullable;
  *       take care to avoid excessive dependence on context when designing an API.
  * </ul>
  */
-public final class Context {
-
-  /** Returns the root {@link Context} which all other {@link Context} are derived from. */
-  public static Context root() {
-    return storage().rootContext();
-  }
+public interface Context {
 
   /** Return the context associated with the current scope. */
-  public static Context current() {
-    return storage().current();
-  }
-
-  /**
-   * Returns the default {@link ContextStorage} used to attach {@link Context}s to scopes of
-   * execution. Should only be used when defining your own {@link ContextStorage} in case you want
-   * to delegate functionality to the default implementation.
-   */
-  public static ContextStorage threadLocalStorage() {
-    return ThreadLocalContextStorage.INSTANCE;
-  }
-
-  static ContextStorage storage() {
-    return LazyStorage.storage;
-  }
-
-  private final PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries;
-
-  private Context(PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries) {
-    this.entries = entries;
-  }
-
-  Context() {
-    entries = null;
+  static Context current() {
+    return LazyStorage.get().current();
   }
 
   /**
@@ -111,12 +53,7 @@ public final class Context {
    * null} if there is no value for the key in this context.
    */
   @Nullable
-  public <V> V getValue(ContextKey<V> key) {
-    // Because withValue enforces the value for a key is its type, this is always safe.
-    @SuppressWarnings("unchecked")
-    V value = (V) PersistentHashArrayMappedTrie.get(entries, key);
-    return value;
-  }
+  <V> V getValue(ContextKey<V> key);
 
   /**
    * Returns a new context with the given key value set.
@@ -143,29 +80,14 @@ public final class Context {
    * number of keys and values — combine multiple related items together into a single key instead
    * of separating them. But if the items are unrelated, have separate keys for them.
    */
-  public <V> Context withValue(ContextKey<V> k1, V v1) {
-    PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
-        PersistentHashArrayMappedTrie.put(entries, k1, v1);
-    return new Context(newEntries);
-  }
+  <V> Context withValue(ContextKey<V> k1, V v1);
 
   /** Returns a new context with the given key value set. */
-  public <V1, V2> Context withValues(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
-    PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
-        PersistentHashArrayMappedTrie.put(entries, k1, v1);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k2, v2);
-    return new Context(newEntries);
-  }
+  <V1, V2> Context withValues(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2);
 
   /** Returns a new context with the given key value set. */
-  public <V1, V2, V3> Context withValues(
-      ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3) {
-    PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
-        PersistentHashArrayMappedTrie.put(entries, k1, v1);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k2, v2);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k3, v3);
-    return new Context(newEntries);
-  }
+  <V1, V2, V3> Context withValues(
+      ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3);
 
   /**
    * Create a new context with the given key value set.
@@ -183,7 +105,7 @@ public final class Context {
    * number of keys and values — combine multiple related items together into a single key instead
    * of separating them. But if the items are unrelated, have separate keys for them.
    */
-  public <V1, V2, V3, V4> Context withValues(
+  <V1, V2, V3, V4> Context withValues(
       ContextKey<V1> k1,
       V1 v1,
       ContextKey<V2> k2,
@@ -191,14 +113,7 @@ public final class Context {
       ContextKey<V3> k3,
       V3 v3,
       ContextKey<V4> k4,
-      V4 v4) {
-    PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
-        PersistentHashArrayMappedTrie.put(entries, k1, v1);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k2, v2);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k3, v3);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k4, v4);
-    return new Context(newEntries);
-  }
+      V4 v4);
 
   /**
    * Attaches this {@link Context}, making it the current {@link Context} and returns a {@link
@@ -217,86 +132,35 @@ public final class Context {
    * assert Context.current() == prevCtx;
    * }</pre>
    */
-  public Scope attach() {
-    final Context thisCtx = this;
-    final Context prevCtx = storage().attach(this);
-
-    if (thisCtx == prevCtx) {
-      // Already attached, so just creating a new scope that doesn't do anything.
-      return NoopScope.INSTANCE;
-    }
-
-    return new Scope() {
-      @Override
-      public void close() {
-        storage().detach(thisCtx, prevCtx);
-      }
-    };
-  }
+  Scope attach();
 
   /**
    * Returns a {@link Runnable} that attaches this {@link Context} and then invokes the input {@link
    * Runnable}.
    */
-  public Runnable wrap(final Runnable runnable) {
-    return new Runnable() {
-      @Override
-      public void run() {
-        try (Scope ignored = attach()) {
-          runnable.run();
-        }
-      }
-    };
-  }
+  Runnable wrap(Runnable runnable);
 
   /**
    * Returns a {@link Runnable} that attaches this {@link Context} and then invokes the input {@link
    * Runnable}.
    */
-  public <T> Callable<T> wrap(final Callable<T> callable) {
-    return new Callable<T>() {
-      @Override
-      public T call() throws Exception {
-        try (Scope ignored = attach()) {
-          return callable.call();
-        }
-      }
-    };
-  }
+  <T> Callable<T> wrap(Callable<T> callable);
 
   /**
    * Returns an {@link Executor} that will execute callbacks in the given {@code executor},
    * attaching this {@link Context} before each execution.
    */
-  public Executor wrap(final Executor executor) {
-    return new Executor() {
-      @Override
-      public void execute(Runnable command) {
-        executor.execute(wrap(command));
-      }
-    };
-  }
+  Executor wrap(Executor executor);
 
   /**
    * Returns an {@link ExecutorService} that will execute callbacks in the given {@code executor},
    * attaching this {@link Context} before each execution.
    */
-  public ExecutorService wrap(ExecutorService executor) {
-    return new ContextExecutorService(this, executor);
-  }
+  ExecutorService wrap(ExecutorService executor);
 
   /**
    * Returns an {@link ScheduledExecutorService} that will execute callbacks in the given {@code
    * executor}, attaching this {@link Context} before each execution.
    */
-  public ScheduledExecutorService wrap(ScheduledExecutorService executor) {
-    return new ContextScheduledExecutorService(this, executor);
-  }
-
-  private enum NoopScope implements Scope {
-    INSTANCE;
-
-    @Override
-    public void close() {}
-  }
+  ScheduledExecutorService wrap(ScheduledExecutorService executor);
 }

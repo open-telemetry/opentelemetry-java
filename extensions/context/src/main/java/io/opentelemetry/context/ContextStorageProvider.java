@@ -19,7 +19,7 @@ import java.util.concurrent.Executor;
 
 /**
  * A Java SPI (Service Provider Interface) to allow replacing the default {@link ContextStorage}.
- * This can be useful if, for example, you want to store OpenTelemetry {@link Context} in another
+ * This can be useful if, for example, you want to store OpenTelemetry {@link DefaultContext} in another
  * context propagation system. For example, the returned {@link ContextStorage} could delegate to
  * methods in
  *
@@ -32,10 +32,10 @@ import java.util.concurrent.Executor;
  * org.eclipse.microprofile.context.ThreadContext}</a>
  *
  * <p>if you are already using one of those systems in your application. Then you would not have to
- * use methods like {@link Context#wrap(Executor)} and can use your current system instead.
+ * use methods like {@link DefaultContext#wrap(Executor)} and can use your current system instead.
  */
 public interface ContextStorageProvider {
 
-  /** Returns the {@link ContextStorage} to use to store {@link Context}. */
+  /** Returns the {@link ContextStorage} to use to store {@link DefaultContext}. */
   ContextStorage get();
 }
