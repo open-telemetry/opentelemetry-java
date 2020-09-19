@@ -97,6 +97,6 @@ class TraceProtoUtilsTest {
                 .setMaxNumberOfAttributesPerTimedEvent(2)
                 .setMaxNumberOfAttributesPerLink(1)
                 .build());
-    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.probability(0.1));
+    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.traceIdRatioBased(0.1));
   }
 }
