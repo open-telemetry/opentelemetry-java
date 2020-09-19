@@ -84,7 +84,7 @@ public final class TraceProtoUtils {
       }
     }
     if (traceConfigProto.hasTraceIdRatioBased()) {
-      return Samplers.probability(traceConfigProto.getTraceIdRatioBased().getSamplingRatio());
+      return Samplers.traceIdRatioBased(traceConfigProto.getTraceIdRatioBased().getSamplingRatio());
     }
     if (traceConfigProto.hasRateLimitingSampler()) {
       // TODO: add support for RateLimiting Sampler

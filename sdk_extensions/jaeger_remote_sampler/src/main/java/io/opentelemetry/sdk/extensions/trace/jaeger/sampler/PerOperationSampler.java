@@ -40,7 +40,8 @@ class PerOperationSampler implements Sampler {
     for (OperationSamplingStrategy opSamplingStrategy : perOperationSampling) {
       this.perOperationSampler.put(
           opSamplingStrategy.getOperation(),
-          Samplers.probability(opSamplingStrategy.getProbabilisticSampling().getSamplingRate()));
+          Samplers.traceIdRatioBased(
+              opSamplingStrategy.getProbabilisticSampling().getSamplingRate()));
     }
   }
 
