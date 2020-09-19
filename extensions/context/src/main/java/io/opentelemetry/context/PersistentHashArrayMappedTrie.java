@@ -51,7 +51,7 @@ final class PersistentHashArrayMappedTrie {
     if (root == null) {
       return null;
     }
-    return root.get(key, key.hashCode(), 0);
+    return root.get(key, System.identityHashCode(key), 0);
   }
 
   /** Returns a new trie where the key is set to the specified value. */
@@ -59,7 +59,7 @@ final class PersistentHashArrayMappedTrie {
     if (root == null) {
       return new Leaf<>(key, value);
     }
-    return root.put(key, value, key.hashCode(), 0);
+    return root.put(key, value, System.identityHashCode(key), 0);
   }
 
   // Not actually annotated to avoid depending on guava
@@ -89,7 +89,7 @@ final class PersistentHashArrayMappedTrie {
 
     @Override
     public Node<K, V> put(K key, V value, int hash, int bitsConsumed) {
-      int thisHash = this.key.hashCode();
+      int thisHash = System.identityHashCode(this.key);
       if (thisHash != hash) {
         // Insert
         return CompressedIndex.combine(new Leaf<>(key, value), hash, this, thisHash, bitsConsumed);
@@ -121,7 +121,7 @@ final class PersistentHashArrayMappedTrie {
     CollisionLeaf(K key1, V value1, K key2, V value2) {
       this((K[]) new Object[] {key1, key2}, (V[]) new Object[] {value1, value2});
       assert key1 != key2;
-      assert key1.hashCode() == key2.hashCode();
+      assert System.identityHashCode(key1) == System.identityHashCode(key2);
     }
 
     private CollisionLeaf(K[] keys, V[] values) {
@@ -146,7 +146,7 @@ final class PersistentHashArrayMappedTrie {
 
     @Override
     public Node<K, V> put(K key, V value, int hash, int bitsConsumed) {
-      int thisHash = keys[0].hashCode();
+      int thisHash = System.identityHashCode(keys[0]);
       int keyIndex;
       if (thisHash != hash) {
         // Insert

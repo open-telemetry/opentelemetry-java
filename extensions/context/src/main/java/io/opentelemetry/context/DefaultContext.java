@@ -36,15 +36,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nullable;
 
-
 final class DefaultContext implements Context {
 
-  private static final Context ROOT = new DefaultContext();
-
-  /** Returns the root {@link DefaultContext} which all other {@link DefaultContext} are derived from. */
-  public static Context root() {
-    return ROOT;
-  }
+  static final Context ROOT = new DefaultContext();
 
   /**
    * Returns the default {@link ContextStorage} used to attach {@link DefaultContext}s to scopes of
@@ -120,7 +114,7 @@ final class DefaultContext implements Context {
   @Override
   public Scope attach() {
     final Context thisCtx = this;
-    final Context prevCtx = storage().attach(this);
+    final Context prevCtx = LazyStorage.get().attach(this);
 
     if (thisCtx == prevCtx) {
       // Already attached, so just creating a new scope that doesn't do anything.
@@ -130,7 +124,7 @@ final class DefaultContext implements Context {
     return new Scope() {
       @Override
       public void close() {
-        storage().detach(thisCtx, prevCtx);
+        LazyStorage.get().detach(thisCtx, prevCtx);
       }
     };
   }

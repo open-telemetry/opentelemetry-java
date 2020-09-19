@@ -19,16 +19,14 @@ import javax.annotation.Nullable;
  * current state a new context object must be created and then attached, replacing the previously
  * bound context. For example:
  *
- * <pre>
+ * <pre>{@code
  *   Context withCredential = Context.current().withValue(CRED_KEY, cred);
  *   withCredential.wrap(new Runnable() {
  *     public void run() {
  *        readUserRecords(userId, CRED_KEY.get());
  *     }
  *   }).run();
- * </pre>
- *
- *
+ * }</pre>
  *
  * <p>Notes and cautions on use:
  *
@@ -49,7 +47,19 @@ public interface Context {
   }
 
   /**
-   * Returns the value stored in this {@link Context} for the given {@link ContextKey}, or {@code
+   * Returns the root {@link Context} which all other {@link DefaultContext} are derived from.
+   *
+   * <p>It should generally not be required to use the root {@link Context} directly - instead, use
+   * {@link Context#current()} to operate on the current {@link Context}. Only use this method if
+   * you are absolutely sure you need to disregard the current {@link Context} - this almost always
+   * is only a workaround hiding an underlying context propagation issue.
+   */
+  static Context root() {
+    return DefaultContext.ROOT;
+  }
+
+  /**
+   * Returns the value stored in this {@link Context} for the given {@link DefaultContextKey}, or {@code
    * null} if there is no value for the key in this context.
    */
   @Nullable
@@ -67,14 +77,14 @@ public interface Context {
    * });
    * }</pre>
    *
-   * <p>Note that multiple calls to {@link #withValue(ContextKey, Object)} can be chained together.
+   * <p>Note that multiple calls to {@code withValue} can be chained together.
    * That is,
    *
-   * <pre>
+   * <pre>{@code
    * context.withValues(K1, V1, K2, V2);
    * // is the same as
    * context.withValue(K1, V1).withValue(K2, V2);
-   * </pre>
+   * }</pre>
    *
    * <p>Nonetheless, {@link Context} should not be treated like a general purpose map with a large
    * number of keys and values — combine multiple related items together into a single key instead
