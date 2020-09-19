@@ -56,7 +56,7 @@ class RateLimitingSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(
             sampler
                 .shouldSample(
@@ -67,7 +67,7 @@ class RateLimitingSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -81,7 +81,7 @@ class RateLimitingSamplerTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertThat(samplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLED);
+    assertThat(samplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(
             sampler
                 .shouldSample(
@@ -92,7 +92,7 @@ class RateLimitingSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
     assertEquals(2, samplingResult.getAttributes().size());
     assertEquals(
         AttributeValue.doubleAttributeValue(1),
