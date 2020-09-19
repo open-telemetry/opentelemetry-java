@@ -55,7 +55,7 @@ public interface Sampler {
    * Returns the description of this {@code Sampler}. This may be displayed on debug pages or in the
    * logs.
    *
-   * <p>Example: "ProbabilitySampler{0.000100}"
+   * <p>Example: "TraceIdRatioBased{0.000100}"
    *
    * @return the description of this {@code Sampler}.
    */
