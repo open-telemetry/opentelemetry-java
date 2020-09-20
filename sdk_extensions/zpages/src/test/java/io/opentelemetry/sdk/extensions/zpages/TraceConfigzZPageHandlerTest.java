@@ -185,7 +185,8 @@ public final class TraceConfigzZPageHandlerTest {
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(
-            Samplers.probability(Double.parseDouble(newSamplingProbability)).getDescription());
+            Samplers.traceIdRatioBased(Double.parseDouble(newSamplingProbability))
+                .getDescription());
     assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributes())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributes));
     assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfEvents())
@@ -270,7 +271,7 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
 
     assertThat(output.toString()).contains("Error while applying trace config changes: ");
-    assertThat(output.toString()).contains("probability must be in range [0.0, 1.0]");
+    assertThat(output.toString()).contains("ratio must be in range [0.0, 1.0]");
 
     // Invalid samplingProbability (> 1)
     output = new ByteArrayOutputStream();
@@ -280,7 +281,7 @@ public final class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
 
     assertThat(output.toString()).contains("Error while applying trace config changes: ");
-    assertThat(output.toString()).contains("probability must be in range [0.0, 1.0]");
+    assertThat(output.toString()).contains("ratio must be in range [0.0, 1.0]");
 
     // Invalid maxNumOfAttributes
     output = new ByteArrayOutputStream();
@@ -387,7 +388,8 @@ public final class TraceConfigzZPageHandlerTest {
 
     assertThat(tracerProvider.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(
-            Samplers.probability(Double.parseDouble(newSamplingProbability)).getDescription());
+            Samplers.traceIdRatioBased(Double.parseDouble(newSamplingProbability))
+                .getDescription());
     assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributes())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributes));
     assertThat(tracerProvider.getActiveTraceConfig().getMaxNumberOfEvents())
