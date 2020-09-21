@@ -21,14 +21,18 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * A propagator designed to inject and extract multiple trace {@code TextMapPropagator} propagators,
- * intendended for backwards compatibility with existing services using different formats. It works
+ * intended for backwards compatibility with existing services using different formats. It works
  * in a stack-fashion, starting with the last registered propagator, to the first one.
+ *
+ * <p>The propagation fields retrieved from all registered propagators are de-duplicated.
  *
  * <p>Upon injection, this propagator invokes {@code TextMapPropagator#inject()} for every
  * registered trace propagator. This will result in the carrier containing all the registered
@@ -66,11 +70,11 @@ public class TraceMultiPropagator implements TextMapPropagator {
     this.propagators = new TextMapPropagator[propagatorList.size()];
     propagatorList.toArray(this.propagators);
 
-    List<String> fields = new ArrayList<>();
+    Set<String> fields = new HashSet<>();
     for (TextMapPropagator propagator : propagators) {
       fields.addAll(propagator.fields());
     }
-    this.propagatorsFields = Collections.unmodifiableList(fields);
+    this.propagatorsFields = Collections.unmodifiableList(new ArrayList<>(fields));
   }
 
   /**

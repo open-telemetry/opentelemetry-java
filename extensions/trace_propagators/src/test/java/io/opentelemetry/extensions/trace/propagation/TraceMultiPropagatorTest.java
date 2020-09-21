@@ -76,7 +76,20 @@ class TraceMultiPropagatorTest {
 
     List<String> fields = prop.fields();
     assertThat(fields).hasSize(4);
-    assertThat(fields).isEqualTo(Arrays.asList("foo", "bar", "hello", "world"));
+    assertThat(fields).containsOnly("foo", "bar", "hello", "world");
+  }
+
+  @Test
+  void fields_duplicates() {
+    TextMapPropagator prop =
+        TraceMultiPropagator.builder()
+            .addPropagator(new EmptyPropagator("foo", "bar", "foo"))
+            .addPropagator(new EmptyPropagator("hello", "world", "world", "bar"))
+            .build();
+
+    List<String> fields = prop.fields();
+    assertThat(fields).hasSize(4);
+    assertThat(fields).containsOnly("foo", "bar", "hello", "world");
   }
 
   @Test
