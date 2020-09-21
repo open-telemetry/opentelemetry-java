@@ -29,6 +29,7 @@ public final class MultiSpanProcessor implements SpanProcessor {
   private final List<SpanProcessor> spanProcessorsStart;
   private final List<SpanProcessor> spanProcessorsEnd;
   private final List<SpanProcessor> spanProcessorsAll;
+  private volatile boolean isShutdown = false;
 
   /**
    * Creates a new {@code MultiSpanProcessor}.
@@ -68,11 +69,17 @@ public final class MultiSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
-    List<CompletableResultCode> results = new ArrayList<>(spanProcessorsAll.size());
-    for (SpanProcessor spanProcessor : spanProcessorsAll) {
-      results.add(spanProcessor.shutdown());
+    synchronized (this) {
+      if (isShutdown) {
+        return CompletableResultCode.ofSuccess();
+      }
+      isShutdown = true;
+      List<CompletableResultCode> results = new ArrayList<>(spanProcessorsAll.size());
+      for (SpanProcessor spanProcessor : spanProcessorsAll) {
+        results.add(spanProcessor.shutdown());
+      }
+      return CompletableResultCode.ofAll(results);
     }
-    return CompletableResultCode.ofAll(results);
   }
 
   @Override

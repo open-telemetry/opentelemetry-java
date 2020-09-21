@@ -81,6 +81,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private final Worker worker;
   private final boolean sampled;
+  private volatile boolean isShutdown = false;
 
   private BatchSpanProcessor(
       SpanExporter spanExporter,
@@ -124,7 +125,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
-    return worker.shutdown();
+    synchronized (this) {
+      if (isShutdown) {
+        return CompletableResultCode.ofSuccess();
+      }
+      isShutdown = true;
+      return worker.shutdown();
+    }
   }
 
   @Override

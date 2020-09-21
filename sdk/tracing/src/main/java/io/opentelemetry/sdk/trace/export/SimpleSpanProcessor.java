@@ -58,6 +58,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   private final SpanExporter spanExporter;
   private final boolean sampled;
+  private volatile boolean isShutdown = false;
 
   private SimpleSpanProcessor(SpanExporter spanExporter, boolean sampled) {
     this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
@@ -103,7 +104,13 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
-    return spanExporter.shutdown();
+    synchronized (this) {
+      if (isShutdown) {
+        return CompletableResultCode.ofSuccess();
+      }
+      isShutdown = true;
+      return spanExporter.shutdown();
+    }
   }
 
   @Override
