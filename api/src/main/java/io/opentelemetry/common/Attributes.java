@@ -319,5 +319,15 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     public Builder setAttribute(String key, Boolean... value) {
       return setAttribute(booleanArrayKey(key), value == null ? null : Arrays.asList(value));
     }
+
+    /**
+     * Add all the provided attributes to this Builder.
+     *
+     * @return this Builder
+     */
+    public Builder addAll(Attributes attributes) {
+      data.addAll(attributes.data());
+      return this;
+    }
   }
 }

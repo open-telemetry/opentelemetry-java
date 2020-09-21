@@ -118,8 +118,8 @@ class AttributesTest {
   void deduplication() {
     Attributes one =
         Attributes.of(
-            stringKey("key1"), "value1",
-            stringKey("key1"), "valueX");
+            stringKey("key1"), "valueX",
+            stringKey("key1"), "value1");
     Attributes two = Attributes.of(stringKey("key1"), "value1");
 
     assertThat(one).isEqualTo(two);
@@ -139,8 +139,8 @@ class AttributesTest {
             .setAttribute("string", "value1")
             .setAttribute("long", 100)
             .setAttribute("double", 33.44)
-            .setAttribute("boolean", false)
             .setAttribute("boolean", "duplicateShouldBeRemoved")
+            .setAttribute("boolean", false)
             .build();
 
     Attributes wantAttributes =
@@ -181,9 +181,9 @@ class AttributesTest {
             .setAttribute("string", "value1", "value2")
             .setAttribute("long", 100L, 200L)
             .setAttribute("double", 33.44, -44.33)
-            .setAttribute("boolean", false, true)
             .setAttribute("boolean", "duplicateShouldBeRemoved")
-            .setAttribute(stringKey("boolean"), "dropped")
+            .setAttribute(stringKey("boolean"), "true")
+            .setAttribute("boolean", false, true)
             .build();
 
     assertThat(attributes)
