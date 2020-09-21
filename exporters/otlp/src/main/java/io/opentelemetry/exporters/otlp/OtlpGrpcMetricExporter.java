@@ -295,7 +295,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
       Long value = getLongProperty(KEY_TIMEOUT, configMap);
       if (value == null) {
-        value = getLongProperty(KEY_TIMEOUT.replace("metric", ""), configMap);
+        value = getLongProperty(CommonProperties.KEY_TIMEOUT, configMap);
       }
       if (value != null) {
         this.setDeadlineMs(value);
@@ -303,7 +303,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
       String endpointValue = getStringProperty(KEY_ENDPOINT, configMap);
       if (endpointValue == null) {
-        endpointValue = getStringProperty(KEY_ENDPOINT.replace("metric", ""), configMap);
+        endpointValue = getStringProperty(CommonProperties.KEY_ENDPOINT, configMap);
       }
       if (endpointValue != null) {
         this.setEndpoint(endpointValue);
@@ -311,7 +311,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
       Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
       if (useTlsValue == null) {
-        useTlsValue = getBooleanProperty(KEY_USE_TLS.replace("metric", ""), configMap);
+        useTlsValue = getBooleanProperty(CommonProperties.KEY_USE_TLS, configMap);
       }
       if (useTlsValue != null) {
         this.setUseTls(useTlsValue);
@@ -319,7 +319,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
       String metadataValue = getStringProperty(KEY_HEADERS, configMap);
       if (metadataValue == null) {
-        metadataValue = getStringProperty(KEY_HEADERS.replace("metric", ""), configMap);
+        metadataValue = getStringProperty(CommonProperties.KEY_HEADERS, configMap);
       }
       if (metadataValue != null) {
         for (String keyValueString : Splitter.on(';').split(metadataValue)) {

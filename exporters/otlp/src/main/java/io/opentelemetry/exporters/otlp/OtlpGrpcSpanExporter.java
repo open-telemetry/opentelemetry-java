@@ -304,7 +304,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
       Long value = getLongProperty(KEY_TIMEOUT, configMap);
       if (value == null) {
-        value = getLongProperty(KEY_TIMEOUT.replace("span", ""), configMap);
+        value = getLongProperty(CommonProperties.KEY_TIMEOUT, configMap);
       }
       if (value != null) {
         this.setDeadlineMs(value);
@@ -312,7 +312,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
       String endpointValue = getStringProperty(KEY_ENDPOINT, configMap);
       if (endpointValue == null) {
-        endpointValue = getStringProperty(KEY_ENDPOINT.replace("span", ""), configMap);
+        endpointValue = getStringProperty(CommonProperties.KEY_ENDPOINT, configMap);
       }
       if (endpointValue != null) {
         this.setEndpoint(endpointValue);
@@ -320,7 +320,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
       Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
       if (useTlsValue == null) {
-        useTlsValue = getBooleanProperty(KEY_USE_TLS.replace("span", ""), configMap);
+        useTlsValue = getBooleanProperty(CommonProperties.KEY_USE_TLS, configMap);
       }
       if (useTlsValue != null) {
         this.setUseTls(useTlsValue);
@@ -328,7 +328,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
       String metadataValue = getStringProperty(KEY_HEADERS, configMap);
       if (metadataValue == null) {
-        metadataValue = getStringProperty(KEY_HEADERS.replace("span", ""), configMap);
+        metadataValue = getStringProperty(CommonProperties.KEY_HEADERS, configMap);
       }
       if (metadataValue != null) {
         for (String keyValueString : Splitter.on(';').split(metadataValue)) {
