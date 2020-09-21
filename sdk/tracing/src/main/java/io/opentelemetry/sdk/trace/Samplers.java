@@ -51,21 +51,21 @@ public final class Samplers {
   static final AttributeKey<Double> SAMPLING_PROBABILITY = doubleKey("sampling.probability");
 
   private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
-      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLED);
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLE);
   private static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT =
-      SamplingResultImpl.createWithoutAttributes(Decision.NOT_RECORD);
+      SamplingResultImpl.createWithoutAttributes(Decision.DROP);
   private static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
-      SamplingResultImpl.createWithoutAttributes(Decision.RECORD);
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_ONLY);
 
   // No instance of this class.
   private Samplers() {}
 
   static boolean isRecording(Decision decision) {
-    return Decision.RECORD.equals(decision) || Decision.RECORD_AND_SAMPLED.equals(decision);
+    return Decision.RECORD_ONLY.equals(decision) || Decision.RECORD_AND_SAMPLE.equals(decision);
   }
 
   static boolean isSampled(Decision decision) {
-    return Decision.RECORD_AND_SAMPLED.equals(decision);
+    return Decision.RECORD_AND_SAMPLE.equals(decision);
   }
 
   /**
@@ -103,11 +103,11 @@ public final class Samplers {
    */
   public static SamplingResult emptySamplingResult(Decision decision) {
     switch (decision) {
-      case RECORD_AND_SAMPLED:
+      case RECORD_AND_SAMPLE:
         return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-      case RECORD:
+      case RECORD_ONLY:
         return EMPTY_RECORDED_SAMPLING_RESULT;
-      case NOT_RECORD:
+      case DROP:
         return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
     }
     throw new AssertionError("unrecognised samplingResult");
@@ -162,15 +162,15 @@ public final class Samplers {
   }
 
   /**
-   * Returns a new Probability {@link Sampler}. The probability of sampling a trace is equal to that
-   * of the specified probability.
+   * Returns a new TraceIdRatioBased {@link Sampler}. The ratio of sampling a trace is equal to that
+   * of the specified ratio.
    *
-   * @param probability The desired probability of sampling. Must be within [0.0, 1.0].
-   * @return a new Probability {@link Sampler}.
-   * @throws IllegalArgumentException if {@code probability} is out of range
+   * @param ratio The desired ratio of sampling. Must be within [0.0, 1.0].
+   * @return a new TraceIdRatioBased {@link Sampler}.
+   * @throws IllegalArgumentException if {@code ratio} is out of range
    */
-  public static Sampler probability(double probability) {
-    return Probability.create(probability);
+  public static Sampler traceIdRatioBased(double ratio) {
+    return TraceIdRatioBased.create(ratio);
   }
 
   @Immutable
@@ -422,33 +422,33 @@ public final class Samplers {
    */
   @AutoValue
   @Immutable
-  abstract static class Probability implements Sampler {
+  abstract static class TraceIdRatioBased implements Sampler {
 
-    Probability() {}
+    TraceIdRatioBased() {}
 
-    static Probability create(double probability) {
+    static TraceIdRatioBased create(double ratio) {
       Preconditions.checkArgument(
-          probability >= 0.0 && probability <= 1.0, "probability must be in range [0.0, 1.0]");
+          ratio >= 0.0 && ratio <= 1.0, "ratio must be in range [0.0, 1.0]");
       long idUpperBound;
       // Special case the limits, to avoid any possible issues with lack of precision across
       // double/long boundaries. For probability == 0.0, we use Long.MIN_VALUE as this guarantees
       // that we will never sample a trace, even in the case where the id == Long.MIN_VALUE, since
       // Math.Abs(Long.MIN_VALUE) == Long.MIN_VALUE.
-      if (probability == 0.0) {
+      if (ratio == 0.0) {
         idUpperBound = Long.MIN_VALUE;
-      } else if (probability == 1.0) {
+      } else if (ratio == 1.0) {
         idUpperBound = Long.MAX_VALUE;
       } else {
-        idUpperBound = (long) (probability * Long.MAX_VALUE);
+        idUpperBound = (long) (ratio * Long.MAX_VALUE);
       }
-      return new AutoValue_Samplers_Probability(
-          probability,
+      return new AutoValue_Samplers_TraceIdRatioBased(
+          ratio,
           idUpperBound,
-          SamplingResultImpl.createWithProbability(Decision.RECORD_AND_SAMPLED, probability),
-          SamplingResultImpl.createWithProbability(Decision.NOT_RECORD, probability));
+          SamplingResultImpl.createWithProbability(Decision.RECORD_AND_SAMPLE, ratio),
+          SamplingResultImpl.createWithProbability(Decision.DROP, ratio));
     }
 
-    abstract double getProbability();
+    abstract double getRatio();
 
     abstract long getIdUpperBound();
 
@@ -479,7 +479,7 @@ public final class Samplers {
 
     @Override
     public final String getDescription() {
-      return String.format("ProbabilitySampler{%.6f}", getProbability());
+      return String.format("TraceIdRatioBased{%.6f}", getRatio());
     }
   }
 

@@ -465,7 +465,7 @@ class SpanBuilderSdkTest {
         tracerSdkFactory
             .getActiveTraceConfig()
             .toBuilder()
-            .setSampler(Samplers.probability(1))
+            .setSampler(Samplers.traceIdRatioBased(1))
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
@@ -546,7 +546,7 @@ class SpanBuilderSdkTest {
                         return new SamplingResult() {
                           @Override
                           public Decision getDecision() {
-                            return Decision.RECORD_AND_SAMPLED;
+                            return Decision.RECORD_AND_SAMPLE;
                           }
 
                           @Override
@@ -575,7 +575,7 @@ class SpanBuilderSdkTest {
   void sampledViaParentLinks() {
     Span span =
         TestUtils.startSpanWithSampler(
-                tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.probability(0.0))
+                tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.traceIdRatioBased(0.0))
             .addLink(sampledSpanContext)
             .startSpan();
     try {

@@ -54,17 +54,17 @@ public interface Sampler {
    * Returns the description of this {@code Sampler}. This may be displayed on debug pages or in the
    * logs.
    *
-   * <p>Example: "ProbabilitySampler{0.000100}"
+   * <p>Example: "TraceIdRatioBased{0.000100}"
    *
    * @return the description of this {@code Sampler}.
    */
   String getDescription();
 
-  /** A decision on whether a span should be recorded, recorded and sampled or not recorded. */
+  /** A decision on whether a span should be recorded, recorded and sampled or dropped. */
   enum Decision {
-    NOT_RECORD,
-    RECORD,
-    RECORD_AND_SAMPLED,
+    DROP,
+    RECORD_ONLY,
+    RECORD_AND_SAMPLE,
   }
 
   /**
@@ -84,8 +84,8 @@ public interface Sampler {
      * Return tags which will be attached to the span.
      *
      * @return attributes added to span. These attributes should be added to the span only when
-     *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD} or {@link
-     *     Decision#RECORD_AND_SAMPLED}.
+     *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD_ONLY} or
+     *     {@link Decision#RECORD_AND_SAMPLE}.
      */
     Attributes getAttributes();
   }
