@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,7 +82,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private final Worker worker;
   private final boolean sampled;
-  private volatile boolean isShutdown = false;
+  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   private BatchSpanProcessor(
       SpanExporter spanExporter,
@@ -125,13 +126,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
-    synchronized (this) {
-      if (isShutdown) {
-        return CompletableResultCode.ofSuccess();
-      }
-      isShutdown = true;
-      return worker.shutdown();
+    if (isShutdown.getAndSet(true)) {
+      return CompletableResultCode.ofSuccess();
     }
+    return worker.shutdown();
   }
 
   @Override
