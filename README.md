@@ -156,7 +156,7 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 
 - [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
-- [John Watson](https://github.com/jkwatson), New Relic
+- [John Watson](https://github.com/jkwatson), Splunk
 - [Anuraag Agrawal](https://github.com/anuraaga), AWS
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
