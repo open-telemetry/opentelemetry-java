@@ -182,7 +182,8 @@ class AttributesTest {
             .setAttribute("long", 100L, 200L)
             .setAttribute("double", 33.44, -44.33)
             .setAttribute("boolean", "duplicateShouldBeRemoved")
-            .setAttribute(stringKey("boolean"), "dropped")
+            .setAttribute(stringKey("boolean"), "true")
+            .setAttribute("boolean", false, true)
             .build();
 
     assertThat(attributes)
