@@ -107,28 +107,6 @@ jobs:
           paths:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}
-# Integration tests
-  integration-tests:
-    environment:
-      # Configure the JVM and Gradle to avoid OOM errors
-      _JAVA_OPTIONS: "-Xmx1g"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: openkbs/jdk-mvn-py3
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - gradle-w3c-{{ checksum "build.gradle" }}
-      - run:
-          name: Integration Tests
-          command: cd integration_tests/tracecontext && ./tracecontext-integration-test.sh
-      - run:
-          <<: *publish_snapshots_task
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: gradle-w3c-{{ checksum "build.gradle" }}
 
 workflows:
   version: 2
@@ -136,7 +114,6 @@ workflows:
     jobs:
       - build
       - java11
-      - integration-tests
   build_and_release:
     jobs:
       - release_job:
