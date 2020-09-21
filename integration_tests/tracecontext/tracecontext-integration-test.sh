@@ -7,6 +7,7 @@ mkdir -p target
 rm -rf ./target/trace-context
 git clone https://github.com/w3c/trace-context ./target/trace-context
 cd ./target/trace-context && git checkout $TRACECONTEXT_GIT_TAG && cd -
+export PATH=/usr/local/bin:$PATH
 pip3 install setuptools;
 pip3 install aiohttp;
 ../../gradlew fatJar
