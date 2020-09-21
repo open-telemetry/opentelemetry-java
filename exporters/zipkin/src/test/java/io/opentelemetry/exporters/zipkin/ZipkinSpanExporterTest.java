@@ -354,8 +354,8 @@ class ZipkinSpanExporterTest {
     Map<String, String> options = new HashMap<>();
     String serviceName = "myGreatService";
     String endpoint = "http://127.0.0.1:9090";
-    options.put("otel.zipkin.service.name", serviceName);
-    options.put("otel.zipkin.endpoint", endpoint);
+    options.put("otel.exporter.zipkin.service.name", serviceName);
+    options.put("otel.exporter.zipkin.endpoint", endpoint);
     ZipkinSpanExporter.Builder config = ZipkinSpanExporter.newBuilder();
     ZipkinSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();

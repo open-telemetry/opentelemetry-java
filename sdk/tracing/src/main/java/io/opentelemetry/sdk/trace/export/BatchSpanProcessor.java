@@ -303,10 +303,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
   /** Builder class for {@link BatchSpanProcessor}. */
   public static final class Builder extends ConfigBuilder<Builder> {
 
-    private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay";
-    private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue";
-    private static final String KEY_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch";
-    private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout";
+    private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay.millis";
+    private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue.size";
+    private static final String KEY_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch.size";
+    private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout.millis";
     private static final String KEY_SAMPLED = "otel.bsp.export.sampled";
 
     @VisibleForTesting static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;

@@ -98,10 +98,10 @@ class BatchSpanProcessorTest {
   @Test
   void configTest() {
     Map<String, String> options = new HashMap<>();
-    options.put("otel.bsp.schedule.delay", "12");
-    options.put("otel.bsp.max.queue", "34");
-    options.put("otel.bsp.max.export.batch", "56");
-    options.put("otel.bsp.export.timeout", "78");
+    options.put("otel.bsp.schedule.delay.millis", "12");
+    options.put("otel.bsp.max.queue.size", "34");
+    options.put("otel.bsp.max.export.batch.size", "56");
+    options.put("otel.bsp.export.timeout.millis", "78");
     options.put("otel.bsp.export.sampled", "false");
     BatchSpanProcessor.Builder config =
         BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
