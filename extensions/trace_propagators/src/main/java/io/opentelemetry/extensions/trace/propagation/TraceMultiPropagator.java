@@ -29,8 +29,8 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * A propagator designed to inject and extract multiple trace {@code TextMapPropagator} propagators,
- * intended for backwards compatibility with existing services using different formats. It works
- * in a stack-fashion, starting with the last registered propagator, to the first one.
+ * intended for backwards compatibility with existing services using different formats. It works in
+ * a stack-fashion, starting with the last registered propagator, to the first one.
  *
  * <p>The propagation fields retrieved from all registered propagators are de-duplicated.
  *
