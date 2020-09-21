@@ -16,11 +16,11 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
@@ -86,10 +86,7 @@ class SamplersTest {
 
   @Test
   void samplingDecisionAttrs() {
-    final Attributes attrs =
-        Attributes.of(
-            "foo", AttributeValue.longAttributeValue(42),
-            "bar", AttributeValue.stringAttributeValue("baz"));
+    final Attributes attrs = Attributes.of(longKey("foo"), 42L, stringKey("bar"), "baz");
     final SamplingResult sampledSamplingResult =
         Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLE, attrs);
     assertThat(sampledSamplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLE);
@@ -726,8 +723,7 @@ class SamplersTest {
             Collections.emptyList());
     assertThat(samplingResult1.getDecision()).isEqualTo(Decision.DROP);
     assertThat(samplingResult1.getAttributes())
-        .isEqualTo(
-            Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
+        .isEqualTo(Attributes.of(Samplers.SAMPLING_PROBABILITY, 0.0001));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     String sampledTraceId =
@@ -760,8 +756,7 @@ class SamplersTest {
             Collections.emptyList());
     assertThat(samplingResult2.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(samplingResult1.getAttributes())
-        .isEqualTo(
-            Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
+        .isEqualTo(Attributes.of(Samplers.SAMPLING_PROBABILITY, 0.0001));
   }
 
   @Test

@@ -17,13 +17,18 @@
 package io.opentelemetry.common;
 
 /**
- * Convenience interface for consuming {@link Labels}.
+ * An enum that represents all the possible value types for an {@code AttributeKey} and hence the
+ * types of values that are allowed for {@link Attributes}.
  *
- * <p>This interface should be considered to be a FunctionalInterface in the java 8+ meaning of that
- * term.
- *
- * @since 0.9.0
+ * @since 0.1.0
  */
-public interface LabelConsumer {
-  void consume(String key, String value);
+public enum AttributeType {
+  STRING,
+  BOOLEAN,
+  LONG,
+  DOUBLE,
+  STRING_ARRAY,
+  BOOLEAN_ARRAY,
+  LONG_ARRAY,
+  DOUBLE_ARRAY
 }

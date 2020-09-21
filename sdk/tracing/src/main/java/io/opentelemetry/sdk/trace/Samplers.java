@@ -16,10 +16,11 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
@@ -29,7 +30,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.attributes.DoubleAttributeSetter;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -48,8 +48,7 @@ public final class Samplers {
    * <p>See https://github.com/open-telemetry/opentelemetry-specification/pull/570
    */
   // Visible for tests.
-  static final DoubleAttributeSetter SAMPLING_PROBABILITY =
-      DoubleAttributeSetter.create("sampling.probability");
+  static final AttributeKey<Double> SAMPLING_PROBABILITY = doubleKey("sampling.probability");
 
   private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
       SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLE);
@@ -495,7 +494,7 @@ public final class Samplers {
      */
     static SamplingResult createWithProbability(Decision decision, double probability) {
       return new AutoValue_Samplers_SamplingResultImpl(
-          decision, Attributes.of(SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
+          decision, Attributes.of(SAMPLING_PROBABILITY, probability));
     }
 
     /**

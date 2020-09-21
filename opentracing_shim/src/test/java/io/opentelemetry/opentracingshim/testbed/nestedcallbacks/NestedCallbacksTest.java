@@ -16,6 +16,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.nestedcallbacks;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -63,8 +64,7 @@ public final class NestedCallbacksTest {
     ReadableAttributes attrs = spans.get(0).getAttributes();
     assertEquals(3, attrs.size());
     for (int i = 1; i <= 3; i++) {
-      assertEquals(
-          Integer.toString(i), spans.get(0).getAttributes().get("key" + i).getStringValue());
+      assertEquals(Integer.toString(i), spans.get(0).getAttributes().get(stringKey("key" + i)));
     }
 
     assertNull(tracer.scopeManager().activeSpan());
