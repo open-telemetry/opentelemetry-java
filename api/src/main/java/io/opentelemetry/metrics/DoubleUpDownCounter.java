@@ -18,6 +18,7 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleUpDownCounter.BoundDoubleUpDownCounter;
+
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -31,7 +32,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
+ *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
  *   private static final DoubleUpDownCounter upDownCounter =
  *       meter.
  *           .doubleUpDownCounterBuilder("resource_usage")
