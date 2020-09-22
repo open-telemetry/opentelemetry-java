@@ -16,11 +16,12 @@
 
 package io.opentelemetry.example.http;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -94,8 +95,7 @@ public class HttpServer {
       System.out.println("Served Client: " + he.getRemoteAddress());
 
       // Generate an Event with an attribute
-      Attributes eventAttributes =
-          Attributes.of("answer", AttributeValue.stringAttributeValue(response));
+      Attributes eventAttributes = Attributes.of(stringKey("answer"), response);
       span.addEvent("Finish Processing", eventAttributes);
 
       // Everything works fine in this example
@@ -103,16 +103,16 @@ public class HttpServer {
     }
   }
 
-  private com.sun.net.httpserver.HttpServer server;
-  private static int port = 8080;
+  private final com.sun.net.httpserver.HttpServer server;
+  private static final int port = 8080;
 
   // OTel API
-  private static Tracer tracer =
+  private static final Tracer tracer =
       OpenTelemetry.getTracer("io.opentelemetry.example.http.HttpServer");
   // Export traces to log
-  private static LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
+  private static final LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
   // Extract the context from http headers
-  private static TextMapPropagator.Getter<HttpExchange> getter =
+  private static final TextMapPropagator.Getter<HttpExchange> getter =
       (carrier, key) -> {
         if (carrier.getRequestHeaders().containsKey(key)) {
           return carrier.getRequestHeaders().get(key).get(0);
