@@ -94,8 +94,7 @@ class DefaultPropagatorsTest {
             .build();
 
     List<String> fields = propagators.getTextMapPropagator().fields();
-    assertThat(fields).hasSize(2);
-    assertThat(fields).containsOnly("prop1", "prop2");
+    assertThat(fields).containsExactlyInAnyOrder("prop1", "prop2");
   }
 
   @Test
