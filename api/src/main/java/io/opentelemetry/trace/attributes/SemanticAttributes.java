@@ -21,6 +21,7 @@ import static io.opentelemetry.common.AttributesKeys.longKey;
 import static io.opentelemetry.common.AttributesKeys.stringKey;
 
 import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.Attributes;
 
 /**
  * Defines constants for all attribute names defined in the OpenTelemetry Semantic Conventions
@@ -242,17 +243,47 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
 
-  /** The name of an {@link io.opentelemetry.trace.Event} describing an exception. */
+  /**
+   * The name of an {@link io.opentelemetry.trace.Event} describing an exception.
+   *
+   * <p>Typically an event with that name should not be manually created. Instead {@link
+   * io.opentelemetry.trace.Span#recordException(Throwable)} should be used.
+   */
   public static final String EXCEPTION_EVENT_NAME = "exception";
-  /** The type of the exception, i.e., it's fully qualified name. */
+
+  /**
+   * The type of the exception, i.e., it's fully qualified name (used on exception events).
+   *
+   * <p>Typically this should not be manually set. Instead {@link
+   * io.opentelemetry.trace.Span#recordException(Throwable)} should be used.
+   */
   public static final AttributeKey<String> EXCEPTION_TYPE = stringKey("exception.type");
-  /** The exception message. */
+
+  /**
+   * The exception message (used on exception events).
+   *
+   * <p>Typically this should not be manually set. Instead {@link
+   * io.opentelemetry.trace.Span#recordException(Throwable)} should be used.
+   */
   public static final AttributeKey<String> EXCEPTION_MESSAGE = stringKey("exception.message");
+
   /**
    * A string representing the stacktrace of an exception, as produced by {@link
-   * Throwable#printStackTrace()}.
+   * Throwable#printStackTrace()} (used on exception events).
+   *
+   * <p>Typically this should not be manually set. Instead {@link
+   * io.opentelemetry.trace.Span#recordException(Throwable)} should be used.
    */
   public static final AttributeKey<String> EXCEPTION_STACKTRACE = stringKey("exception.stacktrace");
+
+  /**
+   * A boolean which SHOULD be set to {@code true} if the exception is recorded at a point where it
+   * is known that it is escaping the scope of the span (used on exception events).
+   *
+   * <p>This should usually be used as second argument to {@link
+   * io.opentelemetry.trace.Span#recordException(Throwable, Attributes)}.
+   */
+  public static final AttributeKey<Boolean> EXCEPTION_ESCAPED = booleanKey("exception.escaped");
 
   /** Id of the thread that has started a span, as produced by {@link Thread#getId()}. */
   public static final AttributeKey<Long> THREAD_ID = longKey("thread.id");
