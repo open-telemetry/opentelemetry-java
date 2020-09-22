@@ -17,7 +17,6 @@
 package io.opentelemetry.common;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -32,7 +31,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface AttributeKey<T> extends Comparable<AttributeKey> {
   /** Returns the underlying String representation of the key. */
-  @Nullable
   String getKey();
 
   /** Returns the type of attribute for this key. Useful for building switch statements. */
