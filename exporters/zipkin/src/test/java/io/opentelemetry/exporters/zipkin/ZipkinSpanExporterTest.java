@@ -192,12 +192,7 @@ class ZipkinSpanExporterTest {
   void generateSpan_AlreadyHasHttpStatusInfo() {
     Attributes attributeMap =
         Attributes.of(
-            SemanticAttributes.HTTP_STATUS_CODE,
-            404L,
-            SemanticAttributes.HTTP_STATUS_TEXT,
-            "NOT FOUND",
-            stringKey("error"),
-            "A user provided error");
+            SemanticAttributes.HTTP_STATUS_CODE, 404L, stringKey("error"), "A user provided error");
     SpanData data =
         buildStandardSpan()
             .setAttributes(attributeMap)
@@ -211,7 +206,6 @@ class ZipkinSpanExporterTest {
                 .toBuilder()
                 .clearTags()
                 .putTag(SemanticAttributes.HTTP_STATUS_CODE.getKey(), "404")
-                .putTag(SemanticAttributes.HTTP_STATUS_TEXT.getKey(), "NOT FOUND")
                 .putTag("error", "A user provided error")
                 .build());
   }
