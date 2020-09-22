@@ -21,7 +21,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -70,7 +70,7 @@ public class TraceMultiPropagator implements TextMapPropagator {
     this.propagators = new TextMapPropagator[propagatorList.size()];
     propagatorList.toArray(this.propagators);
 
-    Set<String> fields = new HashSet<>();
+    Set<String> fields = new LinkedHashSet<>();
     for (TextMapPropagator propagator : propagators) {
       fields.addAll(propagator.fields());
     }

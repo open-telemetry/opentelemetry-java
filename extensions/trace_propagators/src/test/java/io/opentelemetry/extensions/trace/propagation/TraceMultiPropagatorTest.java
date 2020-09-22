@@ -75,7 +75,7 @@ class TraceMultiPropagatorTest {
             .build();
 
     List<String> fields = prop.fields();
-    assertThat(fields).containsExactlyInAnyOrder("foo", "bar", "hello", "world");
+    assertThat(fields).containsExactly("foo", "bar", "hello", "world");
   }
 
   @Test
@@ -87,7 +87,7 @@ class TraceMultiPropagatorTest {
             .build();
 
     List<String> fields = prop.fields();
-    assertThat(fields).containsExactlyInAnyOrder("foo", "bar", "hello", "world");
+    assertThat(fields).containsExactly("foo", "bar", "hello", "world");
   }
 
   @Test

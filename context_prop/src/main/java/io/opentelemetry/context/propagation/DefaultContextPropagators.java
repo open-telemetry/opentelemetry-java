@@ -19,7 +19,7 @@ package io.opentelemetry.context.propagation;
 import io.grpc.Context;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -127,7 +127,7 @@ public final class DefaultContextPropagators implements ContextPropagators {
     }
 
     private static List<String> getAllFields(TextMapPropagator[] textPropagators) {
-      Set<String> fields = new HashSet<>();
+      Set<String> fields = new LinkedHashSet<>();
       for (int i = 0; i < textPropagators.length; i++) {
         fields.addAll(textPropagators[i].fields());
       }
