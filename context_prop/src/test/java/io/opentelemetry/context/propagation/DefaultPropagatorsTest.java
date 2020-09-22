@@ -80,6 +80,25 @@ class DefaultPropagatorsTest {
   }
 
   @Test
+  public void testDuplicatedFields() {
+    CustomTextMapPropagator propagator1 = new CustomTextMapPropagator("prop1");
+    CustomTextMapPropagator propagator2 = new CustomTextMapPropagator("prop2");
+    CustomTextMapPropagator propagator3 = new CustomTextMapPropagator("prop1");
+    CustomTextMapPropagator propagator4 = new CustomTextMapPropagator("prop2");
+    ContextPropagators propagators =
+        DefaultContextPropagators.builder()
+            .addTextMapPropagator(propagator1)
+            .addTextMapPropagator(propagator2)
+            .addTextMapPropagator(propagator3)
+            .addTextMapPropagator(propagator4)
+            .build();
+
+    List<String> fields = propagators.getTextMapPropagator().fields();
+    assertThat(fields).hasSize(2);
+    assertThat(fields).containsOnly("prop1", "prop2");
+  }
+
+  @Test
   void noopPropagator() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
 

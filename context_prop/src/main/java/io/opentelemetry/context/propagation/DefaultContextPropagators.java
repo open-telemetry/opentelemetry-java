@@ -19,7 +19,9 @@ package io.opentelemetry.context.propagation;
 import io.grpc.Context;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * {@code DefaultContextPropagators} is the default, built-in implementation of {@link
@@ -27,6 +29,8 @@ import java.util.List;
  *
  * <p>All the registered propagators are stored internally as a simple list, and are invoked
  * synchronically upon injection and extraction.
+ *
+ * <p>The propagation fields retrieved from all registered propagators are de-duplicated.
  *
  * @since 0.3.0
  */
@@ -114,7 +118,7 @@ public final class DefaultContextPropagators implements ContextPropagators {
     private MultiTextMapPropagator(List<TextMapPropagator> textPropagators) {
       this.textPropagators = new TextMapPropagator[textPropagators.size()];
       textPropagators.toArray(this.textPropagators);
-      this.allFields = getAllFields(this.textPropagators);
+      this.allFields = Collections.unmodifiableList(getAllFields(this.textPropagators));
     }
 
     @Override
@@ -123,12 +127,12 @@ public final class DefaultContextPropagators implements ContextPropagators {
     }
 
     private static List<String> getAllFields(TextMapPropagator[] textPropagators) {
-      List<String> fields = new ArrayList<>();
+      Set<String> fields = new HashSet<>();
       for (int i = 0; i < textPropagators.length; i++) {
         fields.addAll(textPropagators[i].fields());
       }
 
-      return fields;
+      return new ArrayList<>(fields);
     }
 
     @Override
