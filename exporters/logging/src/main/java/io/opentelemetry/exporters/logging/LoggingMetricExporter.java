@@ -5,8 +5,6 @@
 
 package io.opentelemetry.exporters.logging;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -21,9 +19,8 @@ public class LoggingMetricExporter implements MetricExporter {
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
     logger.info("Received a collection of " + metrics.size() + " metrics for export.");
-    Gson gson = new GsonBuilder().setPrettyPrinting().create();
     for (MetricData metricData : metrics) {
-      logger.log(Level.INFO, "metric: {0}", gson.toJson(metricData));
+      logger.log(Level.INFO, "metric: {0}", metricData);
     }
     return CompletableResultCode.ofSuccess();
   }

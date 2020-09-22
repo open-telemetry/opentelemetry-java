@@ -37,5 +37,13 @@ public interface Meter extends RecorderInstruments, ObserverInstruments {
    */
   BatchRecorder newBatchRecorder(String... keyValuePairs);
 
+  /**
+   * Utility method that allows users to atomically record asynchronous measurements to a set of
+   * Instruments with a common set of labels.
+   *
+   * @param name The name of the metric.
+   * @param function The batch observer callback
+   * @return a {@code BatchObserver} that can be used to create new asynchronous instruments.
+   */
   BatchObserver newBatchObserver(String name, BatchObserverFunction function);
 }

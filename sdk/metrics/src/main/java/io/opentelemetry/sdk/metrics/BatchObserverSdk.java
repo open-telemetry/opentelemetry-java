@@ -17,11 +17,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
 import io.opentelemetry.metrics.AsynchronousInstrument.Observation;
 import io.opentelemetry.metrics.AsynchronousInstrument.ObservationType;
 import io.opentelemetry.metrics.BatchObserver;
-import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleSumObserver;
 import io.opentelemetry.metrics.DoubleUpDownSumObserver;
 import io.opentelemetry.metrics.DoubleValueObserver;
@@ -42,12 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Minimal implementation of the {@link BatchRecorder} that simply redirects the calls to the
- * instruments.
- *
- * <p>TODO: Add an async queue processing to process batch records.
- */
+/** Implementation of the {@link BatchObserver}. */
 final class BatchObserverSdk extends AbstractInstrument implements BatchObserver {
 
   private final MeterSdk meter;
@@ -137,7 +130,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     return Collections.unmodifiableList(metricData);
   }
 
-  /** The result for the {@link Callback}. */
+  /** The long observation for the {@link Observation}. */
   interface LongObservation extends Observation {
     long getValue();
 
@@ -146,7 +139,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     Descriptor getDescription();
   }
 
-  /** The result for the {@link Callback}. */
+  /** The double observation for the {@link Observation}. */
   interface DoubleObservation extends Observation {
     double getValue();
 
@@ -155,7 +148,8 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     Descriptor getDescription();
   }
 
-  public static BatchObserverSdk newBatchObserverSdk(
+  /** Creates a new instance of the {@link BatchObserverSdk}. */
+  static BatchObserverSdk newBatchObserverSdk(
       InstrumentDescriptor descriptor,
       MeterSdk meterSdk,
       MeterProviderSharedState meterProviderSharedState,
@@ -172,6 +166,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
         descriptor, meterProviderSharedState, meterSharedState, meterSdk, batcher, function);
   }
 
+  /** Internal batcher used by the {@link BatchObserver}. */
   private static final class BatchObserverBatcher implements Batcher {
     private final Resource resource;
     private final InstrumentationLibraryInfo instrumentationLibraryInfo;

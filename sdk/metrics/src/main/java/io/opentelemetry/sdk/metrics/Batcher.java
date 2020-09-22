@@ -29,6 +29,11 @@ interface Batcher {
    */
   Aggregator getAggregator();
 
+  /**
+   * Returns the {@link Descriptor} that should be used by the observers.
+   *
+   * @return the {@link Descriptor} used to describe the metadata about the measurement.
+   */
   Descriptor getDescriptor();
 
   /**

@@ -75,7 +75,8 @@ final class Batchers {
 
     @Override
     public Descriptor getDescriptor() {
-      return Descriptor.create("", "", "", MetricData.Descriptor.Type.SUMMARY, Labels.empty());
+      return Descriptor.create(
+          "NoopDescriptor", "", "", MetricData.Descriptor.Type.SUMMARY, Labels.empty());
     }
 
     @Override

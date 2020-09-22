@@ -9,8 +9,7 @@ description = 'OpenTelemetry Extension Runtime Metrics'
 ext.moduleName = "io.opentelemetry.extension.metrics.runtime"
 
 dependencies {
-    implementation project(':opentelemetry-sdk'),
-            project(":opentelemetry-exporters-logging")
+    implementation project(':opentelemetry-api')
 
 
     annotationProcessor libraries.auto_value
