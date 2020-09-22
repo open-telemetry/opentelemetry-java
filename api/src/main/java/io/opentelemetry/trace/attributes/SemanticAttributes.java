@@ -78,8 +78,6 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> HTTP_SCHEME = stringKey("http.scheme");
   /** HTTP response status code. E.g. 200 (integer) If and only if one was received/sent. */
   public static final AttributeKey<Long> HTTP_STATUS_CODE = longKey("http.status_code");
-  /** HTTP reason phrase. E.g. "OK" */
-  public static final AttributeKey<String> HTTP_STATUS_TEXT = stringKey("http.status_text");
   /** Kind of HTTP protocol used: "1.0", "1.1", "2", "SPDY" or "QUIC". */
   public static final AttributeKey<String> HTTP_FLAVOR = stringKey("http.flavor");
   /** Value of the HTTP "User-Agent" header sent by the client. */
