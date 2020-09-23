@@ -90,16 +90,14 @@ class ZipkinSpanExporterTest {
 
   @Test
   void generateSpan_subMicroDurations() {
-    SpanData data = buildStandardSpan()
-        .setStartEpochNanos(1505855794_194009601L)
-        .setEndEpochNanos(1505855794_194009999L)
-        .build();
+    SpanData data =
+        buildStandardSpan()
+            .setStartEpochNanos(1505855794_194009601L)
+            .setEndEpochNanos(1505855794_194009999L)
+            .build();
 
-    Span expected = standardZipkinSpanBuilder(Span.Kind.SERVER)
-        .duration(1)
-        .build();
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(expected);
+    Span expected = standardZipkinSpanBuilder(Span.Kind.SERVER).duration(1).build();
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint)).isEqualTo(expected);
   }
 
   @Test
