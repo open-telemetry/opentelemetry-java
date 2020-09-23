@@ -28,6 +28,7 @@ import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 
@@ -78,7 +79,7 @@ class ConfigureTraceExample {
         tracerProvider
             .getActiveTraceConfig()
             .toBuilder()
-            .setSampler(Samplers.traceIdRatioBased(0.5))
+            .setSampler(Samplers.probability(0.5))
             .build();
 
     // We update the configuration to use the alwaysOff sampler.
@@ -111,14 +112,13 @@ class ConfigureTraceExample {
       @Override
       public SamplingResult shouldSample(
           SpanContext parentContext,
-          String traceId,
+          TraceId traceId,
           String name,
           Kind spanKind,
           ReadableAttributes attributes,
           List<Link> parentLinks) {
-        // We sample only if the Span name contains "SAMPLE"
         return Samplers.emptySamplingResult(
-            name.contains("SAMPLE") ? Decision.RECORD_AND_SAMPLE : Decision.DROP);
+            name.contains("SAMPLE") ? Decision.RECORD_AND_SAMPLED : Decision.NOT_RECORD);
       }
 
       @Override

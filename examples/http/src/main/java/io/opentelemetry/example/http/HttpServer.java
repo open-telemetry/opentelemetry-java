@@ -16,12 +16,11 @@
 
 package io.opentelemetry.example.http;
 
-import static io.opentelemetry.common.AttributesKeys.stringKey;
-
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -95,7 +94,8 @@ public class HttpServer {
       System.out.println("Served Client: " + he.getRemoteAddress());
 
       // Generate an Event with an attribute
-      Attributes eventAttributes = Attributes.of(stringKey("answer"), response);
+      Attributes eventAttributes =
+          Attributes.of("answer", AttributeValue.stringAttributeValue(response));
       span.addEvent("Finish Processing", eventAttributes);
 
       // Everything works fine in this example
