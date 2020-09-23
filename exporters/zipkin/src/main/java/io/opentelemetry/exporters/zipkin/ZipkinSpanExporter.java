@@ -85,8 +85,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
   // https://github.com/openzipkin/brave/blob/eee993f998ae57b08644cc357a6d478827428710/instrumentation/http/src/main/java/brave/http/HttpTags.java
   // For discussion about GRPC errors/tags, see here:  https://github.com/openzipkin/brave/pull/999
   // Note: these 3 fields are non-private for testing
-  static final String GRPC_STATUS_CODE = "grpc.status_code";
-  static final String GRPC_STATUS_DESCRIPTION = "grpc.status_description";
+  static final String OTEL_STATUS_CODE = "otel.status_code";
+  static final String OTEL_STATUS_DESCRIPTION = "otel.status_description";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.instrumentation_library.name";
@@ -159,9 +159,9 @@ public final class ZipkinSpanExporter implements SpanExporter {
     Status status = spanData.getStatus();
     // for GRPC spans, include status code & description.
     if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE) != null) {
-      spanBuilder.putTag(GRPC_STATUS_CODE, status.getCanonicalCode().toString());
+      spanBuilder.putTag(OTEL_STATUS_CODE, status.getCanonicalCode().toString());
       if (status.getDescription() != null) {
-        spanBuilder.putTag(GRPC_STATUS_DESCRIPTION, status.getDescription());
+        spanBuilder.putTag(OTEL_STATUS_DESCRIPTION, status.getDescription());
       }
     }
     // add the error tag, if it isn't already in the source span.

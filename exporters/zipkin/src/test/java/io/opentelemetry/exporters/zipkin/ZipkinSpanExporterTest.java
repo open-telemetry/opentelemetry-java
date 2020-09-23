@@ -226,9 +226,9 @@ class ZipkinSpanExporterTest {
         .isEqualTo(
             buildZipkinSpan(Span.Kind.SERVER)
                 .toBuilder()
-                .putTag(ZipkinSpanExporter.GRPC_STATUS_DESCRIPTION, errorMessage)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_DESCRIPTION, errorMessage)
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
-                .putTag(ZipkinSpanExporter.GRPC_STATUS_CODE, "DEADLINE_EXCEEDED")
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "DEADLINE_EXCEEDED")
                 .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "DEADLINE_EXCEEDED")
                 .build());
   }
