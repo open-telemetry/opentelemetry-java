@@ -17,9 +17,7 @@
 package io.opentelemetry.sdk.logging.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeValue;
-import java.util.HashMap;
-import java.util.Map;
+import io.opentelemetry.common.Attributes;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -31,25 +29,25 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class LogRecord {
 
-  abstract long getTimeUnixNano();
+  public abstract long getTimeUnixNano();
 
-  abstract String getTraceId();
+  public abstract String getTraceId();
 
-  abstract String getSpanId();
+  public abstract String getSpanId();
 
-  abstract int getFlags();
+  public abstract int getFlags();
 
-  abstract Severity getSeverity();
-
-  @Nullable
-  abstract String getSeverityText();
+  public abstract Severity getSeverity();
 
   @Nullable
-  abstract String getName();
+  public abstract String getSeverityText();
 
-  abstract AnyValue getBody();
+  @Nullable
+  public abstract String getName();
 
-  abstract Map<String, AttributeValue> getAttributes();
+  public abstract AnyValue getBody();
+
+  public abstract Attributes getAttributes();
 
   public enum Severity {
     UNDEFINED_SEVERITY_NUMBER(0),
@@ -103,7 +101,7 @@ public abstract class LogRecord {
     private String severityText;
     private String name;
     private AnyValue body = AnyValue.stringAnyValue("");
-    private final Map<String, AttributeValue> attributes = new HashMap<>();
+    private final Attributes.Builder attributeBuilder = Attributes.newBuilder();
 
     public Builder setUnixTimeNano(long timestamp) {
       this.timeUnixNano = timestamp;
@@ -154,8 +152,8 @@ public abstract class LogRecord {
       return this;
     }
 
-    public Builder setAttributes(Map<String, AttributeValue> attributes) {
-      this.attributes.putAll(attributes);
+    public Builder setAttributes(Attributes attributes) {
+      this.attributeBuilder.addAll(attributes);
       return this;
     }
 
@@ -169,7 +167,15 @@ public abstract class LogRecord {
         timeUnixNano = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
       }
       return new AutoValue_LogRecord(
-          timeUnixNano, traceId, spanId, flags, severity, severityText, name, body, attributes);
+          timeUnixNano,
+          traceId,
+          spanId,
+          flags,
+          severity,
+          severityText,
+          name,
+          body,
+          attributeBuilder.build());
     }
   }
 }
