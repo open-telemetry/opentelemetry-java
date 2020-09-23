@@ -33,9 +33,9 @@ package io.opentelemetry.context;
 /**
  * The storage for storing and retrieving the current {@link DefaultContext}.
  *
- * <p>If you want to implement your own storage or add some hooks when a {@link DefaultContext} is attached
- * and restored, you should use {@link ContextStorageProvider}. Here's an example that sets MDC
- * before {@link DefaultContext} is attached:
+ * <p>If you want to implement your own storage or add some hooks when a {@link DefaultContext} is
+ * attached and restored, you should use {@link ContextStorageProvider}. Here's an example that sets
+ * MDC before {@link DefaultContext} is attached:
  *
  * <pre>{@code
  * > public class MyStorage implements ContextStorageProvider {
@@ -74,27 +74,25 @@ package io.opentelemetry.context;
 public interface ContextStorage {
 
   /**
-   * Sets the specified {@link DefaultContext} into the storage.
-   *
-   * @return the old {@link DefaultContext} which was in the storage before the specified {@code toPush} is
-   *     pushed. {@code null}, if there was no {@link DefaultContext} previously.
+   * Returns the {@link ContextStorage} being used by this application. This is only for use when
+   * integrating with other context propagation mechanisms and not meant for direct use. To attach
+   * or detach a {@link Context} in an application, use {@link Context#attach()} and
+   * {@link Scope#close()}.
    */
-  Context attach(Context toPush);
+  static ContextStorage get() {
+    return LazyStorage.storage;
+  }
 
   /**
-   * Removes the {@code current} {@link DefaultContext} from the storage and sets back the specified {@code
-   * toRestore}. {@code toRestore} is the {@link DefaultContext} returned from the call to {@link
-   * #attach(Context)} which set {@code current}.
-   *
-   * <p>The specified {@code current} must be the current {@link DefaultContext} in the storage. If it is
-   * not, it means that {@link Scope#close()} was not called properly and the current state of the
-   * context is invalid. A warning will be logged for this case.
+   * Sets the specified {@link Context} as the current {@link Context} and returns a {@link Scope}
+   * representing the scope of execution. {@link Scope#close()} must be called when the current
+   * {@link Context} should be restored to what it was before attaching {@code toAttach}.
    */
-  void detach(Context current, Context toRestore);
+  Scope attach(Context toAttach);
 
   /**
-   * Returns the current {@link DefaultContext}. If no {@link DefaultContext} has been attached yet, this will be
-   * the {@linkplain #rootContext() root context}.
+   * Returns the current {@link DefaultContext}. If no {@link DefaultContext} has been attached yet,
+   * this will be the {@linkplain Context#root()} root context}.
    */
   Context current();
 }

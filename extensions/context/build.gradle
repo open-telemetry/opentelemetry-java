@@ -1,13 +1,20 @@
 plugins {
     id "java"
 
+    id "org.unbroken-dome.test-sets"
     id "ru.vyarus.animalsniffer"
 }
 
 description = 'OpenTelemetry Context (Incubator)'
 ext.moduleName = "io.opentelemetry.context"
 
+testSets {
+    otelInGrpcTest
+}
+
 dependencies {
-    signature "org.codehaus.mojo.signature:java17:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+    otelInGrpcTestImplementation libraries.grpc_context
+
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }

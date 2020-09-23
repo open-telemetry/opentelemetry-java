@@ -19,9 +19,9 @@ import java.util.concurrent.Executor;
 
 /**
  * A Java SPI (Service Provider Interface) to allow replacing the default {@link ContextStorage}.
- * This can be useful if, for example, you want to store OpenTelemetry {@link DefaultContext} in another
- * context propagation system. For example, the returned {@link ContextStorage} could delegate to
- * methods in
+ * This can be useful if, for example, you want to store OpenTelemetry {@link DefaultContext} in
+ * another context propagation system. For example, the returned {@link ContextStorage} could
+ * delegate to methods in
  *
  * <p><a
  * href="https://javadoc.io/doc/com.linecorp.armeria/armeria-javadoc/latest/com/linecorp/armeria/common/RequestContext.html">{@code

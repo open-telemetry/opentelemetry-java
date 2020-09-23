@@ -63,11 +63,7 @@ final class LazyStorage {
 
   private static final Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
 
-  static ContextStorage get() {
-    return LazyStorage.storage;
-  }
-
-  private static final ContextStorage storage;
+  static final ContextStorage storage;
 
   static {
     AtomicReference<Throwable> deferredStorageFailure = new AtomicReference<>();
@@ -124,4 +120,6 @@ final class LazyStorage {
                 + providers));
     return DefaultContext.threadLocalStorage();
   }
+
+  private LazyStorage() {}
 }

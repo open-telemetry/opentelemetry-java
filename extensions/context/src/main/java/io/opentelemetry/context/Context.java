@@ -20,12 +20,12 @@ import javax.annotation.Nullable;
  * bound context. For example:
  *
  * <pre>{@code
- *   Context withCredential = Context.current().withValue(CRED_KEY, cred);
- *   withCredential.wrap(new Runnable() {
- *     public void run() {
- *        readUserRecords(userId, CRED_KEY.get());
- *     }
- *   }).run();
+ * Context withCredential = Context.current().withValue(CRED_KEY, cred);
+ * withCredential.wrap(new Runnable() {
+ *   public void run() {
+ *      readUserRecords(userId, CRED_KEY.get());
+ *   }
+ * }).run();
  * }</pre>
  *
  * <p>Notes and cautions on use:
@@ -43,7 +43,8 @@ public interface Context {
 
   /** Return the context associated with the current scope. */
   static Context current() {
-    return LazyStorage.get().current();
+    Context current = ContextStorage.get().current();
+    return current != null ? current : root();
   }
 
   /**
@@ -59,8 +60,17 @@ public interface Context {
   }
 
   /**
-   * Returns the value stored in this {@link Context} for the given {@link DefaultContextKey}, or {@code
-   * null} if there is no value for the key in this context.
+   * Returns a new {@link ContextKey} with the given debug name. The name does not impact
+   * behavior and is only for debugging purposes. Multiple different keys with the same name will be
+   * separate keys.
+   */
+  static <T> ContextKey<T> key(String name) {
+    return new DefaultContextKey<>(name);
+  }
+
+  /**
+   * Returns the value stored in this {@link Context} for the given {@link DefaultContextKey}, or
+   * {@code null} if there is no value for the key in this context.
    */
   @Nullable
   <V> V getValue(ContextKey<V> key);
@@ -77,8 +87,7 @@ public interface Context {
    * });
    * }</pre>
    *
-   * <p>Note that multiple calls to {@code withValue} can be chained together.
-   * That is,
+   * <p>Note that multiple calls to {@code withValue} can be chained together. That is,
    *
    * <pre>{@code
    * context.withValues(K1, V1, K2, V2);

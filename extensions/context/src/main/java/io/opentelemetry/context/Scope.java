@@ -15,6 +15,8 @@
  */
 package io.opentelemetry.context;
 
+import io.opentelemetry.context.ThreadLocalContextStorage.NoopScope;
+
 /**
  * An {@link AutoCloseable} that represents a mounted context for a block of code. A failure to call
  * {@link Scope#close()} will generally break tracing or cause memory leaks. It is recommended that
@@ -27,6 +29,11 @@ package io.opentelemetry.context;
  * }</pre>
  */
 public interface Scope extends AutoCloseable {
+
+  static Scope noop() {
+    return NoopScope.INSTANCE;
+  }
+
   @Override
   void close();
 }

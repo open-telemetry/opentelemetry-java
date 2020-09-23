@@ -49,6 +49,7 @@ final class DefaultContext implements Context {
     return ThreadLocalContextStorage.INSTANCE;
   }
 
+  @Nullable
   private final PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries;
 
   private DefaultContext(PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries) {
@@ -113,54 +114,30 @@ final class DefaultContext implements Context {
 
   @Override
   public Scope attach() {
-    final Context thisCtx = this;
-    final Context prevCtx = LazyStorage.get().attach(this);
-
-    if (thisCtx == prevCtx) {
-      // Already attached, so just creating a new scope that doesn't do anything.
-      return NoopScope.INSTANCE;
-    }
-
-    return new Scope() {
-      @Override
-      public void close() {
-        LazyStorage.get().detach(thisCtx, prevCtx);
-      }
-    };
+    return ContextStorage.get().attach(this);
   }
 
   @Override
   public Runnable wrap(final Runnable runnable) {
-    return new Runnable() {
-      @Override
-      public void run() {
-        try (Scope ignored = attach()) {
-          runnable.run();
-        }
+    return () -> {
+      try (Scope ignored = attach()) {
+        runnable.run();
       }
     };
   }
 
   @Override
   public <T> Callable<T> wrap(final Callable<T> callable) {
-    return new Callable<T>() {
-      @Override
-      public T call() throws Exception {
-        try (Scope ignored = attach()) {
-          return callable.call();
-        }
+    return () -> {
+      try (Scope ignored = attach()) {
+        return callable.call();
       }
     };
   }
 
   @Override
   public Executor wrap(final Executor executor) {
-    return new Executor() {
-      @Override
-      public void execute(Runnable command) {
-        executor.execute(wrap(command));
-      }
-    };
+    return command -> executor.execute(wrap(command));
   }
 
   @Override
@@ -171,12 +148,5 @@ final class DefaultContext implements Context {
   @Override
   public ScheduledExecutorService wrap(ScheduledExecutorService executor) {
     return new ContextScheduledExecutorService(this, executor);
-  }
-
-  private enum NoopScope implements Scope {
-    INSTANCE;
-
-    @Override
-    public void close() {}
   }
 }
