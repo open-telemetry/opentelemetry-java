@@ -84,7 +84,7 @@ class OtlpGrpcMetricExporterTest {
   @Test
   void configTest() {
     Map<String, String> options = new HashMap<>();
-    options.put("otel.otlp.metric.timeout", "12");
+    options.put("otel.exporter.otlp.metric.timeout", "12");
     OtlpGrpcMetricExporter.Builder config = OtlpGrpcMetricExporter.newBuilder();
     OtlpGrpcMetricExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());

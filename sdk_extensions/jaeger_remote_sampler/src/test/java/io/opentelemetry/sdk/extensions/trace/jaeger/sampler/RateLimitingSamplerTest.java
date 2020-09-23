@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
@@ -56,7 +55,7 @@ class RateLimitingSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(
             sampler
                 .shouldSample(
@@ -67,7 +66,7 @@ class RateLimitingSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLED);
+        .isEqualTo(Decision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -81,7 +80,7 @@ class RateLimitingSamplerTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertThat(samplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLED);
+    assertThat(samplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(
             sampler
                 .shouldSample(
@@ -92,13 +91,11 @@ class RateLimitingSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.NOT_RECORD);
+        .isEqualTo(Decision.DROP);
     assertEquals(2, samplingResult.getAttributes().size());
+    assertEquals(1d, samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_PARAM));
     assertEquals(
-        AttributeValue.doubleAttributeValue(1),
-        samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_PARAM));
-    assertEquals(
-        AttributeValue.stringAttributeValue(RateLimitingSampler.TYPE),
+        RateLimitingSampler.TYPE,
         samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_TYPE));
   }
 

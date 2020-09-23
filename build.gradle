@@ -15,8 +15,6 @@ subprojects {
     group = "io.opentelemetry"
     version = "0.9.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
 
-
-
     plugins.withId("maven-publish") {
         // Always include the artifactory/bintray plugins to do the deployment.
         pluginManager.apply "com.jfrog.artifactory"
@@ -148,8 +146,8 @@ configure(opentelemetryProjects) {
         mavenLocal()
     }
 
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
     java {
         withJavadocJar()
@@ -178,16 +176,10 @@ configure(opentelemetryProjects) {
         // but currently uses javax.annotation.concurrent.Immutable
         it.options.errorprone.disable("ImmutableRefactoring") // "-Xep:ImmutableRefactoring:OFF"
 
-        // Yep, we're using an obsolete JDK.
-        it.options.errorprone.disable("JdkObsolete")
 
         // AutoValueImmutableFields suggests returning Guava types from API methods
         it.options.errorprone.disable("AutoValueImmutableFields")
         // "-Xep:AutoValueImmutableFields:OFF"
-
-        // UnnecessaryAnonymousClass requires Java 8 but we target Java 7
-        it.options.errorprone.disable("UnnecessaryAnonymousClass")
-        // "-Xep:UnnecessaryAnonymousClass:OFF"
 
         it.options.encoding = "UTF-8"
 
@@ -195,19 +187,26 @@ configure(opentelemetryProjects) {
         it.options.errorprone.excludedPaths = ".*generated.*"
         // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
 
+        it.options.errorprone.disable("Java7ApiChecker")
+        it.options.errorprone.disable("AndroidJdkLibsChecker")
+        //apparently disabling android doesn't disable this
+        it.options.errorprone.disable("StaticOrDefaultInterfaceMethod")
+
+        //until we have everything converted, we need these
+        it.options.errorprone.disable("JdkObsolete")
+        it.options.errorprone.disable("UnnecessaryAnonymousClass")
+
         it.options.compilerArgs += ["-Werror"]
     }
 
     compileTestJava {
         // serialVersionUID is basically guaranteed to be useless in tests
         options.compilerArgs += ["-Xlint:-serial"]
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
 
         // Disable Java7 checks in test sources
-        options.errorprone.disable("Java7ApiChecker")
+//        options.errorprone.disable("Java7ApiChecker")
         // Disable AndroidJdkLibs checks in test sources
-        options.errorprone.disable("AndroidJdkLibsChecker")
+//        options.errorprone.disable("AndroidJdkLibsChecker")
     }
 
     jar.manifest {

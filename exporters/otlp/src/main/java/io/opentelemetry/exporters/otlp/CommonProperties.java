@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.common;
+package io.opentelemetry.exporters.otlp;
 
-/**
- * Convenience interface for consuming {@link Labels}.
- *
- * <p>This interface should be considered to be a FunctionalInterface in the java 8+ meaning of that
- * term.
- *
- * @since 0.9.0
- */
-public interface LabelConsumer {
-  void consume(String key, String value);
+public class CommonProperties {
+  public static final String KEY_TIMEOUT = "otel.exporter.otlp.timeout";
+  public static final String KEY_ENDPOINT = "otel.exporter.otlp.endpoint";
+  public static final String KEY_USE_TLS = "otel.exporter.otlp.insecure";
+  public static final String KEY_HEADERS = "otel.exporter.otlp.headers";
+
+  private CommonProperties() {}
 }

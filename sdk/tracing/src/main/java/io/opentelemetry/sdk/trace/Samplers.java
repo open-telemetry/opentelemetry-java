@@ -16,10 +16,11 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
@@ -29,17 +30,12 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.attributes.DoubleAttributeSetter;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * Static class to access a set of pre-defined {@link Sampler Samplers}.
- *
- * @since 0.1.0
- */
+/** Static class to access a set of pre-defined {@link Sampler Samplers}. */
 @Immutable
 public final class Samplers {
 
@@ -52,25 +48,24 @@ public final class Samplers {
    * <p>See https://github.com/open-telemetry/opentelemetry-specification/pull/570
    */
   // Visible for tests.
-  static final DoubleAttributeSetter SAMPLING_PROBABILITY =
-      DoubleAttributeSetter.create("sampling.probability");
+  static final AttributeKey<Double> SAMPLING_PROBABILITY = doubleKey("sampling.probability");
 
   private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
-      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLED);
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLE);
   private static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT =
-      SamplingResultImpl.createWithoutAttributes(Decision.NOT_RECORD);
+      SamplingResultImpl.createWithoutAttributes(Decision.DROP);
   private static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
-      SamplingResultImpl.createWithoutAttributes(Decision.RECORD);
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_ONLY);
 
   // No instance of this class.
   private Samplers() {}
 
   static boolean isRecording(Decision decision) {
-    return Decision.RECORD.equals(decision) || Decision.RECORD_AND_SAMPLED.equals(decision);
+    return Decision.RECORD_ONLY.equals(decision) || Decision.RECORD_AND_SAMPLE.equals(decision);
   }
 
   static boolean isSampled(Decision decision) {
-    return Decision.RECORD_AND_SAMPLED.equals(decision);
+    return Decision.RECORD_AND_SAMPLE.equals(decision);
   }
 
   /**
@@ -108,11 +103,11 @@ public final class Samplers {
    */
   public static SamplingResult emptySamplingResult(Decision decision) {
     switch (decision) {
-      case RECORD_AND_SAMPLED:
+      case RECORD_AND_SAMPLE:
         return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-      case RECORD:
+      case RECORD_ONLY:
         return EMPTY_RECORDED_SAMPLING_RESULT;
-      case NOT_RECORD:
+      case DROP:
         return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
     }
     throw new AssertionError("unrecognised samplingResult");
@@ -124,7 +119,6 @@ public final class Samplers {
    *
    * @return a {@code Sampler} that always makes a "yes" {@link SamplingResult} for {@code Span}
    *     sampling.
-   * @since 0.1.0
    */
   public static Sampler alwaysOn() {
     return AlwaysOnSampler.INSTANCE;
@@ -136,7 +130,6 @@ public final class Samplers {
    *
    * @return a {@code Sampler} that always makes a "no" {@link SamplingResult} for {@code Span}
    *     sampling.
-   * @since 0.1.0
    */
   public static Sampler alwaysOff() {
     return AlwaysOffSampler.INSTANCE;
@@ -151,7 +144,6 @@ public final class Samplers {
    *     not exist.
    * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
    *     following the root sampler's decision.
-   * @since 0.7.0
    */
   public static Sampler parentBased(Sampler root) {
     return parentBasedBuilder(root).build();
@@ -164,22 +156,21 @@ public final class Samplers {
    * @param root the required {@code Sampler} which is used to make the sampling decisions if the
    *     parent does not exist.
    * @return a {@code ParentBased.Builder}
-   * @since 0.8.0
    */
   public static ParentBased.Builder parentBasedBuilder(Sampler root) {
     return new ParentBased.Builder(root);
   }
 
   /**
-   * Returns a new Probability {@link Sampler}. The probability of sampling a trace is equal to that
-   * of the specified probability.
+   * Returns a new TraceIdRatioBased {@link Sampler}. The ratio of sampling a trace is equal to that
+   * of the specified ratio.
    *
-   * @param probability The desired probability of sampling. Must be within [0.0, 1.0].
-   * @return a new Probability {@link Sampler}.
-   * @throws IllegalArgumentException if {@code probability} is out of range
+   * @param ratio The desired ratio of sampling. Must be within [0.0, 1.0].
+   * @return a new TraceIdRatioBased {@link Sampler}.
+   * @throws IllegalArgumentException if {@code ratio} is out of range
    */
-  public static Sampler probability(double probability) {
-    return Probability.create(probability);
+  public static Sampler traceIdRatioBased(double ratio) {
+    return TraceIdRatioBased.create(ratio);
   }
 
   @Immutable
@@ -431,33 +422,33 @@ public final class Samplers {
    */
   @AutoValue
   @Immutable
-  abstract static class Probability implements Sampler {
+  abstract static class TraceIdRatioBased implements Sampler {
 
-    Probability() {}
+    TraceIdRatioBased() {}
 
-    static Probability create(double probability) {
+    static TraceIdRatioBased create(double ratio) {
       Preconditions.checkArgument(
-          probability >= 0.0 && probability <= 1.0, "probability must be in range [0.0, 1.0]");
+          ratio >= 0.0 && ratio <= 1.0, "ratio must be in range [0.0, 1.0]");
       long idUpperBound;
       // Special case the limits, to avoid any possible issues with lack of precision across
       // double/long boundaries. For probability == 0.0, we use Long.MIN_VALUE as this guarantees
       // that we will never sample a trace, even in the case where the id == Long.MIN_VALUE, since
       // Math.Abs(Long.MIN_VALUE) == Long.MIN_VALUE.
-      if (probability == 0.0) {
+      if (ratio == 0.0) {
         idUpperBound = Long.MIN_VALUE;
-      } else if (probability == 1.0) {
+      } else if (ratio == 1.0) {
         idUpperBound = Long.MAX_VALUE;
       } else {
-        idUpperBound = (long) (probability * Long.MAX_VALUE);
+        idUpperBound = (long) (ratio * Long.MAX_VALUE);
       }
-      return new AutoValue_Samplers_Probability(
-          probability,
+      return new AutoValue_Samplers_TraceIdRatioBased(
+          ratio,
           idUpperBound,
-          SamplingResultImpl.createWithProbability(Decision.RECORD_AND_SAMPLED, probability),
-          SamplingResultImpl.createWithProbability(Decision.NOT_RECORD, probability));
+          SamplingResultImpl.createWithProbability(Decision.RECORD_AND_SAMPLE, ratio),
+          SamplingResultImpl.createWithProbability(Decision.DROP, ratio));
     }
 
-    abstract double getProbability();
+    abstract double getRatio();
 
     abstract long getIdUpperBound();
 
@@ -488,7 +479,7 @@ public final class Samplers {
 
     @Override
     public final String getDescription() {
-      return String.format("ProbabilitySampler{%.6f}", getProbability());
+      return String.format("TraceIdRatioBased{%.6f}", getRatio());
     }
   }
 
@@ -503,7 +494,7 @@ public final class Samplers {
      */
     static SamplingResult createWithProbability(Decision decision, double probability) {
       return new AutoValue_Samplers_SamplingResultImpl(
-          decision, Attributes.of(SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
+          decision, Attributes.of(SAMPLING_PROBABILITY, probability));
     }
 
     /**

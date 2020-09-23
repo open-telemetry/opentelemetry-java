@@ -64,14 +64,14 @@ public class EcsResource extends ResourceProvider {
     Attributes.Builder attrBuilders = Attributes.newBuilder();
     try {
       String hostName = InetAddress.getLocalHost().getHostName();
-      ResourceAttributes.CONTAINER_NAME.set(attrBuilders, hostName);
+      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_NAME, hostName);
     } catch (UnknownHostException e) {
       logger.log(Level.WARNING, "Could not get docker container name from hostname.", e);
     }
 
     String containerId = dockerHelper.getContainerId();
     if (!Strings.isNullOrEmpty(containerId)) {
-      ResourceAttributes.CONTAINER_ID.set(attrBuilders, containerId);
+      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
     return attrBuilders.build();

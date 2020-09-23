@@ -16,11 +16,11 @@
 
 package io.opentelemetry.trace;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Span.Kind;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,7 @@ class SpanBuilderTest {
     spanBuilder.setAttribute("key", 12345L);
     spanBuilder.setAttribute("key", .12345);
     spanBuilder.setAttribute("key", true);
-    spanBuilder.setAttribute("key", AttributeValue.stringAttributeValue("value"));
+    spanBuilder.setAttribute(stringKey("key"), "value");
     spanBuilder.setStartTimestamp(12345L);
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }

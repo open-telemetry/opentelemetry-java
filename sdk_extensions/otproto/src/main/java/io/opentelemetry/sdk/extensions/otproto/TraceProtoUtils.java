@@ -83,9 +83,8 @@ public final class TraceProtoUtils {
           throw new IllegalArgumentException("unrecognized constant sampling samplingResult");
       }
     }
-    if (traceConfigProto.hasProbabilitySampler()) {
-      return Samplers.probability(
-          traceConfigProto.getProbabilitySampler().getSamplingProbability());
+    if (traceConfigProto.hasTraceIdRatioBased()) {
+      return Samplers.traceIdRatioBased(traceConfigProto.getTraceIdRatioBased().getSamplingRatio());
     }
     if (traceConfigProto.hasRateLimitingSampler()) {
       // TODO: add support for RateLimiting Sampler

@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,6 +59,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   private final SpanExporter spanExporter;
   private final boolean sampled;
+  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   private SimpleSpanProcessor(SpanExporter spanExporter, boolean sampled) {
     this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
@@ -103,6 +105,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
+    if (isShutdown.getAndSet(true)) {
+      return CompletableResultCode.ofSuccess();
+    }
     return spanExporter.shutdown();
   }
 

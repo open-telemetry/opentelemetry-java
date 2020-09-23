@@ -31,7 +31,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
+ *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
  *   private static final LongUpDownCounter upDownCounter =
  *       meter.
  *           .longUpDownCounterBuilder("active_tasks")
