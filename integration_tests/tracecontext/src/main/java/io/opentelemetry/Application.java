@@ -22,8 +22,12 @@ import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.HttpServletRequest;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
@@ -55,11 +59,33 @@ public class Application {
                     .getTextMapPropagator()
                     .extract(
                         Context.current(),
-                        request,
-                        new Getter<Request>() {
+                        request.raw(),
+                        new Getter<HttpServletRequest>() {
                           @Override
-                          public String get(Request carrier, String key) {
-                            return carrier.headers(key);
+                          public String get(HttpServletRequest carrier, String key) {
+                            Enumeration<String> headers = carrier.getHeaders(key);
+                            if (headers == null || !headers.hasMoreElements()) {
+                              return null;
+                            }
+                            List<String> values = new ArrayList<>();
+                            while (headers.hasMoreElements()) {
+                              String nextElement = headers.nextElement();
+                              if (!nextElement.trim().isEmpty()) {
+                                values.add(nextElement);
+                              }
+                            }
+                            if (values.isEmpty()) {
+                              return null;
+                            }
+                            if (values.size() == 1) {
+                              return values.get(0);
+                            }
+                            StringBuilder builder = new StringBuilder(values.get(0));
+                            for (int i = 1; i < values.size(); i++) {
+                              builder.append(",").append(values.get(i));
+                            }
+
+                            return builder.toString();
                           }
                         });
 
