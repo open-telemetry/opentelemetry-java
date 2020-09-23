@@ -52,7 +52,6 @@ class LongValueObserverSdkTest {
     LongValueObserverSdk longValueObserver =
         testSdk
             .longValueObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongValueObserver")
             .setUnit("ms")
             .build();
@@ -64,7 +63,6 @@ class LongValueObserverSdkTest {
     LongValueObserverSdk longValueObserver =
         testSdk
             .longValueObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongValueObserver")
             .setUnit("ms")
             .build();
@@ -76,11 +74,7 @@ class LongValueObserverSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testObserver",
-                    "My own LongValueObserver",
-                    "ms",
-                    Descriptor.Type.SUMMARY,
-                    Labels.of("sk1", "sv1")),
+                    "testObserver", "My own LongValueObserver", "ms", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.emptyList()));
@@ -95,7 +89,7 @@ class LongValueObserverSdkTest {
     assertThat(longValueObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -110,7 +104,7 @@ class LongValueObserverSdkTest {
     assertThat(longValueObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

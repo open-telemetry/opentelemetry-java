@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -72,9 +71,6 @@ public interface LongUpDownSumObserver extends AsynchronousInstrument<LongResult
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     LongUpDownSumObserver build();

@@ -166,8 +166,7 @@ final class Batchers {
         descriptor.getName(),
         descriptor.getDescription(),
         aggregation.getUnit(descriptor.getUnit()),
-        aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
-        descriptor.getConstantLabels());
+        aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()));
   }
 
   private Batchers() {}

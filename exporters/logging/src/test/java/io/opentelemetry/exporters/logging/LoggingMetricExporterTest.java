@@ -65,11 +65,7 @@ class LoggingMetricExporterTest {
         Arrays.asList(
             MetricData.create(
                 Descriptor.create(
-                    "measureOne",
-                    "A summarized test measure",
-                    "ms",
-                    Descriptor.Type.SUMMARY,
-                    Labels.of("foo", "bar", "baz", "zoom")),
+                    "measureOne", "A summarized test measure", "ms", Descriptor.Type.SUMMARY),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.singletonList(
@@ -84,11 +80,7 @@ class LoggingMetricExporterTest {
                             ValueAtPercentile.create(100.0, 433))))),
             MetricData.create(
                 Descriptor.create(
-                    "counterOne",
-                    "A simple counter",
-                    "one",
-                    Descriptor.Type.MONOTONIC_LONG,
-                    Labels.of("alpha", "aleph", "beta", "bet")),
+                    "counterOne", "A simple counter", "one", Descriptor.Type.MONOTONIC_LONG),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.singletonList(
@@ -99,8 +91,7 @@ class LoggingMetricExporterTest {
                     "observedValue",
                     "an observer gauge",
                     "kb",
-                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
-                    Labels.of("uno", "eins", "dos", "zwei")),
+                    Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.singletonList(

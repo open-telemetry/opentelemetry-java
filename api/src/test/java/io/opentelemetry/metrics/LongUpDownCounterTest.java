@@ -30,9 +30,7 @@ class LongUpDownCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
-
-  private final Meter meter = OpenTelemetry.getMeter("LongUpDownCounterTest");
+  private static final Meter meter = OpenTelemetry.getMeter("LongUpDownCounterTest");
 
   @Test
   void preventNull_Name() {
@@ -83,14 +81,6 @@ class LongUpDownCounterTest {
   }
 
   @Test
-  void preventNull_ConstantLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longUpDownCounterBuilder("metric").setConstantLabels(null).build(),
-        "constantLabels");
-  }
-
-  @Test
   void add_PreventNullLabels() {
     assertThrows(
         NullPointerException.class,
@@ -101,12 +91,7 @@ class LongUpDownCounterTest {
   @Test
   void add_DoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
-        meter
-            .longUpDownCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.longUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     longUpDownCounter.add(1, Labels.empty());
     longUpDownCounter.add(-1, Labels.empty());
     longUpDownCounter.add(1);
@@ -124,12 +109,7 @@ class LongUpDownCounterTest {
   @Test
   void bound_DoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
-        meter
-            .longUpDownCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.longUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.empty());
     bound.add(1);
     bound.add(-1);

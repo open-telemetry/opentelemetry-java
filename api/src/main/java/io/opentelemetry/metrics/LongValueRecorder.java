@@ -117,9 +117,6 @@ public interface LongValueRecorder extends SynchronousInstrument<BoundLongValueR
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Labels constantLabels);
-
-    @Override
     LongValueRecorder build();
   }
 }

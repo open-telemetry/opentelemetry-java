@@ -69,7 +69,6 @@ class LongCounterSdkTest {
     LongCounterSdk longCounter =
         testSdk
             .longCounterBuilder("testCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -79,11 +78,7 @@ class LongCounterSdkTest {
     assertThat(metricData.getDescriptor())
         .isEqualTo(
             Descriptor.create(
-                "testCounter",
-                "My very own counter",
-                "ms",
-                Descriptor.Type.MONOTONIC_LONG,
-                Labels.of("sk1", "sv1")));
+                "testCounter", "My very own counter", "ms", Descriptor.Type.MONOTONIC_LONG));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -94,7 +89,6 @@ class LongCounterSdkTest {
     LongCounterSdk longCounter =
         testSdk
             .longCounterBuilder("testCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -106,11 +100,7 @@ class LongCounterSdkTest {
     assertThat(metricData.getDescriptor())
         .isEqualTo(
             Descriptor.create(
-                "testCounter",
-                "My very own counter",
-                "ms",
-                Descriptor.Type.MONOTONIC_LONG,
-                Labels.of("sk1", "sv1")));
+                "testCounter", "My very own counter", "ms", Descriptor.Type.MONOTONIC_LONG));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();

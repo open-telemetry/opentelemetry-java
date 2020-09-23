@@ -20,7 +20,6 @@ import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.ERROR_MESS
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -39,7 +38,6 @@ class AbstractInstrumentBuilderTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Labels CONSTANT_LABELS = Labels.of("key_2", "value_2");
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final MeterSharedState METER_SHARED_STATE =
@@ -122,17 +120,6 @@ class AbstractInstrumentBuilderTest {
   }
 
   @Test
-  void preventNull_ConstantLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
-                .setConstantLabels(null)
-                .build(),
-        "constantLabels");
-  }
-
-  @Test
   void defaultValue() {
     TestInstrumentBuilder testInstrumentBuilder =
         new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
@@ -141,7 +128,6 @@ class AbstractInstrumentBuilderTest {
     assertThat(testInstrument.getDescriptor().getName()).isEqualTo(NAME);
     assertThat(testInstrument.getDescriptor().getDescription()).isEmpty();
     assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo("1");
-    assertThat(testInstrument.getDescriptor().getConstantLabels().isEmpty()).isTrue();
   }
 
   @Test
@@ -149,8 +135,7 @@ class AbstractInstrumentBuilderTest {
     TestInstrumentBuilder testInstrumentBuilder =
         new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
             .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS);
+            .setUnit(UNIT);
     assertThat(testInstrumentBuilder.getMeterProviderSharedState())
         .isSameAs(METER_PROVIDER_SHARED_STATE);
     assertThat(testInstrumentBuilder.getMeterSharedState()).isSameAs(METER_SHARED_STATE);
@@ -160,7 +145,6 @@ class AbstractInstrumentBuilderTest {
     assertThat(testInstrument.getDescriptor().getName()).isEqualTo(NAME);
     assertThat(testInstrument.getDescriptor().getDescription()).isEqualTo(DESCRIPTION);
     assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo(UNIT);
-    assertThat(testInstrument.getDescriptor().getConstantLabels()).isEqualTo(CONSTANT_LABELS);
     assertThat(testInstrument.getDescriptor().getType()).isEqualTo(InstrumentType.UP_DOWN_COUNTER);
     assertThat(testInstrument.getDescriptor().getValueType()).isEqualTo(InstrumentValueType.LONG);
   }

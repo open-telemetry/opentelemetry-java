@@ -111,9 +111,6 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Labels constantLabels);
-
-    @Override
     LongUpDownCounter build();
   }
 }
