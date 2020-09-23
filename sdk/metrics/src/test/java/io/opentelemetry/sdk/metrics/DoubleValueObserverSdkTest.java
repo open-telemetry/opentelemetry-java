@@ -13,12 +13,10 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleValueObserverSdk}. */
@@ -66,7 +64,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "My own DoubleValueObserver",
                 "ms",
-                MetricData.Type.SUMMARY,
+                Descriptor.Type.NON_MONOTONIC_DOUBLE,
                 Collections.emptyList()));
   }
 
@@ -84,15 +82,13 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.SUMMARY,
+                Descriptor.Type.NON_MONOTONIC_DOUBLE,
                 Collections.singletonList(
-                    SummaryPoint.create(
+                    DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
                         Labels.of("k", "v"),
-                        1,
-                        12.1d,
-                        valueAtPercentiles(12.1d, 12.1d)))));
+                        12.1d))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleValueObserver.collectAll())
         .containsExactly(
@@ -102,18 +98,12 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.SUMMARY,
+                Descriptor.Type.NON_MONOTONIC_DOUBLE,
                 Collections.singletonList(
-                    SummaryPoint.create(
+                    DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
                         Labels.of("k", "v"),
-                        1,
-                        12.1d,
-                        valueAtPercentiles(12.1d, 12.1d)))));
-  }
-
-  private static List<ValueAtPercentile> valueAtPercentiles(double min, double max) {
-    return Arrays.asList(ValueAtPercentile.create(0, min), ValueAtPercentile.create(100, max));
+                        12.1d))));
   }
 }
