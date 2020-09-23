@@ -131,7 +131,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
     Endpoint endpoint = chooseEndpoint(spanData, localEndpoint);
 
     long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());
-
     long endTimestamp = toEpochMicros(spanData.getEndEpochNanos());
 
     final Span.Builder spanBuilder =
@@ -141,7 +140,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
             .kind(toSpanKind(spanData))
             .name(spanData.getName())
             .timestamp(toEpochMicros(spanData.getStartEpochNanos()))
-            .duration(endTimestamp - startTimestamp)
+            .duration(Math.max(1, endTimestamp - startTimestamp))
             .localEndpoint(endpoint);
 
     if (SpanId.isValid(spanData.getParentSpanId())) {

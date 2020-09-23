@@ -89,6 +89,20 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  void generateSpan_subMicroDurations() {
+    SpanData data = buildStandardSpan()
+        .setStartEpochNanos(1505855794_194009601L)
+        .setEndEpochNanos(1505855794_194009999L)
+        .build();
+
+    Span expected = standardZipkinSpanBuilder(Span.Kind.SERVER)
+        .duration(1)
+        .build();
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(expected);
+  }
+
+  @Test
   void generateSpan_ServerKind() {
     SpanData data = buildStandardSpan().setKind(Kind.SERVER).build();
 
@@ -313,15 +327,19 @@ class ZipkinSpanExporterTest {
         .setHasRemoteParent(true)
         .setName("Recv.helloworld.Greeter.SayHello")
         .setStartEpochNanos(1505855794_194009601L)
+        .setEndEpochNanos(1505855799_465726528L)
         .setAttributes(attributes)
         .setTotalAttributeCount(attributes.size())
         .setEvents(annotations)
         .setLinks(Collections.emptyList())
-        .setEndEpochNanos(1505855799_465726528L)
         .setHasEnded(true);
   }
 
   private static Span buildZipkinSpan(Span.Kind kind) {
+    return standardZipkinSpanBuilder(kind).build();
+  }
+
+  private static Span.Builder standardZipkinSpanBuilder(Span.Kind kind) {
     return Span.newBuilder()
         .traceId(TRACE_ID)
         .parentId(PARENT_SPAN_ID)
@@ -332,9 +350,7 @@ class ZipkinSpanExporterTest {
         .duration((1505855799000000L + 465726528L / 1000) - (1505855794000000L + 194009601L / 1000))
         .localEndpoint(localEndpoint)
         .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
-        .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT")
-        //        .putTag(ZipkinSpanExporter.STATUS_CODE, status)
-        .build();
+        .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT");
   }
 
   abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
