@@ -100,29 +100,26 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     collectLock.lock();
     try {
       function.observe(
-          new BatchObserverResult() {
-            @Override
-            public void observe(Labels labels, Observation... observations) {
-              batcher.setLabels(labels);
-              for (Observation observation : observations) {
-                ObservationType type = observation.getType();
-                Aggregator aggregator;
-                Descriptor descriptor;
-                if (type == ObservationType.LONG_OBSERVATION) {
-                  LongObservation longObservation = (LongObservation) observation;
-                  aggregator = longObservation.getAggregator();
-                  aggregator.recordLong(longObservation.getValue());
-                  descriptor = longObservation.getDescription();
-                } else {
-                  DoubleObservation doubleObservation = (DoubleObservation) observation;
-                  aggregator = doubleObservation.getAggregator();
-                  aggregator.recordDouble(doubleObservation.getValue());
-                  descriptor = doubleObservation.getDescription();
-                }
-                batcher.batch(descriptor, aggregator);
+          (labels, observations) -> {
+            batcher.setLabels(labels);
+            for (Observation observation : observations) {
+              ObservationType type = observation.getType();
+              Aggregator aggregator;
+              Descriptor descriptor;
+              if (type == ObservationType.LONG_OBSERVATION) {
+                LongObservation longObservation = (LongObservation) observation;
+                aggregator = longObservation.getAggregator();
+                aggregator.recordLong(longObservation.getValue());
+                descriptor = longObservation.getDescription();
+              } else {
+                DoubleObservation doubleObservation = (DoubleObservation) observation;
+                aggregator = doubleObservation.getAggregator();
+                aggregator.recordDouble(doubleObservation.getValue());
+                descriptor = doubleObservation.getDescription();
               }
-              metricData.addAll(batcher.completeCollectionCycle());
+              batcher.batch(descriptor, aggregator);
             }
+            metricData.addAll(batcher.completeCollectionCycle());
           });
     } finally {
       collectLock.unlock();
