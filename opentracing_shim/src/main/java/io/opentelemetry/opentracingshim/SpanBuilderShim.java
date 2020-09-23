@@ -16,13 +16,12 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.grpc.Context;
-
 import static io.opentelemetry.common.AttributesKeys.booleanKey;
 import static io.opentelemetry.common.AttributesKeys.doubleKey;
 import static io.opentelemetry.common.AttributesKeys.longKey;
 import static io.opentelemetry.common.AttributesKeys.stringKey;
 
+import io.grpc.Context;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.trace.DefaultSpan;
