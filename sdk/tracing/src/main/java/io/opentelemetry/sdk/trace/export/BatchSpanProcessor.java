@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,6 +82,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private final Worker worker;
   private final boolean sampled;
+  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   private BatchSpanProcessor(
       SpanExporter spanExporter,
@@ -124,6 +126,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
+    if (isShutdown.getAndSet(true)) {
+      return CompletableResultCode.ofSuccess();
+    }
     return worker.shutdown();
   }
 
@@ -303,10 +308,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
   /** Builder class for {@link BatchSpanProcessor}. */
   public static final class Builder extends ConfigBuilder<Builder> {
 
-    private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay";
-    private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue";
-    private static final String KEY_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch";
-    private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout";
+    private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay.millis";
+    private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue.size";
+    private static final String KEY_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch.size";
+    private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout.millis";
     private static final String KEY_SAMPLED = "otel.bsp.export.sampled";
 
     @VisibleForTesting static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;

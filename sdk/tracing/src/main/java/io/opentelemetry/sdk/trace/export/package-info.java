@@ -67,10 +67,11 @@
  * io.opentelemetry.sdk.trace.export.BatchSpanProcessor} will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.bsp.schedule.delay}: sets the delay interval between two consecutive exports.
- *   <li>{@code otel.bsp.max.queue}: sets the maximum queue size.
- *   <li>{@code otel.bsp.max.export.batch}: sets the maximum batch size.
- *   <li>{@code otel.bsp.export.timeout}: sets the maximum allowed time to export data.
+ *   <li>{@code otel.bsp.schedule.delay.millis}: sets the delay interval between two consecutive
+ *       exports.
+ *   <li>{@code otel.bsp.max.queue.size}: sets the maximum queue size.
+ *   <li>{@code otel.bsp.max.export.batch.size}: sets the maximum batch size.
+ *   <li>{@code otel.bsp.export.timeout.millis}: sets the maximum allowed time to export data.
  *   <li>{@code otel.bsp.export.sampled}: sets whether only sampled spans should be exported.
  * </ul>
  *
@@ -78,10 +79,11 @@
  * look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: sets the delay interval between two consecutive exports.
- *   <li>{@code OTEL_BSP_MAX_QUEUE}: sets the maximum queue size.
- *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH}: sets the maximum batch size.
- *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: sets the maximum allowed time to export data.
+ *   <li>{@code OTEL_BSP_SCHEDULE_DELAY_MILLIS}: sets the delay interval between two consecutive
+ *       exports.
+ *   <li>{@code OTEL_BSP_MAX_QUEUE_SIZE}: sets the maximum queue size.
+ *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH_SIZE}: sets the maximum batch size.
+ *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT_MILLIS}: sets the maximum allowed time to export data.
  *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
  * </ul>
  */

@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.base.Charsets;
@@ -44,14 +43,13 @@ class BeanstalkResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                ResourceAttributes.SERVICE_INSTANCE.key(), stringAttributeValue("4"),
-                ResourceAttributes.SERVICE_VERSION.key(), stringAttributeValue("2"),
-                ResourceAttributes.SERVICE_NAMESPACE.key(),
-                    stringAttributeValue("HttpSubscriber-env")));
+                ResourceAttributes.SERVICE_INSTANCE, "4",
+                ResourceAttributes.SERVICE_VERSION, "2",
+                ResourceAttributes.SERVICE_NAMESPACE, "HttpSubscriber-env"));
   }
 
   @Test
-  void testConfigFileMissing() throws IOException {
+  void testConfigFileMissing() {
     BeanstalkResource populator = new BeanstalkResource("a_file_never_existing");
     Attributes attributes = populator.getAttributes();
     assertThat(attributes.isEmpty()).isTrue();

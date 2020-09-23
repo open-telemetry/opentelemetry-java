@@ -103,16 +103,16 @@ public class HttpServer {
     }
   }
 
-  private com.sun.net.httpserver.HttpServer server;
-  private static int port = 8080;
+  private final com.sun.net.httpserver.HttpServer server;
+  private static final int port = 8080;
 
   // OTel API
-  private static Tracer tracer =
+  private static final Tracer tracer =
       OpenTelemetry.getTracer("io.opentelemetry.example.http.HttpServer");
   // Export traces to log
-  private static LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
+  private static final LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
   // Extract the context from http headers
-  private static TextMapPropagator.Getter<HttpExchange> getter =
+  private static final TextMapPropagator.Getter<HttpExchange> getter =
       (carrier, key) -> {
         if (carrier.getRequestHeaders().containsKey(key)) {
           return carrier.getRequestHeaders().get(key).get(0);

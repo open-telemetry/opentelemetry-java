@@ -212,7 +212,7 @@ public abstract class TraceConfig {
       configMap = namingConvention.normalize(configMap);
       Double doubleValue = getDoubleProperty(KEY_SAMPLER_PROBABILITY, configMap);
       if (doubleValue != null) {
-        this.setSamplerProbability(doubleValue);
+        this.setTraceIdRatioBased(doubleValue);
       }
       Integer intValue = getIntProperty(KEY_SPAN_MAX_NUM_ATTRIBUTES, configMap);
       if (intValue != null) {
@@ -285,21 +285,18 @@ public abstract class TraceConfig {
      * Sets the global default {@code Sampler}. It must be not {@code null} otherwise {@link
      * #build()} will throw an exception.
      *
-     * @param samplerProbability the global default probability used to make decisions on {@link
-     *     Span} sampling.
+     * @param samplerRatio the global default ratio used to make decisions on {@link Span} sampling.
      * @return this.
      */
-    public Builder setSamplerProbability(double samplerProbability) {
-      Utils.checkArgument(
-          samplerProbability >= 0, "samplerProbability must be greater than or equal to 0.");
-      Utils.checkArgument(
-          samplerProbability <= 1, "samplerProbability must be lesser than or equal to 1.");
-      if (samplerProbability == 1) {
+    public Builder setTraceIdRatioBased(double samplerRatio) {
+      Utils.checkArgument(samplerRatio >= 0, "samplerRatio must be greater than or equal to 0.");
+      Utils.checkArgument(samplerRatio <= 1, "samplerRatio must be lesser than or equal to 1.");
+      if (samplerRatio == 1) {
         setSampler(Samplers.parentBased(Samplers.alwaysOn()));
-      } else if (samplerProbability == 0) {
+      } else if (samplerRatio == 0) {
         setSampler(Samplers.alwaysOff());
       } else {
-        setSampler(Samplers.parentBased(Samplers.probability(samplerProbability)));
+        setSampler(Samplers.parentBased(Samplers.traceIdRatioBased(samplerRatio)));
       }
       return this;
     }

@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link MeterSdkProvider}. */
 class MeterSdkRegistryTest {
   private final TestClock testClock = TestClock.create();
-  private final MeterSdkProvider meterRegistry =
+  private final MeterSdkProvider meterProvider =
       MeterSdkProvider.builder().setClock(testClock).setResource(Resource.getEmpty()).build();
 
   @Test
@@ -61,38 +61,38 @@ class MeterSdkRegistryTest {
 
   @Test
   void defaultGet() {
-    assertThat(meterRegistry.get("test")).isInstanceOf(MeterSdk.class);
+    assertThat(meterProvider.get("test")).isInstanceOf(MeterSdk.class);
   }
 
   @Test
   void getSameInstanceForSameName_WithoutVersion() {
-    assertThat(meterRegistry.get("test")).isSameAs(meterRegistry.get("test"));
-    assertThat(meterRegistry.get("test")).isSameAs(meterRegistry.get("test", null));
+    assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test"));
+    assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test", null));
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
-    assertThat(meterRegistry.get("test", "version")).isSameAs(meterRegistry.get("test", "version"));
+    assertThat(meterProvider.get("test", "version")).isSameAs(meterProvider.get("test", "version"));
   }
 
   @Test
   void propagatesInstrumentationLibraryInfoToMeter() {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("theName", "theVersion");
-    MeterSdk meter = meterRegistry.get(expected.getName(), expected.getVersion());
+    MeterSdk meter = meterProvider.get(expected.getName(), expected.getVersion());
     assertThat(meter.getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 
   @Test
   void metricProducer_GetAllMetrics() {
-    MeterSdk meterSdk1 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
+    MeterSdk meterSdk1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
     LongCounterSdk longCounter1 = meterSdk1.longCounterBuilder("testLongCounter").build();
     longCounter1.add(10, Labels.empty());
-    MeterSdk meterSdk2 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
+    MeterSdk meterSdk2 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
     LongCounterSdk longCounter2 = meterSdk2.longCounterBuilder("testLongCounter").build();
     longCounter2.add(10, Labels.empty());
 
-    assertThat(meterRegistry.getMetricProducer().collectAllMetrics())
+    assertThat(meterProvider.getMetricProducer().collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.create(
                 Descriptor.create(

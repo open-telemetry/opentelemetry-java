@@ -60,10 +60,12 @@ class OtlpGrpcSpanExporterTest {
   @Test
   void configTest() {
     Map<String, String> options = new HashMap<>();
-    options.put("otel.otlp.span.timeout", "12");
-    options.put("otel.otlp.endpoint", "http://localhost:6553");
-    options.put("otel.otlp.use.tls", "true");
-    options.put("otel.otlp.metadata", "key=value;key2=value2=;key3=val=ue3; key4 = value4 ;key5= ");
+    options.put("otel.exporter.otlp.span.timeout", "12");
+    options.put("otel.exporter.otlp.span.endpoint", "http://localhost:6553");
+    options.put("otel.exporter.otlp.span.insecure", "true");
+    options.put(
+        "otel.exporter.otlp.span.headers",
+        "key=value;key2=value2=;key3=val=ue3; key4 = value4 ;key5= ");
     OtlpGrpcSpanExporter.Builder config = OtlpGrpcSpanExporter.newBuilder();
     OtlpGrpcSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());

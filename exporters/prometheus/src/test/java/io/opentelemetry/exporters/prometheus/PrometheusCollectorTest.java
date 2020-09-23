@@ -16,11 +16,11 @@
 
 package io.opentelemetry.exporters.prometheus;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -73,7 +73,7 @@ class PrometheusCollectorTest {
                 "1",
                 Descriptor.Type.MONOTONIC_LONG,
                 Labels.of("kc", "vc")),
-            Resource.create(Attributes.of("kr", AttributeValue.stringAttributeValue("vr"))),
+            Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("grpc", "version"),
             Collections.singletonList(
                 MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
@@ -84,7 +84,7 @@ class PrometheusCollectorTest {
                 "1",
                 Descriptor.Type.MONOTONIC_DOUBLE,
                 Labels.of("kc", "vc")),
-            Resource.create(Attributes.of("kr", AttributeValue.stringAttributeValue("vr"))),
+            Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("http", "version"),
             Collections.singletonList(
                 MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5))));
