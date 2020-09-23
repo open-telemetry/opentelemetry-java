@@ -236,6 +236,10 @@ public interface Span {
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
    *
+   * <p>Note that {@link io.opentelemetry.trace.attributes.SemanticAttributes#EXCEPTION_ESCAPED}
+   * cannot be determined by this function. You should record this attribute manually using {@link
+   * #recordException(Throwable, Attributes)} if you know that an exception is escaping.
+   *
    * @param exception the {@link Throwable} to record.
    * @since 0.7.0
    */
