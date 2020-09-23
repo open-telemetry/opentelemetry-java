@@ -29,6 +29,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TraceVersion;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
@@ -198,6 +199,11 @@ public class HttpTraceContext implements TextMapPropagator {
     }
 
     try {
+      String version = traceparent.substring(0, 2);
+      if (!TraceVersion.isValid(version)) {
+        return SpanContext.getInvalid();
+      }
+
       String traceId =
           traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getHexLength());
       String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getHexLength());
