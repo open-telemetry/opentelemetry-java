@@ -19,7 +19,7 @@ package io.opentelemetry.opentracingshim.testbed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
+import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -38,7 +38,7 @@ class OpenTelemetryInteroperabilityTest {
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer otTracer =
-      TraceShim.createTracerShim(sdk, DefaultCorrelationContextManager.getInstance());
+      TraceShim.createTracerShim(sdk, DefaultBaggageManager.getInstance());
 
   @BeforeEach
   void before() {

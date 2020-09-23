@@ -16,28 +16,27 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.baggage.Baggage;
+import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.correlationcontext.CorrelationContext;
-import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.trace.Tracer;
 
 /**
- * Utility class that holds a Tracer, a CorrelationContextManager, and related objects that are core
- * part of the OT Shim layer.
+ * Utility class that holds a Tracer, a BaggageManager, and related objects that are core part of
+ * the OT Shim layer.
  */
 final class TelemetryInfo {
   private final Tracer tracer;
-  private final CorrelationContextManager contextManager;
-  private final CorrelationContext emptyCorrelationContext;
+  private final BaggageManager contextManager;
+  private final Baggage emptyBaggage;
   private final ContextPropagators propagators;
   private final SpanContextShimTable spanContextTable;
 
-  TelemetryInfo(
-      Tracer tracer, CorrelationContextManager contextManager, ContextPropagators propagators) {
+  TelemetryInfo(Tracer tracer, BaggageManager contextManager, ContextPropagators propagators) {
     this.tracer = tracer;
     this.contextManager = contextManager;
     this.propagators = propagators;
-    this.emptyCorrelationContext = contextManager.contextBuilder().build();
+    this.emptyBaggage = contextManager.contextBuilder().build();
     this.spanContextTable = new SpanContextShimTable();
   }
 
@@ -45,7 +44,7 @@ final class TelemetryInfo {
     return tracer;
   }
 
-  CorrelationContextManager contextManager() {
+  BaggageManager contextManager() {
     return contextManager;
   }
 
@@ -53,8 +52,8 @@ final class TelemetryInfo {
     return spanContextTable;
   }
 
-  CorrelationContext emptyCorrelationContext() {
-    return emptyCorrelationContext;
+  Baggage emptyBaggage() {
+    return emptyBaggage;
   }
 
   ContextPropagators propagators() {
