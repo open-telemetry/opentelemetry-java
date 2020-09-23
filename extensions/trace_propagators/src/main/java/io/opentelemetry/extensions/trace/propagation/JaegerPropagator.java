@@ -19,7 +19,6 @@ package io.opentelemetry.extensions.trace.propagation;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -95,12 +94,10 @@ public class JaegerPropagator implements TextMapPropagator {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null || !span.getContext().isValid()) {
+    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    if (!spanContext.isValid()) {
       return;
     }
-
-    SpanContext spanContext = span.getContext();
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
 

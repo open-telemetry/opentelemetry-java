@@ -90,15 +90,11 @@ public class Application {
                         });
 
             for (io.opentelemetry.Request req : requests) {
-              final Span.Builder builder =
+              Span span =
                   OpenTelemetry.getTracer("validation-server")
-                      .spanBuilder("Entering Validation Server");
-
-              Span parent = TracingContextUtils.getSpanWithoutDefault(context);
-              if (parent != null) {
-                builder.setParent(parent);
-              }
-              Span span = builder.startSpan();
+                      .spanBuilder("Entering Validation Server")
+                      .setParent(context)
+                      .startSpan();
 
               Context withSpanContext = TracingContextUtils.withSpan(span, context);
 

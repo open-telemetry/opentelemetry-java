@@ -305,15 +305,14 @@ final class SpanBuilderSdk implements Span.Builder {
     throw new IllegalStateException("Unknown parent type");
   }
 
-  @Nullable
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
       case CURRENT_CONTEXT:
-        return TracingContextUtils.getSpanWithoutDefault(Context.current());
+        return TracingContextUtils.getCurrentSpan();
       case EXPLICIT_PARENT:
         return explicitParent;
       default:
-        return null;
+        return DefaultSpan.getInvalid();
     }
   }
 
