@@ -95,6 +95,8 @@ public class BeanstalkResource extends ResourceProvider {
       return Attributes.empty();
     }
 
+    attrBuilders.setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws");
+
     return attrBuilders.build();
   }
 }

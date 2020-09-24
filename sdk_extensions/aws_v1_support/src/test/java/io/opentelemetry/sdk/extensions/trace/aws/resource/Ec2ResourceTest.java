@@ -82,6 +82,7 @@ public class Ec2ResourceTest {
     Attributes attributes = populator.getAttributes();
     Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
 
+    expectedAttrBuilders.setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws");
     expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_ID, "i-1234567890abcdef0");
     expectedAttrBuilders.setAttribute(ResourceAttributes.CLOUD_ZONE, "us-west-2b");
     expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_TYPE, "t2.micro");
@@ -115,6 +116,7 @@ public class Ec2ResourceTest {
 
     Attributes.Builder expectedAttrBuilders =
         Attributes.newBuilder()
+            .setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws")
             .setAttribute(ResourceAttributes.HOST_ID, "i-1234567890abcdef0")
             .setAttribute(ResourceAttributes.CLOUD_ZONE, "us-west-2b")
             .setAttribute(ResourceAttributes.HOST_TYPE, "t2.micro")

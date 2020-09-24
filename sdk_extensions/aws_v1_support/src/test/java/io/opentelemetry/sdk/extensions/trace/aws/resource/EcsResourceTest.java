@@ -49,6 +49,8 @@ class EcsResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
+                ResourceAttributes.CLOUD_PROVIDER,
+                "aws",
                 ResourceAttributes.CONTAINER_NAME,
                 InetAddress.getLocalHost().getHostName(),
                 ResourceAttributes.CONTAINER_ID,
@@ -75,7 +77,10 @@ class EcsResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                ResourceAttributes.CONTAINER_NAME, InetAddress.getLocalHost().getHostName()));
+                ResourceAttributes.CLOUD_PROVIDER,
+                "aws",
+                ResourceAttributes.CONTAINER_NAME,
+                InetAddress.getLocalHost().getHostName()));
   }
 
   @Test

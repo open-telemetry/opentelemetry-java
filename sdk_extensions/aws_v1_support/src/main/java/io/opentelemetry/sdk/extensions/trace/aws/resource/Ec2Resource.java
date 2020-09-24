@@ -160,6 +160,7 @@ public class Ec2Resource extends ResourceProvider {
     String hostname = fetchHostname(token);
 
     Attributes.Builder attrBuilders = Attributes.newBuilder();
+    attrBuilders.setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws");
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();
