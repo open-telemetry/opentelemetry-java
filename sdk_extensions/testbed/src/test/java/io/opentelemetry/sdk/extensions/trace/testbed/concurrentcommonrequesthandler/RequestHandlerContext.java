@@ -18,4 +18,4 @@ package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthan
 
 import java.util.HashMap;
 
-final class Context extends HashMap<String, Object> {}
+final class RequestHandlerContext extends HashMap<String, Object> {}

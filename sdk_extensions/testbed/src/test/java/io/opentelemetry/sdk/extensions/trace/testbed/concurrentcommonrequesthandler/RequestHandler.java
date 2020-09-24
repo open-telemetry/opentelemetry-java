@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthandler;
 
+import io.grpc.Context;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
@@ -29,18 +30,18 @@ final class RequestHandler {
 
   private final Tracer tracer;
 
-  private final io.grpc.Context parentContext;
+  private final Context parentContext;
 
   public RequestHandler(Tracer tracer) {
     this(tracer, null);
   }
 
-  public RequestHandler(Tracer tracer, io.grpc.Context parentContext) {
+  public RequestHandler(Tracer tracer, Context parentContext) {
     this.tracer = tracer;
     this.parentContext = parentContext;
   }
 
-  public void beforeRequest(Object request, Context context) {
+  public void beforeRequest(Object request, RequestHandlerContext requestHandlerContext) {
     // we cannot use active span because we don't know in which thread it is executed
     // and we cannot therefore activate span. thread can come from common thread pool.
     Span.Builder spanBuilder =
@@ -50,11 +51,11 @@ final class RequestHandler {
       spanBuilder.setParent(parentContext);
     }
 
-    context.put("span", spanBuilder.startSpan());
+    requestHandlerContext.put("span", spanBuilder.startSpan());
   }
 
-  public void afterResponse(Object response, Context context) {
-    Object spanObject = context.get("span");
+  public void afterResponse(Object response, RequestHandlerContext requestHandlerContext) {
+    Object spanObject = requestHandlerContext.get("span");
     if (spanObject instanceof Span) {
       Span span = (Span) spanObject;
       span.end();
