@@ -209,7 +209,7 @@ class ZipkinSpanExporterTest {
         buildStandardSpan()
             .setAttributes(attributeMap)
             .setKind(Kind.CLIENT)
-            .setStatus(Status.NOT_FOUND)
+            .setStatus(Status.ERROR)
             .build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
@@ -230,7 +230,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(Status.DEADLINE_EXCEEDED.withDescription(errorMessage))
+            .setStatus(Status.ERROR.withDescription(errorMessage))
             .setAttributes(attributeMap)
             .build();
 
@@ -240,8 +240,8 @@ class ZipkinSpanExporterTest {
                 .toBuilder()
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_DESCRIPTION, errorMessage)
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
-                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "DEADLINE_EXCEEDED")
-                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "DEADLINE_EXCEEDED")
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "ERROR")
+                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "ERROR")
                 .build());
   }
 

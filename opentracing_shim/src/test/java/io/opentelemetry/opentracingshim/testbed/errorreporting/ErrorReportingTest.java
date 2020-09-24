@@ -67,7 +67,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.ERROR.getCanonicalCode());
   }
 
   /* Error handling in a callback capturing/activating the Span */
@@ -91,7 +91,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.ERROR.getCanonicalCode());
   }
 
   /* Error handling for a max-retries task (such as url fetching).
@@ -122,7 +122,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.ERROR.getCanonicalCode());
 
     List<Event> events = spans.get(0).getEvents();
     assertEquals(events.size(), maxRetries);
@@ -159,7 +159,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.ERROR.getCanonicalCode());
   }
 
   static class ScopedRunnable implements Runnable {

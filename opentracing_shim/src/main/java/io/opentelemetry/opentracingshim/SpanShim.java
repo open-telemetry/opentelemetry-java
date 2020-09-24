@@ -76,7 +76,7 @@ final class SpanShim extends BaseShimObject implements Span {
       // TODO: confirm we can safely ignore span.kind after Span was created
       // https://github.com/bogdandrutu/opentelemetry/issues/42
     } else if (Tags.ERROR.getKey().equals(key)) {
-      Status status = Boolean.parseBoolean(value) ? Status.UNKNOWN : Status.OK;
+      Status status = Boolean.parseBoolean(value) ? Status.ERROR : Status.UNSET;
       span.setStatus(status);
     } else {
       span.setAttribute(key, value);
@@ -88,7 +88,7 @@ final class SpanShim extends BaseShimObject implements Span {
   @Override
   public Span setTag(String key, boolean value) {
     if (Tags.ERROR.getKey().equals(key)) {
-      Status status = value ? Status.UNKNOWN : Status.OK;
+      Status status = value ? Status.ERROR : Status.UNSET;
       span.setStatus(status);
     } else {
       span.setAttribute(key, value);

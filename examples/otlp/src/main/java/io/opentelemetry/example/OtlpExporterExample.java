@@ -17,7 +17,6 @@
 package io.opentelemetry.example;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter;
