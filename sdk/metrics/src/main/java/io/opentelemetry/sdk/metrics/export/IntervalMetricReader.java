@@ -55,8 +55,6 @@ import javax.annotation.concurrent.Immutable;
  * <ul>
  *   <li>{@code OTEL_IMR_EXPORT_INTERVAL}: sets the export interval between pushes to the exporter.
  * </ul>
- *
- * @since 0.3.0
  */
 public final class IntervalMetricReader {
   private static final Logger logger = Logger.getLogger(IntervalMetricReader.class.getName());
@@ -64,11 +62,7 @@ public final class IntervalMetricReader {
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
 
-  /**
-   * Stops the scheduled task and calls export one more time.
-   *
-   * @since 0.3.0
-   */
+  /** Stops the scheduled task and calls export one more time. */
   public void shutdown() {
     scheduler.shutdown();
     try {
@@ -105,11 +99,7 @@ public final class IntervalMetricReader {
     return builder().readEnvironmentVariables().readSystemProperties();
   }
 
-  /**
-   * Builder for {@link IntervalMetricReader}.
-   *
-   * @since 0.3.0
-   */
+  /** Builder for {@link IntervalMetricReader}. */
   public static final class Builder extends ConfigBuilder<Builder> {
     private final InternalState.Builder optionsBuilder;
     private static final String KEY_EXPORT_INTERVAL = "otel.imr.export.interval";
@@ -123,7 +113,6 @@ public final class IntervalMetricReader {
      *
      * @param exportIntervalMillis the export interval between pushes to the exporter.
      * @return this.
-     * @since 0.3.0
      */
     public Builder setExportIntervalMillis(long exportIntervalMillis) {
       optionsBuilder.setExportIntervalMillis(exportIntervalMillis);
@@ -135,7 +124,6 @@ public final class IntervalMetricReader {
      *
      * @param metricExporter the {@link MetricExporter} to be called when export metrics.
      * @return this.
-     * @since 0.3.0
      */
     public Builder setMetricExporter(MetricExporter metricExporter) {
       optionsBuilder.setMetricExporter(metricExporter);
@@ -148,7 +136,6 @@ public final class IntervalMetricReader {
      * @param metricProducers a collection of {@link MetricProducer} from where the metrics should
      *     be read.
      * @return this.
-     * @since 0.3.0
      */
     public Builder setMetricProducers(Collection<MetricProducer> metricProducers) {
       optionsBuilder.setMetricProducers(metricProducers);
@@ -159,7 +146,6 @@ public final class IntervalMetricReader {
      * Builds a new {@link IntervalMetricReader} with current settings.
      *
      * @return a {@code IntervalMetricReader}.
-     * @since 0.3.0
      */
     public IntervalMetricReader build() {
       InternalState internalState = optionsBuilder.build();

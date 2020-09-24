@@ -36,7 +36,7 @@ class ImmutableKeyValuePairsTest {
         .isEqualTo(ImmutableMap.of("one", 55, "two", "b").toString());
   }
 
-  static class TestPairs extends ImmutableKeyValuePairs<Object> {
+  static class TestPairs extends ImmutableKeyValuePairs<String, Object> {
     private final List<Object> data;
 
     TestPairs(List<Object> data) {

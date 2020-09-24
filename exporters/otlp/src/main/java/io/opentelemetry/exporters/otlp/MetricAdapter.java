@@ -20,8 +20,8 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
 
+import io.opentelemetry.common.LabelConsumer;
 import io.opentelemetry.common.Labels;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
@@ -172,10 +172,6 @@ final class MetricAdapter {
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
               .setTimeUnixNano(longPoint.getEpochNanos())
               .setValue(longPoint.getValue());
-      // Avoid calling addAllLabels when not needed to save a couple allocations.
-      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
-        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
-      }
       Collection<StringKeyValue> labels = toProtoLabels(longPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -195,10 +191,6 @@ final class MetricAdapter {
               .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
               .setTimeUnixNano(doublePoint.getEpochNanos())
               .setValue(doublePoint.getValue());
-      // Avoid calling addAllLabels when not needed to save a couple allocations.
-      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
-        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
-      }
       Collection<StringKeyValue> labels = toProtoLabels(doublePoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -219,10 +211,6 @@ final class MetricAdapter {
               .setTimeUnixNano(summaryPoint.getEpochNanos())
               .setCount(summaryPoint.getCount())
               .setSum(summaryPoint.getSum());
-      // Avoid calling addAllLabels when not needed to save a couple allocations.
-      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
-        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
-      }
       List<StringKeyValue> labels = toProtoLabels(summaryPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -260,7 +248,7 @@ final class MetricAdapter {
     }
     final List<StringKeyValue> result = new ArrayList<>(labels.size());
     labels.forEach(
-        new KeyValueConsumer<String>() {
+        new LabelConsumer() {
           @Override
           public void consume(String key, String value) {
             result.add(StringKeyValue.newBuilder().setKey(key).setValue(value).build());

@@ -1,4 +1,4 @@
 # OpenTelemetry Integration Tests
 
 
-* Java 7 Integration Test
+* Integration Test code lives here

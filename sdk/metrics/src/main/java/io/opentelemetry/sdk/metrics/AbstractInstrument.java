@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Instrument;
@@ -88,10 +87,9 @@ abstract class AbstractInstrument implements Instrument {
 
   abstract static class Builder<B extends AbstractInstrument.Builder<?>>
       implements Instrument.Builder {
-    /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
     /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
         "Name should be a ASCII string with a length no greater than "
-            + NAME_MAX_LENGTH
+            + StringUtils.METRIC_NAME_MAX_LENGTH
             + " characters.";
 
     private final String name;
@@ -100,7 +98,6 @@ abstract class AbstractInstrument implements Instrument {
     private final MeterSdk meterSdk;
     private String description = "";
     private String unit = "1";
-    private Labels constantLabels = Labels.empty();
 
     Builder(
         String name,
@@ -109,9 +106,7 @@ abstract class AbstractInstrument implements Instrument {
         MeterSdk meterSdk) {
       this.meterSdk = meterSdk;
       Objects.requireNonNull(name, "name");
-      Utils.checkArgument(
-          StringUtils.isValidMetricName(name) && name.length() <= NAME_MAX_LENGTH,
-          ERROR_MESSAGE_INVALID_NAME);
+      Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
       this.name = name;
       this.meterProviderSharedState = meterProviderSharedState;
       this.meterSharedState = meterSharedState;
@@ -129,12 +124,6 @@ abstract class AbstractInstrument implements Instrument {
       return getThis();
     }
 
-    @Override
-    public final B setConstantLabels(Labels constantLabels) {
-      this.constantLabels = constantLabels;
-      return getThis();
-    }
-
     final MeterProviderSharedState getMeterProviderSharedState() {
       return meterProviderSharedState;
     }
@@ -145,7 +134,7 @@ abstract class AbstractInstrument implements Instrument {
 
     final InstrumentDescriptor getInstrumentDescriptor(
         InstrumentType type, InstrumentValueType valueType) {
-      return InstrumentDescriptor.create(name, description, unit, constantLabels, type, valueType);
+      return InstrumentDescriptor.create(name, description, unit, type, valueType);
     }
 
     abstract B getThis();

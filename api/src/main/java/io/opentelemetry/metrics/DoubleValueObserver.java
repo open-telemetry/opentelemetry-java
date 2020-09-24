@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -33,7 +32,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <pre>{@code
  * class YourClass {
  *
- *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
+ *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
  *   private static final DoubleValueObserver cpuObserver =
  *       meter.
  *           .doubleValueObserverBuilder("cpu_temperature")
@@ -68,9 +67,6 @@ public interface DoubleValueObserver extends AsynchronousInstrument<DoubleResult
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     DoubleValueObserver build();

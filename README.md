@@ -8,7 +8,7 @@ We hold regular meetings. See details at [community page](https://github.com/ope
 
 ## Overview
 
-OpenTelemetry is a working name of a combined OpenCensus and OpenTracing
+OpenTelemetry is the merging of OpenCensus and OpenTracing into one
 project.
 
 This project contains the following top level components:
@@ -22,6 +22,7 @@ This project contains the following top level components:
 * [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
 * [sdk_extensions](sdk_extensions/): Additional extensions to SDK.
 * [OpenTracing shim](opentracing_shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
+* [Examples](examples/): Various examples on how to use the APIs, SDK, and standard exporters.
 
 We would love to hear from the larger community: please provide feedback proactively.
 
@@ -144,7 +145,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
-- [Anuraag Agrawal](https://github.com/anuraaga), AWS
 - [Armin Ruech](https://github.com/arminru), Dynatrace
 - [Pavol Loffay](https://github.com/pavolloffay), RedHat
 - [Tyler Benson](https://github.com/tylerbenson), DataDog
@@ -156,7 +156,8 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 
 - [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
-- [John Watson](https://github.com/jkwatson), New Relic
+- [John Watson](https://github.com/jkwatson), Splunk
+- [Anuraag Agrawal](https://github.com/anuraaga), AWS
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 

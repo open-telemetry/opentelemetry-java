@@ -66,15 +66,7 @@ It does not support all required rules, so you still have to run `googleJavaForm
   Javadoc, though the style of documentation is up to the author.
 * Try to do the least amount of change when modifying existing documentation.
   Don't change the style unless you have a good reason.
-
-``` sh
-$ git checkout -b docs
-$ ./gradlew javadoc
-$ rm -fr docs/*
-$ cp -R api/build/docs/javadoc/* docs
-$ git add -A .
-$ git commit -m "Update javadoc for API."
-```
+* Our javadoc is available via [javadoc.io}(https://javadoc.io/doc/io.opentelemetry/opentelemetry-api)
 
 ### AutoValue
 

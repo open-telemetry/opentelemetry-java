@@ -21,7 +21,6 @@ import static io.opentelemetry.extensions.trace.propagation.Common.MAX_TRACE_ID_
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -66,17 +65,13 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (context == null || setter == null) {
       return;
     }
-    final Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null) {
-      return;
-    }
-    final SpanContext spanContext = span.getContext();
+    final SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
     if (!spanContext.isValid()) {
       return;
     }
     setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceIdAsHexString());
     setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanIdAsHexString());
-    setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.getTraceFlags().isSampled()));
+    setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.isSampled()));
   }
 
   @Override

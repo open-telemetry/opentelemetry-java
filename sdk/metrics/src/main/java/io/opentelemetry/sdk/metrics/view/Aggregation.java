@@ -25,8 +25,6 @@ import javax.annotation.concurrent.Immutable;
 /**
  * {@link Aggregation} is the process of combining a certain set of recorded measurements for a
  * given {@code Instrument} into the equivalent {@code MetricData}.
- *
- * @since 0.1.0
  */
 @Immutable
 public interface Aggregation {

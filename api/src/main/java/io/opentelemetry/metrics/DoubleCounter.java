@@ -29,7 +29,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
+ *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
  *   private static final DoubleCounter counter =
  *       meter.
  *           .doubleCounterBuilder("allocated_resources")
@@ -105,9 +105,6 @@ public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter>
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     DoubleCounter build();

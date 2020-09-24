@@ -25,15 +25,12 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * Immutable representation of all data collected by the {@link io.opentelemetry.trace.Span} class.
- *
- * @since 0.1.0
  */
 @Immutable
 public interface SpanData {
@@ -52,12 +49,8 @@ public interface SpanData {
    */
   String getSpanId();
 
-  /**
-   * Gets the trace flags for this span.
-   *
-   * @return the trace flags for this span.
-   */
-  TraceFlags getTraceFlags();
+  /** Whether the 'sampled' option set on this span. */
+  boolean isSampled();
 
   /**
    * Gets the {@code TraceState} for this span.
@@ -71,7 +64,6 @@ public interface SpanData {
    * returned will be invalid..
    *
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
-   * @since 0.1.0
    */
   String getParentSpanId();
 
@@ -79,7 +71,6 @@ public interface SpanData {
    * Returns the resource of this {@code Span}.
    *
    * @return the resource of this {@code Span}.
-   * @since 0.1.0
    */
   Resource getResource();
 
@@ -95,7 +86,6 @@ public interface SpanData {
    * Returns the name of this {@code Span}.
    *
    * @return the name of this {@code Span}.
-   * @since 0.1.0
    */
   String getName();
 
@@ -103,7 +93,6 @@ public interface SpanData {
    * Returns the kind of this {@code Span}.
    *
    * @return the kind of this {@code Span}.
-   * @since 0.1.0
    */
   Kind getKind();
 
@@ -111,7 +100,6 @@ public interface SpanData {
    * Returns the start epoch timestamp in nanos of this {@code Span}.
    *
    * @return the start epoch timestamp in nanos of this {@code Span}.
-   * @since 0.1.0
    */
   long getStartEpochNanos();
 
@@ -119,7 +107,6 @@ public interface SpanData {
    * Returns the attributes recorded for this {@code Span}.
    *
    * @return the attributes recorded for this {@code Span}.
-   * @since 0.1.0
    */
   ReadableAttributes getAttributes();
 
@@ -127,7 +114,6 @@ public interface SpanData {
    * Returns the timed events recorded for this {@code Span}.
    *
    * @return the timed events recorded for this {@code Span}.
-   * @since 0.1.0
    */
   List<Event> getEvents();
 
@@ -135,7 +121,6 @@ public interface SpanData {
    * Returns links recorded for this {@code Span}.
    *
    * @return links recorded for this {@code Span}.
-   * @since 0.1.0
    */
   List<Link> getLinks();
 
@@ -143,7 +128,6 @@ public interface SpanData {
    * Returns the {@code Status}.
    *
    * @return the {@code Status}.
-   * @since 0.1.0
    */
   Status getStatus();
 
@@ -151,7 +135,6 @@ public interface SpanData {
    * Returns the end epoch timestamp in nanos of this {@code Span}.
    *
    * @return the end epoch timestamp in nanos of this {@code Span}.
-   * @since 0.1.0
    */
   long getEndEpochNanos();
 
@@ -161,7 +144,6 @@ public interface SpanData {
    *
    * @return {@code true} if the parent is on a different process. {@code false} if this is a root
    *     span.
-   * @since 0.3.0
    */
   boolean getHasRemoteParent();
 
@@ -169,7 +151,6 @@ public interface SpanData {
    * Returns whether this Span has already been ended.
    *
    * @return {@code true} if the span has already been ended, {@code false} if not.
-   * @since 0.4.0
    */
   boolean getHasEnded();
 
@@ -200,11 +181,7 @@ public interface SpanData {
    */
   int getTotalAttributeCount();
 
-  /**
-   * An immutable implementation of {@link io.opentelemetry.trace.Link}.
-   *
-   * @since 0.1.0
-   */
+  /** An immutable implementation of {@link io.opentelemetry.trace.Link}. */
   @Immutable
   @AutoValue
   abstract class Link implements io.opentelemetry.trace.Link {
@@ -217,7 +194,6 @@ public interface SpanData {
      *
      * @param spanContext the {@code SpanContext} of this {@code Link}.
      * @return a new immutable {@code Event<T>}
-     * @since 0.1.0
      */
     public static Link create(SpanContext spanContext) {
       return new AutoValue_SpanData_Link(
@@ -230,7 +206,6 @@ public interface SpanData {
      * @param spanContext the {@code SpanContext} of this {@code Link}.
      * @param attributes the attributes of this {@code Link}.
      * @return a new immutable {@code Event<T>}
-     * @since 0.1.0
      */
     public static Link create(SpanContext spanContext, Attributes attributes) {
       return new AutoValue_SpanData_Link(spanContext, attributes, attributes.size());
@@ -243,7 +218,6 @@ public interface SpanData {
      * @param attributes the attributes of this {@code Link}.
      * @param totalAttributeCount the total number of attributed for this {@code Link}.
      * @return a new immutable {@code Event<T>}
-     * @since 0.1.0
      */
     public static Link create(
         SpanContext spanContext, Attributes attributes, int totalAttributeCount) {
@@ -268,7 +242,6 @@ public interface SpanData {
      * Returns the epoch time in nanos of this event.
      *
      * @return the epoch time in nanos of this event.
-     * @since 0.1.0
      */
     long getEpochNanos();
 

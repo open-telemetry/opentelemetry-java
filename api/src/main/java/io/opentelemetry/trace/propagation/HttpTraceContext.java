@@ -23,7 +23,6 @@ import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.TemporaryBuffers;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -57,7 +56,7 @@ public class HttpTraceContext implements TextMapPropagator {
   private static final int TRACEPARENT_DELIMITER_SIZE = 1;
   private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
   private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
-  private static final int TRACE_OPTION_HEX_SIZE = 2 * TraceFlags.getSize();
+  private static final int TRACE_OPTION_HEX_SIZE = TraceFlags.getHexLength();
   private static final int TRACE_ID_OFFSET = VERSION_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int SPAN_ID_OFFSET =
       TRACE_ID_OFFSET + TRACE_ID_HEX_SIZE + TRACEPARENT_DELIMITER_SIZE;
@@ -91,15 +90,11 @@ public class HttpTraceContext implements TextMapPropagator {
     checkNotNull(context, "context");
     checkNotNull(setter, "setter");
 
-    Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null || !span.getContext().isValid()) {
+    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    if (!spanContext.isValid()) {
       return;
     }
 
-    injectImpl(span.getContext(), carrier, setter);
-  }
-
-  private static <C> void injectImpl(SpanContext spanContext, C carrier, Setter<C> setter) {
     char[] chars = TemporaryBuffers.chars(TRACEPARENT_HEADER_SIZE);
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);
@@ -118,7 +113,7 @@ public class HttpTraceContext implements TextMapPropagator {
     }
 
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
-    spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
+    spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
     List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
     if (entries.isEmpty()) {
@@ -202,8 +197,8 @@ public class HttpTraceContext implements TextMapPropagator {
           traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getHexLength());
       String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getHexLength());
       if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
-        TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
-        return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+        byte isSampled = TraceFlags.byteFromHex(traceparent, TRACE_OPTION_OFFSET);
+        return SpanContext.createFromRemoteParent(traceId, spanId, isSampled, TRACE_STATE_DEFAULT);
       }
       return SpanContext.getInvalid();
     } catch (IllegalArgumentException e) {

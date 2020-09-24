@@ -66,7 +66,7 @@ class SimpleSpanProcessorTest {
       SpanContext.create(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
-          TraceFlags.builder().setIsSampled(true).build(),
+          TraceFlags.getSampled(),
           TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
 
@@ -172,7 +172,7 @@ class SimpleSpanProcessorTest {
 
   @Test
   void tracerSdk_NotSampled_RecordingEventsSpan() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD option.
+    // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
     /*
     tracer.addSpanProcessor(
         BatchSpanProcessor.newBuilder(waitingSpanExporter)

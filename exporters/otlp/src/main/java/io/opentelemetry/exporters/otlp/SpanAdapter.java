@@ -22,9 +22,9 @@ import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -108,9 +108,9 @@ final class SpanAdapter {
     spanData
         .getAttributes()
         .forEach(
-            new KeyValueConsumer<AttributeValue>() {
+            new AttributeConsumer() {
               @Override
-              public void consume(String key, AttributeValue value) {
+              public <T> void consume(AttributeKey<T> key, T value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
               }
             });
@@ -151,9 +151,9 @@ final class SpanAdapter {
     event
         .getAttributes()
         .forEach(
-            new KeyValueConsumer<AttributeValue>() {
+            new AttributeConsumer() {
               @Override
-              public void consume(String key, AttributeValue value) {
+              public <T> void consume(AttributeKey<T> key, T value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
               }
             });
@@ -169,12 +169,13 @@ final class SpanAdapter {
     // TODO: Set TraceState;
     Attributes attributes = link.getAttributes();
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue value) {
+          public <T> void consume(AttributeKey<T> key, T value) {
             builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
           }
         });
+
     builder.setDroppedAttributesCount(link.getTotalAttributeCount() - attributes.size());
     return builder.build();
   }

@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -208,7 +207,7 @@ class TracerSdkTest {
     public void update() {
       Span span = tracer.spanBuilder("testSpan").startSpan();
       try (Scope ignored = tracer.withSpan(span)) {
-        span.setAttribute("testAttribute", AttributeValue.stringAttributeValue("testValue"));
+        span.setAttribute("testAttribute", "testValue");
       } finally {
         span.end();
       }

@@ -16,11 +16,16 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
+
 import io.grpc.Context;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
@@ -45,11 +50,6 @@ import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
 final class SpanBuilderSdk implements Span.Builder {
-  private static final TraceFlags TRACE_OPTIONS_SAMPLED =
-      TraceFlags.builder().setIsSampled(true).build();
-  private static final TraceFlags TRACE_OPTIONS_NOT_SAMPLED =
-      TraceFlags.builder().setIsSampled(false).build();
-
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final SpanProcessor spanProcessor;
@@ -158,29 +158,28 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setAttribute(String key, String value) {
-    return setAttribute(key, AttributeValue.stringAttributeValue(value));
+    return setAttribute(stringKey(key), value);
   }
 
   @Override
   public Span.Builder setAttribute(String key, long value) {
-    return setAttribute(key, AttributeValue.longAttributeValue(value));
+    return setAttribute(longKey(key), value);
   }
 
   @Override
   public Span.Builder setAttribute(String key, double value) {
-    return setAttribute(key, AttributeValue.doubleAttributeValue(value));
+    return setAttribute(doubleKey(key), value);
   }
 
   @Override
   public Span.Builder setAttribute(String key, boolean value) {
-    return setAttribute(key, AttributeValue.booleanAttributeValue(value));
+    return setAttribute(booleanKey(key), value);
   }
 
   @Override
-  public Span.Builder setAttribute(String key, AttributeValue value) {
+  public <T> Span.Builder setAttribute(AttributeKey<T> key, T value) {
     Objects.requireNonNull(key, "key");
-    if (value == null
-        || (value.getType() == AttributeValue.Type.STRING && value.getStringValue() == null)) {
+    if (value == null) {
       if (attributes != null) {
         attributes.remove(key);
       }
@@ -191,7 +190,7 @@ final class SpanBuilderSdk implements Span.Builder {
     }
 
     if (traceConfig.shouldTruncateStringAttributeValues()) {
-      value = StringUtils.truncateToSize(value, traceConfig.getMaxLengthOfAttributeValues());
+      value = StringUtils.truncateToSize(key, value, traceConfig.getMaxLengthOfAttributeValues());
     }
 
     attributes.put(key, value);
@@ -234,9 +233,8 @@ final class SpanBuilderSdk implements Span.Builder {
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
-    TraceFlags traceFlags =
-        Samplers.isSampled(samplingDecision) ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED;
-    SpanContext spanContext = createSpanContext(traceId, spanId, traceState, traceFlags);
+    SpanContext spanContext =
+        createSpanContext(traceId, spanId, traceState, Samplers.isSampled(samplingDecision));
 
     if (!Samplers.isRecording(samplingDecision)) {
       return DefaultSpan.create(spanContext);
@@ -247,9 +245,9 @@ final class SpanBuilderSdk implements Span.Builder {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
       samplingAttributes.forEach(
-          new KeyValueConsumer<AttributeValue>() {
+          new AttributeConsumer() {
             @Override
-            public void consume(String key, AttributeValue value) {
+            public <T> void consume(AttributeKey<T> key, T value) {
               attributes.put(key, value);
             }
           });
@@ -278,7 +276,8 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   private static SpanContext createSpanContext(
-      String traceId, String spanId, TraceState traceState, TraceFlags traceFlags) {
+      String traceId, String spanId, TraceState traceState, boolean isSampled) {
+    byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
     return SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 
@@ -306,15 +305,14 @@ final class SpanBuilderSdk implements Span.Builder {
     throw new IllegalStateException("Unknown parent type");
   }
 
-  @Nullable
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
       case CURRENT_CONTEXT:
-        return TracingContextUtils.getSpanWithoutDefault(Context.current());
+        return TracingContextUtils.getCurrentSpan();
       case EXPLICIT_PARENT:
         return explicitParent;
       default:
-        return null;
+        return DefaultSpan.getInvalid();
     }
   }
 

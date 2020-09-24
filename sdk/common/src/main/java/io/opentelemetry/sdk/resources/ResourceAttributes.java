@@ -16,8 +16,10 @@
 
 package io.opentelemetry.sdk.resources;
 
-import io.opentelemetry.trace.attributes.LongAttributeSetter;
-import io.opentelemetry.trace.attributes.StringAttributeSetter;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
+
+import io.opentelemetry.common.AttributeKey;
 
 /**
  * Provides constants for resource semantic conventions defined by the OpenTelemetry specification.
@@ -29,126 +31,110 @@ import io.opentelemetry.trace.attributes.StringAttributeSetter;
 public final class ResourceAttributes {
 
   /** The operating system type, such as {@code "WINDOWS"}, {@code "DARWIN"}, {@code "LINUX"}. */
-  public static final StringAttributeSetter OS_NAME = StringAttributeSetter.create("os.name");
+  public static final AttributeKey<String> OS_NAME = stringKey("os.name");
 
   /**
    * Human readable information about the OS version, e.g. {@code "Microsoft Windows [Version
    * 10.0.18363.778]"}, {@code "Ubuntu 18.04.1 LTS"}.
    */
-  public static final StringAttributeSetter OS_DESCRIPTION =
-      StringAttributeSetter.create("os.description");
+  public static final AttributeKey<String> OS_DESCRIPTION = stringKey("os.description");
 
   /** Process identifier (PID). */
-  public static final LongAttributeSetter PROCESS_PID = LongAttributeSetter.create("process.pid");
+  public static final AttributeKey<Long> PROCESS_PID = longKey("process.pid");
 
   /** The name of the process executable. */
-  public static final StringAttributeSetter PROCESS_EXECUTABLE_NAME =
-      StringAttributeSetter.create("process.executable.name");
+  public static final AttributeKey<String> PROCESS_EXECUTABLE_NAME =
+      stringKey("process.executable.name");
 
   /** The full path to the process executable. */
-  public static final StringAttributeSetter PROCESS_EXECUTABLE_PATH =
-      StringAttributeSetter.create("process.executable.path");
+  public static final AttributeKey<String> PROCESS_EXECUTABLE_PATH =
+      stringKey("process.executable.path");
 
   /** The command used to launch the process (i.e. the command name). */
-  public static final StringAttributeSetter PROCESS_COMMAND =
-      StringAttributeSetter.create("process.command");
+  public static final AttributeKey<String> PROCESS_COMMAND = stringKey("process.command");
 
   /**
    * The full command used to launch the process. The value can be either a list of strings
    * representing the ordered list of arguments, or a single string representing the full command.
    */
-  public static final StringAttributeSetter PROCESS_COMMAND_LINE =
-      StringAttributeSetter.create("process.command_line");
+  public static final AttributeKey<String> PROCESS_COMMAND_LINE = stringKey("process.command_line");
 
   /** The username of the user that owns the process. */
-  public static final StringAttributeSetter PROCESS_OWNER =
-      StringAttributeSetter.create("process.owner");
+  public static final AttributeKey<String> PROCESS_OWNER = stringKey("process.owner");
 
   /**
    * Logical name of the service. MUST be the same for all instances of horizontally scaled
    * services.
    */
-  public static final StringAttributeSetter SERVICE_NAME =
-      StringAttributeSetter.create("service.name");
+  public static final AttributeKey<String> SERVICE_NAME = stringKey("service.name");
   /**
    * A namespace for `service.name`. A string value having a meaning that helps to distinguish a
    * group of services,
    */
-  public static final StringAttributeSetter SERVICE_NAMESPACE =
-      StringAttributeSetter.create("service.namespace");
+  public static final AttributeKey<String> SERVICE_NAMESPACE = stringKey("service.namespace");
   /**
    * The string ID of the service instance. MUST be unique for each instance of the same
    * `service.namespace,service.name` pair.
    */
-  public static final StringAttributeSetter SERVICE_INSTANCE =
-      StringAttributeSetter.create("service.instance.id");
+  public static final AttributeKey<String> SERVICE_INSTANCE = stringKey("service.instance.id");
   /** The version string of the service API or implementation. */
-  public static final StringAttributeSetter SERVICE_VERSION =
-      StringAttributeSetter.create("service.version");
+  public static final AttributeKey<String> SERVICE_VERSION = stringKey("service.version");
   /** The name of the telemetry library. */
-  public static final StringAttributeSetter LIBRARY_NAME =
-      StringAttributeSetter.create("library.name");
+  public static final AttributeKey<String> LIBRARY_NAME = stringKey("library.name");
   /** The language of telemetry library and of the code instrumented with it. */
-  public static final StringAttributeSetter LIBRARY_LANGUAGE =
-      StringAttributeSetter.create("library.language");
+  public static final AttributeKey<String> LIBRARY_LANGUAGE = stringKey("library.language");
   /** The version string of the library. */
-  public static final StringAttributeSetter LIBRARY_VERSION =
-      StringAttributeSetter.create("library.version");
+  public static final AttributeKey<String> LIBRARY_VERSION = stringKey("library.version");
   /** Container name. */
-  public static final StringAttributeSetter CONTAINER_NAME =
-      StringAttributeSetter.create("container.name");
+  public static final AttributeKey<String> CONTAINER_NAME = stringKey("container.name");
   /** Container id. */
-  public static final StringAttributeSetter CONTAINER_ID =
-      StringAttributeSetter.create("container.id");
+  public static final AttributeKey<String> CONTAINER_ID = stringKey("container.id");
   /** Name of the image the container was built on. */
-  public static final StringAttributeSetter CONTAINER_IMAGE_NAME =
-      StringAttributeSetter.create("container.image.name");
+  public static final AttributeKey<String> CONTAINER_IMAGE_NAME = stringKey("container.image.name");
   /** Container image tag. */
-  public static final StringAttributeSetter CONTAINER_IMAGE_TAG =
-      StringAttributeSetter.create("container.image.tag");
+  public static final AttributeKey<String> CONTAINER_IMAGE_TAG = stringKey("container.image.tag");
   /** The name of the cluster that the pod is running in. */
-  public static final StringAttributeSetter K8S_CLUSTER =
-      StringAttributeSetter.create("k8s.cluster.name");
+  public static final AttributeKey<String> K8S_CLUSTER = stringKey("k8s.cluster.name");
   /** The name of the namespace that the pod is running in. */
-  public static final StringAttributeSetter K8S_NAMESPACE =
-      StringAttributeSetter.create("k8s.namespace.name");
+  public static final AttributeKey<String> K8S_NAMESPACE = stringKey("k8s.namespace.name");
   /** The name of the pod. */
-  public static final StringAttributeSetter K8S_POD = StringAttributeSetter.create("k8s.pod.name");
+  public static final AttributeKey<String> K8S_POD = stringKey("k8s.pod.name");
   /** The name of the deployment. */
-  public static final StringAttributeSetter K8S_DEPLOYMENT =
-      StringAttributeSetter.create("k8s.deployment.name");
+  public static final AttributeKey<String> K8S_DEPLOYMENT = stringKey("k8s.deployment.name");
   /** Hostname of the host. It contains what the `hostname` command returns on the host machine. */
-  public static final StringAttributeSetter HOST_HOSTNAME =
-      StringAttributeSetter.create("host.hostname");
+  public static final AttributeKey<String> HOST_HOSTNAME = stringKey("host.hostname");
   /** Unique host id. For Cloud this must be the instance_id assigned by the cloud provider. */
-  public static final StringAttributeSetter HOST_ID = StringAttributeSetter.create("host.id");
+  public static final AttributeKey<String> HOST_ID = stringKey("host.id");
   /**
    * Name of the host. It may contain what `hostname` returns on Unix systems, the fully qualified,
    * or a name specified by the user.
    */
-  public static final StringAttributeSetter HOST_NAME = StringAttributeSetter.create("host.name");
+  public static final AttributeKey<String> HOST_NAME = stringKey("host.name");
   /** Type of host. For Cloud this must be the machine type. */
-  public static final StringAttributeSetter HOST_TYPE = StringAttributeSetter.create("host.type");
+  public static final AttributeKey<String> HOST_TYPE = stringKey("host.type");
   /** Name of the VM image or OS install the host was instantiated from. */
-  public static final StringAttributeSetter HOST_IMAGE_NAME =
-      StringAttributeSetter.create("host.image.name");
+  public static final AttributeKey<String> HOST_IMAGE_NAME = stringKey("host.image.name");
   /** VM image id. For Cloud, this value is from the provider. */
-  public static final StringAttributeSetter HOST_IMAGE_ID =
-      StringAttributeSetter.create("host.image.id");
+  public static final AttributeKey<String> HOST_IMAGE_ID = stringKey("host.image.id");
   /** The version string of the VM image. */
-  public static final StringAttributeSetter HOST_IMAGE_VERSION =
-      StringAttributeSetter.create("host.image.version");
+  public static final AttributeKey<String> HOST_IMAGE_VERSION = stringKey("host.image.version");
   /** Name of the cloud provider. */
-  public static final StringAttributeSetter CLOUD_PROVIDER =
-      StringAttributeSetter.create("cloud.provider");
+  public static final AttributeKey<String> CLOUD_PROVIDER = stringKey("cloud.provider");
   /** The cloud account id used to identify different entities. */
-  public static final StringAttributeSetter CLOUD_ACCOUNT =
-      StringAttributeSetter.create("cloud.account.id");
+  public static final AttributeKey<String> CLOUD_ACCOUNT = stringKey("cloud.account.id");
   /** A specific geographical location where different entities can run. */
-  public static final StringAttributeSetter CLOUD_REGION =
-      StringAttributeSetter.create("cloud.region");
+  public static final AttributeKey<String> CLOUD_REGION = stringKey("cloud.region");
   /** Zones are a sub set of the region connected through low-latency links. */
-  public static final StringAttributeSetter CLOUD_ZONE = StringAttributeSetter.create("cloud.zone");
+  public static final AttributeKey<String> CLOUD_ZONE = stringKey("cloud.zone");
+
+  /** The name of the function being executed. */
+  public static final AttributeKey<String> FAAS_NAME = stringKey("faas.name");
+  /** The unique ID of the function being executed. */
+  public static final AttributeKey<String> FAAS_ID = stringKey("faas.id");
+  /** The version string of the function being executed. */
+  public static final AttributeKey<String> FAAS_VERSION = stringKey("faas.version");
+  /** The execution environment ID as a string. */
+  public static final AttributeKey<String> FAAS_INSTANCE = stringKey("faas.instance");
 
   private ResourceAttributes() {}
 }

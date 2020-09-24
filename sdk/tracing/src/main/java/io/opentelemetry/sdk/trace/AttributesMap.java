@@ -16,85 +16,89 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 /**
- * A map implementation with a fixed capacity that drops attributes when the map gets full.
+ * A map with a fixed capacity that drops attributes when the map gets full.
  *
- * <p>Some APIs may have slightly different behaviors, like `put` which returns null if out of
- * capacity.
+ * <p>Note: this doesn't implement the Map interface, but behaves very similarly to one.
  */
-final class AttributesMap extends HashMap<String, AttributeValue> implements ReadableAttributes {
+@SuppressWarnings({"rawtypes", "unchecked"})
+final class AttributesMap implements ReadableAttributes {
+  private final Map<AttributeKey, Object> data = new HashMap<>();
 
   private final long capacity;
   private int totalAddedValues = 0;
-  // Here because -Werror complains about this: [serial] serializable class AttributesWithCapacity
-  // has no definition of serialVersionUID. This class shouldn't be serialized.
-  private static final long serialVersionUID = 42L;
 
   AttributesMap(long capacity) {
     this.capacity = capacity;
   }
 
-  @Nullable
-  @Override
-  public AttributeValue put(String key, AttributeValue value) {
+  public <T> void put(AttributeKey<T> key, T value) {
     totalAddedValues++;
-    if (size() >= capacity && !containsKey(key)) {
-      return null;
+    if (data.size() >= capacity && !data.containsKey(key)) {
+      return;
     }
-    return super.put(key, value);
+    data.put(key, value);
   }
 
-  @Override
-  public void putAll(Map<? extends String, ? extends AttributeValue> values) {
-    for (Map.Entry<? extends String, ? extends AttributeValue> entry : values.entrySet()) {
-      put(entry.getKey(), entry.getValue());
-    }
-  }
-
-  @Nullable
-  @Override
-  public AttributeValue remove(Object key) {
-    return super.remove(key);
-  }
-
-  // Added as public to override the newly added methods in java8, so when we do the switch and
-  // start using them we remember to fix them and count the number of attributes added.
-
-  @SuppressWarnings("MissingOverride")
-  public AttributeValue putIfAbsent(String key, AttributeValue value) {
-    throw new UnsupportedOperationException("Do not call methods on the map");
-  }
-
-  @SuppressWarnings("MissingOverride")
-  public AttributeValue replace(String key, AttributeValue value) {
-    throw new UnsupportedOperationException("Do not call methods on the map");
-  }
-
-  @SuppressWarnings("MissingOverride")
-  public boolean replace(String key, AttributeValue oldValue, AttributeValue newValue) {
-    throw new UnsupportedOperationException("Do not call methods on the map");
+  void remove(AttributeKey key) {
+    data.remove(key);
   }
 
   int getTotalAddedValues() {
     return totalAddedValues;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public void forEach(KeyValueConsumer<AttributeValue> consumer) {
-    for (Entry<String, AttributeValue> entry : entrySet()) {
-      consumer.consume(entry.getKey(), entry.getValue());
+  public <T> T get(AttributeKey<T> key) {
+    return (T) data.get(key);
+  }
+
+  @Override
+  public int size() {
+    return data.size();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return data.isEmpty();
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  @Override
+  public void forEach(AttributeConsumer consumer) {
+    for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
+      AttributeKey key = entry.getKey();
+      Object value = entry.getValue();
+      consumer.consume(key, value);
     }
   }
 
-  @Nullable
   @Override
-  public AttributeValue get(String key) {
-    return super.get(key);
+  public String toString() {
+    return "AttributesMap{"
+        + "data="
+        + data
+        + ", capacity="
+        + capacity
+        + ", totalAddedValues="
+        + totalAddedValues
+        + '}';
+  }
+
+  @SuppressWarnings("rawtypes")
+  ReadableAttributes immutableCopy() {
+    Attributes.Builder builder = Attributes.newBuilder();
+    for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
+      builder.setAttribute(entry.getKey(), entry.getValue());
+    }
+    return builder.build();
   }
 }

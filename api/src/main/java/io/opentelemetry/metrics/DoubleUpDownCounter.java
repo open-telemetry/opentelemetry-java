@@ -31,7 +31,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
+ *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
  *   private static final DoubleUpDownCounter upDownCounter =
  *       meter.
  *           .doubleUpDownCounterBuilder("resource_usage")
@@ -108,9 +108,6 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     DoubleUpDownCounter build();

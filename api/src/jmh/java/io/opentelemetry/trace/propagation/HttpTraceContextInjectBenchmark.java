@@ -78,8 +78,7 @@ public class HttpTraceContextInjectBenchmark {
   }
 
   private static SpanContext createTestSpanContext(String traceId, String spanId) {
-    byte sampledTraceOptionsBytes = 1;
-    TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
+    byte sampledTraceOptions = TraceFlags.getSampled();
     TraceState traceStateDefault = TraceState.builder().build();
     return SpanContext.create(traceId, spanId, sampledTraceOptions, traceStateDefault);
   }

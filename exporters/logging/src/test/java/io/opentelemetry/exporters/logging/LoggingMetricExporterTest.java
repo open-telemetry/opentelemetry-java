@@ -16,9 +16,9 @@
 
 package io.opentelemetry.exporters.logging;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -58,19 +58,14 @@ class LoggingMetricExporterTest {
   void testExport() {
 
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
-    Resource resource =
-        Resource.create(Attributes.of("host", AttributeValue.stringAttributeValue("localhost")));
+    Resource resource = Resource.create(Attributes.of(stringKey("host"), "localhost"));
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
     exporter.export(
         Arrays.asList(
             MetricData.create(
                 Descriptor.create(
-                    "measureOne",
-                    "A summarized test measure",
-                    "ms",
-                    Descriptor.Type.SUMMARY,
-                    Labels.of("foo", "bar", "baz", "zoom")),
+                    "measureOne", "A summarized test measure", "ms", Descriptor.Type.SUMMARY),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.singletonList(
@@ -85,11 +80,7 @@ class LoggingMetricExporterTest {
                             ValueAtPercentile.create(100.0, 433))))),
             MetricData.create(
                 Descriptor.create(
-                    "counterOne",
-                    "A simple counter",
-                    "one",
-                    Descriptor.Type.MONOTONIC_LONG,
-                    Labels.of("alpha", "aleph", "beta", "bet")),
+                    "counterOne", "A simple counter", "one", Descriptor.Type.MONOTONIC_LONG),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.singletonList(
@@ -100,8 +91,7 @@ class LoggingMetricExporterTest {
                     "observedValue",
                     "an observer gauge",
                     "kb",
-                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
-                    Labels.of("uno", "eins", "dos", "zwei")),
+                    Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.singletonList(

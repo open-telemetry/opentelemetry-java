@@ -21,9 +21,9 @@ import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.SpanId;
@@ -308,7 +308,7 @@ final class TracezZPageHandler extends ZPageHandler {
         "<td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\"><b>"
             + "TraceId: <b style=\"color:%s;\">%s</b> "
             + " | SpanId: %s | ParentSpanId: %s</b></pre></td>",
-        span.getTraceFlags().isSampled() ? SAMPLED_TRACE_ID_COLOR : NOT_SAMPLED_TRACE_ID_COLOR,
+        span.isSampled() ? SAMPLED_TRACE_ID_COLOR : NOT_SAMPLED_TRACE_ID_COLOR,
         span.getTraceId(),
         span.getSpanId(),
         (span.getParentSpanId() == null ? SpanId.getInvalid() : span.getParentSpanId()));
@@ -394,11 +394,11 @@ final class TracezZPageHandler extends ZPageHandler {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           private boolean first = true;
 
           @Override
-          public void consume(String key, AttributeValue value) {
+          public <T> void consume(AttributeKey<T> key, T value) {
             if (first) {
               first = false;
             } else {
@@ -406,32 +406,7 @@ final class TracezZPageHandler extends ZPageHandler {
             }
             stringBuilder.append(key);
             stringBuilder.append("=");
-            switch (value.getType()) {
-              case STRING:
-                stringBuilder.append(value.getStringValue());
-                break;
-              case BOOLEAN:
-                stringBuilder.append(value.getBooleanValue());
-                break;
-              case LONG:
-                stringBuilder.append(value.getLongValue());
-                break;
-              case DOUBLE:
-                stringBuilder.append(value.getDoubleValue());
-                break;
-              case STRING_ARRAY:
-                stringBuilder.append(value.getStringArrayValue().toString());
-                break;
-              case BOOLEAN_ARRAY:
-                stringBuilder.append(value.getBooleanArrayValue().toString());
-                break;
-              case LONG_ARRAY:
-                stringBuilder.append(value.getLongArrayValue().toString());
-                break;
-              case DOUBLE_ARRAY:
-                stringBuilder.append(value.getDoubleArrayValue().toString());
-                break;
-            }
+            stringBuilder.append(value.toString());
           }
         });
     stringBuilder.append("}");

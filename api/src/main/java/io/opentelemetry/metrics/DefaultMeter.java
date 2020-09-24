@@ -35,7 +35,7 @@ public final class DefaultMeter implements Meter {
 
   /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
       "Name should be a ASCII string with a length no greater than "
-          + StringUtils.NAME_MAX_LENGTH
+          + StringUtils.METRIC_NAME_MAX_LENGTH
           + " characters.";
 
   /**
@@ -649,12 +649,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public B setUnit(String unit) {
       Utils.checkNotNull(unit, "unit");
-      return getThis();
-    }
-
-    @Override
-    public B setConstantLabels(Labels constantLabels) {
-      Utils.checkNotNull(constantLabels, "constantLabels");
       return getThis();
     }
 
