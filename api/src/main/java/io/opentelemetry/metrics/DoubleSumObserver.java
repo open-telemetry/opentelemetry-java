@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -72,9 +71,6 @@ public interface DoubleSumObserver extends AsynchronousInstrument<DoubleResult> 
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     DoubleSumObserver build();

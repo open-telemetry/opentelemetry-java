@@ -19,7 +19,6 @@ package io.opentelemetry.metrics;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
@@ -28,9 +27,7 @@ class DoubleSumObserverTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
-
-  private final Meter meter = OpenTelemetry.getMeter("DoubleSumObserverTest");
+  private static final Meter meter = OpenTelemetry.getMeter("DoubleSumObserverTest");
 
   @Test
   void preventNull_Name() {
@@ -79,14 +76,6 @@ class DoubleSumObserverTest {
   }
 
   @Test
-  void preventNull_ConstantLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleSumObserverBuilder("metric").setConstantLabels(null).build(),
-        "constantLabels");
-  }
-
-  @Test
   void preventNull_Callback() {
     DoubleSumObserver doubleSumObserver = meter.doubleSumObserverBuilder("metric").build();
     assertThrows(NullPointerException.class, () -> doubleSumObserver.setCallback(null), "callback");
@@ -95,12 +84,7 @@ class DoubleSumObserverTest {
   @Test
   void doesNotThrow() {
     DoubleSumObserver doubleSumObserver =
-        meter
-            .doubleSumObserverBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.doubleSumObserverBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     doubleSumObserver.setCallback(result -> {});
   }
 }

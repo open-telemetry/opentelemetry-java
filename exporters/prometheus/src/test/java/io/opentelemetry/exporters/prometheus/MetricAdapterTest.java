@@ -54,16 +54,14 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name", "description", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("name", "description", "1", Descriptor.Type.MONOTONIC_LONG),
                 Collections.emptyList()))
         .isEmpty();
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name", "description", "1", Descriptor.Type.NON_MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("name", "description", "1", Descriptor.Type.NON_MONOTONIC_LONG),
                 Collections.singletonList(
                     MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
@@ -72,32 +70,22 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name",
-                    "description",
-                    "1",
-                    Descriptor.Type.NON_MONOTONIC_LONG,
-                    Labels.of("kc", "vc")),
+                Descriptor.create("name", "description", "1", Descriptor.Type.NON_MONOTONIC_LONG),
                 Collections.singletonList(
                     MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
-            new Sample("full_name", ImmutableList.of("kc", "kp"), ImmutableList.of("vc", "vp"), 5));
+            new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 5));
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name",
-                    "description",
-                    "1",
-                    Descriptor.Type.MONOTONIC_LONG,
-                    Labels.of("kc", "vc")),
+                Descriptor.create("name", "description", "1", Descriptor.Type.MONOTONIC_LONG),
                 ImmutableList.of(
                     MetricData.LongPoint.create(123, 456, Labels.empty(), 5),
                     MetricData.LongPoint.create(321, 654, Labels.of("kp", "vp"), 7))))
         .containsExactly(
-            new Sample("full_name", ImmutableList.of("kc"), ImmutableList.of("vc"), 5),
-            new Sample("full_name", ImmutableList.of("kc", "kp"), ImmutableList.of("vc", "vp"), 7));
+            new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
+            new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
   }
 
   @Test
@@ -105,20 +93,14 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name",
-                    "description",
-                    "1",
-                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
-                    Labels.empty()),
+                Descriptor.create("name", "description", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 Collections.emptyList()))
         .isEmpty();
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name", "description", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.empty()),
+                Descriptor.create("name", "description", "1", Descriptor.Type.MONOTONIC_DOUBLE),
                 Collections.singletonList(
                     MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
@@ -127,18 +109,13 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name",
-                    "description",
-                    "1",
-                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
-                    Labels.of("kc", "vc")),
+                Descriptor.create("name", "description", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 ImmutableList.of(
                     MetricData.DoublePoint.create(123, 456, Labels.empty(), 5),
                     MetricData.DoublePoint.create(321, 654, Labels.of("kp", "vp"), 7))))
         .containsExactly(
-            new Sample("full_name", ImmutableList.of("kc"), ImmutableList.of("vc"), 5),
-            new Sample("full_name", ImmutableList.of("kc", "kp"), ImmutableList.of("vc", "vp"), 7));
+            new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
+            new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
   }
 
   @Test
@@ -146,16 +123,14 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name", "description", "1", Descriptor.Type.SUMMARY, Labels.empty()),
+                Descriptor.create("name", "description", "1", Descriptor.Type.SUMMARY),
                 Collections.emptyList()))
         .isEmpty();
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name", "description", "1", Descriptor.Type.SUMMARY, Labels.empty()),
+                Descriptor.create("name", "description", "1", Descriptor.Type.SUMMARY),
                 ImmutableList.of(
                     MetricData.SummaryPoint.create(
                         321,
@@ -176,8 +151,7 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                Descriptor.create(
-                    "name", "description", "1", Descriptor.Type.SUMMARY, Labels.of("kc", "vc")),
+                Descriptor.create("name", "description", "1", Descriptor.Type.SUMMARY),
                 ImmutableList.of(
                     MetricData.SummaryPoint.create(
                         123, 456, Labels.empty(), 7, 15.3, Collections.emptyList()),
@@ -191,33 +165,26 @@ class MetricAdapterTest {
                             MetricData.ValueAtPercentile.create(0.9, 1.1),
                             MetricData.ValueAtPercentile.create(0.99, 12.3))))))
         .containsExactly(
-            new Sample("full_name_count", ImmutableList.of("kc"), ImmutableList.of("vc"), 7),
-            new Sample("full_name_sum", ImmutableList.of("kc"), ImmutableList.of("vc"), 15.3),
-            new Sample(
-                "full_name_count", ImmutableList.of("kc", "kp"), ImmutableList.of("vc", "vp"), 9),
-            new Sample(
-                "full_name_sum", ImmutableList.of("kc", "kp"), ImmutableList.of("vc", "vp"), 18.3),
+            new Sample("full_name_count", Collections.emptyList(), Collections.emptyList(), 7),
+            new Sample("full_name_sum", Collections.emptyList(), Collections.emptyList(), 15.3),
+            new Sample("full_name_count", ImmutableList.of("kp"), ImmutableList.of("vp"), 9),
+            new Sample("full_name_sum", ImmutableList.of("kp"), ImmutableList.of("vp"), 18.3),
             new Sample(
                 "full_name",
-                ImmutableList.of("kc", "kp", "quantile"),
-                ImmutableList.of("vc", "vp", "0.9"),
+                ImmutableList.of("kp", "quantile"),
+                ImmutableList.of("vp", "0.9"),
                 1.1),
             new Sample(
                 "full_name",
-                ImmutableList.of("kc", "kp", "quantile"),
-                ImmutableList.of("vc", "vp", "0.99"),
+                ImmutableList.of("kp", "quantile"),
+                ImmutableList.of("vp", "0.99"),
                 12.3));
   }
 
   @Test
   void toMetricFamilySamples() {
     Descriptor descriptor =
-        Descriptor.create(
-            "instrument.name",
-            "description",
-            "1",
-            Descriptor.Type.MONOTONIC_DOUBLE,
-            Labels.of("kc", "vc"));
+        Descriptor.create("instrument.name", "description", "1", Descriptor.Type.MONOTONIC_DOUBLE);
 
     MetricData metricData =
         MetricData.create(
@@ -235,9 +202,6 @@ class MetricAdapterTest {
                 descriptor.getDescription(),
                 ImmutableList.of(
                     new Sample(
-                        "instrument_name",
-                        ImmutableList.of("kc", "kp"),
-                        ImmutableList.of("vc", "vp"),
-                        5))));
+                        "instrument_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 5))));
   }
 }

@@ -23,7 +23,6 @@ import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.TemporaryBuffers;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -91,15 +90,11 @@ public class HttpTraceContext implements TextMapPropagator {
     checkNotNull(context, "context");
     checkNotNull(setter, "setter");
 
-    Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null || !span.getContext().isValid()) {
+    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    if (!spanContext.isValid()) {
       return;
     }
 
-    injectImpl(span.getContext(), carrier, setter);
-  }
-
-  private static <C> void injectImpl(SpanContext spanContext, C carrier, Setter<C> setter) {
     char[] chars = TemporaryBuffers.chars(TRACEPARENT_HEADER_SIZE);
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);

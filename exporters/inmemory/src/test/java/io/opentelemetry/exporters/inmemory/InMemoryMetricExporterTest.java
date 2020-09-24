@@ -39,8 +39,7 @@ class InMemoryMetricExporterTest {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.create(
-        Descriptor.create(
-            "name", "description", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
+        Descriptor.create("name", "description", "1", Descriptor.Type.MONOTONIC_LONG),
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
         Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));

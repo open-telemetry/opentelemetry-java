@@ -117,9 +117,6 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Labels constantLabels);
-
-    @Override
     DoubleValueRecorder build();
   }
 }

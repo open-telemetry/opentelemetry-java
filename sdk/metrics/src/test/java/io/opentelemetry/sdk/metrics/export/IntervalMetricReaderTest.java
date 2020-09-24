@@ -48,11 +48,7 @@ import org.mockito.MockitoAnnotations;
 class IntervalMetricReaderTest {
   private static final MetricData.Descriptor METRIC_DESCRIPTOR =
       MetricData.Descriptor.create(
-          "my metric",
-          "my metric description",
-          "us",
-          Descriptor.Type.MONOTONIC_LONG,
-          Labels.empty());
+          "my metric", "my metric description", "us", Descriptor.Type.MONOTONIC_LONG);
 
   private static final List<Point> LONG_POINT_LIST =
       Collections.singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));

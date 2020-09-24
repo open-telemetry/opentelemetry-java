@@ -72,7 +72,6 @@ class LongValueRecorderSdkTest {
     LongValueRecorderSdk longMeasure =
         testSdk
             .longValueRecorderBuilder("testRecorder")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -82,11 +81,7 @@ class LongValueRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testRecorder",
-                    "My very own counter",
-                    "ms",
-                    Descriptor.Type.SUMMARY,
-                    Labels.of("sk1", "sv1")),
+                    "testRecorder", "My very own counter", "ms", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.emptyList()));
@@ -97,7 +92,6 @@ class LongValueRecorderSdkTest {
     LongValueRecorderSdk longMeasure =
         testSdk
             .longValueRecorderBuilder("testRecorder")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -110,11 +104,7 @@ class LongValueRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testRecorder",
-                    "My very own counter",
-                    "ms",
-                    Descriptor.Type.SUMMARY,
-                    Labels.of("sk1", "sv1")),
+                    "testRecorder", "My very own counter", "ms", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.emptyList()));
@@ -129,7 +119,7 @@ class LongValueRecorderSdkTest {
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testRecorder", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
+                Descriptor.create("testRecorder", "", "1", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

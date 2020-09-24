@@ -37,19 +37,10 @@ import org.junit.jupiter.api.Test;
 class MetricDataTest {
 
   private static final Descriptor LONG_METRIC_DESCRIPTOR =
-      Descriptor.create(
-          "metric_name",
-          "metric_description",
-          "ms",
-          Descriptor.Type.MONOTONIC_LONG,
-          Labels.of("key_const", "value_const"));
+      Descriptor.create("metric_name", "metric_description", "ms", Descriptor.Type.MONOTONIC_LONG);
   private static final Descriptor DOUBLE_METRIC_DESCRIPTOR =
       Descriptor.create(
-          "metric_name",
-          "metric_description",
-          "ms",
-          Descriptor.Type.NON_MONOTONIC_DOUBLE,
-          Labels.of("key_const", "value_const"));
+          "metric_name", "metric_description", "ms", Descriptor.Type.NON_MONOTONIC_DOUBLE);
   private static final long START_EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(1000);
   private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
   private static final long LONG_VALUE = 10;
