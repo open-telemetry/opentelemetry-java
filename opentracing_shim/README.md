@@ -15,7 +15,7 @@ There are 2 ways to expose an OpenTracing tracer:
     Tracer tracer = TraceShim.createTracerShim(tracerProvider, contextManager);
     ```
 
-Optionally register tracer as the OpenTracing GlobalTracer
+Optionally register the tracer as the OpenTracing GlobalTracer:
 ```java
 GlobalTracer.registerIfAbsent(tracer);
 ```
