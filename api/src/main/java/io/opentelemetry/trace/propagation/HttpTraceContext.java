@@ -80,7 +80,9 @@ public class HttpTraceContext implements TextMapPropagator {
     VALID_VERSIONS = new HashSet<>();
     for (int i = 0; i < 255; i++) {
       String version = Long.toHexString(i);
-      if (version.length() < 2) version = '0' + version;
+      if (version.length() < 2) {
+        version = '0' + version;
+      }
       VALID_VERSIONS.add(version);
     }
   }
