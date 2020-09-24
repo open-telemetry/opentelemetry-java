@@ -172,10 +172,6 @@ final class MetricAdapter {
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
               .setTimeUnixNano(longPoint.getEpochNanos())
               .setValue(longPoint.getValue());
-      // Avoid calling addAllLabels when not needed to save a couple allocations.
-      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
-        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
-      }
       Collection<StringKeyValue> labels = toProtoLabels(longPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -195,10 +191,6 @@ final class MetricAdapter {
               .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
               .setTimeUnixNano(doublePoint.getEpochNanos())
               .setValue(doublePoint.getValue());
-      // Avoid calling addAllLabels when not needed to save a couple allocations.
-      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
-        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
-      }
       Collection<StringKeyValue> labels = toProtoLabels(doublePoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -219,10 +211,6 @@ final class MetricAdapter {
               .setTimeUnixNano(summaryPoint.getEpochNanos())
               .setCount(summaryPoint.getCount())
               .setSum(summaryPoint.getSum());
-      // Avoid calling addAllLabels when not needed to save a couple allocations.
-      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
-        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
-      }
       List<StringKeyValue> labels = toProtoLabels(summaryPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);

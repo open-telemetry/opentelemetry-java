@@ -110,9 +110,6 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Labels constantLabels);
-
-    @Override
     DoubleUpDownCounter build();
   }
 }

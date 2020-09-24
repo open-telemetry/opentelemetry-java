@@ -69,7 +69,6 @@ class LongUpDownCounterSdkTest {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk
             .longUpDownCounterBuilder("testUpDownCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -82,8 +81,7 @@ class LongUpDownCounterSdkTest {
                 "testUpDownCounter",
                 "My very own counter",
                 "ms",
-                Descriptor.Type.NON_MONOTONIC_LONG,
-                Labels.of("sk1", "sv1")));
+                Descriptor.Type.NON_MONOTONIC_LONG));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();

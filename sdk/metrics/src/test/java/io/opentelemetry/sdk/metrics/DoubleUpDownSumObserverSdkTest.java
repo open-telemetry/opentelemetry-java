@@ -49,7 +49,6 @@ class DoubleUpDownSumObserverSdkTest {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
@@ -61,7 +60,6 @@ class DoubleUpDownSumObserverSdkTest {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
@@ -76,8 +74,7 @@ class DoubleUpDownSumObserverSdkTest {
                     "testObserver",
                     "My own DoubleUpDownSumObserver",
                     "ms",
-                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
-                    Labels.of("sk1", "sv1")),
+                    Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.emptyList()));
@@ -92,8 +89,7 @@ class DoubleUpDownSumObserverSdkTest {
     assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -106,8 +102,7 @@ class DoubleUpDownSumObserverSdkTest {
     assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

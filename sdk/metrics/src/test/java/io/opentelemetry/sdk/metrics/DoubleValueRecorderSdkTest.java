@@ -72,7 +72,6 @@ class DoubleValueRecorderSdkTest {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
             .doubleValueRecorderBuilder("testRecorder")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
@@ -82,11 +81,7 @@ class DoubleValueRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testRecorder",
-                    "My very own measure",
-                    "ms",
-                    Descriptor.Type.SUMMARY,
-                    Labels.of("sk1", "sv1")),
+                    "testRecorder", "My very own measure", "ms", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.emptyList()));
@@ -97,7 +92,6 @@ class DoubleValueRecorderSdkTest {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
             .doubleValueRecorderBuilder("testRecorder")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
@@ -109,11 +103,7 @@ class DoubleValueRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testRecorder",
-                    "My very own measure",
-                    "ms",
-                    Descriptor.Type.SUMMARY,
-                    Labels.of("sk1", "sv1")),
+                    "testRecorder", "My very own measure", "ms", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.emptyList()));
@@ -129,7 +119,7 @@ class DoubleValueRecorderSdkTest {
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testRecorder", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
+                Descriptor.create("testRecorder", "", "1", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

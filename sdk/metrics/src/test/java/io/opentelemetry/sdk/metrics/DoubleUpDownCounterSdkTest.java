@@ -69,7 +69,6 @@ class DoubleUpDownCounterSdkTest {
     DoubleUpDownCounterSdk doubleUpDownCounter =
         testSdk
             .doubleUpDownCounterBuilder("testUpDownCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -82,8 +81,7 @@ class DoubleUpDownCounterSdkTest {
                 "testUpDownCounter",
                 "My very own counter",
                 "ms",
-                Descriptor.Type.NON_MONOTONIC_DOUBLE,
-                Labels.of("sk1", "sv1")));
+                Descriptor.Type.NON_MONOTONIC_DOUBLE));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();

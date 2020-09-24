@@ -58,32 +58,23 @@ class PrometheusCollectorTest {
         .isEqualTo(
             "# HELP grpc_name long_description\n"
                 + "# TYPE grpc_name counter\n"
-                + "grpc_name{kc=\"vc\",kp=\"vp\",} 5.0\n"
+                + "grpc_name{kp=\"vp\",} 5.0\n"
                 + "# HELP http_name double_description\n"
                 + "# TYPE http_name counter\n"
-                + "http_name{kc=\"vc\",kp=\"vp\",} 3.5\n");
+                + "http_name{kp=\"vp\",} 3.5\n");
   }
 
   private static ImmutableList<MetricData> generateTestData() {
     return ImmutableList.of(
         MetricData.create(
-            Descriptor.create(
-                "grpc.name",
-                "long_description",
-                "1",
-                Descriptor.Type.MONOTONIC_LONG,
-                Labels.of("kc", "vc")),
+            Descriptor.create("grpc.name", "long_description", "1", Descriptor.Type.MONOTONIC_LONG),
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("grpc", "version"),
             Collections.singletonList(
                 MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
         MetricData.create(
             Descriptor.create(
-                "http.name",
-                "double_description",
-                "1",
-                Descriptor.Type.MONOTONIC_DOUBLE,
-                Labels.of("kc", "vc")),
+                "http.name", "double_description", "1", Descriptor.Type.MONOTONIC_DOUBLE),
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("http", "version"),
             Collections.singletonList(

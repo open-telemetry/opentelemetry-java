@@ -272,16 +272,8 @@ public abstract class MetricData {
      */
     public abstract Type getType();
 
-    /**
-     * Returns the constant labels associated with this metric descriptor.
-     *
-     * @return the constant labels associated with this metric descriptor.
-     */
-    public abstract Labels getConstantLabels();
-
-    public static Descriptor create(
-        String name, String description, String unit, Type type, Labels constantLabels) {
-      return new AutoValue_MetricData_Descriptor(name, description, unit, type, constantLabels);
+    public static Descriptor create(String name, String description, String unit, Type type) {
+      return new AutoValue_MetricData_Descriptor(name, description, unit, type);
     }
   }
 }

@@ -62,11 +62,7 @@ public class OtlpExporterExample {
 
     Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example");
     Meter meter = OpenTelemetry.getMeter("io.opentelemetry.example");
-    LongCounter counter =
-        meter
-            .longCounterBuilder("example_counter")
-            .setConstantLabels(Labels.of("good", "true"))
-            .build();
+    LongCounter counter = meter.longCounterBuilder("example_counter").build();
 
     for (int i = 0; i < 10; i++) {
       Span exampleSpan = tracer.spanBuilder("exampleSpan").startSpan();

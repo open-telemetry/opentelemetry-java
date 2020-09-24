@@ -68,7 +68,6 @@ class DoubleCounterSdkTest {
     DoubleCounterSdk doubleCounter =
         testSdk
             .doubleCounterBuilder("testCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -78,11 +77,7 @@ class DoubleCounterSdkTest {
     assertThat(metricData.getDescriptor())
         .isEqualTo(
             Descriptor.create(
-                "testCounter",
-                "My very own counter",
-                "ms",
-                Descriptor.Type.MONOTONIC_DOUBLE,
-                Labels.of("sk1", "sv1")));
+                "testCounter", "My very own counter", "ms", Descriptor.Type.MONOTONIC_DOUBLE));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();

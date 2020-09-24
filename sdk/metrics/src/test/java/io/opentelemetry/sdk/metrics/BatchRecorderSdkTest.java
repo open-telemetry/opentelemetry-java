@@ -79,8 +79,7 @@ class BatchRecorderSdkTest {
     assertThat(doubleCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.empty()),
+                Descriptor.create("testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -88,8 +87,7 @@ class BatchRecorderSdkTest {
     assertThat(longCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -98,11 +96,7 @@ class BatchRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testDoubleUpDownCounter",
-                    "",
-                    "1",
-                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
-                    Labels.empty()),
+                    "testDoubleUpDownCounter", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -111,11 +105,7 @@ class BatchRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testLongUpDownCounter",
-                    "",
-                    "1",
-                    Descriptor.Type.NON_MONOTONIC_LONG,
-                    Labels.empty()),
+                    "testLongUpDownCounter", "", "1", Descriptor.Type.NON_MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

@@ -95,15 +95,13 @@ class MeterSdkRegistryTest {
     assertThat(meterProvider.getMetricProducer().collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG),
                 Resource.getEmpty(),
                 meterSdk1.getInstrumentationLibraryInfo(),
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG),
                 Resource.getEmpty(),
                 meterSdk2.getInstrumentationLibraryInfo(),
                 Collections.singletonList(
