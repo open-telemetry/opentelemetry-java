@@ -43,6 +43,7 @@ class BeanstalkResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
+                ResourceAttributes.CLOUD_PROVIDER, "aws",
                 ResourceAttributes.SERVICE_INSTANCE, "4",
                 ResourceAttributes.SERVICE_VERSION, "2",
                 ResourceAttributes.SERVICE_NAMESPACE, "HttpSubscriber-env"));
