@@ -21,11 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import org.junit.jupiter.api.Test;
 
-class SpanDataTest {
+class SpanDataBuilderTest {
 
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
@@ -51,26 +52,28 @@ class SpanDataTest {
 
   @Test
   void noOp() {
-    assertThat(SpanData.newBuilder(TEST_SPAN_DATA).build())
+    assertThat(SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build())
         .isEqualToComparingFieldByField(TEST_SPAN_DATA);
   }
 
   @Test
   void modifySpanData() {
     assertThat(TEST_SPAN_DATA.getStatus()).isEqualTo(Status.UNKNOWN);
-    SpanData modified = SpanData.newBuilder(TEST_SPAN_DATA).setStatus(Status.ABORTED).build();
+    SpanData modified =
+        SpanDataBuilder.newBuilder(TEST_SPAN_DATA).setStatus(Status.ABORTED).build();
     assertThat(modified.getStatus()).isEqualTo(Status.ABORTED);
   }
 
   @Test
   void equalsHashCode() {
-    assertThat(SpanData.newBuilder(TEST_SPAN_DATA).build()).isEqualTo(TEST_SPAN_DATA);
+    assertThat(SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build()).isEqualTo(TEST_SPAN_DATA);
     EqualsTester tester = new EqualsTester();
     tester
         .addEqualityGroup(
-            SpanData.newBuilder(TEST_SPAN_DATA).build(),
-            SpanData.newBuilder(TEST_SPAN_DATA).build())
-        .addEqualityGroup(SpanData.newBuilder(TEST_SPAN_DATA).setStatus(Status.ABORTED).build());
+            SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build(),
+            SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build())
+        .addEqualityGroup(
+            SpanDataBuilder.newBuilder(TEST_SPAN_DATA).setStatus(Status.ABORTED).build());
     tester.testEquals();
   }
 }

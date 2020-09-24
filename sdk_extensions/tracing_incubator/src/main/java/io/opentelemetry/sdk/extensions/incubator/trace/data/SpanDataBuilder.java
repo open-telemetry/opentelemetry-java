@@ -20,16 +20,16 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A {@link io.opentelemetry.sdk.trace.data.SpanData} implementation with a builder that can be used
- * to modify parts of a {@link io.opentelemetry.sdk.trace.data.SpanData}.
+ * A {@link SpanData} implementation with a builder that can be used to modify parts of a {@link
+ * SpanData}.
  *
  * <pre>{@code
  * String clientType = ClientConfig.parseUserAgent(
@@ -48,17 +48,17 @@ import javax.annotation.concurrent.Immutable;
 // type.
 @Immutable
 @AutoValue
-public abstract class SpanData implements io.opentelemetry.sdk.trace.data.SpanData {
+public abstract class SpanDataBuilder implements SpanData {
 
   /**
-   * Returns a {@link SpanData.Builder} populated with the information in the provided {@link
-   * io.opentelemetry.sdk.trace.data.SpanData}.
+   * Returns a {@link SpanDataBuilder.Builder} populated with the information in the provided {@link
+   * SpanData}.
    */
-  public static SpanData.Builder newBuilder(io.opentelemetry.sdk.trace.data.SpanData spanData) {
-    return new AutoValue_SpanData.Builder()
+  public static SpanDataBuilder.Builder newBuilder(SpanData spanData) {
+    return new AutoValue_SpanDataBuilder.Builder()
         .setTraceId(spanData.getTraceId())
         .setSpanId(spanData.getSpanId())
-        .setTraceFlags(spanData.getTraceFlags())
+        .setSampled(spanData.isSampled())
         .setTraceState(spanData.getTraceState())
         .setParentSpanId(spanData.getParentSpanId())
         .setResource(spanData.getResource())
@@ -78,7 +78,7 @@ public abstract class SpanData implements io.opentelemetry.sdk.trace.data.SpanDa
         .setTotalAttributeCount(spanData.getTotalAttributeCount());
   }
 
-  public final SpanData.Builder toBuilder() {
+  public final SpanDataBuilder.Builder toBuilder() {
     return autoToBuilder();
   }
 
@@ -93,11 +93,11 @@ public abstract class SpanData implements io.opentelemetry.sdk.trace.data.SpanDa
       return true;
     }
 
-    if (o instanceof io.opentelemetry.sdk.trace.data.SpanData) {
-      io.opentelemetry.sdk.trace.data.SpanData that = (io.opentelemetry.sdk.trace.data.SpanData) o;
+    if (o instanceof SpanData) {
+      SpanData that = (SpanData) o;
       return getTraceId().equals(that.getTraceId())
           && getSpanId().equals(that.getSpanId())
-          && getTraceFlags().equals(that.getTraceFlags())
+          && isSampled() == that.isSampled()
           && getTraceState().equals(that.getTraceState())
           && getParentSpanId().equals(that.getParentSpanId())
           && getResource().equals(that.getResource())
@@ -120,7 +120,7 @@ public abstract class SpanData implements io.opentelemetry.sdk.trace.data.SpanDa
   }
 
   /**
-   * A {@code Builder} class for {@link SpanData}.
+   * A {@code Builder} class for {@link SpanDataBuilder}.
    *
    * @since 0.1.0
    */
@@ -131,13 +131,13 @@ public abstract class SpanData implements io.opentelemetry.sdk.trace.data.SpanDa
       return autoBuild();
     }
 
-    abstract SpanData autoBuild();
+    abstract SpanDataBuilder autoBuild();
 
     public abstract Builder setTraceId(String traceId);
 
     public abstract Builder setSpanId(String spanId);
 
-    public abstract Builder setTraceFlags(TraceFlags traceFlags);
+    public abstract Builder setSampled(boolean isSampled);
 
     public abstract Builder setTraceState(TraceState traceState);
 

@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
 
@@ -75,8 +74,8 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public TraceFlags getTraceFlags() {
-    return delegate.getTraceFlags();
+  public boolean isSampled() {
+    return delegate.isSampled();
   }
 
   @Override
@@ -173,7 +172,7 @@ public abstract class DelegatingSpanData implements SpanData {
       SpanData that = (SpanData) o;
       return getTraceId().equals(that.getTraceId())
           && getSpanId().equals(that.getSpanId())
-          && getTraceFlags().equals(that.getTraceFlags())
+          && isSampled() == that.isSampled()
           && getTraceState().equals(that.getTraceState())
           && getParentSpanId().equals(that.getParentSpanId())
           && getResource().equals(that.getResource())
@@ -250,8 +249,8 @@ public abstract class DelegatingSpanData implements SpanData {
         + "spanId="
         + getSpanId()
         + ", "
-        + "traceFlags="
-        + getTraceFlags()
+        + "isSampled="
+        + isSampled()
         + ", "
         + "traceState="
         + getTraceState()

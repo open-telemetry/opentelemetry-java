@@ -19,8 +19,9 @@ package io.opentelemetry.sdk.extensions.incubator.trace.data;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.AttributesKeys;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -32,6 +33,9 @@ import io.opentelemetry.trace.attributes.SemanticAttributes;
 import org.junit.jupiter.api.Test;
 
 class DelegatingSpanDataTest {
+
+  private static final AttributeKey<String> CLIENT_TYPE_KEY =
+      AttributesKeys.stringKey("client_type");
 
   private static final class NoOpDelegatingSpanData extends DelegatingSpanData {
     private NoOpDelegatingSpanData(SpanData delegate) {
@@ -46,10 +50,9 @@ class DelegatingSpanDataTest {
     private SpanDataWithClientType(SpanData delegate) {
       super(delegate);
       final String clientType;
-      AttributeValue userAgent =
-          delegate.getAttributes().get(SemanticAttributes.HTTP_USER_AGENT.key());
+      String userAgent = delegate.getAttributes().get(SemanticAttributes.HTTP_USER_AGENT);
       if (userAgent != null) {
-        clientType = parseUserAgent(userAgent.getStringValue());
+        clientType = parseUserAgent(userAgent);
       } else {
         clientType = "unknown";
       }
@@ -87,8 +90,7 @@ class DelegatingSpanDataTest {
   void overrideDelegate() {
     SpanData spanData = createBasicSpanBuilder().build();
     SpanData spanDataWithClientType = new SpanDataWithClientType(spanData);
-    assertThat(spanDataWithClientType.getAttributes().get("client_type").getStringValue())
-        .isEqualTo("unknown");
+    assertThat(spanDataWithClientType.getAttributes().get(CLIENT_TYPE_KEY)).isEqualTo("unknown");
   }
 
   @Test
@@ -107,8 +109,7 @@ class DelegatingSpanDataTest {
         .addEqualityGroup(noopWrapper)
         .addEqualityGroup(spanDataWithClientType)
         .testEquals();
-    assertThat(spanDataWithClientType.getAttributes().get("client_type").getStringValue())
-        .isEqualTo("unknown");
+    assertThat(spanDataWithClientType.getAttributes().get(CLIENT_TYPE_KEY)).isEqualTo("unknown");
   }
 
   private static TestSpanData.Builder createBasicSpanBuilder() {
