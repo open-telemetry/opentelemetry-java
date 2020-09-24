@@ -5,16 +5,20 @@ It takes OpenTelemetry Tracer and expose it as an OpenTracing Tracer.
 
 ## Usage
 
-1. Configure OpenTelemetry tracer
-1. Create OpenTracing tracer from OpenTelemetry tracer
+There are 2 ways to expose OpenTracing tracer: 
+1. From global OpenTelemetry configuration 
     ```java
     Tracer tracer = TraceShim.createTracerShim();
     ```
-1. Optionally register it as the OpenTracing GlobalTracer
+1. From provided `TracerProvider` and `CorrelationContextManager`
     ```java
-    GlobalTracer.registerIfAbsent(tracer);
+    Tracer tracer = TraceShim.createTracerShim(tracerProvider, contextManager);
     ```
 
+Optionally register tracer as the OpenTracing GlobalTracer
+```java
+GlobalTracer.registerIfAbsent(tracer);
+```
 
 [javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-opentracing-shim.svg
 [javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-opentracing-shim
