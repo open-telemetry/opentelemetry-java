@@ -30,10 +30,11 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
-import io.opentelemetry.trace.WireFormatUtils;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
@@ -72,7 +73,19 @@ public class HttpTraceContext implements TextMapPropagator {
   private static final Pattern TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN =
       Pattern.compile("[ \t]*" + TRACESTATE_ENTRY_DELIMITER + "[ \t]*");
 
+  private static final Set<String> VALID_VERSIONS;
+
   private static final HttpTraceContext INSTANCE = new HttpTraceContext();
+
+  static {
+    // A valid version is 1 byte representing an 8-bit unsigned integer, version ff is invalid.
+    VALID_VERSIONS = new HashSet<>();
+    for (int i = 0; i < 255; i++) {
+      String version = Long.toHexString(i);
+      if (version.length() < 2) version = '0' + version;
+      VALID_VERSIONS.add(version);
+    }
+  }
 
   private HttpTraceContext() {
     // singleton
@@ -200,7 +213,7 @@ public class HttpTraceContext implements TextMapPropagator {
 
     try {
       String version = traceparent.substring(0, 2);
-      if (!WireFormatUtils.isValidVersion(version)) {
+      if (!VALID_VERSIONS.contains(version)) {
         return SpanContext.getInvalid();
       }
 
