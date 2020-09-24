@@ -10,7 +10,7 @@ There are 2 ways to expose an OpenTracing tracer:
     ```java
     Tracer tracer = TraceShim.createTracerShim();
     ```
-1. From provided `TracerProvider` and `CorrelationContextManager`
+1. From the provided `TracerProvider` and `CorrelationContextManager`:
     ```java
     Tracer tracer = TraceShim.createTracerShim(tracerProvider, contextManager);
     ```
