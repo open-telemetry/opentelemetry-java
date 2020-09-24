@@ -62,7 +62,8 @@ public class EcsResource extends ResourceProvider {
     }
 
     Attributes.Builder attrBuilders = Attributes.newBuilder();
-    attrBuilders.setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws");
+    attrBuilders.setAttribute(
+        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
     try {
       String hostName = InetAddress.getLocalHost().getHostName();
       attrBuilders.setAttribute(ResourceAttributes.CONTAINER_NAME, hostName);
