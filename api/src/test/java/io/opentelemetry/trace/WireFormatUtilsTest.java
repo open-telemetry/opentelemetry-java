@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 public class WireFormatUtilsTest {
 
   @Test
-  public void isValid() {
+  public void isValidVersion() {
     assertTrue(WireFormatUtils.isValidVersion("00"));
     assertTrue(WireFormatUtils.isValidVersion("cc"));
 
