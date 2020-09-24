@@ -61,6 +61,13 @@ public final class DefaultContextPropagators implements ContextPropagators {
    * {@link Builder} is used to construct a new {@code ContextPropagators} object with the specified
    * propagators.
    *
+   * <p>Upon injection, {@code TextMapPropagator#inject()} is invoked for every registered trace
+   * propagator from first to last one. This will result in the carrier containing all the
+   * registered formats.
+   *
+   * <p>Upon extraction, {@code TextMapPropagator#extract()} is invoked for every registered trace
+   * propagator from first to last one, returning last extracted context.
+   *
    * <p>This is a example of a {@code ContextPropagators} object being created:
    *
    * <pre>{@code
