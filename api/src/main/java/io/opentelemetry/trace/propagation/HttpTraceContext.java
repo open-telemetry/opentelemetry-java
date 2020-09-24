@@ -29,8 +29,8 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TraceVersion;
 import io.opentelemetry.trace.TracingContextUtils;
+import io.opentelemetry.trace.WireFormatUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -200,7 +200,7 @@ public class HttpTraceContext implements TextMapPropagator {
 
     try {
       String version = traceparent.substring(0, 2);
-      if (!TraceVersion.isValid(version)) {
+      if (!WireFormatUtils.isValidVersion(version)) {
         return SpanContext.getInvalid();
       }
 

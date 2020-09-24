@@ -21,16 +21,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class TraceVersionTest {
+public class WireFormatUtilsTest {
 
   @Test
   public void isValid() {
-    assertTrue(TraceVersion.isValid("00"));
-    assertTrue(TraceVersion.isValid("cc"));
+    assertTrue(WireFormatUtils.isValidVersion("00"));
+    assertTrue(WireFormatUtils.isValidVersion("cc"));
 
-    assertFalse(TraceVersion.isValid("ff"));
-    assertFalse(TraceVersion.isValid("000"));
-    assertFalse(TraceVersion.isValid("0"));
-    assertFalse(TraceVersion.isValid("--"));
+    assertFalse(WireFormatUtils.isValidVersion("ff"));
+    assertFalse(WireFormatUtils.isValidVersion("000"));
+    assertFalse(WireFormatUtils.isValidVersion("0"));
+    assertFalse(WireFormatUtils.isValidVersion("--"));
   }
 }

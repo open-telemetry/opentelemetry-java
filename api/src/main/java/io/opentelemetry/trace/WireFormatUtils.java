@@ -16,9 +16,9 @@
 
 package io.opentelemetry.trace;
 
-public class TraceVersion {
+public class WireFormatUtils {
 
-  private TraceVersion() {}
+  private WireFormatUtils() {}
 
   /**
    * Returns whether the version is valid. A valid version is 1 byte representing an 8-bit unsigned
@@ -26,7 +26,7 @@ public class TraceVersion {
    *
    * @return {@code true} if the version is valid.
    */
-  public static boolean isValid(String version) {
+  public static boolean isValidVersion(String version) {
     return version.length() == 2
         && BigendianEncoding.isValidBase16String(version)
         && !version.equals("ff");
