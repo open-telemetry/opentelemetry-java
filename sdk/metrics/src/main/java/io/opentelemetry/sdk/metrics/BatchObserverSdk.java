@@ -110,7 +110,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
                 LongObservation longObservation = (LongObservation) observation;
                 aggregator = longObservation.getAggregator();
                 aggregator.recordLong(longObservation.getValue());
-                descriptor = longObservation.getDescription();
+                descriptor = longObservation.getDescriptor();
               } else {
                 DoubleObservation doubleObservation = (DoubleObservation) observation;
                 aggregator = doubleObservation.getAggregator();
@@ -133,7 +133,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
 
     Aggregator getAggregator();
 
-    Descriptor getDescription();
+    Descriptor getDescriptor();
   }
 
   /** The double observation for the {@link Observation}. */
@@ -186,7 +186,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
       startEpochNanos = clock.now();
     }
 
-    public void setLabels(Labels labels) {
+    private void setLabels(Labels labels) {
       this.labels = labels;
     }
 
@@ -203,7 +203,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     @Override
     public final void batch(Labels labelSet, Aggregator aggregator, boolean unmappedAggregator) {}
 
-    public void batch(Descriptor descriptor, Aggregator aggregator) {
+    private void batch(Descriptor descriptor, Aggregator aggregator) {
       this.reportList.add(new Report(descriptor, aggregator));
     }
 

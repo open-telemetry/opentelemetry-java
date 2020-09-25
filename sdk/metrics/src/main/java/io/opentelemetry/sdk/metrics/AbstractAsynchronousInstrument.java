@@ -106,7 +106,7 @@ abstract class AbstractAsynchronousInstrument<
       }
 
       @Override
-      public Descriptor getDescription() {
+      public Descriptor getDescriptor() {
         return this.activeBatcher.getDescriptor();
       }
 
