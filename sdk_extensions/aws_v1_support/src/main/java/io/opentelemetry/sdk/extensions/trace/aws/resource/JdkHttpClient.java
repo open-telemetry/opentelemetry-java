@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import java.io.ByteArrayOutputStream;
@@ -30,10 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Collection;
 import java.util.Map;
@@ -44,9 +40,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
-public class RestfulClient {
+public class JdkHttpClient {
 
-  private static final Logger logger = Logger.getLogger(RestfulClient.class.getName());
+  private static final Logger logger = Logger.getLogger(JdkHttpClient.class.getName());
 
   private static final int TIMEOUT_MILLIS = 2000;
 
@@ -58,37 +54,41 @@ public class RestfulClient {
     final HttpURLConnection connection;
 
     try {
-      if (Strings.isNullOrEmpty(keyStorePath)) {
-        connection = (HttpURLConnection) new URL(urlStr).openConnection();
-      } else {
+      if (urlStr.startsWith("https")) {
         connection = (HttpsURLConnection) new URL(urlStr).openConnection();
-        ((HttpsURLConnection) connection).setSSLSocketFactory(buildSslSocketFactory(keyStorePath));
+        KeyStore keyStore = getK8sKeystore(keyStorePath);
+        if (keyStore != null) {
+          ((HttpsURLConnection) connection).setSSLSocketFactory(buildSslSocketFactory(keyStore));
+        }
+      } else {
+        connection = (HttpURLConnection) new URL(urlStr).openConnection();
       }
 
       connection.setRequestMethod(httpMethod);
       connection.setConnectTimeout(TIMEOUT_MILLIS);
       connection.setReadTimeout(TIMEOUT_MILLIS);
 
-      if (requestPropertyMap != null) {
-        for (Map.Entry<String, String> requestProperty : requestPropertyMap.entrySet()) {
-          connection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
-        }
+      for (Map.Entry<String, String> requestProperty : requestPropertyMap.entrySet()) {
+        connection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
       }
 
       int responseCode = connection.getResponseCode();
       if (responseCode != 200) {
         logger.log(
-            Level.WARNING,
-            String.format(
-                "Error reponse from %s code (%s) text %s",
-                urlStr, responseCode, readResponseString(connection)));
+            Level.FINE,
+            "Error reponse from "
+                + urlStr
+                + " code ("
+                + responseCode
+                + ") text "
+                + readResponseString(connection));
         return "";
       }
 
       return readResponseString(connection).trim();
 
     } catch (IOException e) {
-      logger.log(Level.WARNING, String.format("Restful Client fetch string failed: %s", e));
+      logger.log(Level.WARNING, "JdkHttpClient fetch string failed: " + e);
     }
 
     return "";
@@ -111,14 +111,13 @@ public class RestfulClient {
     try {
       return os.toString(StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
-      throw new IllegalStateException("UTF-8 not supported can't happen.", e);
+      logger.log(Level.WARNING, "UTF-8 not supported can't happen. " + e);
     }
+    return "";
   }
 
-  private static SSLSocketFactory buildSslSocketFactory(String keystorePath) {
+  private static SSLSocketFactory buildSslSocketFactory(KeyStore keyStore) {
     try {
-      KeyStore keyStore = getK8sKeystore(keystorePath);
-
       String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
       TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
       tmf.init(keyStore);
@@ -128,7 +127,7 @@ public class RestfulClient {
       return context.getSocketFactory();
 
     } catch (Exception e) {
-      logger.log(Level.WARNING, "Build SslSocketFactory for K8s restful client exception: %s", e);
+      logger.log(Level.WARNING, "Build SslSocketFactory for K8s restful client exception: " + e);
     }
     return null;
   }
@@ -137,51 +136,28 @@ public class RestfulClient {
     try {
       File file = new File(tokenFilePath);
       String content = Files.asCharSource(file, Charsets.UTF_8).read();
-      return String.format("Bearer %s", content);
+      return "Bearer " + content;
     } catch (IOException e) {
-      logger.log(Level.WARNING, String.format("Unable to load K8s client token: %s", e));
+      logger.log(Level.WARNING, "Unable to load K8s client token: " + e);
     }
     return "";
   }
 
   private static KeyStore getK8sKeystore(String keyStorePath) {
-    InputStream certificateFile = null;
-    try {
-      KeyStore trustStore = null;
-      File caFile = new File(keyStorePath);
+    try (FileInputStream fis = new FileInputStream(keyStorePath)) {
+      KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+      trustStore.load(null, null);
+      CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
 
-      if (caFile.exists()) {
-        trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        trustStore.load(null, null);
-        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+      Collection<? extends Certificate> certificates = certificateFactory.generateCertificates(fis);
 
-        certificateFile = new FileInputStream(caFile);
-        Collection<? extends Certificate> certificates =
-            certificateFactory.generateCertificates(certificateFile);
-
-        if (certificates.isEmpty()) {
-          throw new IllegalArgumentException("K8s cert file contained no certificates.");
-        }
-
-        for (Certificate certificate : certificates) {
-          trustStore.setCertificateEntry("k8sca", certificate);
-        }
-      } else {
-        logger.log(Level.INFO, "K8s CA Cert file does not exists.");
+      for (Certificate certificate : certificates) {
+        trustStore.setCertificateEntry("k8sca", certificate);
       }
-
       return trustStore;
-    } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-      logger.log(Level.INFO, String.format("Unable to load K8s CA certificate. %s", e));
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Cannot load KeyStore from " + keyStorePath);
       return null;
-    } finally {
-      if (certificateFile != null) {
-        try {
-          certificateFile.close();
-        } catch (IOException e) {
-          logger.log(Level.INFO, "Can't close K8s CA certificate file.");
-        }
-      }
     }
   }
 }

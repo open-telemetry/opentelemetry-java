@@ -34,7 +34,7 @@ import java.util.Map;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-public class RestfulClientTest {
+public class JdkHttpClientTest {
 
   @ClassRule
   public static WireMockClassRule server = new WireMockClassRule(wireMockConfig().dynamicPort());
@@ -45,8 +45,8 @@ public class RestfulClientTest {
 
     Map<String, String> requestPropertyMap = ImmutableMap.of("key1", "value1", "key2", "value2");
     String urlStr = String.format("http://localhost:%s%s", server.port(), "/path");
-    RestfulClient restfulClient = new RestfulClient();
-    String result = restfulClient.fetchString("GET", urlStr, requestPropertyMap, null);
+    JdkHttpClient jdkHttpClient = new JdkHttpClient();
+    String result = jdkHttpClient.fetchString("GET", urlStr, requestPropertyMap, null);
 
     assertThat(result).isEqualTo("expected result");
     verify(getRequestedFor(urlEqualTo("/path")).withHeader("key1", equalTo("value1")));
@@ -57,8 +57,8 @@ public class RestfulClientTest {
   public void testFailedFetchString() {
     Map<String, String> requestPropertyMap = ImmutableMap.of("key1", "value1", "key2", "value2");
     String urlStr = String.format("http://localhost:%s%s", server.port(), "/path");
-    RestfulClient restfulClient = new RestfulClient();
-    String result = restfulClient.fetchString("GET", urlStr, requestPropertyMap, null);
+    JdkHttpClient jdkHttpClient = new JdkHttpClient();
+    String result = jdkHttpClient.fetchString("GET", urlStr, requestPropertyMap, null);
     assertThat(result).isEmpty();
   }
 }

@@ -43,7 +43,7 @@ public class EksResourceTest {
 
   @Mock private DockerHelper mockDockerHelper;
 
-  @Mock private RestfulClient restfulClient;
+  @Mock private JdkHttpClient jdkHttpClient;
 
   @Test
   void testEks(@TempDir File tempFolder) throws IOException {
@@ -54,17 +54,17 @@ public class EksResourceTest {
     String truststore = "truststore123";
     Files.write(truststore.getBytes(Charsets.UTF_8), mockK8sKeystoreFile);
 
-    when(restfulClient.fetchString(
+    when(jdkHttpClient.fetchString(
             any(), Mockito.eq(K8S_SVC_URL + AUTH_CONFIGMAP_PATH), any(), any()))
         .thenReturn("not empty");
-    when(restfulClient.fetchString(
+    when(jdkHttpClient.fetchString(
             any(), Mockito.eq(K8S_SVC_URL + CW_CONFIGMAP_PATH), any(), any()))
         .thenReturn("{\"data\":{\"cluster.name\":\"my-cluster\"}}");
     when(mockDockerHelper.getContainerId()).thenReturn("0123456789A");
 
     EksResource eksResource =
         new EksResource(
-            restfulClient,
+            jdkHttpClient,
             mockDockerHelper,
             mockK8sTokenFile.getPath(),
             mockK8sKeystoreFile.getPath());
@@ -79,7 +79,7 @@ public class EksResourceTest {
 
   @Test
   void testNotEks() {
-    EksResource eksResource = new EksResource(restfulClient, mockDockerHelper, "", "");
+    EksResource eksResource = new EksResource(jdkHttpClient, mockDockerHelper, "", "");
     Attributes attributes = eksResource.getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
   }

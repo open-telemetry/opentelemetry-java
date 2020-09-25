@@ -41,22 +41,22 @@ public class EksResource extends ResourceProvider {
       "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
   private static final Logger logger = Logger.getLogger(EksResource.class.getName());
 
-  private final RestfulClient restfulClient;
+  private final JdkHttpClient jdkHttpClient;
   private final DockerHelper dockerHelper;
   private final String k8sTokenPath;
   private final String k8sKeystorePath;
 
   public EksResource() {
-    this(new RestfulClient(), new DockerHelper(), K8S_TOKEN_PATH, K8S_KEYSTORE_PATH);
+    this(new JdkHttpClient(), new DockerHelper(), K8S_TOKEN_PATH, K8S_KEYSTORE_PATH);
   }
 
   @VisibleForTesting
   EksResource(
-      RestfulClient restfulClient,
+      JdkHttpClient jdkHttpClient,
       DockerHelper dockerHelper,
       String k8sTokenPath,
       String k8sKeystorePath) {
-    this.restfulClient = restfulClient;
+    this.jdkHttpClient = jdkHttpClient;
     this.dockerHelper = dockerHelper;
     this.k8sTokenPath = k8sTokenPath;
     this.k8sKeystorePath = k8sKeystorePath;
@@ -68,34 +68,31 @@ public class EksResource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    logger.log(Level.INFO, "Retrieving aws eks attributes.");
     Attributes.Builder attrBuilders = Attributes.newBuilder();
 
     String clusterName = getClusterName();
     if (!Strings.isNullOrEmpty(clusterName)) {
       attrBuilders.setAttribute(ResourceAttributes.K8S_CLUSTER, clusterName);
     }
-    logger.log(Level.INFO, String.format("clusterName %s", clusterName));
 
     String containerId = dockerHelper.getContainerId();
     if (!Strings.isNullOrEmpty(containerId)) {
       attrBuilders.setAttribute(ResourceAttributes.CONTAINER_ID, containerId);
     }
-    logger.log(Level.INFO, String.format("containerId %s", containerId));
 
     return attrBuilders.build();
   }
 
   private boolean isEks() {
     if (!isK8s()) {
-      logger.log(Level.INFO, "Not running on k8s.");
+      logger.log(Level.FINE, "Not running on k8s.");
       return false;
     }
 
     Map<String, String> requestProperties = new HashMap<>();
-    requestProperties.put("Authorization", restfulClient.getK8sCredHeader(K8S_TOKEN_PATH));
+    requestProperties.put("Authorization", jdkHttpClient.getK8sCredHeader(K8S_TOKEN_PATH));
     String awsAuth =
-        restfulClient.fetchString(
+        jdkHttpClient.fetchString(
             "GET", K8S_SVC_URL + AUTH_CONFIGMAP_PATH, requestProperties, K8S_KEYSTORE_PATH);
 
     return !Strings.isNullOrEmpty(awsAuth);
@@ -109,16 +106,16 @@ public class EksResource extends ResourceProvider {
 
   private String getClusterName() {
     Map<String, String> requestProperties = new HashMap<>();
-    requestProperties.put("Authorization", restfulClient.getK8sCredHeader(K8S_TOKEN_PATH));
+    requestProperties.put("Authorization", jdkHttpClient.getK8sCredHeader(K8S_TOKEN_PATH));
     String json =
-        restfulClient.fetchString(
+        jdkHttpClient.fetchString(
             "GET", K8S_SVC_URL + CW_CONFIGMAP_PATH, requestProperties, K8S_KEYSTORE_PATH);
 
     try {
       ObjectMapper mapper = new ObjectMapper();
       return mapper.readTree(json).at("/data/cluster.name").asText();
     } catch (JsonProcessingException e) {
-      logger.log(Level.WARNING, String.format("Can't get cluster name on EKS: %s", e));
+      logger.log(Level.WARNING, "Can't get cluster name on EKS: " + e);
     }
     return "";
   }
