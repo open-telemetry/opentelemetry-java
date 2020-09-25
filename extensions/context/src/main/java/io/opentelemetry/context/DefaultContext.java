@@ -1,5 +1,5 @@
 /*
- * Copyright The OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentelemetry.context;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nullable;
 
 final class DefaultContext implements Context {
@@ -41,16 +38,15 @@ final class DefaultContext implements Context {
   static final Context ROOT = new DefaultContext();
 
   /**
-   * Returns the default {@link ContextStorage} used to attach {@link DefaultContext}s to scopes of
+   * Returns the default {@link ContextStorage} used to attach {@link Context}s to scopes of
    * execution. Should only be used when defining your own {@link ContextStorage} in case you want
    * to delegate functionality to the default implementation.
    */
-  public static ContextStorage threadLocalStorage() {
+  static ContextStorage threadLocalStorage() {
     return ThreadLocalContextStorage.INSTANCE;
   }
 
-  @Nullable
-  private final PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries;
+  @Nullable private final PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries;
 
   private DefaultContext(PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries) {
     this.entries = entries;
@@ -70,7 +66,7 @@ final class DefaultContext implements Context {
   }
 
   @Override
-  public <V> Context withValue(ContextKey<V> k1, V v1) {
+  public <V> Context withValues(ContextKey<V> k1, V v1) {
     PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
         PersistentHashArrayMappedTrie.put(entries, k1, v1);
     return new DefaultContext(newEntries);
@@ -110,43 +106,5 @@ final class DefaultContext implements Context {
     newEntries = PersistentHashArrayMappedTrie.put(newEntries, k3, v3);
     newEntries = PersistentHashArrayMappedTrie.put(newEntries, k4, v4);
     return new DefaultContext(newEntries);
-  }
-
-  @Override
-  public Scope attach() {
-    return ContextStorage.get().attach(this);
-  }
-
-  @Override
-  public Runnable wrap(final Runnable runnable) {
-    return () -> {
-      try (Scope ignored = attach()) {
-        runnable.run();
-      }
-    };
-  }
-
-  @Override
-  public <T> Callable<T> wrap(final Callable<T> callable) {
-    return () -> {
-      try (Scope ignored = attach()) {
-        return callable.call();
-      }
-    };
-  }
-
-  @Override
-  public Executor wrap(final Executor executor) {
-    return command -> executor.execute(wrap(command));
-  }
-
-  @Override
-  public ExecutorService wrap(ExecutorService executor) {
-    return new ContextExecutorService(this, executor);
-  }
-
-  @Override
-  public ScheduledExecutorService wrap(ScheduledExecutorService executor) {
-    return new ContextScheduledExecutorService(this, executor);
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright The OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 package io.opentelemetry.context;
 
 /**
- * The storage for storing and retrieving the current {@link DefaultContext}.
+ * The storage for storing and retrieving the current {@link Context}.
  *
- * <p>If you want to implement your own storage or add some hooks when a {@link DefaultContext} is
- * attached and restored, you should use {@link ContextStorageProvider}. Here's an example that sets
- * MDC before {@link DefaultContext} is attached:
+ * <p>If you want to implement your own storage or add some hooks when a {@link Context} is attached
+ * and restored, you should use {@link ContextStorageProvider}. Here's an example that sets MDC
+ * before {@link Context} is attached:
  *
  * <pre>{@code
  * > public class MyStorage implements ContextStorageProvider {
@@ -44,31 +45,26 @@ package io.opentelemetry.context;
  * >   public ContextStorage get() {
  * >     ContextStorage threadLocalStorage = Context.threadLocalStorage();
  * >     return new RequestContextStorage() {
- * >
- * >       public Context rootContext() {
- * >         // If you need to add mutable state to contexts in your application, you could do
- * >         // something like this instead.
- * >         // return threadLocalStorage.rootContext().withValue(MY_STATE_KEY, new MyState());
- * >         return threadLocalStorage.rootContext();
- * >       }
- * >
  * >       @Nullable
  * >       @Override
- * >       public Context T attach(RequestContext toPush) {
- * >         setMdc(toPush);
- * >         return threadLocalStorage.attach(toPush);
+ * >       public Scope T attach(Context toAttach) {
+ * >         Context current = current();
+ * >         setMdc(toAttach);
+ * >         Scope scope = threadLocalStorage.attach(toAttach);
+ * >         return () -> {
+ * >           clearMdc();
+ * >           setMdc(current);
+ * >           scope.close();
+ * >         }
  * >       }
  * >
  * >       @Override
- * >       public void pop(RequestContext current, RequestContext toRestore) {
- * >         clearMdc();
- * >         setMdc(toRestore);
- * >         threadLocalStorage.detach(current, toRestore);
+ * >       public Context current() {
+ * >         return threadLocalStorage.current();
  * >       }
- * >       ...
- * >    }
- * >  }
- * >}
+ * >     }
+ * >   }
+ * > }
  * }</pre>
  */
 public interface ContextStorage {
@@ -76,8 +72,8 @@ public interface ContextStorage {
   /**
    * Returns the {@link ContextStorage} being used by this application. This is only for use when
    * integrating with other context propagation mechanisms and not meant for direct use. To attach
-   * or detach a {@link Context} in an application, use {@link Context#attach()} and
-   * {@link Scope#close()}.
+   * or detach a {@link Context} in an application, use {@link Context#attach()} and {@link
+   * Scope#close()}.
    */
   static ContextStorage get() {
     return LazyStorage.storage;

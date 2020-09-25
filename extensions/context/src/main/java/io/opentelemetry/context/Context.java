@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020, OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentelemetry.context;
 
 import java.util.concurrent.Callable;
@@ -10,7 +26,7 @@ import javax.annotation.Nullable;
  * A context propagation mechanism which can carry scoped-values across API boundaries and between
  * threads.
  *
- * <p>A Context object can be {@link #attach attached} to the {@link ContextStorage}, which
+ * <p>A Context object can be {@linkplain #attach attached} to the {@link ContextStorage}, which
  * effectively forms a <b>scope</b> for the context. The scope is bound to the current thread.
  * Within a scope, its Context is accessible even across API boundaries, through {@link #current}.
  * The scope is later exited by {@link Scope#close()} closing} the scope.
@@ -37,6 +53,8 @@ import javax.annotation.Nullable;
  *       store.
  *   <li>Context is not intended for passing optional parameters to an API and developers should
  *       take care to avoid excessive dependence on context when designing an API.
+ *   <li>Attaching Context from a different ancestor will cause information in the current Context
+ *       to be lost. This should generally be avoided.
  * </ul>
  */
 public interface Context {
@@ -57,15 +75,6 @@ public interface Context {
    */
   static Context root() {
     return DefaultContext.ROOT;
-  }
-
-  /**
-   * Returns a new {@link ContextKey} with the given debug name. The name does not impact
-   * behavior and is only for debugging purposes. Multiple different keys with the same name will be
-   * separate keys.
-   */
-  static <T> ContextKey<T> key(String name) {
-    return new DefaultContextKey<>(name);
   }
 
   /**
@@ -99,7 +108,7 @@ public interface Context {
    * number of keys and values — combine multiple related items together into a single key instead
    * of separating them. But if the items are unrelated, have separate keys for them.
    */
-  <V> Context withValue(ContextKey<V> k1, V v1);
+  <V> Context withValues(ContextKey<V> k1, V v1);
 
   /** Returns a new context with the given key value set. */
   <V1, V2> Context withValues(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2);
@@ -111,7 +120,7 @@ public interface Context {
   /**
    * Create a new context with the given key value set.
    *
-   * <p>For more than 4 key-value pairs, note that multiple calls to {@link #withValue} can be
+   * <p>For more than 4 key-value pairs, note that multiple calls to {@link #withValues} can be
    * chained together. That is,
    *
    * <pre>
@@ -151,35 +160,55 @@ public interface Context {
    * assert Context.current() == prevCtx;
    * }</pre>
    */
-  Scope attach();
+  default Scope attach() {
+    return ContextStorage.get().attach(this);
+  }
 
   /**
    * Returns a {@link Runnable} that attaches this {@link Context} and then invokes the input {@link
    * Runnable}.
    */
-  Runnable wrap(Runnable runnable);
+  default Runnable wrap(Runnable runnable) {
+    return () -> {
+      try (Scope ignored = attach()) {
+        runnable.run();
+      }
+    };
+  }
 
   /**
    * Returns a {@link Runnable} that attaches this {@link Context} and then invokes the input {@link
    * Runnable}.
    */
-  <T> Callable<T> wrap(Callable<T> callable);
+  default <T> Callable<T> wrap(Callable<T> callable) {
+    return () -> {
+      try (Scope ignored = attach()) {
+        return callable.call();
+      }
+    };
+  }
 
   /**
    * Returns an {@link Executor} that will execute callbacks in the given {@code executor},
    * attaching this {@link Context} before each execution.
    */
-  Executor wrap(Executor executor);
+  default Executor wrap(Executor executor) {
+    return command -> executor.execute(wrap(command));
+  }
 
   /**
    * Returns an {@link ExecutorService} that will execute callbacks in the given {@code executor},
    * attaching this {@link Context} before each execution.
    */
-  ExecutorService wrap(ExecutorService executor);
+  default ExecutorService wrap(ExecutorService executor) {
+    return new ContextExecutorService(this, executor);
+  }
 
   /**
    * Returns an {@link ScheduledExecutorService} that will execute callbacks in the given {@code
    * executor}, attaching this {@link Context} before each execution.
    */
-  ScheduledExecutorService wrap(ScheduledExecutorService executor);
+  default ScheduledExecutorService wrap(ScheduledExecutorService executor) {
+    return new ContextScheduledExecutorService(this, executor);
+  }
 }

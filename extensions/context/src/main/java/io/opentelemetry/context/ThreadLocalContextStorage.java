@@ -1,5 +1,5 @@
 /*
- * Copyright The OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentelemetry.context;
 
 import java.util.logging.Level;
@@ -24,6 +25,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
   private static final Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
 
   private static final ThreadLocal<Context> THREAD_LOCAL_STORAGE = new ThreadLocal<>();
+
   static {
     THREAD_LOCAL_STORAGE.set(Context.root());
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright The OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 package io.opentelemetry.context;
 
 import java.util.ArrayList;
@@ -101,7 +102,10 @@ final class LazyStorage {
     if (providerClassName.isEmpty()) {
       deferredStorageFailure.set(
           new IllegalStateException(
-              "Found multiple ContextStorageProvider. Set the io.opentelemetry.context.ContextStorageProvider property to the fully qualified class name of the provider to use. Falling back to default ContextStorage. Found providers: "
+              "Found multiple ContextStorageProvider. Set the "
+                  + "io.opentelemetry.context.ContextStorageProvider property to the fully "
+                  + "qualified class name of the provider to use. Falling back to default "
+                  + "ContextStorage. Found providers: "
                   + providers));
       return DefaultContext.threadLocalStorage();
     }
@@ -114,7 +118,8 @@ final class LazyStorage {
 
     deferredStorageFailure.set(
         new IllegalStateException(
-            "io.opentelemetry.context.ContextStorageProvider property set but no matching class could be found, requested: "
+            "io.opentelemetry.context.ContextStorageProvider property set but no matching class "
+                + "could be found, requested: "
                 + providerClassName
                 + " but found providers: "
                 + providers));

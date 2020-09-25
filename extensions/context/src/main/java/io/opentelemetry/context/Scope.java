@@ -1,5 +1,5 @@
 /*
- * Copyright The OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.opentelemetry.context;
 
 import io.opentelemetry.context.ThreadLocalContextStorage.NoopScope;
@@ -22,14 +23,18 @@ import io.opentelemetry.context.ThreadLocalContextStorage.NoopScope;
  * {@link Scope#close()} will generally break tracing or cause memory leaks. It is recommended that
  * you use this class with a {@code try-with-resources} block:
  *
- * <pre>{code
- *   try (Scope ignored = tracer.withSpan(span)) {
- *     ...
- *   }
+ * <pre>{@code
+ * try (Scope ignored = tracer.withSpan(span)) {
+ *   ...
+ * }
  * }</pre>
  */
 public interface Scope extends AutoCloseable {
 
+  /**
+   * Returns a {@link Scope} that does nothing. Represents attaching a {@link Context} when it is
+   * already attached.
+   */
   static Scope noop() {
     return NoopScope.INSTANCE;
   }
