@@ -19,7 +19,7 @@ package io.opentelemetry.trace;
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -85,8 +85,8 @@ public interface Span {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
-   * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
-   * dropped. Note: this behavior could change in the future.
+   * <p>If a null or empty String {@code value} is passed in, the behavior is undefined, and hence
+   * strongly discouraged.
    *
    * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
    * pre-allocate your keys, if possible.
@@ -95,7 +95,7 @@ public interface Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  void setAttribute(String key, @Nullable String value);
+  void setAttribute(String key, @Nonnull String value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -140,11 +140,13 @@ public interface Span {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
+   * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
+   *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  <T> void setAttribute(AttributeKey<T> key, T value);
+  <T> void setAttribute(AttributeKey<T> key, @Nonnull T value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -481,8 +483,8 @@ public interface Span {
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
      *
-     * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
-     * dropped. Note: this behavior could change in the future.
+     * <p>If a null or empty String {@code value} is passed in, the behavior is undefined, and hence
+     * strongly discouraged.
      *
      * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
      * pre-allocate your keys, if possible.
@@ -493,7 +495,7 @@ public interface Span {
      * @throws NullPointerException if {@code key} is {@code null}.
      * @since 0.3.0
      */
-    Builder setAttribute(String key, @Nullable String value);
+    Builder setAttribute(String key, @Nonnull String value);
 
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
@@ -544,6 +546,8 @@ public interface Span {
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
      *
+     * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
+     *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
      * @return this.
@@ -551,7 +555,7 @@ public interface Span {
      * @throws NullPointerException if {@code value} is {@code null}.
      * @since 0.3.0
      */
-    <T> Builder setAttribute(AttributeKey<T> key, T value);
+    <T> Builder setAttribute(AttributeKey<T> key, @Nonnull T value);
 
     /**
      * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the

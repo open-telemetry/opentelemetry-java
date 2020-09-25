@@ -308,18 +308,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public <T> void setAttribute(AttributeKey<T> key, T value) {
-    if (key == null || key.getKey() == null || key.getKey().length() == 0) {
+    if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
       return;
     }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
-        return;
-      }
-      if (value == null) {
-        if (attributes != null) {
-          attributes.remove(key);
-        }
         return;
       }
       if (attributes == null) {
