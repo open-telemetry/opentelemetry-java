@@ -179,14 +179,12 @@ final class SpanBuilderSdk implements Span.Builder {
     final SpanContext parentSpanContext = parentSpan.getContext();
     String traceId;
     String spanId = idsGenerator.generateSpanId();
-    TraceState traceState = TraceState.getDefault();
     if (!parentSpanContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
     } else {
       // New child span.
       traceId = parentSpanContext.getTraceIdAsHexString();
-      traceState = parentSpanContext.getTraceState();
     }
     List<SpanData.Link> immutableLinks =
         links == null ? Collections.emptyList() : Collections.unmodifiableList(links);
@@ -206,8 +204,13 @@ final class SpanBuilderSdk implements Span.Builder {
                 immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
+    TraceState samplingResultTraceState = samplingResult.getTraceState();
     SpanContext spanContext =
-        createSpanContext(traceId, spanId, traceState, Samplers.isSampled(samplingDecision));
+        createSpanContext(
+            traceId,
+            spanId,
+            samplingResultTraceState == null ? TraceState.getDefault() : samplingResultTraceState,
+            Samplers.isSampled(samplingDecision));
 
     if (!Samplers.isRecording(samplingDecision)) {
       return DefaultSpan.create(spanContext);

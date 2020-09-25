@@ -12,6 +12,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -77,5 +78,14 @@ public interface Sampler {
      *     {@link Decision#RECORD_AND_SAMPLE}.
      */
     Attributes getAttributes();
+
+    /**
+     * Return the {@link TraceState} that should be associated with the resulting Span. This may be
+     * the same {@link TraceState} that was provided originally, or an updated one.
+     *
+     * <p>Note: if a null is returned, the TraceState will be reset to {@link
+     * TraceState#getDefault()}.
+     */
+    TraceState getTraceState();
   }
 }

@@ -48,42 +48,49 @@ class SamplersTest {
 
   @Test
   void emptySamplingDecision() {
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE))
-        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE));
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP))
-        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.DROP));
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState))
+        .isEqualTo(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState));
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState))
+        .isEqualTo(Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState));
 
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE).getDecision())
+    assertThat(
+            Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState)
+                .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(
-            Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE)
+            Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState)
                 .getAttributes()
                 .isEmpty())
         .isTrue();
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP).getDecision())
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState).getDecision())
         .isEqualTo(Decision.DROP);
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP).getAttributes().isEmpty())
+    assertThat(
+            Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState)
+                .getAttributes()
+                .isEmpty())
         .isTrue();
   }
 
   @Test
   void samplingDecisionEmpty() {
-    assertThat(Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLE, Attributes.empty()))
-        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE));
-    assertThat(Samplers.samplingResult(Sampler.Decision.DROP, Attributes.empty()))
-        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.DROP));
+    assertThat(
+            Samplers.samplingResult(
+                Sampler.Decision.RECORD_AND_SAMPLE, Attributes.empty(), traceState))
+        .isEqualTo(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState));
+    assertThat(Samplers.samplingResult(Sampler.Decision.DROP, Attributes.empty(), traceState))
+        .isEqualTo(Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState));
   }
 
   @Test
   void samplingDecisionAttrs() {
     final Attributes attrs = Attributes.of(longKey("foo"), 42L, stringKey("bar"), "baz");
     final SamplingResult sampledSamplingResult =
-        Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLE, attrs);
+        Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLE, attrs, traceState);
     assertThat(sampledSamplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(sampledSamplingResult.getAttributes()).isEqualTo(attrs);
 
     final SamplingResult notSampledSamplingResult =
-        Samplers.samplingResult(Sampler.Decision.DROP, attrs);
+        Samplers.samplingResult(Sampler.Decision.DROP, attrs, traceState);
     assertThat(notSampledSamplingResult.getDecision()).isEqualTo(Decision.DROP);
     assertThat(notSampledSamplingResult.getAttributes()).isEqualTo(attrs);
   }
@@ -108,19 +115,6 @@ class SamplersTest {
             Samplers.alwaysOn()
                 .shouldSample(
                     notSampledSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLE);
-
-    // Null parent.
-    assertThat(
-            Samplers.alwaysOn()
-                .shouldSample(
-                    null,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -155,19 +149,6 @@ class SamplersTest {
             Samplers.alwaysOff()
                 .shouldSample(
                     notSampledSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.DROP);
-
-    // Null parent.
-    assertThat(
-            Samplers.alwaysOff()
-                .shouldSample(
-                    null,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,

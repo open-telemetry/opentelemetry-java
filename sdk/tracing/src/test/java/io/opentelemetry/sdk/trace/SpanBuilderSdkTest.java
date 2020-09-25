@@ -512,6 +512,11 @@ class SpanBuilderSdkTest {
                           public Attributes getAttributes() {
                             return Attributes.of(samplerAttributeKey, "bar");
                           }
+
+                          @Override
+                          public TraceState getTraceState() {
+                            return null;
+                          }
                         };
                       }
 
@@ -525,6 +530,65 @@ class SpanBuilderSdkTest {
     try {
       assertThat(span.getContext().isSampled()).isTrue();
       assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
+      assertThat(span.toSpanData().getTraceState()).isEqualTo(TraceState.getDefault());
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void sampler_updatedTraceState() {
+    final String samplerAttributeName = "sampler-attribute";
+    AttributeKey<String> samplerAttributeKey = stringKey(samplerAttributeName);
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
+            TestUtils.startSpanWithSampler(
+                    tracerSdkFactory,
+                    tracerSdk,
+                    SPAN_NAME,
+                    new Sampler() {
+                      @Override
+                      public SamplingResult shouldSample(
+                          SpanContext parentContext,
+                          String traceId,
+                          String name,
+                          Kind spanKind,
+                          ReadableAttributes attributes,
+                          List<io.opentelemetry.trace.Link> parentLinks) {
+                        return new SamplingResult() {
+                          @Override
+                          public Decision getDecision() {
+                            return Decision.RECORD_AND_SAMPLE;
+                          }
+
+                          @Override
+                          public Attributes getAttributes() {
+                            return Attributes.empty();
+                          }
+
+                          @Override
+                          public TraceState getTraceState() {
+                            return parentContext
+                                .getTraceState()
+                                .toBuilder()
+                                .set("newkey", "newValue")
+                                .build();
+                          }
+                        };
+                      }
+
+                      @Override
+                      public String getDescription() {
+                        return "test sampler";
+                      }
+                    },
+                    Collections.singletonMap(samplerAttributeKey.getKey(), "none"))
+                .startSpan();
+    try {
+      assertThat(span.getContext().isSampled()).isTrue();
+      assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
+      assertThat(span.toSpanData().getTraceState())
+          .isEqualTo(TraceState.builder().set("newkey", "newValue").build());
     } finally {
       span.end();
     }
