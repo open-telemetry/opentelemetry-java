@@ -28,8 +28,8 @@ import static io.opentelemetry.common.AttributesKeys.stringKey;
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -37,6 +37,10 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>The keys are {@link AttributeKey}s and the values are Object instances that match the type of
  * the provided key.
+ *
+ * <p>Null keys will be silently dropped.
+ *
+ * <p>Note: The behavior of null-valued attributes is undefined, and hence strongly discouraged.
  */
 @SuppressWarnings("rawtypes")
 @Immutable
@@ -79,7 +83,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   }
 
   /** Returns a {@link Attributes} instance with a single key-value pair. */
-  public static <T> Attributes of(AttributeKey<T> key, T value) {
+  public static <T> Attributes of(AttributeKey<T> key, @Nonnull T value) {
     return sortAndFilterToAttributes(key, value);
   }
 
@@ -88,7 +92,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
    * preserved. Duplicate keys will be removed.
    */
   public static <T, U> Attributes of(
-      AttributeKey<T> key1, T value1, AttributeKey<U> key2, U value2) {
+      AttributeKey<T> key1, @Nonnull T value1, AttributeKey<U> key2, @Nonnull U value2) {
     return sortAndFilterToAttributes(key1, value1, key2, value2);
   }
 
@@ -98,11 +102,11 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
    */
   public static <T, U, V> Attributes of(
       AttributeKey<T> key1,
-      T value1,
+      @Nonnull T value1,
       AttributeKey<U> key2,
-      U value2,
+      @Nonnull U value2,
       AttributeKey<V> key3,
-      V value3) {
+      @Nonnull V value3) {
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3);
   }
 
@@ -112,13 +116,13 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
    */
   public static <T, U, V, W> Attributes of(
       AttributeKey<T> key1,
-      T value1,
+      @Nonnull T value1,
       AttributeKey<U> key2,
-      U value2,
+      @Nonnull U value2,
       AttributeKey<V> key3,
-      V value3,
+      @Nonnull V value3,
       AttributeKey<W> key4,
-      W value4) {
+      @Nonnull W value4) {
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3, key4, value4);
   }
 
@@ -128,15 +132,15 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
    */
   public static <T, U, V, W, X> Attributes of(
       AttributeKey<T> key1,
-      T value1,
+      @Nonnull T value1,
       AttributeKey<U> key2,
-      U value2,
+      @Nonnull U value2,
       AttributeKey<V> key3,
-      V value3,
+      @Nonnull V value3,
       AttributeKey<W> key4,
-      W value4,
+      @Nonnull W value4,
       AttributeKey<X> key5,
-      X value5) {
+      @Nonnull X value5) {
     return sortAndFilterToAttributes(
         key1, value1,
         key2, value2,
@@ -172,10 +176,14 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   }
 
   private static Attributes sortAndFilterToAttributes(Object... data) {
-    // null out any empty keys
+    // null out any empty keys or keys with null values
+    // so they will then be removed by the sortAndFilter method.
     for (int i = 0; i < data.length; i += 2) {
       AttributeKey<?> key = (AttributeKey<?>) data[i];
       if (key != null && (key.getKey() == null || "".equals(key.getKey()))) {
+        data[i] = null;
+      }
+      if (data[i + 1] == null) {
         data[i] = null;
       }
     }
@@ -190,13 +198,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   /** Returns a new {@link Builder} instance from ReadableAttributes. */
   public static Builder newBuilder(ReadableAttributes attributes) {
     final Builder builder = new Builder();
-    attributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
-            builder.setAttribute(key, value);
-          }
-        });
+    attributes.forEach(builder::setAttribute);
     return builder;
   }
 
@@ -230,24 +232,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
     /** Sets a {@link AttributeKey} with associated value into this. */
     public <T> Builder setAttribute(AttributeKey<T> key, T value) {
-      if (key == null || key.getKey() == null || key.getKey().length() == 0) {
-        return this;
-      }
-      if (value == null) {
-        // Remove key/value pairs
-        Iterator<Object> itr = data.iterator();
-        while (itr.hasNext()) {
-          AttributeKey k = (AttributeKey) itr.next();
-          if (key.equals(k)) {
-            // delete key and value
-            itr.remove();
-            itr.next();
-            itr.remove();
-          } else {
-            // skip the value part
-            itr.next();
-          }
-        }
+      if (value == null || key == null || key.getKey() == null || key.getKey().length() == 0) {
         return this;
       }
       data.add(key);
@@ -263,7 +248,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, String value) {
+    public Builder setAttribute(String key, @Nonnull String value) {
       return setAttribute(stringKey(key), value);
     }
 
