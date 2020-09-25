@@ -82,7 +82,11 @@ class DefaultTracerTest {
 
   @Test
   void testSpanContextPropagationExplicitParent() {
-    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(spanContext).startSpan();
+    Span span =
+        defaultTracer
+            .spanBuilder(SPAN_NAME)
+            .setParent(TracingContextUtils.withSpan(DefaultSpan.create(spanContext), Context.ROOT))
+            .startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
   }
 
@@ -90,7 +94,11 @@ class DefaultTracerTest {
   void testSpanContextPropagation() {
     DefaultSpan parent = new DefaultSpan(spanContext);
 
-    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
+    Span span =
+        defaultTracer
+            .spanBuilder(SPAN_NAME)
+            .setParent(TracingContextUtils.withSpan(parent, Context.ROOT))
+            .startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
   }
 

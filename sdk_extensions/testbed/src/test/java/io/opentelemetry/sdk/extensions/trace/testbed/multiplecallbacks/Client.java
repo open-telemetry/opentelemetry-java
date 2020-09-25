@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.multiplecallbacks;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -35,7 +36,7 @@ class Client {
   }
 
   public Future<Object> send(final Object message) {
-    final Span parent = tracer.getCurrentSpan();
+    final Context parent = Context.current();
 
     return executor.submit(
         () -> {
