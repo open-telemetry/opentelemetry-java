@@ -19,7 +19,6 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.0',
             libraries.guava,
             platform(boms.guava)
-    implementation 'io.kubernetes:client-java:9.0.0'
 
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
 
