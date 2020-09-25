@@ -44,7 +44,7 @@ public class JaegerRemoteSampler implements Sampler {
   private static final String WORKER_THREAD_NAME =
       JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
   private static final int DEFAULT_POLLING_INTERVAL_MS = 60000;
-  private static final Sampler INITIAL_SAMPLER = Samplers.probability(0.001);
+  private static final Sampler INITIAL_SAMPLER = Samplers.traceIdRatioBased(0.001);
 
   private final String serviceName;
   private final SamplingManagerBlockingStub stub;
@@ -97,13 +97,13 @@ public class JaegerRemoteSampler implements Sampler {
     PerOperationSamplingStrategies operationSampling = response.getOperationSampling();
     if (operationSampling != null && operationSampling.getPerOperationStrategiesList().size() > 0) {
       Sampler defaultSampler =
-          Samplers.probability(operationSampling.getDefaultSamplingProbability());
+          Samplers.traceIdRatioBased(operationSampling.getDefaultSamplingProbability());
       return new PerOperationSampler(
           defaultSampler, operationSampling.getPerOperationStrategiesList());
     }
     switch (response.getStrategyType()) {
       case PROBABILISTIC:
-        return Samplers.probability(response.getProbabilisticSampling().getSamplingRate());
+        return Samplers.traceIdRatioBased(response.getProbabilisticSampling().getSamplingRate());
       case RATE_LIMITING:
         return new RateLimitingSampler(response.getRateLimitingSampling().getMaxTracesPerSecond());
       case UNRECOGNIZED:

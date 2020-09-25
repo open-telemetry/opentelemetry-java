@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Implementation of the {@code SpanProcessor} that simply forwards all received events to a list of
@@ -29,6 +30,7 @@ public final class MultiSpanProcessor implements SpanProcessor {
   private final List<SpanProcessor> spanProcessorsStart;
   private final List<SpanProcessor> spanProcessorsEnd;
   private final List<SpanProcessor> spanProcessorsAll;
+  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
    * Creates a new {@code MultiSpanProcessor}.
@@ -68,6 +70,9 @@ public final class MultiSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
+    if (isShutdown.getAndSet(true)) {
+      return CompletableResultCode.ofSuccess();
+    }
     List<CompletableResultCode> results = new ArrayList<>(spanProcessorsAll.size());
     for (SpanProcessor spanProcessor : spanProcessorsAll) {
       results.add(spanProcessor.shutdown());

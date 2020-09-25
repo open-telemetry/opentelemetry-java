@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthandler;
+package io.opentelemetry.exporters.otlp;
 
-import java.util.HashMap;
+public class CommonProperties {
+  public static final String KEY_TIMEOUT = "otel.exporter.otlp.timeout";
+  public static final String KEY_ENDPOINT = "otel.exporter.otlp.endpoint";
+  public static final String KEY_USE_TLS = "otel.exporter.otlp.insecure";
+  public static final String KEY_HEADERS = "otel.exporter.otlp.headers";
 
-final class Context extends HashMap<String, Object> {}
+  private CommonProperties() {}
+}

@@ -652,12 +652,6 @@ public final class DefaultMeter implements Meter {
       return getThis();
     }
 
-    @Override
-    public B setConstantLabels(Labels constantLabels) {
-      Utils.checkNotNull(constantLabels, "constantLabels");
-      return getThis();
-    }
-
     protected abstract B getThis();
   }
 }

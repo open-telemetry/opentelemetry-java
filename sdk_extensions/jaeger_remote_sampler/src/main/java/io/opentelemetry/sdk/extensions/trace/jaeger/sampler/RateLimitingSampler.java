@@ -17,8 +17,9 @@
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.AttributesKeys;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.Sampler;
@@ -34,8 +35,8 @@ import java.util.List;
  */
 class RateLimitingSampler implements Sampler {
   static final String TYPE = "ratelimiting";
-  static final String SAMPLER_TYPE = "sampler.type";
-  static final String SAMPLER_PARAM = "sampler.param";
+  static final AttributeKey<String> SAMPLER_TYPE = AttributesKeys.stringKey("sampler.type");
+  static final AttributeKey<Double> SAMPLER_PARAM = AttributesKeys.doubleKey("sampler.param");
 
   private final double maxTracesPerSecond;
   private final RateLimiter rateLimiter;
@@ -52,9 +53,7 @@ class RateLimitingSampler implements Sampler {
     double maxBalance = maxTracesPerSecond < 1.0 ? 1.0 : maxTracesPerSecond;
     this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance, MillisClock.getInstance());
     Attributes attributes =
-        Attributes.of(
-            SAMPLER_TYPE, AttributeValue.stringAttributeValue(TYPE),
-            SAMPLER_PARAM, AttributeValue.doubleAttributeValue(maxTracesPerSecond));
+        Attributes.of(SAMPLER_TYPE, TYPE, SAMPLER_PARAM, (double) maxTracesPerSecond);
     this.onSamplingResult = Samplers.samplingResult(Decision.RECORD_AND_SAMPLE, attributes);
     this.offSamplingResult = Samplers.samplingResult(Decision.DROP, attributes);
   }

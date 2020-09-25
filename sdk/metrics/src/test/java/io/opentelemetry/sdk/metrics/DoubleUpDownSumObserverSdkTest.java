@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -34,8 +34,7 @@ import org.junit.jupiter.api.Test;
 class DoubleUpDownSumObserverSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
-      Resource.create(
-          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
+      Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(
           "io.opentelemetry.sdk.metrics.DoubleUpDownSumObserverSdkTest", null);
@@ -50,7 +49,6 @@ class DoubleUpDownSumObserverSdkTest {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
@@ -62,7 +60,6 @@ class DoubleUpDownSumObserverSdkTest {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
@@ -77,8 +74,7 @@ class DoubleUpDownSumObserverSdkTest {
                     "testObserver",
                     "My own DoubleUpDownSumObserver",
                     "ms",
-                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
-                    Labels.of("sk1", "sv1")),
+                    Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.emptyList()));
@@ -93,8 +89,7 @@ class DoubleUpDownSumObserverSdkTest {
     assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -107,8 +102,7 @@ class DoubleUpDownSumObserverSdkTest {
     assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

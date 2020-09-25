@@ -17,7 +17,7 @@
 package io.opentelemetry.trace;
 
 import io.grpc.Context;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
@@ -80,20 +80,6 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setParent(Span parent) {
-      Utils.checkNotNull(parent, "parent");
-      spanContext = parent.getContext();
-      return this;
-    }
-
-    @Override
-    public NoopSpanBuilder setParent(SpanContext remoteParent) {
-      Utils.checkNotNull(remoteParent, "remoteParent");
-      spanContext = remoteParent;
-      return this;
-    }
-
-    @Override
     public NoopSpanBuilder setParent(Context context) {
       Utils.checkNotNull(context, "context");
       spanContext = TracingContextUtils.getSpan(context).getContext();
@@ -146,7 +132,7 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setAttribute(String key, AttributeValue value) {
+    public <T> NoopSpanBuilder setAttribute(AttributeKey<T> key, T value) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
       return this;

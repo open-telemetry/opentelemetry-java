@@ -34,6 +34,7 @@ include ":opentelemetry-all",
         ":opentelemetry-exporters-prometheus",
         ":opentelemetry-exporters-zipkin",
         ":opentelemetry-integration-tests",
+        ":opentelemetry-integration-tests-tracecontext",
         ":opentelemetry-opentracing-shim",
         ":opentelemetry-proto",
         ":opentelemetry-sdk-common",
@@ -46,6 +47,7 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-extension-otproto",
         ":opentelemetry-sdk-extension-resources",
         ":opentelemetry-sdk-extension-testbed",
+        ":opentelemetry-sdk-extension-tracing-incubator",
         ":opentelemetry-sdk-extension-jaeger-remote-sampler",
         ":opentelemetry-sdk-extension-zpages",
         ":opentelemetry-bom",
@@ -53,6 +55,7 @@ include ":opentelemetry-all",
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name
+        .replace("opentelemetry-integration-tests-", "integration_tests/")
         .replace("opentelemetry-exporters-", "exporters/")
         .replace("opentelemetry-extension-", "extensions/")
         .replace("opentelemetry-sdk-extension-", "sdk_extensions/")

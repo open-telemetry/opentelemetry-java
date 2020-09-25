@@ -16,10 +16,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -35,8 +35,7 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link BatchRecorderSdk}. */
 class BatchRecorderSdkTest {
   private static final Resource RESOURCE =
-      Resource.create(
-          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
+      Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.BatchRecorderSdkTest", null);
   private final TestClock testClock = TestClock.create();
@@ -80,8 +79,7 @@ class BatchRecorderSdkTest {
     assertThat(doubleCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.empty()),
+                Descriptor.create("testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -89,8 +87,7 @@ class BatchRecorderSdkTest {
     assertThat(longCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -99,11 +96,7 @@ class BatchRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testDoubleUpDownCounter",
-                    "",
-                    "1",
-                    Descriptor.Type.NON_MONOTONIC_DOUBLE,
-                    Labels.empty()),
+                    "testDoubleUpDownCounter", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -112,11 +105,7 @@ class BatchRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testLongUpDownCounter",
-                    "",
-                    "1",
-                    Descriptor.Type.NON_MONOTONIC_LONG,
-                    Labels.empty()),
+                    "testLongUpDownCounter", "", "1", Descriptor.Type.NON_MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

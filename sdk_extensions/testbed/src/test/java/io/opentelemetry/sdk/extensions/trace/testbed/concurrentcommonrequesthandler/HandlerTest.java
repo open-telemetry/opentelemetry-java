@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthan
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
@@ -27,6 +28,7 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -108,7 +110,10 @@ class HandlerTest {
     Client client;
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
     try (Scope ignored = tracer.withSpan(parentSpan)) {
-      client = new Client(new RequestHandler(tracer, parentSpan.getContext()));
+      client =
+          new Client(
+              new RequestHandler(
+                  tracer, TracingContextUtils.withSpan(parentSpan, Context.current())));
       String response = client.send("correct_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("correct_parent:response");
     } finally {

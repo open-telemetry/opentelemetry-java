@@ -16,20 +16,21 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 /**
  * A map with a fixed capacity that drops attributes when the map gets full.
  *
  * <p>Note: this doesn't implement the Map interface, but behaves very similarly to one.
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 final class AttributesMap implements ReadableAttributes {
-  private final Map<String, AttributeValue> data = new HashMap<>();
+  private final Map<AttributeKey, Object> data = new HashMap<>();
 
   private final long capacity;
   private int totalAddedValues = 0;
@@ -38,7 +39,7 @@ final class AttributesMap implements ReadableAttributes {
     this.capacity = capacity;
   }
 
-  public void put(String key, AttributeValue value) {
+  public <T> void put(AttributeKey<T> key, T value) {
     totalAddedValues++;
     if (data.size() >= capacity && !data.containsKey(key)) {
       return;
@@ -46,12 +47,18 @@ final class AttributesMap implements ReadableAttributes {
     data.put(key, value);
   }
 
-  void remove(String key) {
+  void remove(AttributeKey key) {
     data.remove(key);
   }
 
   int getTotalAddedValues() {
     return totalAddedValues;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T> T get(AttributeKey<T> key) {
+    return (T) data.get(key);
   }
 
   @Override
@@ -64,17 +71,14 @@ final class AttributesMap implements ReadableAttributes {
     return data.isEmpty();
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  public void forEach(KeyValueConsumer<String, AttributeValue> consumer) {
-    for (Map.Entry<String, AttributeValue> entry : data.entrySet()) {
-      consumer.consume(entry.getKey(), entry.getValue());
+  public void forEach(AttributeConsumer consumer) {
+    for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
+      AttributeKey key = entry.getKey();
+      Object value = entry.getValue();
+      consumer.consume(key, value);
     }
-  }
-
-  @Nullable
-  @Override
-  public AttributeValue get(String key) {
-    return data.get(key);
   }
 
   @Override
@@ -89,9 +93,10 @@ final class AttributesMap implements ReadableAttributes {
         + '}';
   }
 
+  @SuppressWarnings("rawtypes")
   ReadableAttributes immutableCopy() {
     Attributes.Builder builder = Attributes.newBuilder();
-    for (Map.Entry<String, AttributeValue> entry : data.entrySet()) {
+    for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }
     return builder.build();

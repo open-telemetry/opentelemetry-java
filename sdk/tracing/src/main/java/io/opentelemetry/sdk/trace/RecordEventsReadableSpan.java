@@ -16,9 +16,14 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
+
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.internal.StringUtils;
@@ -283,27 +288,27 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public void setAttribute(String key, String value) {
-    setAttribute(key, AttributeValue.stringAttributeValue(value));
+    setAttribute(stringKey(key), value);
   }
 
   @Override
   public void setAttribute(String key, long value) {
-    setAttribute(key, AttributeValue.longAttributeValue(value));
+    setAttribute(longKey(key), value);
   }
 
   @Override
   public void setAttribute(String key, double value) {
-    setAttribute(key, AttributeValue.doubleAttributeValue(value));
+    setAttribute(doubleKey(key), value);
   }
 
   @Override
   public void setAttribute(String key, boolean value) {
-    setAttribute(key, AttributeValue.booleanAttributeValue(value));
+    setAttribute(booleanKey(key), value);
   }
 
   @Override
-  public void setAttribute(String key, AttributeValue value) {
-    if (key == null || key.length() == 0) {
+  public <T> void setAttribute(AttributeKey<T> key, T value) {
+    if (key == null || key.getKey() == null || key.getKey().length() == 0) {
       return;
     }
     synchronized (lock) {
@@ -311,7 +316,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
-      if (value == null || value.isNull()) {
+      if (value == null) {
         if (attributes != null) {
           attributes.remove(key);
         }
@@ -322,7 +327,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       }
 
       if (traceConfig.shouldTruncateStringAttributeValues()) {
-        value = StringUtils.truncateToSize(value, traceConfig.getMaxLengthOfAttributeValues());
+        value = StringUtils.truncateToSize(key, value, traceConfig.getMaxLengthOfAttributeValues());
       }
 
       attributes.put(key, value);
@@ -435,15 +440,20 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return;
     }
     long timestamp = clock.now();
-    Attributes.Builder attributes =
-        additionalAttributes != null ? additionalAttributes.toBuilder() : Attributes.newBuilder();
-    SemanticAttributes.EXCEPTION_TYPE.set(attributes, exception.getClass().getCanonicalName());
+
+    Attributes.Builder attributes = Attributes.newBuilder();
+    attributes.setAttribute(
+        SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
-      SemanticAttributes.EXCEPTION_MESSAGE.set(attributes, exception.getMessage());
+      attributes.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
     }
     StringWriter writer = new StringWriter();
     exception.printStackTrace(new PrintWriter(writer));
-    SemanticAttributes.EXCEPTION_STACKTRACE.set(attributes, writer.toString());
+    attributes.setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
+
+    if (additionalAttributes != null) {
+      attributes.addAll(additionalAttributes);
+    }
 
     addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
   }
@@ -628,6 +638,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return sb.toString();
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   private static class LimitingAttributeConsumer implements AttributeConsumer {
     private final int limit;
     private final Attributes.Builder builder;
@@ -639,7 +650,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
 
     @Override
-    public void consume(String key, AttributeValue value) {
+    public void consume(AttributeKey key, Object value) {
       if (added < limit) {
         builder.setAttribute(key, value);
         added++;

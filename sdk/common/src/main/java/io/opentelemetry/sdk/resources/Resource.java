@@ -16,10 +16,12 @@
 
 package io.opentelemetry.sdk.resources;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
+
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.internal.StringUtils;
@@ -45,13 +47,24 @@ public abstract class Resource {
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
-  private static final Resource TELEMETRY_SDK =
-      create(
-          Attributes.newBuilder()
-              .setAttribute("telemetry.sdk.name", "opentelemetry")
-              .setAttribute("telemetry.sdk.language", "java")
-              .setAttribute("telemetry.sdk.version", readVersion())
-              .build());
+
+  // todo: move to ResourceAttributes
+  private static final AttributeKey<String> SDK_NAME = stringKey("telemetry.sdk.name");
+  private static final AttributeKey<String> SDK_LANGUAGE = stringKey("telemetry.sdk.language");
+  private static final AttributeKey<String> SDK_VERSION = stringKey("telemetry.sdk.version");
+
+  private static final Resource TELEMETRY_SDK;
+
+  static {
+    TELEMETRY_SDK =
+        create(
+            Attributes.newBuilder()
+                .setAttribute(SDK_NAME, "opentelemetry")
+                .setAttribute(SDK_LANGUAGE, "java")
+                .setAttribute(SDK_VERSION, readVersion())
+                .build());
+  }
+
   private static final Resource DEFAULT =
       new EnvAutodetectResource.Builder()
           .readEnvironmentVariables()
@@ -157,8 +170,8 @@ public abstract class Resource {
 
     Attributes.Builder attrBuilder = Attributes.newBuilder();
     Merger merger = new Merger(attrBuilder);
-    this.getAttributes().forEach(merger);
     other.getAttributes().forEach(merger);
+    this.getAttributes().forEach(merger);
     return new AutoValue_Resource(attrBuilder.build());
   }
 
@@ -170,7 +183,7 @@ public abstract class Resource {
     }
 
     @Override
-    public void consume(String key, AttributeValue value) {
+    public <T> void consume(AttributeKey<T> key, T value) {
       attrBuilder.setAttribute(key, value);
     }
   }
@@ -179,7 +192,7 @@ public abstract class Resource {
     attributes.forEach(
         new AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue value) {
+          public <T> void consume(AttributeKey<T> key, T value) {
             Utils.checkArgument(
                 isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
             Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
@@ -205,7 +218,7 @@ public abstract class Resource {
    * @param name the name to be validated.
    * @return whether the name is valid.
    */
-  private static boolean isValidAndNotEmpty(String name) {
-    return !name.isEmpty() && isValid(name);
+  private static boolean isValidAndNotEmpty(AttributeKey<?> name) {
+    return !name.getKey().isEmpty() && isValid(name.getKey());
   }
 }

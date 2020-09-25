@@ -16,7 +16,9 @@
 
 package io.opentelemetry.internal;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.AttributeType;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -62,44 +64,40 @@ public final class StringUtils {
 
   /**
    * If given attribute is of type STRING and has more characters than given {@code limit} then
-   * return new AttributeValue with string truncated to {@code limit} characters.
+   * return new value with string truncated to {@code limit} characters.
    *
-   * <p>If given attribute is of type STRING_ARRAY and non-empty then return new AttributeValue with
-   * every element truncated to {@code limit} characters.
+   * <p>If given attribute is of type STRING_ARRAY and non-empty then return new value with every
+   * element truncated to {@code limit} characters.
    *
    * <p>Otherwise return given {@code value}
    *
    * @throws IllegalArgumentException if limit is zero or negative
    */
-  public static AttributeValue truncateToSize(AttributeValue value, int limit) {
+  @SuppressWarnings("unchecked")
+  public static <T> T truncateToSize(AttributeKey<T> key, T value, int limit) {
     Utils.checkArgument(limit > 0, "attribute value limit must be positive, got %d", limit);
 
     if (value == null
-        || (value.getType() != AttributeValue.Type.STRING
-            && value.getType() != AttributeValue.Type.STRING_ARRAY)) {
+        || ((key.getType() != AttributeType.STRING)
+            && (key.getType() != AttributeType.STRING_ARRAY))) {
       return value;
     }
 
-    if (value.getType() == AttributeValue.Type.STRING_ARRAY) {
-      List<String> strings = value.getStringArrayValue();
+    if (key.getType() == AttributeType.STRING_ARRAY) {
+      List<String> strings = (List<String>) value;
       if (strings.isEmpty()) {
         return value;
       }
 
-      String[] newStrings = new String[strings.size()];
-      for (int i = 0; i < strings.size(); i++) {
-        String string = strings.get(i);
-        newStrings[i] = truncateToSize(string, limit);
+      List<String> newStrings = new ArrayList<>(strings.size());
+      for (String string : strings) {
+        newStrings.add(truncateToSize(string, limit));
       }
 
-      return AttributeValue.arrayAttributeValue(newStrings);
+      return (T) newStrings;
     }
 
-    String string = value.getStringValue();
-    // Don't allocate new AttributeValue if not needed
-    return (string == null || string.length() <= limit)
-        ? value
-        : AttributeValue.stringAttributeValue(string.substring(0, limit));
+    return (T) truncateToSize((String) value, limit);
   }
 
   @Nullable

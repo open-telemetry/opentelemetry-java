@@ -16,8 +16,6 @@
 
 package io.opentelemetry.common;
 
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
-
 /**
  * Convenience interface for consuming {@link Labels}.
  *
@@ -26,7 +24,6 @@ import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
  *
  * @since 0.9.0
  */
-public interface LabelConsumer extends KeyValueConsumer<String, String> {
-  @Override
+public interface LabelConsumer {
   void consume(String key, String value);
 }

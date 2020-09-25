@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Instrument;
@@ -99,7 +98,6 @@ abstract class AbstractInstrument implements Instrument {
     private final MeterSdk meterSdk;
     private String description = "";
     private String unit = "1";
-    private Labels constantLabels = Labels.empty();
 
     Builder(
         String name,
@@ -126,12 +124,6 @@ abstract class AbstractInstrument implements Instrument {
       return getThis();
     }
 
-    @Override
-    public final B setConstantLabels(Labels constantLabels) {
-      this.constantLabels = constantLabels;
-      return getThis();
-    }
-
     final MeterProviderSharedState getMeterProviderSharedState() {
       return meterProviderSharedState;
     }
@@ -142,7 +134,7 @@ abstract class AbstractInstrument implements Instrument {
 
     final InstrumentDescriptor getInstrumentDescriptor(
         InstrumentType type, InstrumentValueType valueType) {
-      return InstrumentDescriptor.create(name, description, unit, constantLabels, type, valueType);
+      return InstrumentDescriptor.create(name, description, unit, type, valueType);
     }
 
     abstract B getThis();

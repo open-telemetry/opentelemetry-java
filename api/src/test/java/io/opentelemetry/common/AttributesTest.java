@@ -16,52 +16,65 @@
 
 package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
-import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
-import static io.opentelemetry.common.AttributeValue.longAttributeValue;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longArrayKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Attributes}s. */
+@SuppressWarnings("rawtypes")
 class AttributesTest {
 
   @Test
   void forEach() {
-    final Map<String, AttributeValue> entriesSeen = new HashMap<>();
+    final Map<AttributeKey, Object> entriesSeen = new HashMap<>();
 
-    Attributes attributes =
-        Attributes.of(
-            "key1", stringAttributeValue("value1"),
-            "key2", AttributeValue.longAttributeValue(333));
+    Attributes attributes = Attributes.of(stringKey("key1"), "value1", longKey("key2"), 333L);
 
     attributes.forEach(entriesSeen::put);
 
     assertThat(entriesSeen)
-        .containsExactly(
-            entry("key1", stringAttributeValue("value1")), entry("key2", longAttributeValue(333)));
+        .containsExactly(entry(stringKey("key1"), "value1"), entry(longKey("key2"), 333L));
   }
 
   @Test
   void forEach_singleAttribute() {
-    final Map<String, AttributeValue> entriesSeen = new HashMap<>();
+    final Map<AttributeKey, Object> entriesSeen = new HashMap<>();
 
-    Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
+    Attributes attributes = Attributes.of(stringKey("key"), "value");
     attributes.forEach(entriesSeen::put);
-    assertThat(entriesSeen).containsExactly(entry("key", stringAttributeValue("value")));
+    assertThat(entriesSeen).containsExactly(entry(stringKey("key"), "value"));
+  }
+
+  @Test
+  void builder_nullKey() {
+    Attributes attributes = Attributes.newBuilder().setAttribute(stringKey(null), "value").build();
+    assertThat(attributes).isEqualTo(Attributes.empty());
   }
 
   @Test
   void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();
-    emptyAttributes.forEach((key, value) -> sawSomething.set(true));
+    emptyAttributes.forEach(
+        new AttributeConsumer() {
+          @Override
+          public <T> void consume(AttributeKey<T> key, T value) {
+            sawSomething.set(true);
+          }
+        });
     assertThat(sawSomething.get()).isFalse();
   }
 
@@ -69,34 +82,34 @@ class AttributesTest {
   void orderIndependentEquality() {
     Attributes one =
         Attributes.of(
-            "key1", stringAttributeValue("value1"),
-            "key2", stringAttributeValue("value2"));
+            stringKey("key1"), "value1",
+            stringKey("key2"), "value2");
     Attributes two =
         Attributes.of(
-            "key2", stringAttributeValue("value2"),
-            "key1", stringAttributeValue("value1"));
+            stringKey("key2"), "value2",
+            stringKey("key1"), "value1");
 
     assertThat(one).isEqualTo(two);
 
     Attributes three =
         Attributes.of(
-            "key1", stringAttributeValue("value1"),
-            "key2", stringAttributeValue("value2"),
-            "", stringAttributeValue("empty"),
-            "key3", stringAttributeValue("value3"),
-            "key4", stringAttributeValue("value4"));
+            stringKey("key1"), "value1",
+            stringKey("key2"), "value2",
+            stringKey(""), "empty",
+            stringKey("key3"), "value3",
+            stringKey("key4"), "value4");
     Attributes four =
         Attributes.of(
             null,
-            stringAttributeValue("null"),
-            "key2",
-            stringAttributeValue("value2"),
-            "key1",
-            stringAttributeValue("value1"),
-            "key4",
-            stringAttributeValue("value4"),
-            "key3",
-            stringAttributeValue("value3"));
+            "null",
+            stringKey("key2"),
+            "value2",
+            stringKey("key1"),
+            "value1",
+            stringKey("key4"),
+            "value4",
+            stringKey("key3"),
+            "value3");
 
     assertThat(three).isEqualTo(four);
   }
@@ -105,17 +118,16 @@ class AttributesTest {
   void deduplication() {
     Attributes one =
         Attributes.of(
-            "key1", stringAttributeValue("value1"),
-            "key1", stringAttributeValue("valueX"));
-    Attributes two = Attributes.of("key1", stringAttributeValue("value1"));
+            stringKey("key1"), "valueX",
+            stringKey("key1"), "value1");
+    Attributes two = Attributes.of(stringKey("key1"), "value1");
 
     assertThat(one).isEqualTo(two);
   }
 
   @Test
   void emptyAndNullKey() {
-    Attributes noAttributes =
-        Attributes.of("", stringAttributeValue("empty"), null, stringAttributeValue("null"));
+    Attributes noAttributes = Attributes.of(stringKey(""), "empty", null, "null");
 
     assertThat(noAttributes.size()).isEqualTo(0);
   }
@@ -127,16 +139,20 @@ class AttributesTest {
             .setAttribute("string", "value1")
             .setAttribute("long", 100)
             .setAttribute("double", 33.44)
-            .setAttribute("boolean", false)
             .setAttribute("boolean", "duplicateShouldBeRemoved")
+            .setAttribute("boolean", false)
             .build();
 
     Attributes wantAttributes =
         Attributes.of(
-            "string", stringAttributeValue("value1"),
-            "long", longAttributeValue(100),
-            "double", doubleAttributeValue(33.44),
-            "boolean", booleanAttributeValue(false));
+            stringKey("string"),
+            "value1",
+            longKey("long"),
+            100L,
+            doubleKey("double"),
+            33.44,
+            booleanKey("boolean"),
+            false);
     assertThat(attributes).isEqualTo(wantAttributes);
 
     Attributes.Builder newAttributes = Attributes.newBuilder(attributes);
@@ -144,11 +160,16 @@ class AttributesTest {
     assertThat(newAttributes.build())
         .isEqualTo(
             Attributes.of(
-                "string", stringAttributeValue("value1"),
-                "long", longAttributeValue(100),
-                "double", doubleAttributeValue(33.44),
-                "boolean", booleanAttributeValue(false),
-                "newKey", stringAttributeValue("newValue")));
+                stringKey("string"),
+                "value1",
+                longKey("long"),
+                100L,
+                doubleKey("double"),
+                33.44,
+                booleanKey("boolean"),
+                false,
+                stringKey("newKey"),
+                "newValue"));
     // Original not mutated.
     assertThat(attributes).isEqualTo(wantAttributes);
   }
@@ -160,55 +181,55 @@ class AttributesTest {
             .setAttribute("string", "value1", "value2")
             .setAttribute("long", 100L, 200L)
             .setAttribute("double", 33.44, -44.33)
-            .setAttribute("boolean", false, true)
             .setAttribute("boolean", "duplicateShouldBeRemoved")
-            .setAttribute("boolean", stringAttributeValue("dropped"))
+            .setAttribute(stringKey("boolean"), "true")
+            .setAttribute("boolean", false, true)
             .build();
 
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                "string", arrayAttributeValue("value1", "value2"),
-                "long", arrayAttributeValue(100L, 200L),
-                "double", arrayAttributeValue(33.44, -44.33),
-                "boolean", arrayAttributeValue(false, true)));
+                stringArrayKey("string"), Arrays.asList("value1", "value2"),
+                longArrayKey("long"), Arrays.asList(100L, 200L),
+                doubleArrayKey("double"), Arrays.asList(33.44, -44.33),
+                booleanArrayKey("boolean"), Arrays.asList(false, true)));
   }
 
   @Test
   void get_Null() {
-    assertThat(Attributes.empty().get("foo")).isNull();
-    assertThat(Attributes.of("key", stringAttributeValue("value")).get("foo")).isNull();
+    assertThat(Attributes.empty().get(stringKey("foo"))).isNull();
+    assertThat(Attributes.of(stringKey("key"), "value").get(stringKey("foo"))).isNull();
   }
 
   @Test
   void get() {
-    assertThat(Attributes.of("key", stringAttributeValue("value")).get("key"))
-        .isEqualTo(stringAttributeValue("value"));
-    assertThat(Attributes.of("key", stringAttributeValue("value")).get("value")).isNull();
+    assertThat(Attributes.of(stringKey("key"), "value").get(stringKey("key"))).isEqualTo("value");
+    assertThat(Attributes.of(stringKey("key"), "value").get(stringKey("value"))).isNull();
     Attributes threeElements =
         Attributes.of(
-            "string", stringAttributeValue("value"),
-            "boolean", booleanAttributeValue(true),
-            "long", longAttributeValue(1L));
-    assertThat(threeElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
-    assertThat(threeElements.get("string")).isEqualTo(stringAttributeValue("value"));
-    assertThat(threeElements.get("long")).isEqualTo(longAttributeValue(1L));
+            stringKey("string"), "value", booleanKey("boolean"), true, longKey("long"), 1L);
+    assertThat(threeElements.get(booleanKey("boolean"))).isEqualTo(true);
+    assertThat(threeElements.get(stringKey("string"))).isEqualTo("value");
+    assertThat(threeElements.get(longKey("long"))).isEqualTo(1L);
     Attributes twoElements =
-        Attributes.of(
-            "string", stringAttributeValue("value"),
-            "boolean", booleanAttributeValue(true));
-    assertThat(twoElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
-    assertThat(twoElements.get("string")).isEqualTo(stringAttributeValue("value"));
+        Attributes.of(stringKey("string"), "value", booleanKey("boolean"), true);
+    assertThat(twoElements.get(booleanKey("boolean"))).isEqualTo(true);
+    assertThat(twoElements.get(stringKey("string"))).isEqualTo("value");
     Attributes fourElements =
         Attributes.of(
-            "string", stringAttributeValue("value"),
-            "boolean", booleanAttributeValue(true),
-            "long", longAttributeValue(1L),
-            "array", arrayAttributeValue("one", "two", "three"));
-    assertThat(fourElements.get("array")).isEqualTo(arrayAttributeValue("one", "two", "three"));
-    assertThat(threeElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
-    assertThat(threeElements.get("string")).isEqualTo(stringAttributeValue("value"));
-    assertThat(threeElements.get("long")).isEqualTo(longAttributeValue(1L));
+            stringKey("string"),
+            "value",
+            booleanKey("boolean"),
+            true,
+            longKey("long"),
+            1L,
+            stringArrayKey("array"),
+            Arrays.asList("one", "two", "three"));
+    assertThat(fourElements.get(stringArrayKey("array")))
+        .isEqualTo(Arrays.asList("one", "two", "three"));
+    assertThat(threeElements.get(booleanKey("boolean"))).isEqualTo(true);
+    assertThat(threeElements.get(stringKey("string"))).isEqualTo("value");
+    assertThat(threeElements.get(longKey("long"))).isEqualTo(1L);
   }
 
   @Test
@@ -236,7 +257,7 @@ class AttributesTest {
   @Test
   void deleteByNull() {
     Attributes.Builder attributes = Attributes.newBuilder();
-    attributes.setAttribute("attrValue", AttributeValue.stringAttributeValue("attrValue"));
+    attributes.setAttribute(stringKey("attrValue"), "attrValue");
     attributes.setAttribute("string", "string");
     attributes.setAttribute("long", 10);
     attributes.setAttribute("double", 1.0);
@@ -246,7 +267,7 @@ class AttributesTest {
     attributes.setAttribute("arrayDouble", new Double[] {1.0});
     attributes.setAttribute("arrayBool", new Boolean[] {true});
     assertThat(attributes.build().size()).isEqualTo(9);
-    attributes.setAttribute("attrValue", (AttributeValue) null);
+    attributes.setAttribute(stringKey("attrValue"), null);
     attributes.setAttribute("string", (String) null);
     attributes.setAttribute("arrayString", (String[]) null);
     attributes.setAttribute("arrayLong", (Long[]) null);
