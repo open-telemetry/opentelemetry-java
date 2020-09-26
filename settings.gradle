@@ -21,9 +21,9 @@ pluginManagement {
 rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all",
         ":opentelemetry-api",
+        ":opentelemetry-context",
         ":opentelemetry-context-prop",
         ":opentelemetry-extension-auto-annotations",
-        ":opentelemetry-extension-context",
         ":opentelemetry-extension-runtime-metrics",
         ":opentelemetry-extension-trace-propagators",
         ":opentelemetry-extension-trace-utils",
