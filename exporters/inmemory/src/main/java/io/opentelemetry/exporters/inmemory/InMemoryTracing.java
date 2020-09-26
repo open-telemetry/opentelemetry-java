@@ -17,8 +17,11 @@
 package io.opentelemetry.exporters.inmemory;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.trace.propagation.HttpTraceContext;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -95,6 +98,11 @@ public abstract class InMemoryTracing {
      * @since 0.3.0
      */
     public final InMemoryTracing build() {
+      // install the HttpTraceContext propagator into the API for testing with.
+      OpenTelemetry.setPropagators(
+          DefaultContextPropagators.builder()
+              .addTextMapPropagator(HttpTraceContext.getInstance())
+              .build());
       InMemorySpanExporter exporter = InMemorySpanExporter.create();
       getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
       return setSpanExporter(exporter).autoBuild();

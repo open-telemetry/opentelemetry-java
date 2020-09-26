@@ -56,10 +56,7 @@ public final class OpenTelemetry {
   private final MeterProvider meterProvider;
   private final CorrelationContextManager contextManager;
 
-  private volatile ContextPropagators propagators =
-      DefaultContextPropagators.builder()
-          .addTextMapPropagator(HttpTraceContext.getInstance())
-          .build();
+  private volatile ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
   /**
    * Returns a singleton {@link TracerProvider}.
