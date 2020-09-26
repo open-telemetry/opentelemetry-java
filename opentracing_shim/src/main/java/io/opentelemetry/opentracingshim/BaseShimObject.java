@@ -16,8 +16,8 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.trace.Tracer;
 
 abstract class BaseShimObject {
@@ -35,7 +35,7 @@ abstract class BaseShimObject {
     return telemetryInfo.tracer();
   }
 
-  CorrelationContextManager contextManager() {
+  BaggageManager contextManager() {
     return telemetryInfo.contextManager();
   }
 

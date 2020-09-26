@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
@@ -50,7 +50,7 @@ class HandlerTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
-  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new BaggageManagerSdk());
   private final Client client = new Client(new RequestHandler(tracer));
 
   @BeforeEach

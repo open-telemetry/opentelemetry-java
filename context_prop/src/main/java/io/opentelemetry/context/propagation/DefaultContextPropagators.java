@@ -66,7 +66,7 @@ public final class DefaultContextPropagators implements ContextPropagators {
    * <pre>{@code
    * ContextPropagators propagators = DefaultContextPropagators.builder()
    *     .addTextMapPropagator(new HttpTraceContext())
-   *     .addTextMapPropagator(new HttpCorrelationContext())
+   *     .addTextMapPropagator(new HttpBaggage())
    *     .addTextMapPropagator(new MyCustomContextPropagator())
    *     .build();
    * }</pre>

@@ -17,8 +17,8 @@
 package io.opentelemetry.opentracingshim;
 
 import io.grpc.Context;
+import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -37,9 +37,7 @@ final class Propagation extends BaseShimObject {
     Context context =
         TracingContextUtils.withSpan(
             DefaultSpan.create(contextShim.getSpanContext()), Context.current());
-    context =
-        CorrelationsContextUtils.withCorrelationContext(
-            contextShim.getCorrelationContext(), context);
+    context = BaggageUtils.withBaggage(contextShim.getBaggage(), context);
 
     propagators().getTextMapPropagator().inject(context, carrier, TextMapSetter.INSTANCE);
   }
@@ -61,8 +59,7 @@ final class Propagation extends BaseShimObject {
       return null;
     }
 
-    return new SpanContextShim(
-        telemetryInfo, span.getContext(), CorrelationsContextUtils.getCorrelationContext(context));
+    return new SpanContextShim(telemetryInfo, span.getContext(), BaggageUtils.getBaggage(context));
   }
 
   static final class TextMapSetter implements TextMapPropagator.Setter<TextMapInject> {

@@ -16,11 +16,11 @@
 
 package io.opentelemetry;
 
+import io.opentelemetry.baggage.BaggageManager;
+import io.opentelemetry.baggage.DefaultBaggageManager;
+import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory;
 import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
@@ -38,13 +38,13 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link Meter}
- * and {@link CorrelationContextManager}.
+ * and {@link BaggageManager}.
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
  * @see TracerProvider
  * @see MeterProviderFactory
- * @see CorrelationContextManagerFactory
+ * @see BaggageManagerFactory
  */
 @ThreadSafe
 public final class OpenTelemetry {
@@ -54,7 +54,7 @@ public final class OpenTelemetry {
 
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
-  private final CorrelationContextManager contextManager;
+  private final BaggageManager contextManager;
 
   private volatile ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
@@ -144,15 +144,14 @@ public final class OpenTelemetry {
   }
 
   /**
-   * Returns a singleton {@link CorrelationContextManager}.
+   * Returns a singleton {@link BaggageManager}.
    *
-   * @return registered manager or default via {@link
-   *     DefaultCorrelationContextManager#getInstance()}.
+   * @return registered manager or default via {@link DefaultBaggageManager#getInstance()}.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
    * @since 0.1.0
    */
-  public static CorrelationContextManager getCorrelationContextManager() {
+  public static BaggageManager getBaggageManager() {
     return getInstance().contextManager;
   }
 
@@ -209,12 +208,11 @@ public final class OpenTelemetry {
         meterProviderFactory != null
             ? meterProviderFactory.create()
             : DefaultMeterProvider.getInstance();
-    CorrelationContextManagerFactory contextManagerProvider =
-        loadSpi(CorrelationContextManagerFactory.class);
+    BaggageManagerFactory contextManagerProvider = loadSpi(BaggageManagerFactory.class);
     contextManager =
         contextManagerProvider != null
             ? contextManagerProvider.create()
-            : DefaultCorrelationContextManager.getInstance();
+            : DefaultBaggageManager.getInstance();
   }
 
   /**

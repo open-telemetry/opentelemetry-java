@@ -13,7 +13,7 @@ ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk"
 dependencies {
     api project(':opentelemetry-api'),
             project(':opentelemetry-sdk-common'),
-            project(':opentelemetry-sdk-correlation-context'),
+            project(':opentelemetry-sdk-baggage'),
             project(':opentelemetry-sdk-metrics'),
             project(':opentelemetry-sdk-tracing')
 
