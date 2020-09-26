@@ -30,7 +30,7 @@ public class BaggageManagerSdk implements BaggageManager {
   }
 
   @Override
-  public Baggage.Builder contextBuilder() {
+  public Baggage.Builder baggageBuilder() {
     return new BaggageSdk.Builder();
   }
 

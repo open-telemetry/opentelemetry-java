@@ -415,7 +415,7 @@ class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public Baggage.Builder contextBuilder() {
+    public Baggage.Builder baggageBuilder() {
       return null;
     }
 

@@ -43,12 +43,12 @@ public interface BaggageManager {
   Baggage getCurrentBaggage();
 
   /**
-   * Returns a new {@code Builder}.
+   * Returns a new {@link Baggage.Builder}.
    *
-   * @return a new {@code Builder}.
+   * @return a new {@code Baggage.Builder}.
    * @since 0.9.0
    */
-  Baggage.Builder contextBuilder();
+  Baggage.Builder baggageBuilder();
 
   /**
    * Enters the scope of code where the given {@code Baggage} is in the current context (replacing

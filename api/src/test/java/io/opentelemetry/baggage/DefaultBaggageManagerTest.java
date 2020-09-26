@@ -47,7 +47,7 @@ class DefaultBaggageManagerTest {
 
   @Test
   void builderMethod() {
-    assertThat(DEFAULT_BAGGAGE_MANAGER.contextBuilder().build().getEntries()).isEmpty();
+    assertThat(DEFAULT_BAGGAGE_MANAGER.baggageBuilder().build().getEntries()).isEmpty();
   }
 
   @Test
@@ -104,26 +104,26 @@ class DefaultBaggageManagerTest {
 
   @Test
   void noopContextBuilder_SetParent_DisallowsNullParent() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.contextBuilder();
+    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
     assertThrows(NullPointerException.class, () -> noopBuilder.setParent((Baggage) null));
   }
 
   @Test
   void noopContextBuilder_SetParent_DisallowsNullContext() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.contextBuilder();
+    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
     assertThrows(NullPointerException.class, () -> noopBuilder.setParent((Context) null));
     ;
   }
 
   @Test
   void noopContextBuilder_SetParent_fromContext() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.contextBuilder();
+    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
     noopBuilder.setParent(Context.current()); // No error.
   }
 
   @Test
   void noopContextBuilder_Put_DisallowsNullKey() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.contextBuilder();
+    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
     assertThrows(
         NullPointerException.class,
         () -> noopBuilder.put(null, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
@@ -131,7 +131,7 @@ class DefaultBaggageManagerTest {
 
   @Test
   void noopContextBuilder_Put_DisallowsNullValue() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.contextBuilder();
+    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
     assertThrows(
         NullPointerException.class,
         () -> noopBuilder.put(KEY, null, Entry.METADATA_UNLIMITED_PROPAGATION));
@@ -139,13 +139,13 @@ class DefaultBaggageManagerTest {
 
   @Test
   void noopContextBuilder_Put_DisallowsNullEntryMetadata() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.contextBuilder();
+    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
     assertThrows(NullPointerException.class, () -> noopBuilder.put(KEY, VALUE, null));
   }
 
   @Test
   void noopContextBuilder_Remove_DisallowsNullKey() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.contextBuilder();
+    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
     assertThrows(NullPointerException.class, () -> noopBuilder.remove(null));
   }
 }

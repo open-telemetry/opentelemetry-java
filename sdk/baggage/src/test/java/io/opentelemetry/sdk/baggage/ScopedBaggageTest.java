@@ -58,7 +58,7 @@ class ScopedBaggageTest {
   void withContext() {
     assertThat(contextManager.getCurrentBaggage().getEntries()).isEmpty();
     Baggage scopedEntries =
-        contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+        contextManager.baggageBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedEntries)) {
       assertThat(contextManager.getCurrentBaggage()).isSameAs(scopedEntries);
     }
@@ -68,11 +68,11 @@ class ScopedBaggageTest {
   @Test
   void createBuilderFromCurrentEntries() {
     Baggage scopedDistContext =
-        contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+        contextManager.baggageBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
       Baggage newEntries =
           contextManager
-              .contextBuilder()
+              .baggageBuilder()
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
       assertThat(newEntries.getEntries())
@@ -87,7 +87,7 @@ class ScopedBaggageTest {
   void setCurrentEntriesWithBuilder() {
     assertThat(contextManager.getCurrentBaggage().getEntries()).isEmpty();
     Baggage scopedDistContext =
-        contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+        contextManager.baggageBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
       assertThat(contextManager.getCurrentBaggage().getEntries())
           .containsExactly(Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION));
@@ -99,11 +99,11 @@ class ScopedBaggageTest {
   @Test
   void addToCurrentEntriesWithBuilder() {
     Baggage scopedDistContext =
-        contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+        contextManager.baggageBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope1 = contextManager.withContext(scopedDistContext)) {
       Baggage innerDistContext =
           contextManager
-              .contextBuilder()
+              .baggageBuilder()
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
       try (Scope scope2 = contextManager.withContext(innerDistContext)) {
@@ -121,14 +121,14 @@ class ScopedBaggageTest {
   void multiScopeBaggageWithMetadata() {
     Baggage scopedDistContext =
         contextManager
-            .contextBuilder()
+            .baggageBuilder()
             .put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION)
             .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
             .build();
     try (Scope scope1 = contextManager.withContext(scopedDistContext)) {
       Baggage innerDistContext =
           contextManager
-              .contextBuilder()
+              .baggageBuilder()
               .put(KEY_3, VALUE_3, METADATA_NO_PROPAGATION)
               .put(KEY_2, VALUE_4, METADATA_NO_PROPAGATION)
               .build();
@@ -148,11 +148,11 @@ class ScopedBaggageTest {
   void setNoParent_doesNotInheritContext() {
     assertThat(contextManager.getCurrentBaggage().getEntries()).isEmpty();
     Baggage scopedDistContext =
-        contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+        contextManager.baggageBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
       Baggage innerDistContext =
           contextManager
-              .contextBuilder()
+              .baggageBuilder()
               .setNoParent()
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();

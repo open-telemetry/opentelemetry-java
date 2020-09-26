@@ -68,7 +68,7 @@ class BaggageSdkTest {
     BaggageSdk parent = listToBaggage(T1, T2);
     Baggage distContext =
         contextManager
-            .contextBuilder()
+            .baggageBuilder()
             .setParent(parent)
             .put(t1alt.getKey(), t1alt.getValue(), t1alt.getEntryMetadata())
             .build();
@@ -80,7 +80,7 @@ class BaggageSdkTest {
     BaggageSdk distContext = listToBaggage(T1);
     assertThat(
             contextManager
-                .contextBuilder()
+                .baggageBuilder()
                 .setParent(distContext)
                 .put(K2, V2, TMD)
                 .build()
@@ -93,7 +93,7 @@ class BaggageSdkTest {
     BaggageSdk distContext = listToBaggage(T1);
     assertThat(
             contextManager
-                .contextBuilder()
+                .baggageBuilder()
                 .setParent(distContext)
                 .put(K1, V2, TMD)
                 .build()
@@ -104,14 +104,14 @@ class BaggageSdkTest {
   @Test
   void put_nullKey() {
     BaggageSdk distContext = listToBaggage(T1);
-    Baggage.Builder builder = contextManager.contextBuilder().setParent(distContext);
+    Baggage.Builder builder = contextManager.baggageBuilder().setParent(distContext);
     assertThrows(NullPointerException.class, () -> builder.put(null, V2, TMD), "key");
   }
 
   @Test
   void put_nullValue() {
     BaggageSdk distContext = listToBaggage(T1);
-    Baggage.Builder builder = contextManager.contextBuilder().setParent(distContext);
+    Baggage.Builder builder = contextManager.baggageBuilder().setParent(distContext);
     assertThrows(NullPointerException.class, () -> builder.put(K2, null, TMD), "value");
   }
 
@@ -120,21 +120,21 @@ class BaggageSdkTest {
     BaggageSdk parent = listToBaggage(T1);
     assertThrows(
         NullPointerException.class,
-        () -> contextManager.contextBuilder().setParent(parent).setParent((Baggage) null).build());
+        () -> contextManager.baggageBuilder().setParent(parent).setParent((Baggage) null).build());
   }
 
   @Test
   void setParent_nullContext() {
     assertThrows(
         NullPointerException.class,
-        () -> contextManager.contextBuilder().setParent((Context) null));
+        () -> contextManager.baggageBuilder().setParent((Context) null));
   }
 
   @Test
   void setParent_fromContext() {
     BaggageSdk parent = listToBaggage(T1);
     Context context = BaggageUtils.withBaggage(listToBaggage(T2), Context.current());
-    Baggage baggage = contextManager.contextBuilder().setParent(parent).setParent(context).build();
+    Baggage baggage = contextManager.baggageBuilder().setParent(parent).setParent(context).build();
     assertThat(baggage.getEntries()).containsExactly(T2);
   }
 
@@ -143,7 +143,7 @@ class BaggageSdkTest {
     Context emptyContext = Context.current();
     BaggageSdk parent = listToBaggage(T1);
     try (Scope scope = BaggageUtils.currentContextWith(parent)) {
-      Baggage baggage = contextManager.contextBuilder().setParent(emptyContext).build();
+      Baggage baggage = contextManager.baggageBuilder().setParent(emptyContext).build();
       assertThat(baggage.getEntries()).isEmpty();
     }
   }
@@ -151,7 +151,7 @@ class BaggageSdkTest {
   @Test
   void setParent_setNoParent() {
     BaggageSdk parent = listToBaggage(T1);
-    Baggage distContext = contextManager.contextBuilder().setParent(parent).setNoParent().build();
+    Baggage distContext = contextManager.baggageBuilder().setParent(parent).setNoParent().build();
     assertThat(distContext.getEntries()).isEmpty();
   }
 
@@ -177,13 +177,13 @@ class BaggageSdkTest {
   void remove_keyFromParent() {
     BaggageSdk distContext = listToBaggage(T1, T2);
     assertThat(
-            contextManager.contextBuilder().setParent(distContext).remove(K1).build().getEntries())
+            contextManager.baggageBuilder().setParent(distContext).remove(K1).build().getEntries())
         .containsExactly(T2);
   }
 
   @Test
   void remove_nullKey() {
-    Baggage.Builder builder = contextManager.contextBuilder();
+    Baggage.Builder builder = contextManager.baggageBuilder();
     assertThrows(NullPointerException.class, () -> builder.remove(null), "key");
   }
 
@@ -191,11 +191,11 @@ class BaggageSdkTest {
   void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            contextManager.contextBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
-            contextManager.contextBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
-            contextManager.contextBuilder().put(K2, V2, TMD).put(K1, V1, TMD).build())
-        .addEqualityGroup(contextManager.contextBuilder().put(K1, V1, TMD).put(K2, V1, TMD).build())
-        .addEqualityGroup(contextManager.contextBuilder().put(K1, V2, TMD).put(K2, V1, TMD).build())
+            contextManager.baggageBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
+            contextManager.baggageBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
+            contextManager.baggageBuilder().put(K2, V2, TMD).put(K1, V1, TMD).build())
+        .addEqualityGroup(contextManager.baggageBuilder().put(K1, V1, TMD).put(K2, V1, TMD).build())
+        .addEqualityGroup(contextManager.baggageBuilder().put(K1, V2, TMD).put(K2, V1, TMD).build())
         .testEquals();
   }
 }

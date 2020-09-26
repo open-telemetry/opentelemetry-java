@@ -48,7 +48,7 @@ public final class DefaultBaggageManager implements BaggageManager {
   }
 
   @Override
-  public Baggage.Builder contextBuilder() {
+  public Baggage.Builder baggageBuilder() {
     return new NoopBaggageBuilder();
   }
 

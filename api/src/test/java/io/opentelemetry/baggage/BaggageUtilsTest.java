@@ -31,7 +31,7 @@ class BaggageUtilsTest {
 
   @Test
   void testGetCurrentBaggage_SetCorrContext() {
-    Baggage baggage = DefaultBaggageManager.getInstance().contextBuilder().build();
+    Baggage baggage = DefaultBaggageManager.getInstance().baggageBuilder().build();
     Context orig = BaggageUtils.withBaggage(baggage, Context.current()).attach();
     try {
       assertThat(BaggageUtils.getCurrentBaggage()).isSameAs(baggage);
@@ -48,7 +48,7 @@ class BaggageUtilsTest {
 
   @Test
   void testGetBaggage_ExplicitContext() {
-    Baggage baggage = DefaultBaggageManager.getInstance().contextBuilder().build();
+    Baggage baggage = DefaultBaggageManager.getInstance().baggageBuilder().build();
     Context context = BaggageUtils.withBaggage(baggage, Context.current());
     assertThat(BaggageUtils.getBaggage(context)).isSameAs(baggage);
   }
@@ -61,7 +61,7 @@ class BaggageUtilsTest {
 
   @Test
   void testGetBaggageWithoutDefault_ExplicitContext() {
-    Baggage baggage = DefaultBaggageManager.getInstance().contextBuilder().build();
+    Baggage baggage = DefaultBaggageManager.getInstance().baggageBuilder().build();
     Context context = BaggageUtils.withBaggage(baggage, Context.current());
     assertThat(BaggageUtils.getBaggage(context)).isSameAs(baggage);
   }

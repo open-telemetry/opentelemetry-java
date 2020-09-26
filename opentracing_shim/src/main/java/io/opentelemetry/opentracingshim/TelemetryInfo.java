@@ -36,7 +36,7 @@ final class TelemetryInfo {
     this.tracer = tracer;
     this.contextManager = contextManager;
     this.propagators = propagators;
-    this.emptyBaggage = contextManager.contextBuilder().build();
+    this.emptyBaggage = contextManager.baggageBuilder().build();
     this.spanContextTable = new SpanContextShimTable();
   }
 
