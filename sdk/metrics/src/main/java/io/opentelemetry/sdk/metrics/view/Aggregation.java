@@ -40,13 +40,13 @@ public interface Aggregation {
   AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType);
 
   /**
-   * Returns the {@link MetricData.Descriptor.Type} that this {@code Aggregation} will produce.
+   * Returns the {@link MetricData.Type} that this {@code Aggregation} will produce.
    *
    * @param instrumentType the type of the {@code Instrument}.
    * @param instrumentValueType the type of recorded values for the {@code Instrument}.
-   * @return the {@link MetricData.Descriptor.Type} that this {@code Aggregation} will produce.
+   * @return the {@link MetricData.Type} that this {@code Aggregation} will produce.
    */
-  MetricData.Descriptor.Type getDescriptorType(
+  MetricData.Type getDescriptorType(
       InstrumentType instrumentType, InstrumentValueType instrumentValueType);
 
   /**

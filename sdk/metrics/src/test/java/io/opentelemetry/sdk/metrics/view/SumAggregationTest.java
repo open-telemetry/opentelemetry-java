@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Aggregations#sum()}. */
@@ -42,15 +42,15 @@ class SumAggregationTest {
     Aggregation sum = Aggregations.sum();
     for (InstrumentType type : MONOTONIC_INSTRUMENTS) {
       assertThat(sum.getDescriptorType(type, InstrumentValueType.DOUBLE))
-          .isEqualTo(Descriptor.Type.MONOTONIC_DOUBLE);
+          .isEqualTo(MetricData.Type.MONOTONIC_DOUBLE);
       assertThat(sum.getDescriptorType(type, InstrumentValueType.LONG))
-          .isEqualTo(Descriptor.Type.MONOTONIC_LONG);
+          .isEqualTo(MetricData.Type.MONOTONIC_LONG);
     }
     for (InstrumentType type : NON_MONOTONIC_INSTRUMENTS) {
       assertThat(sum.getDescriptorType(type, InstrumentValueType.DOUBLE))
-          .isEqualTo(Descriptor.Type.NON_MONOTONIC_DOUBLE);
+          .isEqualTo(MetricData.Type.NON_MONOTONIC_DOUBLE);
       assertThat(sum.getDescriptorType(type, InstrumentValueType.LONG))
-          .isEqualTo(Descriptor.Type.NON_MONOTONIC_LONG);
+          .isEqualTo(MetricData.Type.NON_MONOTONIC_LONG);
     }
   }
 

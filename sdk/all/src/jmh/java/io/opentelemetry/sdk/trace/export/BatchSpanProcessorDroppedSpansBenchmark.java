@@ -125,7 +125,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
     private long getMetric(boolean dropped) {
       String labelValue = String.valueOf(dropped);
       for (MetricData metricData : allMetrics) {
-        if (metricData.getDescriptor().getName().equals("processedSpans")) {
+        if (metricData.getName().equals("processedSpans")) {
           List<Point> points = new ArrayList<>(metricData.getPoints());
           if (points.isEmpty()) {
             return 0;

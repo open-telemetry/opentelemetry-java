@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Aggregations#count()}. */
@@ -31,9 +31,9 @@ class CountAggregationTest {
     Aggregation count = Aggregations.count();
     for (InstrumentType type : InstrumentType.values()) {
       assertThat(count.getDescriptorType(type, InstrumentValueType.DOUBLE))
-          .isEqualTo(Descriptor.Type.MONOTONIC_LONG);
+          .isEqualTo(MetricData.Type.MONOTONIC_LONG);
       assertThat(count.getDescriptorType(type, InstrumentValueType.LONG))
-          .isEqualTo(Descriptor.Type.MONOTONIC_LONG);
+          .isEqualTo(MetricData.Type.MONOTONIC_LONG);
     }
   }
 

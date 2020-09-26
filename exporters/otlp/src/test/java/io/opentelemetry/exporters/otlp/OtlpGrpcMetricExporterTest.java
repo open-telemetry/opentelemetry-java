@@ -34,7 +34,6 @@ import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
@@ -259,9 +258,12 @@ class OtlpGrpcMetricExporterTest {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.create(
-        Descriptor.create("name", "description", "1", Descriptor.Type.MONOTONIC_LONG),
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
+        "name",
+        "description",
+        "1",
+        MetricData.Type.MONOTONIC_LONG,
         Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
   }
 

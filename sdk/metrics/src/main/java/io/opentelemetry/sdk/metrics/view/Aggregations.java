@@ -95,9 +95,9 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      return MetricData.Descriptor.Type.SUMMARY;
+      return MetricData.Type.SUMMARY;
     }
 
     @Override
@@ -124,21 +124,21 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       switch (instrumentType) {
         case COUNTER:
         case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Descriptor.Type.MONOTONIC_LONG
-              : MetricData.Descriptor.Type.MONOTONIC_DOUBLE;
+              ? MetricData.Type.MONOTONIC_LONG
+              : MetricData.Type.MONOTONIC_DOUBLE;
         case UP_DOWN_COUNTER:
         case VALUE_RECORDER:
         case UP_DOWN_SUM_OBSERVER:
         case VALUE_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Descriptor.Type.NON_MONOTONIC_LONG
-              : MetricData.Descriptor.Type.NON_MONOTONIC_DOUBLE;
+              ? MetricData.Type.NON_MONOTONIC_LONG
+              : MetricData.Type.NON_MONOTONIC_DOUBLE;
       }
       throw new IllegalArgumentException("Unsupported instrument/value types");
     }
@@ -166,9 +166,9 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      return MetricData.Descriptor.Type.MONOTONIC_LONG;
+      return MetricData.Type.MONOTONIC_LONG;
     }
 
     @Override
@@ -198,7 +198,7 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       throw new UnsupportedOperationException("Implement this");
     }
@@ -226,17 +226,17 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       switch (instrumentType) {
         case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Descriptor.Type.MONOTONIC_LONG
-              : MetricData.Descriptor.Type.MONOTONIC_DOUBLE;
+              ? MetricData.Type.MONOTONIC_LONG
+              : MetricData.Type.MONOTONIC_DOUBLE;
         case UP_DOWN_SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Descriptor.Type.NON_MONOTONIC_LONG
-              : MetricData.Descriptor.Type.NON_MONOTONIC_DOUBLE;
+              ? MetricData.Type.NON_MONOTONIC_LONG
+              : MetricData.Type.NON_MONOTONIC_DOUBLE;
         default:
           // Do not change this unless the limitations of the current LastValueAggregator are fixed.
           throw new IllegalArgumentException("Unsupported instrument/value types");

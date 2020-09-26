@@ -25,7 +25,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
@@ -79,35 +78,45 @@ class BatchRecorderSdkTest {
     assertThat(doubleCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testDoubleCounter",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), labelSet, 12.1d))));
     assertThat(longCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testLongCounter",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), labelSet, 12))));
     assertThat(doubleUpDownCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testDoubleUpDownCounter", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testDoubleUpDownCounter",
+                "",
+                "1",
+                MetricData.Type.NON_MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d))));
     assertThat(longUpDownCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testLongUpDownCounter", "", "1", Descriptor.Type.NON_MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testLongUpDownCounter",
+                "",
+                "1",
+                MetricData.Type.NON_MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), labelSet, -12))));
   }

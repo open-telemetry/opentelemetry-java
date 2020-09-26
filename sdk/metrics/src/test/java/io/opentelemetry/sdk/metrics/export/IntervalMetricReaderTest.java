@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
@@ -46,18 +45,17 @@ import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link IntervalMetricReader}. */
 class IntervalMetricReaderTest {
-  private static final MetricData.Descriptor METRIC_DESCRIPTOR =
-      MetricData.Descriptor.create(
-          "my metric", "my metric description", "us", Descriptor.Type.MONOTONIC_LONG);
-
   private static final List<Point> LONG_POINT_LIST =
       Collections.singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
       MetricData.create(
-          METRIC_DESCRIPTOR,
           Resource.getEmpty(),
           InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
+          "my metric",
+          "my metric description",
+          "us",
+          MetricData.Type.MONOTONIC_LONG,
           LONG_POINT_LIST);
 
   @Mock private MetricProducer metricProducer;
