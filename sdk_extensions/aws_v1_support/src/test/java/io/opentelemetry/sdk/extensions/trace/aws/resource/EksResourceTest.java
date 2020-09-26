@@ -50,7 +50,7 @@ public class EksResourceTest {
     File mockK8sTokenFile = new File(tempFolder, "k8sToken");
     String token = "token123";
     Files.write(token.getBytes(Charsets.UTF_8), mockK8sTokenFile);
-    File mockK8sKeystoreFile = new File(tempFolder, "k8sKeystore");
+    File mockK8sKeystoreFile = new File(tempFolder, "k8sCert");
     String truststore = "truststore123";
     Files.write(truststore.getBytes(Charsets.UTF_8), mockK8sKeystoreFile);
 

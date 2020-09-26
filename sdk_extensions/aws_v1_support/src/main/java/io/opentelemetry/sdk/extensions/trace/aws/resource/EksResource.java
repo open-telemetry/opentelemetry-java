@@ -19,11 +19,14 @@ package io.opentelemetry.sdk.extensions.trace.aws.resource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.google.common.io.Files;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -37,7 +40,7 @@ public class EksResource extends ResourceProvider {
       "/api/v1/namespaces/amazon-cloudwatch/configmaps/cluster-info";
   private static final String K8S_TOKEN_PATH =
       "/var/run/secrets/kubernetes.io/serviceaccount/token";
-  private static final String K8S_KEYSTORE_PATH =
+  private static final String K8S_CERT_PATH =
       "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
   private static final Logger logger = Logger.getLogger(EksResource.class.getName());
 
@@ -47,7 +50,7 @@ public class EksResource extends ResourceProvider {
   private final String k8sKeystorePath;
 
   public EksResource() {
-    this(new JdkHttpClient(), new DockerHelper(), K8S_TOKEN_PATH, K8S_KEYSTORE_PATH);
+    this(new JdkHttpClient(), new DockerHelper(), K8S_TOKEN_PATH, K8S_CERT_PATH);
   }
 
   @VisibleForTesting
@@ -90,10 +93,10 @@ public class EksResource extends ResourceProvider {
     }
 
     Map<String, String> requestProperties = new HashMap<>();
-    requestProperties.put("Authorization", jdkHttpClient.getK8sCredHeader(K8S_TOKEN_PATH));
+    requestProperties.put("Authorization", getK8sCredHeader(K8S_TOKEN_PATH));
     String awsAuth =
         jdkHttpClient.fetchString(
-            "GET", K8S_SVC_URL + AUTH_CONFIGMAP_PATH, requestProperties, K8S_KEYSTORE_PATH);
+            "GET", K8S_SVC_URL + AUTH_CONFIGMAP_PATH, requestProperties, K8S_CERT_PATH);
 
     return !Strings.isNullOrEmpty(awsAuth);
   }
@@ -106,16 +109,27 @@ public class EksResource extends ResourceProvider {
 
   private String getClusterName() {
     Map<String, String> requestProperties = new HashMap<>();
-    requestProperties.put("Authorization", jdkHttpClient.getK8sCredHeader(K8S_TOKEN_PATH));
+    requestProperties.put("Authorization", getK8sCredHeader(K8S_TOKEN_PATH));
     String json =
         jdkHttpClient.fetchString(
-            "GET", K8S_SVC_URL + CW_CONFIGMAP_PATH, requestProperties, K8S_KEYSTORE_PATH);
+            "GET", K8S_SVC_URL + CW_CONFIGMAP_PATH, requestProperties, K8S_CERT_PATH);
 
     try {
       ObjectMapper mapper = new ObjectMapper();
       return mapper.readTree(json).at("/data/cluster.name").asText();
     } catch (JsonProcessingException e) {
-      logger.log(Level.WARNING, "Can't get cluster name on EKS: " + e);
+      logger.log(Level.WARNING, "Can't get cluster name on EKS.", e);
+    }
+    return "";
+  }
+
+  private static String getK8sCredHeader(String tokenFilePath) {
+    try {
+      File file = new File(tokenFilePath);
+      String content = Files.asCharSource(file, Charsets.UTF_8).read();
+      return "Bearer " + content;
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Unable to load K8s client token.", e);
     }
     return "";
   }
