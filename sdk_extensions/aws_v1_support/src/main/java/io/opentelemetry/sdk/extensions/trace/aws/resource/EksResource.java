@@ -93,7 +93,7 @@ public class EksResource extends ResourceProvider {
     }
 
     Map<String, String> requestProperties = new HashMap<>();
-    requestProperties.put("Authorization", getK8sCredHeader(K8S_TOKEN_PATH));
+    requestProperties.put("Authorization", getK8sCredHeader());
     String awsAuth =
         jdkHttpClient.fetchString(
             "GET", K8S_SVC_URL + AUTH_CONFIGMAP_PATH, requestProperties, K8S_CERT_PATH);
@@ -109,7 +109,7 @@ public class EksResource extends ResourceProvider {
 
   private String getClusterName() {
     Map<String, String> requestProperties = new HashMap<>();
-    requestProperties.put("Authorization", getK8sCredHeader(K8S_TOKEN_PATH));
+    requestProperties.put("Authorization", getK8sCredHeader());
     String json =
         jdkHttpClient.fetchString(
             "GET", K8S_SVC_URL + CW_CONFIGMAP_PATH, requestProperties, K8S_CERT_PATH);
@@ -123,9 +123,9 @@ public class EksResource extends ResourceProvider {
     return "";
   }
 
-  private static String getK8sCredHeader(String tokenFilePath) {
+  private static String getK8sCredHeader() {
     try {
-      File file = new File(tokenFilePath);
+      File file = new File(K8S_TOKEN_PATH);
       String content = Files.asCharSource(file, Charsets.UTF_8).read();
       return "Bearer " + content;
     } catch (IOException e) {
