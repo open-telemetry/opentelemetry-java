@@ -45,10 +45,10 @@ public final class BaggageUtils {
   }
 
   /**
-   * Returns the {@link Baggage} from the current {@code Context}, falling back to an empty {@link
-   * Baggage}.
+   * Returns the {@link Baggage} from the {@linkplain Context#current current context}, falling back
+   * to an empty {@link Baggage}.
    *
-   * @return the {@link Baggage} from the current {@code Context}.
+   * @return the {@link Baggage} from the {@linkplain Context#current current context}.
    * @since 0.9.0
    */
   public static Baggage getCurrentBaggage() {

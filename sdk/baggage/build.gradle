@@ -5,7 +5,7 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-description = 'OpenTelemetry SDK Correlation Context'
+description = 'OpenTelemetry SDK Baggage'
 ext.moduleName = "io.opentelemetry.sdk.baggage"
 ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/baggage"
 
