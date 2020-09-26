@@ -11,10 +11,12 @@ ext.moduleName = "io.opentelemetry.context"
 testSets {
     grpcInOtelTest
     otelInGrpcTest
+    otelAsGrpcTest
 }
 
 dependencies {
     grpcInOtelTestImplementation libraries.grpc_context
+    otelAsGrpcTestImplementation libraries.grpc_context
     otelInGrpcTestImplementation libraries.grpc_context
 
     testImplementation libraries.awaitility

@@ -104,11 +104,7 @@ class ContextTest {
     try (Scope ignored = context.makeCurrent()) {
       assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
       AtomicReference<Context> current = new AtomicReference<>();
-      Thread thread =
-          new Thread(
-              () -> {
-                current.set(Context.current());
-              });
+      Thread thread = new Thread(() -> current.set(Context.current()));
       thread.start();
       thread.join();
       assertThat(current.get()).isEqualTo(Context.root());

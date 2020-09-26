@@ -90,4 +90,12 @@ public interface ContextStorage {
    * this will be the {@linkplain Context#root()} root context}.
    */
   Context current();
+
+  /**
+   * Returns a {@link ContextKey} for the given name. This is only useful when integrating with a
+   * separate context propagation mechanism, where
+   */
+  default <T> ContextKey<T> contextKey(String name) {
+    return new DefaultContextKey<>(name);
+  }
 }

@@ -50,6 +50,6 @@ public interface ContextKey<T> {
    * keys.
    */
   static <T> ContextKey<T> named(String name) {
-    return new DefaultContextKey<>(name);
+    return ContextStorage.get().contextKey(name);
   }
 }
