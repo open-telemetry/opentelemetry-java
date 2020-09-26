@@ -383,6 +383,8 @@ class RecordEventsReadableSpanTest {
       span.setAttribute(stringKey("NullStringAttributeValue"), null);
       span.setAttribute(stringKey("EmptyStringAttributeValue"), "");
       span.setAttribute("LongKey", 1000L);
+      span.setAttribute(longKey("LongKey2"), 5);
+      span.setAttribute(longKey("LongKey3"), 6L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
       span.setAttribute(
@@ -408,11 +410,13 @@ class RecordEventsReadableSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(spanData.getAttributes().size()).isEqualTo(14);
+    assertThat(spanData.getAttributes().size()).isEqualTo(16);
     assertThat(spanData.getAttributes().get(stringKey("StringKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringKey("EmptyStringKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringKey("EmptyStringAttributeValue"))).isNotNull();
     assertThat(spanData.getAttributes().get(longKey("LongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longKey("LongKey2"))).isEqualTo(5L);
+    assertThat(spanData.getAttributes().get(longKey("LongKey3"))).isEqualTo(6L);
     assertThat(spanData.getAttributes().get(doubleKey("DoubleKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(booleanKey("BooleanKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey"))).isNotNull();
@@ -756,7 +760,7 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
 
     // Should be no exceptions
-    span.setAttribute(null, 0);
+    span.setAttribute(null, 0L);
     span.setStatus(null);
     span.updateName(null);
     span.addEvent((Event) null);

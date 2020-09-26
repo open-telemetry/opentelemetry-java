@@ -147,6 +147,18 @@ public interface Span {
   <T> void setAttribute(AttributeKey<T> key, T value);
 
   /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  default void setAttribute(AttributeKey<Long> key, int value) {
+    setAttribute(key, (long) value);
+  }
+
+  /**
    * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
    *
    * @param name the name of the event.
