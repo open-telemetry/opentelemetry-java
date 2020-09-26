@@ -18,8 +18,7 @@ package io.opentelemetry.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -43,13 +42,13 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class HttpTraceContextInjectBenchmark {
 
-  private static final List<SpanContext> spanContexts =
+  private static final List<Span> spans =
       Arrays.asList(
-          createTestSpanContext("905734c59b913b4a905734c59b913b4a", "9909983295041501"),
-          createTestSpanContext("21196a77f299580e21196a77f299580e", "993a97ee3691eb26"),
-          createTestSpanContext("2e7d0ad2390617702e7d0ad239061770", "d49582a2de984b86"),
-          createTestSpanContext("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
-          createTestSpanContext("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
+          createTestSpan("905734c59b913b4a905734c59b913b4a", "9909983295041501"),
+          createTestSpan("21196a77f299580e21196a77f299580e", "993a97ee3691eb26"),
+          createTestSpan("2e7d0ad2390617702e7d0ad239061770", "d49582a2de984b86"),
+          createTestSpan("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
+          createTestSpan("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
   private static final int COUNT = 5; // spanContexts.size()
   private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
   private final Map<String, String> carrier = new HashMap<>();
@@ -60,7 +59,7 @@ public class HttpTraceContextInjectBenchmark {
           carrier.put(key, value);
         }
       };
-  private final List<Context> contexts = createContexts(spanContexts);
+  private final List<Context> contexts = createContexts(spans);
 
   /** Benchmark for measuring inject with default trace state and sampled trace options. */
   @Benchmark
@@ -77,16 +76,16 @@ public class HttpTraceContextInjectBenchmark {
     return carrier;
   }
 
-  private static SpanContext createTestSpanContext(String traceId, String spanId) {
+  private static Span createTestSpan(String traceId, String spanId) {
     byte sampledTraceOptions = TraceFlags.getSampled();
     TraceState traceStateDefault = TraceState.builder().build();
-    return SpanContext.create(traceId, spanId, sampledTraceOptions, traceStateDefault);
+    return Span.getPropagated(traceId, spanId, sampledTraceOptions, traceStateDefault);
   }
 
-  private static List<Context> createContexts(List<SpanContext> spanContexts) {
+  private static List<Context> createContexts(List<Span> spans) {
     List<Context> contexts = new ArrayList<>();
-    for (SpanContext context : spanContexts) {
-      contexts.add(TracingContextUtils.withSpan(DefaultSpan.create(context), Context.ROOT));
+    for (Span span : spans) {
+      contexts.add(TracingContextUtils.withSpan(span, Context.ROOT));
     }
     return contexts;
   }

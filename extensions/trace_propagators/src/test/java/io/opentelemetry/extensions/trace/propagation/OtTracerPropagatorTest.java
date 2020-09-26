@@ -21,8 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
@@ -46,20 +45,12 @@ class OtTracerPropagatorTest {
   private static final Getter<Map<String, String>> getter = Map::get;
   private final OtTracerPropagator propagator = OtTracerPropagator.getInstance();
 
-  private static SpanContext getSpanContext(Context context) {
-    return TracingContextUtils.getSpan(context).getContext();
-  }
-
-  private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
-  }
-
   @Test
   void inject_invalidContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     propagator.inject(
-        withSpanContext(
-            SpanContext.create(
+        TracingContextUtils.withSpan(
+            Span.getPropagated(
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
                 SAMPLED_TRACE_OPTIONS,
@@ -74,8 +65,8 @@ class OtTracerPropagatorTest {
   void inject_SampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     propagator.inject(
-        withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+        TracingContextUtils.withSpan(
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
             Context.current()),
         carrier,
         setter);
@@ -88,8 +79,8 @@ class OtTracerPropagatorTest {
   void inject_SampledContext_nullCarrierUsage() {
     final Map<String, String> carrier = new LinkedHashMap<>();
     propagator.inject(
-        withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+        TracingContextUtils.withSpan(
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
             Context.current()),
         null,
         (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
@@ -102,8 +93,8 @@ class OtTracerPropagatorTest {
   void inject_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     propagator.inject(
-        withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
+        TracingContextUtils.withSpan(
+            Span.getPropagated(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
             Context.current()),
         carrier,
         setter);
@@ -127,10 +118,9 @@ class OtTracerPropagatorTest {
     carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
 
-    assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
+    assertThat(TracingContextUtils.getSpan(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -140,10 +130,9 @@ class OtTracerPropagatorTest {
     carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(OtTracerPropagator.SAMPLED_HEADER, "true");
 
-    assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
+    assertThat(TracingContextUtils.getSpan(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -153,10 +142,9 @@ class OtTracerPropagatorTest {
     carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.FALSE_INT);
 
-    assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
+    assertThat(TracingContextUtils.getSpan(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -166,9 +154,9 @@ class OtTracerPropagatorTest {
     carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
 
-    assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
+    assertThat(TracingContextUtils.getSpan(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
@@ -179,9 +167,9 @@ class OtTracerPropagatorTest {
     carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(OtTracerPropagator.SAMPLED_HEADER, "true");
 
-    assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
+    assertThat(TracingContextUtils.getSpan(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
@@ -192,9 +180,9 @@ class OtTracerPropagatorTest {
     carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.FALSE_INT);
 
-    assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
+    assertThat(TracingContextUtils.getSpan(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
@@ -204,8 +192,10 @@ class OtTracerPropagatorTest {
     invalidHeaders.put(OtTracerPropagator.TRACE_ID_HEADER, "abcdefghijklmnopabcdefghijklmnop");
     invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -214,8 +204,10 @@ class OtTracerPropagatorTest {
     invalidHeaders.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID + "00");
     invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -224,8 +216,10 @@ class OtTracerPropagatorTest {
     invalidHeaders.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
     invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, "abcdefghijklmnop");
     invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -234,14 +228,18 @@ class OtTracerPropagatorTest {
     invalidHeaders.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
     invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, "abcdefghijklmnop" + "00");
     invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
   void extract_emptyCarrier() {
     Map<String, String> emptyHeaders = new HashMap<>();
-    assertThat(getSpanContext(propagator.extract(Context.current(), emptyHeaders, getter)))
-        .isEqualTo(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                propagator.extract(Context.current(), emptyHeaders, getter)))
+        .isEqualTo(Span.getInvalid());
   }
 }

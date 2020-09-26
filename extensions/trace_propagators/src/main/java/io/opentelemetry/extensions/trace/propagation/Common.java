@@ -16,7 +16,7 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
@@ -42,21 +42,21 @@ final class Common {
 
   private Common() {}
 
-  static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
+  static Span buildPropagatedSpan(String traceId, String spanId, String sampled) {
     try {
       byte traceFlags =
           TRUE_INT.equals(sampled) || Boolean.parseBoolean(sampled) // accept either "1" or "true"
               ? SAMPLED
               : NOT_SAMPLED;
 
-      return SpanContext.createFromRemoteParent(
+      return Span.getPropagated(
           StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH),
           spanId,
           traceFlags,
           TraceState.getDefault());
     } catch (Exception e) {
       logger.log(Level.INFO, "Error parsing header. Returning INVALID span context.", e);
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
   }
 

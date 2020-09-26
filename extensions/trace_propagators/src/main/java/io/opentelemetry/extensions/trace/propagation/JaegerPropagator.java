@@ -18,8 +18,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
@@ -94,20 +93,20 @@ public class JaegerPropagator implements TextMapPropagator {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
-    if (!spanContext.isValid()) {
+    Span span = TracingContextUtils.getSpan(context);
+    if (!span.isValid()) {
       return;
     }
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
 
-    String traceId = spanContext.getTraceIdAsHexString();
+    String traceId = span.getTraceIdAsHexString();
     for (int i = 0; i < traceId.length(); i++) {
       chars[i] = traceId.charAt(i);
     }
 
     chars[SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
-    String spanId = spanContext.getSpanIdAsHexString();
+    String spanId = span.getSpanIdAsHexString();
     for (int i = 0; i < spanId.length(); i++) {
       chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
     }
@@ -115,7 +114,7 @@ public class JaegerPropagator implements TextMapPropagator {
     chars[PARENT_SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[PARENT_SPAN_ID_OFFSET] = DEPRECATED_PARENT_SPAN;
     chars[SAMPLED_FLAG_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
-    chars[SAMPLED_FLAG_OFFSET] = spanContext.isSampled() ? IS_SAMPLED_CHAR : NOT_SAMPLED_CHAR;
+    chars[SAMPLED_FLAG_OFFSET] = span.isSampled() ? IS_SAMPLED_CHAR : NOT_SAMPLED_CHAR;
     setter.set(carrier, PROPAGATION_HEADER, new String(chars));
   }
 
@@ -124,19 +123,19 @@ public class JaegerPropagator implements TextMapPropagator {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
 
-    SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
-    if (!spanContext.isValid()) {
+    Span extracted = extractSpanFromHeader(carrier, getter);
+    if (!extracted.isValid()) {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(extracted, context);
   }
 
   @SuppressWarnings("StringSplitter")
-  private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {
+  private static <C> Span extractSpanFromHeader(C carrier, Getter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
     if (StringUtils.isNullOrEmpty(value)) {
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     // if the delimiter (:) cannot be found then the propagation value could be URL
@@ -152,7 +151,7 @@ public class JaegerPropagator implements TextMapPropagator {
                 + "' with value "
                 + value
                 + ". Returning INVALID span context.");
-        return SpanContext.getInvalid();
+        return Span.getInvalid();
       }
     }
 
@@ -164,7 +163,7 @@ public class JaegerPropagator implements TextMapPropagator {
               + "' with value "
               + value
               + ". Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     String traceId = parts[0];
@@ -175,7 +174,7 @@ public class JaegerPropagator implements TextMapPropagator {
               + "' with traceId "
               + traceId
               + ". Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     String spanId = parts[1];
@@ -184,7 +183,7 @@ public class JaegerPropagator implements TextMapPropagator {
           "Invalid SpanId in Jaeger header: '"
               + PROPAGATION_HEADER
               + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     String flags = parts[3];
@@ -193,13 +192,13 @@ public class JaegerPropagator implements TextMapPropagator {
           "Invalid Flags in Jaeger header: '"
               + PROPAGATION_HEADER
               + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     return buildSpanContext(traceId, spanId, flags);
   }
 
-  private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
+  private static Span buildSpanContext(String traceId, String spanId, String flags) {
     try {
       int flagsInt = Integer.parseInt(flags);
       byte traceFlags = ((flagsInt & 1) == 1) ? SAMPLED : NOT_SAMPLED;
@@ -207,16 +206,15 @@ public class JaegerPropagator implements TextMapPropagator {
       String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
       String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);
       if (!TraceId.isValid(otelTraceId) || !SpanId.isValid(otelSpanId)) {
-        return SpanContext.getInvalid();
+        return Span.getInvalid();
       }
-      return SpanContext.createFromRemoteParent(
-          otelTraceId, otelSpanId, traceFlags, TraceState.getDefault());
+      return Span.getPropagated(otelTraceId, otelSpanId, traceFlags, TraceState.getDefault());
     } catch (Exception e) {
       logger.log(
           Level.FINE,
           "Error parsing '" + PROPAGATION_HEADER + "' header. Returning INVALID span context.",
           e);
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
   }
 

@@ -29,13 +29,14 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface Link {
-  /**
-   * Returns the {@code SpanContext}.
-   *
-   * @return the {@code SpanContext}.
-   * @since 0.1.0
-   */
-  SpanContext getContext();
+
+  String getTraceIdAsHexString();
+
+  String getSpanIdAsHexString();
+
+  TraceState getTraceState();
+
+  byte getTraceFlags();
 
   /**
    * Returns the set of attributes.

@@ -22,8 +22,7 @@ import static io.opentelemetry.internal.Utils.checkNotNull;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.TemporaryBuffers;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
@@ -104,8 +103,8 @@ public class HttpTraceContext implements TextMapPropagator {
     checkNotNull(context, "context");
     checkNotNull(setter, "setter");
 
-    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
-    if (!spanContext.isValid()) {
+    Span span = TracingContextUtils.getSpan(context);
+    if (!span.isValid()) {
       return;
     }
 
@@ -114,22 +113,22 @@ public class HttpTraceContext implements TextMapPropagator {
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
 
-    String traceId = spanContext.getTraceIdAsHexString();
+    String traceId = span.getTraceIdAsHexString();
     for (int i = 0; i < traceId.length(); i++) {
       chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
     }
 
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
 
-    String spanId = spanContext.getSpanIdAsHexString();
+    String spanId = span.getSpanIdAsHexString();
     for (int i = 0; i < spanId.length(); i++) {
       chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
     }
 
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
-    spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
+    span.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
-    List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
+    List<TraceState.Entry> entries = span.getTraceState().getEntries();
     if (entries.isEmpty()) {
       // No need to add an empty "tracestate" header.
       return;
@@ -154,44 +153,44 @@ public class HttpTraceContext implements TextMapPropagator {
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
 
-    SpanContext spanContext = extractImpl(carrier, getter);
-    if (!spanContext.isValid()) {
+    Span extracted = extractImpl(carrier, getter);
+    if (!extracted.isValid()) {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(extracted, context);
   }
 
-  private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {
+  private static <C> Span extractImpl(C carrier, Getter<C> getter) {
     String traceParent = getter.get(carrier, TRACE_PARENT);
     if (traceParent == null) {
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
-    SpanContext contextFromParentHeader = extractContextFromTraceParent(traceParent);
-    if (!contextFromParentHeader.isValid()) {
-      return contextFromParentHeader;
+    Span spanFromParentHeader = extractContextFromTraceParent(traceParent);
+    if (!spanFromParentHeader.isValid()) {
+      return spanFromParentHeader;
     }
 
     String traceStateHeader = getter.get(carrier, TRACE_STATE);
     if (traceStateHeader == null || traceStateHeader.isEmpty()) {
-      return contextFromParentHeader;
+      return spanFromParentHeader;
     }
 
     try {
       TraceState traceState = extractTraceState(traceStateHeader);
-      return SpanContext.createFromRemoteParent(
-          contextFromParentHeader.getTraceIdAsHexString(),
-          contextFromParentHeader.getSpanIdAsHexString(),
-          contextFromParentHeader.getTraceFlags(),
+      return Span.getPropagated(
+          spanFromParentHeader.getTraceIdAsHexString(),
+          spanFromParentHeader.getSpanIdAsHexString(),
+          spanFromParentHeader.getTraceFlags(),
           traceState);
     } catch (IllegalArgumentException e) {
       logger.info("Unparseable tracestate header. Returning span context without state.");
-      return contextFromParentHeader;
+      return spanFromParentHeader;
     }
   }
 
-  private static SpanContext extractContextFromTraceParent(String traceparent) {
+  private static Span extractContextFromTraceParent(String traceparent) {
     // TODO(bdrutu): Do we need to verify that version is hex and that
     // for the version the length is the expected one?
     boolean isValid =
@@ -203,13 +202,13 @@ public class HttpTraceContext implements TextMapPropagator {
             && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER;
     if (!isValid) {
       logger.info("Unparseable traceparent header. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     try {
       String version = traceparent.substring(0, 2);
       if (!VALID_VERSIONS.contains(version)) {
-        return SpanContext.getInvalid();
+        return Span.getInvalid();
       }
 
       String traceId =
@@ -217,12 +216,12 @@ public class HttpTraceContext implements TextMapPropagator {
       String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getHexLength());
       if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
         byte isSampled = TraceFlags.byteFromHex(traceparent, TRACE_OPTION_OFFSET);
-        return SpanContext.createFromRemoteParent(traceId, spanId, isSampled, TRACE_STATE_DEFAULT);
+        return Span.getPropagated(traceId, spanId, isSampled, TRACE_STATE_DEFAULT);
       }
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     } catch (IllegalArgumentException e) {
       logger.info("Unparseable traceparent header. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
   }
 

@@ -16,13 +16,12 @@
 
 package io.opentelemetry.opentracingshim;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -93,6 +92,6 @@ class TracerShimTest {
     tracerShim.close();
     Span otSpan = tracerShim.buildSpan(null).start();
     io.opentelemetry.trace.Span span = ((SpanShim) otSpan).getSpan();
-    assertTrue(span instanceof DefaultSpan);
+    assertFalse(span.isValid());
   }
 }

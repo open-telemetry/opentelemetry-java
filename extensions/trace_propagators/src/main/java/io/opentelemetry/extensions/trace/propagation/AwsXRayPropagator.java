@@ -18,9 +18,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
@@ -97,21 +95,19 @@ public class AwsXRayPropagator implements TextMapPropagator {
     Objects.requireNonNull(setter, "setter");
 
     Span span = TracingContextUtils.getSpan(context);
-    if (!span.getContext().isValid()) {
+    if (!span.isValid()) {
       return;
     }
 
-    SpanContext spanContext = span.getContext();
-
-    String otTraceId = spanContext.getTraceIdAsHexString();
+    String otTraceId = span.getTraceIdAsHexString();
     String xrayTraceId =
         TRACE_ID_VERSION
             + TRACE_ID_DELIMITER
             + otTraceId.substring(0, TRACE_ID_FIRST_PART_LENGTH)
             + TRACE_ID_DELIMITER
             + otTraceId.substring(TRACE_ID_FIRST_PART_LENGTH);
-    String parentId = spanContext.getSpanIdAsHexString();
-    char samplingFlag = spanContext.isSampled() ? IS_SAMPLED : NOT_SAMPLED;
+    String parentId = span.getSpanIdAsHexString();
+    char samplingFlag = span.isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 
     String traceHeader =
@@ -134,18 +130,18 @@ public class AwsXRayPropagator implements TextMapPropagator {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
 
-    SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
-    if (!spanContext.isValid()) {
+    Span extracted = extractSpanFromHeader(carrier, getter);
+    if (!extracted.isValid()) {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(extracted, context);
   }
 
-  private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {
+  private static <C> Span extractSpanFromHeader(C carrier, Getter<C> getter) {
     String traceHeader = getter.get(carrier, TRACE_HEADER_KEY);
     if (traceHeader == null || traceHeader.isEmpty()) {
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     String traceId = TraceId.getInvalid();
@@ -171,7 +167,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
             "Error parsing X-Ray trace header. Invalid key value pair: "
                 + part
                 + " Returning INVALID span context.");
-        return SpanContext.getInvalid();
+        return Span.getInvalid();
       }
 
       String value = trimmedPart.substring(equalsIndex + 1);
@@ -192,7 +188,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
               + "' with value "
               + traceHeader
               + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     if (!SpanId.isValid(spanId)) {
@@ -202,7 +198,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
               + "' with value "
               + traceHeader
               + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     if (isSampled == null) {
@@ -212,11 +208,11 @@ public class AwsXRayPropagator implements TextMapPropagator {
               + "' with value "
               + traceHeader
               + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
-    return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
+    return Span.getPropagated(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
   private static String parseTraceId(String xrayTraceId) {

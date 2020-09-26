@@ -90,22 +90,22 @@ abstract class SpanWrapper implements SpanData {
 
   @Override
   public String getTraceId() {
-    return delegate().getContext().getTraceIdAsHexString();
+    return delegate().getTraceIdAsHexString();
   }
 
   @Override
   public String getSpanId() {
-    return delegate().getContext().getSpanIdAsHexString();
+    return delegate().getSpanIdAsHexString();
   }
 
   @Override
   public boolean isSampled() {
-    return delegate().getSpanContext().isSampled();
+    return delegate().isSampled();
   }
 
   @Override
   public TraceState getTraceState() {
-    return delegate().getSpanContext().getTraceState();
+    return delegate().getTraceState();
   }
 
   @Override

@@ -19,19 +19,21 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.TraceState;
 
 /** The extend Span interface used by the SDK. */
 public interface ReadableSpan {
 
-  /**
-   * Returns the {@link SpanContext} of the {@code Span}.
-   *
-   * <p>Equivalent with {@link Span#getContext()}.
-   *
-   * @return the {@link SpanContext} of the {@code Span}.
-   */
-  SpanContext getSpanContext();
+  /** Returns the trace ID of this {@link Span}. */
+  String getTraceIdAsHexString();
+
+  String getSpanIdAsHexString();
+
+  byte getTraceFlags();
+
+  TraceState getTraceState();
+
+  boolean isSampled();
 
   /**
    * Returns the name of the {@code Span}.

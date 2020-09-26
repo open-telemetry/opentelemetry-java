@@ -66,7 +66,7 @@ final class TracezSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(ReadWriteSpan span) {
-    runningSpanCache.put(span.getSpanContext().getSpanIdAsHexString(), span);
+    runningSpanCache.put(span.getSpanIdAsHexString(), span);
   }
 
   @Override
@@ -76,8 +76,8 @@ final class TracezSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    runningSpanCache.remove(span.getSpanContext().getSpanIdAsHexString());
-    if (!sampled || span.getSpanContext().isSampled()) {
+    runningSpanCache.remove(span.getSpanIdAsHexString());
+    if (!sampled || span.isSampled()) {
       completedSpanCache.putIfAbsent(span.getName(), new TracezSpanBuckets());
       completedSpanCache.get(span.getName()).addToBucket(span);
     }

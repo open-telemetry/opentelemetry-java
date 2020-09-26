@@ -32,8 +32,11 @@ import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -115,9 +118,25 @@ public class SpanPipelineBenchmark {
   }
 
   private static class TestLink implements Link {
+
     @Override
-    public SpanContext getContext() {
-      return SpanContext.getInvalid();
+    public String getTraceIdAsHexString() {
+      return TraceId.getInvalid();
+    }
+
+    @Override
+    public String getSpanIdAsHexString() {
+      return SpanId.getInvalid();
+    }
+
+    @Override
+    public TraceState getTraceState() {
+      return TraceState.getDefault();
+    }
+
+    @Override
+    public byte getTraceFlags() {
+      return TraceFlags.getDefault();
     }
 
     @Override

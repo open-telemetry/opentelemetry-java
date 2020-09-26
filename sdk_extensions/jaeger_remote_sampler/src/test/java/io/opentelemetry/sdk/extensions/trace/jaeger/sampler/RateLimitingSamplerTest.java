@@ -23,7 +23,6 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
@@ -37,10 +36,9 @@ class RateLimitingSamplerTest {
   private final String traceId = TraceId.fromLongs(150, 150);
   private final String parentSpanId = SpanId.fromLong(250);
   private final TraceState traceState = TraceState.builder().build();
-  private final SpanContext sampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState);
-  private final SpanContext notSampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
+  private final Span sampledSpan =
+      Span.getPropagated(traceId, parentSpanId, TraceFlags.getSampled(), traceState);
+  private final Span notSampledSpan = Span.getUnsampled(traceId, parentSpanId, traceState);
 
   @Test
   void alwaysSampleSampledContext() {
@@ -48,7 +46,7 @@ class RateLimitingSamplerTest {
     assertThat(
             sampler
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -59,7 +57,7 @@ class RateLimitingSamplerTest {
     assertThat(
             sampler
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -74,7 +72,7 @@ class RateLimitingSamplerTest {
     RateLimitingSampler sampler = new RateLimitingSampler(1);
     SamplingResult samplingResult =
         sampler.shouldSample(
-            notSampledSpanContext,
+            notSampledSpan,
             traceId,
             SPAN_NAME,
             SPAN_KIND,
@@ -84,7 +82,7 @@ class RateLimitingSamplerTest {
     assertThat(
             sampler
                 .shouldSample(
-                    notSampledSpanContext,
+                    notSampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,

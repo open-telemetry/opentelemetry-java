@@ -32,9 +32,7 @@ import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.Tracer;
@@ -62,19 +60,15 @@ class SimpleSpanProcessorTest {
   @Mock private SpanExporter spanExporter;
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SimpleSpanProcessor");
-  private static final SpanContext SAMPLED_SPAN_CONTEXT =
-      SpanContext.create(
-          TraceId.getInvalid(),
-          SpanId.getInvalid(),
-          TraceFlags.getSampled(),
-          TraceState.builder().build());
-  private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
 
   private SimpleSpanProcessor simpleSampledSpansProcessor;
 
   @BeforeEach
   void setUp() {
     simpleSampledSpansProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    when(readableSpan.getTraceIdAsHexString()).thenReturn(TraceId.getInvalid());
+    when(readableSpan.getSpanIdAsHexString()).thenReturn(SpanId.getInvalid());
+    when(readableSpan.getTraceState()).thenReturn(TraceState.getDefault());
   }
 
   @Test
@@ -105,7 +99,7 @@ class SimpleSpanProcessorTest {
   @Test
   void onEndSync_SampledSpan() {
     SpanData spanData = TestUtils.makeBasicSpan();
-    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.isSampled()).thenReturn(true);
     when(readableSpan.toSpanData()).thenReturn(spanData);
     simpleSampledSpansProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(spanData));
@@ -113,14 +107,14 @@ class SimpleSpanProcessorTest {
 
   @Test
   void onEndSync_NotSampledSpan() {
-    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.isSampled()).thenReturn(false);
     simpleSampledSpansProcessor.onEnd(readableSpan);
     verifyNoInteractions(spanExporter);
   }
 
   @Test
   void onEndSync_OnlySampled_NotSampledSpan() {
-    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.isSampled()).thenReturn(false);
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
@@ -131,7 +125,7 @@ class SimpleSpanProcessorTest {
 
   @Test
   void onEndSync_OnlySampled_SampledSpan() {
-    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.isSampled()).thenReturn(true);
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
@@ -195,7 +189,7 @@ class SimpleSpanProcessorTest {
   @Test
   void onEndSync_ExporterReturnError() {
     SpanData spanData = TestUtils.makeBasicSpan();
-    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.isSampled()).thenReturn(true);
     when(readableSpan.toSpanData()).thenReturn(spanData);
     simpleSampledSpansProcessor.onEnd(readableSpan);
     // Try again, now will no longer return error.
@@ -215,7 +209,7 @@ class SimpleSpanProcessorTest {
     SimpleSpanProcessor spanProcessor =
         SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
 
-    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.isSampled()).thenReturn(false);
     spanProcessor.onEnd(readableSpan);
     verifyNoInteractions(spanExporter);
   }
@@ -227,7 +221,7 @@ class SimpleSpanProcessorTest {
     SimpleSpanProcessor spanProcessor =
         SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
 
-    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.isSampled()).thenReturn(false);
     spanProcessor.onEnd(readableSpan);
     verifyNoInteractions(spanExporter);
   }
@@ -240,7 +234,7 @@ class SimpleSpanProcessorTest {
         SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
     SpanData spanData = TestUtils.makeBasicSpan();
 
-    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.isSampled()).thenReturn(false);
     when(readableSpan.toSpanData()).thenReturn(spanData);
 
     spanProcessor.onEnd(readableSpan);

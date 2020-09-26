@@ -21,7 +21,6 @@ import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
@@ -32,8 +31,8 @@ public interface Sampler {
   /**
    * Called during {@link Span} creation to make a sampling samplingResult.
    *
-   * @param parentContext the parent span's {@link SpanContext}. This can be {@code
-   *     SpanContext.INVALID} if this is a root span.
+   * @param parentSpan the parent {@link Span}. This can be {@code SpanContext.INVALID} if this is a
+   *     root span.
    * @param traceId the {@link TraceId} for the new {@code Span}. This will be identical to that in
    *     the parentContext, unless this is a root span.
    * @param name the name of the new {@code Span}.
@@ -43,7 +42,7 @@ public interface Sampler {
    * @return sampling samplingResult whether span should be sampled or not.
    */
   SamplingResult shouldSample(
-      SpanContext parentContext,
+      Span parentSpan,
       String traceId,
       String name,
       Kind spanKind,
@@ -68,7 +67,7 @@ public interface Sampler {
   }
 
   /**
-   * Sampling result returned by {@link Sampler#shouldSample(SpanContext, String, String, Kind,
+   * Sampling result returned by {@link Sampler#shouldSample(Span, String, String, Kind,
    * ReadableAttributes, List)}.
    */
   interface SamplingResult {

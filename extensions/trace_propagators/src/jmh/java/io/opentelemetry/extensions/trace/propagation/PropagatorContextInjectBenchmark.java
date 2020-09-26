@@ -18,8 +18,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -52,18 +51,18 @@ public class PropagatorContextInjectBenchmark {
   @State(Scope.Thread)
   public abstract static class AbstractContextInjectBenchmark {
 
-    private static final List<SpanContext> spanContexts =
+    private static final List<Span> spans =
         Arrays.asList(
-            createTestSpanContext("905734c59b913b4a905734c59b913b4a", "9909983295041501"),
-            createTestSpanContext("21196a77f299580e21196a77f299580e", "993a97ee3691eb26"),
-            createTestSpanContext("2e7d0ad2390617702e7d0ad239061770", "d49582a2de984b86"),
-            createTestSpanContext("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
-            createTestSpanContext("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
+            createTestSpan("905734c59b913b4a905734c59b913b4a", "9909983295041501"),
+            createTestSpan("21196a77f299580e21196a77f299580e", "993a97ee3691eb26"),
+            createTestSpan("2e7d0ad2390617702e7d0ad239061770", "d49582a2de984b86"),
+            createTestSpan("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
+            createTestSpan("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
 
     private final Map<String, String> carrier = new HashMap<>();
 
     private Integer iteration = 0;
-    private SpanContext contextToTest = spanContexts.get(iteration);
+    private Span spanToTest = spans.get(iteration);
 
     /** Benchmark for measuring inject with default trace state and sampled trace options. */
     @Benchmark
@@ -73,8 +72,7 @@ public class PropagatorContextInjectBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Map<String, String> measureInject() {
-      Context context =
-          TracingContextUtils.withSpan(DefaultSpan.create(contextToTest), Context.current());
+      Context context = TracingContextUtils.withSpan(spanToTest, Context.current());
       doInject(context, carrier);
       return carrier;
     }
@@ -83,12 +81,12 @@ public class PropagatorContextInjectBenchmark {
 
     @TearDown(Level.Iteration)
     public void tearDown() {
-      this.contextToTest = spanContexts.get(++iteration % spanContexts.size());
+      this.spanToTest = spans.get(++iteration % spans.size());
     }
 
-    private static SpanContext createTestSpanContext(String traceId, String spanId) {
+    private static Span createTestSpan(String traceId, String spanId) {
       TraceState traceStateDefault = TraceState.builder().build();
-      return SpanContext.create(traceId, spanId, TraceFlags.getSampled(), traceStateDefault);
+      return Span.getPropagated(traceId, spanId, TraceFlags.getSampled(), traceStateDefault);
     }
   }
 

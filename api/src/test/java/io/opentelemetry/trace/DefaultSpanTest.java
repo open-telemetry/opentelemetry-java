@@ -33,14 +33,14 @@ class DefaultSpanTest {
 
   @Test
   void hasInvalidContextAndDefaultSpanOptions() {
-    SpanContext context = DefaultSpan.getInvalid().getContext();
-    assertThat(context.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
-    assertThat(context.getTraceState()).isEqualTo(TraceState.getDefault());
+    Span span = Span.getInvalid();
+    assertThat(span.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
+    assertThat(span.getTraceState()).isEqualTo(TraceState.getDefault());
   }
 
   @Test
   void doNotCrash() {
-    Span span = DefaultSpan.getInvalid();
+    Span span = Span.getInvalid();
     span.setAttribute(stringKey("MyStringAttributeKey"), "MyStringAttributeValue");
     span.setAttribute(booleanKey("MyBooleanAttributeKey"), true);
     span.setAttribute(longKey("MyLongAttributeKey"), 123L);
@@ -68,7 +68,7 @@ class DefaultSpanTest {
 
   @Test
   void defaultSpan_ToString() {
-    Span span = DefaultSpan.getInvalid();
+    Span span = Span.getInvalid();
     assertThat(span.toString()).isEqualTo("DefaultSpan");
   }
 

@@ -18,7 +18,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
@@ -30,15 +30,15 @@ final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector 
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
-    if (!spanContext.isValid()) {
+    Span span = TracingContextUtils.getSpan(context);
+    if (!span.isValid()) {
       return;
     }
 
-    String sampled = spanContext.isSampled() ? Common.TRUE_INT : Common.FALSE_INT;
+    String sampled = span.isSampled() ? Common.TRUE_INT : Common.FALSE_INT;
 
-    setter.set(carrier, B3Propagator.TRACE_ID_HEADER, spanContext.getTraceIdAsHexString());
-    setter.set(carrier, B3Propagator.SPAN_ID_HEADER, spanContext.getSpanIdAsHexString());
+    setter.set(carrier, B3Propagator.TRACE_ID_HEADER, span.getTraceIdAsHexString());
+    setter.set(carrier, B3Propagator.SPAN_ID_HEADER, span.getSpanIdAsHexString());
     setter.set(carrier, B3Propagator.SAMPLED_HEADER, sampled);
   }
 }

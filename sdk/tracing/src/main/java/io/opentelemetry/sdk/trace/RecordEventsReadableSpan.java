@@ -37,8 +37,9 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
@@ -58,10 +59,13 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
+  private final String traceIdHex;
+  private final String spanIdHex;
+  private final byte traceFlags;
+  private final TraceState traceState;
+
   // The config used when constructing this Span.
   private final TraceConfig traceConfig;
-  // Contains the identifiers associated with this Span.
-  private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
   private final String parentSpanId;
   // True if the parent is on a different process.
@@ -111,7 +115,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private boolean hasEnded;
 
   private RecordEventsReadableSpan(
-      SpanContext context,
+      String traceIdHex,
+      String spanIdHex,
+      byte traceFlags,
+      TraceState traceState,
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
@@ -125,7 +132,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       List<io.opentelemetry.trace.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
-    this.context = context;
+    this.traceIdHex = traceIdHex;
+    this.spanIdHex = spanIdHex;
+    this.traceFlags = traceFlags;
+    this.traceState = traceState;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.parentSpanId = parentSpanId;
     this.hasRemoteParent = hasRemoteParent;
@@ -146,7 +156,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   /**
    * Creates and starts a span with the given configuration.
    *
-   * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
    * @param kind the span kind.
    * @param parentSpanId the span_id of the parent span, or {@code Span.INVALID} if the new span is
@@ -162,7 +171,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @return a new and started span.
    */
   static RecordEventsReadableSpan startSpan(
-      SpanContext context,
+      String traceIdHex,
+      String spanIdHex,
+      byte traceFlags,
+      TraceState traceState,
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
@@ -178,7 +190,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       long startEpochNanos) {
     RecordEventsReadableSpan span =
         new RecordEventsReadableSpan(
-            context,
+            traceIdHex,
+            spanIdHex,
+            traceFlags,
+            traceState,
             name,
             instrumentationLibraryInfo,
             kind,
@@ -221,11 +236,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     synchronized (lock) {
       return hasEnded;
     }
-  }
-
-  @Override
-  public SpanContext getSpanContext() {
-    return getContext();
   }
 
   /**
@@ -284,6 +294,41 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    */
   Clock getClock() {
     return clock;
+  }
+
+  @Override
+  public String getTraceIdAsHexString() {
+    return traceIdHex;
+  }
+
+  @Override
+  public String getSpanIdAsHexString() {
+    return spanIdHex;
+  }
+
+  @Override
+  public boolean isSampled() {
+    return TraceFlags.isSampled(traceFlags);
+  }
+
+  @Override
+  public byte getTraceFlags() {
+    return traceFlags;
+  }
+
+  @Override
+  public TraceState getTraceState() {
+    return traceState;
+  }
+
+  @Override
+  public boolean isValid() {
+    return true;
+  }
+
+  @Override
+  public boolean isRemote() {
+    return false;
   }
 
   @Override
@@ -499,11 +544,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public SpanContext getContext() {
-    return context;
-  }
-
-  @Override
   public boolean isRecording() {
     return true;
   }
@@ -550,7 +590,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       if (!(link instanceof Link)) {
         // Make a copy because the given Link may not be immutable and we may reference a lot of
         // memory.
-        newLink = Link.create(link.getContext(), link.getAttributes());
+        newLink =
+            Link.create(
+                link.getTraceIdAsHexString(),
+                link.getSpanIdAsHexString(),
+                link.getTraceFlags(),
+                link.getTraceState(),
+                link.getAttributes(),
+                link.getAttributes().size());
       } else {
         newLink = (Link) link;
       }
@@ -613,9 +660,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     StringBuilder sb = new StringBuilder();
     sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceIdAsHexString());
+    sb.append(traceIdHex);
     sb.append(", spanId=");
-    sb.append(context.getSpanIdAsHexString());
+    sb.append(spanIdHex);
     sb.append(", parentSpanId=");
     sb.append(parentSpanId);
     sb.append(", name=");

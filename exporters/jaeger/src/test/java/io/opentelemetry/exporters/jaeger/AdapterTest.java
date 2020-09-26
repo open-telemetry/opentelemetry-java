@@ -40,7 +40,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
@@ -193,8 +192,7 @@ class AdapterTest {
   @Test
   void testSpanRefs() {
     // prepare
-    Link link =
-        Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+    Link link = Link.create(createSpan("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -206,7 +204,7 @@ class AdapterTest {
   @Test
   void testSpanRef() {
     // prepare
-    Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    Link link = Link.create(createSpan(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
@@ -281,7 +279,7 @@ class AdapterTest {
   private static SpanData getSpanData(long startMs, long endMs) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
-    Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    Link link = Link.create(createSpan(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return TestSpanData.newBuilder()
         .setHasEnded(true)
@@ -302,8 +300,8 @@ class AdapterTest {
         .build();
   }
 
-  private static SpanContext createSpanContext(String traceId, String spanId) {
-    return SpanContext.create(
+  private static Span createSpan(String traceId, String spanId) {
+    return Span.getPropagated(
         traceId, spanId, TraceFlags.getDefault(), TraceState.builder().build());
   }
 

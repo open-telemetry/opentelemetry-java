@@ -287,10 +287,8 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + RUNNING_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of running: 1");
-    assertThat(output.toString())
-        .contains(runningSpan.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(runningSpan.getContext().getSpanIdAsHexString().toString());
+    assertThat(output.toString()).contains(runningSpan.getTraceIdAsHexString());
+    assertThat(output.toString()).contains(runningSpan.getSpanIdAsHexString());
 
     runningSpan.end();
   }
@@ -313,14 +311,10 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + LATENCY_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of latency samples: 2");
-    assertThat(output.toString())
-        .contains(latencySpan1.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(latencySpan1.getContext().getSpanIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(latencySpan2.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(latencySpan2.getContext().getSpanIdAsHexString().toString());
+    assertThat(output.toString()).contains(latencySpan1.getTraceIdAsHexString());
+    assertThat(output.toString()).contains(latencySpan1.getSpanIdAsHexString());
+    assertThat(output.toString()).contains(latencySpan2.getTraceIdAsHexString());
+    assertThat(output.toString()).contains(latencySpan2.getSpanIdAsHexString());
   }
 
   @Test
@@ -341,14 +335,10 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + ERROR_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of error samples: 2");
-    assertThat(output.toString())
-        .contains(errorSpan1.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(errorSpan1.getContext().getSpanIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(errorSpan2.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(errorSpan2.getContext().getSpanIdAsHexString().toString());
+    assertThat(output.toString()).contains(errorSpan1.getTraceIdAsHexString());
+    assertThat(output.toString()).contains(errorSpan1.getSpanIdAsHexString());
+    assertThat(output.toString()).contains(errorSpan2.getTraceIdAsHexString());
+    assertThat(output.toString()).contains(errorSpan2.getSpanIdAsHexString());
   }
 
   @Test

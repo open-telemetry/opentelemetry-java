@@ -16,6 +16,7 @@
 
 package io.opentelemetry.opentracingshim.testbed;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -24,7 +25,6 @@ import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -53,7 +53,7 @@ class OpenTelemetryInteroperabilityTest {
     } finally {
       otSpan.finish();
     }
-    assertEquals(tracer.getCurrentSpan().getClass(), DefaultSpan.class);
+    assertFalse(tracer.getCurrentSpan().isValid());
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
@@ -70,7 +70,7 @@ class OpenTelemetryInteroperabilityTest {
       otelSpan.end();
     }
 
-    assertEquals(tracer.getCurrentSpan().getClass(), DefaultSpan.class);
+    assertFalse(tracer.getCurrentSpan().isValid());
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();

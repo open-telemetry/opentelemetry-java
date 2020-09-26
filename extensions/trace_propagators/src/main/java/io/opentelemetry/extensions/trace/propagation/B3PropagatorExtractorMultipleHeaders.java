@@ -22,8 +22,7 @@ import static io.opentelemetry.extensions.trace.propagation.B3Propagator.TRACE_I
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -38,33 +37,33 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
   public <C> Context extract(Context context, C carrier, TextMapPropagator.Getter<C> getter) {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
-    SpanContext spanContext = getSpanContextFromMultipleHeaders(carrier, getter);
-    if (!spanContext.isValid()) {
+    Span extracted = extractSpanFromMultipleHeaders(carrier, getter);
+    if (!extracted.isValid()) {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(extracted, context);
   }
 
-  private static <C> SpanContext getSpanContextFromMultipleHeaders(
+  private static <C> Span extractSpanFromMultipleHeaders(
       C carrier, TextMapPropagator.Getter<C> getter) {
     String traceId = getter.get(carrier, TRACE_ID_HEADER);
     if (StringUtils.isNullOrEmpty(traceId)) {
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
     if (!Common.isTraceIdValid(traceId)) {
       logger.fine(
           "Invalid TraceId in B3 header: " + traceId + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     String spanId = getter.get(carrier, SPAN_ID_HEADER);
     if (!Common.isSpanIdValid(spanId)) {
       logger.fine("Invalid SpanId in B3 header: " + spanId + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
 
     String sampled = getter.get(carrier, SAMPLED_HEADER);
-    return Common.buildSpanContext(traceId, spanId, sampled);
+    return Common.buildPropagatedSpan(traceId, spanId, sampled);
   }
 }

@@ -60,7 +60,12 @@ public final class TraceFlags {
   public static boolean isSampledFromHex(CharSequence src, int srcOffset) {
     // todo bypass the byte conversion and look directly at the hex.
     byte b = BigendianEncoding.byteFromBase16String(src, srcOffset);
-    return (b & IS_SAMPLED) != 0;
+    return isSampled(b);
+  }
+
+  /** Extract the sampled flag from trace-flags. */
+  public static boolean isSampled(byte traceFlags) {
+    return (traceFlags & IS_SAMPLED) != 0;
   }
 
   /** Extract the byte representation of the flags from a hex-representation. */

@@ -33,18 +33,32 @@ class SpanBuilderTest {
   void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(TracingContextUtils.withSpan(DefaultSpan.create(null), Context.ROOT));
+    spanBuilder.setParent(
+        TracingContextUtils.withSpan(Span.getPropagated(null, null, (byte) 0, null), Context.ROOT));
     spanBuilder.setParent(Context.ROOT);
     spanBuilder.setNoParent();
-    spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
-    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
+    spanBuilder.addLink(Span.getInvalid());
+    spanBuilder.addLink(Span.getInvalid(), Attributes.empty());
     spanBuilder.addLink(
         new Link() {
-          private final SpanContext spanContext = DefaultSpan.getInvalid().getContext();
+          @Override
+          public String getTraceIdAsHexString() {
+            return TraceId.getInvalid();
+          }
 
           @Override
-          public SpanContext getContext() {
-            return spanContext;
+          public String getSpanIdAsHexString() {
+            return SpanId.getInvalid();
+          }
+
+          @Override
+          public TraceState getTraceState() {
+            return TraceState.getDefault();
+          }
+
+          @Override
+          public byte getTraceFlags() {
+            return TraceFlags.getDefault();
           }
 
           @Override

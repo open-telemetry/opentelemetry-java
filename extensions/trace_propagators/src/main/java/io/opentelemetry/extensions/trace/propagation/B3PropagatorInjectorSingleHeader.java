@@ -18,7 +18,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -41,22 +41,22 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
-    if (!spanContext.isValid()) {
+    Span span = TracingContextUtils.getSpan(context);
+    if (!span.isValid()) {
       return;
     }
 
     char[] chars = new char[COMBINED_HEADER_SIZE];
-    String traceId = spanContext.getTraceIdAsHexString();
+    String traceId = span.getTraceIdAsHexString();
     traceId.getChars(0, traceId.length(), chars, 0);
     chars[SPAN_ID_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
 
-    String spanId = spanContext.getSpanIdAsHexString();
+    String spanId = span.getSpanIdAsHexString();
     System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getHexLength());
 
     chars[SAMPLED_FLAG_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
     chars[SAMPLED_FLAG_OFFSET] =
-        spanContext.isSampled() ? B3Propagator.IS_SAMPLED : B3Propagator.NOT_SAMPLED;
+        span.isSampled() ? B3Propagator.IS_SAMPLED : B3Propagator.NOT_SAMPLED;
     setter.set(carrier, B3Propagator.COMBINED_HEADER, new String(chars));
   }
 }

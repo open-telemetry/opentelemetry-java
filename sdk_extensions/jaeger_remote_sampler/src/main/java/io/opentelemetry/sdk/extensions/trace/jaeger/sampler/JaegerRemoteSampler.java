@@ -28,8 +28,8 @@ import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -77,13 +77,13 @@ public class JaegerRemoteSampler implements Sampler {
 
   @Override
   public SamplingResult shouldSample(
-      SpanContext parentContext,
+      Span parentSpan,
       String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
       List<Link> parentLinks) {
-    return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
+    return sampler.shouldSample(parentSpan, traceId, name, spanKind, attributes, parentLinks);
   }
 
   private void getAndUpdateSampler() {

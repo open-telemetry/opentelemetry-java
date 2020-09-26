@@ -21,15 +21,17 @@ import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -43,18 +45,28 @@ class SamplersTest {
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();
-  private final SpanContext sampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState);
-  private final SpanContext notSampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
-  private final SpanContext invalidSpanContext = SpanContext.getInvalid();
-  private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpanContext);
-  private final SpanContext sampledRemoteSpanContext =
-      SpanContext.createFromRemoteParent(
-          traceId, parentSpanId, TraceFlags.getSampled(), traceState);
-  private final SpanContext notSampledRemoteSpanContext =
-      SpanContext.createFromRemoteParent(
-          traceId, parentSpanId, TraceFlags.getDefault(), traceState);
+  private final Span sampledSpan =
+      OpenTelemetry.getTracer("test")
+          .spanBuilder("test")
+          .setParent(
+              TracingContextUtils.withSpan(
+                  Span.getPropagated(traceId, parentSpanId, TraceFlags.getSampled(), traceState),
+                  Context.ROOT))
+          .startSpan();
+  private final Span unsampledSpan =
+      OpenTelemetry.getTracer("test")
+          .spanBuilder("test")
+          .setParent(
+              TracingContextUtils.withSpan(
+                  Span.getPropagated(traceId, parentSpanId, TraceFlags.getDefault(), traceState),
+                  Context.ROOT))
+          .startSpan();
+  private final Span invalidSpan = Span.getInvalid();
+  private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpan);
+  private final Span sampledRemoteSpan =
+      Span.getPropagated(traceId, parentSpanId, TraceFlags.getSampled(), traceState);
+  private final Span notSampledRemoteSpan =
+      Span.getPropagated(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
 
   @Test
   void emptySamplingDecision() {
@@ -104,7 +116,7 @@ class SamplersTest {
     assertThat(
             Samplers.alwaysOn()
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -117,7 +129,7 @@ class SamplersTest {
     assertThat(
             Samplers.alwaysOn()
                 .shouldSample(
-                    notSampledSpanContext,
+                    unsampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -151,7 +163,7 @@ class SamplersTest {
     assertThat(
             Samplers.alwaysOff()
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -164,7 +176,7 @@ class SamplersTest {
     assertThat(
             Samplers.alwaysOff()
                 .shouldSample(
-                    notSampledSpanContext,
+                    unsampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -198,7 +210,7 @@ class SamplersTest {
     assertThat(
             Samplers.parentBased(Samplers.alwaysOn())
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -211,7 +223,7 @@ class SamplersTest {
     assertThat(
             Samplers.parentBased(Samplers.alwaysOn())
                 .shouldSample(
-                    notSampledSpanContext,
+                    unsampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -227,7 +239,7 @@ class SamplersTest {
     assertThat(
             Samplers.parentBased(Samplers.alwaysOff())
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -240,7 +252,7 @@ class SamplersTest {
     assertThat(
             Samplers.parentBased(Samplers.alwaysOff())
                 .shouldSample(
-                    notSampledSpanContext,
+                    unsampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -257,7 +269,7 @@ class SamplersTest {
                 .setRemoteParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
-                    notSampledRemoteSpanContext,
+                    notSampledRemoteSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -271,7 +283,7 @@ class SamplersTest {
                 .setRemoteParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
-                    notSampledRemoteSpanContext,
+                    notSampledRemoteSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -285,7 +297,7 @@ class SamplersTest {
                 .setRemoteParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
-                    notSampledRemoteSpanContext,
+                    notSampledRemoteSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -299,7 +311,7 @@ class SamplersTest {
                 .setRemoteParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
-                    notSampledRemoteSpanContext,
+                    notSampledRemoteSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -317,7 +329,7 @@ class SamplersTest {
                 .setLocalParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
-                    notSampledSpanContext,
+                    unsampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -331,7 +343,7 @@ class SamplersTest {
                 .setLocalParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
-                    notSampledSpanContext,
+                    unsampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -345,7 +357,7 @@ class SamplersTest {
                 .setLocalParentNotSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
-                    notSampledSpanContext,
+                    unsampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -359,7 +371,7 @@ class SamplersTest {
                 .setLocalParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
-                    notSampledSpanContext,
+                    unsampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -376,7 +388,7 @@ class SamplersTest {
                 .setRemoteParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
-                    sampledRemoteSpanContext,
+                    sampledRemoteSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -390,7 +402,7 @@ class SamplersTest {
                 .setRemoteParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
-                    sampledRemoteSpanContext,
+                    sampledRemoteSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -404,7 +416,7 @@ class SamplersTest {
                 .setRemoteParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
-                    sampledRemoteSpanContext,
+                    sampledRemoteSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -418,7 +430,7 @@ class SamplersTest {
                 .setRemoteParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
-                    sampledRemoteSpanContext,
+                    sampledRemoteSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -435,7 +447,7 @@ class SamplersTest {
                 .setLocalParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -449,7 +461,7 @@ class SamplersTest {
                 .setLocalParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -463,7 +475,7 @@ class SamplersTest {
                 .setLocalParentSampled(Samplers.alwaysOff())
                 .build()
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -477,7 +489,7 @@ class SamplersTest {
                 .setLocalParentSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
-                    sampledSpanContext,
+                    sampledSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -492,7 +504,7 @@ class SamplersTest {
     assertThat(
             Samplers.parentBased(Samplers.alwaysOff())
                 .shouldSample(
-                    invalidSpanContext,
+                    invalidSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -504,7 +516,7 @@ class SamplersTest {
     assertThat(
             Samplers.parentBased(Samplers.alwaysOff())
                 .shouldSample(
-                    invalidSpanContext,
+                    invalidSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -521,7 +533,7 @@ class SamplersTest {
                 .setLocalParentNotSampled(Samplers.alwaysOn())
                 .build()
                 .shouldSample(
-                    invalidSpanContext,
+                    invalidSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -533,7 +545,7 @@ class SamplersTest {
     assertThat(
             Samplers.parentBased(Samplers.alwaysOn())
                 .shouldSample(
-                    invalidSpanContext,
+                    invalidSpan,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
@@ -583,7 +595,7 @@ class SamplersTest {
   // Applies the given sampler to NUM_SAMPLE_TRIES random traceId.
   private void assertSamplerSamplesWithProbability(
       Sampler sampler,
-      SpanContext parent,
+      Span parent,
       List<io.opentelemetry.trace.Link> parentLinks,
       double probability) {
     int count = 0; // Count of spans with sampling enabled
@@ -625,7 +637,7 @@ class SamplersTest {
 
   private void assertTraceIdRatioBased_NotSampledParent(Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        sampler, notSampledSpanContext, Collections.emptyList(), probability);
+        sampler, unsampledSpan, Collections.emptyList(), probability);
   }
 
   @Test
@@ -642,8 +654,7 @@ class SamplersTest {
   }
 
   private void assertTraceIdRatioBased_SampledParent(Sampler sampler, double probability) {
-    assertSamplerSamplesWithProbability(
-        sampler, sampledSpanContext, Collections.emptyList(), probability);
+    assertSamplerSamplesWithProbability(sampler, sampledSpan, Collections.emptyList(), probability);
   }
 
   @Test
@@ -679,13 +690,13 @@ class SamplersTest {
 
   private void assertTraceIdRatioBased_SampledParentLink(Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        sampler, notSampledSpanContext, Collections.singletonList(sampledParentLink), probability);
+        sampler, unsampledSpan, Collections.singletonList(sampledParentLink), probability);
   }
 
   private void assertTraceIdRatioBased_SampledParentLinkContext(
       Sampler sampler, double probability) {
     assertSamplerSamplesWithProbability(
-        sampler, sampledSpanContext, Collections.singletonList(sampledParentLink), probability);
+        sampler, sampledSpan, Collections.singletonList(sampledParentLink), probability);
   }
 
   @Test
@@ -715,7 +726,7 @@ class SamplersTest {
             });
     SamplingResult samplingResult1 =
         defaultProbability.shouldSample(
-            invalidSpanContext,
+            invalidSpan,
             notSampledTraceId,
             SPAN_NAME,
             SPAN_KIND,
@@ -748,7 +759,7 @@ class SamplersTest {
             });
     SamplingResult samplingResult2 =
         defaultProbability.shouldSample(
-            invalidSpanContext,
+            invalidSpan,
             sampledTraceId,
             SPAN_NAME,
             SPAN_KIND,

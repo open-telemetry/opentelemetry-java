@@ -21,8 +21,8 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.OperationSampling
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +47,7 @@ class PerOperationSampler implements Sampler {
 
   @Override
   public SamplingResult shouldSample(
-      SpanContext parentContext,
+      Span parentSpan,
       String traceId,
       String name,
       Kind spanKind,
@@ -57,7 +57,7 @@ class PerOperationSampler implements Sampler {
     if (sampler == null) {
       sampler = this.defaultSampler;
     }
-    return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
+    return sampler.shouldSample(parentSpan, traceId, name, spanKind, attributes, parentLinks);
   }
 
   @Override

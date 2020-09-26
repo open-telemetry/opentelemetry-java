@@ -35,10 +35,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -105,17 +103,17 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder addLink(SpanContext spanContext) {
-    addLink(Link.create(spanContext));
+  public Span.Builder addLink(Span span) {
+    addLink(Link.create(span));
     return this;
   }
 
   @Override
-  public Span.Builder addLink(SpanContext spanContext, Attributes attributes) {
+  public Span.Builder addLink(Span span, Attributes attributes) {
     int totalAttributeCount = attributes.size();
     addLink(
         Link.create(
-            spanContext,
+            span,
             RecordEventsReadableSpan.copyAndLimitAttributes(
                 attributes, traceConfig.getMaxNumberOfAttributesPerLink()),
             totalAttributeCount));
@@ -192,17 +190,16 @@ final class SpanBuilderSdk implements Span.Builder {
     final Context parentContext =
         isRootSpan ? Context.ROOT : parent == null ? Context.current() : parent;
     final Span parentSpan = TracingContextUtils.getSpan(parentContext);
-    final SpanContext parentSpanContext = parentSpan.getContext();
     String traceId;
     String spanId = idsGenerator.generateSpanId();
     TraceState traceState = TraceState.getDefault();
-    if (!parentSpanContext.isValid()) {
+    if (!parentSpan.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
     } else {
       // New child span.
-      traceId = parentSpanContext.getTraceIdAsHexString();
-      traceState = parentSpanContext.getTraceState();
+      traceId = parentSpan.getTraceIdAsHexString();
+      traceState = parentSpan.getTraceState();
     }
     List<io.opentelemetry.trace.Link> immutableLinks =
         links == null
@@ -216,19 +213,11 @@ final class SpanBuilderSdk implements Span.Builder {
         traceConfig
             .getSampler()
             .shouldSample(
-                parentSpanContext,
-                traceId,
-                spanName,
-                spanKind,
-                immutableAttributes,
-                immutableLinks);
+                parentSpan, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
-    SpanContext spanContext =
-        createSpanContext(traceId, spanId, traceState, Samplers.isSampled(samplingDecision));
-
     if (!Samplers.isRecording(samplingDecision)) {
-      return DefaultSpan.create(spanContext);
+      return Span.getUnsampled(traceId, spanId, traceState);
     }
     ReadableAttributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
@@ -250,12 +239,15 @@ final class SpanBuilderSdk implements Span.Builder {
     attributes = null;
 
     return RecordEventsReadableSpan.startSpan(
-        spanContext,
+        traceId,
+        spanId,
+        TraceFlags.getSampled(),
+        traceState,
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentSpanContext.getSpanIdAsHexString(),
-        parentSpanContext.isRemote(),
+        parentSpan.getSpanIdAsHexString(),
+        parentSpan.isRemote(),
         traceConfig,
         spanProcessor,
         getClock(parentSpan, clock),
@@ -264,12 +256,6 @@ final class SpanBuilderSdk implements Span.Builder {
         immutableLinks,
         totalNumberOfLinksAdded,
         startEpochNanos);
-  }
-
-  private static SpanContext createSpanContext(
-      String traceId, String spanId, TraceState traceState, boolean isSampled) {
-    byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
-    return SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 
   private static Clock getClock(Span parent, Clock clock) {

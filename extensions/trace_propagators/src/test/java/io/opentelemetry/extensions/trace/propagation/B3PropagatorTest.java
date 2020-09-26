@@ -21,8 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
@@ -58,20 +57,12 @@ class B3PropagatorTest {
   private final B3Propagator b3Propagator = B3Propagator.getMultipleHeaderPropagator();
   private final B3Propagator b3PropagatorSingleHeader = B3Propagator.getSingleHeaderPropagator();
 
-  private static SpanContext getSpanContext(Context context) {
-    return TracingContextUtils.getSpan(context).getContext();
-  }
-
-  private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
-  }
-
   @Test
   void inject_invalidContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     b3Propagator.inject(
-        withSpanContext(
-            SpanContext.create(
+        TracingContextUtils.withSpan(
+            Span.getPropagated(
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
                 SAMPLED_TRACE_OPTIONS,
@@ -86,8 +77,8 @@ class B3PropagatorTest {
   void inject_SampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     b3Propagator.inject(
-        withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+        TracingContextUtils.withSpan(
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
             Context.current()),
         carrier,
         setter);
@@ -100,8 +91,8 @@ class B3PropagatorTest {
   void inject_SampledContext_nullCarrierUsage() {
     final Map<String, String> carrier = new LinkedHashMap<>();
     b3Propagator.inject(
-        withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+        TracingContextUtils.withSpan(
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
             Context.current()),
         null,
         (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
@@ -114,8 +105,8 @@ class B3PropagatorTest {
   void inject_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     b3Propagator.inject(
-        withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
+        TracingContextUtils.withSpan(
+            Span.getPropagated(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
             Context.current()),
         carrier,
         setter);
@@ -140,10 +131,10 @@ class B3PropagatorTest {
     carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
 
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(b3Propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -153,10 +144,10 @@ class B3PropagatorTest {
     carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(B3Propagator.SAMPLED_HEADER, "true");
 
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(b3Propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -166,10 +157,10 @@ class B3PropagatorTest {
     carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(B3Propagator.SAMPLED_HEADER, Common.FALSE_INT);
 
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(b3Propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -179,9 +170,10 @@ class B3PropagatorTest {
     carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
 
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(b3Propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
@@ -192,9 +184,10 @@ class B3PropagatorTest {
     carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(B3Propagator.SAMPLED_HEADER, "true");
 
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(b3Propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
@@ -205,9 +198,10 @@ class B3PropagatorTest {
     carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(B3Propagator.SAMPLED_HEADER, Common.FALSE_INT);
 
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(b3Propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
@@ -217,8 +211,10 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, "g" + TRACE_ID.substring(1));
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -227,8 +223,10 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID.substring(2));
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -237,8 +235,10 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID + "00");
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -247,8 +247,10 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID_ALL_ZERO);
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -257,8 +259,10 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, "g" + SPAN_ID.substring(1));
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -267,8 +271,10 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID.substring(2));
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -277,8 +283,10 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID + "00");
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -287,16 +295,18 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
     invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID_ALL_ZERO);
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
   void inject_invalidContext_SingleHeader() {
     Map<String, String> carrier = new LinkedHashMap<>();
     b3PropagatorSingleHeader.inject(
-        withSpanContext(
-            SpanContext.create(
+        TracingContextUtils.withSpan(
+            Span.getPropagated(
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
                 SAMPLED_TRACE_OPTIONS,
@@ -311,8 +321,8 @@ class B3PropagatorTest {
   void inject_SampledContext_SingleHeader() {
     Map<String, String> carrier = new LinkedHashMap<>();
     b3PropagatorSingleHeader.inject(
-        withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+        TracingContextUtils.withSpan(
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
             Context.current()),
         carrier,
         setter);
@@ -325,8 +335,8 @@ class B3PropagatorTest {
   void inject_NotSampledContext_SingleHeader() {
     Map<String, String> carrier = new LinkedHashMap<>();
     b3PropagatorSingleHeader.inject(
-        withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
+        TracingContextUtils.withSpan(
+            Span.getPropagated(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
             Context.current()),
         carrier,
         setter);
@@ -349,10 +359,11 @@ class B3PropagatorTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT);
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -361,10 +372,11 @@ class B3PropagatorTest {
     carrier.put(
         B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT + "-" + "0");
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -372,10 +384,11 @@ class B3PropagatorTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + "true");
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -383,10 +396,11 @@ class B3PropagatorTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + "true" + "-" + "0");
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -394,10 +408,11 @@ class B3PropagatorTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.FALSE_INT);
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+            Span.getPropagated(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -406,9 +421,11 @@ class B3PropagatorTest {
     carrier.put(
         B3Propagator.COMBINED_HEADER, SHORT_TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT);
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
@@ -419,9 +436,11 @@ class B3PropagatorTest {
         B3Propagator.COMBINED_HEADER,
         SHORT_TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT + "-" + "0");
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
@@ -430,9 +449,11 @@ class B3PropagatorTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(B3Propagator.COMBINED_HEADER, SHORT_TRACE_ID + "-" + SPAN_ID + "-" + "true");
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
@@ -442,9 +463,11 @@ class B3PropagatorTest {
     carrier.put(
         B3Propagator.COMBINED_HEADER, SHORT_TRACE_ID + "-" + SPAN_ID + "-" + "true" + "-" + "0");
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
@@ -454,9 +477,11 @@ class B3PropagatorTest {
     carrier.put(
         B3Propagator.COMBINED_HEADER, SHORT_TRACE_ID + "-" + SPAN_ID + "-" + Common.FALSE_INT);
 
-    assertThat(getSpanContext(b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3PropagatorSingleHeader.extract(Context.current(), carrier, getter)))
         .isEqualTo(
-            SpanContext.createFromRemoteParent(
+            Span.getPropagated(
                 SHORT_TRACE_ID_FULL, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
@@ -466,9 +491,9 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.COMBINED_HEADER, null);
 
     assertThat(
-            getSpanContext(
+            TracingContextUtils.getSpan(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -477,9 +502,9 @@ class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.COMBINED_HEADER, "");
 
     assertThat(
-            getSpanContext(
+            TracingContextUtils.getSpan(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -490,9 +515,9 @@ class B3PropagatorTest {
         "abcdefghijklmnopabcdefghijklmnop" + "-" + SPAN_ID + "-" + Common.TRUE_INT);
 
     assertThat(
-            getSpanContext(
+            TracingContextUtils.getSpan(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -503,9 +528,9 @@ class B3PropagatorTest {
         "abcdefghijklmnopabcdefghijklmnop" + "00" + "-" + SPAN_ID + "-" + Common.TRUE_INT);
 
     assertThat(
-            getSpanContext(
+            TracingContextUtils.getSpan(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -515,9 +540,9 @@ class B3PropagatorTest {
         B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + "abcdefghijklmnop" + "-" + Common.TRUE_INT);
 
     assertThat(
-            getSpanContext(
+            TracingContextUtils.getSpan(
                 b3PropagatorSingleHeader.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -527,8 +552,10 @@ class B3PropagatorTest {
         B3Propagator.COMBINED_HEADER,
         TRACE_ID + "-" + "abcdefghijklmnop" + "00" + "-" + Common.TRUE_INT);
 
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -536,8 +563,10 @@ class B3PropagatorTest {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(B3Propagator.COMBINED_HEADER, TRACE_ID);
 
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -546,8 +575,10 @@ class B3PropagatorTest {
     invalidHeaders.put(
         B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + Common.TRUE_INT + "-extra");
 
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(Span.getInvalid());
   }
 
   @Test
@@ -567,7 +598,9 @@ class B3PropagatorTest {
   @Test
   void extract_emptyCarrier() {
     Map<String, String> emptyHeaders = new HashMap<>();
-    assertThat(getSpanContext(b3Propagator.extract(Context.current(), emptyHeaders, getter)))
-        .isEqualTo(SpanContext.getInvalid());
+    assertThat(
+            TracingContextUtils.getSpan(
+                b3Propagator.extract(Context.current(), emptyHeaders, getter)))
+        .isEqualTo(Span.getInvalid());
   }
 }

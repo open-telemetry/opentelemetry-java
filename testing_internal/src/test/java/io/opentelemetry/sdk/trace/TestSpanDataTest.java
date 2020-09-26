@@ -25,8 +25,8 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
@@ -82,13 +82,13 @@ class TestSpanDataTest {
 
   @Test
   void link_defaultTotalAttributeCountIsZero() {
-    Link link = Link.create(SpanContext.getInvalid());
+    Link link = Link.create(Span.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   void link_canSetTotalAttributeCount() {
-    Link link = Link.create(SpanContext.getInvalid());
+    Link link = Link.create(Span.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
@@ -112,7 +112,7 @@ class TestSpanDataTest {
   }
 
   private static Link emptyLink() {
-    return Link.create(SpanContext.getInvalid());
+    return Link.create(Span.getInvalid());
   }
 
   private static TestSpanData.Builder createBasicSpanBuilder() {

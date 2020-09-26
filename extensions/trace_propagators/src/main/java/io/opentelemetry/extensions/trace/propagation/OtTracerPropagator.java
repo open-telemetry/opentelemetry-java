@@ -20,8 +20,7 @@ import static io.opentelemetry.extensions.trace.propagation.Common.MAX_TRACE_ID_
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
@@ -65,13 +64,13 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (context == null || setter == null) {
       return;
     }
-    final SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
-    if (!spanContext.isValid()) {
+    final Span span = TracingContextUtils.getSpan(context);
+    if (!span.isValid()) {
       return;
     }
-    setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceIdAsHexString());
-    setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanIdAsHexString());
-    setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.isSampled()));
+    setter.set(carrier, TRACE_ID_HEADER, span.getTraceIdAsHexString());
+    setter.set(carrier, SPAN_ID_HEADER, span.getSpanIdAsHexString());
+    setter.set(carrier, SAMPLED_HEADER, String.valueOf(span.isSampled()));
   }
 
   @Override
@@ -86,17 +85,17 @@ public class OtTracerPropagator implements TextMapPropagator {
             : StringUtils.padLeft(incomingTraceId, MAX_TRACE_ID_LENGTH);
     String spanId = getter.get(carrier, SPAN_ID_HEADER);
     String sampled = getter.get(carrier, SAMPLED_HEADER);
-    SpanContext spanContext = buildSpanContext(traceId, spanId, sampled);
-    if (!spanContext.isValid()) {
+    Span extracted = buildPropagatedSpan(traceId, spanId, sampled);
+    if (!extracted.isValid()) {
       return context;
     }
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(extracted, context);
   }
 
-  static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
+  static Span buildPropagatedSpan(String traceId, String spanId, String sampled) {
     if (!Common.isTraceIdValid(traceId) || !Common.isSpanIdValid(spanId)) {
-      return SpanContext.getInvalid();
+      return Span.getInvalid();
     }
-    return Common.buildSpanContext(traceId, spanId, sampled);
+    return Common.buildPropagatedSpan(traceId, spanId, sampled);
   }
 }

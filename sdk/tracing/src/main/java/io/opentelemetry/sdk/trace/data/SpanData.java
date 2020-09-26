@@ -22,8 +22,8 @@ import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
@@ -192,36 +192,61 @@ public interface SpanData {
     /**
      * Returns a new immutable {@code Link}.
      *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param span the {@link Span} this {@link Link} links to.
      * @return a new immutable {@code Event<T>}
      */
-    public static Link create(SpanContext spanContext) {
-      return new AutoValue_SpanData_Link(
-          spanContext, DEFAULT_ATTRIBUTE_COLLECTION, DEFAULT_ATTRIBUTE_COUNT);
+    public static Link create(Span span) {
+      return create(span, DEFAULT_ATTRIBUTE_COLLECTION, DEFAULT_ATTRIBUTE_COUNT);
     }
 
     /**
      * Returns a new immutable {@code Link}.
      *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param span the {@link Span} this {@link Link} links to.
      * @param attributes the attributes of this {@code Link}.
      * @return a new immutable {@code Event<T>}
      */
-    public static Link create(SpanContext spanContext, Attributes attributes) {
-      return new AutoValue_SpanData_Link(spanContext, attributes, attributes.size());
+    public static Link create(Span span, Attributes attributes) {
+      return create(span, attributes, attributes.size());
     }
 
     /**
      * Returns a new immutable {@code Link}.
      *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param span the {@link Span} this {@link Link} links to.
+     * @param attributes the attributes of this {@code Link}.
+     * @param totalAttributeCount the total number of attributed for this {@code Link}.
+     * @return a new immutable {@code Event<T>}
+     */
+    public static Link create(Span span, Attributes attributes, int totalAttributeCount) {
+      return create(
+          span.getTraceIdAsHexString(),
+          span.getSpanIdAsHexString(),
+          span.getTraceFlags(),
+          span.getTraceState(),
+          attributes,
+          totalAttributeCount);
+    }
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param traceId the trace ID of the {@link Span} this {@link Link} links to.
+     * @param spanId the span ID of the {@link Span} this {@link Link} links to.
+     * @param traceState the trace state of the {@link Span} this {@link Link} links to.
      * @param attributes the attributes of this {@code Link}.
      * @param totalAttributeCount the total number of attributed for this {@code Link}.
      * @return a new immutable {@code Event<T>}
      */
     public static Link create(
-        SpanContext spanContext, Attributes attributes, int totalAttributeCount) {
-      return new AutoValue_SpanData_Link(spanContext, attributes, totalAttributeCount);
+        String traceId,
+        String spanId,
+        byte traceFlags,
+        TraceState traceState,
+        Attributes attributes,
+        int totalAttributeCount) {
+      return new AutoValue_SpanData_Link(
+          traceId, spanId, traceState, traceFlags, attributes, totalAttributeCount);
     }
 
     /**

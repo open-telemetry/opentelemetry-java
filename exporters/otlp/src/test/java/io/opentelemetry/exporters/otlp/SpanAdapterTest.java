@@ -52,7 +52,6 @@ import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
@@ -69,8 +68,9 @@ class SpanAdapterTest {
   private static final String SPAN_ID = SpanId.bytesToHex(SPAN_ID_BYTES);
 
   private static final TraceState TRACE_STATE = TraceState.builder().build();
-  private static final SpanContext SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TRACE_STATE);
+  private static final io.opentelemetry.trace.Span SPAN =
+      io.opentelemetry.trace.Span.getPropagated(
+          TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TRACE_STATE);
 
   @Test
   void toProtoSpan() {
@@ -91,7 +91,7 @@ class SpanAdapterTest {
                     Collections.singletonList(
                         EventImpl.create(12347, "my_event", Attributes.empty())))
                 .setTotalRecordedEvents(3)
-                .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
+                .setLinks(Collections.singletonList(Link.create(SPAN)))
                 .setTotalRecordedLinks(2)
                 .setStatus(io.opentelemetry.trace.Status.OK)
                 .build());
@@ -285,7 +285,7 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(Link.create(SPAN_CONTEXT)))
+    assertThat(SpanAdapter.toProtoSpanLink(Link.create(SPAN)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -297,7 +297,7 @@ class SpanAdapterTest {
   void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
-                Link.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
+                Link.create(SPAN, Attributes.of(stringKey("key_string"), "string"), 5)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))

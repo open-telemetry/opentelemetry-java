@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.Objects;
@@ -180,7 +179,7 @@ public final class Samplers {
     // Returns a "yes" {@link SamplingResult} for {@link Span} sampling.
     @Override
     public SamplingResult shouldSample(
-        SpanContext parentContext,
+        Span parentSpan,
         String traceId,
         String name,
         Kind spanKind,
@@ -202,7 +201,7 @@ public final class Samplers {
     // Returns a "no" {@link SamplingResult}T on {@link Span} sampling.
     @Override
     public SamplingResult shouldSample(
-        SpanContext parentContext,
+        Span parentSpan,
         String traceId,
         String name,
         Kind spanKind,
@@ -244,29 +243,28 @@ public final class Samplers {
     // Otherwise, uses the delegateSampler provided at initialization to make a decision.
     @Override
     public SamplingResult shouldSample(
-        SpanContext parentContext,
+        Span parentSpan,
         String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
         List<Link> parentLinks) {
-      if (!parentContext.isValid()) {
-        return this.root.shouldSample(
-            parentContext, traceId, name, spanKind, attributes, parentLinks);
+      if (!parentSpan.isValid()) {
+        return this.root.shouldSample(parentSpan, traceId, name, spanKind, attributes, parentLinks);
       }
 
-      if (parentContext.isRemote()) {
-        return parentContext.isSampled()
+      if (parentSpan.isRemote()) {
+        return parentSpan.isSampled()
             ? this.remoteParentSampled.shouldSample(
-                parentContext, traceId, name, spanKind, attributes, parentLinks)
+                parentSpan, traceId, name, spanKind, attributes, parentLinks)
             : this.remoteParentNotSampled.shouldSample(
-                parentContext, traceId, name, spanKind, attributes, parentLinks);
+                parentSpan, traceId, name, spanKind, attributes, parentLinks);
       }
-      return parentContext.isSampled()
+      return parentSpan.isSampled()
           ? this.localParentSampled.shouldSample(
-              parentContext, traceId, name, spanKind, attributes, parentLinks)
+              parentSpan, traceId, name, spanKind, attributes, parentLinks)
           : this.localParentNotSampled.shouldSample(
-              parentContext, traceId, name, spanKind, attributes, parentLinks);
+              parentSpan, traceId, name, spanKind, attributes, parentLinks);
     }
 
     @Override
@@ -458,7 +456,7 @@ public final class Samplers {
 
     @Override
     public final SamplingResult shouldSample(
-        SpanContext parentContext,
+        Span parentSpan,
         String traceId,
         String name,
         Kind spanKind,

@@ -79,9 +79,8 @@ public interface Tracer {
    *
    * <p>startSpan methods do NOT modify the current Context {@code Span}.
    *
-   * @return a default {@code Span} that does nothing and has an invalid {@link SpanContext} if no
-   *     {@code Span} is associated with the current Context, otherwise the current {@code Span}
-   *     from the Context.
+   * @return a default {@code Span} that does nothing and is invalid if no {@code Span} is
+   *     associated with the current Context, otherwise the current {@code Span} from the Context.
    * @since 0.1.0
    */
   Span getCurrentSpan();

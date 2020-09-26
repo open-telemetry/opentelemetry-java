@@ -23,7 +23,6 @@ import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
@@ -84,7 +83,7 @@ class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
+      assertThat(tracer.getCurrentSpan()).isSameAs(Span.getInvalid());
     }
   }
 
@@ -125,7 +124,7 @@ class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
+      assertThat(tracer.getCurrentSpan()).isSameAs(Span.getInvalid());
     }
   }
 }

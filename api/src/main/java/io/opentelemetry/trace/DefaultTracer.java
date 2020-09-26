@@ -66,39 +66,37 @@ public final class DefaultTracer implements Tracer {
       return new NoopSpanBuilder(spanName);
     }
 
-    @Nullable private SpanContext spanContext;
+    @Nullable private Span parent;
 
     @Override
     public Span startSpan() {
-      if (spanContext == null) {
-        spanContext = TracingContextUtils.getCurrentSpan().getContext();
+      if (parent == null) {
+        parent = TracingContextUtils.getCurrentSpan();
       }
 
-      return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
-          ? new DefaultSpan(spanContext)
-          : DefaultSpan.getInvalid();
+      return parent.isValid() ? parent : Span.getInvalid();
     }
 
     @Override
     public NoopSpanBuilder setParent(Context context) {
       Utils.checkNotNull(context, "context");
-      spanContext = TracingContextUtils.getSpan(context).getContext();
+      parent = TracingContextUtils.getSpan(context);
       return this;
     }
 
     @Override
     public NoopSpanBuilder setNoParent() {
-      spanContext = SpanContext.getInvalid();
+      parent = Span.getInvalid();
       return this;
     }
 
     @Override
-    public NoopSpanBuilder addLink(SpanContext spanContext) {
+    public NoopSpanBuilder addLink(Span span) {
       return this;
     }
 
     @Override
-    public NoopSpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
+    public NoopSpanBuilder addLink(Span span, Attributes attributes) {
       return this;
     }
 

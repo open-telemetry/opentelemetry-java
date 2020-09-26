@@ -19,6 +19,8 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryMetadata;
+import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.TraceState;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,26 +29,49 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   static final EntryMetadata DEFAULT_ENTRY_METADATA =
       EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
 
-  private final io.opentelemetry.trace.SpanContext context;
+  private final String traceId;
+  private final String spanId;
+  private final byte traceFlags;
+  private final TraceState traceState;
+
   private final CorrelationContext distContext;
 
   public SpanContextShim(SpanShim spanShim) {
     this(
         spanShim.telemetryInfo(),
-        spanShim.getSpan().getContext(),
+        spanShim.getSpan(),
         spanShim.telemetryInfo().emptyCorrelationContext());
   }
 
-  public SpanContextShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.SpanContext context) {
-    this(telemetryInfo, context, telemetryInfo.emptyCorrelationContext());
+  public SpanContextShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.Span span) {
+    this(telemetryInfo, span, telemetryInfo.emptyCorrelationContext());
   }
 
   public SpanContextShim(
       TelemetryInfo telemetryInfo,
-      io.opentelemetry.trace.SpanContext context,
+      io.opentelemetry.trace.Span span,
+      CorrelationContext distContext) {
+    this(
+        telemetryInfo,
+        span.getTraceIdAsHexString(),
+        span.getSpanIdAsHexString(),
+        span.getTraceFlags(),
+        span.getTraceState(),
+        distContext);
+  }
+
+  private SpanContextShim(
+      TelemetryInfo telemetryInfo,
+      String traceId,
+      String spanId,
+      byte traceFlags,
+      TraceState traceState,
       CorrelationContext distContext) {
     super(telemetryInfo);
-    this.context = context;
+    this.traceId = traceId;
+    this.spanId = spanId;
+    this.traceFlags = traceFlags;
+    this.traceState = traceState;
     this.distContext = distContext;
   }
 
@@ -54,11 +79,12 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
     CorrelationContext.Builder builder = contextManager().contextBuilder().setParent(distContext);
     builder.put(key, value, DEFAULT_ENTRY_METADATA);
 
-    return new SpanContextShim(telemetryInfo(), context, builder.build());
+    return new SpanContextShim(
+        telemetryInfo(), traceId, spanId, traceFlags, traceState, builder.build());
   }
 
-  io.opentelemetry.trace.SpanContext getSpanContext() {
-    return context;
+  io.opentelemetry.trace.Span getPropagatedSpan() {
+    return Span.getPropagated(traceId, spanId, traceFlags, traceState);
   }
 
   CorrelationContext getCorrelationContext() {
@@ -67,12 +93,12 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   @Override
   public String toTraceId() {
-    return context.getTraceIdAsHexString();
+    return traceId;
   }
 
   @Override
   public String toSpanId() {
-    return context.getSpanIdAsHexString().toString();
+    return spanId;
   }
 
   @Override

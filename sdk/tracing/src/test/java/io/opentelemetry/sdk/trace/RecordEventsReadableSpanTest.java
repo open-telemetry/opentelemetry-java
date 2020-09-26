@@ -39,8 +39,8 @@ import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
@@ -78,14 +78,14 @@ class RecordEventsReadableSpanTest {
   private final String traceId = idsGenerator.generateTraceId();
   private final String spanId = idsGenerator.generateSpanId();
   private final String parentSpanId = idsGenerator.generateSpanId();
-  private final SpanContext spanContext =
-      SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final Resource resource = Resource.getEmpty();
   private final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<AttributeKey, Object> attributes = new HashMap<>();
   private Attributes expectedAttributes;
-  private final io.opentelemetry.trace.Link link = Link.create(spanContext);
+  private final io.opentelemetry.trace.Link link =
+      Link.create(
+          traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault(), Attributes.empty(), 0);
   @Mock private SpanProcessor spanProcessor;
 
   private TestClock testClock;
@@ -131,9 +131,25 @@ class RecordEventsReadableSpanTest {
     final Attributes attributes = Attributes.of(stringKey("attr"), "val");
     io.opentelemetry.trace.Link link =
         new io.opentelemetry.trace.Link() {
+
           @Override
-          public SpanContext getContext() {
-            return spanContext;
+          public String getTraceIdAsHexString() {
+            return traceId;
+          }
+
+          @Override
+          public String getSpanIdAsHexString() {
+            return spanId;
+          }
+
+          @Override
+          public TraceState getTraceState() {
+            return TraceState.getDefault();
+          }
+
+          @Override
+          public byte getTraceFlags() {
+            return TraceFlags.getDefault();
           }
 
           @Override
@@ -151,7 +167,8 @@ class RecordEventsReadableSpanTest {
 
     Link resultingLink = span.toSpanData().getLinks().get(0);
     assertThat(resultingLink.getTotalAttributeCount()).isEqualTo(1);
-    assertThat(resultingLink.getContext()).isSameAs(spanContext);
+    assertThat(resultingLink.getTraceIdAsHexString()).isEqualTo(traceId);
+    assertThat(resultingLink.getSpanIdAsHexString()).isEqualTo(spanId);
     assertThat(resultingLink.getAttributes()).isEqualTo(attributes);
   }
 
@@ -222,7 +239,7 @@ class RecordEventsReadableSpanTest {
 
     assertThrows(
         UnsupportedOperationException.class,
-        () -> spanData.getLinks().add(Link.create(SpanContext.getInvalid())));
+        () -> spanData.getLinks().add(Link.create(Span.getInvalid())));
   }
 
   @Test
@@ -816,7 +833,10 @@ class RecordEventsReadableSpanTest {
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
-            spanContext,
+            traceId,
+            spanId,
+            TraceFlags.getDefault(),
+            TraceState.getDefault(),
             SPAN_NAME,
             instrumentationLibraryInfo,
             kind,
@@ -899,13 +919,16 @@ class RecordEventsReadableSpanTest {
     attributes.forEach(attributesWithCapacity::put);
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
-    SpanContext context =
-        SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
-    Link link1 = Link.create(context, TestUtils.generateRandomAttributes());
+    Span span =
+        Span.getPropagated(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
+    Link link1 = Link.create(span, TestUtils.generateRandomAttributes());
 
     RecordEventsReadableSpan readableSpan =
         RecordEventsReadableSpan.startSpan(
-            context,
+            span.getTraceIdAsHexString(),
+            span.getSpanIdAsHexString(),
+            span.getTraceFlags(),
+            span.getTraceState(),
             name,
             instrumentationLibraryInfo,
             kind,

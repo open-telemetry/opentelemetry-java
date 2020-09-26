@@ -18,6 +18,7 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -29,35 +30,63 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public final class DefaultSpan implements Span {
+final class DefaultSpan implements Span {
 
-  private static final DefaultSpan INVALID = new DefaultSpan(SpanContext.getInvalid());
+  static final Span INVALID =
+      new DefaultSpan(
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
+          TraceFlags.getDefault(),
+          TraceState.getDefault(),
+          /* isRemote= */ false);
 
-  /**
-   * Returns a {@link DefaultSpan} with an invalid {@link SpanContext}.
-   *
-   * @return a {@code DefaultSpan} with an invalid {@code SpanContext}.
-   * @since 0.1.0
-   */
-  public static Span getInvalid() {
-    return INVALID;
+  private final String traceIdHex;
+  private final String spanIdHex;
+  private final byte traceFlags;
+  private final TraceState traceState;
+  private final boolean isRemote;
+
+  DefaultSpan(
+      String traceIdHex,
+      String spanIdHex,
+      byte traceFlags,
+      TraceState traceState,
+      boolean isRemote) {
+    this.traceIdHex = traceIdHex != null ? traceIdHex : TraceId.getInvalid();
+    this.spanIdHex = spanIdHex != null ? spanIdHex : SpanId.getInvalid();
+    this.traceFlags = traceFlags;
+    this.traceState = traceState != null ? traceState : TraceState.getDefault();
+    this.isRemote = isRemote;
   }
 
-  /**
-   * Creates an instance of this class with the {@link SpanContext}.
-   *
-   * @param spanContext the {@code SpanContext}.
-   * @return a {@link DefaultSpan}.
-   * @since 0.1.0
-   */
-  public static Span create(SpanContext spanContext) {
-    return new DefaultSpan(spanContext);
+  @Override
+  public String getTraceIdAsHexString() {
+    return traceIdHex;
   }
 
-  private final SpanContext spanContext;
+  @Override
+  public String getSpanIdAsHexString() {
+    return spanIdHex;
+  }
 
-  DefaultSpan(SpanContext spanContext) {
-    this.spanContext = spanContext;
+  @Override
+  public byte getTraceFlags() {
+    return traceFlags;
+  }
+
+  @Override
+  public TraceState getTraceState() {
+    return traceState;
+  }
+
+  @Override
+  public boolean isSampled() {
+    return TraceFlags.isSampled(traceFlags);
+  }
+
+  @Override
+  public boolean isRemote() {
+    return isRemote;
   }
 
   @Override
@@ -112,11 +141,6 @@ public final class DefaultSpan implements Span {
   public void end(EndSpanOptions endOptions) {}
 
   @Override
-  public SpanContext getContext() {
-    return spanContext;
-  }
-
-  @Override
   public boolean isRecording() {
     return false;
   }
@@ -124,5 +148,26 @@ public final class DefaultSpan implements Span {
   @Override
   public String toString() {
     return "DefaultSpan";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof DefaultSpan)) {
+      return false;
+    }
+    DefaultSpan that = (DefaultSpan) o;
+    return traceFlags == that.traceFlags
+        && isRemote == that.isRemote
+        && traceIdHex.equals(that.traceIdHex)
+        && spanIdHex.equals(that.spanIdHex)
+        && traceState.equals(that.traceState);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(traceIdHex, spanIdHex, traceFlags, traceState, isRemote);
   }
 }

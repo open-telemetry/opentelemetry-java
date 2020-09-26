@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * An interface that represents a span. It has an associated {@link SpanContext}.
+ * An interface that represents a span.
  *
  * <p>Spans are created by the {@link Builder#startSpan} method.
  *
@@ -33,6 +33,70 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface Span {
+
+  /**
+   * Returns an invalid {@link Span}. An invalid {@link Span} is used when tracing is disabled,
+   * usually because there is no OpenTelemetry SDK installed.
+   */
+  static Span getInvalid() {
+    return DefaultSpan.INVALID;
+  }
+
+  /**
+   * Returns a {@link Span} that has been propagated from a remote parent. This span does not
+   * correspond to processing in the current process and is used to set as the parent of one that
+   * is.
+   */
+  static Span getPropagated(String traceId, String spanId, byte traceFlags, TraceState traceState) {
+    return new DefaultSpan(traceId, spanId, traceFlags, traceState, /* isRemote= */ true);
+  }
+
+  /**
+   * Returns an unsampled {@link Span}. Because the {@link Span} is unsampled, it will not be
+   * exported and all operations are no-op.
+   */
+  static Span getUnsampled(String traceId, String spanId, TraceState traceState) {
+    return new DefaultSpan(
+        traceId, spanId, TraceFlags.getDefault(), traceState, /* isRemote= */ false);
+  }
+
+  /** Returns the trace ID of this {@link Span}. */
+  String getTraceIdAsHexString();
+
+  String getSpanIdAsHexString();
+
+  byte getTraceFlags();
+
+  TraceState getTraceState();
+
+  default byte[] getTraceIdBytes() {
+    return TraceId.bytesFromHex(getTraceIdAsHexString(), 0);
+  }
+
+  default byte[] getSpanIdBytes() {
+    return SpanId.bytesFromHex(getSpanIdAsHexString(), 0);
+  }
+
+  boolean isSampled();
+
+  default void copyTraceFlagsHexTo(char[] dest, int destOffset) {
+    dest[destOffset] = '0';
+    dest[destOffset + 1] = isSampled() ? '1' : '0';
+  }
+
+  /**
+   * Returns {@code true} if this {@link Span} is valid. An invalid {@link Span} is used when
+   * tracing isn't enabled, for example because there is no OpenTelemetry SDK registered.
+   */
+  default boolean isValid() {
+    return TraceId.isValid(getTraceIdAsHexString()) && SpanId.isValid(getSpanIdAsHexString());
+  }
+
+  /**
+   * Returns {@code true} if this {@link Span} was propagated from a remote parent and does not
+   * correspond to any processing in this process.
+   */
+  boolean isRemote();
 
   /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
@@ -292,14 +356,6 @@ public interface Span {
   void end(EndSpanOptions endOptions);
 
   /**
-   * Returns the {@code SpanContext} associated with this {@code Span}.
-   *
-   * @return the {@code SpanContext} associated with this {@code Span}.
-   * @since 0.1.0
-   */
-  SpanContext getContext();
-
-  /**
    * Returns {@code true} if this {@code Span} records tracing events (e.g. {@link
    * #addEvent(String)}, {@link #setAttribute(String, long)}).
    *
@@ -430,18 +486,18 @@ public interface Span {
     /**
      * Adds a {@link Link} to the newly created {@code Span}.
      *
-     * @param spanContext the context of the linked {@code Span}.
+     * @param span the {@link Span} to link to.
      * @return this.
      * @throws NullPointerException if {@code spanContext} is {@code null}.
      * @see #addLink(Link)
      * @since 0.1.0
      */
-    Builder addLink(SpanContext spanContext);
+    Builder addLink(Span span);
 
     /**
      * Adds a {@link Link} to the newly created {@code Span}.
      *
-     * @param spanContext the context of the linked {@code Span}.
+     * @param span the {@link Span} to link to.
      * @param attributes the attributes of the {@code Link}.
      * @return this.
      * @throws NullPointerException if {@code spanContext} is {@code null}.
@@ -449,7 +505,7 @@ public interface Span {
      * @see #addLink(Link)
      * @since 0.1.0
      */
-    Builder addLink(SpanContext spanContext, Attributes attributes);
+    Builder addLink(Span span, Attributes attributes);
 
     /**
      * Adds a {@link Link} to the newly created {@code Span}.

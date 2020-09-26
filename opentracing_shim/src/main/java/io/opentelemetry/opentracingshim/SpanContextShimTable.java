@@ -96,9 +96,7 @@ final class SpanContextShimTable {
         return contextShim;
       }
 
-      contextShim =
-          new SpanContextShim(
-              spanShim.telemetryInfo(), spanShim.getSpan().getContext(), distContext);
+      contextShim = new SpanContextShim(spanShim.telemetryInfo(), spanShim.getSpan(), distContext);
       shimsMap.put(spanShim.getSpan(), contextShim);
       return contextShim;
 

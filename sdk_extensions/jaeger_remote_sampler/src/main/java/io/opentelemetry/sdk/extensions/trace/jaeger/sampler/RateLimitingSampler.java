@@ -25,8 +25,9 @@ import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.TraceFlags;
 import java.util.List;
 
 /**
@@ -60,21 +61,21 @@ class RateLimitingSampler implements Sampler {
 
   @Override
   public SamplingResult shouldSample(
-      SpanContext parentContext,
+      Span parentSpan,
       String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
       List<Link> parentLinks) {
-    if (parentContext.isSampled()) {
+    if (parentSpan.isSampled()) {
       return Samplers.alwaysOn()
-          .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
+          .shouldSample(parentSpan, traceId, name, spanKind, attributes, parentLinks);
     }
     if (parentLinks != null) {
       for (Link parentLink : parentLinks) {
-        if (parentLink.getContext().isSampled()) {
+        if (TraceFlags.isSampled(parentLink.getTraceFlags())) {
           return Samplers.alwaysOn()
-              .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
+              .shouldSample(parentSpan, traceId, name, spanKind, attributes, parentLinks);
         }
       }
     }

@@ -24,7 +24,6 @@ import static io.opentelemetry.common.AttributesKeys.stringKey;
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.correlationcontext.CorrelationContext;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -45,7 +44,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private SpanContextShim parentSpanContext;
   private boolean ignoreActiveSpan;
 
-  private final List<io.opentelemetry.trace.SpanContext> parentLinks = new ArrayList<>();
+  private final List<io.opentelemetry.trace.Span> parentLinkedSpans = new ArrayList<>();
 
   @SuppressWarnings("rawtypes")
   private final List<AttributeKey> spanBuilderAttributeKeys = new ArrayList<>();
@@ -71,7 +70,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (parentSpan == null && parentSpanContext == null) {
       parentSpan = spanShim;
     } else {
-      parentLinks.add(spanShim.getSpan().getContext());
+      parentLinkedSpans.add(spanShim.getSpan());
     }
 
     return this;
@@ -94,7 +93,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (parentSpan == null && parentSpanContext == null) {
       parentSpanContext = contextShim;
     } else {
-      parentLinks.add(contextShim.getSpanContext());
+      parentLinkedSpans.add(contextShim.getPropagatedSpan());
     }
 
     return this;
@@ -200,13 +199,12 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       distContext = contextShim == null ? null : contextShim.getCorrelationContext();
     } else if (parentSpanContext != null) {
       builder.setParent(
-          TracingContextUtils.withSpan(
-              DefaultSpan.create(parentSpanContext.getSpanContext()), Context.ROOT));
+          TracingContextUtils.withSpan(parentSpanContext.getPropagatedSpan(), Context.ROOT));
       distContext = parentSpanContext.getCorrelationContext();
     }
 
-    for (io.opentelemetry.trace.SpanContext link : parentLinks) {
-      builder.addLink(link);
+    for (io.opentelemetry.trace.Span span : parentLinkedSpans) {
+      builder.addLink(span);
     }
 
     if (spanKind != null) {
