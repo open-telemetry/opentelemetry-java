@@ -44,6 +44,7 @@ class DefaultSpanTest {
     span.setAttribute(stringKey("MyStringAttributeKey"), "MyStringAttributeValue");
     span.setAttribute(booleanKey("MyBooleanAttributeKey"), true);
     span.setAttribute(longKey("MyLongAttributeKey"), 123L);
+    span.setAttribute(longKey("MyLongAttributeKey"), 123);
     span.setAttribute("NullString", null);
     span.setAttribute("EmptyString", "");
     span.setAttribute(stringArrayKey("NullArrayString"), null);
