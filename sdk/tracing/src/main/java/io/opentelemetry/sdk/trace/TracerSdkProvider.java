@@ -56,12 +56,12 @@ public class TracerSdkProvider implements TracerProvider {
   }
 
   @Override
-  public TracerSdk get(String instrumentationName) {
+  public Tracer get(String instrumentationName) {
     return tracerSdkComponentRegistry.get(instrumentationName);
   }
 
   @Override
-  public TracerSdk get(String instrumentationName, String instrumentationVersion) {
+  public Tracer get(String instrumentationName, String instrumentationVersion) {
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
   }
 

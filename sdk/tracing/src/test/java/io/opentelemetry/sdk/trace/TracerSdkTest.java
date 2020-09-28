@@ -51,9 +51,10 @@ class TracerSdkTest {
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
   private final TracerSdk tracer =
-      TracerSdkProvider.builder()
-          .build()
-          .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+      (TracerSdk)
+          TracerSdkProvider.builder()
+              .build()
+              .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
   @BeforeEach
   void setUp() {
@@ -118,7 +119,8 @@ class TracerSdkTest {
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =
-        tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+        (TracerSdk)
+            tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
@@ -140,7 +142,8 @@ class TracerSdkTest {
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =
-        tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+        (TracerSdk)
+            tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);

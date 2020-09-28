@@ -63,7 +63,7 @@ class SpanBuilderSdkTest {
           TraceState.getDefault());
 
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
-  private final TracerSdk tracerSdk = tracerSdkFactory.get("SpanBuilderSdkTest");
+  private final TracerSdk tracerSdk = (TracerSdk) tracerSdkFactory.get("SpanBuilderSdkTest");
 
   @Test
   void setSpanKind_null() {

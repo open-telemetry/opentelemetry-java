@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Tracer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,8 +105,8 @@ class TracerSdkProviderTest {
   void propagatesInstrumentationLibraryInfoToTracer() {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("theName", "theVersion");
-    TracerSdk tracer = tracerFactory.get(expected.getName(), expected.getVersion());
-    assertThat(tracer.getInstrumentationLibraryInfo()).isEqualTo(expected);
+    Tracer tracer = tracerFactory.get(expected.getName(), expected.getVersion());
+    assertThat(((TracerSdk) tracer).getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 
   @Test
