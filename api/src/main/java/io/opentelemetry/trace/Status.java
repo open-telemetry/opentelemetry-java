@@ -51,10 +51,10 @@ public final class Status {
     OK(0),
 
     /** The default status. */
-    UNSET(17),
+    UNSET(1),
 
     /** The operation contains an error. */
-    ERROR(18);
+    ERROR(2);
 
     private final int value;
 
