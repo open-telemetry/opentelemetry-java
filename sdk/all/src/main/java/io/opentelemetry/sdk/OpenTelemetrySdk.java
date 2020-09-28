@@ -21,7 +21,6 @@ import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
