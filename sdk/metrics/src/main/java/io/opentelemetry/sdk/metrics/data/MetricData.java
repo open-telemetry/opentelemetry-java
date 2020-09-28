@@ -70,30 +70,30 @@ public abstract class MetricData {
   public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 
   /**
-   * Returns the metric descriptor name.
+   * Returns the metric name.
    *
-   * @return the metric descriptor name.
+   * @return the metric name.
    */
   public abstract String getName();
 
   /**
-   * Returns the description of this metric descriptor.
+   * Returns the description of this metric.
    *
-   * @return the description of this metric descriptor.
+   * @return the description of this metric.
    */
   public abstract String getDescription();
 
   /**
-   * Returns the unit of this metric descriptor.
+   * Returns the unit of this metric.
    *
-   * @return the unit of this metric descriptor.
+   * @return the unit of this metric.
    */
   public abstract String getUnit();
 
   /**
-   * Returns the type of this metric descriptor.
+   * Returns the type of this metric.
    *
-   * @return the type of this metric descriptor.
+   * @return the type of this metric.
    */
   public abstract Type getType();
 
