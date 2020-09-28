@@ -232,7 +232,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
     /** Sets a {@link AttributeKey} with associated value into this. */
     public <T> Builder setAttribute(AttributeKey<T> key, T value) {
-      if (value == null || key == null || key.getKey() == null || key.getKey().length() == 0) {
+      if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null ) {
         return this;
       }
       data.add(key);
