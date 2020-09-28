@@ -29,7 +29,6 @@ import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -83,7 +82,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   }
 
   /** Returns a {@link Attributes} instance with a single key-value pair. */
-  public static <T> Attributes of(AttributeKey<T> key, @Nonnull T value) {
+  public static <T> Attributes of(AttributeKey<T> key, T value) {
     return sortAndFilterToAttributes(key, value);
   }
 
@@ -92,7 +91,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
    * preserved. Duplicate keys will be removed.
    */
   public static <T, U> Attributes of(
-      AttributeKey<T> key1, @Nonnull T value1, AttributeKey<U> key2, @Nonnull U value2) {
+      AttributeKey<T> key1, T value1, AttributeKey<U> key2, U value2) {
     return sortAndFilterToAttributes(key1, value1, key2, value2);
   }
 
@@ -102,11 +101,11 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
    */
   public static <T, U, V> Attributes of(
       AttributeKey<T> key1,
-      @Nonnull T value1,
+      T value1,
       AttributeKey<U> key2,
-      @Nonnull U value2,
+      U value2,
       AttributeKey<V> key3,
-      @Nonnull V value3) {
+      V value3) {
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3);
   }
 
@@ -116,13 +115,13 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
    */
   public static <T, U, V, W> Attributes of(
       AttributeKey<T> key1,
-      @Nonnull T value1,
+      T value1,
       AttributeKey<U> key2,
-      @Nonnull U value2,
+      U value2,
       AttributeKey<V> key3,
-      @Nonnull V value3,
+      V value3,
       AttributeKey<W> key4,
-      @Nonnull W value4) {
+      W value4) {
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3, key4, value4);
   }
 
@@ -132,15 +131,15 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
    */
   public static <T, U, V, W, X> Attributes of(
       AttributeKey<T> key1,
-      @Nonnull T value1,
+      T value1,
       AttributeKey<U> key2,
-      @Nonnull U value2,
+      U value2,
       AttributeKey<V> key3,
-      @Nonnull V value3,
+      V value3,
       AttributeKey<W> key4,
-      @Nonnull W value4,
+      W value4,
       AttributeKey<X> key5,
-      @Nonnull X value5) {
+      X value5) {
     return sortAndFilterToAttributes(
         key1, value1,
         key2, value2,
@@ -232,7 +231,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
     /** Sets a {@link AttributeKey} with associated value into this. */
     public <T> Builder setAttribute(AttributeKey<T> key, T value) {
-      if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null ) {
+      if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
         return this;
       }
       data.add(key);
@@ -248,7 +247,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
      *
      * @return this Builder
      */
-    public Builder setAttribute(String key, @Nonnull String value) {
+    public Builder setAttribute(String key, String value) {
       return setAttribute(stringKey(key), value);
     }
 
