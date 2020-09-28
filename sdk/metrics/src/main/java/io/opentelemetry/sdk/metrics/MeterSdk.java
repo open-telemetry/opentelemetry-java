@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.BatchObserver;
 import io.opentelemetry.metrics.BatchObserver.BatchObserverFunction;
 import io.opentelemetry.metrics.Meter;
@@ -110,12 +109,7 @@ final class MeterSdk implements Meter {
   public BatchObserver newBatchObserver(String name, BatchObserverFunction function) {
     InstrumentDescriptor descriptor =
         InstrumentDescriptor.create(
-            name,
-            "",
-            "",
-            Labels.empty(),
-            InstrumentType.BATCH_OBSERVER,
-            InstrumentValueType.BATCH_OBSERVER);
+            name, "", "", InstrumentType.BATCH_OBSERVER, InstrumentValueType.BATCH_OBSERVER);
     BatchObserverSdk batchObserver =
         BatchObserverSdk.newBatchObserverSdk(
             descriptor, this, meterProviderSharedState, meterSharedState, function);

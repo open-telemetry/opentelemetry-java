@@ -5,7 +5,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
