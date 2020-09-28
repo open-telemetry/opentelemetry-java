@@ -65,7 +65,9 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
   }
 
   static class AbstractLongAsynchronousInstrument extends AbstractAsynchronousInstrument<LongResult>
-      implements LongObservation {
+      implements LongObservation, SdkObservation {
+    long observedValue = 0;
+
     AbstractLongAsynchronousInstrument(
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
@@ -81,29 +83,20 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
 
     @Override
     public Observation observation(long observation) {
-      return new LongObservationSdk(this.getActiveBatcher(), observation);
+      this.observedValue = observation;
+      return this;
     }
 
-    private static final class LongObservationSdk implements SdkObservation {
-      private final ActiveBatcher activeBatcher;
-      private final long value;
+    @Override
+    public Aggregator record() {
+      Aggregator aggregator = this.getActiveBatcher().getAggregator();
+      aggregator.recordLong(this.observedValue);
+      return aggregator;
+    }
 
-      private LongObservationSdk(ActiveBatcher activeBatcher, long value) {
-        this.activeBatcher = activeBatcher;
-        this.value = value;
-      }
-
-      @Override
-      public Aggregator record() {
-        Aggregator aggregator = this.activeBatcher.getAggregator();
-        aggregator.recordLong(this.value);
-        return aggregator;
-      }
-
-      @Override
-      public Descriptor getDescriptor() {
-        return this.activeBatcher.getDescriptor();
-      }
+    @Override
+    public Descriptor getObservationDescriptor() {
+      return this.getActiveBatcher().getDescriptor();
     }
 
     private static final class LongResultSdk implements LongResult {
@@ -124,7 +117,10 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
   }
 
   static class AbstractDoubleAsynchronousInstrument
-      extends AbstractAsynchronousInstrument<DoubleResult> implements DoubleObservation {
+      extends AbstractAsynchronousInstrument<DoubleResult>
+      implements DoubleObservation, SdkObservation {
+    double observedValue = 0;
+
     AbstractDoubleAsynchronousInstrument(
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
@@ -140,30 +136,20 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
 
     @Override
     public Observation observation(double observation) {
-      return new DoubleObservationSdk(this.getActiveBatcher(), observation);
+      this.observedValue = observation;
+      return this;
     }
 
-    private static final class DoubleObservationSdk implements SdkObservation {
+    @Override
+    public Aggregator record() {
+      Aggregator aggregator = this.getActiveBatcher().getAggregator();
+      aggregator.recordDouble(this.observedValue);
+      return aggregator;
+    }
 
-      private final ActiveBatcher activeBatcher;
-      private final double value;
-
-      private DoubleObservationSdk(ActiveBatcher activeBatcher, double value) {
-        this.activeBatcher = activeBatcher;
-        this.value = value;
-      }
-
-      @Override
-      public Aggregator record() {
-        Aggregator aggregator = this.activeBatcher.getAggregator();
-        aggregator.recordDouble(this.value);
-        return aggregator;
-      }
-
-      @Override
-      public Descriptor getDescriptor() {
-        return this.activeBatcher.getDescriptor();
-      }
+    @Override
+    public Descriptor getObservationDescriptor() {
+      return this.getActiveBatcher().getDescriptor();
     }
 
     private static final class DoubleResultSdk implements DoubleResult {

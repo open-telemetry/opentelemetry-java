@@ -115,7 +115,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
   interface SdkObservation extends Observation {
     Aggregator record();
 
-    Descriptor getDescriptor();
+    Descriptor getObservationDescriptor();
   }
 
   /** Creates a new instance of the {@link BatchObserverSdk}. */
@@ -177,7 +177,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     public final void batch(Labels labelSet, Aggregator aggregator, boolean unmappedAggregator) {}
 
     private void batch(SdkObservation observation) {
-      this.reportList.add(new Report(observation.getDescriptor(), observation.record()));
+      this.reportList.add(new Report(observation.getObservationDescriptor(), observation.record()));
     }
 
     @Override
