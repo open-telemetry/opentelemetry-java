@@ -195,8 +195,8 @@ class ZipkinSpanExporterTest {
         .isEqualTo(
             buildZipkinSpan(Span.Kind.CLIENT)
                 .toBuilder()
-                .putTag("otel.instrumentation_library.name", "io.opentelemetry.auto")
-                .putTag("otel.instrumentation_library.version", "1.0.0")
+                .putTag("otel.instrumentation.name", "io.opentelemetry.auto")
+                .putTag("otel.instrumentation.version", "1.0.0")
                 .build());
   }
 
