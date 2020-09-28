@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -69,7 +70,7 @@ public final class ZPageServer {
       TracezSpanProcessor.newBuilder().build();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
-  private static final TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+  private static final TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
       new TracezZPageHandler(tracezDataAggregator);

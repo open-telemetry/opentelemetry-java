@@ -16,9 +16,11 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -35,8 +37,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanAttributeTruncateBenchmark {
 
-  private final TracerSdk tracerSdk =
-      (TracerSdk) OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
+  private final Tracer tracerSdk = OpenTelemetry.getTracer("benchmarkTracer");
   private SpanBuilderSdk spanBuilderSdk;
 
   public String shortValue = "short";
@@ -49,12 +50,12 @@ public class SpanAttributeTruncateBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     TraceConfig config =
-        OpenTelemetrySdk.getTracerProvider()
+        OpenTelemetrySdk.getTracerManagement()
             .getActiveTraceConfig()
             .toBuilder()
             .setMaxLengthOfAttributeValues(maxLength)
             .build();
-    OpenTelemetrySdk.getTracerProvider().updateActiveTraceConfig(config);
+    OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(config);
     spanBuilderSdk =
         (SpanBuilderSdk)
             tracerSdk

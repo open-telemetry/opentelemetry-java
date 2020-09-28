@@ -19,6 +19,7 @@ package io.opentelemetry.exporters.inmemory;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
@@ -57,7 +58,7 @@ public abstract class InMemoryTracing {
    * @return the {@code TracerSdkProvider} passed during construction.
    * @since 0.1.0
    */
-  abstract TracerSdkProvider getTracerProvider();
+  abstract TracerSdkManagement getTracerProvider();
 
   /**
    * Returns the installed {@link InMemorySpanExporter}.
@@ -83,11 +84,11 @@ public abstract class InMemoryTracing {
    */
   @AutoValue.Builder
   public abstract static class Builder {
-    public abstract Builder setTracerProvider(TracerSdkProvider tracerProvider);
+    public abstract Builder setTracerProvider(TracerSdkManagement tracerProvider);
 
     abstract Builder setSpanExporter(InMemorySpanExporter exporter);
 
-    abstract TracerSdkProvider getTracerProvider();
+    abstract TracerSdkManagement getTracerProvider();
 
     abstract InMemoryTracing autoBuild();
 

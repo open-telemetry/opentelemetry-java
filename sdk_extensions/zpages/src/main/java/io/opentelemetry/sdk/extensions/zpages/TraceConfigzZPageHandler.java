@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.extensions.zpages;
 
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -45,9 +45,9 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
   // Background color used for zebra striping rows in table
   private static final String ZEBRA_STRIPE_COLOR = "#e6e6e6";
   private static final Logger logger = Logger.getLogger(TraceConfigzZPageHandler.class.getName());
-  private final TracerSdkProvider tracerProvider;
+  private final TracerSdkManagement tracerProvider;
 
-  TraceConfigzZPageHandler(TracerSdkProvider tracerProvider) {
+  TraceConfigzZPageHandler(TracerSdkManagement tracerProvider) {
     this.tracerProvider = tracerProvider;
   }
 

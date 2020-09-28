@@ -16,9 +16,10 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -34,8 +35,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanBenchmark {
 
-  private final TracerSdk tracerSdk =
-      (TracerSdk) OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
+  private final Tracer tracerSdk = OpenTelemetry.getTracer("benchmarkTracer");
   private RecordEventsReadableSpan span;
 
   @Setup(Level.Trial)
