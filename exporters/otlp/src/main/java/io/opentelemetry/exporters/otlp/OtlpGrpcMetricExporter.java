@@ -78,6 +78,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class OtlpGrpcMetricExporter implements MetricExporter {
   public static final String DEFAULT_ENDPOINT = "localhost:55680";
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+  private static final boolean DEFAULT_USE_TLS = false;
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
 
@@ -185,12 +186,12 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   public static class Builder extends ConfigBuilder<Builder> {
     private static final String KEY_TIMEOUT = "otel.exporter.otlp.metric.timeout";
     private static final String KEY_ENDPOINT = "otel.exporter.otlp.metric.endpoint";
-    private static final String KEY_USE_TLS = "otel.exporter.otlp.metric.insecure";
+    private static final String KEY_INSECURE = "otel.exporter.otlp.metric.insecure";
     private static final String KEY_HEADERS = "otel.exporter.otlp.metric.headers";
     private ManagedChannel channel;
     private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
     private String endpoint = DEFAULT_ENDPOINT;
-    private boolean useTls;
+    private boolean useTls = DEFAULT_USE_TLS;
     @Nullable private Metadata metadata;
 
     /**
@@ -309,12 +310,12 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
         this.setEndpoint(endpointValue);
       }
 
-      Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
-      if (useTlsValue == null) {
-        useTlsValue = getBooleanProperty(CommonProperties.KEY_USE_TLS, configMap);
+      Boolean insecure = getBooleanProperty(KEY_INSECURE, configMap);
+      if (insecure == null) {
+        insecure = getBooleanProperty(CommonProperties.KEY_INSECURE, configMap);
       }
-      if (useTlsValue != null) {
-        this.setUseTls(useTlsValue);
+      if (insecure != null) {
+        this.setUseTls(!insecure);
       }
 
       String metadataValue = getStringProperty(KEY_HEADERS, configMap);
