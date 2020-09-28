@@ -7,8 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument;
-import io.opentelemetry.sdk.metrics.BatchObserverSdk.DoubleObservation;
-import io.opentelemetry.sdk.metrics.BatchObserverSdk.LongObservation;
+import io.opentelemetry.sdk.metrics.BatchObserverSdk.SdkObservation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
@@ -86,7 +85,7 @@ abstract class AbstractAsynchronousInstrument<
       return new LongObservationSdk(this.getActiveBatcher(), observation);
     }
 
-    private static final class LongObservationSdk implements LongObservation {
+    private static final class LongObservationSdk implements SdkObservation {
       private final ActiveBatcher activeBatcher;
       private final long value;
 
@@ -96,23 +95,15 @@ abstract class AbstractAsynchronousInstrument<
       }
 
       @Override
-      public ObservationType getType() {
-        return ObservationType.LONG_OBSERVATION;
-      }
-
-      @Override
-      public Aggregator getAggregator() {
-        return this.activeBatcher.getAggregator();
+      public Aggregator record() {
+        Aggregator aggregator = this.activeBatcher.getAggregator();
+        aggregator.recordLong(this.value);
+        return aggregator;
       }
 
       @Override
       public Descriptor getDescriptor() {
         return this.activeBatcher.getDescriptor();
-      }
-
-      @Override
-      public long getValue() {
-        return this.value;
       }
     }
 
@@ -153,7 +144,7 @@ abstract class AbstractAsynchronousInstrument<
       return new DoubleObservationSdk(this.getActiveBatcher(), observation);
     }
 
-    private static final class DoubleObservationSdk implements DoubleObservation {
+    private static final class DoubleObservationSdk implements SdkObservation {
 
       private final ActiveBatcher activeBatcher;
       private final double value;
@@ -164,23 +155,15 @@ abstract class AbstractAsynchronousInstrument<
       }
 
       @Override
-      public ObservationType getType() {
-        return ObservationType.DOUBLE_OBSERVATION;
+      public Aggregator record() {
+        Aggregator aggregator = this.activeBatcher.getAggregator();
+        aggregator.recordDouble(this.value);
+        return aggregator;
       }
 
       @Override
-      public Aggregator getAggregator() {
-        return this.activeBatcher.getAggregator();
-      }
-
-      @Override
-      public Descriptor getDescription() {
+      public Descriptor getDescriptor() {
         return this.activeBatcher.getDescriptor();
-      }
-
-      @Override
-      public double getValue() {
-        return this.value;
       }
     }
 

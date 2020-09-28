@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument.Observation;
-import io.opentelemetry.metrics.AsynchronousInstrument.ObservationType;
 import io.opentelemetry.metrics.BatchObserver;
 import io.opentelemetry.metrics.DoubleSumObserver;
 import io.opentelemetry.metrics.DoubleUpDownSumObserver;
@@ -103,21 +102,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
           (labels, observations) -> {
             batcher.setLabels(labels);
             for (Observation observation : observations) {
-              ObservationType type = observation.getType();
-              Aggregator aggregator;
-              Descriptor descriptor;
-              if (type == ObservationType.LONG_OBSERVATION) {
-                LongObservation longObservation = (LongObservation) observation;
-                aggregator = longObservation.getAggregator();
-                aggregator.recordLong(longObservation.getValue());
-                descriptor = longObservation.getDescriptor();
-              } else {
-                DoubleObservation doubleObservation = (DoubleObservation) observation;
-                aggregator = doubleObservation.getAggregator();
-                aggregator.recordDouble(doubleObservation.getValue());
-                descriptor = doubleObservation.getDescription();
-              }
-              batcher.batch(descriptor, aggregator);
+              batcher.batch((SdkObservation) observation);
             }
             metricData.addAll(batcher.completeCollectionCycle());
           });
@@ -127,22 +112,10 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     return Collections.unmodifiableList(metricData);
   }
 
-  /** The long observation for the {@link Observation}. */
-  interface LongObservation extends Observation {
-    long getValue();
-
-    Aggregator getAggregator();
+  interface SdkObservation extends Observation {
+    Aggregator record();
 
     Descriptor getDescriptor();
-  }
-
-  /** The double observation for the {@link Observation}. */
-  interface DoubleObservation extends Observation {
-    double getValue();
-
-    Aggregator getAggregator();
-
-    Descriptor getDescription();
   }
 
   /** Creates a new instance of the {@link BatchObserverSdk}. */
@@ -203,8 +176,8 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     @Override
     public final void batch(Labels labelSet, Aggregator aggregator, boolean unmappedAggregator) {}
 
-    private void batch(Descriptor descriptor, Aggregator aggregator) {
-      this.reportList.add(new Report(descriptor, aggregator));
+    private void batch(SdkObservation observation) {
+      this.reportList.add(new Report(observation.getDescriptor(), observation.record()));
     }
 
     @Override

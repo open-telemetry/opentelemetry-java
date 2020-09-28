@@ -10,7 +10,6 @@ import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Objects;
 import io.opentelemetry.metrics.AsynchronousInstrument.Observation;
-import io.opentelemetry.metrics.AsynchronousInstrument.ObservationType;
 import io.opentelemetry.metrics.BatchObserver.BatchObserverFunction;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -433,12 +432,7 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  private static final class NoopObservation implements Observation {
-    @Override
-    public ObservationType getType() {
-      return null;
-    }
-  }
+  private static final class NoopObservation implements Observation {}
 
   private static final NoopObservation noopObservation = new NoopObservation();
 

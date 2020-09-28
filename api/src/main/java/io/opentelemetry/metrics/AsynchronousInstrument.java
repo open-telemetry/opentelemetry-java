@@ -63,12 +63,5 @@ public interface AsynchronousInstrument<R extends Result, T extends Number> exte
     void observe(double value, Labels labels);
   }
 
-  interface Observation {
-    ObservationType getType();
-  }
-
-  enum ObservationType {
-    LONG_OBSERVATION,
-    DOUBLE_OBSERVATION,
-  }
+  interface Observation {}
 }
