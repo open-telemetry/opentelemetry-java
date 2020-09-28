@@ -40,7 +40,7 @@ class SpanDataBuilderTest {
           .setStartEpochNanos(0)
           .setEndEpochNanos(100)
           .setKind(Span.Kind.SERVER)
-          .setStatus(Status.UNKNOWN)
+          .setStatus(Status.ERROR)
           .setAttributes(
               Attributes.newBuilder()
                   .setAttribute("cat", "meow")
@@ -58,10 +58,12 @@ class SpanDataBuilderTest {
 
   @Test
   void modifySpanData() {
-    assertThat(TEST_SPAN_DATA.getStatus()).isEqualTo(Status.UNKNOWN);
+    assertThat(TEST_SPAN_DATA.getStatus()).isEqualTo(Status.ERROR);
     SpanData modified =
-        SpanDataBuilder.newBuilder(TEST_SPAN_DATA).setStatus(Status.ABORTED).build();
-    assertThat(modified.getStatus()).isEqualTo(Status.ABORTED);
+        SpanDataBuilder.newBuilder(TEST_SPAN_DATA)
+            .setStatus(Status.ERROR.withDescription("ABORTED"))
+            .build();
+    assertThat(modified.getStatus()).isEqualTo(Status.ERROR.withDescription("ABORTED"));
   }
 
   @Test
@@ -73,7 +75,9 @@ class SpanDataBuilderTest {
             SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build(),
             SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build())
         .addEqualityGroup(
-            SpanDataBuilder.newBuilder(TEST_SPAN_DATA).setStatus(Status.ABORTED).build());
+            SpanDataBuilder.newBuilder(TEST_SPAN_DATA)
+                .setStatus(Status.ERROR.withDescription("ABORTED"))
+                .build());
     tester.testEquals();
   }
 }

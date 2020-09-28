@@ -221,7 +221,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       span.setAttribute(key, value);
     }
     if (error) {
-      span.setStatus(Status.UNKNOWN);
+      span.setStatus(Status.ERROR);
     }
 
     SpanShim spanShim = new SpanShim(telemetryInfo(), span);

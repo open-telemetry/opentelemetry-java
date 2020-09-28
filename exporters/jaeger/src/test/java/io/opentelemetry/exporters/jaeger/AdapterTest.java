@@ -218,7 +218,7 @@ class AdapterTest {
   }
 
   @Test
-  void testStatusNotOk() {
+  void testStatusNotUnset() {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
@@ -230,7 +230,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.CANCELLED)
+            .setStatus(Status.ERROR)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
             .build();
@@ -257,7 +257,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.UNKNOWN)
+            .setStatus(Status.ERROR)
             .setAttributes(attributes)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)

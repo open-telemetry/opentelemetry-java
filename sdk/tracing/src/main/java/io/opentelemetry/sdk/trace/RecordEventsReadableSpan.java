@@ -102,7 +102,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
-  private Status status;
+  private Status status = Status.UNSET;
   // The end time of the span.
   @GuardedBy("lock")
   private long endEpochNanos;
@@ -511,7 +511,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   @GuardedBy("lock")
   private Status getStatusWithDefault() {
     synchronized (lock) {
-      return status == null ? Status.OK : status;
+      return status;
     }
   }
 

@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Status.CanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.io.ByteArrayOutputStream;
@@ -76,7 +77,7 @@ class TracezZPageHandlerTest {
     latencySpan.end(endOptions);
 
     Span errorSpan = tracer.spanBuilder(ERROR_SPAN).startSpan();
-    errorSpan.setStatus(CanonicalCode.INVALID_ARGUMENT.toStatus());
+    errorSpan.setStatus(CanonicalCode.ERROR.toStatus());
     errorSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
@@ -255,9 +256,9 @@ class TracezZPageHandlerTest {
     Span errorSpan2 = tracer.spanBuilder(ERROR_SPAN).startSpan();
     Span errorSpan3 = tracer.spanBuilder(ERROR_SPAN).startSpan();
     Span finishedSpan = tracer.spanBuilder(FINISHED_SPAN_ONE).startSpan();
-    errorSpan1.setStatus(CanonicalCode.CANCELLED.toStatus());
-    errorSpan2.setStatus(CanonicalCode.ABORTED.toStatus());
-    errorSpan3.setStatus(CanonicalCode.DEADLINE_EXCEEDED.toStatus());
+    errorSpan1.setStatus(Status.ERROR.withDescription("CANCELLED"));
+    errorSpan2.setStatus(Status.ERROR.withDescription("ABORTED"));
+    errorSpan3.setStatus(Status.ERROR.withDescription("DEADLINE_EXCEEDED"));
     errorSpan1.end();
     errorSpan2.end();
     errorSpan3.end();
@@ -287,10 +288,8 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + RUNNING_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of running: 1");
-    assertThat(output.toString())
-        .contains(runningSpan.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(runningSpan.getContext().getSpanIdAsHexString().toString());
+    assertThat(output.toString()).contains(runningSpan.getContext().getTraceIdAsHexString());
+    assertThat(output.toString()).contains(runningSpan.getContext().getSpanIdAsHexString());
 
     runningSpan.end();
   }
@@ -313,14 +312,10 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + LATENCY_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of latency samples: 2");
-    assertThat(output.toString())
-        .contains(latencySpan1.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(latencySpan1.getContext().getSpanIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(latencySpan2.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(latencySpan2.getContext().getSpanIdAsHexString().toString());
+    assertThat(output.toString()).contains(latencySpan1.getContext().getTraceIdAsHexString());
+    assertThat(output.toString()).contains(latencySpan1.getContext().getSpanIdAsHexString());
+    assertThat(output.toString()).contains(latencySpan2.getContext().getTraceIdAsHexString());
+    assertThat(output.toString()).contains(latencySpan2.getContext().getSpanIdAsHexString());
   }
 
   @Test
@@ -328,8 +323,8 @@ class TracezZPageHandlerTest {
     OutputStream output = new ByteArrayOutputStream();
     Span errorSpan1 = tracer.spanBuilder(ERROR_SPAN).startSpan();
     Span errorSpan2 = tracer.spanBuilder(ERROR_SPAN).startSpan();
-    errorSpan1.setStatus(CanonicalCode.CANCELLED.toStatus());
-    errorSpan2.setStatus(CanonicalCode.ABORTED.toStatus());
+    errorSpan1.setStatus(Status.ERROR.withDescription("CANCELLED"));
+    errorSpan2.setStatus(Status.ERROR.withDescription("ABORTED"));
     errorSpan1.end();
     errorSpan2.end();
     Map<String, String> queryMap =
@@ -341,14 +336,10 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + ERROR_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of error samples: 2");
-    assertThat(output.toString())
-        .contains(errorSpan1.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(errorSpan1.getContext().getSpanIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(errorSpan2.getContext().getTraceIdAsHexString().toString());
-    assertThat(output.toString())
-        .contains(errorSpan2.getContext().getSpanIdAsHexString().toString());
+    assertThat(output.toString()).contains(errorSpan1.getContext().getTraceIdAsHexString());
+    assertThat(output.toString()).contains(errorSpan1.getContext().getSpanIdAsHexString());
+    assertThat(output.toString()).contains(errorSpan2.getContext().getTraceIdAsHexString());
+    assertThat(output.toString()).contains(errorSpan2.getContext().getSpanIdAsHexString());
   }
 
   @Test

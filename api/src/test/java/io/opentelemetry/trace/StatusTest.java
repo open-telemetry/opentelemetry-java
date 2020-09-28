@@ -28,14 +28,15 @@ class StatusTest {
     assertThat(Status.OK.getCanonicalCode()).isEqualTo(Status.CanonicalCode.OK);
     assertThat(Status.OK.getDescription()).isNull();
     assertThat(Status.OK.isOk()).isTrue();
+    assertThat(Status.UNSET.isOk()).isTrue();
   }
 
   @Test
   void createStatus_WithDescription() {
-    Status status = Status.UNKNOWN.withDescription("This is an error.");
-    assertThat(status.getCanonicalCode()).isEqualTo(Status.CanonicalCode.UNKNOWN);
+    Status status = Status.ERROR.withDescription("This is an error.");
+    assertThat(status.getCanonicalCode()).isEqualTo(Status.CanonicalCode.ERROR);
     assertThat(status.getDescription()).isEqualTo("This is an error.");
-    assertThat(status.isOk()).isFalse();
+    assertThat(status.isUnset()).isFalse();
   }
 
   @Test
@@ -43,9 +44,9 @@ class StatusTest {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(Status.OK, Status.OK.withDescription(null));
     tester.addEqualityGroup(
-        Status.CANCELLED.withDescription("ThisIsAnError"),
-        Status.CANCELLED.withDescription("ThisIsAnError"));
-    tester.addEqualityGroup(Status.UNKNOWN.withDescription("This is an error."));
+        Status.ERROR.withDescription("ThisIsAnError"),
+        Status.ERROR.withDescription("ThisIsAnError"));
+    tester.addEqualityGroup(Status.ERROR.withDescription("This is an error."));
     tester.testEquals();
   }
 }

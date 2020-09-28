@@ -55,7 +55,7 @@ try (Scope scope = tracer.withSpan(span)) {
 	// your use case
 	...
 } catch (Throwable t) {
-    Status status = Status.UNKNOWN.withDescription("Change it to your error message");
+    Status status = Status.ERROR.withDescription("Change it to your error message");
     span.setStatus(status);
 } finally {
     span.end(); // closing the scope does not end the span, this has to be done manually

@@ -100,7 +100,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeRunnableAndExpectError(runnable, error);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("MyError"));
+    verify(span).setStatus(Status.ERROR.withDescription("MyError"));
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -116,7 +116,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeRunnableAndExpectError(runnable, error);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("AssertionError"));
+    verify(span).setStatus(Status.ERROR.withDescription("AssertionError"));
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -162,7 +162,7 @@ class CurrentSpanUtilsTest {
           throw exception;
         };
     executeCallableAndExpectError(callable, exception);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("MyException"));
+    verify(span).setStatus(Status.ERROR.withDescription("MyException"));
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -178,7 +178,7 @@ class CurrentSpanUtilsTest {
           throw exception;
         };
     executeCallableAndExpectError(callable, exception);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("Exception"));
+    verify(span).setStatus(Status.ERROR.withDescription("Exception"));
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -194,7 +194,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeCallableAndExpectError(callable, error);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("MyError"));
+    verify(span).setStatus(Status.ERROR.withDescription("MyError"));
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -210,7 +210,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeCallableAndExpectError(callable, error);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("AssertionError"));
+    verify(span).setStatus(Status.ERROR.withDescription("AssertionError"));
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
