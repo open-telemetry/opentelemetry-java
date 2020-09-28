@@ -24,6 +24,7 @@ import static io.opentelemetry.common.AttributesKeys.longArrayKey;
 import static io.opentelemetry.common.AttributesKeys.longKey;
 import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
 import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
@@ -257,5 +258,37 @@ class AttributesTest {
     assertThat(fromPartial).isEqualTo(filled);
     // Original not mutated.
     assertThat(partial).isEqualTo(Attributes.newBuilder().setAttribute("cat", "meow").build());
+  }
+
+  @Test
+  void nullsAreNoOps() {
+    Attributes.Builder builder = Attributes.newBuilder();
+    builder.setAttribute(stringKey("attrValue"), "attrValue");
+    builder.setAttribute("string", "string");
+    builder.setAttribute("long", 10);
+    builder.setAttribute("double", 1.0);
+    builder.setAttribute("bool", true);
+    builder.setAttribute("arrayString", new String[] {"string"});
+    builder.setAttribute("arrayLong", new Long[] {10L});
+    builder.setAttribute("arrayDouble", new Double[] {1.0});
+    builder.setAttribute("arrayBool", new Boolean[] {true});
+    assertThat(builder.build().size()).isEqualTo(9);
+
+    // note: currently these are no-op calls; that behavior is not required, so if it needs to
+    // change, that is fine.
+    builder.setAttribute(stringKey("attrValue"), null);
+    builder.setAttribute("string", (String) null);
+    builder.setAttribute("arrayString", (String[]) null);
+    builder.setAttribute("arrayLong", (Long[]) null);
+    builder.setAttribute("arrayDouble", (Double[]) null);
+    builder.setAttribute("arrayBool", (Boolean[]) null);
+
+    Attributes attributes = builder.build();
+    assertThat(attributes.size()).isEqualTo(9);
+    assertThat(attributes.get(stringKey("string"))).isEqualTo("string");
+    assertThat(attributes.get(stringArrayKey("arrayString"))).isEqualTo(singletonList("string"));
+    assertThat(attributes.get(longArrayKey("arrayLong"))).isEqualTo(singletonList(10L));
+    assertThat(attributes.get(doubleArrayKey("arrayDouble"))).isEqualTo(singletonList(1.0d));
+    assertThat(attributes.get(booleanArrayKey("arrayBool"))).isEqualTo(singletonList(true));
   }
 }
