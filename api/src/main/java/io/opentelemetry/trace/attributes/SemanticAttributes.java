@@ -184,8 +184,7 @@ public final class SemanticAttributes {
    * For db.system == redis, the index of the database being accessed as used in the SELECT command,
    * provided as an integer. To be used instead of the generic db.name attribute.
    */
-  public static final AttributeKey<String> REDIS_DATABASE_INDEX =
-      stringKey("db.redis.database_index");
+  public static final AttributeKey<Long> REDIS_DATABASE_INDEX = longKey("db.redis.database_index");
   /**
    * For db.system == mongodb, the collection being accessed within the database stated in db.name
    */
