@@ -45,9 +45,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.5.0
  */
 @ThreadSafe
-public interface DoubleValueObserver extends AsynchronousInstrument<DoubleResult, Double> {
-  @Override
-  void setCallback(Callback<DoubleResult> callback);
+public interface DoubleValueObserver extends DoubleAsynchronousInstrument {
 
   /** Builder class for {@link DoubleValueObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {

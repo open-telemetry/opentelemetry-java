@@ -17,9 +17,8 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
-abstract class AbstractAsynchronousInstrument<
-        T extends AsynchronousInstrument.Result, U extends Number>
-    extends AbstractInstrument implements AsynchronousInstrument<T, U> {
+abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.Result>
+    extends AbstractInstrument implements AsynchronousInstrument<T> {
   @Nullable private volatile Callback<T> metricUpdater = null;
   private final ReentrantLock collectLock = new ReentrantLock();
 
@@ -65,8 +64,8 @@ abstract class AbstractAsynchronousInstrument<
     }
   }
 
-  static class AbstractLongAsynchronousInstrument
-      extends AbstractAsynchronousInstrument<LongResult, Long> {
+  static class AbstractLongAsynchronousInstrument extends AbstractAsynchronousInstrument<LongResult>
+      implements LongObservation {
     AbstractLongAsynchronousInstrument(
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
@@ -81,7 +80,7 @@ abstract class AbstractAsynchronousInstrument<
     }
 
     @Override
-    public Observation observation(Long observation) {
+    public Observation observation(long observation) {
       return new LongObservationSdk(this.getActiveBatcher(), observation);
     }
 
@@ -125,7 +124,7 @@ abstract class AbstractAsynchronousInstrument<
   }
 
   static class AbstractDoubleAsynchronousInstrument
-      extends AbstractAsynchronousInstrument<DoubleResult, Double> {
+      extends AbstractAsynchronousInstrument<DoubleResult> implements DoubleObservation {
     AbstractDoubleAsynchronousInstrument(
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
@@ -140,7 +139,7 @@ abstract class AbstractAsynchronousInstrument<
     }
 
     @Override
-    public Observation observation(Double observation) {
+    public Observation observation(double observation) {
       return new DoubleObservationSdk(this.getActiveBatcher(), observation);
     }
 

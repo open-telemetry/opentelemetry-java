@@ -448,7 +448,7 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public Observation observation(Double observation) {
+    public Observation observation(double observation) {
       return noopObservation;
     }
 
@@ -474,7 +474,7 @@ public final class DefaultMeter implements Meter {
     private NoopLongSumObserver() {}
 
     @Override
-    public Observation observation(Long observation) {
+    public Observation observation(long observation) {
       return noopObservation;
     }
 
@@ -502,7 +502,7 @@ public final class DefaultMeter implements Meter {
   @Immutable
   private static final class NoopDoubleUpDownSumObserver implements DoubleUpDownSumObserver {
     @Override
-    public Observation observation(Double observation) {
+    public Observation observation(double observation) {
       return noopObservation;
     }
 
@@ -532,7 +532,7 @@ public final class DefaultMeter implements Meter {
   @Immutable
   private static final class NoopLongUpDownSumObserver implements LongUpDownSumObserver {
     @Override
-    public Observation observation(Long observation) {
+    public Observation observation(long observation) {
       return noopObservation;
     }
 
@@ -563,7 +563,7 @@ public final class DefaultMeter implements Meter {
   private static final class NoopDoubleValueObserver implements DoubleValueObserver {
 
     @Override
-    public Observation observation(Double observation) {
+    public Observation observation(double observation) {
       return noopObservation;
     }
 
@@ -594,7 +594,7 @@ public final class DefaultMeter implements Meter {
   private static final class NoopLongValueObserver implements LongValueObserver {
 
     @Override
-    public Observation observation(Long observation) {
+    public Observation observation(long observation) {
       return noopObservation;
     }
 

@@ -45,9 +45,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.5.0
  */
 @ThreadSafe
-public interface LongValueObserver extends AsynchronousInstrument<LongResult, Long> {
-  @Override
-  void setCallback(Callback<LongResult> callback);
+public interface LongValueObserver extends LongAsynchronousInstrument {
 
   /** Builder class for {@link LongValueObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {
