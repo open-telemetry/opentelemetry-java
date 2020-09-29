@@ -211,6 +211,9 @@ public class HttpTraceContext implements TextMapPropagator {
       if (!VALID_VERSIONS.contains(version)) {
         return SpanContext.getInvalid();
       }
+      if (version.equals("00") && traceparent.length() > TRACEPARENT_HEADER_SIZE) {
+        return SpanContext.getInvalid();
+      }
 
       String traceId =
           traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getHexLength());
