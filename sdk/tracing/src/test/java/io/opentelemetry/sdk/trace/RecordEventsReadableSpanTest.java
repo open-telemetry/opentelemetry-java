@@ -112,7 +112,7 @@ class RecordEventsReadableSpanTest {
     span.end();
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
     // and are ignored.
-    spanDoWork(span, Status.CANCELLED);
+    spanDoWork(span, Status.ERROR.withDescription("CANCELLED"));
     SpanData spanData = span.toSpanData();
     verifySpanData(
         spanData,
@@ -122,7 +122,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NAME,
         START_EPOCH_NANOS,
         START_EPOCH_NANOS,
-        Status.OK,
+        Status.UNSET,
         /*hasEnded=*/ true);
   }
 
@@ -182,7 +182,7 @@ class RecordEventsReadableSpanTest {
           SPAN_NEW_NAME,
           START_EPOCH_NANOS,
           0,
-          Status.OK,
+          Status.UNSET,
           /*hasEnded=*/ false);
       assertThat(span.hasEnded()).isFalse();
     } finally {
@@ -195,7 +195,7 @@ class RecordEventsReadableSpanTest {
   void toSpanData_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
-      spanDoWork(span, Status.CANCELLED);
+      spanDoWork(span, Status.ERROR.withDescription("CANCELLED"));
     } finally {
       span.end();
     }
@@ -211,7 +211,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NEW_NAME,
         START_EPOCH_NANOS,
         testClock.now(),
-        Status.CANCELLED,
+        Status.ERROR.withDescription("CANCELLED"),
         /*hasEnded=*/ true);
   }
 
@@ -296,13 +296,14 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.OK);
-      span.setStatus(Status.CANCELLED);
-      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.UNSET);
+      span.setStatus(Status.ERROR.withDescription("CANCELLED"));
+      assertThat(span.toSpanData().getStatus())
+          .isEqualTo(Status.ERROR.withDescription("CANCELLED"));
     } finally {
       span.end();
     }
-    assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
+    assertThat(span.toSpanData().getStatus()).isEqualTo(Status.ERROR.withDescription("CANCELLED"));
   }
 
   @Test
@@ -383,6 +384,8 @@ class RecordEventsReadableSpanTest {
       span.setAttribute(stringKey("NullStringAttributeValue"), null);
       span.setAttribute(stringKey("EmptyStringAttributeValue"), "");
       span.setAttribute("LongKey", 1000L);
+      span.setAttribute(longKey("LongKey2"), 5);
+      span.setAttribute(longKey("LongKey3"), 6L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
       span.setAttribute(
@@ -408,11 +411,13 @@ class RecordEventsReadableSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(spanData.getAttributes().size()).isEqualTo(14);
+    assertThat(spanData.getAttributes().size()).isEqualTo(16);
     assertThat(spanData.getAttributes().get(stringKey("StringKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringKey("EmptyStringKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringKey("EmptyStringAttributeValue"))).isNotNull();
     assertThat(spanData.getAttributes().get(longKey("LongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longKey("LongKey2"))).isEqualTo(5L);
+    assertThat(spanData.getAttributes().get(longKey("LongKey3"))).isEqualTo(6L);
     assertThat(spanData.getAttributes().get(doubleKey("DoubleKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(booleanKey("BooleanKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey"))).isNotNull();
@@ -756,7 +761,7 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
 
     // Should be no exceptions
-    span.setAttribute(null, 0);
+    span.setAttribute(null, 0L);
     span.setStatus(null);
     span.updateName(null);
     span.addEvent((Event) null);
@@ -771,7 +776,7 @@ class RecordEventsReadableSpanTest {
     // Ignored the bad calls
     SpanData data = span.toSpanData();
     assertThat(data.getAttributes().isEmpty()).isTrue();
-    assertThat(data.getStatus()).isEqualTo(Status.OK);
+    assertThat(data.getStatus()).isEqualTo(Status.UNSET);
     assertThat(data.getName()).isEqualTo(SPAN_NAME);
   }
 
@@ -947,7 +952,7 @@ class RecordEventsReadableSpanTest {
         name,
         startEpochNanos,
         endEpochNanos,
-        Status.OK,
+        Status.UNSET,
         /* hasEnded= */ true);
     assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
     assertThat(result.isSampled()).isEqualTo(false);

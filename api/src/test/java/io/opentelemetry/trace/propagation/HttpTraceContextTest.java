@@ -332,6 +332,14 @@ class HttpTraceContextTest {
   }
 
   @Test
+  void extract_InvalidVersion_ff() {
+    Map<String, String> invalidHeaders = new HashMap<>();
+    invalidHeaders.put(TRACE_PARENT, "ff-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01");
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(SpanContext.getInvalid());
+  }
+
+  @Test
   void fieldsList() {
     assertThat(httpTraceContext.fields()).containsExactly(TRACE_PARENT, TRACE_STATE);
   }

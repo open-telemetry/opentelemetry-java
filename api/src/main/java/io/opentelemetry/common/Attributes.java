@@ -145,6 +145,32 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
         key5, value5);
   }
 
+  /**
+   * Returns a {@link Attributes} instance with the given key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
+   */
+  public static <T, U, V, W, X, Y> Attributes of(
+      AttributeKey<T> key1,
+      T value1,
+      AttributeKey<U> key2,
+      U value2,
+      AttributeKey<V> key3,
+      V value3,
+      AttributeKey<W> key4,
+      W value4,
+      AttributeKey<X> key5,
+      X value5,
+      AttributeKey<Y> key6,
+      Y value6) {
+    return sortAndFilterToAttributes(
+        key1, value1,
+        key2, value2,
+        key3, value3,
+        key4, value4,
+        key5, value5,
+        key6, value6);
+  }
+
   private static Attributes sortAndFilterToAttributes(Object... data) {
     // null out any empty keys
     for (int i = 0; i < data.length; i += 2) {
@@ -195,6 +221,11 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     /** Create the {@link Attributes} from this. */
     public Attributes build() {
       return sortAndFilterToAttributes(data.toArray());
+    }
+
+    /** Sets a {@link AttributeKey} with associated value into this. */
+    public <T> Builder setAttribute(AttributeKey<Long> key, int value) {
+      return setAttribute(key, (long) value);
     }
 
     /** Sets a {@link AttributeKey} with associated value into this. */

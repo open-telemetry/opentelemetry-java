@@ -83,14 +83,14 @@ public class Ec2Resource extends ResourceProvider {
     try {
       connection = (HttpURLConnection) url.openConnection();
     } catch (Exception e) {
-      logger.log(Level.WARNING, "Error connecting to IMDS.", e);
+      logger.log(Level.FINE, "Error connecting to IMDS.", e);
       return "";
     }
 
     try {
       connection.setRequestMethod(httpMethod);
     } catch (ProtocolException e) {
-      logger.log(Level.WARNING, "Unknown HTTP method, this is a programming bug.", e);
+      logger.log(Level.FINE, "Unknown HTTP method, this is a programming bug.", e);
       return "";
     }
 
@@ -108,13 +108,13 @@ public class Ec2Resource extends ResourceProvider {
     try {
       responseCode = connection.getResponseCode();
     } catch (Exception e) {
-      logger.log(Level.WARNING, "Error connecting to IMDS: ", e);
+      logger.log(Level.FINE, "Error connecting to IMDS: ", e);
       return "";
     }
 
     if (responseCode != 200) {
       logger.log(
-          Level.WARNING,
+          Level.FINE,
           "Error reponse from IMDS: code ("
               + responseCode
               + ") text "
@@ -160,6 +160,8 @@ public class Ec2Resource extends ResourceProvider {
     String hostname = fetchHostname(token);
 
     Attributes.Builder attrBuilders = Attributes.newBuilder();
+    attrBuilders.setAttribute(
+        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();

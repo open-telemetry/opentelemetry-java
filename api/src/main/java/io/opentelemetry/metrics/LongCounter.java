@@ -108,9 +108,6 @@ public interface LongCounter extends SynchronousInstrument<BoundLongCounter> {
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Labels constantLabels);
-
-    @Override
     LongCounter build();
   }
 }

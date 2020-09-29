@@ -21,10 +21,13 @@ import static io.opentelemetry.common.AttributesKeys.doubleKey;
 import static io.opentelemetry.common.AttributesKeys.longKey;
 import static io.opentelemetry.common.AttributesKeys.stringKey;
 
+import io.grpc.Context;
+import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
@@ -186,18 +189,20 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public Span start() {
-    CorrelationContext distContext = null;
+    Baggage distContext = null;
     io.opentelemetry.trace.Span.Builder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      builder.setParent(parentSpan.getSpan());
+      builder.setParent(TracingContextUtils.withSpan(parentSpan.getSpan(), Context.ROOT));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
-      distContext = contextShim == null ? null : contextShim.getCorrelationContext();
+      distContext = contextShim == null ? null : contextShim.getBaggage();
     } else if (parentSpanContext != null) {
-      builder.setParent(parentSpanContext.getSpanContext());
-      distContext = parentSpanContext.getCorrelationContext();
+      builder.setParent(
+          TracingContextUtils.withSpan(
+              DefaultSpan.create(parentSpanContext.getSpanContext()), Context.ROOT));
+      distContext = parentSpanContext.getBaggage();
     }
 
     for (io.opentelemetry.trace.SpanContext link : parentLinks) {
@@ -216,12 +221,12 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       span.setAttribute(key, value);
     }
     if (error) {
-      span.setStatus(Status.UNKNOWN);
+      span.setStatus(Status.ERROR);
     }
 
     SpanShim spanShim = new SpanShim(telemetryInfo(), span);
 
-    if (distContext != null && distContext != telemetryInfo().emptyCorrelationContext()) {
+    if (distContext != null && distContext != telemetryInfo().emptyBaggage()) {
       spanContextTable().create(spanShim, distContext);
     }
 

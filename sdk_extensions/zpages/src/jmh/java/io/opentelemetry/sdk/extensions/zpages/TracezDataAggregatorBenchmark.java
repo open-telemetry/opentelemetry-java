@@ -55,7 +55,7 @@ public class TracezDataAggregatorBenchmark {
       tracer.spanBuilder(runningSpan).startSpan();
       tracer.spanBuilder(latencySpan).startSpan().end();
       Span error = tracer.spanBuilder(errorSpan).startSpan();
-      error.setStatus(Status.UNKNOWN);
+      error.setStatus(Status.ERROR);
       error.end();
     }
   }

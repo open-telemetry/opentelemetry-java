@@ -17,7 +17,7 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import java.util.Objects;
@@ -27,7 +27,7 @@ public final class TraceShim {
 
   /**
    * Creates a {@code io.opentracing.Tracer} shim out of {@code OpenTelemetry.getTracer()} and
-   * {@code OpenTelemetry.getCorrelationContextManager()}.
+   * {@code OpenTelemetry.getBaggageManager()}.
    *
    * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
@@ -36,21 +36,21 @@ public final class TraceShim {
     return new TracerShim(
         new TelemetryInfo(
             getTracer(OpenTelemetry.getTracerProvider()),
-            OpenTelemetry.getCorrelationContextManager(),
+            OpenTelemetry.getBaggageManager(),
             OpenTelemetry.getPropagators()));
   }
 
   /**
    * Creates a {@code io.opentracing.Tracer} shim out the specified {@code Tracer} and {@code
-   * CorrelationContextManager}.
+   * BaggageManager}.
    *
    * @param tracerProvider the {@code TracerProvider} used by this shim.
-   * @param contextManager the {@code CorrelationContextManager} used by this shim.
+   * @param contextManager the {@code BaggageManager} used by this shim.
    * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
    */
   public static io.opentracing.Tracer createTracerShim(
-      TracerProvider tracerProvider, CorrelationContextManager contextManager) {
+      TracerProvider tracerProvider, BaggageManager contextManager) {
     return new TracerShim(
         new TelemetryInfo(
             getTracer(Objects.requireNonNull(tracerProvider, "tracerProvider")),

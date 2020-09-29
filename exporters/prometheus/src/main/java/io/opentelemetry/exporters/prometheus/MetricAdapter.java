@@ -19,6 +19,7 @@ package io.opentelemetry.exporters.prometheus;
 import static io.prometheus.client.Collector.doubleToGoString;
 
 import io.opentelemetry.common.LabelConsumer;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
@@ -90,27 +91,16 @@ final class MetricAdapter {
     final List<Sample> samples =
         new ArrayList<>(estimateNumSamples(points.size(), descriptor.getType()));
 
-    List<String> constLabelNames = Collections.emptyList();
-    List<String> constLabelValues = Collections.emptyList();
-    if (descriptor.getConstantLabels().size() != 0) {
-      constLabelNames = new ArrayList<>(descriptor.getConstantLabels().size());
-      constLabelValues = new ArrayList<>(descriptor.getConstantLabels().size());
-      descriptor.getConstantLabels().forEach(new Consumer(constLabelNames, constLabelValues));
-    }
-
     for (Point point : points) {
       List<String> labelNames = Collections.emptyList();
       List<String> labelValues = Collections.emptyList();
-      if (constLabelNames.size() + point.getLabels().size() != 0) {
-        labelNames =
-            new ArrayList<>(descriptor.getConstantLabels().size() + point.getLabels().size());
-        labelNames.addAll(constLabelNames);
-        labelValues =
-            new ArrayList<>(descriptor.getConstantLabels().size() + point.getLabels().size());
-        labelValues.addAll(constLabelValues);
+      Labels labels = point.getLabels();
+      if (labels.size() != 0) {
+        labelNames = new ArrayList<>(labels.size());
+        labelValues = new ArrayList<>(labels.size());
 
         // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
-        point.getLabels().forEach(new Consumer(labelNames, labelValues));
+        labels.forEach(new Consumer(labelNames, labelValues));
       }
 
       switch (descriptor.getType()) {

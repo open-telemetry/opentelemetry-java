@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 /*
  * SpanContextShimTable stores and manages OpenTracing SpanContext instances,
  * which are expected to a unmodfiable union of SpanContext and Baggage
- * (CorrelationContext/TagMap under OpenTelemetry).
+ * (Baggage/TagMap under OpenTelemetry).
  *
  * This requires that changes on a given Span and its (new) SpanContext
  * are visible in all threads at *any* moment. The current approach uses
@@ -85,10 +85,10 @@ final class SpanContextShimTable {
   }
 
   public SpanContextShim create(SpanShim spanShim) {
-    return create(spanShim, spanShim.telemetryInfo().emptyCorrelationContext());
+    return create(spanShim, spanShim.telemetryInfo().emptyBaggage());
   }
 
-  public SpanContextShim create(SpanShim spanShim, CorrelationContext distContext) {
+  public SpanContextShim create(SpanShim spanShim, Baggage distContext) {
     lock.writeLock().lock();
     try {
       SpanContextShim contextShim = shimsMap.get(spanShim.getSpan());

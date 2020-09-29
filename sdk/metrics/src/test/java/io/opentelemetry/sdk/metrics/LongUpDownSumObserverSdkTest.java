@@ -49,7 +49,6 @@ class LongUpDownSumObserverSdkTest {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
             .build();
@@ -61,7 +60,6 @@ class LongUpDownSumObserverSdkTest {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
             .build();
@@ -76,8 +74,7 @@ class LongUpDownSumObserverSdkTest {
                     "testObserver",
                     "My own LongUpDownSumObserver",
                     "ms",
-                    Descriptor.Type.NON_MONOTONIC_LONG,
-                    Labels.of("sk1", "sv1")),
+                    Descriptor.Type.NON_MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.emptyList()));
@@ -92,8 +89,7 @@ class LongUpDownSumObserverSdkTest {
     assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -106,8 +102,7 @@ class LongUpDownSumObserverSdkTest {
     assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

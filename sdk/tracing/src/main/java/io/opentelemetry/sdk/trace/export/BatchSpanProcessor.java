@@ -150,11 +150,21 @@ public final class BatchSpanProcessor implements SpanProcessor {
               .setDescription(
                   "The number of spans processed by the BatchSpanProcessor. "
                       + "[dropped=true if they were dropped due to high throughput]")
-              .setConstantLabels(
-                  Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName()))
               .build();
-      droppedSpans = processedSpansCounter.bind(Labels.of("dropped", "true"));
-      exportedSpans = processedSpansCounter.bind(Labels.of("dropped", "false"));
+      droppedSpans =
+          processedSpansCounter.bind(
+              Labels.of(
+                  "spanProcessorType",
+                  BatchSpanProcessor.class.getSimpleName(),
+                  "dropped",
+                  "true"));
+      exportedSpans =
+          processedSpansCounter.bind(
+              Labels.of(
+                  "spanProcessorType",
+                  BatchSpanProcessor.class.getSimpleName(),
+                  "dropped",
+                  "false"));
     }
 
     private static final BoundLongCounter droppedSpans;

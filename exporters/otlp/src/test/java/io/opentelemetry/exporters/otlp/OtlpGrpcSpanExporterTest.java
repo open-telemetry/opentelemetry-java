@@ -71,7 +71,7 @@ class OtlpGrpcSpanExporterTest {
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
     Mockito.verify(spy).setDeadlineMs(12);
     Mockito.verify(spy).setEndpoint("http://localhost:6553");
-    Mockito.verify(spy).setUseTls(true);
+    Mockito.verify(spy).setUseTls(false);
     Mockito.verify(spy).addHeader("key", "value");
     Mockito.verify(spy).addHeader("key2", "value2=");
     Mockito.verify(spy).addHeader("key3", "val=ue3");

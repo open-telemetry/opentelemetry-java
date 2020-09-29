@@ -17,6 +17,7 @@
 package io.opentelemetry.exporters.otlp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
@@ -85,10 +86,12 @@ class OtlpGrpcMetricExporterTest {
   void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.exporter.otlp.metric.timeout", "12");
+    options.put("otel.exporter.otlp.insecure", "true");
     OtlpGrpcMetricExporter.Builder config = OtlpGrpcMetricExporter.newBuilder();
     OtlpGrpcMetricExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
-    Mockito.verify(spy).setDeadlineMs(12);
+    verify(spy).setDeadlineMs(12);
+    verify(spy).setUseTls(false);
   }
 
   @Test
@@ -259,8 +262,7 @@ class OtlpGrpcMetricExporterTest {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.create(
-        Descriptor.create(
-            "name", "description", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
+        Descriptor.create("name", "description", "1", Descriptor.Type.MONOTONIC_LONG),
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
         Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));

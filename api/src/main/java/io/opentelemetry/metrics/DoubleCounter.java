@@ -107,9 +107,6 @@ public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter>
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Labels constantLabels);
-
-    @Override
     DoubleCounter build();
   }
 }

@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Status.CanonicalCode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -181,8 +182,12 @@ final class SpanAdapter {
   }
 
   static Status toStatusProto(io.opentelemetry.trace.Status status) {
-    Status.Builder builder =
-        Status.newBuilder().setCode(StatusCode.forNumber(status.getCanonicalCode().value()));
+    // todo: Update this when the proto definitions are updated to include UNSET and ERROR
+    StatusCode protoStatusCode = StatusCode.STATUS_CODE_OK;
+    if (status.getCanonicalCode() == CanonicalCode.ERROR) {
+      protoStatusCode = StatusCode.STATUS_CODE_UNKNOWN_ERROR;
+    }
+    Status.Builder builder = Status.newBuilder().setCode(protoStatusCode);
     if (status.getDescription() != null) {
       builder.setMessage(status.getDescription());
     }

@@ -80,20 +80,6 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setParent(Span parent) {
-      Utils.checkNotNull(parent, "parent");
-      spanContext = parent.getContext();
-      return this;
-    }
-
-    @Override
-    public NoopSpanBuilder setParent(SpanContext remoteParent) {
-      Utils.checkNotNull(remoteParent, "remoteParent");
-      spanContext = remoteParent;
-      return this;
-    }
-
-    @Override
     public NoopSpanBuilder setParent(Context context) {
       Utils.checkNotNull(context, "context");
       spanContext = TracingContextUtils.getSpan(context).getContext();

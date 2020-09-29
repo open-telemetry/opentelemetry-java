@@ -138,6 +138,7 @@ class AttributesTest {
         Attributes.newBuilder()
             .setAttribute("string", "value1")
             .setAttribute("long", 100)
+            .setAttribute(longKey("long2"), 10)
             .setAttribute("double", 33.44)
             .setAttribute("boolean", "duplicateShouldBeRemoved")
             .setAttribute("boolean", false)
@@ -149,6 +150,8 @@ class AttributesTest {
             "value1",
             longKey("long"),
             100L,
+            longKey("long2"),
+            10L,
             doubleKey("double"),
             33.44,
             booleanKey("boolean"),
@@ -164,6 +167,8 @@ class AttributesTest {
                 "value1",
                 longKey("long"),
                 100L,
+                longKey("long2"),
+                10L,
                 doubleKey("double"),
                 33.44,
                 booleanKey("boolean"),

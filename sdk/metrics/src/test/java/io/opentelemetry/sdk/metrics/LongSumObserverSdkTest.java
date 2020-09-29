@@ -49,7 +49,6 @@ class LongSumObserverSdkTest {
     LongSumObserverSdk longSumObserver =
         testSdk
             .longSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
             .build();
@@ -61,7 +60,6 @@ class LongSumObserverSdkTest {
     LongSumObserverSdk longSumObserver =
         testSdk
             .longSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
             .build();
@@ -73,11 +71,7 @@ class LongSumObserverSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testObserver",
-                    "My own LongSumObserver",
-                    "ms",
-                    Descriptor.Type.MONOTONIC_LONG,
-                    Labels.of("sk1", "sv1")),
+                    "testObserver", "My own LongSumObserver", "ms", Descriptor.Type.MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.emptyList()));
@@ -91,8 +85,7 @@ class LongSumObserverSdkTest {
     assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -105,8 +98,7 @@ class LongSumObserverSdkTest {
     assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(

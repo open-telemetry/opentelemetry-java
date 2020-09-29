@@ -81,6 +81,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
+  private static final boolean DEFAULT_USE_TLS = false;
 
   private final TraceServiceFutureStub traceService;
   private final ManagedChannel managedChannel;
@@ -194,12 +195,12 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
     private static final String KEY_TIMEOUT = "otel.exporter.otlp.span.timeout";
     private static final String KEY_ENDPOINT = "otel.exporter.otlp.span.endpoint";
-    private static final String KEY_USE_TLS = "otel.exporter.otlp.span.insecure";
+    private static final String KEY_INSECURE = "otel.exporter.otlp.span.insecure";
     private static final String KEY_HEADERS = "otel.exporter.otlp.span.headers";
     private ManagedChannel channel;
     private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
     private String endpoint = DEFAULT_ENDPOINT;
-    private boolean useTls;
+    private boolean useTls = DEFAULT_USE_TLS;
     @Nullable private Metadata metadata;
 
     /**
@@ -318,12 +319,12 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
         this.setEndpoint(endpointValue);
       }
 
-      Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
-      if (useTlsValue == null) {
-        useTlsValue = getBooleanProperty(CommonProperties.KEY_USE_TLS, configMap);
+      Boolean insecure = getBooleanProperty(KEY_INSECURE, configMap);
+      if (insecure == null) {
+        insecure = getBooleanProperty(CommonProperties.KEY_INSECURE, configMap);
       }
-      if (useTlsValue != null) {
-        this.setUseTls(useTlsValue);
+      if (insecure != null) {
+        this.setUseTls(!insecure);
       }
 
       String metadataValue = getStringProperty(KEY_HEADERS, configMap);
