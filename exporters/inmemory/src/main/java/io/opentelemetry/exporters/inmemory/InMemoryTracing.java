@@ -20,15 +20,14 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * InMemoryTracing is an utility class that helps installing the {@link SimpleSpanProcessor} and an
- * instance of the {@link InMemorySpanExporter} to a given {@link TracerSdkProvider}. Can be used to
- * test OpenTelemetry integration.
+ * instance of the {@link InMemorySpanExporter} to a given {@link TracerSdkManagement}. Can be used
+ * to test OpenTelemetry integration.
  *
  * <p>Example usage:
  *
@@ -53,12 +52,12 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class InMemoryTracing {
   /**
-   * Returns the {@code TracerSdkProvider} passed during construction.
+   * Returns the {@code TracerSdkManagement} passed during construction.
    *
-   * @return the {@code TracerSdkProvider} passed during construction.
+   * @return the {@code TracerSdkManagement} passed during construction.
    * @since 0.1.0
    */
-  abstract TracerSdkManagement getTracerProvider();
+  abstract TracerSdkManagement getTracerSdkManagement();
 
   /**
    * Returns the installed {@link InMemorySpanExporter}.
@@ -84,11 +83,11 @@ public abstract class InMemoryTracing {
    */
   @AutoValue.Builder
   public abstract static class Builder {
-    public abstract Builder setTracerProvider(TracerSdkManagement tracerProvider);
+    public abstract Builder setTracerSdkManagement(TracerSdkManagement tracerSdkManagement);
 
     abstract Builder setSpanExporter(InMemorySpanExporter exporter);
 
-    abstract TracerSdkManagement getTracerProvider();
+    abstract TracerSdkManagement getTracerSdkManagement();
 
     abstract InMemoryTracing autoBuild();
 
@@ -105,7 +104,7 @@ public abstract class InMemoryTracing {
               .addTextMapPropagator(HttpTraceContext.getInstance())
               .build());
       InMemorySpanExporter exporter = InMemorySpanExporter.create();
-      getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
+      getTracerSdkManagement().addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
       return setSpanExporter(exporter).autoBuild();
     }
   }

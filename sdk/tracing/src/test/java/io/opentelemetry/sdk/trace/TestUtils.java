@@ -74,9 +74,9 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkManagement tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
+      TracerSdkManagement tracerSdkManagement, Tracer tracer, String spanName, Sampler sampler) {
     return startSpanWithSampler(
-        tracerSdkFactory, tracer, spanName, sampler, Collections.emptyMap());
+        tracerSdkManagement, tracer, spanName, sampler, Collections.emptyMap());
   }
 
   /**
@@ -86,13 +86,13 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkManagement tracerSdkFactory,
+      TracerSdkManagement tracerSdkManagement,
       Tracer tracer,
       String spanName,
       Sampler sampler,
       Map<String, String> attributes) {
-    TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
-    tracerSdkFactory.updateActiveTraceConfig(
+    TraceConfig originalConfig = tracerSdkManagement.getActiveTraceConfig();
+    tracerSdkManagement.updateActiveTraceConfig(
         originalConfig.toBuilder().setSampler(sampler).build());
     try {
       Span.Builder builder = tracer.spanBuilder(spanName);
@@ -100,7 +100,7 @@ public final class TestUtils {
 
       return builder;
     } finally {
-      tracerSdkFactory.updateActiveTraceConfig(originalConfig);
+      tracerSdkManagement.updateActiveTraceConfig(originalConfig);
     }
   }
 }

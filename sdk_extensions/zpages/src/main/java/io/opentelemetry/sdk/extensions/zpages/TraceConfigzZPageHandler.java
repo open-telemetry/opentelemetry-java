@@ -45,10 +45,10 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
   // Background color used for zebra striping rows in table
   private static final String ZEBRA_STRIPE_COLOR = "#e6e6e6";
   private static final Logger logger = Logger.getLogger(TraceConfigzZPageHandler.class.getName());
-  private final TracerSdkManagement tracerProvider;
+  private final TracerSdkManagement tracerSdkManagement;
 
-  TraceConfigzZPageHandler(TracerSdkManagement tracerProvider) {
-    this.tracerProvider = tracerProvider;
+  TraceConfigzZPageHandler(TracerSdkManagement tracerSdkManagement) {
+    this.tracerSdkManagement = tracerSdkManagement;
   }
 
   @Override
@@ -221,42 +221,45 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "Sampler",
-        /* paramValue=*/ this.tracerProvider.getActiveTraceConfig().getSampler().getDescription(),
+        /* paramValue=*/ this.tracerSdkManagement
+            .getActiveTraceConfig()
+            .getSampler()
+            .getDescription(),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributes",
         /* paramValue=*/ Integer.toString(
-            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributes()),
+            this.tracerSdkManagement.getActiveTraceConfig().getMaxNumberOfAttributes()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfEvents",
         /* paramValue=*/ Integer.toString(
-            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfEvents()),
+            this.tracerSdkManagement.getActiveTraceConfig().getMaxNumberOfEvents()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfLinks",
         /* paramValue=*/ Integer.toString(
-            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfLinks()),
+            this.tracerSdkManagement.getActiveTraceConfig().getMaxNumberOfLinks()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerEvent",
         /* paramValue=*/ Integer.toString(
-            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent()),
+            this.tracerSdkManagement.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerLink",
         /* paramValue=*/ Integer.toString(
-            this.tracerProvider.getActiveTraceConfig().getMaxNumberOfAttributesPerLink()),
+            this.tracerSdkManagement.getActiveTraceConfig().getMaxNumberOfAttributesPerLink()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe=*/ true);
     out.print("</table>");
@@ -376,7 +379,8 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       return;
     }
     if (action.equals(QUERY_STRING_ACTION_CHANGE)) {
-      TraceConfig.Builder newConfigBuilder = this.tracerProvider.getActiveTraceConfig().toBuilder();
+      TraceConfig.Builder newConfigBuilder =
+          this.tracerSdkManagement.getActiveTraceConfig().toBuilder();
       String samplingProbabilityStr = queryMap.get(QUERY_STRING_SAMPLING_PROBABILITY);
       if (samplingProbabilityStr != null) {
         try {
@@ -441,10 +445,10 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
               "MaxNumOfAttributesPerLink must be of the type integer", e);
         }
       }
-      this.tracerProvider.updateActiveTraceConfig(newConfigBuilder.build());
+      this.tracerSdkManagement.updateActiveTraceConfig(newConfigBuilder.build());
     } else if (action.equals(QUERY_STRING_ACTION_DEFAULT)) {
       TraceConfig defaultConfig = TraceConfig.getDefault().toBuilder().build();
-      this.tracerProvider.updateActiveTraceConfig(defaultConfig);
+      this.tracerSdkManagement.updateActiveTraceConfig(defaultConfig);
     }
   }
 }

@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collection;
 
@@ -51,7 +51,7 @@ public interface SpanExporter {
   CompletableResultCode flush();
 
   /**
-   * Called when {@link TracerSdkProvider#shutdown()} is called, if this {@code SpanExporter} is
+   * Called when {@link TracerSdkManagement#shutdown()} is called, if this {@code SpanExporter} is
    * register to a {@code TracerSdkProvider} object.
    *
    * @return a {@link CompletableResultCode} which is completed when shutdown completes.

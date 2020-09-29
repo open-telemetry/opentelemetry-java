@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test;
 class ActorPropagationTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(ActorPropagationTest.class.getName());
   private Phaser phaser;
 

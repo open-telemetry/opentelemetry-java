@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 class ListenerTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = TraceShim.createTracerShim(sdk, new BaggageManagerSdk());
 
   @Test

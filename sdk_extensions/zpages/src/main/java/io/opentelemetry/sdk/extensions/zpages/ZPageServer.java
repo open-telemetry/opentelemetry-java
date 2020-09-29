@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -70,13 +69,14 @@ public final class ZPageServer {
       TracezSpanProcessor.newBuilder().build();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
-  private static final TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
+  private static final TracerSdkManagement TRACER_SDK_MANAGEMENT =
+      OpenTelemetrySdk.getTracerManagement();
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
       new TracezZPageHandler(tracezDataAggregator);
   // Handler for /traceconfigz page
   private static final ZPageHandler traceConfigzZPageHandler =
-      new TraceConfigzZPageHandler(tracerProvider);
+      new TraceConfigzZPageHandler(TRACER_SDK_MANAGEMENT);
   // Handler for index page, **please include all available ZPageHandlers in the constructor**
   private static final ZPageHandler indexZPageHandler =
       new IndexZPageHandler(ImmutableList.of(tracezZPageHandler, traceConfigzZPageHandler));
@@ -88,10 +88,10 @@ public final class ZPageServer {
   @Nullable
   private static HttpServer server;
 
-  /** Function that adds the {@link TracezSpanProcessor} to the {@link TracerSdkProvider}. */
+  /** Function that adds the {@link TracezSpanProcessor} to the {@link TracerSdkManagement}. */
   private static void addTracezSpanProcessor() {
     if (isTracezSpanProcesserAdded.compareAndSet(/* expectedValue=*/ false, /* newValue=*/ true)) {
-      tracerProvider.addSpanProcessor(tracezSpanProcessor);
+      TRACER_SDK_MANAGEMENT.addSpanProcessor(tracezSpanProcessor);
     }
   }
 

@@ -44,7 +44,7 @@ import org.junit.jupiter.api.Test;
 class PromisePropagationTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(PromisePropagationTest.class.getName());
   private Phaser phaser;
 
