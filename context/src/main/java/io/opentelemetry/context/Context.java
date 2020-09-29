@@ -111,11 +111,15 @@ public interface Context {
   <V> Context withValues(ContextKey<V> k1, V v1);
 
   /** Returns a new context with the given key value set. */
-  <V1, V2> Context withValues(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2);
+  default <V1, V2> Context withValues(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
+    return withValues(k1, v1).withValues(k2, v2);
+  }
 
   /** Returns a new context with the given key value set. */
-  <V1, V2, V3> Context withValues(
-      ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3);
+  default <V1, V2, V3> Context withValues(
+      ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3) {
+    return withValues(k1, v1, k2, v2).withValues(k3, v3);
+  }
 
   /**
    * Create a new context with the given key value set.
@@ -133,7 +137,7 @@ public interface Context {
    * number of keys and values — combine multiple related items together into a single key instead
    * of separating them. But if the items are unrelated, have separate keys for them.
    */
-  <V1, V2, V3, V4> Context withValues(
+  default <V1, V2, V3, V4> Context withValues(
       ContextKey<V1> k1,
       V1 v1,
       ContextKey<V2> k2,
@@ -141,7 +145,9 @@ public interface Context {
       ContextKey<V3> k3,
       V3 v3,
       ContextKey<V4> k4,
-      V4 v4);
+      V4 v4) {
+    return withValues(k1, v1, k2, v2, k3, v3).withValues(k4, v4);
+  }
 
   /**
    * Makes this the {@linkplain Context#current() current context} and returns a {@link Scope} which

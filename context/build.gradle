@@ -12,12 +12,15 @@ testSets {
     grpcInOtelTest
     otelInGrpcTest
     otelAsGrpcTest
+    otelAsBraveTest
 }
 
 dependencies {
     grpcInOtelTestImplementation libraries.grpc_context
     otelAsGrpcTestImplementation libraries.grpc_context
     otelInGrpcTestImplementation libraries.grpc_context
+
+    otelAsBraveTestImplementation "io.zipkin.brave:brave:5.12.6"
 
     testImplementation libraries.awaitility
 
