@@ -124,14 +124,14 @@ class JaegerGrpcSpanExporterTest {
 
     assertEquals(
         "io.opentelemetry.auto",
-        getSpanTagValue(batch.getSpans(0), "otel.instrumentation_library.name")
-            .orElseThrow(() -> new AssertionError("otel.instrumentation_library.name not found"))
+        getSpanTagValue(batch.getSpans(0), "otel.library.name")
+            .orElseThrow(() -> new AssertionError("otel.library.name not found"))
             .getVStr());
 
     assertEquals(
         "1.0.0",
-        getSpanTagValue(batch.getSpans(0), "otel.instrumentation_library.version")
-            .orElseThrow(() -> new AssertionError("otel.instrumentation_library.version not found"))
+        getSpanTagValue(batch.getSpans(0), "otel.library.version")
+            .orElseThrow(() -> new AssertionError("otel.library.version not found"))
             .getVStr());
 
     boolean foundClientTag = false;

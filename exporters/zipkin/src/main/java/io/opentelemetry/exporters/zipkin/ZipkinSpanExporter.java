@@ -85,8 +85,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
   static final String OTEL_STATUS_DESCRIPTION = "otel.status_description";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
-  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.instrumentation_library.name";
-  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.instrumentation_library.version";
+  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
+  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
   private final BytesEncoder<Span> encoder;
   private final Sender sender;
