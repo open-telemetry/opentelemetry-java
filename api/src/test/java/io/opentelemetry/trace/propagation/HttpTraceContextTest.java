@@ -340,6 +340,24 @@ class HttpTraceContextTest {
   }
 
   @Test
+  void extract_InvalidTraceparent_extraTrailing() {
+    Map<String, String> invalidHeaders = new HashMap<>();
+    invalidHeaders.put(TRACE_PARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-01");
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  void extract_ValidTraceparent_nextVersion_extraTrailing() {
+    Map<String, String> invalidHeaders = new HashMap<>();
+    invalidHeaders.put(TRACE_PARENT, "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-01");
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+  }
+
+  @Test
   void fieldsList() {
     assertThat(httpTraceContext.fields()).containsExactly(TRACE_PARENT, TRACE_STATE);
   }
