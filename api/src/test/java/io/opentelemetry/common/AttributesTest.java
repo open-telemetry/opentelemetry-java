@@ -24,6 +24,7 @@ import static io.opentelemetry.common.AttributesKeys.longArrayKey;
 import static io.opentelemetry.common.AttributesKeys.longKey;
 import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
 import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
@@ -260,24 +261,34 @@ class AttributesTest {
   }
 
   @Test
-  void deleteByNull() {
-    Attributes.Builder attributes = Attributes.newBuilder();
-    attributes.setAttribute(stringKey("attrValue"), "attrValue");
-    attributes.setAttribute("string", "string");
-    attributes.setAttribute("long", 10);
-    attributes.setAttribute("double", 1.0);
-    attributes.setAttribute("bool", true);
-    attributes.setAttribute("arrayString", new String[] {"string"});
-    attributes.setAttribute("arrayLong", new Long[] {10L});
-    attributes.setAttribute("arrayDouble", new Double[] {1.0});
-    attributes.setAttribute("arrayBool", new Boolean[] {true});
-    assertThat(attributes.build().size()).isEqualTo(9);
-    attributes.setAttribute(stringKey("attrValue"), null);
-    attributes.setAttribute("string", (String) null);
-    attributes.setAttribute("arrayString", (String[]) null);
-    attributes.setAttribute("arrayLong", (Long[]) null);
-    attributes.setAttribute("arrayDouble", (Double[]) null);
-    attributes.setAttribute("arrayBool", (Boolean[]) null);
-    assertThat(attributes.build().size()).isEqualTo(3);
+  void nullsAreNoOps() {
+    Attributes.Builder builder = Attributes.newBuilder();
+    builder.setAttribute(stringKey("attrValue"), "attrValue");
+    builder.setAttribute("string", "string");
+    builder.setAttribute("long", 10);
+    builder.setAttribute("double", 1.0);
+    builder.setAttribute("bool", true);
+    builder.setAttribute("arrayString", new String[] {"string"});
+    builder.setAttribute("arrayLong", new Long[] {10L});
+    builder.setAttribute("arrayDouble", new Double[] {1.0});
+    builder.setAttribute("arrayBool", new Boolean[] {true});
+    assertThat(builder.build().size()).isEqualTo(9);
+
+    // note: currently these are no-op calls; that behavior is not required, so if it needs to
+    // change, that is fine.
+    builder.setAttribute(stringKey("attrValue"), null);
+    builder.setAttribute("string", (String) null);
+    builder.setAttribute("arrayString", (String[]) null);
+    builder.setAttribute("arrayLong", (Long[]) null);
+    builder.setAttribute("arrayDouble", (Double[]) null);
+    builder.setAttribute("arrayBool", (Boolean[]) null);
+
+    Attributes attributes = builder.build();
+    assertThat(attributes.size()).isEqualTo(9);
+    assertThat(attributes.get(stringKey("string"))).isEqualTo("string");
+    assertThat(attributes.get(stringArrayKey("arrayString"))).isEqualTo(singletonList("string"));
+    assertThat(attributes.get(longArrayKey("arrayLong"))).isEqualTo(singletonList(10L));
+    assertThat(attributes.get(doubleArrayKey("arrayDouble"))).isEqualTo(singletonList(1.0d));
+    assertThat(attributes.get(booleanArrayKey("arrayBool"))).isEqualTo(singletonList(true));
   }
 }

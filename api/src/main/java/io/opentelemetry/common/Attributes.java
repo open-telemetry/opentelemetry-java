@@ -28,7 +28,6 @@ import static io.opentelemetry.common.AttributesKeys.stringKey;
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -37,6 +36,10 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>The keys are {@link AttributeKey}s and the values are Object instances that match the type of
  * the provided key.
+ *
+ * <p>Null keys will be silently dropped.
+ *
+ * <p>Note: The behavior of null-valued attributes is undefined, and hence strongly discouraged.
  */
 @SuppressWarnings("rawtypes")
 @Immutable
@@ -172,10 +175,14 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   }
 
   private static Attributes sortAndFilterToAttributes(Object... data) {
-    // null out any empty keys
+    // null out any empty keys or keys with null values
+    // so they will then be removed by the sortAndFilter method.
     for (int i = 0; i < data.length; i += 2) {
       AttributeKey<?> key = (AttributeKey<?>) data[i];
       if (key != null && (key.getKey() == null || "".equals(key.getKey()))) {
+        data[i] = null;
+      }
+      if (data[i + 1] == null) {
         data[i] = null;
       }
     }
@@ -190,13 +197,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   /** Returns a new {@link Builder} instance from ReadableAttributes. */
   public static Builder newBuilder(ReadableAttributes attributes) {
     final Builder builder = new Builder();
-    attributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
-            builder.setAttribute(key, value);
-          }
-        });
+    attributes.forEach(builder::setAttribute);
     return builder;
   }
 
@@ -230,24 +231,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
 
     /** Sets a {@link AttributeKey} with associated value into this. */
     public <T> Builder setAttribute(AttributeKey<T> key, T value) {
-      if (key == null || key.getKey() == null || key.getKey().length() == 0) {
-        return this;
-      }
-      if (value == null) {
-        // Remove key/value pairs
-        Iterator<Object> itr = data.iterator();
-        while (itr.hasNext()) {
-          AttributeKey k = (AttributeKey) itr.next();
-          if (key.equals(k)) {
-            // delete key and value
-            itr.remove();
-            itr.next();
-            itr.remove();
-          } else {
-            // skip the value part
-            itr.next();
-          }
-        }
+      if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
         return this;
       }
       data.add(key);

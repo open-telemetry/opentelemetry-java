@@ -483,11 +483,6 @@ class RecordEventsReadableSpanTest {
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(3);
     span.setAttribute(doubleArrayKey("doubleArrayAttribute"), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(4);
-    span.setAttribute(stringArrayKey("stringArrayAttribute"), null);
-    span.setAttribute(booleanArrayKey("boolArrayAttribute"), null);
-    span.setAttribute(longArrayKey("longArrayAttribute"), null);
-    span.setAttribute(doubleArrayKey("doubleArrayAttribute"), null);
-    assertThat(span.toSpanData().getAttributes().size()).isZero();
   }
 
   @Test
@@ -498,9 +493,6 @@ class RecordEventsReadableSpanTest {
     span.setAttribute(stringKey("nullStringAttributeValue"), null);
     span.setAttribute(stringKey("emptyStringAttributeValue"), "");
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
-    span.setAttribute("emptyString", null);
-    span.setAttribute("emptyStringAttributeValue", null);
-    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test
@@ -518,16 +510,6 @@ class RecordEventsReadableSpanTest {
     span.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList(12345L, null));
     span.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
-    span.setAttribute(stringKey("emptyString"), null);
-    span.setAttribute(stringKey("emptyStringAttributeValue"), null);
-    span.setAttribute(longKey("longAttribute"), null);
-    span.setAttribute(booleanKey("boolAttribute"), null);
-    span.setAttribute(doubleKey("doubleAttribute"), null);
-    span.setAttribute(stringArrayKey("stringArrayAttribute"), null);
-    span.setAttribute(booleanArrayKey("boolArrayAttribute"), null);
-    span.setAttribute(longArrayKey("longArrayAttribute"), null);
-    span.setAttribute(doubleArrayKey("doubleArrayAttribute"), null);
-    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test

@@ -286,9 +286,6 @@ class SpanBuilderSdkTest {
     spanBuilder.setAttribute(stringKey("emptyStringAttributeValue"), "");
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
-    span.setAttribute("emptyString", null);
-    span.setAttribute("emptyStringAttributeValue", null);
-    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test
@@ -335,16 +332,6 @@ class SpanBuilderSdkTest {
     spanBuilder.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
-    span.setAttribute("emptyString", null);
-    span.setAttribute(stringKey("emptyStringAttributeValue"), null);
-    span.setAttribute(longKey("longAttribute"), null);
-    span.setAttribute(booleanKey("boolAttribute"), null);
-    span.setAttribute(doubleKey("doubleAttribute"), null);
-    span.setAttribute(stringArrayKey("stringArrayAttribute"), null);
-    span.setAttribute(booleanArrayKey("boolArrayAttribute"), null);
-    span.setAttribute(longArrayKey("longArrayAttribute"), null);
-    span.setAttribute(doubleArrayKey("doubleArrayAttribute"), null);
-    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test

@@ -40,6 +40,9 @@ final class AttributesMap implements ReadableAttributes {
   }
 
   public <T> void put(AttributeKey<T> key, T value) {
+    if (key == null || key.getKey() == null || value == null) {
+      return;
+    }
     totalAddedValues++;
     if (data.size() >= capacity && !data.containsKey(key)) {
       return;
