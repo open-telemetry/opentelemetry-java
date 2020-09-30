@@ -72,6 +72,7 @@ public class HttpTraceContext implements TextMapPropagator {
   private static final Pattern TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN =
       Pattern.compile("[ \t]*" + TRACESTATE_ENTRY_DELIMITER + "[ \t]*");
   private static final Set<String> VALID_VERSIONS;
+  private static final String VERSION_00 = "00";
   private static final HttpTraceContext INSTANCE = new HttpTraceContext();
 
   static {
@@ -209,6 +210,9 @@ public class HttpTraceContext implements TextMapPropagator {
     try {
       String version = traceparent.substring(0, 2);
       if (!VALID_VERSIONS.contains(version)) {
+        return SpanContext.getInvalid();
+      }
+      if (version.equals(VERSION_00) && traceparent.length() > TRACEPARENT_HEADER_SIZE) {
         return SpanContext.getInvalid();
       }
 

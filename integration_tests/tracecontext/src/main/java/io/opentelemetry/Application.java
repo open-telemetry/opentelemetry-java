@@ -18,10 +18,12 @@ package io.opentelemetry;
 
 import com.google.gson.Gson;
 import io.grpc.Context;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
+import io.opentelemetry.trace.propagation.HttpTraceContext;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -43,6 +45,11 @@ public class Application {
 
   /** Entry point. */
   public static void main(String[] args) {
+    OpenTelemetry.setPropagators(
+        DefaultContextPropagators.builder()
+            .addTextMapPropagator(HttpTraceContext.getInstance())
+            .build());
+
     Spark.port(5000);
     Spark.post(
         "verify-tracecontext",
