@@ -22,7 +22,6 @@ dependencies {
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}",
             libraries.testcontainers,
-            libraries.awaitility,
             libraries.rest_assured
 
     testImplementation project(':opentelemetry-testing-internal')
