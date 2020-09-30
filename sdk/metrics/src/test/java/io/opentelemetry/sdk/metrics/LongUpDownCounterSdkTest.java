@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -75,13 +74,10 @@ class LongUpDownCounterSdkTest {
     List<MetricData> metricDataList = longUpDownCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
-    assertThat(metricData.getDescriptor())
-        .isEqualTo(
-            Descriptor.create(
-                "testUpDownCounter",
-                "My very own counter",
-                "ms",
-                Descriptor.Type.NON_MONOTONIC_LONG));
+    assertThat(metricData.getName()).isEqualTo("testUpDownCounter");
+    assertThat(metricData.getDescription()).isEqualTo("My very own counter");
+    assertThat(metricData.getUnit()).isEqualTo("ms");
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.NON_MONOTONIC_LONG);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -115,7 +111,7 @@ class LongUpDownCounterSdkTest {
     longUpDownCounter1.add(12);
 
     assertThat(longUpDownCounter.collectAll().get(0))
-        .isEqualToIgnoringGivenFields(longUpDownCounter1.collectAll().get(0), "descriptor");
+        .isEqualToIgnoringGivenFields(longUpDownCounter1.collectAll().get(0), "name");
   }
 
   @Test

@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import org.junit.jupiter.api.Test;
 
 class MinMaxSumCountAggregationTest {
@@ -33,19 +33,19 @@ class MinMaxSumCountAggregationTest {
     assertThat(
             minMaxSumCount.getDescriptorType(
                 InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE))
-        .isEqualTo(Descriptor.Type.SUMMARY);
+        .isEqualTo(MetricData.Type.SUMMARY);
     assertThat(
             minMaxSumCount.getDescriptorType(
                 InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG))
-        .isEqualTo(Descriptor.Type.SUMMARY);
+        .isEqualTo(MetricData.Type.SUMMARY);
     assertThat(
             minMaxSumCount.getDescriptorType(
                 InstrumentType.VALUE_OBSERVER, InstrumentValueType.DOUBLE))
-        .isEqualTo(Descriptor.Type.SUMMARY);
+        .isEqualTo(MetricData.Type.SUMMARY);
     assertThat(
             minMaxSumCount.getDescriptorType(
                 InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG))
-        .isEqualTo(Descriptor.Type.SUMMARY);
+        .isEqualTo(MetricData.Type.SUMMARY);
   }
 
   @Test

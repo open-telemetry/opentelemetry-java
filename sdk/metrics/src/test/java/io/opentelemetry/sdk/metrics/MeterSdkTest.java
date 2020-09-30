@@ -28,7 +28,6 @@ import io.opentelemetry.metrics.LongValueObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -418,21 +417,30 @@ class MeterSdkTest {
     assertThat(testSdk.collectAll())
         .containsExactlyInAnyOrder(
             MetricData.create(
-                Descriptor.create("testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testLongCounter",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
-                Descriptor.create("testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testDoubleCounter",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), Labels.empty(), 10.1))),
             MetricData.create(
-                Descriptor.create("testLongValueRecorder", "", "1", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testLongValueRecorder",
+                "",
+                "1",
+                MetricData.Type.SUMMARY,
                 Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now(),
@@ -443,9 +451,12 @@ class MeterSdkTest {
                         Arrays.asList(
                             ValueAtPercentile.create(0, 10), ValueAtPercentile.create(100, 10))))),
             MetricData.create(
-                Descriptor.create("testDoubleValueRecorder", "", "1", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testDoubleValueRecorder",
+                "",
+                "1",
+                MetricData.Type.SUMMARY,
                 Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now(),

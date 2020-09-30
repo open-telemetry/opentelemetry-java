@@ -24,7 +24,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -70,13 +69,12 @@ class DoubleSumObserverSdkTest {
     assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver",
-                    "My own DoubleSumObserver",
-                    "ms",
-                    Descriptor.Type.MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "My own DoubleSumObserver",
+                "ms",
+                MetricData.Type.MONOTONIC_DOUBLE,
                 Collections.emptyList()));
   }
 
@@ -89,9 +87,12 @@ class DoubleSumObserverSdkTest {
     assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Descriptor.Type.MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -102,9 +103,12 @@ class DoubleSumObserverSdkTest {
     assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Descriptor.Type.MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - 2 * SECOND_NANOS,

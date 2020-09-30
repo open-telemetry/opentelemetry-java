@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -35,12 +34,6 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link io.opentelemetry.sdk.metrics.data.MetricData}. */
 class MetricDataTest {
-
-  private static final Descriptor LONG_METRIC_DESCRIPTOR =
-      Descriptor.create("metric_name", "metric_description", "ms", Descriptor.Type.MONOTONIC_LONG);
-  private static final Descriptor DOUBLE_METRIC_DESCRIPTOR =
-      Descriptor.create(
-          "metric_name", "metric_description", "ms", Descriptor.Type.NON_MONOTONIC_DOUBLE);
   private static final long START_EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(1000);
   private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
   private static final long LONG_VALUE = 10;
@@ -66,39 +59,83 @@ class MetricDataTest {
               ValueAtPercentile.create(100, DOUBLE_VALUE)));
 
   @Test
-  void metricData_NullDescriptor() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            MetricData.create(
-                null,
-                Resource.getEmpty(),
-                InstrumentationLibraryInfo.getEmpty(),
-                singletonList(DOUBLE_POINT)),
-        "descriptor");
-  }
-
-  @Test
-  void metricData_NullResource() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            MetricData.create(
-                LONG_METRIC_DESCRIPTOR,
-                null,
-                InstrumentationLibraryInfo.getEmpty(),
-                singletonList(DOUBLE_POINT)),
-        "resource");
-  }
-
-  @Test
   void metricData_NullInstrumentationLibraryInfo() {
     assertThrows(
         NullPointerException.class,
         () ->
             MetricData.create(
-                LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), null, singletonList(DOUBLE_POINT)),
+                Resource.getEmpty(),
+                null,
+                "metric_name",
+                "metric_description",
+                "ms",
+                MetricData.Type.MONOTONIC_LONG,
+                singletonList(DOUBLE_POINT)),
         "instrumentationLibraryInfo");
+  }
+
+  @Test
+  void metricData_NullName() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            MetricData.create(
+                Resource.getEmpty(),
+                InstrumentationLibraryInfo.getEmpty(),
+                null,
+                "metric_description",
+                "ms",
+                MetricData.Type.MONOTONIC_LONG,
+                singletonList(DOUBLE_POINT)),
+        "name");
+  }
+
+  @Test
+  void metricData_NullDescription() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            MetricData.create(
+                Resource.getEmpty(),
+                InstrumentationLibraryInfo.getEmpty(),
+                "metric_name",
+                null,
+                "ms",
+                MetricData.Type.MONOTONIC_LONG,
+                singletonList(DOUBLE_POINT)),
+        "description");
+  }
+
+  @Test
+  void metricData_NullUnit() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            MetricData.create(
+                Resource.getEmpty(),
+                InstrumentationLibraryInfo.getEmpty(),
+                "metric_name",
+                "metric_description",
+                null,
+                MetricData.Type.MONOTONIC_LONG,
+                singletonList(DOUBLE_POINT)),
+        "unit");
+  }
+
+  @Test
+  void metricData_NullType() {
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            MetricData.create(
+                Resource.getEmpty(),
+                InstrumentationLibraryInfo.getEmpty(),
+                "metric_name",
+                "metric_description",
+                "ms",
+                null,
+                singletonList(DOUBLE_POINT)),
+        "type");
   }
 
   @Test
@@ -107,9 +144,12 @@ class MetricDataTest {
         NullPointerException.class,
         () ->
             MetricData.create(
-                LONG_METRIC_DESCRIPTOR,
                 Resource.getEmpty(),
                 InstrumentationLibraryInfo.getEmpty(),
+                "metric_name",
+                "metric_description",
+                "ms",
+                MetricData.Type.MONOTONIC_LONG,
                 null),
         "points");
   }
@@ -118,11 +158,17 @@ class MetricDataTest {
   void metricData_Getters() {
     MetricData metricData =
         MetricData.create(
-            LONG_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            MetricData.Type.MONOTONIC_LONG,
             Collections.emptyList());
-    assertThat(metricData.getDescriptor()).isEqualTo(LONG_METRIC_DESCRIPTOR);
+    assertThat(metricData.getName()).isEqualTo("metric_name");
+    assertThat(metricData.getDescription()).isEqualTo("metric_description");
+    assertThat(metricData.getUnit()).isEqualTo("ms");
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.MONOTONIC_LONG);
     assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
     assertThat(metricData.getInstrumentationLibraryInfo())
         .isEqualTo(InstrumentationLibraryInfo.getEmpty());
@@ -138,9 +184,12 @@ class MetricDataTest {
     assertThat(LONG_POINT.getValue()).isEqualTo(LONG_VALUE);
     MetricData metricData =
         MetricData.create(
-            LONG_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            MetricData.Type.MONOTONIC_LONG,
             Collections.singletonList(LONG_POINT));
     assertThat(metricData.getPoints()).containsExactly(LONG_POINT);
   }
@@ -157,9 +206,12 @@ class MetricDataTest {
         .isEqualTo(Arrays.asList(MINIMUM_VALUE, MAXIMUM_VALUE));
     MetricData metricData =
         MetricData.create(
-            DOUBLE_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            MetricData.Type.NON_MONOTONIC_DOUBLE,
             Collections.singletonList(SUMMARY_POINT));
     assertThat(metricData.getPoints()).containsExactly(SUMMARY_POINT);
   }
@@ -173,9 +225,12 @@ class MetricDataTest {
     assertThat(DOUBLE_POINT.getValue()).isEqualTo(DOUBLE_VALUE);
     MetricData metricData =
         MetricData.create(
-            DOUBLE_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            MetricData.Type.NON_MONOTONIC_DOUBLE,
             Collections.singletonList(DOUBLE_POINT));
     assertThat(metricData.getPoints()).containsExactly(DOUBLE_POINT);
   }

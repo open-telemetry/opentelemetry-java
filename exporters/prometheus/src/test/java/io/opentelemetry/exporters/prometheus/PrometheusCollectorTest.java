@@ -25,7 +25,6 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.CollectorRegistry;
@@ -67,16 +66,21 @@ class PrometheusCollectorTest {
   private static ImmutableList<MetricData> generateTestData() {
     return ImmutableList.of(
         MetricData.create(
-            Descriptor.create("grpc.name", "long_description", "1", Descriptor.Type.MONOTONIC_LONG),
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("grpc", "version"),
+            "grpc.name",
+            "long_description",
+            "1",
+            MetricData.Type.MONOTONIC_LONG,
             Collections.singletonList(
                 MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
         MetricData.create(
-            Descriptor.create(
-                "http.name", "double_description", "1", Descriptor.Type.MONOTONIC_DOUBLE),
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("http", "version"),
+            "http.name",
+            "double_description",
+            "1",
+            MetricData.Type.MONOTONIC_DOUBLE,
             Collections.singletonList(
                 MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5))));
   }

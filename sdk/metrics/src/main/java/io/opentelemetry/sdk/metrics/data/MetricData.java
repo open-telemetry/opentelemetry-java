@@ -32,12 +32,27 @@ import javax.annotation.concurrent.Immutable;
 public abstract class MetricData {
   MetricData() {}
 
-  /**
-   * Returns the {@link Descriptor} of this metric.
-   *
-   * @return the {@code Descriptor} of this metric.
-   */
-  public abstract Descriptor getDescriptor();
+  /** The kind of metric. It describes how the data is reported. */
+  public enum Type {
+    /** An instantaneous measurement of a long (int64) value. Reports {@link LongPoint} points. */
+    NON_MONOTONIC_LONG,
+
+    /** An instantaneous measurement of a double value. Reports {@link DoublePoint} points. */
+    NON_MONOTONIC_DOUBLE,
+
+    /** An cumulative measurement of an long (int64) value. Reports {@link LongPoint} points. */
+    MONOTONIC_LONG,
+
+    /** An cumulative measurement of a double value. Reports {@link DoublePoint} points. */
+    MONOTONIC_DOUBLE,
+
+    /**
+     * A Summary of measurements of numeric values, containing the minimum value recorded, the
+     * maximum value recorded, the sum of all measurements and the total number of measurements
+     * recorded.
+     */
+    SUMMARY,
+  }
 
   /**
    * Returns the resource of this {@code MetricData}.
@@ -55,21 +70,53 @@ public abstract class MetricData {
   public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 
   /**
+   * Returns the metric name.
+   *
+   * @return the metric name.
+   */
+  public abstract String getName();
+
+  /**
+   * Returns the description of this metric.
+   *
+   * @return the description of this metric.
+   */
+  public abstract String getDescription();
+
+  /**
+   * Returns the unit of this metric.
+   *
+   * @return the unit of this metric.
+   */
+  public abstract String getUnit();
+
+  /**
+   * Returns the type of this metric.
+   *
+   * @return the type of this metric.
+   */
+  public abstract Type getType();
+
+  /**
    * Returns the data {@link Point}s for this metric.
    *
    * <p>Only one type of points are available at any moment for a {@link MetricData}, and the type
-   * is determined by the {@link Descriptor.Type}.
+   * is determined by the {@link Type}.
    *
    * @return the data {@link Point}s for this metric, or empty {@code Collection} if no points.
    */
   public abstract Collection<Point> getPoints();
 
   public static MetricData create(
-      Descriptor descriptor,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      Type type,
       Collection<Point> points) {
-    return new AutoValue_MetricData(descriptor, resource, instrumentationLibraryInfo, points);
+    return new AutoValue_MetricData(
+        resource, instrumentationLibraryInfo, name, description, unit, type, points);
   }
 
   @Immutable
@@ -211,69 +258,6 @@ public abstract class MetricData {
 
     public static ValueAtPercentile create(double percentile, double value) {
       return new AutoValue_MetricData_ValueAtPercentile(percentile, value);
-    }
-  }
-
-  /** {@link Descriptor} defines metadata about the {@code MetricData} type and its schema. */
-  @Immutable
-  @AutoValue
-  public abstract static class Descriptor {
-
-    Descriptor() {}
-
-    /** The kind of metric. It describes how the data is reported. */
-    public enum Type {
-
-      /** An instantaneous measurement of a long (int64) value. Reports {@link LongPoint} points. */
-      NON_MONOTONIC_LONG,
-
-      /** An instantaneous measurement of a double value. Reports {@link DoublePoint} points. */
-      NON_MONOTONIC_DOUBLE,
-
-      /** An cumulative measurement of an long (int64) value. Reports {@link LongPoint} points. */
-      MONOTONIC_LONG,
-
-      /** An cumulative measurement of a double value. Reports {@link DoublePoint} points. */
-      MONOTONIC_DOUBLE,
-
-      /**
-       * A Summary of measurements of numeric values, containing the minimum value recorded, the
-       * maximum value recorded, the sum of all measurements and the total number of measurements
-       * recorded.
-       */
-      SUMMARY,
-    }
-
-    /**
-     * Returns the metric descriptor name.
-     *
-     * @return the metric descriptor name.
-     */
-    public abstract String getName();
-
-    /**
-     * Returns the description of this metric descriptor.
-     *
-     * @return the description of this metric descriptor.
-     */
-    public abstract String getDescription();
-
-    /**
-     * Returns the unit of this metric descriptor.
-     *
-     * @return the unit of this metric descriptor.
-     */
-    public abstract String getUnit();
-
-    /**
-     * Returns the type of this metric descriptor.
-     *
-     * @return the type of this metric descriptor.
-     */
-    public abstract Type getType();
-
-    public static Descriptor create(String name, String description, String unit, Type type) {
-      return new AutoValue_MetricData_Descriptor(name, description, unit, type);
     }
   }
 }

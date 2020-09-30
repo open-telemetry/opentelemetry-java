@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -75,13 +74,10 @@ class DoubleUpDownCounterSdkTest {
     List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
-    assertThat(metricData.getDescriptor())
-        .isEqualTo(
-            Descriptor.create(
-                "testUpDownCounter",
-                "My very own counter",
-                "ms",
-                Descriptor.Type.NON_MONOTONIC_DOUBLE));
+    assertThat(metricData.getName()).isEqualTo("testUpDownCounter");
+    assertThat(metricData.getDescription()).isEqualTo("My very own counter");
+    assertThat(metricData.getUnit()).isEqualTo("ms");
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.NON_MONOTONIC_DOUBLE);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -118,7 +114,7 @@ class DoubleUpDownCounterSdkTest {
     doubleUpDownCounter1.add(12.1d);
 
     assertThat(doubleUpDownCounter.collectAll().get(0))
-        .isEqualToIgnoringGivenFields(doubleUpDownCounter1.collectAll().get(0), "descriptor");
+        .isEqualToIgnoringGivenFields(doubleUpDownCounter1.collectAll().get(0), "name");
   }
 
   @Test
