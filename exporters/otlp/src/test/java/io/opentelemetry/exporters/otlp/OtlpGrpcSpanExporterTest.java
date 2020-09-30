@@ -17,6 +17,7 @@
 package io.opentelemetry.exporters.otlp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
@@ -30,6 +31,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
@@ -138,12 +140,14 @@ class OtlpGrpcSpanExporterTest {
 
     try {
       TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
-          .isTrue();
+      CompletableResultCode result1 =
+          exporter.export(Collections.singletonList(generateFakeSpan()));
+      await().untilAsserted(() -> assertThat(result1.isSuccess()).isTrue());
 
       TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
-          .isTrue();
+      CompletableResultCode result2 =
+          exporter.export(Collections.singletonList(generateFakeSpan()));
+      await().untilAsserted(() -> assertThat(result2.isSuccess()).isTrue());
     } finally {
       exporter.shutdown();
     }

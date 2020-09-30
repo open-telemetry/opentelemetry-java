@@ -28,7 +28,6 @@ dependencies {
         "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     testImplementation libraries.testcontainers,
-        libraries.awaitility,
         libraries.rest_assured
 
     signature "org.codehaus.mojo.signature:java18:1.0@signature"
