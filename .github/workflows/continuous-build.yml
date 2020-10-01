@@ -37,6 +37,7 @@ jobs:
       - uses: burrunan/gradle-cache-action@v1.5
         with:
           job-id: jdk${{ matrix.java }}
+          remote-build-cache-proxy-enabled: false
           arguments: check --stacktrace ${{ matrix.coverage && ':opentelemetry-all:jacocoTestReport' || '' }}
           properties: |
             enable.docker.tests=${{ matrix.os == 'ubuntu-latest' }}
