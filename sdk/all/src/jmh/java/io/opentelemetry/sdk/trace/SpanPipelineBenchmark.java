@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -51,7 +50,6 @@ import org.openjdk.jmh.annotations.Warmup;
 public class SpanPipelineBenchmark {
 
   private static final AttributeKey<String> LINK_ATTRIBUTE_KEY = stringKey("linkAttr");
-  private static final AttributeKey<Boolean> FINALIZED_KEY = booleanKey("finalized");
   private static final AttributeKey<String> OPERATION_KEY = stringKey("operation");
   private static final AttributeKey<Long> LONG_ATTRIBUTE_KEY = longKey("longAttribute");
   private static final AttributeKey<String> STRING_ATTRIBUTE_KEY = stringKey("stringAttribute");
@@ -92,7 +90,6 @@ public class SpanPipelineBenchmark {
     span.setStatus(Status.OK);
 
     span.addEvent("testEvent");
-    span.addEvent(new TestEvent());
     span.end();
   }
 
@@ -123,18 +120,6 @@ public class SpanPipelineBenchmark {
     @Override
     public Attributes getAttributes() {
       return Attributes.of(LINK_ATTRIBUTE_KEY, "linkValue");
-    }
-  }
-
-  private static class TestEvent implements Event {
-    @Override
-    public String getName() {
-      return "ended";
-    }
-
-    @Override
-    public Attributes getAttributes() {
-      return Attributes.of(FINALIZED_KEY, true);
     }
   }
 }

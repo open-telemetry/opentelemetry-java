@@ -56,9 +56,6 @@ class DefaultSpanTest {
     span.addEvent("event", 0);
     span.addEvent("event", Attributes.of(booleanKey("MyBooleanAttributeKey"), true));
     span.addEvent("event", Attributes.of(booleanKey("MyBooleanAttributeKey"), true), 0);
-    span.addEvent(new TestEvent());
-    span.addEvent(new TestEvent(), 0);
-    span.addEvent((Event) null);
     span.setStatus(Status.OK);
     span.recordException(new IllegalStateException());
     span.recordException(new IllegalStateException(), Attributes.empty());
@@ -71,17 +68,5 @@ class DefaultSpanTest {
   void defaultSpan_ToString() {
     Span span = DefaultSpan.getInvalid();
     assertThat(span.toString()).isEqualTo("DefaultSpan");
-  }
-
-  static final class TestEvent implements Event {
-    @Override
-    public String getName() {
-      return "name";
-    }
-
-    @Override
-    public Attributes getAttributes() {
-      return Attributes.empty();
-    }
   }
 }
