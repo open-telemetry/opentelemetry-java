@@ -161,7 +161,7 @@ public interface Span {
   }
 
   /**
-   * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
+   * Adds an event to the {@link Span}. The timestamp of the event will be the current time.
    *
    * @param name the name of the event.
    * @since 0.1.0
@@ -184,8 +184,8 @@ public interface Span {
   void addEvent(String name, long timestamp);
 
   /**
-   * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the *
-   * {@link Event} will be the current time.
+   * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the event
+   * will be the current time.
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
