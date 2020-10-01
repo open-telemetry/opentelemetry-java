@@ -36,7 +36,7 @@ import javax.annotation.concurrent.Immutable;
  *   public void testCondition() {
  *     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build()
  *     InMemoryTracing tracing =
- *         InMemoryTracing.builder().setTracerSdkProvider(tracerSdkProvider).build();
+ *         InMemoryTracing.builder().setTracerSdkManagement(tracerSdkProvider).build();
  *     Tracer tracer = tracerSdkProvider.getTracer("MyTestClass");
  *     tracer.spanBuilder("span").startSpan().end();
  *

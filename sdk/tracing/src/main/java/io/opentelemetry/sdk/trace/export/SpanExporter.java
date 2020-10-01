@@ -52,7 +52,7 @@ public interface SpanExporter {
 
   /**
    * Called when {@link TracerSdkManagement#shutdown()} is called, if this {@code SpanExporter} is
-   * register to a {@code TracerSdkProvider} object.
+   * registered to a {@code TracerSdkManagement} object.
    *
    * @return a {@link CompletableResultCode} which is completed when shutdown completes.
    */
