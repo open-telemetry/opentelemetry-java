@@ -29,10 +29,8 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Event;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +48,6 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanPipelineBenchmark {
 
-  private static final AttributeKey<String> LINK_ATTRIBUTE_KEY = stringKey("linkAttr");
   private static final AttributeKey<Boolean> FINALIZED_KEY = booleanKey("finalized");
   private static final AttributeKey<String> OPERATION_KEY = stringKey("operation");
   private static final AttributeKey<Long> LONG_ATTRIBUTE_KEY = longKey("longAttribute");
@@ -82,7 +79,6 @@ public class SpanPipelineBenchmark {
             .spanBuilder("benchmarkSpan")
             .setSpanKind(Kind.CLIENT)
             .setAttribute("key", "value")
-            .addLink(new TestLink())
             .startSpan();
     span.addEvent("started", Attributes.of(OPERATION_KEY, "some_work"));
     span.setAttribute(LONG_ATTRIBUTE_KEY, 33L);
@@ -111,18 +107,6 @@ public class SpanPipelineBenchmark {
     public CompletableResultCode shutdown() {
       // no-op
       return CompletableResultCode.ofSuccess();
-    }
-  }
-
-  private static class TestLink implements Link {
-    @Override
-    public SpanContext getContext() {
-      return SpanContext.getInvalid();
-    }
-
-    @Override
-    public Attributes getAttributes() {
-      return Attributes.of(LINK_ATTRIBUTE_KEY, "linkValue");
     }
   }
 

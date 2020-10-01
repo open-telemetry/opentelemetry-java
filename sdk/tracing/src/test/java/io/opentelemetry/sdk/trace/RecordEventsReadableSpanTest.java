@@ -85,7 +85,7 @@ class RecordEventsReadableSpanTest {
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<AttributeKey, Object> attributes = new HashMap<>();
   private Attributes expectedAttributes;
-  private final io.opentelemetry.trace.Link link = Link.create(spanContext);
+  private final Link link = Link.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
 
   private TestClock testClock;
@@ -124,35 +124,6 @@ class RecordEventsReadableSpanTest {
         START_EPOCH_NANOS,
         Status.UNSET,
         /*hasEnded=*/ true);
-  }
-
-  @Test
-  void lazyLinksAreResolved() {
-    final Attributes attributes = Attributes.of(stringKey("attr"), "val");
-    io.opentelemetry.trace.Link link =
-        new io.opentelemetry.trace.Link() {
-          @Override
-          public SpanContext getContext() {
-            return spanContext;
-          }
-
-          @Override
-          public Attributes getAttributes() {
-            return attributes;
-          }
-        };
-    RecordEventsReadableSpan span =
-        createTestSpan(
-            Kind.CLIENT,
-            TraceConfig.getDefault(),
-            parentSpanId,
-            null,
-            Collections.singletonList(link));
-
-    Link resultingLink = span.toSpanData().getLinks().get(0);
-    assertThat(resultingLink.getTotalAttributeCount()).isEqualTo(1);
-    assertThat(resultingLink.getContext()).isSameAs(spanContext);
-    assertThat(resultingLink.getAttributes()).isEqualTo(attributes);
   }
 
   @Test
@@ -799,7 +770,7 @@ class RecordEventsReadableSpanTest {
       TraceConfig config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links) {
+      List<Link> links) {
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
