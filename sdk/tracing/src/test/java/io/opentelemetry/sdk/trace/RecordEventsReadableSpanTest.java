@@ -24,7 +24,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.EventImpl;
+import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -133,7 +133,8 @@ class RecordEventsReadableSpanTest {
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
       Event event =
-          EventImpl.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+          ImmutableEvent.create(
+              START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
       verifySpanData(
           spanData,
           expectedAttributes,
@@ -162,7 +163,8 @@ class RecordEventsReadableSpanTest {
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
     Event event =
-        EventImpl.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+        ImmutableEvent.create(
+            START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
     verifySpanData(
         spanData,
         expectedAttributes,
@@ -192,7 +194,7 @@ class RecordEventsReadableSpanTest {
 
     assertThrows(
         UnsupportedOperationException.class,
-        () -> spanData.getEvents().add(EventImpl.create(1000, "test", Attributes.empty())));
+        () -> spanData.getEvents().add(ImmutableEvent.create(1000, "test", Attributes.empty())));
   }
 
   @Test
@@ -563,7 +565,7 @@ class RecordEventsReadableSpanTest {
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
         Event expectedEvent =
-            EventImpl.create(
+            ImmutableEvent.create(
                 START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
                 "event2",
                 Attributes.empty(),
@@ -578,7 +580,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
       Event expectedEvent =
-          EventImpl.create(
+          ImmutableEvent.create(
               START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
               "event2",
               Attributes.empty(),
@@ -859,9 +861,9 @@ class RecordEventsReadableSpanTest {
 
     List<Event> events =
         Arrays.asList(
-            EventImpl.create(
+            ImmutableEvent.create(
                 firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
-            EventImpl.create(
+            ImmutableEvent.create(
                 secondEventTimeNanos, "event2", event2Attributes, event2Attributes.size()));
 
     SpanData result = readableSpan.toSpanData();

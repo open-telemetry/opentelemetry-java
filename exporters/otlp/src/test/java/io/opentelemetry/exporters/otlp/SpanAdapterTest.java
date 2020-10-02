@@ -23,7 +23,7 @@ import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventImpl;
+import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -63,7 +63,7 @@ class SpanAdapterTest {
                 .setTotalAttributeCount(2)
                 .setEvents(
                     Collections.singletonList(
-                        EventImpl.create(12347, "my_event", Attributes.empty())))
+                        ImmutableEvent.create(12347, "my_event", Attributes.empty())))
                 .setTotalRecordedEvents(3)
                 .setLinks(Collections.singletonList(ImmutableLink.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
@@ -130,7 +130,7 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                EventImpl.create(12345, "test_without_attributes", Attributes.empty())))
+                ImmutableEvent.create(12345, "test_without_attributes", Attributes.empty())))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -142,7 +142,7 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                EventImpl.create(
+                ImmutableEvent.create(
                     12345,
                     "test_with_attributes",
                     Attributes.of(stringKey("key_string"), "string"),

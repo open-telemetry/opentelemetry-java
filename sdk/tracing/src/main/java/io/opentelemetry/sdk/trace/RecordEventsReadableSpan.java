@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.EventImpl;
+import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.EndSpanOptions;
@@ -83,7 +83,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
-  private final EvictingQueue<EventImpl> events;
+  private final EvictingQueue<ImmutableEvent> events;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
@@ -321,7 +321,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(EventImpl.create(clock.now(), name, Attributes.empty(), 0));
+    addTimedEvent(ImmutableEvent.create(clock.now(), name, Attributes.empty(), 0));
   }
 
   @Override
@@ -329,7 +329,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(EventImpl.create(timestamp, name, Attributes.empty(), 0));
+    addTimedEvent(ImmutableEvent.create(timestamp, name, Attributes.empty(), 0));
   }
 
   @Override
@@ -339,7 +339,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        EventImpl.create(
+        ImmutableEvent.create(
             clock.now(),
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
@@ -353,7 +353,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        EventImpl.create(
+        ImmutableEvent.create(
             timestamp,
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
@@ -370,7 +370,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return result.build();
   }
 
-  private void addTimedEvent(EventImpl timedEvent) {
+  private void addTimedEvent(ImmutableEvent timedEvent) {
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");

@@ -12,7 +12,7 @@ import javax.annotation.concurrent.Immutable;
 /** An immutable implementation of the {@link SpanData.Event}. */
 @Immutable
 @AutoValue
-public abstract class EventImpl implements SpanData.Event {
+public abstract class ImmutableEvent implements SpanData.Event {
 
   /**
    * Returns a new immutable {@code Event}.
@@ -22,8 +22,8 @@ public abstract class EventImpl implements SpanData.Event {
    * @param attributes the attributes of the {@code Event}.
    * @return a new immutable {@code Event<T>}
    */
-  public static EventImpl create(long epochNanos, String name, Attributes attributes) {
-    return new AutoValue_EventImpl(name, attributes, epochNanos, attributes.size());
+  public static ImmutableEvent create(long epochNanos, String name, Attributes attributes) {
+    return new AutoValue_ImmutableEvent(name, attributes, epochNanos, attributes.size());
   }
 
   /**
@@ -35,10 +35,10 @@ public abstract class EventImpl implements SpanData.Event {
    * @param totalAttributeCount the total number of attributes for this {@code} Event.
    * @return a new immutable {@code Event<T>}
    */
-  public static EventImpl create(
+  public static ImmutableEvent create(
       long epochNanos, String name, Attributes attributes, int totalAttributeCount) {
-    return new AutoValue_EventImpl(name, attributes, epochNanos, totalAttributeCount);
+    return new AutoValue_ImmutableEvent(name, attributes, epochNanos, totalAttributeCount);
   }
 
-  EventImpl() {}
+  ImmutableEvent() {}
 }

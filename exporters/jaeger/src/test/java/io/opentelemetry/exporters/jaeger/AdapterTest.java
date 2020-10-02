@@ -24,7 +24,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventImpl;
+import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -123,7 +123,7 @@ class AdapterTest {
   @Test
   void testJaegerLog() {
     // prepare
-    EventImpl event = getTimedEvent();
+    ImmutableEvent event = getTimedEvent();
 
     // test
     Model.Log log = Adapter.toJaegerLog(event);
@@ -262,10 +262,10 @@ class AdapterTest {
     assertTrue(error.getVBool());
   }
 
-  private static EventImpl getTimedEvent() {
+  private static ImmutableEvent getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     Attributes attributes = Attributes.of(stringKey("foo"), "bar");
-    return EventImpl.create(epochNanos, "the log message", attributes);
+    return ImmutableEvent.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {

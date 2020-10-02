@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.trace.data.EventImpl;
+import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
@@ -54,7 +54,7 @@ class TestSpanDataTest {
 
     assertThrows(
         UnsupportedOperationException.class,
-        () -> spanData.getEvents().add(EventImpl.create(1234, "foo", Attributes.empty())));
+        () -> spanData.getEvents().add(ImmutableEvent.create(1234, "foo", Attributes.empty())));
   }
 
   @Test
@@ -83,13 +83,13 @@ class TestSpanDataTest {
 
   @Test
   void timedEvent_defaultTotalAttributeCountIsZero() {
-    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty());
+    ImmutableEvent event = ImmutableEvent.create(START_EPOCH_NANOS, "foo", Attributes.empty());
     assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   void timedEvent_canSetTotalAttributeCount() {
-    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty(), 123);
+    ImmutableEvent event = ImmutableEvent.create(START_EPOCH_NANOS, "foo", Attributes.empty(), 123);
     assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 
