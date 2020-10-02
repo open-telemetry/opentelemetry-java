@@ -31,12 +31,12 @@ import org.junit.jupiter.api.Test;
 class InMemoryTracingTest {
   private final TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
   private final InMemoryTracing tracing =
-      InMemoryTracing.builder().setTracerProvider(tracerSdkProvider).build();
+      InMemoryTracing.builder().setTracerSdkManagement(tracerSdkProvider).build();
   private final Tracer tracer = tracerSdkProvider.get("InMemoryTracing");
 
   @Test
   void defaultInstance() {
-    assertThat(tracing.getTracerProvider()).isSameAs(tracerSdkProvider);
+    assertThat(tracing.getTracerSdkManagement()).isSameAs(tracerSdkProvider);
     assertThat(tracing.getSpanExporter().getFinishedSpanItems()).hasSize(0);
   }
 
@@ -44,7 +44,7 @@ class InMemoryTracingTest {
   void ctor_nullTracer() {
     assertThrows(
         NullPointerException.class,
-        () -> InMemoryTracing.builder().setTracerProvider(null).build(),
+        () -> InMemoryTracing.builder().setTracerSdkManagement(null).build(),
         "tracerProvider");
   }
 

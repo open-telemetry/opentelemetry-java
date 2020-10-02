@@ -34,10 +34,10 @@ import javax.annotation.concurrent.Immutable;
  * Class that holds global trace parameters.
  *
  * <p>Note: To update the TraceConfig associated with a {@link
- * io.opentelemetry.sdk.trace.TracerSdkProvider}, you should use the {@link #toBuilder()} method on
- * the TraceConfig currently assigned to the provider, make the changes desired to the {@link
+ * io.opentelemetry.sdk.trace.TracerSdkManagement}, you should use the {@link #toBuilder()} method
+ * on the TraceConfig currently assigned to the provider, make the changes desired to the {@link
  * Builder} instance, then use the {@link
- * io.opentelemetry.sdk.trace.TracerSdkProvider#updateActiveTraceConfig(TraceConfig)} with the
+ * io.opentelemetry.sdk.trace.TracerSdkManagement#updateActiveTraceConfig(TraceConfig)} with the
  * resulting TraceConfig instance.
  *
  * <p>Configuration options for {@link TraceConfig} can be read from system properties, environment

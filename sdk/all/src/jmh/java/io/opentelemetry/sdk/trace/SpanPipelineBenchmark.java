@@ -21,6 +21,7 @@ import static io.opentelemetry.common.AttributesKeys.doubleKey;
 import static io.opentelemetry.common.AttributesKeys.longKey;
 import static io.opentelemetry.common.AttributesKeys.stringKey;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -31,6 +32,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.Tracer;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -52,12 +54,12 @@ public class SpanPipelineBenchmark {
   private static final AttributeKey<String> STRING_ATTRIBUTE_KEY = stringKey("stringAttribute");
   private static final AttributeKey<Double> DOUBLE_ATTRIBUTE_KEY = doubleKey("doubleAttribute");
   private static final AttributeKey<Boolean> BOOLEAN_ATTRIBUTE_KEY = booleanKey("booleanAttribute");
-  private final TracerSdk tracerSdk = OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
+  private final Tracer tracer = OpenTelemetry.getTracerProvider().get("benchmarkTracer");
 
   @Setup(Level.Trial)
   public final void setup() {
     SpanExporter exporter = new NoOpSpanExporter();
-    OpenTelemetrySdk.getTracerProvider()
+    OpenTelemetrySdk.getTracerManagement()
         .addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
 
@@ -73,7 +75,7 @@ public class SpanPipelineBenchmark {
 
   private void doWork() {
     Span span =
-        tracerSdk
+        tracer
             .spanBuilder("benchmarkSpan")
             .setSpanKind(Kind.CLIENT)
             .setAttribute("key", "value")

@@ -20,12 +20,12 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * This class provides a static global accessor for SDK telemetry objects {@link TracerSdkProvider},
- * {@link MeterSdkProvider} and {@link BaggageManagerSdk}.
+ * This class provides a static global accessor for SDK telemetry objects {@link
+ * TracerSdkManagement}, {@link MeterSdkProvider} and {@link BaggageManagerSdk}.
  *
  * <p>This is a convenience class getting and casting the telemetry objects from {@link
  * OpenTelemetry}.
@@ -35,12 +35,12 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OpenTelemetrySdk {
   /**
-   * Returns a {@link TracerSdkProvider}.
+   * Returns a {@link TracerSdkManagement}.
    *
-   * @return TracerProvider returned by {@link OpenTelemetry#getTracerProvider()}.
+   * @return TracerSdkManagement for managing your Tracing SDK.
    */
-  public static TracerSdkProvider getTracerProvider() {
-    return (TracerSdkProvider) ((Obfuscated<?>) OpenTelemetry.getTracerProvider()).unobfuscate();
+  public static TracerSdkManagement getTracerManagement() {
+    return (TracerSdkManagement) ((Obfuscated<?>) OpenTelemetry.getTracerProvider()).unobfuscate();
   }
 
   /**

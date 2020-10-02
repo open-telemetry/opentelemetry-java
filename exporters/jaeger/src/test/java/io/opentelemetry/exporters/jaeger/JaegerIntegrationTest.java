@@ -75,7 +75,7 @@ class JaegerIntegrationTest {
             .setChannel(jaegerChannel)
             .setDeadlineMs(30000)
             .build();
-    OpenTelemetrySdk.getTracerProvider()
+    OpenTelemetrySdk.getTracerManagement()
         .addSpanProcessor(SimpleSpanProcessor.newBuilder(jaegerExporter).build());
   }
 
