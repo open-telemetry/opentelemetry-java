@@ -19,9 +19,7 @@ class LongCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
-
-  private final Meter meter = OpenTelemetry.getMeter("LongCounterTest");
+  private static final Meter meter = OpenTelemetry.getMeter("LongCounterTest");
 
   @Test
   void preventNull_Name() {
@@ -46,7 +44,7 @@ class LongCounterTest {
 
   @Test
   void preventTooLongName() {
-    char[] chars = new char[StringUtils.NAME_MAX_LENGTH + 1];
+    char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     assertThrows(
@@ -69,14 +67,6 @@ class LongCounterTest {
         NullPointerException.class,
         () -> meter.longCounterBuilder("metric").setUnit(null).build(),
         "unit");
-  }
-
-  @Test
-  void preventNull_ConstantLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longCounterBuilder("metric").setConstantLabels(null).build(),
-        "constantLabels");
   }
 
   @Test
@@ -116,12 +106,7 @@ class LongCounterTest {
   @Test
   void bound_DoesNotThrow() {
     LongCounter longCounter =
-        meter
-            .longCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     BoundLongCounter bound = longCounter.bind(Labels.empty());
     bound.add(1);
     bound.unbind();
@@ -130,12 +115,7 @@ class LongCounterTest {
   @Test
   void bound_PreventNegativeValue() {
     LongCounter longCounter =
-        meter
-            .longCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     BoundLongCounter bound = longCounter.bind(Labels.empty());
     try {
       assertThrows(

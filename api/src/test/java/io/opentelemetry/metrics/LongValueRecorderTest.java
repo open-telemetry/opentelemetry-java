@@ -20,9 +20,7 @@ public final class LongValueRecorderTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
-
-  private final Meter meter = OpenTelemetry.getMeter("LongValueRecorderTest");
+  private static final Meter meter = OpenTelemetry.getMeter("LongValueRecorderTest");
 
   @Test
   void preventNull_Name() {
@@ -73,14 +71,6 @@ public final class LongValueRecorderTest {
   }
 
   @Test
-  void preventNull_ConstantLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longValueRecorderBuilder("metric").setConstantLabels(null).build(),
-        "constantLabels");
-  }
-
-  @Test
   void record_PreventNullLabels() {
     assertThrows(
         NullPointerException.class,
@@ -91,12 +81,7 @@ public final class LongValueRecorderTest {
   @Test
   void record_DoesNotThrow() {
     LongValueRecorder longValueRecorder =
-        meter
-            .longValueRecorderBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.longValueRecorderBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     longValueRecorder.record(5, Labels.empty());
     longValueRecorder.record(-5, Labels.empty());
     longValueRecorder.record(5);
@@ -114,12 +99,7 @@ public final class LongValueRecorderTest {
   @Test
   void bound_DoesNotThrow() {
     LongValueRecorder longValueRecorder =
-        meter
-            .longValueRecorderBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.longValueRecorderBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     BoundLongValueRecorder bound = longValueRecorder.bind(Labels.empty());
     bound.record(5);
     bound.record(-5);

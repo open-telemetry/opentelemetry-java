@@ -8,16 +8,16 @@ package io.opentelemetry.sdk;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import org.junit.jupiter.api.Test;
 
 class OpenTelemetrySdkTest {
 
   @Test
   void testDefault() {
-    assertThat(OpenTelemetrySdk.getTracerProvider().get(""))
+    assertThat(((TracerSdkProvider) OpenTelemetrySdk.getTracerManagement()).get(""))
         .isSameAs(OpenTelemetry.getTracerProvider().get(""));
-    assertThat(OpenTelemetrySdk.getCorrelationContextManager())
-        .isSameAs(OpenTelemetry.getCorrelationContextManager());
+    assertThat(OpenTelemetrySdk.getBaggageManager()).isSameAs(OpenTelemetry.getBaggageManager());
     assertThat(OpenTelemetrySdk.getMeterProvider()).isSameAs(OpenTelemetry.getMeterProvider());
   }
 

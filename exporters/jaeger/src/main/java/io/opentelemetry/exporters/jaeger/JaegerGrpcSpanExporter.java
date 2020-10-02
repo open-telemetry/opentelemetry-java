@@ -177,8 +177,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
 
   /** Builder utility for this exporter. */
   public static class Builder extends ConfigBuilder<Builder> {
-    private static final String KEY_SERVICE_NAME = "otel.jaeger.service.name";
-    private static final String KEY_ENDPOINT = "otel.jaeger.endpoint";
+    private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";
+    private static final String KEY_ENDPOINT = "otel.exporter.jaeger.endpoint";
 
     private String serviceName = DEFAULT_SERVICE_NAME;
     private String endpoint = DEFAULT_ENDPOINT;

@@ -5,17 +5,22 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
+
 import com.google.common.collect.EvictingQueue;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.TimedEvent.RawTimedEventWithEvent;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -30,7 +35,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -55,7 +59,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
   // List of recorded links to parent and child spans.
-  private final List<io.opentelemetry.trace.Link> links;
+  private final List<Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
 
@@ -80,14 +84,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
-  private final EvictingQueue<TimedEvent> events;
+  private final EvictingQueue<EventImpl> events;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
-  private Status status;
+  private Status status = Status.UNSET;
   // The end time of the span.
   @GuardedBy("lock")
   private long endEpochNanos;
@@ -107,7 +111,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links,
+      List<Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
@@ -143,7 +147,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param clock the clock used to get the time.
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
-   * @param links the links set during span creation, may be truncated.
+   * @param links the links set during span creation, may be truncated. The list MUST be immutable.
    * @return a new and started span.
    */
   static RecordEventsReadableSpan startSpan(
@@ -158,7 +162,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links,
+      List<Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     RecordEventsReadableSpan span =
@@ -189,7 +193,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     synchronized (lock) {
       return SpanWrapper.create(
           this,
-          getImmutableLinks(),
+          links,
           getImmutableTimedEvents(),
           getImmutableAttributes(),
           (attributes == null) ? 0 : attributes.getTotalAddedValues(),
@@ -273,27 +277,27 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public void setAttribute(String key, String value) {
-    setAttribute(key, AttributeValue.stringAttributeValue(value));
+    setAttribute(stringKey(key), value);
   }
 
   @Override
   public void setAttribute(String key, long value) {
-    setAttribute(key, AttributeValue.longAttributeValue(value));
+    setAttribute(longKey(key), value);
   }
 
   @Override
   public void setAttribute(String key, double value) {
-    setAttribute(key, AttributeValue.doubleAttributeValue(value));
+    setAttribute(doubleKey(key), value);
   }
 
   @Override
   public void setAttribute(String key, boolean value) {
-    setAttribute(key, AttributeValue.booleanAttributeValue(value));
+    setAttribute(booleanKey(key), value);
   }
 
   @Override
-  public void setAttribute(String key, AttributeValue value) {
-    if (key == null || key.length() == 0) {
+  public <T> void setAttribute(AttributeKey<T> key, T value) {
+    if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
       return;
     }
     synchronized (lock) {
@@ -301,18 +305,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
-      if (value == null || value.isNull()) {
-        if (attributes != null) {
-          attributes.remove(key);
-        }
-        return;
-      }
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
 
       if (traceConfig.shouldTruncateStringAttributeValues()) {
-        value = StringUtils.truncateToSize(value, traceConfig.getMaxLengthOfAttributeValues());
+        value = StringUtils.truncateToSize(key, value, traceConfig.getMaxLengthOfAttributeValues());
       }
 
       attributes.put(key, value);
@@ -324,7 +322,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(TimedEvent.create(clock.now(), name, Attributes.empty(), 0));
+    addTimedEvent(EventImpl.create(clock.now(), name, Attributes.empty(), 0));
   }
 
   @Override
@@ -332,7 +330,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(TimedEvent.create(timestamp, name, Attributes.empty(), 0));
+    addTimedEvent(EventImpl.create(timestamp, name, Attributes.empty(), 0));
   }
 
   @Override
@@ -342,7 +340,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        TimedEvent.create(
+        EventImpl.create(
             clock.now(),
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
@@ -356,27 +354,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        TimedEvent.create(
+        EventImpl.create(
             timestamp,
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
-  }
-
-  @Override
-  public void addEvent(io.opentelemetry.trace.Event event) {
-    if (event == null) {
-      return;
-    }
-    addTimedEvent(TimedEvent.create(clock.now(), event));
-  }
-
-  @Override
-  public void addEvent(io.opentelemetry.trace.Event event, long timestamp) {
-    if (event == null) {
-      return;
-    }
-    addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
   static Attributes copyAndLimitAttributes(final Attributes attributes, final int limit) {
@@ -389,7 +371,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return result.build();
   }
 
-  private void addTimedEvent(TimedEvent timedEvent) {
+  private void addTimedEvent(EventImpl timedEvent) {
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
@@ -425,15 +407,20 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return;
     }
     long timestamp = clock.now();
-    Attributes.Builder attributes =
-        additionalAttributes != null ? additionalAttributes.toBuilder() : Attributes.newBuilder();
-    SemanticAttributes.EXCEPTION_TYPE.set(attributes, exception.getClass().getCanonicalName());
+
+    Attributes.Builder attributes = Attributes.newBuilder();
+    attributes.setAttribute(
+        SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
-      SemanticAttributes.EXCEPTION_MESSAGE.set(attributes, exception.getMessage());
+      attributes.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
     }
     StringWriter writer = new StringWriter();
     exception.printStackTrace(new PrintWriter(writer));
-    SemanticAttributes.EXCEPTION_STACKTRACE.set(attributes, writer.toString());
+    attributes.setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
+
+    if (additionalAttributes != null) {
+      attributes.addAll(additionalAttributes);
+    }
 
     addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
   }
@@ -491,7 +478,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   @GuardedBy("lock")
   private Status getStatusWithDefault() {
     synchronized (lock) {
-      return status == null ? Status.OK : status;
+      return status;
     }
   }
 
@@ -520,47 +507,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private List<Link> getImmutableLinks() {
-    if (links.isEmpty()) {
-      return Collections.emptyList();
-    }
-    List<Link> result = new ArrayList<>(links.size());
-    for (io.opentelemetry.trace.Link link : links) {
-      Link newLink;
-      if (!(link instanceof Link)) {
-        // Make a copy because the given Link may not be immutable and we may reference a lot of
-        // memory.
-        newLink = Link.create(link.getContext(), link.getAttributes());
-      } else {
-        newLink = (Link) link;
-      }
-      result.add(newLink);
-    }
-    return Collections.unmodifiableList(result);
-  }
-
-  @GuardedBy("lock")
   private List<Event> getImmutableTimedEvents() {
     if (events.isEmpty()) {
       return Collections.emptyList();
     }
 
-    List<Event> results = new ArrayList<>(events.size());
-    for (TimedEvent event : events) {
-      if (event instanceof RawTimedEventWithEvent) {
-        // make sure to copy the data if the event is wrapping another one,
-        // so we don't hold on the caller's memory
-        results.add(
-            TimedEvent.create(
-                event.getEpochNanos(),
-                event.getName(),
-                event.getAttributes(),
-                event.getTotalAttributeCount()));
-      } else {
-        results.add(event);
-      }
-    }
-    return Collections.unmodifiableList(results);
+    return Collections.unmodifiableList(new ArrayList<>(events));
   }
 
   @GuardedBy("lock")
@@ -574,11 +526,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return attributes;
     }
     // otherwise, make a copy of the data into an immutable container.
-    Attributes.Builder builder = Attributes.newBuilder();
-    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      builder.setAttribute(entry.getKey(), entry.getValue());
-    }
-    return builder.build();
+    return attributes.immutableCopy();
   }
 
   @Override
@@ -622,7 +570,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return sb.toString();
   }
 
-  private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private static class LimitingAttributeConsumer implements AttributeConsumer {
     private final int limit;
     private final Attributes.Builder builder;
     private int added;
@@ -633,7 +582,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
 
     @Override
-    public void consume(String key, AttributeValue value) {
+    public void consume(AttributeKey key, Object value) {
       if (added < limit) {
         builder.setAttribute(key, value);
         added++;

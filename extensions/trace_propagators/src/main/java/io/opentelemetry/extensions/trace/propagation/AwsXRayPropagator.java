@@ -65,6 +65,16 @@ public class AwsXRayPropagator implements TextMapPropagator {
 
   private static final List<String> FIELDS = Collections.singletonList(TRACE_HEADER_KEY);
 
+  private static final AwsXRayPropagator INSTANCE = new AwsXRayPropagator();
+
+  private AwsXRayPropagator() {
+    // singleton
+  }
+
+  public static AwsXRayPropagator getInstance() {
+    return INSTANCE;
+  }
+
   @Override
   public List<String> fields() {
     return FIELDS;
@@ -90,7 +100,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
             + TRACE_ID_DELIMITER
             + otTraceId.substring(TRACE_ID_FIRST_PART_LENGTH);
     String parentId = spanContext.getSpanIdAsHexString();
-    char samplingFlag = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
+    char samplingFlag = spanContext.isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 
     String traceHeader =
@@ -129,7 +139,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
 
     String traceId = TraceId.getInvalid();
     String spanId = SpanId.getInvalid();
-    TraceFlags traceFlags = TraceFlags.getDefault();
+    Boolean isSampled = false;
 
     int pos = 0;
     while (pos < traceHeader.length()) {
@@ -160,7 +170,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
       } else if (trimmedPart.startsWith(PARENT_ID_KEY)) {
         spanId = parseSpanId(value);
       } else if (trimmedPart.startsWith(SAMPLED_FLAG_KEY)) {
-        traceFlags = parseTraceFlag(value);
+        isSampled = parseTraceFlag(value);
       }
       // TODO: Put the arbitrary TraceHeader keys in OT trace state
     }
@@ -184,7 +194,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
-    if (traceFlags == null) {
+    if (isSampled == null) {
       logger.fine(
           "Invalid Sampling flag in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -194,6 +204,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
+    byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
     return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
@@ -230,7 +241,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
   }
 
   @Nullable
-  private static TraceFlags parseTraceFlag(String xraySampledFlag) {
+  private static Boolean parseTraceFlag(String xraySampledFlag) {
     if (xraySampledFlag.length() != SAMPLED_FLAG_LENGTH) {
       // Returning null as there is no invalid trace flag defined.
       return null;
@@ -238,9 +249,9 @@ public class AwsXRayPropagator implements TextMapPropagator {
 
     char flag = xraySampledFlag.charAt(0);
     if (flag == IS_SAMPLED) {
-      return TraceFlags.builder().setIsSampled(true).build();
+      return true;
     } else if (flag == NOT_SAMPLED) {
-      return TraceFlags.builder().setIsSampled(false).build();
+      return false;
     } else {
       return null;
     }

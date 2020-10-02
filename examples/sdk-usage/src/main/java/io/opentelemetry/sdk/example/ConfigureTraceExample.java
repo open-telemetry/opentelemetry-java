@@ -106,7 +106,6 @@ class ConfigureTraceExample {
           Kind spanKind,
           ReadableAttributes attributes,
           List<Link> parentLinks) {
-        // We sample only if the Span name contains "SAMPLE"
         return Samplers.emptySamplingResult(
             name.contains("SAMPLE") ? Decision.RECORD_AND_SAMPLED : Decision.NOT_RECORD);
       }

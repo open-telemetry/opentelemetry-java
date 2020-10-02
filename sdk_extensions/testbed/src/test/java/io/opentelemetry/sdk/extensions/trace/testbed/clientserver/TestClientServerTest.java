@@ -28,7 +28,7 @@ class TestClientServerTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(TestClientServerTest.class.getName());
   private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(10);
   private Server server;

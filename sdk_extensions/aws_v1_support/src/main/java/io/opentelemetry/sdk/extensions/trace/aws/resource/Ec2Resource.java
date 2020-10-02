@@ -72,14 +72,14 @@ public class Ec2Resource extends ResourceProvider {
     try {
       connection = (HttpURLConnection) url.openConnection();
     } catch (Exception e) {
-      logger.log(Level.WARNING, "Error connecting to IMDS.", e);
+      logger.log(Level.FINE, "Error connecting to IMDS.", e);
       return "";
     }
 
     try {
       connection.setRequestMethod(httpMethod);
     } catch (ProtocolException e) {
-      logger.log(Level.WARNING, "Unknown HTTP method, this is a programming bug.", e);
+      logger.log(Level.FINE, "Unknown HTTP method, this is a programming bug.", e);
       return "";
     }
 
@@ -97,13 +97,13 @@ public class Ec2Resource extends ResourceProvider {
     try {
       responseCode = connection.getResponseCode();
     } catch (Exception e) {
-      logger.log(Level.WARNING, "Error connecting to IMDS: ", e);
+      logger.log(Level.FINE, "Error connecting to IMDS: ", e);
       return "";
     }
 
     if (responseCode != 200) {
       logger.log(
-          Level.WARNING,
+          Level.FINE,
           "Error reponse from IMDS: code ("
               + responseCode
               + ") text "
@@ -149,6 +149,8 @@ public class Ec2Resource extends ResourceProvider {
     String hostname = fetchHostname(token);
 
     Attributes.Builder attrBuilders = Attributes.newBuilder();
+    attrBuilders.setAttribute(
+        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();
@@ -161,22 +163,22 @@ public class Ec2Resource extends ResourceProvider {
         String value = parser.nextTextValue();
         switch (parser.getCurrentName()) {
           case "instanceId":
-            ResourceAttributes.HOST_ID.set(attrBuilders, value);
+            attrBuilders.setAttribute(ResourceAttributes.HOST_ID, value);
             break;
           case "availabilityZone":
-            ResourceAttributes.CLOUD_ZONE.set(attrBuilders, value);
+            attrBuilders.setAttribute(ResourceAttributes.CLOUD_ZONE, value);
             break;
           case "instanceType":
-            ResourceAttributes.HOST_TYPE.set(attrBuilders, value);
+            attrBuilders.setAttribute(ResourceAttributes.HOST_TYPE, value);
             break;
           case "imageId":
-            ResourceAttributes.HOST_IMAGE_ID.set(attrBuilders, value);
+            attrBuilders.setAttribute(ResourceAttributes.HOST_IMAGE_ID, value);
             break;
           case "accountId":
-            ResourceAttributes.CLOUD_ACCOUNT.set(attrBuilders, value);
+            attrBuilders.setAttribute(ResourceAttributes.CLOUD_ACCOUNT, value);
             break;
           case "region":
-            ResourceAttributes.CLOUD_REGION.set(attrBuilders, value);
+            attrBuilders.setAttribute(ResourceAttributes.CLOUD_REGION, value);
             break;
           default:
             parser.skipChildren();
@@ -187,8 +189,8 @@ public class Ec2Resource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    ResourceAttributes.HOST_HOSTNAME.set(attrBuilders, hostname);
-    ResourceAttributes.HOST_NAME.set(attrBuilders, hostname);
+    attrBuilders.setAttribute(ResourceAttributes.HOST_HOSTNAME, hostname);
+    attrBuilders.setAttribute(ResourceAttributes.HOST_NAME, hostname);
 
     return attrBuilders.build();
   }

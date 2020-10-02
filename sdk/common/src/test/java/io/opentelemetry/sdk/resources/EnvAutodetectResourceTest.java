@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Attributes;
@@ -33,7 +33,7 @@ class EnvAutodetectResourceTest {
   @Test
   void parseResourceAttributes_single() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes("value=foo");
-    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    assertThat(result).isEqualTo(Attributes.of(stringKey("value"), "foo"));
   }
 
   @Test
@@ -42,20 +42,20 @@ class EnvAutodetectResourceTest {
     assertThat(result)
         .isEqualTo(
             Attributes.of(
-                "value", stringAttributeValue("foo"),
-                "other", stringAttributeValue("bar")));
+                stringKey("value"), "foo",
+                stringKey("other"), "bar"));
   }
 
   @Test
   void parseResourceAttributes_whitespace() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes(" value = foo ");
-    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    assertThat(result).isEqualTo(Attributes.of(stringKey("value"), "foo"));
   }
 
   @Test
   void parseResourceAttributes_quotes() {
     Attributes result = EnvAutodetectResource.parseResourceAttributes("value=\"foo\"");
-    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    assertThat(result).isEqualTo(Attributes.of(stringKey("value"), "foo"));
   }
 
   @Test
@@ -68,7 +68,7 @@ class EnvAutodetectResourceTest {
             .readSystemProperties()
             .build();
     Attributes result = (Attributes) resource.getAttributes();
-    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+    assertThat(result).isEqualTo(Attributes.of(stringKey("value"), "foo"));
     System.clearProperty(key);
   }
 
@@ -83,7 +83,7 @@ class EnvAutodetectResourceTest {
               .readSystemProperties()
               .build();
       Attributes result = (Attributes) resource.getAttributes();
-      assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
+      assertThat(result).isEqualTo(Attributes.of(stringKey("value"), "foo"));
     }
   }
 }

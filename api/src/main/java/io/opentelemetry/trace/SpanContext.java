@@ -12,9 +12,9 @@ import javax.annotation.concurrent.Immutable;
 /**
  * A class that represents a span context. A span context contains the state that must propagate to
  * child {@link Span}s and across process boundaries. It contains the identifiers (a {@link TraceId
- * trace_id} and {@link SpanId span_id}) associated with the {@link Span} and a set of {@link
- * TraceFlags options}, as well as the {@link TraceState traceState} and the {@link boolean remote}
- * flag.
+ * trace_id} and {@link SpanId span_id}) associated with the {@link Span} and a set of options
+ * (currently only whether the context is sampled or not), as well as the {@link TraceState
+ * traceState} and the {@link boolean remote} flag.
  *
  * @since 0.1.0
  */
@@ -43,22 +43,18 @@ public abstract class SpanContext {
    *
    * @param traceIdHex the trace identifier of the span context.
    * @param spanIdHex the span identifier of the span context.
-   * @param traceFlags the trace options for the span context.
+   * @param traceFlags the byte representation of the {@link TraceFlags}
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0
    */
   public static SpanContext create(
-      String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
+      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
     return create(traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ false);
   }
 
   private static SpanContext create(
-      String traceIdHex,
-      String spanIdHex,
-      TraceFlags traceFlags,
-      TraceState traceState,
-      boolean remote) {
+      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState, boolean remote) {
     return new AutoValue_SpanContext(
         traceIdHex, spanIdHex, traceFlags, traceState, /* remote$=*/ remote);
   }
@@ -69,13 +65,13 @@ public abstract class SpanContext {
    *
    * @param traceIdHex the trace identifier of the span context.
    * @param spanIdHex the span identifier of the span context.
-   * @param traceFlags the trace options for the span context.
+   * @param traceFlags the byte representation of the {@link TraceFlags}
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
+      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
     return create(traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true);
   }
 
@@ -125,13 +121,18 @@ public abstract class SpanContext {
     return SpanId.bytesFromHex(getSpanIdHex(), 0);
   }
 
-  /**
-   * Returns the {@code TraceFlags} associated with this {@code SpanContext}.
-   *
-   * @return the {@code TraceFlags} associated with this {@code SpanContext}.
-   * @since 0.1.0
-   */
-  public abstract TraceFlags getTraceFlags();
+  /** Whether the span in this context is sampled. */
+  public boolean isSampled() {
+    return (getTraceFlags() & 1) == 1;
+  }
+
+  /** The byte-representation of {@link TraceFlags}. */
+  public abstract byte getTraceFlags();
+
+  public void copyTraceFlagsHexTo(char[] dest, int destOffset) {
+    dest[destOffset] = '0';
+    dest[destOffset + 1] = isSampled() ? '1' : '0';
+  }
 
   /**
    * Returns the {@code TraceState} associated with this {@code SpanContext}.

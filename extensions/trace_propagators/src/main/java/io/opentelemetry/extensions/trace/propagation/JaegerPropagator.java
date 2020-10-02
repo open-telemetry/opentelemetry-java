@@ -8,7 +8,6 @@ package io.opentelemetry.extensions.trace.propagation;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -43,8 +42,8 @@ public class JaegerPropagator implements TextMapPropagator {
   private static final int MAX_SPAN_ID_LENGTH = SpanId.getHexLength();
   private static final int MAX_FLAGS_LENGTH = 2;
 
-  private static final char IS_SAMPLED = '1';
-  private static final char NOT_SAMPLED = '0';
+  private static final char IS_SAMPLED_CHAR = '1';
+  private static final char NOT_SAMPLED_CHAR = '0';
   private static final int PROPAGATION_HEADER_DELIMITER_SIZE = 1;
 
   private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
@@ -59,11 +58,20 @@ public class JaegerPropagator implements TextMapPropagator {
       PARENT_SPAN_ID_OFFSET + PARENT_SPAN_ID_SIZE + PROPAGATION_HEADER_DELIMITER_SIZE;
   private static final int PROPAGATION_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
-  private static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
-  private static final TraceFlags NOT_SAMPLED_FLAGS =
-      TraceFlags.builder().setIsSampled(false).build();
+  private static final byte SAMPLED = TraceFlags.getSampled();
+  private static final byte NOT_SAMPLED = TraceFlags.getDefault();
 
   private static final List<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
+
+  private static final JaegerPropagator INSTANCE = new JaegerPropagator();
+
+  private JaegerPropagator() {
+    // singleton
+  }
+
+  public static JaegerPropagator getInstance() {
+    return INSTANCE;
+  }
 
   @Override
   public List<String> fields() {
@@ -75,12 +83,10 @@ public class JaegerPropagator implements TextMapPropagator {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null || !span.getContext().isValid()) {
+    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    if (!spanContext.isValid()) {
       return;
     }
-
-    SpanContext spanContext = span.getContext();
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
 
@@ -98,7 +104,7 @@ public class JaegerPropagator implements TextMapPropagator {
     chars[PARENT_SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[PARENT_SPAN_ID_OFFSET] = DEPRECATED_PARENT_SPAN;
     chars[SAMPLED_FLAG_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
-    chars[SAMPLED_FLAG_OFFSET] = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
+    chars[SAMPLED_FLAG_OFFSET] = spanContext.isSampled() ? IS_SAMPLED_CHAR : NOT_SAMPLED_CHAR;
     setter.set(carrier, PROPAGATION_HEADER, new String(chars));
   }
 
@@ -185,7 +191,7 @@ public class JaegerPropagator implements TextMapPropagator {
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
     try {
       int flagsInt = Integer.parseInt(flags);
-      TraceFlags traceFlags = ((flagsInt & 1) == 1) ? SAMPLED_FLAGS : NOT_SAMPLED_FLAGS;
+      byte traceFlags = ((flagsInt & 1) == 1) ? SAMPLED : NOT_SAMPLED;
 
       String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
       String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);

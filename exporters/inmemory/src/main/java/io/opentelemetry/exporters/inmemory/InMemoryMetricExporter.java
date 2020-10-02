@@ -116,7 +116,7 @@ public class InMemoryMetricExporter implements MetricExporter {
    * Clears the internal {@code List} of finished {@code Metric}s.
    *
    * <p>Any subsequent call to export() function on this MetricExporter, will return {@code
-   * ResultCode.FAILURE}
+   * CompletableResultCode.ofFailure()}
    */
   @Override
   public void shutdown() {

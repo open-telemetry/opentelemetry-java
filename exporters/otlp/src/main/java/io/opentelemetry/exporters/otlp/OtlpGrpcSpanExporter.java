@@ -43,24 +43,26 @@ import javax.annotation.concurrent.ThreadSafe;
  * will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time allowed to send each span
- *       batch.
- *   <li>{@code otel.otlp.endpoint}: to set the endpoint to connect to.
- *   <li>{@code otel.otlp.use.tls}: to set use or not TLS.
- *   <li>{@code otel.otlp.metadata} to set key-value pairs separated by semicolon to pass as request
- *       metadata.
+ *   <li>{@code otel.exporter.otlp.span.timeout}: to set the max waiting time allowed to send each
+ *       span batch.
+ *   <li>{@code otel.exporter.otlp.span.endpoint}: to set the endpoint to connect to.
+ *   <li>{@code otel.exporter.otlp.span.insecure}: whether to enable client transport security for
+ *       the connection.
+ *   <li>{@code otel.exporter.otlp.span.headers}: the headers associated with the requests.
  * </ul>
  *
  * <p>For environment variables, {@link OtlpGrpcSpanExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time allowed to send each span
- *       batch.
- *   <li>{@code OTEL_OTLP_ENDPOINT}: to set the endpoint to connect to.
- *   <li>{@code OTEL_OTLP_USE_TLS}: to set use or not TLS.
- *   <li>{@code OTEL_OTLP_METADATA}: to set key-value pairs separated by semicolon to pass as
- *       request metadata.
+ *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_TIMEOUT}: to set the max waiting time allowed to send each
+ *       span batch.
+ *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_ENDPOINT}: to set the endpoint to connect to.
+ *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_INSECURE}: whether to enable client transport security for
+ *       the connection.
+ *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_HEADERS}: the headers associated with the requests.
  * </ul>
+ *
+ * <p>In both cases, if a property is missing, the name without "span" is used to resolve the value.
  */
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
@@ -68,6 +70,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
+  private static final boolean DEFAULT_USE_TLS = false;
 
   private final TraceServiceFutureStub traceService;
   private final ManagedChannel managedChannel;
@@ -178,14 +181,15 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
   /** Builder utility for this exporter. */
   public static class Builder extends ConfigBuilder<Builder> {
-    private static final String KEY_SPAN_TIMEOUT = "otel.otlp.span.timeout";
-    private static final String KEY_ENDPOINT = "otel.otlp.endpoint";
-    private static final String KEY_USE_TLS = "otel.otlp.use.tls";
-    private static final String KEY_METADATA = "otel.otlp.metadata";
+
+    private static final String KEY_TIMEOUT = "otel.exporter.otlp.span.timeout";
+    private static final String KEY_ENDPOINT = "otel.exporter.otlp.span.endpoint";
+    private static final String KEY_INSECURE = "otel.exporter.otlp.span.insecure";
+    private static final String KEY_HEADERS = "otel.exporter.otlp.span.headers";
     private ManagedChannel channel;
     private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
     private String endpoint = DEFAULT_ENDPOINT;
-    private boolean useTls;
+    private boolean useTls = DEFAULT_USE_TLS;
     @Nullable private Metadata metadata;
 
     /**
@@ -287,21 +291,35 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     protected Builder fromConfigMap(
         Map<String, String> configMap, NamingConvention namingConvention) {
       configMap = namingConvention.normalize(configMap);
-      Long value = getLongProperty(KEY_SPAN_TIMEOUT, configMap);
+
+      Long value = getLongProperty(KEY_TIMEOUT, configMap);
+      if (value == null) {
+        value = getLongProperty(CommonProperties.KEY_TIMEOUT, configMap);
+      }
       if (value != null) {
         this.setDeadlineMs(value);
       }
+
       String endpointValue = getStringProperty(KEY_ENDPOINT, configMap);
+      if (endpointValue == null) {
+        endpointValue = getStringProperty(CommonProperties.KEY_ENDPOINT, configMap);
+      }
       if (endpointValue != null) {
         this.setEndpoint(endpointValue);
       }
 
-      Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
-      if (useTlsValue != null) {
-        this.setUseTls(useTlsValue);
+      Boolean insecure = getBooleanProperty(KEY_INSECURE, configMap);
+      if (insecure == null) {
+        insecure = getBooleanProperty(CommonProperties.KEY_INSECURE, configMap);
+      }
+      if (insecure != null) {
+        this.setUseTls(!insecure);
       }
 
-      String metadataValue = getStringProperty(KEY_METADATA, configMap);
+      String metadataValue = getStringProperty(KEY_HEADERS, configMap);
+      if (metadataValue == null) {
+        metadataValue = getStringProperty(CommonProperties.KEY_HEADERS, configMap);
+      }
       if (metadataValue != null) {
         for (String keyValueString : Splitter.on(';').split(metadataValue)) {
           final List<String> keyValue =

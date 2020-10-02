@@ -39,7 +39,8 @@ public class TraceConfigSystemPropertiesTest {
             .readSystemProperties()
             .build();
     // this is not a useful assertion. How can we do better?
-    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.parentBased(Samplers.probability(0.3)));
+    assertThat(traceConfig.getSampler())
+        .isEqualTo(Samplers.parentBased(Samplers.traceIdRatioBased(0.3)));
     assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(5);
     assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(6);
     assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(9);

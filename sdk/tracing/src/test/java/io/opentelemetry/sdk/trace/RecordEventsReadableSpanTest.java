@@ -5,11 +5,19 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longArrayKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -26,6 +34,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -45,6 +54,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 class RecordEventsReadableSpanTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
@@ -62,9 +72,9 @@ class RecordEventsReadableSpanTest {
   private final Resource resource = Resource.getEmpty();
   private final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create("theName", null);
-  private final Map<String, AttributeValue> attributes = new HashMap<>();
+  private final Map<AttributeKey, Object> attributes = new HashMap<>();
   private Attributes expectedAttributes;
-  private final io.opentelemetry.trace.Link link = Link.create(spanContext);
+  private final Link link = Link.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
 
   private TestClock testClock;
@@ -72,14 +82,13 @@ class RecordEventsReadableSpanTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.initMocks(this);
-    attributes.put("MyStringAttributeKey", stringAttributeValue("MyStringAttributeValue"));
-    attributes.put("MyLongAttributeKey", AttributeValue.longAttributeValue(123L));
-    attributes.put("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(false));
+    attributes.put(stringKey("MyStringAttributeKey"), "MyStringAttributeValue");
+    attributes.put(longKey("MyLongAttributeKey"), 123L);
+    attributes.put(booleanKey("MyBooleanAttributeKey"), false);
     Attributes.Builder builder =
         Attributes.newBuilder()
-            .setAttribute(
-                "MySingleStringAttributeKey", stringAttributeValue("MySingleStringAttributeValue"));
-    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
+            .setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
+    for (Map.Entry<AttributeKey, Object> entry : attributes.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }
     expectedAttributes = builder.build();
@@ -92,7 +101,7 @@ class RecordEventsReadableSpanTest {
     span.end();
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
     // and are ignored.
-    spanDoWork(span, Status.CANCELLED);
+    spanDoWork(span, Status.ERROR.withDescription("CANCELLED"));
     SpanData spanData = span.toSpanData();
     verifySpanData(
         spanData,
@@ -102,37 +111,8 @@ class RecordEventsReadableSpanTest {
         SPAN_NAME,
         START_EPOCH_NANOS,
         START_EPOCH_NANOS,
-        Status.OK,
+        Status.UNSET,
         /*hasEnded=*/ true);
-  }
-
-  @Test
-  void lazyLinksAreResolved() {
-    final Attributes attributes = Attributes.of("attr", stringAttributeValue("val"));
-    io.opentelemetry.trace.Link link =
-        new io.opentelemetry.trace.Link() {
-          @Override
-          public SpanContext getContext() {
-            return spanContext;
-          }
-
-          @Override
-          public Attributes getAttributes() {
-            return attributes;
-          }
-        };
-    RecordEventsReadableSpan span =
-        createTestSpan(
-            Kind.CLIENT,
-            TraceConfig.getDefault(),
-            parentSpanId,
-            null,
-            Collections.singletonList(link));
-
-    Link resultingLink = span.toSpanData().getLinks().get(0);
-    assertThat(resultingLink.getTotalAttributeCount()).isEqualTo(1);
-    assertThat(resultingLink.getContext()).isSameAs(spanContext);
-    assertThat(resultingLink.getAttributes()).isEqualTo(attributes);
   }
 
   @Test
@@ -153,7 +133,7 @@ class RecordEventsReadableSpanTest {
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
       Event event =
-          TimedEvent.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+          EventImpl.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
       verifySpanData(
           spanData,
           expectedAttributes,
@@ -162,7 +142,7 @@ class RecordEventsReadableSpanTest {
           SPAN_NEW_NAME,
           START_EPOCH_NANOS,
           0,
-          Status.OK,
+          Status.UNSET,
           /*hasEnded=*/ false);
       assertThat(span.hasEnded()).isFalse();
     } finally {
@@ -175,14 +155,14 @@ class RecordEventsReadableSpanTest {
   void toSpanData_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
-      spanDoWork(span, Status.CANCELLED);
+      spanDoWork(span, Status.ERROR.withDescription("CANCELLED"));
     } finally {
       span.end();
     }
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
     Event event =
-        TimedEvent.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+        EventImpl.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
     verifySpanData(
         spanData,
         expectedAttributes,
@@ -191,7 +171,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NEW_NAME,
         START_EPOCH_NANOS,
         testClock.now(),
-        Status.CANCELLED,
+        Status.ERROR.withDescription("CANCELLED"),
         /*hasEnded=*/ true);
   }
 
@@ -254,7 +234,7 @@ class RecordEventsReadableSpanTest {
     // Assert that the snapshot does not reflect the modified state, but the state of the time when
     // toSpanData was called.
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size());
-    assertThat(spanData.getAttributes().get("anotherKey")).isNull();
+    assertThat(spanData.getAttributes().get(stringKey("anotherKey"))).isNull();
     assertThat(spanData.getHasEnded()).isFalse();
     assertThat(spanData.getEndEpochNanos()).isEqualTo(0);
     assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
@@ -264,8 +244,7 @@ class RecordEventsReadableSpanTest {
     // state.
     spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size() + 1);
-    assertThat(spanData.getAttributes().get("anotherKey"))
-        .isEqualTo(AttributeValue.stringAttributeValue("anotherValue"));
+    assertThat(spanData.getAttributes().get(stringKey("anotherKey"))).isEqualTo("anotherValue");
     assertThat(spanData.getHasEnded()).isTrue();
     assertThat(spanData.getEndEpochNanos()).isGreaterThan(0);
     assertThat(spanData.getName()).isEqualTo("changedName");
@@ -277,13 +256,14 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.OK);
-      span.setStatus(Status.CANCELLED);
-      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.UNSET);
+      span.setStatus(Status.ERROR.withDescription("CANCELLED"));
+      assertThat(span.toSpanData().getStatus())
+          .isEqualTo(Status.ERROR.withDescription("CANCELLED"));
     } finally {
       span.end();
     }
-    assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
+    assertThat(span.toSpanData().getStatus()).isEqualTo(Status.ERROR.withDescription("CANCELLED"));
   }
 
   @Test
@@ -359,189 +339,150 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
       span.setAttribute("StringKey", "StringVal");
-      span.setAttribute("NullStringKey", (String) null);
+      span.setAttribute("NullStringKey", null);
       span.setAttribute("EmptyStringKey", "");
-      span.setAttribute("NullStringAttributeValue", stringAttributeValue(null));
-      span.setAttribute("EmptyStringAttributeValue", stringAttributeValue(""));
+      span.setAttribute(stringKey("NullStringAttributeValue"), null);
+      span.setAttribute(stringKey("EmptyStringAttributeValue"), "");
       span.setAttribute("LongKey", 1000L);
+      span.setAttribute(longKey("LongKey2"), 5);
+      span.setAttribute(longKey("LongKey3"), 6L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
       span.setAttribute(
-          "ArrayStringKey",
-          AttributeValue.arrayAttributeValue("StringVal", null, "", "StringVal2"));
-      span.setAttribute("ArrayLongKey", AttributeValue.arrayAttributeValue(1L, 2L, 3L, 4L, 5L));
+          stringArrayKey("ArrayStringKey"), Arrays.asList("StringVal", null, "", "StringVal2"));
+      span.setAttribute(longArrayKey("ArrayLongKey"), Arrays.asList(1L, 2L, 3L, 4L, 5L));
+      span.setAttribute(doubleArrayKey("ArrayDoubleKey"), Arrays.asList(0.1, 2.3, 4.5, 6.7, 8.9));
       span.setAttribute(
-          "ArrayDoubleKey", AttributeValue.arrayAttributeValue(0.1, 2.3, 4.5, 6.7, 8.9));
-      span.setAttribute(
-          "ArrayBooleanKey", AttributeValue.arrayAttributeValue(true, false, false, true));
+          booleanArrayKey("ArrayBooleanKey"), Arrays.asList(true, false, false, true));
       // These should be dropped
-      span.setAttribute("NullArrayStringKey", AttributeValue.arrayAttributeValue((String[]) null));
-      span.setAttribute("NullArrayLongKey", AttributeValue.arrayAttributeValue((Long[]) null));
-      span.setAttribute("NullArrayDoubleKey", AttributeValue.arrayAttributeValue((Double[]) null));
-      span.setAttribute(
-          "NullArrayBooleanKey", AttributeValue.arrayAttributeValue((Boolean[]) null));
+      span.setAttribute(stringArrayKey("NullArrayStringKey"), null);
+      span.setAttribute(longArrayKey("NullArrayLongKey"), null);
+      span.setAttribute(doubleArrayKey("NullArrayDoubleKey"), null);
+      span.setAttribute(booleanArrayKey("NullArrayBooleanKey"), null);
       // These should be maintained
+      span.setAttribute(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}));
       span.setAttribute(
-          "ArrayWithNullLongKey", AttributeValue.arrayAttributeValue(new Long[] {null}));
+          stringArrayKey("ArrayWithNullStringKey"), Arrays.asList(new String[] {null}));
       span.setAttribute(
-          "ArrayWithNullStringKey", AttributeValue.arrayAttributeValue(new String[] {null}));
+          doubleArrayKey("ArrayWithNullDoubleKey"), Arrays.asList(new Double[] {null}));
       span.setAttribute(
-          "ArrayWithNullDoubleKey", AttributeValue.arrayAttributeValue(new Double[] {null}));
-      span.setAttribute(
-          "ArrayWithNullBooleanKey", AttributeValue.arrayAttributeValue(new Boolean[] {null}));
+          booleanArrayKey("ArrayWithNullBooleanKey"), Arrays.asList(new Boolean[] {null}));
     } finally {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(spanData.getAttributes().size()).isEqualTo(14);
-    assertThat(spanData.getAttributes().get("StringKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("EmptyStringKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("EmptyStringAttributeValue")).isNotNull();
-    assertThat(spanData.getAttributes().get("LongKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("DoubleKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("BooleanKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("ArrayStringKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("ArrayLongKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("ArrayDoubleKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("ArrayBooleanKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("ArrayWithNullLongKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("ArrayWithNullStringKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("ArrayWithNullDoubleKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("ArrayWithNullBooleanKey")).isNotNull();
-    assertThat(spanData.getAttributes().get("ArrayStringKey").getStringArrayValue().size())
-        .isEqualTo(4);
-    assertThat(spanData.getAttributes().get("ArrayLongKey").getLongArrayValue().size())
-        .isEqualTo(5);
-    assertThat(spanData.getAttributes().get("ArrayDoubleKey").getDoubleArrayValue().size())
-        .isEqualTo(5);
-    assertThat(spanData.getAttributes().get("ArrayBooleanKey").getBooleanArrayValue().size())
+    assertThat(spanData.getAttributes().size()).isEqualTo(16);
+    assertThat(spanData.getAttributes().get(stringKey("StringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringKey("EmptyStringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringKey("EmptyStringAttributeValue"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longKey("LongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longKey("LongKey2"))).isEqualTo(5L);
+    assertThat(spanData.getAttributes().get(longKey("LongKey3"))).isEqualTo(6L);
+    assertThat(spanData.getAttributes().get(doubleKey("DoubleKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(booleanKey("BooleanKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longArrayKey("ArrayLongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayDoubleKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayBooleanKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longArrayKey("ArrayWithNullLongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringArrayKey("ArrayWithNullStringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayWithNullDoubleKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayWithNullBooleanKey")))
+        .isNotNull();
+    assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey")).size()).isEqualTo(4);
+    assertThat(spanData.getAttributes().get(longArrayKey("ArrayLongKey")).size()).isEqualTo(5);
+    assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayDoubleKey")).size()).isEqualTo(5);
+    assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayBooleanKey")).size())
         .isEqualTo(4);
   }
 
   @Test
   void setAttribute_emptyKeys() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    span.setAttribute("", AttributeValue.stringAttributeValue(""));
+    span.setAttribute("", "");
     span.setAttribute("", 1000L);
     span.setAttribute("", 10.0);
     span.setAttribute("", false);
-    span.setAttribute("", AttributeValue.arrayAttributeValue(new String[0]));
-    span.setAttribute("", AttributeValue.arrayAttributeValue(new Boolean[0]));
-    span.setAttribute("", AttributeValue.arrayAttributeValue(new Long[0]));
-    span.setAttribute("", AttributeValue.arrayAttributeValue(new Double[0]));
+    span.setAttribute(stringArrayKey(""), Collections.emptyList());
+    span.setAttribute(booleanArrayKey(""), Collections.emptyList());
+    span.setAttribute(longArrayKey(""), Collections.emptyList());
+    span.setAttribute(doubleArrayKey(""), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
   }
 
   @Test
   void setAttribute_nullKeys() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    span.setAttribute(null, AttributeValue.stringAttributeValue(""));
+    span.setAttribute(stringKey(null), "");
     span.setAttribute(null, 1000L);
     span.setAttribute(null, 10.0);
     span.setAttribute(null, false);
-    span.setAttribute(null, AttributeValue.arrayAttributeValue(new String[0]));
-    span.setAttribute(null, AttributeValue.arrayAttributeValue(new Boolean[0]));
-    span.setAttribute(null, AttributeValue.arrayAttributeValue(new Long[0]));
-    span.setAttribute(null, AttributeValue.arrayAttributeValue(new Double[0]));
+    span.setAttribute(null, Collections.emptyList());
+    span.setAttribute(null, Collections.emptyList());
+    span.setAttribute(null, Collections.emptyList());
+    span.setAttribute(null, Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isZero();
   }
 
   @Test
   void setAttribute_emptyArrayAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    span.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue((String[]) null));
+    span.setAttribute(stringArrayKey("stringArrayAttribute"), null);
     assertThat(span.toSpanData().getAttributes().size()).isZero();
-    span.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
+    span.setAttribute(stringArrayKey("stringArrayAttribute"), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
-    span.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue((Boolean[]) null));
+    span.setAttribute(booleanArrayKey("boolArrayAttribute"), null);
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
-    span.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue(new Boolean[0]));
+    span.setAttribute(booleanArrayKey("boolArrayAttribute"), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
-    span.setAttribute("longArrayAttribute", AttributeValue.arrayAttributeValue((Long[]) null));
+    span.setAttribute(longArrayKey("longArrayAttribute"), null);
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
-    span.setAttribute("longArrayAttribute", AttributeValue.arrayAttributeValue(new Long[0]));
+    span.setAttribute(longArrayKey("longArrayAttribute"), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(3);
-    span.setAttribute("doubleArrayAttribute", AttributeValue.arrayAttributeValue((Double[]) null));
+    span.setAttribute(doubleArrayKey("doubleArrayAttribute"), null);
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(3);
-    span.setAttribute("doubleArrayAttribute", AttributeValue.arrayAttributeValue(new Double[0]));
+    span.setAttribute(doubleArrayKey("doubleArrayAttribute"), Collections.emptyList());
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(4);
-    span.setAttribute("stringArrayAttribute", (AttributeValue) null);
-    span.setAttribute("boolArrayAttribute", (AttributeValue) null);
-    span.setAttribute("longArrayAttribute", (AttributeValue) null);
-    span.setAttribute("doubleArrayAttribute", (AttributeValue) null);
-    assertThat(span.toSpanData().getAttributes().size()).isZero();
   }
 
   @Test
   void setAttribute_nullStringValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    span.setAttribute("nullString", (String) null);
+    span.setAttribute("nullString", null);
     span.setAttribute("emptyString", "");
-    span.setAttribute("nullStringAttributeValue", stringAttributeValue(null));
-    span.setAttribute("emptyStringAttributeValue", stringAttributeValue(""));
+    span.setAttribute(stringKey("nullStringAttributeValue"), null);
+    span.setAttribute(stringKey("emptyStringAttributeValue"), "");
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
-    span.setAttribute("emptyString", (String) null);
-    span.setAttribute("emptyStringAttributeValue", (String) null);
-    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test
   void setAttribute_nullAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("emptyString", "");
-    span.setAttribute("nullString", (AttributeValue) null);
-    span.setAttribute("nullStringAttributeValue", stringAttributeValue(null));
-    span.setAttribute("emptyStringAttributeValue", stringAttributeValue(""));
+    span.setAttribute(stringKey("nullString"), null);
+    span.setAttribute(stringKey("nullStringAttributeValue"), null);
+    span.setAttribute(stringKey("emptyStringAttributeValue"), "");
     span.setAttribute("longAttribute", 0L);
     span.setAttribute("boolAttribute", false);
     span.setAttribute("doubleAttribute", 0.12345f);
-    span.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue("", null));
-    span.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue(true, null));
-    span.setAttribute("longArrayAttribute", AttributeValue.arrayAttributeValue(12345L, null));
-    span.setAttribute("doubleArrayAttribute", AttributeValue.arrayAttributeValue(1.2345, null));
+    span.setAttribute(stringArrayKey("stringArrayAttribute"), Arrays.asList("", null));
+    span.setAttribute(booleanArrayKey("boolArrayAttribute"), Arrays.asList(true, null));
+    span.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList(12345L, null));
+    span.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
-    span.setAttribute("emptyString", (AttributeValue) null);
-    span.setAttribute("emptyStringAttributeValue", (AttributeValue) null);
-    span.setAttribute("longAttribute", (AttributeValue) null);
-    span.setAttribute("boolAttribute", (AttributeValue) null);
-    span.setAttribute("doubleAttribute", (AttributeValue) null);
-    span.setAttribute("stringArrayAttribute", (AttributeValue) null);
-    span.setAttribute("boolArrayAttribute", (AttributeValue) null);
-    span.setAttribute("longArrayAttribute", (AttributeValue) null);
-    span.setAttribute("doubleArrayAttribute", (AttributeValue) null);
-    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test
   void addEvent() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    io.opentelemetry.trace.Event customEvent =
-        new io.opentelemetry.trace.Event() {
-          @Override
-          public String getName() {
-            return "event3";
-          }
-
-          @Override
-          public Attributes getAttributes() {
-            return Attributes.empty();
-          }
-        };
     try {
       span.addEvent("event1");
-      span.addEvent("event2", Attributes.of("e1key", stringAttributeValue("e1Value")));
-      span.addEvent(customEvent);
+      span.addEvent("event2", Attributes.of(stringKey("e1key"), "e1Value"));
     } finally {
       span.end();
     }
     List<Event> events = span.toSpanData().getEvents();
-    assertThat(events.size()).isEqualTo(3);
-    for (Event event : events) {
-      // make sure that we aren't holding on to the memory from the custom event, in case it
-      // references
-      // some heavyweight thing.
-      assertThat(event).isNotInstanceOf(TimedEvent.RawTimedEventWithEvent.class);
-    }
+    assertThat(events.size()).isEqualTo(2);
   }
 
   @Test
@@ -555,7 +496,7 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
-        span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(i));
+        span.setAttribute(longKey("MyStringAttributeKey" + i), (long) i);
       }
       SpanData spanData = span.toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
@@ -579,7 +520,7 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
-        span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(i));
+        span.setAttribute(longKey("MyStringAttributeKey" + i), (long) i);
       }
       SpanData spanData = span.toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
@@ -587,22 +528,19 @@ class RecordEventsReadableSpanTest {
 
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         int val = i + maxNumberOfAttributes * 3 / 2;
-        span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(val));
+        span.setAttribute(longKey("MyStringAttributeKey" + i), (long) val);
       }
       spanData = span.toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
       // Test that we still have in the attributes map the latest maxNumberOfAttributes / 2 entries.
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         int val = i + maxNumberOfAttributes * 3 / 2;
-        AttributeValue expectedValue = AttributeValue.longAttributeValue(val);
-        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + i))
-            .isEqualTo(expectedValue);
+        assertThat(spanData.getAttributes().get(longKey("MyStringAttributeKey" + i)))
+            .isEqualTo(val);
       }
       // Test that we have the newest re-added initial entries.
       for (int i = maxNumberOfAttributes / 2; i < maxNumberOfAttributes; i++) {
-        AttributeValue expectedValue = AttributeValue.longAttributeValue(i);
-        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + i))
-            .isEqualTo(expectedValue);
+        assertThat(spanData.getAttributes().get(longKey("MyStringAttributeKey" + i))).isEqualTo(i);
       }
     } finally {
       span.end();
@@ -625,7 +563,7 @@ class RecordEventsReadableSpanTest {
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
         Event expectedEvent =
-            TimedEvent.create(
+            EventImpl.create(
                 START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
                 "event2",
                 Attributes.empty(),
@@ -640,7 +578,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
       Event expectedEvent =
-          TimedEvent.create(
+          EventImpl.create(
               START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
               "event2",
               Attributes.empty(),
@@ -671,9 +609,9 @@ class RecordEventsReadableSpanTest {
     assertThat(event.getAttributes())
         .isEqualTo(
             Attributes.newBuilder()
-                .setAttribute("exception.type", "java.lang.IllegalStateException")
-                .setAttribute("exception.message", "there was an exception")
-                .setAttribute("exception.stacktrace", stacktrace)
+                .setAttribute(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalStateException")
+                .setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
+                .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
                 .build());
   }
 
@@ -687,7 +625,7 @@ class RecordEventsReadableSpanTest {
     List<Event> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     Event event = events.get(0);
-    assertThat(event.getAttributes().get("exception.message")).isNull();
+    assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE)).isNull();
   }
 
   private static class InnerClassException extends Exception {}
@@ -702,10 +640,8 @@ class RecordEventsReadableSpanTest {
     List<Event> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     Event event = events.get(0);
-    assertThat(event.getAttributes().get("exception.type"))
-        .isEqualTo(
-            stringAttributeValue(
-                "io.opentelemetry.sdk.trace.RecordEventsReadableSpanTest.InnerClassException"));
+    assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE))
+        .isEqualTo("io.opentelemetry.sdk.trace.RecordEventsReadableSpanTest.InnerClassException");
   }
 
   @Test
@@ -723,10 +659,10 @@ class RecordEventsReadableSpanTest {
     span.recordException(
         exception,
         Attributes.of(
-            "key1",
-            stringAttributeValue("this is an additional attribute"),
-            "exception.message",
-            stringAttributeValue("this is a precedence attribute")));
+            stringKey("key1"),
+            "this is an additional attribute",
+            stringKey("exception.message"),
+            "this is a precedence attribute"));
 
     List<Event> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
@@ -748,13 +684,11 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
 
     // Should be no exceptions
-    span.setAttribute(null, 0);
+    span.setAttribute(null, 0L);
     span.setStatus(null);
     span.updateName(null);
-    span.addEvent((Event) null);
-    span.addEvent((String) null);
-    span.addEvent((Event) null, 0);
-    span.addEvent((String) null, 0);
+    span.addEvent(null);
+    span.addEvent(null, 0);
     span.addEvent(null, null);
     span.addEvent(null, null, 0);
     span.recordException(null);
@@ -763,15 +697,15 @@ class RecordEventsReadableSpanTest {
     // Ignored the bad calls
     SpanData data = span.toSpanData();
     assertThat(data.getAttributes().isEmpty()).isTrue();
-    assertThat(data.getStatus()).isEqualTo(Status.OK);
+    assertThat(data.getStatus()).isEqualTo(Status.UNSET);
     assertThat(data.getName()).isEqualTo(SPAN_NAME);
   }
 
   private RecordEventsReadableSpan createTestSpanWithAttributes(
-      Map<String, AttributeValue> attributes) {
+      Map<AttributeKey, Object> attributes) {
     AttributesMap attributesMap =
         new AttributesMap(TraceConfig.getDefault().getMaxNumberOfAttributes());
-    attributesMap.putAll(attributes);
+    attributes.forEach(attributesMap::put);
     return createTestSpan(
         Kind.INTERNAL,
         TraceConfig.getDefault(),
@@ -804,7 +738,7 @@ class RecordEventsReadableSpanTest {
       TraceConfig config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links) {
+      List<Link> links) {
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
@@ -827,11 +761,8 @@ class RecordEventsReadableSpanTest {
   }
 
   private void spanDoWork(RecordEventsReadableSpan span, @Nullable Status status) {
-    span.setAttribute(
-        "MySingleStringAttributeKey", stringAttributeValue("MySingleStringAttributeValue"));
-    for (Map.Entry<String, AttributeValue> attribute : attributes.entrySet()) {
-      span.setAttribute(attribute.getKey(), attribute.getValue());
-    }
+    span.setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
+    attributes.forEach(span::setAttribute);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addEvent("event2", Attributes.empty());
     testClock.advanceMillis(MILLIS_PER_SECOND);
@@ -869,7 +800,13 @@ class RecordEventsReadableSpanTest {
     // verify equality manually, since the implementations don't all equals with each other.
     ReadableAttributes spanDataAttributes = spanData.getAttributes();
     assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
-    spanDataAttributes.forEach((key, value) -> assertThat(attributes.get(key)).isEqualTo(value));
+    spanDataAttributes.forEach(
+        new AttributeConsumer() {
+          @Override
+          public <T> void consume(AttributeKey<T> key, T value) {
+            assertThat(attributes.get(key)).isEqualTo(value);
+          }
+        });
   }
 
   @Test
@@ -922,9 +859,9 @@ class RecordEventsReadableSpanTest {
 
     List<Event> events =
         Arrays.asList(
-            TimedEvent.create(
+            EventImpl.create(
                 firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
-            TimedEvent.create(
+            EventImpl.create(
                 secondEventTimeNanos, "event2", event2Attributes, event2Attributes.size()));
 
     SpanData result = readableSpan.toSpanData();
@@ -936,10 +873,10 @@ class RecordEventsReadableSpanTest {
         name,
         startEpochNanos,
         endEpochNanos,
-        Status.OK,
+        Status.UNSET,
         /* hasEnded= */ true);
     assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
-    assertThat(result.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
+    assertThat(result.isSampled()).isEqualTo(false);
   }
 
   @Test

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.trace.Link;
@@ -16,11 +15,7 @@ import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * Sampler is used to make decisions on {@link Span} sampling.
- *
- * @since 0.1.0
- */
+/** Sampler is used to make decisions on {@link Span} sampling. */
 @ThreadSafe
 public interface Sampler {
   /**
@@ -32,10 +27,9 @@ public interface Sampler {
    *     the parentContext, unless this is a root span.
    * @param name the name of the new {@code Span}.
    * @param spanKind the {@link Kind} of the {@code Span}.
-   * @param attributes list of {@link AttributeValue} with their keys.
+   * @param attributes {@link ReadableAttributes} associated with the span.
    * @param parentLinks the parentLinks associated with the new {@code Span}.
    * @return sampling samplingResult whether span should be sampled or not.
-   * @since 0.1.0
    */
   SamplingResult shouldSample(
       SpanContext parentContext,
@@ -49,25 +43,22 @@ public interface Sampler {
    * Returns the description of this {@code Sampler}. This may be displayed on debug pages or in the
    * logs.
    *
-   * <p>Example: "ProbabilitySampler{0.000100}"
+   * <p>Example: "TraceIdRatioBased{0.000100}"
    *
    * @return the description of this {@code Sampler}.
-   * @since 0.1.0
    */
   String getDescription();
 
-  /** A decision on whether a span should be recorded, recorded and sampled or not recorded. */
+  /** A decision on whether a span should be recorded, recorded and sampled or dropped. */
   enum Decision {
-    NOT_RECORD,
-    RECORD,
-    RECORD_AND_SAMPLED,
+    DROP,
+    RECORD_ONLY,
+    RECORD_AND_SAMPLE,
   }
 
   /**
    * Sampling result returned by {@link Sampler#shouldSample(SpanContext, String, String, Kind,
    * ReadableAttributes, List)}.
-   *
-   * @since 0.1.0
    */
   interface SamplingResult {
 
@@ -75,7 +66,6 @@ public interface Sampler {
      * Return decision on whether a span should be recorded, recorded and sampled or not recorded.
      *
      * @return sampling result.
-     * @since 0.7.0
      */
     Decision getDecision();
 
@@ -83,9 +73,8 @@ public interface Sampler {
      * Return tags which will be attached to the span.
      *
      * @return attributes added to span. These attributes should be added to the span only when
-     *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD} or {@link
-     *     Decision#RECORD_AND_SAMPLED}.
-     * @since 0.1.0
+     *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD_ONLY} or
+     *     {@link Decision#RECORD_AND_SAMPLE}.
      */
     Attributes getAttributes();
   }

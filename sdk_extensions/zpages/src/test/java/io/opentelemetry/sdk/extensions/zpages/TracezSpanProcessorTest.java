@@ -35,10 +35,10 @@ class TracezSpanProcessorTest {
       SpanContext.create(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
-          TraceFlags.builder().setIsSampled(true).build(),
+          TraceFlags.getSampled(),
           TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
-  private static final Status SPAN_STATUS = Status.UNKNOWN;
+  private static final Status SPAN_STATUS = Status.ERROR;
 
   private static void assertSpanCacheSizes(
       TracezSpanProcessor spanProcessor, int runningSpanCacheSize, int completedSpanCacheSize) {

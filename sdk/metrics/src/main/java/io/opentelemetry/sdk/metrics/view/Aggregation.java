@@ -14,8 +14,6 @@ import javax.annotation.concurrent.Immutable;
 /**
  * {@link Aggregation} is the process of combining a certain set of recorded measurements for a
  * given {@code Instrument} into the equivalent {@code MetricData}.
- *
- * @since 0.1.0
  */
 @Immutable
 public interface Aggregation {
@@ -31,13 +29,13 @@ public interface Aggregation {
   AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType);
 
   /**
-   * Returns the {@link MetricData.Descriptor.Type} that this {@code Aggregation} will produce.
+   * Returns the {@link MetricData.Type} that this {@code Aggregation} will produce.
    *
    * @param instrumentType the type of the {@code Instrument}.
    * @param instrumentValueType the type of recorded values for the {@code Instrument}.
-   * @return the {@link MetricData.Descriptor.Type} that this {@code Aggregation} will produce.
+   * @return the {@link MetricData.Type} that this {@code Aggregation} will produce.
    */
-  MetricData.Descriptor.Type getDescriptorType(
+  MetricData.Type getDescriptorType(
       InstrumentType instrumentType, InstrumentValueType instrumentValueType);
 
   /**

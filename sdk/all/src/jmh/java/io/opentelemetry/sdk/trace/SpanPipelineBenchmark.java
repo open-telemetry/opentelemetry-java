@@ -5,21 +5,23 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.Event;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.Tracer;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -36,12 +38,17 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanPipelineBenchmark {
 
-  private final TracerSdk tracerSdk = OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
+  private static final AttributeKey<String> OPERATION_KEY = stringKey("operation");
+  private static final AttributeKey<Long> LONG_ATTRIBUTE_KEY = longKey("longAttribute");
+  private static final AttributeKey<String> STRING_ATTRIBUTE_KEY = stringKey("stringAttribute");
+  private static final AttributeKey<Double> DOUBLE_ATTRIBUTE_KEY = doubleKey("doubleAttribute");
+  private static final AttributeKey<Boolean> BOOLEAN_ATTRIBUTE_KEY = booleanKey("booleanAttribute");
+  private final Tracer tracer = OpenTelemetry.getTracerProvider().get("benchmarkTracer");
 
   @Setup(Level.Trial)
   public final void setup() {
     SpanExporter exporter = new NoOpSpanExporter();
-    OpenTelemetrySdk.getTracerProvider()
+    OpenTelemetrySdk.getTracerManagement()
         .addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
 
@@ -57,21 +64,19 @@ public class SpanPipelineBenchmark {
 
   private void doWork() {
     Span span =
-        tracerSdk
+        tracer
             .spanBuilder("benchmarkSpan")
             .setSpanKind(Kind.CLIENT)
             .setAttribute("key", "value")
-            .addLink(new TestLink())
             .startSpan();
-    span.addEvent("started", Attributes.of("operation", stringAttributeValue("some_work")));
-    span.setAttribute("longAttribute", 33L);
-    span.setAttribute("stringAttribute", "test_value");
-    span.setAttribute("doubleAttribute", 4844.44d);
-    span.setAttribute("booleanAttribute", false);
+    span.addEvent("started", Attributes.of(OPERATION_KEY, "some_work"));
+    span.setAttribute(LONG_ATTRIBUTE_KEY, 33L);
+    span.setAttribute(STRING_ATTRIBUTE_KEY, "test_value");
+    span.setAttribute(DOUBLE_ATTRIBUTE_KEY, 4844.44d);
+    span.setAttribute(BOOLEAN_ATTRIBUTE_KEY, false);
     span.setStatus(Status.OK);
 
     span.addEvent("testEvent");
-    span.addEvent(new TestEvent());
     span.end();
   }
 
@@ -90,30 +95,6 @@ public class SpanPipelineBenchmark {
     public CompletableResultCode shutdown() {
       // no-op
       return CompletableResultCode.ofSuccess();
-    }
-  }
-
-  private static class TestLink implements Link {
-    @Override
-    public SpanContext getContext() {
-      return SpanContext.getInvalid();
-    }
-
-    @Override
-    public Attributes getAttributes() {
-      return Attributes.of("linkAttr", stringAttributeValue("linkValue"));
-    }
-  }
-
-  private static class TestEvent implements Event {
-    @Override
-    public String getName() {
-      return "ended";
-    }
-
-    @Override
-    public Attributes getAttributes() {
-      return Attributes.of("finalized", booleanAttributeValue(true));
     }
   }
 }

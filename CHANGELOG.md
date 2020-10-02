@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Extensions:
+    - BREAKING CHANGE: Made Propagators to expose only a singleton instance
+
 ## 0.8.0 - 2020-09-01
 
 - Extensions:

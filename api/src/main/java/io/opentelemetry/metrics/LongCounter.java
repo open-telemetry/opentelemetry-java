@@ -18,7 +18,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
+ *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
  *   private static final LongCounter counter =
  *       meter.
  *           .longCounterBuilder("processed_jobs")
@@ -95,9 +95,6 @@ public interface LongCounter extends SynchronousInstrument<BoundLongCounter> {
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     LongCounter build();

@@ -6,7 +6,6 @@
 package io.opentelemetry.example;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter;
@@ -15,7 +14,6 @@ import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
@@ -36,10 +34,8 @@ public class OtlpExporterExample {
 
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.getDefault();
-    BatchSpanProcessor spanProcessor = BatchSpanProcessor
-        .newBuilder(spanExporter)
-        .setScheduleDelayMillis(100)
-        .build();
+    BatchSpanProcessor spanProcessor =
+        BatchSpanProcessor.newBuilder(spanExporter).setScheduleDelayMillis(100).build();
     OpenTelemetrySdk.getTracerProvider().addSpanProcessor(spanProcessor);
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
@@ -54,11 +50,7 @@ public class OtlpExporterExample {
 
     Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example");
     Meter meter = OpenTelemetry.getMeter("io.opentelemetry.example");
-    LongCounter counter =
-        meter
-            .longCounterBuilder("example_counter")
-            .setConstantLabels(Labels.of("good", "true"))
-            .build();
+    LongCounter counter = meter.longCounterBuilder("example_counter").build();
 
     for (int i = 0; i < 10; i++) {
       Span exampleSpan = tracer.spanBuilder("exampleSpan").startSpan();

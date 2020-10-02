@@ -5,7 +5,11 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.common.AttributeValue;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
+
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Span;
@@ -61,7 +65,7 @@ final class SpanShim extends BaseShimObject implements Span {
       // TODO: confirm we can safely ignore span.kind after Span was created
       // https://github.com/bogdandrutu/opentelemetry/issues/42
     } else if (Tags.ERROR.getKey().equals(key)) {
-      Status status = Boolean.parseBoolean(value) ? Status.UNKNOWN : Status.OK;
+      Status status = Boolean.parseBoolean(value) ? Status.ERROR : Status.UNSET;
       span.setStatus(status);
     } else {
       span.setAttribute(key, value);
@@ -73,7 +77,7 @@ final class SpanShim extends BaseShimObject implements Span {
   @Override
   public Span setTag(String key, boolean value) {
     if (Tags.ERROR.getKey().equals(key)) {
-      Status status = value ? Status.UNKNOWN : Status.OK;
+      Status status = value ? Status.ERROR : Status.UNSET;
       span.setStatus(status);
     } else {
       span.setAttribute(key, value);
@@ -192,15 +196,13 @@ final class SpanShim extends BaseShimObject implements Span {
           || value instanceof Short
           || value instanceof Integer
           || value instanceof Long) {
-        attributesBuilder.setAttribute(
-            key, AttributeValue.longAttributeValue(((Number) value).longValue()));
+        attributesBuilder.setAttribute(longKey(key), ((Number) value).longValue());
       } else if (value instanceof Float || value instanceof Double) {
-        attributesBuilder.setAttribute(
-            key, AttributeValue.doubleAttributeValue(((Number) value).doubleValue()));
+        attributesBuilder.setAttribute(doubleKey(key), ((Number) value).doubleValue());
       } else if (value instanceof Boolean) {
-        attributesBuilder.setAttribute(key, AttributeValue.booleanAttributeValue((Boolean) value));
+        attributesBuilder.setAttribute(booleanKey(key), (Boolean) value);
       } else {
-        attributesBuilder.setAttribute(key, AttributeValue.stringAttributeValue(value.toString()));
+        attributesBuilder.setAttribute(stringKey(key), value.toString());
       }
     }
 

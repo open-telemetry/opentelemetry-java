@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleValueRecorder;
@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -30,8 +29,7 @@ import org.junit.jupiter.api.Test;
 class DoubleValueRecorderSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
-      Resource.create(
-          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
+      Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(
           "io.opentelemetry.sdk.metrics.DoubleValueRecorderSdkTest", null);
@@ -62,7 +60,6 @@ class DoubleValueRecorderSdkTest {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
             .doubleValueRecorderBuilder("testRecorder")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
@@ -71,14 +68,12 @@ class DoubleValueRecorderSdkTest {
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testRecorder",
-                    "My very own measure",
-                    "ms",
-                    Descriptor.Type.SUMMARY,
-                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testRecorder",
+                "My very own measure",
+                "ms",
+                MetricData.Type.SUMMARY,
                 Collections.emptyList()));
   }
 
@@ -87,7 +82,6 @@ class DoubleValueRecorderSdkTest {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
             .doubleValueRecorderBuilder("testRecorder")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
@@ -98,14 +92,12 @@ class DoubleValueRecorderSdkTest {
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testRecorder",
-                    "My very own measure",
-                    "ms",
-                    Descriptor.Type.SUMMARY,
-                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testRecorder",
+                "My very own measure",
+                "ms",
+                MetricData.Type.SUMMARY,
                 Collections.emptyList()));
   }
 
@@ -119,9 +111,12 @@ class DoubleValueRecorderSdkTest {
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testRecorder", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testRecorder",
+                "",
+                "1",
+                MetricData.Type.SUMMARY,
                 Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -143,7 +138,7 @@ class DoubleValueRecorderSdkTest {
     doubleMeasure1.record(12.1d);
 
     assertThat(doubleMeasure.collectAll().get(0))
-        .isEqualToIgnoringGivenFields(doubleMeasure1.collectAll().get(0), "descriptor");
+        .isEqualToIgnoringGivenFields(doubleMeasure1.collectAll().get(0), "name");
   }
 
   @Test

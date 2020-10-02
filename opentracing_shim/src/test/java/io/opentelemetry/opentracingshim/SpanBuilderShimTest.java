@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.Tracer;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ class SpanBuilderShimTest {
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, new CorrelationContextManagerSdk(), OpenTelemetry.getPropagators());
+      new TelemetryInfo(tracer, new BaggageManagerSdk(), OpenTelemetry.getPropagators());
 
   private static final String SPAN_NAME = "Span";
 

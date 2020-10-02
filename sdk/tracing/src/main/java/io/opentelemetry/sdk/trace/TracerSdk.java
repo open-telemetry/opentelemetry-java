@@ -48,8 +48,7 @@ final class TracerSdk implements Tracer {
   }
 
   /**
-   * Returns the instrumentation library specified when creating the tracer using {@link
-   * TracerSdkProvider}.
+   * Returns the instrumentation library specified when creating the tracer.
    *
    * @return an instance of {@link InstrumentationLibraryInfo}
    */

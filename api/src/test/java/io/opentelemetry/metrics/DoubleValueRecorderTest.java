@@ -18,9 +18,7 @@ class DoubleValueRecorderTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
-
-  private final Meter meter = OpenTelemetry.getMeter("DoubleValueRecorderTest");
+  private static final Meter meter = OpenTelemetry.getMeter("DoubleValueRecorderTest");
 
   @Test
   void preventNull_Name() {
@@ -71,14 +69,6 @@ class DoubleValueRecorderTest {
   }
 
   @Test
-  void preventNull_ConstantLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleValueRecorderBuilder("metric").setConstantLabels(null).build(),
-        "constantLabels");
-  }
-
-  @Test
   void record_PreventNullLabels() {
     assertThrows(
         NullPointerException.class,
@@ -89,12 +79,7 @@ class DoubleValueRecorderTest {
   @Test
   void record_DoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder =
-        meter
-            .doubleValueRecorderBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.doubleValueRecorderBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     doubleValueRecorder.record(5.0, Labels.empty());
     doubleValueRecorder.record(-5.0, Labels.empty());
     doubleValueRecorder.record(5.0);
@@ -112,12 +97,7 @@ class DoubleValueRecorderTest {
   @Test
   void bound_DoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder =
-        meter
-            .doubleValueRecorderBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.doubleValueRecorderBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     BoundDoubleValueRecorder bound = doubleValueRecorder.bind(Labels.empty());
     bound.record(5.0);
     bound.record(-5.0);

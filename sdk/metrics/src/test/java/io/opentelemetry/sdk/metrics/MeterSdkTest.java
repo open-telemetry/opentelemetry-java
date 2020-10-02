@@ -5,17 +5,18 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.BatchRecorder;
+import io.opentelemetry.metrics.DoubleValueObserver;
+import io.opentelemetry.metrics.LongValueObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -28,8 +29,7 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link MeterSdk}. */
 class MeterSdkTest {
   private static final Resource RESOURCE =
-      Resource.create(
-          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
+      Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.MeterSdkTest", null);
   private final TestClock testClock = TestClock.create();
@@ -43,7 +43,6 @@ class MeterSdkTest {
     LongCounterSdk longCounter =
         testSdk
             .longCounterBuilder("testLongCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -52,7 +51,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .longCounterBuilder("testLongCounter")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -62,6 +60,10 @@ class MeterSdkTest {
         IllegalArgumentException.class,
         () -> testSdk.longCounterBuilder("testLongCounter").build(),
         "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.longCounterBuilder("testLongCounter".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -69,7 +71,6 @@ class MeterSdkTest {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk
             .longUpDownCounterBuilder("testLongUpDownCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -78,7 +79,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .longUpDownCounterBuilder("testLongUpDownCounter")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -88,6 +88,10 @@ class MeterSdkTest {
         IllegalArgumentException.class,
         () -> testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build(),
         "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.longUpDownCounterBuilder("testLongUpDownCounter".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -95,7 +99,6 @@ class MeterSdkTest {
     LongValueRecorderSdk longValueRecorder =
         testSdk
             .longValueRecorderBuilder("testLongValueRecorder")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -104,7 +107,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .longValueRecorderBuilder("testLongValueRecorder")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -114,6 +116,38 @@ class MeterSdkTest {
         IllegalArgumentException.class,
         () -> testSdk.longValueRecorderBuilder("testLongValueRecorder").build(),
         "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.longValueRecorderBuilder("testLongValueRecorder".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
+  }
+
+  @Test
+  void testLongValueObserver() {
+    LongValueObserver longValueObserver =
+        testSdk
+            .longValueObserverBuilder("longValueObserver")
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .build();
+    assertThat(longValueObserver).isNotNull();
+
+    assertThat(
+            testSdk
+                .longValueObserverBuilder("longValueObserver")
+                .setDescription("My very own counter")
+                .setUnit("metric tonnes")
+                .build())
+        .isSameAs(longValueObserver);
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.longValueObserverBuilder("longValueObserver").build(),
+        "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.longValueObserverBuilder("longValueObserver".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -121,7 +155,6 @@ class MeterSdkTest {
     LongSumObserverSdk longObserver =
         testSdk
             .longSumObserverBuilder("testLongSumObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -130,7 +163,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .longSumObserverBuilder("testLongSumObserver")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -140,6 +172,11 @@ class MeterSdkTest {
         IllegalArgumentException.class,
         () -> testSdk.longSumObserverBuilder("testLongSumObserver").build(),
         "Instrument with same name and different descriptor already created.");
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.longSumObserverBuilder("testLongSumObserver".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -147,7 +184,6 @@ class MeterSdkTest {
     LongUpDownSumObserverSdk longObserver =
         testSdk
             .longUpDownSumObserverBuilder("testLongUpDownSumObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -156,7 +192,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .longUpDownSumObserverBuilder("testLongUpDownSumObserver")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -166,6 +201,12 @@ class MeterSdkTest {
         IllegalArgumentException.class,
         () -> testSdk.longUpDownSumObserverBuilder("testLongUpDownSumObserver").build(),
         "Instrument with same name and different descriptor already created.");
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            testSdk.longUpDownSumObserverBuilder("testLongUpDownSumObserver".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -173,7 +214,6 @@ class MeterSdkTest {
     DoubleCounterSdk doubleCounter =
         testSdk
             .doubleCounterBuilder("testDoubleCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -182,7 +222,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleCounterBuilder("testDoubleCounter")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -192,6 +231,10 @@ class MeterSdkTest {
         IllegalArgumentException.class,
         () -> testSdk.doubleCounterBuilder("testDoubleCounter").build(),
         "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.doubleCounterBuilder("testDoubleCounter".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -199,7 +242,6 @@ class MeterSdkTest {
     DoubleUpDownCounterSdk doubleUpDownCounter =
         testSdk
             .doubleUpDownCounterBuilder("testDoubleUpDownCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -208,7 +250,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleUpDownCounterBuilder("testDoubleUpDownCounter")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -218,6 +259,10 @@ class MeterSdkTest {
         IllegalArgumentException.class,
         () -> testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build(),
         "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -225,7 +270,6 @@ class MeterSdkTest {
     DoubleValueRecorderSdk doubleValueRecorder =
         testSdk
             .doubleValueRecorderBuilder("testDoubleValueRecorder")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own ValueRecorder")
             .setUnit("metric tonnes")
             .build();
@@ -234,7 +278,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleValueRecorderBuilder("testDoubleValueRecorder")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own ValueRecorder")
                 .setUnit("metric tonnes")
                 .build())
@@ -244,6 +287,10 @@ class MeterSdkTest {
         IllegalArgumentException.class,
         () -> testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build(),
         "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -251,7 +298,6 @@ class MeterSdkTest {
     DoubleSumObserverSdk doubleObserver =
         testSdk
             .doubleSumObserverBuilder("testDoubleSumObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -260,7 +306,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleSumObserverBuilder("testDoubleSumObserver")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -270,6 +315,10 @@ class MeterSdkTest {
         IllegalArgumentException.class,
         () -> testSdk.doubleSumObserverBuilder("testDoubleSumObserver").build(),
         "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.doubleSumObserverBuilder("testDoubleSumObserver".toUpperCase()).build(),
+        "Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -277,7 +326,6 @@ class MeterSdkTest {
     DoubleUpDownSumObserverSdk doubleObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -286,7 +334,6 @@ class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver")
-                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -295,6 +342,41 @@ class MeterSdkTest {
     assertThrows(
         IllegalArgumentException.class,
         () -> testSdk.doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver").build(),
+        "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            testSdk
+                .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver".toUpperCase())
+                .build(),
+        "Instrument with same name and different descriptor already created.");
+  }
+
+  @Test
+  void testDoubleValueObserver() {
+    DoubleValueObserver doubleValueObserver =
+        testSdk
+            .doubleValueObserverBuilder("doubleValueObserver")
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .build();
+    assertThat(doubleValueObserver).isNotNull();
+
+    assertThat(
+            testSdk
+                .doubleValueObserverBuilder("doubleValueObserver")
+                .setDescription("My very own counter")
+                .setUnit("metric tonnes")
+                .build())
+        .isSameAs(doubleValueObserver);
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.doubleValueObserverBuilder("doubleValueObserver").build(),
+        "Instrument with same name and different descriptor already created.");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> testSdk.doubleValueObserverBuilder("doubleValueObserver".toUpperCase()).build(),
         "Instrument with same name and different descriptor already created.");
   }
 
@@ -324,24 +406,30 @@ class MeterSdkTest {
     assertThat(testSdk.collectAll())
         .containsExactlyInAnyOrder(
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testLongCounter",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
-                Descriptor.create(
-                    "testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testDoubleCounter",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), Labels.empty(), 10.1))),
             MetricData.create(
-                Descriptor.create(
-                    "testLongValueRecorder", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testLongValueRecorder",
+                "",
+                "1",
+                MetricData.Type.SUMMARY,
                 Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now(),
@@ -352,10 +440,12 @@ class MeterSdkTest {
                         Arrays.asList(
                             ValueAtPercentile.create(0, 10), ValueAtPercentile.create(100, 10))))),
             MetricData.create(
-                Descriptor.create(
-                    "testDoubleValueRecorder", "", "1", Descriptor.Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testDoubleValueRecorder",
+                "",
+                "1",
+                MetricData.Type.SUMMARY,
                 Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now(),

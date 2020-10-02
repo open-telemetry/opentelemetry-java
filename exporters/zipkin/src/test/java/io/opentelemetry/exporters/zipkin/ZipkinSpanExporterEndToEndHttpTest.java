@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -143,7 +142,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setTraceId(TRACE_ID)
         .setSpanId(SPAN_ID)
         .setParentSpanId(PARENT_SPAN_ID)
-        .setTraceFlags(TraceFlags.builder().setIsSampled(true).build())
+        .setSampled(true)
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)
         .setHasRemoteParent(true)

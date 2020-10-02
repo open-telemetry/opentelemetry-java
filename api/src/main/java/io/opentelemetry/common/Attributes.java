@@ -5,25 +5,34 @@
 
 package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
-import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
-import static io.opentelemetry.common.AttributeValue.longAttributeValue;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longArrayKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * An immutable container for attributes.
  *
- * <p>The keys are {@link String}s and the values are {@link AttributeValue} instances.
+ * <p>The keys are {@link AttributeKey}s and the values are Object instances that match the type of
+ * the provided key.
+ *
+ * <p>Null keys will be silently dropped.
+ *
+ * <p>Note: The behavior of null-valued attributes is undefined, and hence strongly discouraged.
  */
+@SuppressWarnings("rawtypes")
 @Immutable
-public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
+public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Object>
     implements ReadableAttributes {
   private static final Attributes EMPTY = Attributes.newBuilder().build();
 
@@ -41,13 +50,28 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
     }
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T> T get(AttributeKey<T> key) {
+    return (T) super.get(key);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public void forEach(AttributeConsumer consumer) {
+    List<Object> data = data();
+    for (int i = 0; i < data.size(); i += 2) {
+      consumer.consume((AttributeKey) data.get(i), data.get(i + 1));
+    }
+  }
+
   /** Returns a {@link Attributes} instance with no attributes. */
   public static Attributes empty() {
     return EMPTY;
   }
 
   /** Returns a {@link Attributes} instance with a single key-value pair. */
-  public static Attributes of(String key, AttributeValue value) {
+  public static <T> Attributes of(AttributeKey<T> key, T value) {
     return sortAndFilterToAttributes(key, value);
   }
 
@@ -55,8 +79,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
    * Returns a {@link Attributes} instance with two key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Attributes of(
-      String key1, AttributeValue value1, String key2, AttributeValue value2) {
+  public static <T, U> Attributes of(
+      AttributeKey<T> key1, T value1, AttributeKey<U> key2, U value2) {
     return sortAndFilterToAttributes(key1, value1, key2, value2);
   }
 
@@ -64,13 +88,13 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
    * Returns a {@link Attributes} instance with three key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3) {
+  public static <T, U, V> Attributes of(
+      AttributeKey<T> key1,
+      T value1,
+      AttributeKey<U> key2,
+      U value2,
+      AttributeKey<V> key3,
+      V value3) {
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3);
   }
 
@@ -78,15 +102,15 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
    * Returns a {@link Attributes} instance with four key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3,
-      String key4,
-      AttributeValue value4) {
+  public static <T, U, V, W> Attributes of(
+      AttributeKey<T> key1,
+      T value1,
+      AttributeKey<U> key2,
+      U value2,
+      AttributeKey<V> key3,
+      V value3,
+      AttributeKey<W> key4,
+      W value4) {
     return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3, key4, value4);
   }
 
@@ -94,17 +118,17 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
    * Returns a {@link Attributes} instance with five key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3,
-      String key4,
-      AttributeValue value4,
-      String key5,
-      AttributeValue value5) {
+  public static <T, U, V, W, X> Attributes of(
+      AttributeKey<T> key1,
+      T value1,
+      AttributeKey<U> key2,
+      U value2,
+      AttributeKey<V> key3,
+      V value3,
+      AttributeKey<W> key4,
+      W value4,
+      AttributeKey<X> key5,
+      X value5) {
     return sortAndFilterToAttributes(
         key1, value1,
         key2, value2,
@@ -113,7 +137,44 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
         key5, value5);
   }
 
+  /**
+   * Returns a {@link Attributes} instance with the given key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
+   */
+  public static <T, U, V, W, X, Y> Attributes of(
+      AttributeKey<T> key1,
+      T value1,
+      AttributeKey<U> key2,
+      U value2,
+      AttributeKey<V> key3,
+      V value3,
+      AttributeKey<W> key4,
+      W value4,
+      AttributeKey<X> key5,
+      X value5,
+      AttributeKey<Y> key6,
+      Y value6) {
+    return sortAndFilterToAttributes(
+        key1, value1,
+        key2, value2,
+        key3, value3,
+        key4, value4,
+        key5, value5,
+        key6, value6);
+  }
+
   private static Attributes sortAndFilterToAttributes(Object... data) {
+    // null out any empty keys or keys with null values
+    // so they will then be removed by the sortAndFilter method.
+    for (int i = 0; i < data.length; i += 2) {
+      AttributeKey<?> key = (AttributeKey<?>) data[i];
+      if (key != null && (key.getKey() == null || "".equals(key.getKey()))) {
+        data[i] = null;
+      }
+      if (data[i + 1] == null) {
+        data[i] = null;
+      }
+    }
     return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
   }
 
@@ -125,13 +186,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
   /** Returns a new {@link Builder} instance from ReadableAttributes. */
   public static Builder newBuilder(ReadableAttributes attributes) {
     final Builder builder = new Builder();
-    attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
-          @Override
-          public void consume(String key, AttributeValue value) {
-            builder.setAttribute(key, value);
-          }
-        });
+    attributes.forEach(builder::setAttribute);
     return builder;
   }
 
@@ -158,30 +213,14 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
       return sortAndFilterToAttributes(data.toArray());
     }
 
-    /**
-     * Sets a bare {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, AttributeValue value) {
-      if (key == null || key.length() == 0) {
-        return this;
-      }
-      if (value == null || value.isNull()) {
-        // Remove key/value pairs
-        Iterator<Object> itr = data.iterator();
-        while (itr.hasNext()) {
-          String k = (String) itr.next();
-          if (key.equals(k)) {
-            // delete key and value
-            itr.remove();
-            itr.next();
-            itr.remove();
-          } else {
-            // skip the value part
-            itr.next();
-          }
-        }
+    /** Sets a {@link AttributeKey} with associated value into this. */
+    public <T> Builder setAttribute(AttributeKey<Long> key, int value) {
+      return setAttribute(key, (long) value);
+    }
+
+    /** Sets a {@link AttributeKey} with associated value into this. */
+    public <T> Builder setAttribute(AttributeKey<T> key, T value) {
+      if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
         return this;
       }
       data.add(key);
@@ -190,83 +229,109 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue>
     }
 
     /**
-     * Sets a String {@link AttributeValue} into this.
+     * Sets a String attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, String value) {
-      AttributeValue v = stringAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(stringKey(key), value);
     }
 
     /**
-     * Sets a long {@link AttributeValue} into this.
+     * Sets a long attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, long value) {
-      AttributeValue v = longAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(longKey(key), value);
     }
 
     /**
-     * Sets a double {@link AttributeValue} into this.
+     * Sets a double attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, double value) {
-      AttributeValue v = doubleAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(doubleKey(key), value);
     }
 
     /**
-     * Sets a boolean {@link AttributeValue} into this.
+     * Sets a boolean attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, boolean value) {
-      AttributeValue v = booleanAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(booleanKey(key), value);
     }
 
     /**
-     * Sets a String array {@link AttributeValue} into this.
+     * Sets a String array attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, String... value) {
-      AttributeValue v = arrayAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(stringArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
-     * Sets a Long array {@link AttributeValue} into this.
+     * Sets a Long array attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, Long... value) {
-      AttributeValue v = arrayAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(longArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
-     * Sets a Double array {@link AttributeValue} into this.
+     * Sets a Double array attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, Double... value) {
-      AttributeValue v = arrayAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(doubleArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
-     * Sets a Boolean array {@link AttributeValue} into this.
+     * Sets a Boolean array attribute into this.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
     public Builder setAttribute(String key, Boolean... value) {
-      AttributeValue v = arrayAttributeValue(value);
-      return setAttribute(key, v);
+      return setAttribute(booleanArrayKey(key), value == null ? null : Arrays.asList(value));
+    }
+
+    /**
+     * Add all the provided attributes to this Builder.
+     *
+     * @return this Builder
+     */
+    public Builder addAll(Attributes attributes) {
+      data.addAll(attributes.data());
+      return this;
     }
   }
 }

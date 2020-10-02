@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -39,10 +38,12 @@ class EcsResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                ResourceAttributes.CONTAINER_NAME.key(),
-                stringAttributeValue(InetAddress.getLocalHost().getHostName()),
-                ResourceAttributes.CONTAINER_ID.key(),
-                stringAttributeValue("0123456789A")));
+                ResourceAttributes.CLOUD_PROVIDER,
+                "aws",
+                ResourceAttributes.CONTAINER_NAME,
+                InetAddress.getLocalHost().getHostName(),
+                ResourceAttributes.CONTAINER_ID,
+                "0123456789A"));
   }
 
   @Test
@@ -65,8 +66,10 @@ class EcsResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                ResourceAttributes.CONTAINER_NAME.key(),
-                stringAttributeValue(InetAddress.getLocalHost().getHostName())));
+                ResourceAttributes.CLOUD_PROVIDER,
+                "aws",
+                ResourceAttributes.CONTAINER_NAME,
+                InetAddress.getLocalHost().getHostName()));
   }
 
   @Test

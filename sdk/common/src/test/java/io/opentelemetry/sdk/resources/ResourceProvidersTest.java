@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.resources;
 
+import static io.opentelemetry.common.AttributesKeys.longKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeValue;
 import org.junit.jupiter.api.Test;
 
 class ResourceProvidersTest {
@@ -16,8 +16,8 @@ class ResourceProvidersTest {
   void default_resource_includes_attributes_from_providers() {
     Resource resource = Resource.getDefault();
 
-    AttributeValue providerAttribute = resource.getAttributes().get("providerAttribute");
+    long providerAttribute = resource.getAttributes().get(longKey("providerAttribute"));
     assertThat(providerAttribute).isNotNull();
-    assertThat(providerAttribute.getLongValue()).isEqualTo(42);
+    assertThat(providerAttribute).isEqualTo(42);
   }
 }

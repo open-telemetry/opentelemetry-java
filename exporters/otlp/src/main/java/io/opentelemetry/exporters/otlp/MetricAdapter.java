@@ -9,8 +9,8 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
 
+import io.opentelemetry.common.LabelConsumer;
 import io.opentelemetry.common.Labels;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
@@ -24,7 +24,6 @@ import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -88,13 +87,11 @@ final class MetricAdapter {
   // fall through comment isn't working for some reason.
   @SuppressWarnings("fallthrough")
   static Metric toProtoMetric(MetricData metricData) {
-    Descriptor descriptor = metricData.getDescriptor();
     Metric.Builder builder =
         Metric.newBuilder()
-            .setName(descriptor.getName())
-            .setDescription(descriptor.getDescription())
-            .setUnit(descriptor.getUnit());
-
+            .setName(metricData.getName())
+            .setDescription(metricData.getDescription())
+            .setUnit(metricData.getUnit());
     // If no points available then return.
     if (metricData.getPoints().isEmpty()) {
       return builder.build();
@@ -102,7 +99,7 @@ final class MetricAdapter {
 
     boolean monotonic = false;
 
-    switch (descriptor.getType()) {
+    switch (metricData.getType()) {
       case MONOTONIC_LONG:
         monotonic = true;
         // fall through
@@ -110,9 +107,8 @@ final class MetricAdapter {
         builder.setIntSum(
             IntSum.newBuilder()
                 .setIsMonotonic(monotonic)
-                .setAggregationTemporality(mapToTemporality(descriptor))
-                .addAllDataPoints(
-                    toIntDataPoints(metricData.getPoints(), metricData.getDescriptor()))
+                .setAggregationTemporality(mapToTemporality(metricData.getType()))
+                .addAllDataPoints(toIntDataPoints(metricData.getPoints()))
                 .build());
         break;
       case MONOTONIC_DOUBLE:
@@ -122,25 +118,23 @@ final class MetricAdapter {
         builder.setDoubleSum(
             DoubleSum.newBuilder()
                 .setIsMonotonic(monotonic)
-                .setAggregationTemporality(mapToTemporality(descriptor))
-                .addAllDataPoints(
-                    toDoubleDataPoints(metricData.getPoints(), metricData.getDescriptor()))
+                .setAggregationTemporality(mapToTemporality(metricData.getType()))
+                .addAllDataPoints(toDoubleDataPoints(metricData.getPoints()))
                 .build());
         break;
       case SUMMARY:
         builder.setDoubleHistogram(
             DoubleHistogram.newBuilder()
-                .setAggregationTemporality(mapToTemporality(descriptor))
-                .addAllDataPoints(
-                    toSummaryDataPoints(metricData.getPoints(), metricData.getDescriptor()))
+                .setAggregationTemporality(mapToTemporality(metricData.getType()))
+                .addAllDataPoints(toSummaryDataPoints(metricData.getPoints()))
                 .build());
         break;
     }
     return builder.build();
   }
 
-  private static AggregationTemporality mapToTemporality(Descriptor descriptor) {
-    switch (descriptor.getType()) {
+  private static AggregationTemporality mapToTemporality(MetricData.Type type) {
+    switch (type) {
       case NON_MONOTONIC_LONG:
       case NON_MONOTONIC_DOUBLE:
       case MONOTONIC_LONG:
@@ -152,7 +146,7 @@ final class MetricAdapter {
     return AGGREGATION_TEMPORALITY_UNSPECIFIED;
   }
 
-  static List<IntDataPoint> toIntDataPoints(Collection<Point> points, Descriptor descriptor) {
+  static List<IntDataPoint> toIntDataPoints(Collection<Point> points) {
     List<IntDataPoint> result = new ArrayList<>(points.size());
     for (Point point : points) {
       LongPoint longPoint = (LongPoint) point;
@@ -161,10 +155,6 @@ final class MetricAdapter {
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
               .setTimeUnixNano(longPoint.getEpochNanos())
               .setValue(longPoint.getValue());
-      // Avoid calling addAllLabels when not needed to save a couple allocations.
-      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
-        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
-      }
       Collection<StringKeyValue> labels = toProtoLabels(longPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -174,8 +164,7 @@ final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleDataPoint> toDoubleDataPoints(
-      Collection<Point> points, Descriptor descriptor) {
+  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<Point> points) {
     List<DoubleDataPoint> result = new ArrayList<>(points.size());
     for (Point point : points) {
       DoublePoint doublePoint = (DoublePoint) point;
@@ -184,10 +173,6 @@ final class MetricAdapter {
               .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
               .setTimeUnixNano(doublePoint.getEpochNanos())
               .setValue(doublePoint.getValue());
-      // Avoid calling addAllLabels when not needed to save a couple allocations.
-      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
-        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
-      }
       Collection<StringKeyValue> labels = toProtoLabels(doublePoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -197,8 +182,7 @@ final class MetricAdapter {
     return result;
   }
 
-  static List<DoubleHistogramDataPoint> toSummaryDataPoints(
-      Collection<Point> points, Descriptor descriptor) {
+  static List<DoubleHistogramDataPoint> toSummaryDataPoints(Collection<Point> points) {
     List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
     for (Point point : points) {
       SummaryPoint summaryPoint = (SummaryPoint) point;
@@ -208,10 +192,6 @@ final class MetricAdapter {
               .setTimeUnixNano(summaryPoint.getEpochNanos())
               .setCount(summaryPoint.getCount())
               .setSum(summaryPoint.getSum());
-      // Avoid calling addAllLabels when not needed to save a couple allocations.
-      if (descriptor.getConstantLabels() != null && !descriptor.getConstantLabels().isEmpty()) {
-        builder.addAllLabels(toProtoLabels(descriptor.getConstantLabels()));
-      }
       List<StringKeyValue> labels = toProtoLabels(summaryPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
@@ -249,7 +229,7 @@ final class MetricAdapter {
     }
     final List<StringKeyValue> result = new ArrayList<>(labels.size());
     labels.forEach(
-        new KeyValueConsumer<String>() {
+        new LabelConsumer() {
           @Override
           public void consume(String key, String value) {
             result.add(StringKeyValue.newBuilder().setKey(key).setValue(value).build());

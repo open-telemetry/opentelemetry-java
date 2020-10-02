@@ -15,8 +15,6 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * Provides a framework for detection of resource information from the environment variable
  * "OTEL_RESOURCE_ATTRIBUTES" and system properties "otel.resource.attributes".
- *
- * @since 0.1.0
  */
 @ThreadSafe
 final class EnvAutodetectResource {

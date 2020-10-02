@@ -5,8 +5,10 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.promisepropagation;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
@@ -31,7 +33,7 @@ import org.junit.jupiter.api.Test;
 class PromisePropagationTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(PromisePropagationTest.class.getName());
   private Phaser phaser;
 
@@ -92,7 +94,7 @@ class PromisePropagationTest {
       List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(4);
 
-      String component = "component";
+      AttributeKey<String> component = stringKey("component");
       SpanData parentSpanProto = TestUtils.getOneByAttr(finished, component, "example-promises");
       assertThat(parentSpanProto).isNotNull();
       assertThat(SpanId.isValid(parentSpanProto.getParentSpanId())).isFalse();

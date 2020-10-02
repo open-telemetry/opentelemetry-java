@@ -32,7 +32,7 @@ class TracerShimTest {
         new TracerShim(
             new TelemetryInfo(
                 OpenTelemetry.getTracer("opentracingshim"),
-                OpenTelemetry.getCorrelationContextManager(),
+                OpenTelemetry.getBaggageManager(),
                 OpenTelemetry.getPropagators()));
   }
 

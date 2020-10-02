@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.common.InstrumentationLibraryInfo.getEmpty;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -24,20 +23,10 @@ import org.junit.jupiter.api.Test;
 class InstrumentRegistryTest {
   private static final InstrumentDescriptor INSTRUMENT_DESCRIPTOR =
       InstrumentDescriptor.create(
-          "name",
-          "description",
-          "1",
-          Labels.of("key_2", "value_2"),
-          InstrumentType.COUNTER,
-          InstrumentValueType.LONG);
+          "name", "description", "1", InstrumentType.COUNTER, InstrumentValueType.LONG);
   private static final InstrumentDescriptor OTHER_INSTRUMENT_DESCRIPTOR =
       InstrumentDescriptor.create(
-          "name",
-          "other_description",
-          "1",
-          Labels.of("key_2", "value_2"),
-          InstrumentType.COUNTER,
-          InstrumentValueType.LONG);
+          "name", "other_description", "1", InstrumentType.COUNTER, InstrumentValueType.LONG);
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final ActiveBatcher ACTIVE_BATCHER = new ActiveBatcher(Batchers.getNoop());

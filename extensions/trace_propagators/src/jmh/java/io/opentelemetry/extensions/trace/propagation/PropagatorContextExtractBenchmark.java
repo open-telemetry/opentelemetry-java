@@ -101,7 +101,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
+    private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
     @Override
     protected Context doExtract() {
@@ -144,7 +144,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
+    private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
     @Override
     protected Context doExtract() {

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.actorpropagation;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -33,7 +34,7 @@ final class Actor implements AutoCloseable {
   }
 
   Future<?> tell(final String message) {
-    final Span parent = tracer.getCurrentSpan();
+    final Context parent = Context.current();
     phaser.register();
     return executor.submit(
         () -> {
@@ -57,7 +58,7 @@ final class Actor implements AutoCloseable {
   }
 
   Future<String> ask(final String message) {
-    final Span parent = tracer.getCurrentSpan();
+    final Context parent = Context.current();
     phaser.register();
     return executor.submit(
         () -> {

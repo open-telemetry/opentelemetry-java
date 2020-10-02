@@ -34,9 +34,7 @@ class B3PropagatorTest {
   private static final String SHORT_TRACE_ID_FULL = StringUtils.padLeft(SHORT_TRACE_ID, 32);
   private static final String SPAN_ID = "ff00000000000041";
   private static final String SPAN_ID_ALL_ZERO = "0000000000000000";
-  private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
-  private static final TraceFlags SAMPLED_TRACE_OPTIONS =
-      TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
+  private static final byte SAMPLED_TRACE_OPTIONS = TraceFlags.getSampled();
   private static final Setter<Map<String, String>> setter = Map::put;
   private static final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {

@@ -5,15 +5,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -23,8 +22,7 @@ import org.junit.jupiter.api.Test;
 class LongSumObserverSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
-      Resource.create(
-          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
+      Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(
           "io.opentelemetry.sdk.metrics.LongSumObserverSdkTest", null);
@@ -39,7 +37,6 @@ class LongSumObserverSdkTest {
     LongSumObserverSdk longSumObserver =
         testSdk
             .longSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
             .build();
@@ -51,7 +48,6 @@ class LongSumObserverSdkTest {
     LongSumObserverSdk longSumObserver =
         testSdk
             .longSumObserverBuilder("testObserver")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
             .build();
@@ -62,14 +58,12 @@ class LongSumObserverSdkTest {
     assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver",
-                    "My own LongSumObserver",
-                    "ms",
-                    Descriptor.Type.MONOTONIC_LONG,
-                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "My own LongSumObserver",
+                "ms",
+                MetricData.Type.MONOTONIC_LONG,
                 Collections.emptyList()));
   }
 
@@ -81,10 +75,12 @@ class LongSumObserverSdkTest {
     assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -95,10 +91,12 @@ class LongSumObserverSdkTest {
     assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - 2 * SECOND_NANOS,

@@ -10,4 +10,15 @@ package io.opentelemetry.common;
  *
  * <p>See {@link Attributes} for the public API implementation.
  */
-public interface ReadableAttributes extends ReadableKeyValuePairs<AttributeValue> {}
+public interface ReadableAttributes {
+  <T> T get(AttributeKey<T> key);
+
+  /** The number of attributes contained in this. */
+  int size();
+
+  /** Whether there are any attributes contained in this. */
+  boolean isEmpty();
+
+  /** Iterates over all the key-value pairs of attributes contained by this instance. */
+  void forEach(AttributeConsumer consumer);
+}

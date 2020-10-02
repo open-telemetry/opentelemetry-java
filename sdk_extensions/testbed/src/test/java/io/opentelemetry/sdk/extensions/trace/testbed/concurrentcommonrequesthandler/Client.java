@@ -20,7 +20,7 @@ final class Client {
   }
 
   public Future<String> send(final Object message) {
-    final Context context = new Context();
+    final RequestHandlerContext requestHandlerContext = new RequestHandlerContext();
     return executor.submit(
         () -> {
           TestUtils.sleep();
@@ -28,7 +28,7 @@ final class Client {
               .submit(
                   () -> {
                     TestUtils.sleep();
-                    requestHandler.beforeRequest(message, context);
+                    requestHandler.beforeRequest(message, requestHandlerContext);
                   })
               .get();
 
@@ -36,7 +36,7 @@ final class Client {
               .submit(
                   () -> {
                     TestUtils.sleep();
-                    requestHandler.afterResponse(message, context);
+                    requestHandler.afterResponse(message, requestHandlerContext);
                   })
               .get();
 

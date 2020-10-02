@@ -42,21 +42,32 @@ import javax.annotation.concurrent.ThreadSafe;
  * will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time allowed to send each metric
- *       batch.
+ *   <li>{@code otel.exporter.otlp.metric.timeout}: to set the max waiting time allowed to send each
+ *       span batch.
+ *   <li>{@code otel.exporter.otlp.metric.endpoint}: to set the endpoint to connect to.
+ *   <li>{@code otel.exporter.otlp.metric.insecure}: whether to enable client transport security for
+ *       the connection.
+ *   <li>{@code otel.exporter.otlp.metric.headers}: the headers associated with the requests.
  * </ul>
  *
  * <p>For environment variables, {@link OtlpGrpcMetricExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_OTLP_METRIC_TIMEOUT}: to set the max waiting time allowed to send each metric
- *       batch.
+ *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_TIMEOUT}: to set the max waiting time allowed to send each
+ *       span batch.
+ *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_ENDPOINT}: to set the endpoint to connect to.
+ *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_INSECURE}: whether to enable client transport security for
+ *       the connection.
+ *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_HEADERS}: the headers associated with the requests.
  * </ul>
+ *
+ * <p>In both cases, if a property is missing, the name without "span" is used to resolve the value.
  */
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
   public static final String DEFAULT_ENDPOINT = "localhost:55680";
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+  private static final boolean DEFAULT_USE_TLS = false;
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
 
@@ -162,14 +173,14 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   /** Builder utility for this exporter. */
   public static class Builder extends ConfigBuilder<Builder> {
-    private static final String KEY_METRIC_TIMEOUT = "otel.otlp.metric.timeout";
-    private static final String KEY_ENDPOINT = "otel.otlp.endpoint";
-    private static final String KEY_USE_TLS = "otel.otlp.use.tls";
-    private static final String KEY_METADATA = "otel.otlp.metadata";
+    private static final String KEY_TIMEOUT = "otel.exporter.otlp.metric.timeout";
+    private static final String KEY_ENDPOINT = "otel.exporter.otlp.metric.endpoint";
+    private static final String KEY_INSECURE = "otel.exporter.otlp.metric.insecure";
+    private static final String KEY_HEADERS = "otel.exporter.otlp.metric.headers";
     private ManagedChannel channel;
     private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
     private String endpoint = DEFAULT_ENDPOINT;
-    private boolean useTls;
+    private boolean useTls = DEFAULT_USE_TLS;
     @Nullable private Metadata metadata;
 
     /**
@@ -271,24 +282,43 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     protected Builder fromConfigMap(
         Map<String, String> configMap, NamingConvention namingConvention) {
       configMap = namingConvention.normalize(configMap);
-      Long value = getLongProperty(KEY_METRIC_TIMEOUT, configMap);
+
+      Long value = getLongProperty(KEY_TIMEOUT, configMap);
+      if (value == null) {
+        value = getLongProperty(CommonProperties.KEY_TIMEOUT, configMap);
+      }
       if (value != null) {
         this.setDeadlineMs(value);
       }
+
       String endpointValue = getStringProperty(KEY_ENDPOINT, configMap);
+      if (endpointValue == null) {
+        endpointValue = getStringProperty(CommonProperties.KEY_ENDPOINT, configMap);
+      }
       if (endpointValue != null) {
         this.setEndpoint(endpointValue);
       }
 
-      Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
-      if (useTlsValue != null) {
-        this.setUseTls(useTlsValue);
+      Boolean insecure = getBooleanProperty(KEY_INSECURE, configMap);
+      if (insecure == null) {
+        insecure = getBooleanProperty(CommonProperties.KEY_INSECURE, configMap);
+      }
+      if (insecure != null) {
+        this.setUseTls(!insecure);
       }
 
-      String metadataValue = getStringProperty(KEY_METADATA, configMap);
+      String metadataValue = getStringProperty(KEY_HEADERS, configMap);
+      if (metadataValue == null) {
+        metadataValue = getStringProperty(CommonProperties.KEY_HEADERS, configMap);
+      }
       if (metadataValue != null) {
         for (String keyValueString : Splitter.on(';').split(metadataValue)) {
-          final List<String> keyValue = Splitter.on('=').splitToList(keyValueString);
+          final List<String> keyValue =
+              Splitter.on('=')
+                  .limit(2)
+                  .trimResults()
+                  .omitEmptyStrings()
+                  .splitToList(keyValueString);
           if (keyValue.size() == 2) {
             addHeader(keyValue.get(0), keyValue.get(1));
           }

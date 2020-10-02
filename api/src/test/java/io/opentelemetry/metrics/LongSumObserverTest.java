@@ -8,7 +8,6 @@ package io.opentelemetry.metrics;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
@@ -18,9 +17,7 @@ class LongSumObserverTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
-
-  private final Meter meter = OpenTelemetry.getMeter("LongSumObserverTest");
+  private static final Meter meter = OpenTelemetry.getMeter("LongSumObserverTest");
 
   @Test
   void preventNull_Name() {
@@ -45,7 +42,7 @@ class LongSumObserverTest {
 
   @Test
   void preventTooLongName() {
-    char[] chars = new char[StringUtils.NAME_MAX_LENGTH + 1];
+    char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     assertThrows(
@@ -71,14 +68,6 @@ class LongSumObserverTest {
   }
 
   @Test
-  void preventNull_ConstantLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longSumObserverBuilder("metric").setConstantLabels(null).build(),
-        "constantLabels");
-  }
-
-  @Test
   void preventNull_Callback() {
     LongSumObserver longSumObserver = meter.longSumObserverBuilder("metric").build();
     assertThrows(NullPointerException.class, () -> longSumObserver.setCallback(null), "callback");
@@ -87,12 +76,7 @@ class LongSumObserverTest {
   @Test
   void doesNotThrow() {
     LongSumObserver longSumObserver =
-        meter
-            .longSumObserverBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.longSumObserverBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     longSumObserver.setCallback(result -> {});
   }
 }

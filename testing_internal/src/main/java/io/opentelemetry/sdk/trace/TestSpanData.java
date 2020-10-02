@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -15,7 +14,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,14 +39,14 @@ public abstract class TestSpanData implements SpanData {
     return new AutoValue_TestSpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
-        .setLinks(Collections.<Link>emptyList())
+        .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Attributes.empty())
-        .setEvents(Collections.<Event>emptyList())
+        .setEvents(Collections.emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
-        .setTraceFlags(TraceFlags.getDefault())
+        .setSampled(false)
         .setHasRemoteParent(false)
         .setTotalAttributeCount(0);
   }
@@ -96,13 +94,7 @@ public abstract class TestSpanData implements SpanData {
      */
     public abstract Builder setSpanId(String spanId);
 
-    /**
-     * Set the {@link TraceFlags} on this builder.
-     *
-     * @param traceFlags the trace flags.
-     * @return this.
-     */
-    public abstract Builder setTraceFlags(TraceFlags traceFlags);
+    public abstract Builder setSampled(boolean isSampled);
 
     /**
      * Set the {@link TraceState} on this builder.
@@ -169,12 +161,12 @@ public abstract class TestSpanData implements SpanData {
     public abstract Builder setEndEpochNanos(long epochNanos);
 
     /**
-     * Set the attributes that are associated with this span, as a Map of String keys to
-     * AttributeValue instances. Must not be null, may be empty.
+     * Set the attributes that are associated with this span, in the form of {@link
+     * ReadableAttributes}.
      *
-     * @param attributes a Map&lt;String, AttributeValue&gt; of attributes.
+     * @param attributes {@link ReadableAttributes} for this span.
      * @return this
-     * @see AttributeValue
+     * @see ReadableAttributes
      * @since 0.1.0
      */
     public abstract Builder setAttributes(ReadableAttributes attributes);

@@ -7,70 +7,29 @@ package io.opentelemetry.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.testing.EqualsTester;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceFlags}. */
 class TraceFlagsTest {
-  private static final byte FIRST_BYTE = (byte) 0xff;
-  private static final byte SECOND_BYTE = 1;
-  private static final byte THIRD_BYTE = 6;
 
   @Test
-  void getByte() {
-    assertThat(TraceFlags.getDefault().getByte()).isZero();
-    assertThat(TraceFlags.builder().setIsSampled(false).build().getByte()).isZero();
-    assertThat(TraceFlags.builder().setIsSampled(true).build().getByte()).isOne();
-    assertThat(TraceFlags.builder().setIsSampled(true).setIsSampled(false).build().getByte())
-        .isZero();
-    assertThat(TraceFlags.fromByte(FIRST_BYTE).getByte()).isEqualTo((byte) -1);
-    assertThat(TraceFlags.fromByte(SECOND_BYTE).getByte()).isOne();
-    assertThat(TraceFlags.fromByte(THIRD_BYTE).getByte()).isEqualTo((byte) 6);
+  void isDefaultSampled() {
+    assertThat(TraceFlags.getDefault()).isEqualTo((byte) 0x0);
   }
 
   @Test
-  void isSampled() {
-    assertThat(TraceFlags.getDefault().isSampled()).isFalse();
-    assertThat(TraceFlags.builder().setIsSampled(true).build().isSampled()).isTrue();
+  void toBooleanFromBase16() {
+    assertThat(TraceFlags.isSampledFromHex("ff", 0)).isTrue();
+    assertThat(TraceFlags.isSampledFromHex("01", 0)).isTrue();
+    assertThat(TraceFlags.isSampledFromHex("05", 0)).isTrue();
+    assertThat(TraceFlags.isSampledFromHex("00", 0)).isFalse();
   }
 
   @Test
-  void toFromByte() {
-    assertThat(TraceFlags.fromByte(FIRST_BYTE).getByte()).isEqualTo(FIRST_BYTE);
-    assertThat(TraceFlags.fromByte(SECOND_BYTE).getByte()).isEqualTo(SECOND_BYTE);
-    assertThat(TraceFlags.fromByte(THIRD_BYTE).getByte()).isEqualTo(THIRD_BYTE);
-  }
-
-  @Test
-  void toFromBase16() {
-    assertThat(TraceFlags.fromLowerBase16("ff", 0).toLowerBase16()).isEqualTo("ff");
-    assertThat(TraceFlags.fromLowerBase16("01", 0).toLowerBase16()).isEqualTo("01");
-    assertThat(TraceFlags.fromLowerBase16("06", 0).toLowerBase16()).isEqualTo("06");
-  }
-
-  @Test
-  void builder_FromOptions() {
-    assertThat(
-            TraceFlags.builder(TraceFlags.fromByte(THIRD_BYTE))
-                .setIsSampled(true)
-                .build()
-                .getByte())
-        .isEqualTo((byte) (6 | 1));
-  }
-
-  @Test
-  void traceFlags_EqualsAndHashCode() {
-    EqualsTester tester = new EqualsTester();
-    tester.addEqualityGroup(TraceFlags.getDefault());
-    tester.addEqualityGroup(
-        TraceFlags.fromByte(SECOND_BYTE), TraceFlags.builder().setIsSampled(true).build());
-    tester.addEqualityGroup(TraceFlags.fromByte(FIRST_BYTE));
-    tester.testEquals();
-  }
-
-  @Test
-  void traceFlags_ToString() {
-    assertThat(TraceFlags.getDefault().toString()).contains("sampled=false");
-    assertThat(TraceFlags.builder().setIsSampled(true).build().toString()).contains("sampled=true");
+  void toByteFromBase16() {
+    assertThat(TraceFlags.byteFromHex("ff", 0)).isEqualTo((byte) 0xff);
+    assertThat(TraceFlags.byteFromHex("01", 0)).isEqualTo((byte) 0x1);
+    assertThat(TraceFlags.byteFromHex("05", 0)).isEqualTo((byte) 0x5);
+    assertThat(TraceFlags.byteFromHex("00", 0)).isEqualTo((byte) 0x0);
   }
 }

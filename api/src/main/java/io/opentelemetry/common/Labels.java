@@ -12,9 +12,11 @@ import javax.annotation.concurrent.Immutable;
 
 /** An immutable container for labels, which are pairs of {@link String}. */
 @Immutable
-public abstract class Labels extends ImmutableKeyValuePairs<String> {
+public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
 
   private static final Labels EMPTY = Labels.newBuilder().build();
+
+  public abstract void forEach(LabelConsumer consumer);
 
   @AutoValue
   @Immutable
@@ -23,6 +25,14 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
 
     @Override
     abstract List<Object> data();
+
+    @Override
+    public void forEach(LabelConsumer consumer) {
+      List<Object> data = data();
+      for (int i = 0; i < data.size(); i += 2) {
+        consumer.consume((String) data.get(i), (String) data.get(i + 1));
+      }
+    }
   }
 
   /** Returns a {@link Labels} instance with no attributes. */

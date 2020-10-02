@@ -6,9 +6,9 @@
 package io.opentelemetry.trace;
 
 import io.grpc.Context;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -74,18 +74,24 @@ public interface Span {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
-   * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
-   * dropped. Note: this behavior could change in the future.
+   * <p>If a null or empty String {@code value} is passed in, the behavior is undefined, and hence
+   * strongly discouraged.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  void setAttribute(String key, @Nullable String value);
+  void setAttribute(String key, @Nonnull String value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
@@ -97,6 +103,9 @@ public interface Span {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @since 0.1.0
@@ -106,6 +115,9 @@ public interface Span {
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
@@ -117,14 +129,28 @@ public interface Span {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
+   * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
+   *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  void setAttribute(String key, AttributeValue value);
+  <T> void setAttribute(AttributeKey<T> key, @Nonnull T value);
 
   /**
-   * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  default void setAttribute(AttributeKey<Long> key, int value) {
+    setAttribute(key, (long) value);
+  }
+
+  /**
+   * Adds an event to the {@link Span}. The timestamp of the event will be the current time.
    *
    * @param name the name of the event.
    * @since 0.1.0
@@ -147,8 +173,8 @@ public interface Span {
   void addEvent(String name, long timestamp);
 
   /**
-   * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the *
-   * {@link Event} will be the current time.
+   * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the event
+   * will be the current time.
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
@@ -175,29 +201,6 @@ public interface Span {
   void addEvent(String name, Attributes attributes, long timestamp);
 
   /**
-   * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
-   *
-   * @param event the event to add.
-   * @since 0.1.0
-   */
-  void addEvent(Event event);
-
-  /**
-   * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
-   * this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed using
-   * it, for example, by taking a difference of readings from {@link System#nanoTime()} and adding
-   * to the span start time.
-   *
-   * <p>When possible, it is preferred to use {@link #addEvent(String)} at the time the event
-   * occurred.
-   *
-   * @param event the event to add.
-   * @param timestamp the explicit event timestamp in nanos since epoch.
-   * @since 0.1.0
-   */
-  void addEvent(Event event, long timestamp);
-
-  /**
    * Sets the {@link Status} to the {@code Span}.
    *
    * <p>If used, this will override the default {@code Span} status. Default is {@link Status#OK}.
@@ -212,6 +215,10 @@ public interface Span {
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
+   *
+   * <p>Note that {@link io.opentelemetry.trace.attributes.SemanticAttributes#EXCEPTION_ESCAPED}
+   * cannot be determined by this function. You should record this attribute manually using {@link
+   * #recordException(Throwable, Attributes)} if you know that an exception is escaping.
    *
    * @param exception the {@link Throwable} to record.
    * @since 0.7.0
@@ -373,51 +380,6 @@ public interface Span {
   interface Builder {
 
     /**
-     * Sets the parent {@code Span} to use. If not set, the value of {@code Tracer.getCurrentSpan()}
-     * at {@link #startSpan()} time will be used as parent.
-     *
-     * <p>This <b>must</b> be used to create a {@code Span} when manual Context propagation is used
-     * OR when creating a root {@code Span} with a parent with an invalid {@link SpanContext}.
-     *
-     * <p>Observe this is the preferred method when the parent is a {@code Span} created within the
-     * process. Using its {@code SpanContext} as parent remains as a valid, albeit inefficient,
-     * operation.
-     *
-     * <p>If called multiple times, only the last specified value will be used. Observe that the
-     * state defined by a previous call to {@link #setNoParent()} will be discarded.
-     *
-     * @param parent the {@code Span} used as parent.
-     * @return this.
-     * @throws NullPointerException if {@code parent} is {@code null}.
-     * @see #setNoParent()
-     * @since 0.1.0
-     */
-    Builder setParent(Span parent);
-
-    /**
-     * Sets the parent {@link SpanContext} to use. If not set, the value of {@code
-     * Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
-     *
-     * <p>Similar to {@link #setParent(Span parent)} but this <b>must</b> be used to create a {@code
-     * Span} when the parent is in a different process. This is only intended for use by RPC systems
-     * or similar.
-     *
-     * <p>If no {@link SpanContext} is available, users must call {@link #setNoParent()} in order to
-     * create a root {@code Span} for a new trace.
-     *
-     * <p>If called multiple times, only the last specified value will be used. Observe that the
-     * state defined by a previous call to {@link #setNoParent()} will be discarded.
-     *
-     * @param remoteParent the {@link SpanContext} used as parent.
-     * @return this.
-     * @throws NullPointerException if {@code remoteParent} is {@code null}.
-     * @see #setParent(Span parent)
-     * @see #setNoParent()
-     * @since 0.1.0
-     */
-    Builder setParent(SpanContext remoteParent);
-
-    /**
      * Sets the parent to use from the specified {@code Context}. If not set, the value of {@code
      * Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
      *
@@ -448,26 +410,16 @@ public interface Span {
     /**
      * Adds a {@link Link} to the newly created {@code Span}.
      *
+     * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
+     * operations, where a single batch handler processes multiple requests from different traces or
+     * the same trace.
+     *
      * @param spanContext the context of the linked {@code Span}.
      * @return this.
      * @throws NullPointerException if {@code spanContext} is {@code null}.
-     * @see #addLink(Link)
      * @since 0.1.0
      */
     Builder addLink(SpanContext spanContext);
-
-    /**
-     * Adds a {@link Link} to the newly created {@code Span}.
-     *
-     * @param spanContext the context of the linked {@code Span}.
-     * @param attributes the attributes of the {@code Link}.
-     * @return this.
-     * @throws NullPointerException if {@code spanContext} is {@code null}.
-     * @throws NullPointerException if {@code attributes} is {@code null}.
-     * @see #addLink(Link)
-     * @since 0.1.0
-     */
-    Builder addLink(SpanContext spanContext, Attributes attributes);
 
     /**
      * Adds a {@link Link} to the newly created {@code Span}.
@@ -476,19 +428,24 @@ public interface Span {
      * operations, where a single batch handler processes multiple requests from different traces or
      * the same trace.
      *
-     * @param link the {@link Link} to be added.
+     * @param spanContext the context of the linked {@code Span}.
+     * @param attributes the attributes of the {@code Link}.
      * @return this.
-     * @throws NullPointerException if {@code link} is {@code null}.
+     * @throws NullPointerException if {@code spanContext} is {@code null}.
+     * @throws NullPointerException if {@code attributes} is {@code null}.
      * @since 0.1.0
      */
-    Builder addLink(Link link);
+    Builder addLink(SpanContext spanContext, Attributes attributes);
 
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
      *
-     * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
-     * dropped. Note: this behavior could change in the future.
+     * <p>If a null or empty String {@code value} is passed in, the behavior is undefined, and hence
+     * strongly discouraged.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
@@ -496,11 +453,14 @@ public interface Span {
      * @throws NullPointerException if {@code key} is {@code null}.
      * @since 0.3.0
      */
-    Builder setAttribute(String key, @Nullable String value);
+    Builder setAttribute(String key, @Nonnull String value);
 
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
@@ -514,6 +474,9 @@ public interface Span {
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
      *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
+     *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
      * @return this.
@@ -525,6 +488,9 @@ public interface Span {
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+     * pre-allocate your keys, if possible.
      *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
@@ -538,6 +504,8 @@ public interface Span {
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
      *
+     * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
+     *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
      * @return this.
@@ -545,7 +513,7 @@ public interface Span {
      * @throws NullPointerException if {@code value} is {@code null}.
      * @since 0.3.0
      */
-    Builder setAttribute(String key, AttributeValue value);
+    <T> Builder setAttribute(AttributeKey<T> key, @Nonnull T value);
 
     /**
      * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the

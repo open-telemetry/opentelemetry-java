@@ -96,6 +96,12 @@ public final class InMemorySpanExporter implements SpanExporter {
     return CompletableResultCode.ofSuccess();
   }
 
+  /**
+   * Clears the internal {@code List} of finished {@code SpanData}s.
+   *
+   * <p>Any subsequent call to export() function on this SpanExporter, will return {@code
+   * CompletableResultCode.ofFailure()}
+   */
   @Override
   public CompletableResultCode shutdown() {
     synchronized (this) {

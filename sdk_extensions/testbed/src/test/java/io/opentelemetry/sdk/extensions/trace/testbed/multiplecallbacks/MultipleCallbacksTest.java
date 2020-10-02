@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 class MultipleCallbacksTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(MultipleCallbacksTest.class.getName());
 
   @Test

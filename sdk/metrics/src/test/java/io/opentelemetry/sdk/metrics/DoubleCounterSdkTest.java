@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleCounter;
@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -27,8 +26,7 @@ import org.junit.jupiter.api.Test;
 class DoubleCounterSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
-      Resource.create(
-          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
+      Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.DoubleCounterSdkTest", null);
   private final TestClock testClock = TestClock.create();
@@ -58,21 +56,16 @@ class DoubleCounterSdkTest {
     DoubleCounterSdk doubleCounter =
         testSdk
             .doubleCounterBuilder("testCounter")
-            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
     List<MetricData> metricDataList = doubleCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
-    assertThat(metricData.getDescriptor())
-        .isEqualTo(
-            Descriptor.create(
-                "testCounter",
-                "My very own counter",
-                "ms",
-                Descriptor.Type.MONOTONIC_DOUBLE,
-                Labels.of("sk1", "sv1")));
+    assertThat(metricData.getName()).isEqualTo("testCounter");
+    assertThat(metricData.getDescription()).isEqualTo("My very own counter");
+    assertThat(metricData.getUnit()).isEqualTo("ms");
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.MONOTONIC_DOUBLE);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -106,7 +99,7 @@ class DoubleCounterSdkTest {
     doubleCounter1.add(12.1d);
 
     assertThat(doubleCounter.collectAll().get(0))
-        .isEqualToIgnoringGivenFields(doubleCounter1.collectAll().get(0), "descriptor");
+        .isEqualToIgnoringGivenFields(doubleCounter1.collectAll().get(0), "name");
   }
 
   @Test

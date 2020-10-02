@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.promisepropagation;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -14,7 +15,7 @@ import java.util.Collection;
 final class Promise<T> {
   private final PromiseContext context;
   private final Tracer tracer;
-  private final Span parentSpan;
+  private final Context parent;
 
   private final Collection<SuccessCallback<T>> successCallbacks = new ArrayList<>();
   private final Collection<ErrorCallback> errorCallbacks = new ArrayList<>();
@@ -24,7 +25,7 @@ final class Promise<T> {
 
     // Passed along here for testing. Normally should be referenced via GlobalTracer.get().
     this.tracer = tracer;
-    parentSpan = tracer.getCurrentSpan();
+    parent = Context.current();
   }
 
   void onSuccess(SuccessCallback<T> successCallback) {
@@ -40,7 +41,7 @@ final class Promise<T> {
     for (final SuccessCallback<T> callback : successCallbacks) {
       context.submit(
           () -> {
-            Span childSpan = tracer.spanBuilder("success").setParent(parentSpan).startSpan();
+            Span childSpan = tracer.spanBuilder("success").setParent(parent).startSpan();
             childSpan.setAttribute("component", "success");
             try (Scope ignored = tracer.withSpan(childSpan)) {
               callback.accept(result);
@@ -57,7 +58,7 @@ final class Promise<T> {
     for (final ErrorCallback callback : errorCallbacks) {
       context.submit(
           () -> {
-            Span childSpan = tracer.spanBuilder("error").setParent(parentSpan).startSpan();
+            Span childSpan = tracer.spanBuilder("error").setParent(parent).startSpan();
             childSpan.setAttribute("component", "error");
             try (Scope ignored = tracer.withSpan(childSpan)) {
               callback.accept(error);

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
@@ -30,8 +30,7 @@ public class TracezDataAggregatorBenchmark {
   private static final String runningSpan = "RUNNING_SPAN";
   private static final String latencySpan = "LATENCY_SPAN";
   private static final String errorSpan = "ERROR_SPAN";
-  private final Tracer tracer =
-      OpenTelemetrySdk.getTracerProvider().get("TracezDataAggregatorBenchmark");
+  private final Tracer tracer = OpenTelemetry.getTracer("TracezDataAggregatorBenchmark");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
 
@@ -44,7 +43,7 @@ public class TracezDataAggregatorBenchmark {
       tracer.spanBuilder(runningSpan).startSpan();
       tracer.spanBuilder(latencySpan).startSpan().end();
       Span error = tracer.spanBuilder(errorSpan).startSpan();
-      error.setStatus(Status.UNKNOWN);
+      error.setStatus(Status.ERROR);
       error.end();
     }
   }

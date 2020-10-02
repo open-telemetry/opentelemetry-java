@@ -13,7 +13,7 @@ ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk"
 dependencies {
     api project(':opentelemetry-api'),
             project(':opentelemetry-sdk-common'),
-            project(':opentelemetry-sdk-correlation-context'),
+            project(':opentelemetry-sdk-baggage'),
             project(':opentelemetry-sdk-metrics'),
             project(':opentelemetry-sdk-tracing')
 
@@ -34,7 +34,7 @@ dependencies {
         transitive = false
     }
 
-    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 

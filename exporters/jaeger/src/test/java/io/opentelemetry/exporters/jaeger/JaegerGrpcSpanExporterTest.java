@@ -113,14 +113,14 @@ class JaegerGrpcSpanExporterTest {
 
     assertEquals(
         "io.opentelemetry.auto",
-        getSpanTagValue(batch.getSpans(0), "otel.instrumentation_library.name")
-            .orElseThrow(() -> new AssertionError("otel.instrumentation_library.name not found"))
+        getSpanTagValue(batch.getSpans(0), "otel.library.name")
+            .orElseThrow(() -> new AssertionError("otel.library.name not found"))
             .getVStr());
 
     assertEquals(
         "1.0.0",
-        getSpanTagValue(batch.getSpans(0), "otel.instrumentation_library.version")
-            .orElseThrow(() -> new AssertionError("otel.instrumentation_library.version not found"))
+        getSpanTagValue(batch.getSpans(0), "otel.library.version")
+            .orElseThrow(() -> new AssertionError("otel.library.version not found"))
             .getVStr());
 
     boolean foundClientTag = false;
@@ -156,8 +156,8 @@ class JaegerGrpcSpanExporterTest {
     Map<String, String> options = new HashMap<>();
     String serviceName = "myGreatService";
     String endpoint = "127.0.0.1:9090";
-    options.put("otel.jaeger.service.name", serviceName);
-    options.put("otel.jaeger.endpoint", endpoint);
+    options.put("otel.exporter.jaeger.service.name", serviceName);
+    options.put("otel.exporter.jaeger.endpoint", endpoint);
     JaegerGrpcSpanExporter.Builder config = JaegerGrpcSpanExporter.newBuilder();
     JaegerGrpcSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();

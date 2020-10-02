@@ -7,14 +7,14 @@ package io.opentelemetry.sdk;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Obfuscated;
-import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * This class provides a static global accessor for SDK telemetry objects {@link TracerSdkProvider},
- * {@link MeterSdkProvider} and {@link CorrelationContextManagerSdk}.
+ * This class provides a static global accessor for SDK telemetry objects {@link
+ * TracerSdkManagement}, {@link MeterSdkProvider} and {@link BaggageManagerSdk}.
  *
  * <p>This is a convenience class getting and casting the telemetry objects from {@link
  * OpenTelemetry}.
@@ -24,33 +24,30 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OpenTelemetrySdk {
   /**
-   * Returns a {@link TracerSdkProvider}.
+   * Returns a {@link TracerSdkManagement}.
    *
-   * @return TracerProvider returned by {@link OpenTelemetry#getTracerProvider()}.
-   * @since 0.1.0
+   * @return TracerSdkManagement for managing your Tracing SDK.
    */
-  public static TracerSdkProvider getTracerProvider() {
-    return (TracerSdkProvider) ((Obfuscated<?>) OpenTelemetry.getTracerProvider()).unobfuscate();
+  public static TracerSdkManagement getTracerManagement() {
+    return (TracerSdkManagement) ((Obfuscated<?>) OpenTelemetry.getTracerProvider()).unobfuscate();
   }
 
   /**
    * Returns a {@link MeterSdkProvider}.
    *
    * @return MeterProvider returned by {@link OpenTelemetry#getMeterProvider()}.
-   * @since 0.1.0
    */
   public static MeterSdkProvider getMeterProvider() {
     return (MeterSdkProvider) OpenTelemetry.getMeterProvider();
   }
 
   /**
-   * Returns a {@link CorrelationContextManagerSdk}.
+   * Returns a {@link BaggageManagerSdk}.
    *
-   * @return context manager returned by {@link OpenTelemetry#getCorrelationContextManager()}.
-   * @since 0.1.0
+   * @return context manager returned by {@link OpenTelemetry#getBaggageManager()}.
    */
-  public static CorrelationContextManagerSdk getCorrelationContextManager() {
-    return (CorrelationContextManagerSdk) OpenTelemetry.getCorrelationContextManager();
+  public static BaggageManagerSdk getBaggageManager() {
+    return (BaggageManagerSdk) OpenTelemetry.getBaggageManager();
   }
 
   private OpenTelemetrySdk() {}

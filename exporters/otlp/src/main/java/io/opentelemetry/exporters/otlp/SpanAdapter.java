@@ -11,9 +11,9 @@ import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Status.CanonicalCode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -97,9 +98,9 @@ final class SpanAdapter {
     spanData
         .getAttributes()
         .forEach(
-            new KeyValueConsumer<AttributeValue>() {
+            new AttributeConsumer() {
               @Override
-              public void consume(String key, AttributeValue value) {
+              public <T> void consume(AttributeKey<T> key, T value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
               }
             });
@@ -140,9 +141,9 @@ final class SpanAdapter {
     event
         .getAttributes()
         .forEach(
-            new KeyValueConsumer<AttributeValue>() {
+            new AttributeConsumer() {
               @Override
-              public void consume(String key, AttributeValue value) {
+              public <T> void consume(AttributeKey<T> key, T value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
               }
             });
@@ -158,19 +159,24 @@ final class SpanAdapter {
     // TODO: Set TraceState;
     Attributes attributes = link.getAttributes();
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue value) {
+          public <T> void consume(AttributeKey<T> key, T value) {
             builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
           }
         });
+
     builder.setDroppedAttributesCount(link.getTotalAttributeCount() - attributes.size());
     return builder.build();
   }
 
   static Status toStatusProto(io.opentelemetry.trace.Status status) {
-    Status.Builder builder =
-        Status.newBuilder().setCode(StatusCode.forNumber(status.getCanonicalCode().value()));
+    // todo: Update this when the proto definitions are updated to include UNSET and ERROR
+    StatusCode protoStatusCode = StatusCode.STATUS_CODE_OK;
+    if (status.getCanonicalCode() == CanonicalCode.ERROR) {
+      protoStatusCode = StatusCode.STATUS_CODE_UNKNOWN_ERROR;
+    }
+    Status.Builder builder = Status.newBuilder().setCode(protoStatusCode);
     if (status.getDescription() != null) {
       builder.setMessage(status.getDescription());
     }

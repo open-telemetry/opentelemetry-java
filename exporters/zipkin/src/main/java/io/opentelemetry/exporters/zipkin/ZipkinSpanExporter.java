@@ -5,11 +5,13 @@
 
 package io.opentelemetry.exporters.zipkin;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.AttributeType;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -51,15 +53,15 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
  * will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.zipkin.service.name}: to set the service name.
- *   <li>{@code otel.zipkin.endpoint}: to set the endpoint URL.
+ *   <li>{@code otel.exporter.zipkin.service.name}: to set the service name.
+ *   <li>{@code otel.exporter.zipkin.endpoint}: to set the endpoint URL.
  * </ul>
  *
  * <p>For environment variables, {@link ZipkinSpanExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_ZIPKIN_SERVICE_NAME}: to set the service name.
- *   <li>{@code OTEL_ZIPKIN_ENDPOINT}: to set the endpoint URL.
+ *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the service name.
+ *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the endpoint URL.
  * </ul>
  */
 public final class ZipkinSpanExporter implements SpanExporter {
@@ -68,16 +70,12 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
-  // The naming follows Zipkin convention. For http see here:
-  // https://github.com/openzipkin/brave/blob/eee993f998ae57b08644cc357a6d478827428710/instrumentation/http/src/main/java/brave/http/HttpTags.java
-  // For discussion about GRPC errors/tags, see here:  https://github.com/openzipkin/brave/pull/999
-  // Note: these 3 fields are non-private for testing
-  static final String GRPC_STATUS_CODE = "grpc.status_code";
-  static final String GRPC_STATUS_DESCRIPTION = "grpc.status_description";
-  static final String STATUS_ERROR = "error";
+  static final String OTEL_STATUS_CODE = "otel.status_code";
+  static final String OTEL_STATUS_DESCRIPTION = "otel.status_description";
+  static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
-  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.instrumentation_library.name";
-  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.instrumentation_library.version";
+  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
+  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
   private final BytesEncoder<Span> encoder;
   private final Sender sender;
@@ -118,7 +116,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
     Endpoint endpoint = chooseEndpoint(spanData, localEndpoint);
 
     long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());
-
     long endTimestamp = toEpochMicros(spanData.getEndEpochNanos());
 
     final Span.Builder spanBuilder =
@@ -128,7 +125,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
             .kind(toSpanKind(spanData))
             .name(spanData.getName())
             .timestamp(toEpochMicros(spanData.getStartEpochNanos()))
-            .duration(endTimestamp - startTimestamp)
+            .duration(Math.max(1, endTimestamp - startTimestamp))
             .localEndpoint(endpoint);
 
     if (SpanId.isValid(spanData.getParentSpanId())) {
@@ -137,23 +134,23 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     ReadableAttributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue value) {
-            spanBuilder.putTag(key, attributeValueToString(value));
+          public <T> void consume(AttributeKey<T> key, T value) {
+            spanBuilder.putTag(key.getKey(), valueToString(key, value));
           }
         });
     Status status = spanData.getStatus();
     // for GRPC spans, include status code & description.
-    if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE.key()) != null) {
-      spanBuilder.putTag(GRPC_STATUS_CODE, status.getCanonicalCode().toString());
+    if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE) != null) {
+      spanBuilder.putTag(OTEL_STATUS_CODE, status.getCanonicalCode().toString());
       if (status.getDescription() != null) {
-        spanBuilder.putTag(GRPC_STATUS_DESCRIPTION, status.getDescription());
+        spanBuilder.putTag(OTEL_STATUS_DESCRIPTION, status.getDescription());
       }
     }
     // add the error tag, if it isn't already in the source span.
     if (status != null && !status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
-      spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
+      spanBuilder.putTag(STATUS_ERROR.getKey(), status.getCanonicalCode().toString());
     }
 
     InstrumentationLibraryInfo instrumentationLibraryInfo =
@@ -178,11 +175,11 @@ public final class ZipkinSpanExporter implements SpanExporter {
     ReadableAttributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
-    AttributeValue serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME.key());
+    String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
     if (serviceNameValue == null) {
       return localEndpoint;
     }
-    return Endpoint.newBuilder().serviceName(serviceNameValue.getStringValue()).build();
+    return Endpoint.newBuilder().serviceName(serviceNameValue).build();
   }
 
   @Nullable
@@ -212,25 +209,19 @@ public final class ZipkinSpanExporter implements SpanExporter {
     return NANOSECONDS.toMicros(epochNanos);
   }
 
-  private static String attributeValueToString(AttributeValue attributeValue) {
-    AttributeValue.Type type = attributeValue.getType();
+  private static <T> String valueToString(AttributeKey<T> key, T attributeValue) {
+    AttributeType type = key.getType();
     switch (type) {
       case STRING:
-        return attributeValue.getStringValue();
       case BOOLEAN:
-        return String.valueOf(attributeValue.getBooleanValue());
       case LONG:
-        return String.valueOf(attributeValue.getLongValue());
       case DOUBLE:
-        return String.valueOf(attributeValue.getDoubleValue());
+        return String.valueOf(attributeValue);
       case STRING_ARRAY:
-        return commaSeparated(attributeValue.getStringArrayValue());
       case BOOLEAN_ARRAY:
-        return commaSeparated(attributeValue.getBooleanArrayValue());
       case LONG_ARRAY:
-        return commaSeparated(attributeValue.getLongArrayValue());
       case DOUBLE_ARRAY:
-        return commaSeparated(attributeValue.getDoubleArrayValue());
+        return commaSeparated((List<?>) attributeValue);
     }
     throw new IllegalStateException("Unknown attribute type: " + type);
   }
@@ -299,8 +290,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   /** Builder class for {@link ZipkinSpanExporter}. */
   public static final class Builder extends ConfigBuilder<Builder> {
-    private static final String KEY_SERVICE_NAME = "otel.zipkin.service.name";
-    private static final String KEY_ENDPOINT = "otel.zipkin.endpoint";
+    private static final String KEY_SERVICE_NAME = "otel.exporter.zipkin.service.name";
+    private static final String KEY_ENDPOINT = "otel.exporter.zipkin.endpoint";
     private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
     private Sender sender;
     private String serviceName = DEFAULT_SERVICE_NAME;

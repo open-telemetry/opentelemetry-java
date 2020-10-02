@@ -229,7 +229,7 @@ class CompletableResultCodeTest {
               result.succeed();
             })
         .start();
-    assertThat(result.join(500, TimeUnit.MILLISECONDS).isSuccess()).isTrue();
+    assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     // Already completed, synchronous call.
     assertThat(result.join(0, TimeUnit.NANOSECONDS).isSuccess()).isTrue();
   }

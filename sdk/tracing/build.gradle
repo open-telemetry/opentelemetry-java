@@ -7,8 +7,8 @@ plugins {
 }
 
 description = 'OpenTelemetry SDK Tracing'
-ext.moduleName = "io.opentelemetry.sdk.tracing"
-ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/tracing"
+ext.moduleName = "io.opentelemetry.sdk.trace"
+ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/trace"
 
 dependencies {
     api project(':opentelemetry-api'),
@@ -24,10 +24,9 @@ dependencies {
     testCompile project(path: ':opentelemetry-sdk-common', configuration: 'testClasses')
 
     testImplementation project(':opentelemetry-testing-internal')
-    testImplementation libraries.junit_pioneer,
-            libraries.awaitility
+    testImplementation libraries.junit_pioneer
 
-    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 

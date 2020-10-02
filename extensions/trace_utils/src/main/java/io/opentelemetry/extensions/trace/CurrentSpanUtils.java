@@ -110,7 +110,7 @@ public final class CurrentSpanUtils {
 
   private static void setErrorStatus(Span span, Throwable t) {
     span.setStatus(
-        Status.UNKNOWN.withDescription(
+        Status.ERROR.withDescription(
             t.getMessage() == null ? t.getClass().getSimpleName() : t.getMessage()));
   }
 }

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -41,9 +40,10 @@ class TracerSdkTest {
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
   private final TracerSdk tracer =
-      TracerSdkProvider.builder()
-          .build()
-          .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+      (TracerSdk)
+          TracerSdkProvider.builder()
+              .build()
+              .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
   @BeforeEach
   void setUp() {
@@ -108,7 +108,8 @@ class TracerSdkTest {
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =
-        tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+        (TracerSdk)
+            tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
@@ -130,7 +131,8 @@ class TracerSdkTest {
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =
-        tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+        (TracerSdk)
+            tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
@@ -197,7 +199,7 @@ class TracerSdkTest {
     public void update() {
       Span span = tracer.spanBuilder("testSpan").startSpan();
       try (Scope ignored = tracer.withSpan(span)) {
-        span.setAttribute("testAttribute", AttributeValue.stringAttributeValue("testValue"));
+        span.setAttribute("testAttribute", "testValue");
       } finally {
         span.end();
       }

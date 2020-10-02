@@ -27,8 +27,7 @@ class AwsXRayPropagatorTest {
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.getDefault();
 
   private static final String SPAN_ID_BASE16 = "53995c3f42cd8ad8";
-  private static final TraceFlags SAMPLED_TRACE_FLAG =
-      TraceFlags.builder().setIsSampled(true).build();
+  private static final byte SAMPLED_TRACE_FLAG = TraceFlags.getSampled();
 
   private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
   private static final TextMapPropagator.Getter<Map<String, String>> getter =
@@ -39,7 +38,7 @@ class AwsXRayPropagatorTest {
           return carrier.get(key);
         }
       };
-  private final AwsXRayPropagator xrayPropagator = new AwsXRayPropagator();
+  private final AwsXRayPropagator xrayPropagator = AwsXRayPropagator.getInstance();
 
   @Test
   void inject_SampledContext() {

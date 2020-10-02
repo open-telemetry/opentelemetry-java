@@ -9,13 +9,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.opentelemetry.baggage.Baggage;
+import io.opentelemetry.baggage.BaggageManager;
+import io.opentelemetry.baggage.DefaultBaggageManager;
+import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.correlationcontext.CorrelationContext;
-import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;
@@ -60,7 +60,7 @@ class OpenTelemetryTest {
     OpenTelemetry.reset();
     System.clearProperty(TracerProviderFactory.class.getName());
     System.clearProperty(MeterProviderFactory.class.getName());
-    System.clearProperty(CorrelationContextManagerFactory.class.getName());
+    System.clearProperty(BaggageManagerFactory.class.getName());
   }
 
   @Test
@@ -69,10 +69,8 @@ class OpenTelemetryTest {
     assertThat(OpenTelemetry.getTracerProvider()).isSameAs(OpenTelemetry.getTracerProvider());
     assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
     assertThat(OpenTelemetry.getMeterProvider()).isSameAs(OpenTelemetry.getMeterProvider());
-    assertThat(OpenTelemetry.getCorrelationContextManager())
-        .isInstanceOf(DefaultCorrelationContextManager.class);
-    assertThat(OpenTelemetry.getCorrelationContextManager())
-        .isSameAs(OpenTelemetry.getCorrelationContextManager());
+    assertThat(OpenTelemetry.getBaggageManager()).isInstanceOf(DefaultBaggageManager.class);
+    assertThat(OpenTelemetry.getBaggageManager()).isSameAs(OpenTelemetry.getBaggageManager());
     assertThat(OpenTelemetry.getPropagators()).isInstanceOf(DefaultContextPropagators.class);
     assertThat(OpenTelemetry.getPropagators()).isSameAs(OpenTelemetry.getPropagators());
   }
@@ -158,48 +156,38 @@ class OpenTelemetryTest {
   }
 
   @Test
-  void testCorrelationContextManagerLoadArbitrary() throws IOException {
+  void testBaggageManagerLoadArbitrary() throws IOException {
     File serviceFile =
         createService(
-            CorrelationContextManagerFactory.class,
-            FirstCorrelationContextManager.class,
-            SecondCorrelationContextManager.class);
+            BaggageManagerFactory.class, FirstBaggageManager.class, SecondBaggageManager.class);
     try {
       assertTrue(
-          (OpenTelemetry.getCorrelationContextManager() instanceof FirstCorrelationContextManager)
-              || (OpenTelemetry.getCorrelationContextManager()
-                  instanceof SecondCorrelationContextManager));
-      assertThat(OpenTelemetry.getCorrelationContextManager())
-          .isEqualTo(OpenTelemetry.getCorrelationContextManager());
+          (OpenTelemetry.getBaggageManager() instanceof FirstBaggageManager)
+              || (OpenTelemetry.getBaggageManager() instanceof SecondBaggageManager));
+      assertThat(OpenTelemetry.getBaggageManager()).isEqualTo(OpenTelemetry.getBaggageManager());
     } finally {
       serviceFile.delete();
     }
   }
 
   @Test
-  void testCorrelationContextManagerSystemProperty() throws IOException {
+  void testBaggageManagerSystemProperty() throws IOException {
     File serviceFile =
         createService(
-            CorrelationContextManagerFactory.class,
-            FirstCorrelationContextManager.class,
-            SecondCorrelationContextManager.class);
-    System.setProperty(
-        CorrelationContextManagerFactory.class.getName(),
-        SecondCorrelationContextManager.class.getName());
+            BaggageManagerFactory.class, FirstBaggageManager.class, SecondBaggageManager.class);
+    System.setProperty(BaggageManagerFactory.class.getName(), SecondBaggageManager.class.getName());
     try {
-      assertThat(OpenTelemetry.getCorrelationContextManager())
-          .isInstanceOf(SecondCorrelationContextManager.class);
-      assertThat(OpenTelemetry.getCorrelationContextManager())
-          .isEqualTo(OpenTelemetry.getCorrelationContextManager());
+      assertThat(OpenTelemetry.getBaggageManager()).isInstanceOf(SecondBaggageManager.class);
+      assertThat(OpenTelemetry.getBaggageManager()).isEqualTo(OpenTelemetry.getBaggageManager());
     } finally {
       serviceFile.delete();
     }
   }
 
   @Test
-  void testCorrelationContextManagerNotFound() {
-    System.setProperty(CorrelationContextManagerFactory.class.getName(), "io.does.not.exists");
-    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getCorrelationContextManager());
+  void testBaggageManagerNotFound() {
+    System.setProperty(BaggageManagerFactory.class.getName(), "io.does.not.exists");
+    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getBaggageManager());
   }
 
   @Test
@@ -395,35 +383,34 @@ class OpenTelemetryTest {
     }
   }
 
-  public static class SecondCorrelationContextManager extends FirstCorrelationContextManager {
+  public static class SecondBaggageManager extends FirstBaggageManager {
     @Override
-    public CorrelationContextManager create() {
-      return new SecondCorrelationContextManager();
+    public BaggageManager create() {
+      return new SecondBaggageManager();
     }
   }
 
-  public static class FirstCorrelationContextManager
-      implements CorrelationContextManager, CorrelationContextManagerFactory {
+  public static class FirstBaggageManager implements BaggageManager, BaggageManagerFactory {
     @Override
-    public CorrelationContextManager create() {
-      return new FirstCorrelationContextManager();
+    public BaggageManager create() {
+      return new FirstBaggageManager();
     }
 
     @Nullable
     @Override
-    public CorrelationContext getCurrentContext() {
+    public Baggage getCurrentBaggage() {
       return null;
     }
 
     @Nullable
     @Override
-    public CorrelationContext.Builder contextBuilder() {
+    public Baggage.Builder baggageBuilder() {
       return null;
     }
 
     @Nullable
     @Override
-    public Scope withContext(CorrelationContext distContext) {
+    public Scope withContext(Baggage distContext) {
       return null;
     }
   }

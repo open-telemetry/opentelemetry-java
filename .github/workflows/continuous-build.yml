@@ -1,0 +1,45 @@
+name: "Continuous Build"
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        java:
+          # Test all OS's with Java 11
+          - 11
+        include:
+          - os: ubuntu-latest
+            java: 11
+            coverage: true
+          - os: ubuntu-latest
+            java: 8
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - uses: burrunan/gradle-cache-action@v1.5
+        with:
+          job-id: jdk${{ matrix.java }}
+          remote-build-cache-proxy-enabled: false
+          arguments: check --stacktrace ${{ matrix.coverage && ':opentelemetry-all:jacocoTestReport' || '' }}
+          properties: |
+            enable.docker.tests=${{ matrix.os == 'ubuntu-latest' }}
+      - uses: codecov/codecov-action@v1
+        if: ${{ matrix.coverage }}

@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.AttributeValue;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
+
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -31,9 +32,7 @@ public final class TestUtils {
    * @return some {@link io.opentelemetry.common.Attributes}
    */
   static Attributes generateRandomAttributes() {
-    return Attributes.of(
-        UUID.randomUUID().toString(),
-        AttributeValue.stringAttributeValue(UUID.randomUUID().toString()));
+    return Attributes.of(stringKey(UUID.randomUUID().toString()), UUID.randomUUID().toString());
   }
 
   /**
@@ -64,9 +63,9 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkProvider tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
+      TracerSdkManagement tracerSdkManagement, Tracer tracer, String spanName, Sampler sampler) {
     return startSpanWithSampler(
-        tracerSdkFactory, tracer, spanName, sampler, Collections.emptyMap());
+        tracerSdkManagement, tracer, spanName, sampler, Collections.emptyMap());
   }
 
   /**
@@ -76,23 +75,21 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkProvider tracerSdkFactory,
+      TracerSdkManagement tracerSdkManagement,
       Tracer tracer,
       String spanName,
       Sampler sampler,
-      Map<String, AttributeValue> attributes) {
-    TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
-    tracerSdkFactory.updateActiveTraceConfig(
+      Map<String, String> attributes) {
+    TraceConfig originalConfig = tracerSdkManagement.getActiveTraceConfig();
+    tracerSdkManagement.updateActiveTraceConfig(
         originalConfig.toBuilder().setSampler(sampler).build());
     try {
       Span.Builder builder = tracer.spanBuilder(spanName);
-      for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-        builder.setAttribute(entry.getKey(), entry.getValue());
-      }
+      attributes.forEach(builder::setAttribute);
 
       return builder;
     } finally {
-      tracerSdkFactory.updateActiveTraceConfig(originalConfig);
+      tracerSdkManagement.updateActiveTraceConfig(originalConfig);
     }
   }
 }

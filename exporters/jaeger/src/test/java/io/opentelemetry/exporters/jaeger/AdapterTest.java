@@ -5,13 +5,20 @@
 
 package io.opentelemetry.exporters.jaeger;
 
+import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
+import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
+import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributesKeys.longArrayKey;
+import static io.opentelemetry.common.AttributesKeys.longKey;
+import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
@@ -26,6 +33,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -132,40 +140,20 @@ class AdapterTest {
   }
 
   @Test
-  void testKeyValues() {
-    // prepare
-    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-
-    // test
-    Collection<Model.KeyValue> keyValues =
-        Adapter.toKeyValues(Collections.singletonMap("valueB", valueB));
-
-    // verify
-    // the actual content is checked in some other test
-    assertEquals(1, keyValues.size());
-  }
-
-  @Test
   void testKeyValue() {
-    // prepare
-    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-    AttributeValue valueD = AttributeValue.doubleAttributeValue(1.);
-    AttributeValue valueI = AttributeValue.longAttributeValue(2);
-    AttributeValue valueS = AttributeValue.stringAttributeValue("foobar");
-    AttributeValue valueArrayB = AttributeValue.arrayAttributeValue(true, false);
-    AttributeValue valueArrayD = AttributeValue.arrayAttributeValue(1.2345, 6.789);
-    AttributeValue valueArrayI = AttributeValue.arrayAttributeValue(12345L, 67890L);
-    AttributeValue valueArrayS = AttributeValue.arrayAttributeValue("foobar", "barfoo");
-
     // test
-    Model.KeyValue kvB = Adapter.toKeyValue("valueB", valueB);
-    Model.KeyValue kvD = Adapter.toKeyValue("valueD", valueD);
-    Model.KeyValue kvI = Adapter.toKeyValue("valueI", valueI);
-    Model.KeyValue kvS = Adapter.toKeyValue("valueS", valueS);
-    Model.KeyValue kvArrayB = Adapter.toKeyValue("valueArrayB", valueArrayB);
-    Model.KeyValue kvArrayD = Adapter.toKeyValue("valueArrayD", valueArrayD);
-    Model.KeyValue kvArrayI = Adapter.toKeyValue("valueArrayI", valueArrayI);
-    Model.KeyValue kvArrayS = Adapter.toKeyValue("valueArrayS", valueArrayS);
+    Model.KeyValue kvB = Adapter.toKeyValue(booleanKey("valueB"), true);
+    Model.KeyValue kvD = Adapter.toKeyValue(doubleKey("valueD"), 1.);
+    Model.KeyValue kvI = Adapter.toKeyValue(longKey("valueI"), 2L);
+    Model.KeyValue kvS = Adapter.toKeyValue(stringKey("valueS"), "foobar");
+    Model.KeyValue kvArrayB =
+        Adapter.toKeyValue(booleanArrayKey("valueArrayB"), Arrays.asList(true, false));
+    Model.KeyValue kvArrayD =
+        Adapter.toKeyValue(doubleArrayKey("valueArrayD"), Arrays.asList(1.2345, 6.789));
+    Model.KeyValue kvArrayI =
+        Adapter.toKeyValue(longArrayKey("valueArrayI"), Arrays.asList(12345L, 67890L));
+    Model.KeyValue kvArrayS =
+        Adapter.toKeyValue(stringArrayKey("valueArrayS"), Arrays.asList("foobar", "barfoo"));
 
     // verify
     assertTrue(kvB.getVBool());
@@ -219,7 +207,7 @@ class AdapterTest {
   }
 
   @Test
-  void testStatusNotOk() {
+  void testStatusNotUnset() {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
@@ -231,7 +219,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.CANCELLED)
+            .setStatus(Status.ERROR)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
             .build();
@@ -243,10 +231,10 @@ class AdapterTest {
   void testSpanError() {
     Attributes attributes =
         Attributes.of(
-            "error.type",
-            AttributeValue.stringAttributeValue(this.getClass().getName()),
-            "error.message",
-            AttributeValue.stringAttributeValue("server error"));
+            stringKey("error.type"),
+            this.getClass().getName(),
+            stringKey("error.message"),
+            "server error");
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
@@ -258,7 +246,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.UNKNOWN)
+            .setStatus(Status.ERROR)
             .setAttributes(attributes)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
@@ -275,14 +263,12 @@ class AdapterTest {
 
   private static EventImpl getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-    AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
-    Attributes attributes = Attributes.of("foo", valueS);
+    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
     return EventImpl.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
-    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-    Attributes attributes = Attributes.of("valueB", valueB);
+    Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
@@ -294,7 +280,7 @@ class AdapterTest {
         .setName("GET /api/endpoint")
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-        .setAttributes(Attributes.of("valueB", valueB))
+        .setAttributes(Attributes.of(booleanKey("valueB"), true))
         .setEvents(Collections.singletonList(getTimedEvent()))
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
@@ -307,7 +293,7 @@ class AdapterTest {
 
   private static SpanContext createSpanContext(String traceId, String spanId) {
     return SpanContext.create(
-        traceId, spanId, TraceFlags.builder().build(), TraceState.builder().build());
+        traceId, spanId, TraceFlags.getDefault(), TraceState.builder().build());
   }
 
   @Nullable

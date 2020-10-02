@@ -22,36 +22,30 @@ class OsResourceTest {
   void linux() {
     assumeThat(System.getProperty("os.name").toLowerCase()).startsWith("linux");
     Attributes attributes = RESOURCE.getAttributes();
-    assertThat(attributes.get(ResourceAttributes.OS_NAME.key()).getStringValue())
-        .isEqualTo("LINUX");
-    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION.key()).getStringValue())
-        .isNotEmpty();
+    assertThat(attributes.get(ResourceAttributes.OS_NAME)).isEqualTo("LINUX");
+    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotEmpty();
   }
 
   @Test
   void macos() {
     assumeThat(System.getProperty("os.name").toLowerCase()).startsWith("mac");
     Attributes attributes = RESOURCE.getAttributes();
-    assertThat(attributes.get(ResourceAttributes.OS_NAME.key()).getStringValue())
-        .isEqualTo("DARWIN");
-    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION.key()).getStringValue())
-        .isNotEmpty();
+    assertThat(attributes.get(ResourceAttributes.OS_NAME)).isEqualTo("DARWIN");
+    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotEmpty();
   }
 
   @Test
   void windows() {
     assumeThat(System.getProperty("os.name").toLowerCase()).startsWith("windows");
     Attributes attributes = RESOURCE.getAttributes();
-    assertThat(attributes.get(ResourceAttributes.OS_NAME.key()).getStringValue())
-        .isEqualTo("WINDOWS");
-    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION.key()).getStringValue())
-        .isNotEmpty();
+    assertThat(attributes.get(ResourceAttributes.OS_NAME)).isEqualTo("WINDOWS");
+    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotEmpty();
   }
 
   @Test
   void inDefault() {
     ReadableAttributes attributes = Resource.getDefault().getAttributes();
-    assertThat(attributes.get(ResourceAttributes.OS_NAME.key())).isNotNull();
-    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION.key())).isNotNull();
+    assertThat(attributes.get(ResourceAttributes.OS_NAME)).isNotNull();
+    assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotNull();
   }
 }

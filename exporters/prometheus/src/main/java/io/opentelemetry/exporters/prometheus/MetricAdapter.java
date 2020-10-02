@@ -7,9 +7,9 @@ package io.opentelemetry.exporters.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
+import io.opentelemetry.common.LabelConsumer;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -45,22 +45,21 @@ final class MetricAdapter {
 
   // Converts a MetricData to a Prometheus MetricFamilySamples.
   static MetricFamilySamples toMetricFamilySamples(MetricData metricData) {
-    Descriptor descriptor = metricData.getDescriptor();
-    String cleanMetricName = cleanMetricName(descriptor.getName());
-    Collector.Type type = toMetricFamilyType(descriptor.getType());
+    String cleanMetricName = cleanMetricName(metricData.getName());
+    Collector.Type type = toMetricFamilyType(metricData.getType());
 
     return new MetricFamilySamples(
         cleanMetricName,
         type,
-        descriptor.getDescription(),
-        toSamples(cleanMetricName, descriptor, metricData.getPoints()));
+        metricData.getDescription(),
+        toSamples(cleanMetricName, metricData.getType(), metricData.getPoints()));
   }
 
   private static String cleanMetricName(String descriptorMetricName) {
     return Collector.sanitizeMetricName(descriptorMetricName);
   }
 
-  static Collector.Type toMetricFamilyType(MetricData.Descriptor.Type type) {
+  static Collector.Type toMetricFamilyType(MetricData.Type type) {
     switch (type) {
       case NON_MONOTONIC_LONG:
       case NON_MONOTONIC_DOUBLE:
@@ -75,34 +74,22 @@ final class MetricAdapter {
   }
 
   // Converts a list of points from MetricData to a list of Prometheus Samples.
-  static List<Sample> toSamples(String name, Descriptor descriptor, Collection<Point> points) {
-    final List<Sample> samples =
-        new ArrayList<>(estimateNumSamples(points.size(), descriptor.getType()));
-
-    List<String> constLabelNames = Collections.emptyList();
-    List<String> constLabelValues = Collections.emptyList();
-    if (descriptor.getConstantLabels().size() != 0) {
-      constLabelNames = new ArrayList<>(descriptor.getConstantLabels().size());
-      constLabelValues = new ArrayList<>(descriptor.getConstantLabels().size());
-      descriptor.getConstantLabels().forEach(new Consumer(constLabelNames, constLabelValues));
-    }
+  static List<Sample> toSamples(String name, MetricData.Type type, Collection<Point> points) {
+    final List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
 
     for (Point point : points) {
       List<String> labelNames = Collections.emptyList();
       List<String> labelValues = Collections.emptyList();
-      if (constLabelNames.size() + point.getLabels().size() != 0) {
-        labelNames =
-            new ArrayList<>(descriptor.getConstantLabels().size() + point.getLabels().size());
-        labelNames.addAll(constLabelNames);
-        labelValues =
-            new ArrayList<>(descriptor.getConstantLabels().size() + point.getLabels().size());
-        labelValues.addAll(constLabelValues);
+      Labels labels = point.getLabels();
+      if (labels.size() != 0) {
+        labelNames = new ArrayList<>(labels.size());
+        labelValues = new ArrayList<>(labels.size());
 
         // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
-        point.getLabels().forEach(new Consumer(labelNames, labelValues));
+        labels.forEach(new Consumer(labelNames, labelValues));
       }
 
-      switch (descriptor.getType()) {
+      switch (type) {
         case MONOTONIC_DOUBLE:
         case NON_MONOTONIC_DOUBLE:
           DoublePoint doublePoint = (DoublePoint) point;
@@ -126,7 +113,7 @@ final class MetricAdapter {
     return Collector.sanitizeMetricName(labelKey);
   }
 
-  private static final class Consumer implements KeyValueConsumer<String> {
+  private static final class Consumer implements LabelConsumer {
     final List<String> labelNames;
     final List<String> labelValues;
 
@@ -166,7 +153,7 @@ final class MetricAdapter {
     }
   }
 
-  private static int estimateNumSamples(int numPoints, Descriptor.Type type) {
+  private static int estimateNumSamples(int numPoints, MetricData.Type type) {
     switch (type) {
       case NON_MONOTONIC_LONG:
       case NON_MONOTONIC_DOUBLE:

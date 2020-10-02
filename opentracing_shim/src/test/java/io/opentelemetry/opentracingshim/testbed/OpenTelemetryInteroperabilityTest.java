@@ -8,10 +8,11 @@ package io.opentelemetry.opentracingshim.testbed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
@@ -22,12 +23,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class OpenTelemetryInteroperabilityTest {
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final io.opentelemetry.trace.Tracer tracer = sdk.get("opentracingshim");
+  private final io.opentelemetry.trace.Tracer tracer = OpenTelemetry.getTracer("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder()
+          .setTracerSdkManagement(OpenTelemetrySdk.getTracerManagement())
+          .build();
   private final Tracer otTracer =
-      TraceShim.createTracerShim(sdk, DefaultCorrelationContextManager.getInstance());
+      TraceShim.createTracerShim(
+          OpenTelemetry.getTracerProvider(), DefaultBaggageManager.getInstance());
 
   @BeforeEach
   void before() {

@@ -14,6 +14,118 @@ ext {
 subprojects {
     group = "io.opentelemetry"
     version = "0.9.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
+
+    plugins.withId("maven-publish") {
+        // Always include the artifactory/bintray plugins to do the deployment.
+        pluginManager.apply "com.jfrog.artifactory"
+        pluginManager.apply "com.jfrog.bintray"
+
+        publishing {
+            publications {
+                mavenPublication(MavenPublication) {
+                    version version
+                    groupId group
+
+                    plugins.withId("java-platform") {
+                        from(components["javaPlatform"])
+                    }
+                    plugins.withId("java-library") {
+                        from(components["java"])
+                    }
+
+                    versionMapping {
+                        allVariants {
+                            fromResolutionResult()
+                        }
+                    }
+
+                    pom {
+                        name = 'OpenTelemetry Java'
+                        packaging = 'jar'
+                        url = 'https://github.com/open-telemetry/opentelemetry-java'
+
+                        licenses {
+                            license {
+                                name = 'The Apache License, Version 2.0'
+                                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id = 'opentelemetry'
+                                name = 'OpenTelemetry Gitter'
+                                url = 'https://gitter.im/open-telemetry/community'
+                            }
+                        }
+
+                        scm {
+                            connection = 'scm:git:git@github.com:open-telemetry/opentelemetry-java.git'
+                            developerConnection = 'scm:git:git@github.com:open-telemetry/opentelemetry-java.git'
+                            url = 'git@github.com:open-telemetry/opentelemetry-java.git'
+                        }
+
+                        afterEvaluate {
+                            // description is not available until evaluated.
+                            description = project.description
+                        }
+                    }
+                }
+            }
+        }
+
+        // Snapshot publishing.
+        artifactory {
+            contextUrl = 'https://oss.jfrog.org'
+            publish {
+                repository {
+                    repoKey = 'oss-snapshot-local'
+                    username = System.getenv("BINTRAY_USER")
+                    password = System.getenv("BINTRAY_KEY")
+                }
+                defaults {
+                    publications('mavenPublication')
+                    publishArtifacts = true
+                    publishPom = true
+                }
+            }
+            resolve {
+                repoKey = 'libs-release'
+            }
+        }
+
+        // Release artifacts publishing.
+        bintray {
+            user = System.getenv("BINTRAY_USER")
+            key = System.getenv("BINTRAY_KEY")
+            publications = ['mavenPublication']
+
+            publish = true
+
+            pkg {
+                repo = 'maven'
+                name = 'opentelemetry-java'
+                licenses = ['Apache-2.0']
+                vcsUrl = 'https://github.com/open-telemetry/opentelemetry-java.git'
+                userOrg = 'open-telemetry'
+
+                githubRepo = 'open-telemetry/opentelemetry-java'
+
+                version {
+                    name = project.version
+
+                    gpg {
+                        sign = true
+                    }
+
+                    mavenCentralSync {
+                        user = System.getenv("SONATYPE_USER")
+                        password = System.getenv("SONATYPE_KEY")
+                    }
+                }
+            }
+        }
+    }
 }
 
 configure(opentelemetryProjects) {
@@ -34,8 +146,13 @@ configure(opentelemetryProjects) {
         mavenLocal()
     }
 
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
 
     tasks.withType(JavaCompile) {
         it.options.compilerArgs += [
@@ -59,16 +176,10 @@ configure(opentelemetryProjects) {
         // but currently uses javax.annotation.concurrent.Immutable
         it.options.errorprone.disable("ImmutableRefactoring") // "-Xep:ImmutableRefactoring:OFF"
 
-        // Yep, we're using an obsolete JDK.
-        it.options.errorprone.disable("JdkObsolete")
 
         // AutoValueImmutableFields suggests returning Guava types from API methods
         it.options.errorprone.disable("AutoValueImmutableFields")
         // "-Xep:AutoValueImmutableFields:OFF"
-
-        // UnnecessaryAnonymousClass requires Java 8 but we target Java 7
-        it.options.errorprone.disable("UnnecessaryAnonymousClass")
-        // "-Xep:UnnecessaryAnonymousClass:OFF"
 
         it.options.encoding = "UTF-8"
 
@@ -76,19 +187,26 @@ configure(opentelemetryProjects) {
         it.options.errorprone.excludedPaths = ".*generated.*"
         // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
 
+        it.options.errorprone.disable("Java7ApiChecker")
+        it.options.errorprone.disable("AndroidJdkLibsChecker")
+        //apparently disabling android doesn't disable this
+        it.options.errorprone.disable("StaticOrDefaultInterfaceMethod")
+
+        //until we have everything converted, we need these
+        it.options.errorprone.disable("JdkObsolete")
+        it.options.errorprone.disable("UnnecessaryAnonymousClass")
+
         it.options.compilerArgs += ["-Werror"]
     }
 
     compileTestJava {
         // serialVersionUID is basically guaranteed to be useless in tests
         options.compilerArgs += ["-Xlint:-serial"]
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
 
         // Disable Java7 checks in test sources
-        options.errorprone.disable("Java7ApiChecker")
+//        options.errorprone.disable("Java7ApiChecker")
         // Disable AndroidJdkLibs checks in test sources
-        options.errorprone.disable("AndroidJdkLibsChecker")
+//        options.errorprone.disable("AndroidJdkLibsChecker")
     }
 
     jar.manifest {
@@ -213,6 +331,7 @@ configure(opentelemetryProjects) {
                 libraries.mockito,
                 libraries.mockito_junit_jupiter,
                 libraries.assertj,
+                libraries.awaitility,
                 libraries.guava_testlib
 
         testRuntimeOnly libraries.junit_jupiter_engine,
@@ -267,20 +386,6 @@ configure(opentelemetryProjects) {
     signing {
         required false
         sign configurations.archives
-    }
-
-    task javadocJar(type: Jar) {
-        classifier = 'javadoc'
-        from javadoc
-    }
-
-    task sourcesJar(type: Jar) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-    artifacts {
-        archives javadocJar, sourcesJar
     }
 
     // At a test failure, log the stack trace to the console so that we don't
@@ -338,115 +443,6 @@ configure(opentelemetryProjects) {
 
         // Always run jmhReport after jmh task.
         tasks.jmh.finalizedBy tasks.jmhReport
-    }
-
-    plugins.withId("maven-publish") {
-        // Always include the artifactory/bintray plugins to do the deployment.
-        pluginManager.apply "com.jfrog.artifactory"
-        pluginManager.apply "com.jfrog.bintray"
-
-        publishing {
-            publications {
-                mavenPublication(MavenPublication) {
-                    version version
-                    groupId group
-
-                    from components.java
-                    artifact sourcesJar
-                    artifact javadocJar
-
-                    versionMapping {
-                        allVariants {
-                            fromResolutionResult()
-                        }
-                    }
-
-                    pom {
-                        name = 'OpenTelemetry Java'
-                        packaging = 'jar'
-                        url = 'https://github.com/open-telemetry/opentelemetry-java'
-
-                        licenses {
-                            license {
-                                name = 'The Apache License, Version 2.0'
-                                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                            }
-                        }
-
-                        developers {
-                            developer {
-                                id = 'opentelemetry'
-                                name = 'OpenTelemetry Gitter'
-                                url = 'https://gitter.im/open-telemetry/community'
-                            }
-                        }
-
-                        scm {
-                            connection = 'scm:git:git@github.com:open-telemetry/opentelemetry-java.git'
-                            developerConnection = 'scm:git:git@github.com:open-telemetry/opentelemetry-java.git'
-                            url = 'git@github.com:open-telemetry/opentelemetry-java.git'
-                        }
-
-                        afterEvaluate {
-                            // description is not available until evaluated.
-                            description = project.description
-                        }
-                    }
-                }
-            }
-        }
-
-        // Snapshot publishing.
-        artifactory {
-            contextUrl = 'https://oss.jfrog.org'
-            publish {
-                repository {
-                    repoKey = 'oss-snapshot-local'
-                    username = System.getenv("BINTRAY_USER")
-                    password = System.getenv("BINTRAY_KEY")
-                }
-                defaults {
-                    publications('mavenPublication')
-                    publishArtifacts = true
-                    publishPom = true
-                }
-            }
-            resolve {
-                repoKey = 'libs-release'
-            }
-        }
-
-        // Release artifacts publishing.
-        bintray {
-            user = System.getenv("BINTRAY_USER")
-            key = System.getenv("BINTRAY_KEY")
-            publications = ['mavenPublication']
-
-            publish = true
-
-            pkg {
-                repo = 'maven'
-                name = 'opentelemetry-java'
-                licenses = ['Apache-2.0']
-                vcsUrl = 'https://github.com/open-telemetry/opentelemetry-java.git'
-                userOrg = 'open-telemetry'
-
-                githubRepo = 'open-telemetry/opentelemetry-java'
-
-                version {
-                    name = project.version
-
-                    gpg {
-                        sign = true
-                    }
-
-                    mavenCentralSync {
-                        user = System.getenv("SONATYPE_USER")
-                        password = System.getenv("SONATYPE_KEY")
-                    }
-                }
-            }
-        }
     }
 }
 

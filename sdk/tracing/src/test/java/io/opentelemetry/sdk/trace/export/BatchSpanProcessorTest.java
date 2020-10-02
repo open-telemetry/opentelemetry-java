@@ -60,7 +60,7 @@ class BatchSpanProcessorTest {
     tracerSdkFactory.shutdown();
   }
 
-  // TODO(bdrutu): Fix this when Sampler return RECORD option.
+  // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
   /*
   private ReadableSpan createNotSampledRecordingEventsEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
@@ -87,10 +87,10 @@ class BatchSpanProcessorTest {
   @Test
   void configTest() {
     Map<String, String> options = new HashMap<>();
-    options.put("otel.bsp.schedule.delay", "12");
-    options.put("otel.bsp.max.queue", "34");
-    options.put("otel.bsp.max.export.batch", "56");
-    options.put("otel.bsp.export.timeout", "78");
+    options.put("otel.bsp.schedule.delay.millis", "12");
+    options.put("otel.bsp.max.queue.size", "34");
+    options.put("otel.bsp.max.export.batch.size", "56");
+    options.put("otel.bsp.export.timeout.millis", "78");
     options.put("otel.bsp.export.sampled", "false");
     BatchSpanProcessor.Builder config =
         BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
@@ -389,7 +389,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void exportNotSampledSpans_recordingEvents() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD option.
+    // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
     /*
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(waitingSpanExporter)
@@ -405,7 +405,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void exportNotSampledSpans_reportOnlySampled() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD option.
+    // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
     /*
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.newBuilder(waitingSpanExporter)

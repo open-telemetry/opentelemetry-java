@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 public final class LateSpanFinishTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(LateSpanFinishTest.class.getName());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 

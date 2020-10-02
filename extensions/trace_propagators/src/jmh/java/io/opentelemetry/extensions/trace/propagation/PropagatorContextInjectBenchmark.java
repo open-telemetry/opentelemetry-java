@@ -76,17 +76,15 @@ public class PropagatorContextInjectBenchmark {
     }
 
     private static SpanContext createTestSpanContext(String traceId, String spanId) {
-      byte sampledTraceOptionsBytes = 1;
-      TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
       TraceState traceStateDefault = TraceState.builder().build();
-      return SpanContext.create(traceId, spanId, sampledTraceOptions, traceStateDefault);
+      return SpanContext.create(traceId, spanId, TraceFlags.getSampled(), traceStateDefault);
     }
   }
 
   /** Benchmark for injecting trace context into Jaeger headers. */
   public static class JaegerContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
-    private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
+    private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
     private final TextMapPropagator.Setter<Map<String, String>> setter =
         new TextMapPropagator.Setter<Map<String, String>>() {
           @Override

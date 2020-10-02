@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.nestedcallbacks;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
@@ -31,8 +32,8 @@ public final class NestedCallbacksTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
-  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new BaggageManagerSdk());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -52,8 +53,7 @@ public final class NestedCallbacksTest {
     ReadableAttributes attrs = spans.get(0).getAttributes();
     assertEquals(3, attrs.size());
     for (int i = 1; i <= 3; i++) {
-      assertEquals(
-          Integer.toString(i), spans.get(0).getAttributes().get("key" + i).getStringValue());
+      assertEquals(Integer.toString(i), spans.get(0).getAttributes().get(stringKey("key" + i)));
     }
 
     assertNull(tracer.scopeManager().activeSpan());

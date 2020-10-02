@@ -23,5 +23,14 @@
  * 126, inclusive) and less than 256 characters. Type and attribute keys MUST have a length greater
  * than zero. They SHOULD start with a domain name and separate hierarchies with / characters, e.g.
  * k8s.io/namespace/name.
+ *
+ * <p>One environment variable is used to disable resource provider implementations that are found
+ * on the classpath:
+ *
+ * <ul>
+ *   <li>OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS: A comma-separated list of fully qualified class
+ *       names representing resource provider implementations that are found on the classpath but
+ *       should be disabled.
+ * </ul>
  */
 package io.opentelemetry.sdk.resources;

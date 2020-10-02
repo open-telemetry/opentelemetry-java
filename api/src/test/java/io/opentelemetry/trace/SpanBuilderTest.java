@@ -5,10 +5,11 @@
 
 package io.opentelemetry.trace;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeValue;
+import io.grpc.Context;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Span.Kind;
 import org.junit.jupiter.api.Test;
@@ -21,44 +22,24 @@ class SpanBuilderTest {
   void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(DefaultSpan.getInvalid());
-    spanBuilder.setParent(DefaultSpan.getInvalid().getContext());
+    spanBuilder.setParent(TracingContextUtils.withSpan(DefaultSpan.create(null), Context.ROOT));
+    spanBuilder.setParent(Context.ROOT);
     spanBuilder.setNoParent();
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
-    spanBuilder.addLink(
-        new Link() {
-          private final SpanContext spanContext = DefaultSpan.getInvalid().getContext();
-
-          @Override
-          public SpanContext getContext() {
-            return spanContext;
-          }
-
-          @Override
-          public Attributes getAttributes() {
-            return Attributes.empty();
-          }
-        });
     spanBuilder.setAttribute("key", "value");
     spanBuilder.setAttribute("key", 12345L);
     spanBuilder.setAttribute("key", .12345);
     spanBuilder.setAttribute("key", true);
-    spanBuilder.setAttribute("key", AttributeValue.stringAttributeValue("value"));
+    spanBuilder.setAttribute(stringKey("key"), "value");
     spanBuilder.setStartTimestamp(12345L);
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
-  void setParent_NullSpan() {
+  void setParent_NullContext() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    assertThrows(NullPointerException.class, () -> spanBuilder.setParent((Span) null));
-  }
-
-  @Test
-  void setParent_NullSpanContext() {
-    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    assertThrows(NullPointerException.class, () -> spanBuilder.setParent((SpanContext) null));
+    assertThrows(NullPointerException.class, () -> spanBuilder.setParent(null));
   }
 
   @Test

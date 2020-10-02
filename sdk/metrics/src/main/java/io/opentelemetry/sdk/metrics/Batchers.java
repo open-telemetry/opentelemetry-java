@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
@@ -40,10 +39,10 @@ final class Batchers {
       MeterSharedState meterSharedState,
       Aggregation aggregation) {
     return new AllLabels(
-        getDefaultMetricDescriptor(descriptor, aggregation),
+        descriptor,
+        aggregation,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        aggregation.getAggregatorFactory(descriptor.getValueType()),
         meterProviderSharedState.getClock(),
         /* delta= */ false);
   }
@@ -58,10 +57,10 @@ final class Batchers {
       MeterSharedState meterSharedState,
       Aggregation aggregation) {
     return new AllLabels(
-        getDefaultMetricDescriptor(descriptor, aggregation),
+        descriptor,
+        aggregation,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        aggregation.getAggregatorFactory(descriptor.getValueType()),
         meterProviderSharedState.getClock(),
         /* delta= */ true);
   }
@@ -84,7 +83,8 @@ final class Batchers {
   }
 
   private static final class AllLabels implements Batcher {
-    private final Descriptor descriptor;
+    private final InstrumentDescriptor descriptor;
+    private final Aggregation aggregation;
     private final Resource resource;
     private final InstrumentationLibraryInfo instrumentationLibraryInfo;
     private final Clock clock;
@@ -94,17 +94,18 @@ final class Batchers {
     private final boolean delta;
 
     private AllLabels(
-        Descriptor descriptor,
+        InstrumentDescriptor descriptor,
+        Aggregation aggregation,
         Resource resource,
         InstrumentationLibraryInfo instrumentationLibraryInfo,
-        AggregatorFactory aggregatorFactory,
         Clock clock,
         boolean delta) {
       this.descriptor = descriptor;
+      this.aggregation = aggregation;
       this.resource = resource;
       this.instrumentationLibraryInfo = instrumentationLibraryInfo;
       this.clock = clock;
-      this.aggregatorFactory = aggregatorFactory;
+      this.aggregatorFactory = aggregation.getAggregatorFactory(descriptor.getValueType());
       this.delta = delta;
       this.aggregatorMap = new HashMap<>();
       startEpochNanos = clock.now();
@@ -145,18 +146,15 @@ final class Batchers {
         aggregatorMap = new HashMap<>();
       }
       return Collections.singletonList(
-          MetricData.create(descriptor, resource, instrumentationLibraryInfo, points));
+          MetricData.create(
+              resource,
+              instrumentationLibraryInfo,
+              descriptor.getName(),
+              descriptor.getDescription(),
+              aggregation.getUnit(descriptor.getUnit()),
+              aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
+              points));
     }
-  }
-
-  private static Descriptor getDefaultMetricDescriptor(
-      InstrumentDescriptor descriptor, Aggregation aggregation) {
-    return Descriptor.create(
-        descriptor.getName(),
-        descriptor.getDescription(),
-        aggregation.getUnit(descriptor.getUnit()),
-        aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
-        descriptor.getConstantLabels());
   }
 
   private Batchers() {}

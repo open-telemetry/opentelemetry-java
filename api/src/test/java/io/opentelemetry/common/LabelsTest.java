@@ -67,8 +67,8 @@ class LabelsTest {
   void deduplication() {
     Labels one =
         Labels.of(
-            "key1", "value1",
-            "key1", "valueX");
+            "key1", "valueX",
+            "key1", "value1");
     Labels two = Labels.of("key1", "value1");
 
     assertThat(one).isEqualTo(two);
@@ -99,9 +99,9 @@ class LabelsTest {
   void builder() {
     Labels labels =
         Labels.newBuilder()
+            .setLabel("key1", "duplicateShouldBeIgnored")
             .setLabel("key1", "value1")
             .setLabel("key2", "value2")
-            .setLabel("key1", "duplicateShouldBeIgnored")
             .build();
 
     assertThat(labels)

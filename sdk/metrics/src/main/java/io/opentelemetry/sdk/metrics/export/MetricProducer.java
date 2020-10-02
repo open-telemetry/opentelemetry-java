@@ -15,8 +15,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * #collectAllMetrics()} will return any metric generated since the last call was made.
  *
  * <p>Implementations must be thread-safe.
- *
- * @since 0.3.0
  */
 @ThreadSafe
 public interface MetricProducer {
@@ -25,7 +23,6 @@ public interface MetricProducer {
    * metrics that have been produced since the last time this method was called.
    *
    * @return a collection of produced {@link MetricData}s to be exported.
-   * @since 0.17
    */
   Collection<MetricData> collectAllMetrics();
 }

@@ -68,28 +68,28 @@ class TraceConfigTest {
   }
 
   @Test
-  void updateTraceConfig_InvalidSamplerProbability() {
+  void updateTraceConfig_InvalidTraceIdRatioBased() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> TraceConfig.getDefault().toBuilder().setSamplerProbability(2).build());
+        () -> TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(2).build());
   }
 
   @Test
-  void updateTraceConfig_NegativeSamplerProbability() {
+  void updateTraceConfig_NegativeTraceIdRatioBased() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> TraceConfig.getDefault().toBuilder().setSamplerProbability(-1).build());
+        () -> TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(-1).build());
   }
 
   @Test
-  void updateTraceConfig_OffSamplerProbability() {
-    TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().setSamplerProbability(0).build();
+  void updateTraceConfig_OffTraceIdRatioBased() {
+    TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(0).build();
     assertThat(traceConfig.getSampler()).isSameAs(Samplers.alwaysOff());
   }
 
   @Test
-  void updateTraceConfig_OnSamplerProbability() {
-    TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().setSamplerProbability(1).build();
+  void updateTraceConfig_OnTraceIdRatioBased() {
+    TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(1).build();
 
     Sampler sampler = traceConfig.getSampler();
     assertThat(sampler).isEqualTo(Samplers.parentBased(Samplers.alwaysOn()));

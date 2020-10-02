@@ -5,12 +5,14 @@
 
 package io.opentelemetry.sdk.resources;
 
+import static io.opentelemetry.common.AttributesKeys.stringKey;
+
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Objects;
@@ -22,8 +24,6 @@ import javax.annotation.concurrent.Immutable;
 /**
  * {@link Resource} represents a resource, which capture identifying information about the entities
  * for which signals (stats or traces) are reported.
- *
- * @since 0.1.0
  */
 @Immutable
 @AutoValue
@@ -36,13 +36,24 @@ public abstract class Resource {
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
-  private static final Resource TELEMETRY_SDK =
-      create(
-          Attributes.newBuilder()
-              .setAttribute("telemetry.sdk.name", "opentelemetry")
-              .setAttribute("telemetry.sdk.language", "java")
-              .setAttribute("telemetry.sdk.version", readVersion())
-              .build());
+
+  // todo: move to ResourceAttributes
+  private static final AttributeKey<String> SDK_NAME = stringKey("telemetry.sdk.name");
+  private static final AttributeKey<String> SDK_LANGUAGE = stringKey("telemetry.sdk.language");
+  private static final AttributeKey<String> SDK_VERSION = stringKey("telemetry.sdk.version");
+
+  private static final Resource TELEMETRY_SDK;
+
+  static {
+    TELEMETRY_SDK =
+        create(
+            Attributes.newBuilder()
+                .setAttribute(SDK_NAME, "opentelemetry")
+                .setAttribute(SDK_LANGUAGE, "java")
+                .setAttribute(SDK_VERSION, readVersion())
+                .build());
+  }
+
   private static final Resource DEFAULT =
       new EnvAutodetectResource.Builder()
           .readEnvironmentVariables()
@@ -65,8 +76,15 @@ public abstract class Resource {
   }
 
   private static Resource readResourceFromProviders() {
+    ResourcesConfig resourcesConfig =
+        ResourcesConfig.newBuilder().readEnvironmentVariables().readSystemProperties().build();
     Resource result = Resource.EMPTY;
     for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
+      if (resourcesConfig
+          .getDisabledResourceProviders()
+          .contains(resourceProvider.getClass().getName())) {
+        continue;
+      }
       result = result.merge(resourceProvider.create());
     }
     return result;
@@ -78,7 +96,6 @@ public abstract class Resource {
    * Returns an empty {@link Resource}.
    *
    * @return an empty {@code Resource}.
-   * @since 0.1.0
    */
   public static Resource getEmpty() {
     return EMPTY;
@@ -88,7 +105,6 @@ public abstract class Resource {
    * Returns the telemetry sdk {@link Resource}.
    *
    * @return a {@code Resource} with telemetry sdk attributes.
-   * @since 0.6.0
    */
   public static Resource getTelemetrySdk() {
     return TELEMETRY_SDK;
@@ -98,7 +114,6 @@ public abstract class Resource {
    * Returns a map of attributes that describe the resource.
    *
    * @return a map of attributes.
-   * @since 0.1.0
    */
   public abstract ReadableAttributes getAttributes();
 
@@ -114,7 +129,6 @@ public abstract class Resource {
    * @throws NullPointerException if {@code attributes} is null.
    * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
    *     ASCII string or exceed {@link #MAX_LENGTH} characters.
-   * @since 0.1.0
    */
   public static Resource create(Attributes attributes) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
@@ -137,7 +151,6 @@ public abstract class Resource {
    *
    * @param other the {@code Resource} that will be merged with {@code this}.
    * @return the newly merged {@code Resource}.
-   * @since 0.1.0
    */
   public Resource merge(@Nullable Resource other) {
     if (other == null) {
@@ -146,12 +159,12 @@ public abstract class Resource {
 
     Attributes.Builder attrBuilder = Attributes.newBuilder();
     Merger merger = new Merger(attrBuilder);
-    this.getAttributes().forEach(merger);
     other.getAttributes().forEach(merger);
+    this.getAttributes().forEach(merger);
     return new AutoValue_Resource(attrBuilder.build());
   }
 
-  private static final class Merger implements KeyValueConsumer<AttributeValue> {
+  private static final class Merger implements AttributeConsumer {
     private final Attributes.Builder attrBuilder;
 
     private Merger(Attributes.Builder attrBuilder) {
@@ -159,16 +172,16 @@ public abstract class Resource {
     }
 
     @Override
-    public void consume(String key, AttributeValue value) {
+    public <T> void consume(AttributeKey<T> key, T value) {
       attrBuilder.setAttribute(key, value);
     }
   }
 
   private static void checkAttributes(ReadableAttributes attributes) {
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue value) {
+          public <T> void consume(AttributeKey<T> key, T value) {
             Utils.checkArgument(
                 isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
             Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
@@ -194,7 +207,7 @@ public abstract class Resource {
    * @param name the name to be validated.
    * @return whether the name is valid.
    */
-  private static boolean isValidAndNotEmpty(String name) {
-    return !name.isEmpty() && isValid(name);
+  private static boolean isValidAndNotEmpty(AttributeKey<?> name) {
+    return !name.getKey().isEmpty() && isValid(name.getKey());
   }
 }
