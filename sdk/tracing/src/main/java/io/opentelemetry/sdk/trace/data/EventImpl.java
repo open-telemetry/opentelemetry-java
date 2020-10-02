@@ -20,10 +20,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.Attributes;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * An immutable timed event representation. Enhances the core {@link io.opentelemetry.trace.Event}
- * by adding the time at which the event occurred.
- */
+/** An immutable implementation of the {@link SpanData.Event}. */
 @Immutable
 @AutoValue
 public abstract class EventImpl implements SpanData.Event {
