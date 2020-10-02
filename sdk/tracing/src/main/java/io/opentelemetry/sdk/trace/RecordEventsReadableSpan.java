@@ -70,7 +70,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
   // List of recorded links to parent and child spans.
-  private final List<io.opentelemetry.trace.Link> links;
+  private final List<Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
 
@@ -122,7 +122,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links,
+      List<Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
@@ -158,7 +158,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param clock the clock used to get the time.
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
-   * @param links the links set during span creation, may be truncated.
+   * @param links the links set during span creation, may be truncated. The list MUST be immutable.
    * @return a new and started span.
    */
   static RecordEventsReadableSpan startSpan(
@@ -173,7 +173,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links,
+      List<Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     RecordEventsReadableSpan span =
@@ -204,7 +204,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     synchronized (lock) {
       return SpanWrapper.create(
           this,
-          getImmutableLinks(),
+          links,
           getImmutableTimedEvents(),
           getImmutableAttributes(),
           (attributes == null) ? 0 : attributes.getTotalAddedValues(),
@@ -515,26 +515,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   int getTotalRecordedLinks() {
     return totalRecordedLinks;
-  }
-
-  @GuardedBy("lock")
-  private List<Link> getImmutableLinks() {
-    if (links.isEmpty()) {
-      return Collections.emptyList();
-    }
-    List<Link> result = new ArrayList<>(links.size());
-    for (io.opentelemetry.trace.Link link : links) {
-      Link newLink;
-      if (!(link instanceof Link)) {
-        // Make a copy because the given Link may not be immutable and we may reference a lot of
-        // memory.
-        newLink = Link.create(link.getContext(), link.getAttributes());
-      } else {
-        newLink = (Link) link;
-      }
-      result.add(newLink);
-    }
-    return Collections.unmodifiableList(result);
   }
 
   @GuardedBy("lock")

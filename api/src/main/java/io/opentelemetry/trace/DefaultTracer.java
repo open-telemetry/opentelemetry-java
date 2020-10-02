@@ -103,11 +103,6 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder addLink(Link link) {
-      return this;
-    }
-
-    @Override
     public NoopSpanBuilder setAttribute(String key, String value) {
       Utils.checkNotNull(key, "key");
       return this;
