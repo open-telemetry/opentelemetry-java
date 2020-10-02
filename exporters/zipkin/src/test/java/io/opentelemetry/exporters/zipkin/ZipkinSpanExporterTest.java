@@ -27,7 +27,7 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventImpl;
+import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
@@ -66,8 +66,8 @@ class ZipkinSpanExporterTest {
   private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.of(
-          EventImpl.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
-          EventImpl.create(1505855799_459486280L, "SENT", Attributes.empty()));
+          ImmutableEvent.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
+          ImmutableEvent.create(1505855799_459486280L, "SENT", Attributes.empty()));
 
   @Test
   void generateSpan_remoteParent() {
