@@ -97,7 +97,7 @@ public class BatchSpanProcessorFlushBenchmark {
     processor = BatchSpanProcessor.newBuilder(exporter).build();
 
     ImmutableList.Builder<Span> spans = ImmutableList.builderWithExpectedSize(spanCount);
-    Tracer tracer = OpenTelemetry.getTracerProvider().get("benchmarkTracer");
+    Tracer tracer = OpenTelemetry.getGlobalTracerProvider().get("benchmarkTracer");
     for (int i = 0; i < spanCount; i++) {
       spans.add(tracer.spanBuilder("span").startSpan());
     }

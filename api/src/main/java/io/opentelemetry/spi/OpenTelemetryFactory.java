@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace.spi;
-
-import static org.assertj.core.api.Assertions.assertThat;
+package io.opentelemetry.spi;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.trace.Tracer;
-import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link TracerProviderFactorySdk}. */
-class TracerProviderFactorySdkTest {
+public interface OpenTelemetryFactory {
 
-  @Test
-  void testDefault() {
-    Tracer tracerSdk = TracerSdkProvider.builder().build().get("");
-    assertThat(OpenTelemetry.getGlobalTracerProvider().get("")).isInstanceOf(tracerSdk.getClass());
-  }
+  OpenTelemetry create();
 }

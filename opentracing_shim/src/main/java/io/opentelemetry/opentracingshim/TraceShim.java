@@ -35,9 +35,9 @@ public final class TraceShim {
   public static io.opentracing.Tracer createTracerShim() {
     return new TracerShim(
         new TelemetryInfo(
-            getTracer(OpenTelemetry.getTracerProvider()),
-            OpenTelemetry.getBaggageManager(),
-            OpenTelemetry.getPropagators()));
+            getTracer(OpenTelemetry.getGlobalTracerProvider()),
+            OpenTelemetry.getGlobalBaggageManager(),
+            OpenTelemetry.getGlobalPropagators()));
   }
 
   /**
@@ -55,7 +55,7 @@ public final class TraceShim {
         new TelemetryInfo(
             getTracer(Objects.requireNonNull(tracerProvider, "tracerProvider")),
             Objects.requireNonNull(contextManager, "contextManager"),
-            OpenTelemetry.getPropagators()));
+            OpenTelemetry.getGlobalPropagators()));
   }
 
   private static Tracer getTracer(TracerProvider tracerProvider) {

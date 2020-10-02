@@ -63,12 +63,12 @@ class OpenTelemetryTest {
 
   @BeforeAll
   static void beforeClass() {
-    OpenTelemetry.reset();
+    DefaultOpenTelemetry.reset();
   }
 
   @AfterEach
   void after() {
-    OpenTelemetry.reset();
+    DefaultOpenTelemetry.reset();
     System.clearProperty(TracerProviderFactory.class.getName());
     System.clearProperty(MeterProviderFactory.class.getName());
     System.clearProperty(BaggageManagerFactory.class.getName());
@@ -76,14 +76,17 @@ class OpenTelemetryTest {
 
   @Test
   void testDefault() {
-    assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(DefaultTracerProvider.class);
-    assertThat(OpenTelemetry.getTracerProvider()).isSameAs(OpenTelemetry.getTracerProvider());
-    assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
-    assertThat(OpenTelemetry.getMeterProvider()).isSameAs(OpenTelemetry.getMeterProvider());
-    assertThat(OpenTelemetry.getBaggageManager()).isInstanceOf(DefaultBaggageManager.class);
-    assertThat(OpenTelemetry.getBaggageManager()).isSameAs(OpenTelemetry.getBaggageManager());
-    assertThat(OpenTelemetry.getPropagators()).isInstanceOf(DefaultContextPropagators.class);
-    assertThat(OpenTelemetry.getPropagators()).isSameAs(OpenTelemetry.getPropagators());
+    assertThat(OpenTelemetry.getGlobalTracerProvider()).isInstanceOf(DefaultTracerProvider.class);
+    assertThat(OpenTelemetry.getGlobalTracerProvider())
+        .isSameAs(OpenTelemetry.getGlobalTracerProvider());
+    assertThat(OpenTelemetry.getGlobalMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
+    assertThat(OpenTelemetry.getGlobalMeterProvider())
+        .isSameAs(OpenTelemetry.getGlobalMeterProvider());
+    assertThat(OpenTelemetry.getGlobalBaggageManager()).isInstanceOf(DefaultBaggageManager.class);
+    assertThat(OpenTelemetry.getGlobalBaggageManager())
+        .isSameAs(OpenTelemetry.getGlobalBaggageManager());
+    assertThat(OpenTelemetry.getGlobalPropagators()).isInstanceOf(DefaultContextPropagators.class);
+    assertThat(OpenTelemetry.getGlobalPropagators()).isSameAs(OpenTelemetry.getGlobalPropagators());
   }
 
   @Test
@@ -95,8 +98,8 @@ class OpenTelemetryTest {
             SecondTracerProviderFactory.class);
     try {
       assertTrue(
-          (OpenTelemetry.getTracerProvider().get("") instanceof FirstTracerProviderFactory)
-              || (OpenTelemetry.getTracerProvider().get("")
+          (OpenTelemetry.getGlobalTracerProvider().get("") instanceof FirstTracerProviderFactory)
+              || (OpenTelemetry.getGlobalTracerProvider().get("")
                   instanceof SecondTracerProviderFactory));
     } finally {
       serviceFile.delete();
@@ -113,7 +116,7 @@ class OpenTelemetryTest {
     System.setProperty(
         TracerProviderFactory.class.getName(), SecondTracerProviderFactory.class.getName());
     try {
-      assertThat(OpenTelemetry.getTracerProvider().get(""))
+      assertThat(OpenTelemetry.getGlobalTracerProvider().get(""))
           .isInstanceOf(SecondTracerProviderFactory.class);
     } finally {
       serviceFile.delete();
@@ -123,7 +126,7 @@ class OpenTelemetryTest {
   @Test
   void testTracerNotFound() {
     System.setProperty(TracerProviderFactory.class.getName(), "io.does.not.exists");
-    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getTracer("testTracer"));
+    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getGlobalTracer("testTracer"));
   }
 
   @Test
@@ -135,9 +138,10 @@ class OpenTelemetryTest {
             SecondMeterProviderFactory.class);
     try {
       assertTrue(
-          (OpenTelemetry.getMeterProvider() instanceof FirstMeterProviderFactory)
-              || (OpenTelemetry.getMeterProvider() instanceof SecondMeterProviderFactory));
-      assertThat(OpenTelemetry.getMeterProvider()).isEqualTo(OpenTelemetry.getMeterProvider());
+          (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
+              || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory));
+      assertThat(OpenTelemetry.getGlobalMeterProvider())
+          .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
     } finally {
       serviceFile.delete();
     }
@@ -153,8 +157,10 @@ class OpenTelemetryTest {
     System.setProperty(
         MeterProviderFactory.class.getName(), SecondMeterProviderFactory.class.getName());
     try {
-      assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(SecondMeterProviderFactory.class);
-      assertThat(OpenTelemetry.getMeterProvider()).isEqualTo(OpenTelemetry.getMeterProvider());
+      assertThat(OpenTelemetry.getGlobalMeterProvider())
+          .isInstanceOf(SecondMeterProviderFactory.class);
+      assertThat(OpenTelemetry.getGlobalMeterProvider())
+          .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
     } finally {
       serviceFile.delete();
     }
@@ -163,7 +169,7 @@ class OpenTelemetryTest {
   @Test
   void testMeterNotFound() {
     System.setProperty(MeterProviderFactory.class.getName(), "io.does.not.exists");
-    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getMeterProvider());
+    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getGlobalMeterProvider());
   }
 
   @Test
@@ -173,9 +179,10 @@ class OpenTelemetryTest {
             BaggageManagerFactory.class, FirstBaggageManager.class, SecondBaggageManager.class);
     try {
       assertTrue(
-          (OpenTelemetry.getBaggageManager() instanceof FirstBaggageManager)
-              || (OpenTelemetry.getBaggageManager() instanceof SecondBaggageManager));
-      assertThat(OpenTelemetry.getBaggageManager()).isEqualTo(OpenTelemetry.getBaggageManager());
+          (OpenTelemetry.getGlobalBaggageManager() instanceof FirstBaggageManager)
+              || (OpenTelemetry.getGlobalBaggageManager() instanceof SecondBaggageManager));
+      assertThat(OpenTelemetry.getGlobalBaggageManager())
+          .isEqualTo(OpenTelemetry.getGlobalBaggageManager());
     } finally {
       serviceFile.delete();
     }
@@ -188,8 +195,9 @@ class OpenTelemetryTest {
             BaggageManagerFactory.class, FirstBaggageManager.class, SecondBaggageManager.class);
     System.setProperty(BaggageManagerFactory.class.getName(), SecondBaggageManager.class.getName());
     try {
-      assertThat(OpenTelemetry.getBaggageManager()).isInstanceOf(SecondBaggageManager.class);
-      assertThat(OpenTelemetry.getBaggageManager()).isEqualTo(OpenTelemetry.getBaggageManager());
+      assertThat(OpenTelemetry.getGlobalBaggageManager()).isInstanceOf(SecondBaggageManager.class);
+      assertThat(OpenTelemetry.getGlobalBaggageManager())
+          .isEqualTo(OpenTelemetry.getGlobalBaggageManager());
     } finally {
       serviceFile.delete();
     }
@@ -198,14 +206,14 @@ class OpenTelemetryTest {
   @Test
   void testBaggageManagerNotFound() {
     System.setProperty(BaggageManagerFactory.class.getName(), "io.does.not.exists");
-    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getBaggageManager());
+    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getGlobalBaggageManager());
   }
 
   @Test
   void testPropagatorsSet() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
     OpenTelemetry.setPropagators(propagators);
-    assertThat(OpenTelemetry.getPropagators()).isEqualTo(propagators);
+    assertThat(OpenTelemetry.getGlobalPropagators()).isEqualTo(propagators);
   }
 
   @Test

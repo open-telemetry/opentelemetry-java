@@ -34,7 +34,8 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanBenchmark {
 
-  private final TracerSdk tracerSdk = OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
+  private final TracerSdk tracerSdk =
+      OpenTelemetrySdk.getGlobalTracerProvider().get("benchmarkTracer");
   private RecordEventsReadableSpan span;
 
   @Setup(Level.Trial)

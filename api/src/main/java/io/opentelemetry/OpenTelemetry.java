@@ -20,8 +20,6 @@ import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.Meter;
@@ -31,9 +29,7 @@ import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
-import io.opentelemetry.trace.spi.TracerProviderFactory;
 import java.util.ServiceLoader;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -47,16 +43,15 @@ import javax.annotation.concurrent.ThreadSafe;
  * @see BaggageManagerFactory
  */
 @ThreadSafe
-public final class OpenTelemetry {
-  private static final Object mutex = new Object();
+public interface OpenTelemetry {
 
-  @Nullable private static volatile OpenTelemetry instance;
+  static OpenTelemetry getGlobalOpenTelemetry() {
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry();
+  }
 
-  private final TracerProvider tracerProvider;
-  private final MeterProvider meterProvider;
-  private final BaggageManager contextManager;
-
-  private volatile ContextPropagators propagators = DefaultContextPropagators.builder().build();
+  static void setGlobalOpenTelemetry(OpenTelemetry openTelemetry) {
+    DefaultOpenTelemetry.setGlobalOpenTelemetry(openTelemetry);
+  }
 
   /**
    * Returns a singleton {@link TracerProvider}.
@@ -66,8 +61,8 @@ public final class OpenTelemetry {
    *     be found.
    * @since 0.1.0
    */
-  public static TracerProvider getTracerProvider() {
-    return getInstance().tracerProvider;
+  static TracerProvider getGlobalTracerProvider() {
+    return getGlobalOpenTelemetry().getTracerProvider();
   }
 
   /**
@@ -80,8 +75,8 @@ public final class OpenTelemetry {
    * @return a tracer instance.
    * @since 0.5.0
    */
-  public static Tracer getTracer(String instrumentationName) {
-    return getTracerProvider().get(instrumentationName);
+  static Tracer getGlobalTracer(String instrumentationName) {
+    return getGlobalTracerProvider().get(instrumentationName);
   }
 
   /**
@@ -97,8 +92,8 @@ public final class OpenTelemetry {
    * @return a tracer instance.
    * @since 0.5.0
    */
-  public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
-    return getTracerProvider().get(instrumentationName, instrumentationVersion);
+  static Tracer getGlobalTracer(String instrumentationName, String instrumentationVersion) {
+    return getGlobalTracerProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /**
@@ -109,8 +104,8 @@ public final class OpenTelemetry {
    *     found.
    * @since 0.1.0
    */
-  public static MeterProvider getMeterProvider() {
-    return getInstance().meterProvider;
+  static MeterProvider getGlobalMeterProvider() {
+    return getGlobalOpenTelemetry().getMeterProvider();
   }
 
   /**
@@ -123,8 +118,8 @@ public final class OpenTelemetry {
    * @return a tracer instance.
    * @since 0.5.0
    */
-  public static Meter getMeter(String instrumentationName) {
-    return getMeterProvider().get(instrumentationName);
+  static Meter getGlobalMeter(String instrumentationName) {
+    return getGlobalMeterProvider().get(instrumentationName);
   }
 
   /**
@@ -139,8 +134,8 @@ public final class OpenTelemetry {
    * @return a tracer instance.
    * @since 0.5.0
    */
-  public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
-    return getMeterProvider().get(instrumentationName, instrumentationVersion);
+  static Meter getGlobalMeter(String instrumentationName, String instrumentationVersion) {
+    return getGlobalMeterProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /**
@@ -151,8 +146,8 @@ public final class OpenTelemetry {
    *     found.
    * @since 0.1.0
    */
-  public static BaggageManager getBaggageManager() {
-    return getInstance().contextManager;
+  static BaggageManager getGlobalBaggageManager() {
+    return getGlobalOpenTelemetry().getBaggageManager();
   }
 
   /**
@@ -165,9 +160,33 @@ public final class OpenTelemetry {
    *     found.
    * @since 0.3.0
    */
-  public static ContextPropagators getPropagators() {
-    return getInstance().propagators;
+  static ContextPropagators getGlobalPropagators() {
+    return getGlobalOpenTelemetry().getPropagators();
   }
+
+  TracerProvider getTracerProvider();
+
+  default Tracer getTracer(String instrumentationName) {
+    return getTracerProvider().get(instrumentationName);
+  }
+
+  default Tracer getTracer(String instrumentationName, String instrumentationVersion) {
+    return getTracerProvider().get(instrumentationName, instrumentationVersion);
+  }
+
+  MeterProvider getMeterProvider();
+
+  default Meter getMeter(String instrumentationName) {
+    return getMeterProvider().get(instrumentationName);
+  }
+
+  default Meter getMeter(String instrumentationName, String instrumentationVersion) {
+    return getMeterProvider().get(instrumentationName, instrumentationVersion);
+  }
+
+  BaggageManager getBaggageManager();
+
+  ContextPropagators getPropagators();
 
   /**
    * Sets the {@link ContextPropagators} object, which can be used to access the set of registered
@@ -179,101 +198,10 @@ public final class OpenTelemetry {
    * @throws NullPointerException if {@code propagators} is {@code null}.
    * @since 0.3.0
    */
-  public static void setPropagators(ContextPropagators propagators) {
+  static void setPropagators(ContextPropagators propagators) {
     Utils.checkNotNull(propagators, "propagators");
-    getInstance().propagators = propagators;
+    setGlobalOpenTelemetry(getGlobalOpenTelemetry().withPropagators(propagators));
   }
 
-  /** Lazy loads an instance. */
-  private static OpenTelemetry getInstance() {
-    if (instance == null) {
-      synchronized (mutex) {
-        if (instance == null) {
-          instance = new OpenTelemetry();
-        }
-      }
-    }
-    return instance;
-  }
-
-  private OpenTelemetry() {
-    TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
-    this.tracerProvider =
-        tracerProviderFactory != null
-            ? new ObfuscatedTracerProvider(tracerProviderFactory.create())
-            : DefaultTracerProvider.getInstance();
-
-    MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
-    meterProvider =
-        meterProviderFactory != null
-            ? meterProviderFactory.create()
-            : DefaultMeterProvider.getInstance();
-    BaggageManagerFactory contextManagerProvider = loadSpi(BaggageManagerFactory.class);
-    contextManager =
-        contextManagerProvider != null
-            ? contextManagerProvider.create()
-            : DefaultBaggageManager.getInstance();
-  }
-
-  /**
-   * Load provider class via {@link ServiceLoader}. A specific provider class can be requested via
-   * setting a system property with FQCN.
-   *
-   * @param providerClass a provider class
-   * @param <T> provider type
-   * @return a provider or null if not found
-   * @throws IllegalStateException if a specified provider is not found
-   */
-  @Nullable
-  private static <T> T loadSpi(Class<T> providerClass) {
-    String specifiedProvider = System.getProperty(providerClass.getName());
-    ServiceLoader<T> providers = ServiceLoader.load(providerClass);
-    for (T provider : providers) {
-      if (specifiedProvider == null || specifiedProvider.equals(provider.getClass().getName())) {
-        return provider;
-      }
-    }
-    if (specifiedProvider != null) {
-      throw new IllegalStateException(
-          String.format("Service provider %s not found", specifiedProvider));
-    }
-    return null;
-  }
-
-  // for testing
-  static void reset() {
-    instance = null;
-  }
-
-  /**
-   * A {@link TracerProvider} wrapper that forces users to access the SDK specific implementation
-   * via the SDK, instead of via the API and casting it to the SDK specific implementation.
-   *
-   * @see Obfuscated
-   */
-  @ThreadSafe
-  private static class ObfuscatedTracerProvider
-      implements TracerProvider, Obfuscated<TracerProvider> {
-
-    private final TracerProvider delegate;
-
-    private ObfuscatedTracerProvider(TracerProvider delegate) {
-      this.delegate = delegate;
-    }
-
-    @Override
-    public Tracer get(String instrumentationName) {
-      return delegate.get(instrumentationName);
-    }
-
-    @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return delegate.get(instrumentationName, instrumentationVersion);
-    }
-
-    @Override
-    public TracerProvider unobfuscate() {
-      return delegate;
-    }
-  }
+  OpenTelemetry withPropagators(ContextPropagators propagators);
 }

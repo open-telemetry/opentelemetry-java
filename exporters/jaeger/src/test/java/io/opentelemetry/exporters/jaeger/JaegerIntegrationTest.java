@@ -47,7 +47,7 @@ class JaegerIntegrationTest {
   private static final String JAEGER_VERSION = "1.17";
   private static final String SERVICE_NAME = "E2E-test";
   private static final String JAEGER_URL = "http://localhost";
-  private final Tracer tracer = OpenTelemetry.getTracer(getClass().getCanonicalName());
+  private final Tracer tracer = OpenTelemetry.getGlobalTracer(getClass().getCanonicalName());
 
   @Container
   public static GenericContainer<?> jaegerContainer =
@@ -75,7 +75,7 @@ class JaegerIntegrationTest {
             .setChannel(jaegerChannel)
             .setDeadlineMs(30000)
             .build();
-    OpenTelemetrySdk.getTracerProvider()
+    OpenTelemetrySdk.getGlobalTracerProvider()
         .addSpanProcessor(SimpleSpanProcessor.newBuilder(jaegerExporter).build());
   }
 

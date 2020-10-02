@@ -57,12 +57,13 @@ public class SpanPipelineBenchmark {
   private static final AttributeKey<String> STRING_ATTRIBUTE_KEY = stringKey("stringAttribute");
   private static final AttributeKey<Double> DOUBLE_ATTRIBUTE_KEY = doubleKey("doubleAttribute");
   private static final AttributeKey<Boolean> BOOLEAN_ATTRIBUTE_KEY = booleanKey("booleanAttribute");
-  private final TracerSdk tracerSdk = OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
+  private final TracerSdk tracerSdk =
+      OpenTelemetrySdk.getGlobalTracerProvider().get("benchmarkTracer");
 
   @Setup(Level.Trial)
   public final void setup() {
     SpanExporter exporter = new NoOpSpanExporter();
-    OpenTelemetrySdk.getTracerProvider()
+    OpenTelemetrySdk.getGlobalTracerProvider()
         .addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
 

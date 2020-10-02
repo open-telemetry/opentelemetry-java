@@ -69,7 +69,8 @@ public final class ZPageServer {
       TracezSpanProcessor.newBuilder().build();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
-  private static final TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+  private static final TracerSdkProvider tracerProvider =
+      OpenTelemetrySdk.getGlobalTracerProvider();
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
       new TracezZPageHandler(tracezDataAggregator);

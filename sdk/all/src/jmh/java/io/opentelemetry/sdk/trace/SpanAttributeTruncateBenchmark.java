@@ -35,7 +35,8 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanAttributeTruncateBenchmark {
 
-  private final TracerSdk tracerSdk = OpenTelemetrySdk.getTracerProvider().get("benchmarkTracer");
+  private final TracerSdk tracerSdk =
+      OpenTelemetrySdk.getGlobalTracerProvider().get("benchmarkTracer");
   private SpanBuilderSdk spanBuilderSdk;
 
   public String shortValue = "short";
@@ -48,12 +49,12 @@ public class SpanAttributeTruncateBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     TraceConfig config =
-        OpenTelemetrySdk.getTracerProvider()
+        OpenTelemetrySdk.getGlobalTracerProvider()
             .getActiveTraceConfig()
             .toBuilder()
             .setMaxLengthOfAttributeValues(maxLength)
             .build();
-    OpenTelemetrySdk.getTracerProvider().updateActiveTraceConfig(config);
+    OpenTelemetrySdk.getGlobalTracerProvider().updateActiveTraceConfig(config);
     spanBuilderSdk =
         (SpanBuilderSdk)
             tracerSdk
