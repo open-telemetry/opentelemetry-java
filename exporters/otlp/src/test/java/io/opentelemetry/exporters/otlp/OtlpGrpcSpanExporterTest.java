@@ -120,7 +120,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_DeadlineSetPerExport() throws InterruptedException {
-    int deadlineMs = 500;
+    int deadlineMs = 1500;
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder()
             .setChannel(inProcessChannel)
@@ -128,15 +128,9 @@ class OtlpGrpcSpanExporterTest {
             .build();
 
     try {
-      TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
-      CompletableResultCode result1 =
-          exporter.export(Collections.singletonList(generateFakeSpan()));
-      await().untilAsserted(() -> assertThat(result1.isSuccess()).isTrue());
-
-      TimeUnit.MILLISECONDS.sleep(2 * deadlineMs);
-      CompletableResultCode result2 =
-          exporter.export(Collections.singletonList(generateFakeSpan()));
-      await().untilAsserted(() -> assertThat(result2.isSuccess()).isTrue());
+      TimeUnit.MILLISECONDS.sleep(2000);
+      CompletableResultCode result = exporter.export(Collections.singletonList(generateFakeSpan()));
+      await().untilAsserted(() -> assertThat(result.isSuccess()).isTrue());
     } finally {
       exporter.shutdown();
     }
