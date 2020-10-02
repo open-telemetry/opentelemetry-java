@@ -88,12 +88,6 @@ public final class DefaultSpan implements Span {
   public void addEvent(String name, Attributes attributes, long timestamp) {}
 
   @Override
-  public void addEvent(Event event) {}
-
-  @Override
-  public void addEvent(Event event, long timestamp) {}
-
-  @Override
   public void setStatus(Status status) {}
 
   @Override

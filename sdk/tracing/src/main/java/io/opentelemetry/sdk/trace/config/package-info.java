@@ -44,15 +44,15 @@
  *   <li>{@code otel.config.sampler.probability}: to set the global default sampler which is used
  *       when constructing a new {@code Span}.
  *   <li>{@code otel.config.max.attrs}: to set the global default max number of attributes per
- *       {@link io.opentelemetry.trace.Span}.
- *   <li>{@code otel.config.max.events}: to set the global default max number of {@link
- *       io.opentelemetry.trace.Event}s per {@link io.opentelemetry.trace.Span}.
- *   <li>{@code otel.config.max.links}: to set the global default max number of {@link
- *       io.opentelemetry.trace.Link} entries per {@link io.opentelemetry.trace.Span}.
+ *       {@code Span}.
+ *   <li>{@code otel.config.max.events}: to set the global default max number of events per {@code
+ *       Span}.
+ *   <li>{@code otel.config.max.links}: to set the global default max number of links per {@code
+ *       Span}.
  *   <li>{@code otel.config.max.event.attrs}: to set the global default max number of attributes per
- *       {@link io.opentelemetry.trace.Event}.
+ *       event.
  *   <li>{@code otel.config.max.link.attrs}: to set the global default max number of attributes per
- *       {@link io.opentelemetry.trace.Link}.
+ *       link.
  * </ul>
  *
  * <p>For environment variable, {@link io.opentelemetry.sdk.trace.config.TraceConfig} will look for
@@ -62,15 +62,15 @@
  *   <li>{@code OTEL_CONFIG_SAMPLER_PROBABILITY}: to set the global default sampler which is used
  *       when constructing a new {@code Span}.
  *   <li>{@code OTEL_CONFIG_MAX_ATTRS}: to set the global default max number of attributes per
- *       {@link io.opentelemetry.trace.Span}.
- *   <li>{@code OTEL_CONFIG_MAX_EVENTS}: to set the global default max number of {@link
- *       io.opentelemetry.trace.Event}s per {@link io.opentelemetry.trace.Span}.
- *   <li>{@code OTEL_CONFIG_MAX_LINKS}: to set the global default max number of {@link
- *       io.opentelemetry.trace.Link} entries per {@link io.opentelemetry.trace.Span}.
+ *       {@code Span}.
+ *   <li>{@code OTEL_CONFIG_MAX_EVENTS}: to set the global default max number of events per {@code
+ *       Span}.
+ *   <li>{@code OTEL_CONFIG_MAX_LINKS}: to set the global default max number of links entries per
+ *       {@code Span}.
  *   <li>{@code OTEL_CONFIG_MAX_EVENT_ATTRS}: to set the global default max number of attributes per
- *       {@link io.opentelemetry.trace.Event}.
+ *       event.
  *   <li>{@code OTEL_CONFIG_MAX_LINK_ATTRS}: to set the global default max number of attributes per
- *       {@link io.opentelemetry.trace.Link}.
+ *       link.
  * </ul>
  */
 package io.opentelemetry.sdk.trace.config;

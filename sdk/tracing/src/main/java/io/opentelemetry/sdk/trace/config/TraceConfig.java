@@ -23,7 +23,7 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.trace.Event;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
