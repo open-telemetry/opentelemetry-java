@@ -237,7 +237,23 @@ public interface SpanData {
     Link() {}
   }
 
-  interface Event extends io.opentelemetry.trace.Event {
+  interface Event {
+    /**
+     * Return the name of the {@code Event}.
+     *
+     * @return the name of the {@code Event}.
+     * @since 0.1.0
+     */
+    String getName();
+
+    /**
+     * Return the attributes of the {@code Event}.
+     *
+     * @return the attributes of the {@code Event}.
+     * @since 0.1.0
+     */
+    Attributes getAttributes();
+
     /**
      * Returns the epoch time in nanos of this event.
      *
