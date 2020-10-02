@@ -14,14 +14,13 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
-import io.opentelemetry.trace.Link;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Static class to access a set of pre-defined {@link Sampler Samplers}. */
@@ -174,7 +173,7 @@ public final class Samplers {
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<Link> parentLinks) {
+        List<SpanData.Link> parentLinks) {
       return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
     }
 
@@ -196,7 +195,7 @@ public final class Samplers {
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<Link> parentLinks) {
+        List<SpanData.Link> parentLinks) {
       return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
     }
 
@@ -238,7 +237,7 @@ public final class Samplers {
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<Link> parentLinks) {
+        List<SpanData.Link> parentLinks) {
       if (!parentContext.isValid()) {
         return this.root.shouldSample(
             parentContext, traceId, name, spanKind, attributes, parentLinks);
@@ -452,7 +451,7 @@ public final class Samplers {
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        @Nullable List<Link> parentLinks) {
+        List<SpanData.Link> parentLinks) {
       // Always sample if we are within probability range. This is true even for child spans (that
       // may have had a different sampling samplingResult made) to allow for different sampling
       // policies,

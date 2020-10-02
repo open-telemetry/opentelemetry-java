@@ -23,7 +23,6 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -59,7 +58,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
   // List of recorded links to parent and child spans.
-  private final List<Link> links;
+  private final List<SpanData.Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
 
@@ -111,7 +110,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
-      List<Link> links,
+      List<SpanData.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
@@ -162,7 +161,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       AttributesMap attributes,
-      List<Link> links,
+      List<SpanData.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     RecordEventsReadableSpan span =

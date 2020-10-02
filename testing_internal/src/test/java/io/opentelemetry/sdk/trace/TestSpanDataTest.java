@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.ImmutableEvent;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -71,13 +71,13 @@ class TestSpanDataTest {
 
   @Test
   void link_defaultTotalAttributeCountIsZero() {
-    Link link = Link.create(SpanContext.getInvalid());
+    ImmutableLink link = ImmutableLink.create(SpanContext.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   void link_canSetTotalAttributeCount() {
-    Link link = Link.create(SpanContext.getInvalid());
+    ImmutableLink link = ImmutableLink.create(SpanContext.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
@@ -100,8 +100,8 @@ class TestSpanDataTest {
         .build();
   }
 
-  private static Link emptyLink() {
-    return Link.create(SpanContext.getInvalid());
+  private static ImmutableLink emptyLink() {
+    return ImmutableLink.create(SpanContext.getInvalid());
   }
 
   private static TestSpanData.Builder createBasicSpanBuilder() {

@@ -408,7 +408,7 @@ public interface Span {
     Builder setNoParent();
 
     /**
-     * Adds a {@link Link} to the newly created {@code Span}.
+     * Adds a link to the newly created {@code Span}.
      *
      * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
      * operations, where a single batch handler processes multiple requests from different traces or
@@ -422,7 +422,7 @@ public interface Span {
     Builder addLink(SpanContext spanContext);
 
     /**
-     * Adds a {@link Link} to the newly created {@code Span}.
+     * Adds a link to the newly created {@code Span}.
      *
      * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
      * operations, where a single batch handler processes multiple requests from different traces or

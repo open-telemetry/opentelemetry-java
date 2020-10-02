@@ -13,7 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
@@ -37,7 +38,7 @@ class SamplersTest {
   private final SpanContext notSampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
   private final SpanContext invalidSpanContext = SpanContext.getInvalid();
-  private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpanContext);
+  private final ImmutableLink sampledParentLink = ImmutableLink.create(sampledSpanContext);
   private final SpanContext sampledRemoteSpanContext =
       SpanContext.createFromRemoteParent(
           traceId, parentSpanId, TraceFlags.getSampled(), traceState);
@@ -571,10 +572,7 @@ class SamplersTest {
 
   // Applies the given sampler to NUM_SAMPLE_TRIES random traceId.
   private void assertSamplerSamplesWithProbability(
-      Sampler sampler,
-      SpanContext parent,
-      List<io.opentelemetry.trace.Link> parentLinks,
-      double probability) {
+      Sampler sampler, SpanContext parent, List<SpanData.Link> parentLinks, double probability) {
     int count = 0; // Count of spans with sampling enabled
     for (int i = 0; i < NUM_SAMPLE_TRIES; i++) {
       if (Samplers.isSampled(

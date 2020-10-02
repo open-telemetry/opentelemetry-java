@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.trace.data;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
@@ -153,9 +153,10 @@ public interface SpanData {
   int getTotalRecordedEvents();
 
   /**
-   * The total number of {@link Link} links that were recorded on this span. This number may be
-   * larger than the number of links that are attached to this span, if the total number recorded
-   * was greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfLinks()}
+   * The total number of {@link ImmutableLink} links that were recorded on this span. This number
+   * may be larger than the number of links that are attached to this span, if the total number
+   * recorded was greater than the configured maximum value. See: {@link
+   * TraceConfig#getMaxNumberOfLinks()}
    *
    * @return The total number of links recorded on this span.
    */
@@ -170,48 +171,28 @@ public interface SpanData {
    */
   int getTotalAttributeCount();
 
-  /** An immutable implementation of {@link io.opentelemetry.trace.Link}. */
-  @Immutable
-  @AutoValue
-  abstract class Link implements io.opentelemetry.trace.Link {
-
-    private static final Attributes DEFAULT_ATTRIBUTE_COLLECTION = Attributes.empty();
-    private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
+  /**
+   * A link to a {@link Span}.
+   *
+   * <p>Used (for example) in batching operations, where a single batch handler processes multiple
+   * requests from different traces. Link can be also used to reference spans from the same trace.
+   */
+  interface Link {
+    /**
+     * Returns the {@code SpanContext}.
+     *
+     * @return the {@code SpanContext}.
+     * @since 0.1.0
+     */
+    SpanContext getContext();
 
     /**
-     * Returns a new immutable {@code Link}.
+     * Returns the set of attributes.
      *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
-     * @return a new immutable {@code Event<T>}
+     * @return the set of attributes.
+     * @since 0.1.0
      */
-    public static Link create(SpanContext spanContext) {
-      return new AutoValue_SpanData_Link(
-          spanContext, DEFAULT_ATTRIBUTE_COLLECTION, DEFAULT_ATTRIBUTE_COUNT);
-    }
-
-    /**
-     * Returns a new immutable {@code Link}.
-     *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
-     * @param attributes the attributes of this {@code Link}.
-     * @return a new immutable {@code Event<T>}
-     */
-    public static Link create(SpanContext spanContext, Attributes attributes) {
-      return new AutoValue_SpanData_Link(spanContext, attributes, attributes.size());
-    }
-
-    /**
-     * Returns a new immutable {@code Link}.
-     *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
-     * @param attributes the attributes of this {@code Link}.
-     * @param totalAttributeCount the total number of attributed for this {@code Link}.
-     * @return a new immutable {@code Event<T>}
-     */
-    public static Link create(
-        SpanContext spanContext, Attributes attributes, int totalAttributeCount) {
-      return new AutoValue_SpanData_Link(spanContext, attributes, totalAttributeCount);
-    }
+    Attributes getAttributes();
 
     /**
      * The total number of attributes that were recorded on this Link. This number may be larger
@@ -221,9 +202,7 @@ public interface SpanData {
      *
      * @return The number of attributes on this link.
      */
-    public abstract int getTotalAttributeCount();
-
-    Link() {}
+    int getTotalAttributeCount();
   }
 
   interface Event {

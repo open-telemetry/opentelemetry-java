@@ -25,9 +25,9 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.ImmutableEvent;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -74,7 +74,7 @@ class RecordEventsReadableSpanTest {
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<AttributeKey, Object> attributes = new HashMap<>();
   private Attributes expectedAttributes;
-  private final Link link = Link.create(spanContext);
+  private final ImmutableLink link = ImmutableLink.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
 
   private TestClock testClock;
@@ -184,7 +184,7 @@ class RecordEventsReadableSpanTest {
 
     assertThrows(
         UnsupportedOperationException.class,
-        () -> spanData.getLinks().add(Link.create(SpanContext.getInvalid())));
+        () -> spanData.getLinks().add(ImmutableLink.create(SpanContext.getInvalid())));
   }
 
   @Test
@@ -740,7 +740,7 @@ class RecordEventsReadableSpanTest {
       TraceConfig config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      List<Link> links) {
+      List<SpanData.Link> links) {
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
@@ -778,7 +778,7 @@ class RecordEventsReadableSpanTest {
       SpanData spanData,
       final ReadableAttributes attributes,
       List<Event> eventData,
-      List<io.opentelemetry.trace.Link> links,
+      List<SpanData.Link> links,
       String spanName,
       long startEpochNanos,
       long endEpochNanos,
@@ -829,7 +829,7 @@ class RecordEventsReadableSpanTest {
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
         SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
-    Link link1 = Link.create(context, TestUtils.generateRandomAttributes());
+    ImmutableLink link1 = ImmutableLink.create(context, TestUtils.generateRandomAttributes());
 
     RecordEventsReadableSpan readableSpan =
         RecordEventsReadableSpan.startSpan(

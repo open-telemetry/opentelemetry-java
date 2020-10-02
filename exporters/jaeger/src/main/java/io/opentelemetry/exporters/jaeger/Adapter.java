@@ -16,9 +16,9 @@ import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -223,28 +223,28 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Link}s into a collection of Jaeger's {@link Model.SpanRef}.
+   * Converts {@link ImmutableLink}s into a collection of Jaeger's {@link Model.SpanRef}.
    *
    * @param links the span's links property to be converted
    * @return a collection of Jaeger span references
    */
   @VisibleForTesting
-  static Collection<Model.SpanRef> toSpanRefs(List<Link> links) {
+  static Collection<Model.SpanRef> toSpanRefs(List<SpanData.Link> links) {
     List<Model.SpanRef> spanRefs = new ArrayList<>(links.size());
-    for (Link link : links) {
+    for (SpanData.Link link : links) {
       spanRefs.add(toSpanRef(link));
     }
     return spanRefs;
   }
 
   /**
-   * Converts a single {@link Link} into a Jaeger's {@link Model.SpanRef}.
+   * Converts a single {@link ImmutableLink} into a Jaeger's {@link Model.SpanRef}.
    *
    * @param link the OpenTelemetry link to be converted
    * @return the Jaeger span reference
    */
   @VisibleForTesting
-  static Model.SpanRef toSpanRef(Link link) {
+  static Model.SpanRef toSpanRef(SpanData.Link link) {
     Model.SpanRef.Builder builder = Model.SpanRef.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsHexString()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsHexString()));

@@ -24,7 +24,7 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.ImmutableEvent;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -65,7 +65,7 @@ class SpanAdapterTest {
                     Collections.singletonList(
                         ImmutableEvent.create(12347, "my_event", Attributes.empty())))
                 .setTotalRecordedEvents(3)
-                .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
+                .setLinks(Collections.singletonList(ImmutableLink.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
                 .setStatus(io.opentelemetry.trace.Status.OK)
                 .build());
@@ -162,7 +162,7 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(Link.create(SPAN_CONTEXT)))
+    assertThat(SpanAdapter.toProtoSpanLink(ImmutableLink.create(SPAN_CONTEXT)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -174,7 +174,8 @@ class SpanAdapterTest {
   void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
-                Link.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
+                ImmutableLink.create(
+                    SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))

@@ -63,7 +63,7 @@ public abstract class TestSpanData implements SpanData {
 
     abstract List<Event> getEvents();
 
-    abstract List<Link> getLinks();
+    abstract List<SpanData.Link> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -204,10 +204,9 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param links A List&lt;Link&gt;
      * @return this
-     * @see io.opentelemetry.trace.Link
      * @since 0.1.0
      */
-    public abstract Builder setLinks(List<Link> links);
+    public abstract Builder setLinks(List<SpanData.Link> links);
 
     /**
      * Sets to true if the span has a parent on a different process.
