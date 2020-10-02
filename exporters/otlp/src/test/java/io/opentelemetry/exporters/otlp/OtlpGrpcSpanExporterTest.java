@@ -140,8 +140,7 @@ class OtlpGrpcSpanExporterTest {
 
     try {
       TimeUnit.MILLISECONDS.sleep(2000);
-      CompletableResultCode result =
-          exporter.export(Collections.singletonList(generateFakeSpan()));
+      CompletableResultCode result = exporter.export(Collections.singletonList(generateFakeSpan()));
       await().untilAsserted(() -> assertThat(result.isSuccess()).isTrue());
     } finally {
       exporter.shutdown();
