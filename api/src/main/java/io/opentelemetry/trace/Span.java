@@ -458,12 +458,15 @@ public interface Span {
     /**
      * Adds a {@link Link} to the newly created {@code Span}.
      *
+     * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
+     * operations, where a single batch handler processes multiple requests from different traces or
+     * the same trace.
+     *
      * @param spanContext the context of the linked {@code Span}.
      * @param attributes the attributes of the {@code Link}.
      * @return this.
      * @throws NullPointerException if {@code spanContext} is {@code null}.
      * @throws NullPointerException if {@code attributes} is {@code null}.
-     * @see #addLink(SpanContext)
      * @since 0.1.0
      */
     Builder addLink(SpanContext spanContext, Attributes attributes);
