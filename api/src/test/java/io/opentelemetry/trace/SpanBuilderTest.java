@@ -38,20 +38,6 @@ class SpanBuilderTest {
     spanBuilder.setNoParent();
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
-    spanBuilder.addLink(
-        new Link() {
-          private final SpanContext spanContext = DefaultSpan.getInvalid().getContext();
-
-          @Override
-          public SpanContext getContext() {
-            return spanContext;
-          }
-
-          @Override
-          public Attributes getAttributes() {
-            return Attributes.empty();
-          }
-        });
     spanBuilder.setAttribute("key", "value");
     spanBuilder.setAttribute("key", 12345L);
     spanBuilder.setAttribute("key", .12345);

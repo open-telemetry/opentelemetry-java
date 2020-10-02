@@ -81,13 +81,12 @@ class SpanBuilderSdkTest {
   void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      assertThat(span.toSpanData().getLinks()).hasSize(3);
+      assertThat(span.toSpanData().getLinks()).hasSize(2);
     } finally {
       span.end();
     }
@@ -174,17 +173,8 @@ class SpanBuilderSdkTest {
   }
 
   @Test
-  void addLink_null() {
-    assertThrows(
-        NullPointerException.class,
-        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink((io.opentelemetry.trace.Link) null));
-  }
-
-  @Test
   void addLinkSpanContext_null() {
-    assertThrows(
-        NullPointerException.class,
-        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink((SpanContext) null));
+    assertThrows(NullPointerException.class, () -> tracerSdk.spanBuilder(SPAN_NAME).addLink(null));
   }
 
   @Test

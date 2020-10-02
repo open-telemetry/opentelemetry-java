@@ -85,7 +85,7 @@ class RecordEventsReadableSpanTest {
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<AttributeKey, Object> attributes = new HashMap<>();
   private Attributes expectedAttributes;
-  private final io.opentelemetry.trace.Link link = Link.create(spanContext);
+  private final Link link = Link.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
 
   private TestClock testClock;
@@ -127,35 +127,6 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
-  void lazyLinksAreResolved() {
-    final Attributes attributes = Attributes.of(stringKey("attr"), "val");
-    io.opentelemetry.trace.Link link =
-        new io.opentelemetry.trace.Link() {
-          @Override
-          public SpanContext getContext() {
-            return spanContext;
-          }
-
-          @Override
-          public Attributes getAttributes() {
-            return attributes;
-          }
-        };
-    RecordEventsReadableSpan span =
-        createTestSpan(
-            Kind.CLIENT,
-            TraceConfig.getDefault(),
-            parentSpanId,
-            null,
-            Collections.singletonList(link));
-
-    Link resultingLink = span.toSpanData().getLinks().get(0);
-    assertThat(resultingLink.getTotalAttributeCount()).isEqualTo(1);
-    assertThat(resultingLink.getContext()).isSameAs(spanContext);
-    assertThat(resultingLink.getAttributes()).isEqualTo(attributes);
-  }
-
-  @Test
   void endSpanTwice_DoNotCrash() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     assertThat(span.hasEnded()).isFalse();
@@ -173,7 +144,7 @@ class RecordEventsReadableSpanTest {
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
       Event event =
-          TimedEvent.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+          EventImpl.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
       verifySpanData(
           spanData,
           expectedAttributes,
@@ -202,7 +173,7 @@ class RecordEventsReadableSpanTest {
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
     Event event =
-        TimedEvent.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+        EventImpl.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
     verifySpanData(
         spanData,
         expectedAttributes,
@@ -515,33 +486,14 @@ class RecordEventsReadableSpanTest {
   @Test
   void addEvent() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    io.opentelemetry.trace.Event customEvent =
-        new io.opentelemetry.trace.Event() {
-          @Override
-          public String getName() {
-            return "event3";
-          }
-
-          @Override
-          public Attributes getAttributes() {
-            return Attributes.empty();
-          }
-        };
     try {
       span.addEvent("event1");
       span.addEvent("event2", Attributes.of(stringKey("e1key"), "e1Value"));
-      span.addEvent(customEvent);
     } finally {
       span.end();
     }
     List<Event> events = span.toSpanData().getEvents();
-    assertThat(events.size()).isEqualTo(3);
-    for (Event event : events) {
-      // make sure that we aren't holding on to the memory from the custom event, in case it
-      // references
-      // some heavyweight thing.
-      assertThat(event).isNotInstanceOf(TimedEvent.RawTimedEventWithEvent.class);
-    }
+    assertThat(events.size()).isEqualTo(2);
   }
 
   @Test
@@ -622,7 +574,7 @@ class RecordEventsReadableSpanTest {
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
         Event expectedEvent =
-            TimedEvent.create(
+            EventImpl.create(
                 START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
                 "event2",
                 Attributes.empty(),
@@ -637,7 +589,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
       Event expectedEvent =
-          TimedEvent.create(
+          EventImpl.create(
               START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
               "event2",
               Attributes.empty(),
@@ -746,10 +698,8 @@ class RecordEventsReadableSpanTest {
     span.setAttribute(null, 0L);
     span.setStatus(null);
     span.updateName(null);
-    span.addEvent((Event) null);
-    span.addEvent((String) null);
-    span.addEvent((Event) null, 0);
-    span.addEvent((String) null, 0);
+    span.addEvent(null);
+    span.addEvent(null, 0);
     span.addEvent(null, null);
     span.addEvent(null, null, 0);
     span.recordException(null);
@@ -799,7 +749,7 @@ class RecordEventsReadableSpanTest {
       TraceConfig config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links) {
+      List<Link> links) {
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
@@ -920,9 +870,9 @@ class RecordEventsReadableSpanTest {
 
     List<Event> events =
         Arrays.asList(
-            TimedEvent.create(
+            EventImpl.create(
                 firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
-            TimedEvent.create(
+            EventImpl.create(
                 secondEventTimeNanos, "event2", event2Attributes, event2Attributes.size()));
 
     SpanData result = readableSpan.toSpanData();

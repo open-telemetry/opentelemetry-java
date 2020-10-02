@@ -61,7 +61,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable private Context parent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private AttributesMap attributes;
-  @Nullable private List<io.opentelemetry.trace.Link> links;
+  @Nullable private List<Link> links;
   private int totalNumberOfLinksAdded = 0;
   private long startEpochNanos = 0;
   private boolean isRootSpan;
@@ -122,8 +122,7 @@ final class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
-  @Override
-  public Span.Builder addLink(io.opentelemetry.trace.Link link) {
+  private void addLink(Link link) {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     if (links == null) {
@@ -132,11 +131,10 @@ final class SpanBuilderSdk implements Span.Builder {
 
     // don't bother doing anything with any links beyond the max.
     if (links.size() == traceConfig.getMaxNumberOfLinks()) {
-      return this;
+      return;
     }
 
     links.add(link);
-    return this;
   }
 
   @Override
@@ -201,8 +199,7 @@ final class SpanBuilderSdk implements Span.Builder {
       traceId = parentSpanContext.getTraceIdAsHexString();
       traceState = parentSpanContext.getTraceState();
     }
-    List<io.opentelemetry.trace.Link> immutableLinks =
-        links == null ? Collections.emptyList() : Collections.unmodifiableList(links);
+    List<Link> oldLinks = links;
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
@@ -216,7 +213,9 @@ final class SpanBuilderSdk implements Span.Builder {
                 spanName,
                 spanKind,
                 immutableAttributes,
-                immutableLinks);
+                oldLinks == null
+                    ? Collections.emptyList()
+                    : Collections.unmodifiableList(oldLinks));
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
     SpanContext spanContext =
@@ -256,7 +255,7 @@ final class SpanBuilderSdk implements Span.Builder {
         getClock(parentSpan, clock),
         resource,
         recordedAttributes,
-        immutableLinks,
+        oldLinks == null ? Collections.emptyList() : Collections.unmodifiableList(oldLinks),
         totalNumberOfLinksAdded,
         startEpochNanos);
   }

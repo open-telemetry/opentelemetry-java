@@ -241,7 +241,7 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
 
   /**
-   * The name of an {@link io.opentelemetry.trace.Event} describing an exception.
+   * The name of an event describing an exception.
    *
    * <p>Typically an event with that name should not be manually created. Instead {@link
    * io.opentelemetry.trace.Span#recordException(Throwable)} should be used.

@@ -161,7 +161,7 @@ public interface Span {
   }
 
   /**
-   * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
+   * Adds an event to the {@link Span}. The timestamp of the event will be the current time.
    *
    * @param name the name of the event.
    * @since 0.1.0
@@ -184,8 +184,8 @@ public interface Span {
   void addEvent(String name, long timestamp);
 
   /**
-   * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the *
-   * {@link Event} will be the current time.
+   * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the event
+   * will be the current time.
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
@@ -210,29 +210,6 @@ public interface Span {
    * @since 0.1.0
    */
   void addEvent(String name, Attributes attributes, long timestamp);
-
-  /**
-   * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
-   *
-   * @param event the event to add.
-   * @since 0.1.0
-   */
-  void addEvent(Event event);
-
-  /**
-   * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
-   * this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed using
-   * it, for example, by taking a difference of readings from {@link System#nanoTime()} and adding
-   * to the span start time.
-   *
-   * <p>When possible, it is preferred to use {@link #addEvent(String)} at the time the event
-   * occurred.
-   *
-   * @param event the event to add.
-   * @param timestamp the explicit event timestamp in nanos since epoch.
-   * @since 0.1.0
-   */
-  void addEvent(Event event, long timestamp);
 
   /**
    * Sets the {@link Status} to the {@code Span}.
@@ -444,26 +421,16 @@ public interface Span {
     /**
      * Adds a {@link Link} to the newly created {@code Span}.
      *
+     * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
+     * operations, where a single batch handler processes multiple requests from different traces or
+     * the same trace.
+     *
      * @param spanContext the context of the linked {@code Span}.
      * @return this.
      * @throws NullPointerException if {@code spanContext} is {@code null}.
-     * @see #addLink(Link)
      * @since 0.1.0
      */
     Builder addLink(SpanContext spanContext);
-
-    /**
-     * Adds a {@link Link} to the newly created {@code Span}.
-     *
-     * @param spanContext the context of the linked {@code Span}.
-     * @param attributes the attributes of the {@code Link}.
-     * @return this.
-     * @throws NullPointerException if {@code spanContext} is {@code null}.
-     * @throws NullPointerException if {@code attributes} is {@code null}.
-     * @see #addLink(Link)
-     * @since 0.1.0
-     */
-    Builder addLink(SpanContext spanContext, Attributes attributes);
 
     /**
      * Adds a {@link Link} to the newly created {@code Span}.
@@ -472,12 +439,14 @@ public interface Span {
      * operations, where a single batch handler processes multiple requests from different traces or
      * the same trace.
      *
-     * @param link the {@link Link} to be added.
+     * @param spanContext the context of the linked {@code Span}.
+     * @param attributes the attributes of the {@code Link}.
      * @return this.
-     * @throws NullPointerException if {@code link} is {@code null}.
+     * @throws NullPointerException if {@code spanContext} is {@code null}.
+     * @throws NullPointerException if {@code attributes} is {@code null}.
      * @since 0.1.0
      */
-    Builder addLink(Link link);
+    Builder addLink(SpanContext spanContext, Attributes attributes);
 
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
