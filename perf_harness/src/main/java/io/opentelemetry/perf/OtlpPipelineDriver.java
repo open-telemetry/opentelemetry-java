@@ -13,8 +13,6 @@ import eu.rekawek.toxiproxy.model.ToxicList;
 import eu.rekawek.toxiproxy.model.toxic.Latency;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.logging.LoggingMetricExporter;
-import io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -28,7 +26,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
-public class OtlpPipelineDriver {
+class OtlpPipelineDriver {
 
   public static final String COLLECTOR_PROXY_PORT = "44444";
 
@@ -38,8 +36,9 @@ public class OtlpPipelineDriver {
     Proxy collectorProxy = toxiproxyClient.getProxyOrNull("collector");
 
     if (collectorProxy == null) {
-      collectorProxy = toxiproxyClient
-          .createProxy("collector", "0.0.0.0:" + COLLECTOR_PROXY_PORT, "otel-collector:55680");
+      collectorProxy =
+          toxiproxyClient.createProxy(
+              "collector", "0.0.0.0:" + COLLECTOR_PROXY_PORT, "otel-collector:55680");
     }
     collectorProxy.enable();
 
@@ -84,35 +83,38 @@ public class OtlpPipelineDriver {
     System.setProperty("otel.resource.attributes", "service.name=OtlpExporterExample");
 
     // set up the span exporter and wire it into the SDK
-    OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.newBuilder()
-        .setEndpoint("localhost:" + COLLECTOR_PROXY_PORT)
-        .setDeadlineMs(2000)
-        .build();
+    OtlpGrpcSpanExporter spanExporter =
+        OtlpGrpcSpanExporter.newBuilder()
+            .setEndpoint("localhost:" + COLLECTOR_PROXY_PORT)
+            .setDeadlineMs(2000)
+            .build();
     BatchSpanProcessor spanProcessor =
         BatchSpanProcessor.newBuilder(spanExporter).setScheduleDelayMillis(1000).build();
     OpenTelemetrySdk.getTracerProvider().addSpanProcessor(spanProcessor);
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
-    MetricExporter metricExporter = new MetricExporter() {
-      @Override
-      public CompletableResultCode export(Collection<MetricData> metrics) {
-        metrics.forEach(metricData -> {
-          System.out.println("metricData.getDescriptor() = " + metricData.getDescriptor());
-          metricData.getPoints().forEach(point -> System.out.println("\tpoint = " + point));
-        });
-        return CompletableResultCode.ofSuccess();
-      }
+    MetricExporter metricExporter =
+        new MetricExporter() {
+          @Override
+          public CompletableResultCode export(Collection<MetricData> metrics) {
+            metrics.forEach(
+                metricData -> {
+                  System.out.println("metricData.getDescriptor() = " + metricData.getDescriptor());
+                  metricData.getPoints().forEach(point -> System.out.println("\tpoint = " + point));
+                });
+            return CompletableResultCode.ofSuccess();
+          }
 
-      @Override
-      public CompletableResultCode flush() {
-        return CompletableResultCode.ofSuccess();
-      }
+          @Override
+          public CompletableResultCode flush() {
+            return CompletableResultCode.ofSuccess();
+          }
 
-      @Override
-      public void shutdown() {
-        //no-op
-      }
-    };
+          @Override
+          public void shutdown() {
+            // no-op
+          }
+        };
 
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()
@@ -123,4 +125,6 @@ public class OtlpPipelineDriver {
             .build();
     return intervalMetricReader;
   }
+
+  private OtlpPipelineDriver() {}
 }
