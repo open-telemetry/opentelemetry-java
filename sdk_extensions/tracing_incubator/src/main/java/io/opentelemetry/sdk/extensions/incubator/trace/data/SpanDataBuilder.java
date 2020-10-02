@@ -9,7 +9,6 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
@@ -152,7 +151,7 @@ public abstract class SpanDataBuilder implements SpanData {
 
     public abstract Builder setKind(Kind kind);
 
-    public abstract Builder setLinks(List<ImmutableLink> links);
+    public abstract Builder setLinks(List<Link> links);
 
     public abstract Builder setHasRemoteParent(boolean hasRemoteParent);
 

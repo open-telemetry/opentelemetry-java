@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
@@ -114,7 +113,7 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public List<ImmutableLink> getLinks() {
+  public List<Link> getLinks() {
     return delegate.getLinks();
   }
 
