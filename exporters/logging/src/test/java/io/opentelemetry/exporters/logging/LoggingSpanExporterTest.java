@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventImpl;
+import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -58,7 +58,7 @@ class LoggingSpanExporterTest {
             .setKind(Kind.INTERNAL)
             .setEvents(
                 Collections.singletonList(
-                    EventImpl.create(
+                    ImmutableEvent.create(
                         epochNanos + 500,
                         "somethingHappenedHere",
                         Attributes.of(booleanKey("important"), true))))
