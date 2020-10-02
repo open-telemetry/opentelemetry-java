@@ -89,7 +89,7 @@ public class MultiSpanExporterBenchmark {
               .setHasEnded(true)
               .build();
     }
-    this.spans = Arrays.<SpanData>asList(spans);
+    this.spans = Arrays.asList(spans);
   }
 
   @Benchmark
