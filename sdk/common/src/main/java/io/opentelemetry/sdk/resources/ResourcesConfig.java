@@ -81,8 +81,7 @@ public abstract class ResourcesConfig {
    * @return a new {@link Builder}.
    */
   public static Builder newBuilder() {
-    return new AutoValue_ResourcesConfig.Builder()
-        .setDisabledResourceProviders(ImmutableSet.<String>of());
+    return new AutoValue_ResourcesConfig.Builder().setDisabledResourceProviders(ImmutableSet.of());
   }
 
   /**

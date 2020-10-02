@@ -202,9 +202,7 @@ final class SpanBuilderSdk implements Span.Builder {
       traceState = parentSpanContext.getTraceState();
     }
     List<io.opentelemetry.trace.Link> immutableLinks =
-        links == null
-            ? Collections.<io.opentelemetry.trace.Link>emptyList()
-            : Collections.unmodifiableList(links);
+        links == null ? Collections.emptyList() : Collections.unmodifiableList(links);
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;

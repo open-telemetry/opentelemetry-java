@@ -117,7 +117,7 @@ public abstract class TraceState {
 
     // Needs to be in this class to avoid initialization deadlock because super class depends on
     // subclass (the auto-value generate class).
-    private static final TraceState EMPTY = create(Collections.<Entry>emptyList());
+    private static final TraceState EMPTY = create(Collections.emptyList());
 
     private Builder(TraceState parent) {
       Utils.checkNotNull(parent, "parent");
