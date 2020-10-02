@@ -16,7 +16,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.SamplingManagerGrpc.Sampli
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.trace.Link;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
@@ -71,7 +71,7 @@ public class JaegerRemoteSampler implements Sampler {
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
-      List<Link> parentLinks) {
+      List<SpanData.Link> parentLinks) {
     return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
   }
 

@@ -25,9 +25,9 @@ import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventImpl;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
@@ -182,8 +182,9 @@ class AdapterTest {
   @Test
   void testSpanRefs() {
     // prepare
-    Link link =
-        Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+    ImmutableLink link =
+        ImmutableLink.create(
+            createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -195,7 +196,7 @@ class AdapterTest {
   @Test
   void testSpanRef() {
     // prepare
-    Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    ImmutableLink link = ImmutableLink.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
@@ -270,7 +271,8 @@ class AdapterTest {
   private static SpanData getSpanData(long startMs, long endMs) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
-    Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    ImmutableLink link =
+        ImmutableLink.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return TestSpanData.newBuilder()
         .setHasEnded(true)

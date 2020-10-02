@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status.CanonicalCode;
@@ -110,7 +109,7 @@ final class SpanAdapter {
       builder.addEvents(toProtoSpanEvent(event));
     }
     builder.setDroppedEventsCount(spanData.getTotalRecordedEvents() - spanData.getEvents().size());
-    for (Link link : spanData.getLinks()) {
+    for (SpanData.Link link : spanData.getLinks()) {
       builder.addLinks(toProtoSpanLink(link));
     }
     builder.setDroppedLinksCount(spanData.getTotalRecordedLinks() - spanData.getLinks().size());
@@ -152,7 +151,7 @@ final class SpanAdapter {
     return builder.build();
   }
 
-  static Span.Link toProtoSpanLink(Link link) {
+  static Span.Link toProtoSpanLink(SpanData.Link link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsHexString()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsHexString()));

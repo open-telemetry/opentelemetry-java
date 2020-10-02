@@ -12,8 +12,6 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
 import java.util.Properties;
@@ -40,14 +38,14 @@ import javax.annotation.concurrent.Immutable;
  *       when constructing a new {@code Span}.
  *   <li>{@code otel.config.max.attrs}: to set the global default max number of attributes per
  *       {@link Span}.
- *   <li>{@code otel.config.max.events}: to set the global default max number of {@link Event}s per
- *       {@link Span}.
- *   <li>{@code otel.config.max.links}: to set the global default max number of {@link Link} entries
- *       per {@link Span}.
+ *   <li>{@code otel.config.max.events}: to set the global default max number of events per {@link
+ *       Span}.
+ *   <li>{@code otel.config.max.links}: to set the global default max number of links per {@link
+ *       Span}.
  *   <li>{@code otel.config.max.event.attrs}: to set the global default max number of attributes per
- *       {@link Event}.
+ *       event.
  *   <li>{@code otel.config.max.link.attrs}: to set the global default max number of attributes per
- *       {@link Link}.
+ *       link.
  *   <li>{@code otel.config.max.attr.length}: to set the global default max length of string
  *       attribute value in characters.
  * </ul>
@@ -59,14 +57,14 @@ import javax.annotation.concurrent.Immutable;
  *       when constructing a new {@code Span}.
  *   <li>{@code OTEL_CONFIG_MAX_ATTRS}: to set the global default max number of attributes per
  *       {@link Span}.
- *   <li>{@code OTEL_CONFIG_MAX_EVENTS}: to set the global default max number of {@link Event}s per
- *       {@link Span}.
- *   <li>{@code OTEL_CONFIG_MAX_LINKS}: to set the global default max number of {@link Link} entries
- *       per {@link Span}.
+ *   <li>{@code OTEL_CONFIG_MAX_EVENTS}: to set the global default max number of events per {@link
+ *       Span}.
+ *   <li>{@code OTEL_CONFIG_MAX_LINKS}: to set the global default max number of links per {@link
+ *       Span}.
  *   <li>{@code OTEL_CONFIG_MAX_EVENT_ATTRS}: to set the global default max number of attributes per
- *       {@link Event}.
+ *       event.
  *   <li>{@code OTEL_CONFIG_MAX_LINK_ATTRS}: to set the global default max number of attributes per
- *       {@link Link}.
+ *       link.
  *   <li>{@code OTEL_CONFIG_MAX_ATTR_LENGTH}: to set the global default max length of string
  *       attribute value in characters.
  * </ul>
@@ -112,30 +110,30 @@ public abstract class TraceConfig {
   public abstract int getMaxNumberOfAttributes();
 
   /**
-   * Returns the global default max number of {@link Event}s per {@link Span}.
+   * Returns the global default max number of events per {@link Span}.
    *
-   * @return the global default max number of {@code Event}s per {@code Span}.
+   * @return the global default max number of events per {@code Span}.
    */
   public abstract int getMaxNumberOfEvents();
 
   /**
-   * Returns the global default max number of {@link Link} entries per {@link Span}.
+   * Returns the global default max number of links per {@link Span}.
    *
-   * @return the global default max number of {@code Link} entries per {@code Span}.
+   * @return the global default max number of links per {@code Span}.
    */
   public abstract int getMaxNumberOfLinks();
 
   /**
-   * Returns the global default max number of attributes per {@link Event}.
+   * Returns the global default max number of attributes per event.
    *
-   * @return the global default max number of attributes per {@link Event}.
+   * @return the global default max number of attributes per event.
    */
   public abstract int getMaxNumberOfAttributesPerEvent();
 
   /**
-   * Returns the global default max number of attributes per {@link Link}.
+   * Returns the global default max number of attributes per link.
    *
-   * @return the global default max number of attributes per {@link Link}.
+   * @return the global default max number of attributes per link.
    */
   public abstract int getMaxNumberOfAttributesPerLink();
 
@@ -300,37 +298,37 @@ public abstract class TraceConfig {
     public abstract Builder setMaxNumberOfAttributes(int maxNumberOfAttributes);
 
     /**
-     * Sets the global default max number of {@link Event}s per {@link Span}.
+     * Sets the global default max number of events per {@link Span}.
      *
-     * @param maxNumberOfEvents the global default max number of {@link Event}s per {@link Span}. It
-     *     must be positive otherwise {@link #build()} will throw an exception.
+     * @param maxNumberOfEvents the global default max number of events per {@link Span}. It must be
+     *     positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
     public abstract Builder setMaxNumberOfEvents(int maxNumberOfEvents);
 
     /**
-     * Sets the global default max number of {@link Link} entries per {@link Span}.
+     * Sets the global default max number of links per {@link Span}.
      *
-     * @param maxNumberOfLinks the global default max number of {@link Link} entries per {@link
-     *     Span}. It must be positive otherwise {@link #build()} will throw an exception.
+     * @param maxNumberOfLinks the global default max number of links per {@link Span}. It must be
+     *     positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
     public abstract Builder setMaxNumberOfLinks(int maxNumberOfLinks);
 
     /**
-     * Sets the global default max number of attributes per {@link Event}.
+     * Sets the global default max number of attributes per event.
      *
-     * @param maxNumberOfAttributesPerEvent the global default max number of attributes per {@link
-     *     Event}. It must be positive otherwise {@link #build()} will throw an exception.
+     * @param maxNumberOfAttributesPerEvent the global default max number of attributes per event.
+     *     It must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
     public abstract Builder setMaxNumberOfAttributesPerEvent(int maxNumberOfAttributesPerEvent);
 
     /**
-     * Sets the global default max number of attributes per {@link Link}.
+     * Sets the global default max number of attributes per link.
      *
-     * @param maxNumberOfAttributesPerLink the global default max number of attributes per {@link
-     *     Link}. It must be positive otherwise {@link #build()} will throw an exception.
+     * @param maxNumberOfAttributesPerLink the global default max number of attributes per link. It
+     *     must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
     public abstract Builder setMaxNumberOfAttributesPerLink(int maxNumberOfAttributesPerLink);

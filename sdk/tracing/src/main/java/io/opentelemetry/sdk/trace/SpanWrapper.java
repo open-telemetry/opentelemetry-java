@@ -31,9 +31,9 @@ import javax.annotation.concurrent.Immutable;
 abstract class SpanWrapper implements SpanData {
   abstract RecordEventsReadableSpan delegate();
 
-  abstract List<Link> resolvedLinks();
+  abstract List<SpanData.Link> resolvedLinks();
 
-  abstract List<Event> resolvedEvents();
+  abstract List<SpanData.Event> resolvedEvents();
 
   abstract ReadableAttributes attributes();
 
@@ -55,7 +55,7 @@ abstract class SpanWrapper implements SpanData {
    */
   static SpanWrapper create(
       RecordEventsReadableSpan delegate,
-      List<Link> links,
+      List<SpanData.Link> links,
       List<Event> events,
       ReadableAttributes attributes,
       int totalAttributeCount,
@@ -138,7 +138,7 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public List<Link> getLinks() {
+  public List<SpanData.Link> getLinks() {
     return resolvedLinks();
   }
 

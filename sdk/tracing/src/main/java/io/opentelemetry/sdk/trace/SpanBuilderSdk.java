@@ -23,7 +23,8 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -50,7 +51,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable private Context parent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private AttributesMap attributes;
-  @Nullable private List<Link> links;
+  @Nullable private List<ImmutableLink> links;
   private int totalNumberOfLinksAdded = 0;
   private long startEpochNanos = 0;
   private boolean isRootSpan;
@@ -95,7 +96,7 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder addLink(SpanContext spanContext) {
-    addLink(Link.create(spanContext));
+    addLink(ImmutableLink.create(spanContext));
     return this;
   }
 
@@ -103,7 +104,7 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span.Builder addLink(SpanContext spanContext, Attributes attributes) {
     int totalAttributeCount = attributes.size();
     addLink(
-        Link.create(
+        ImmutableLink.create(
             spanContext,
             RecordEventsReadableSpan.copyAndLimitAttributes(
                 attributes, traceConfig.getMaxNumberOfAttributesPerLink()),
@@ -111,7 +112,7 @@ final class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
-  private void addLink(Link link) {
+  private void addLink(ImmutableLink link) {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     if (links == null) {
@@ -188,7 +189,8 @@ final class SpanBuilderSdk implements Span.Builder {
       traceId = parentSpanContext.getTraceIdAsHexString();
       traceState = parentSpanContext.getTraceState();
     }
-    List<Link> oldLinks = links;
+    List<SpanData.Link> immutableLinks =
+        links == null ? Collections.emptyList() : Collections.unmodifiableList(links);
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
@@ -202,9 +204,7 @@ final class SpanBuilderSdk implements Span.Builder {
                 spanName,
                 spanKind,
                 immutableAttributes,
-                oldLinks == null
-                    ? Collections.emptyList()
-                    : Collections.unmodifiableList(oldLinks));
+                immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
     SpanContext spanContext =
@@ -244,7 +244,7 @@ final class SpanBuilderSdk implements Span.Builder {
         getClock(parentSpan, clock),
         resource,
         recordedAttributes,
-        oldLinks == null ? Collections.emptyList() : Collections.unmodifiableList(oldLinks),
+        immutableLinks,
         totalNumberOfLinksAdded,
         startEpochNanos);
   }

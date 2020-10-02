@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.trace.Link;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -37,7 +37,7 @@ public interface Sampler {
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
-      List<Link> parentLinks);
+      List<SpanData.Link> parentLinks);
 
   /**
    * Returns the description of this {@code Sampler}. This may be displayed on debug pages or in the
