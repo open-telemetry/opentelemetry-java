@@ -13,10 +13,10 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.AttributesKeys;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import org.junit.jupiter.api.Test;
@@ -110,7 +110,7 @@ class DelegatingSpanDataTest {
         .setStartEpochNanos(100)
         .setEndEpochNanos(200)
         .setKind(Kind.SERVER)
-        .setStatus(Status.OK)
+        .setStatus(ImmutableStatus.OK)
         .setHasRemoteParent(false)
         .setTotalRecordedEvents(0)
         .setTotalRecordedLinks(0);

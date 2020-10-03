@@ -15,7 +15,7 @@ import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -210,7 +210,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       span.setAttribute(key, value);
     }
     if (error) {
-      span.setStatus(Status.ERROR);
+      span.setStatus(StatusCanonicalCode.ERROR, null);
     }
 
     SpanShim spanShim = new SpanShim(telemetryInfo(), span);

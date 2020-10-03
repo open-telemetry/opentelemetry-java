@@ -13,10 +13,10 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.ImmutableEvent;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +53,7 @@ class LoggingSpanExporterTest {
             .setSpanId(SpanId.fromLong(9876L))
             .setStartEpochNanos(epochNanos)
             .setEndEpochNanos(epochNanos + 1000)
-            .setStatus(Status.OK)
+            .setStatus(ImmutableStatus.OK)
             .setName("testSpan")
             .setKind(Kind.INTERNAL)
             .setEvents(

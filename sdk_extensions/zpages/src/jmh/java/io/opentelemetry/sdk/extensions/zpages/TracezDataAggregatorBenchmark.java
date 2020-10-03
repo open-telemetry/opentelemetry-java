@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -43,7 +43,7 @@ public class TracezDataAggregatorBenchmark {
       tracer.spanBuilder(runningSpan).startSpan();
       tracer.spanBuilder(latencySpan).startSpan().end();
       Span error = tracer.spanBuilder(errorSpan).startSpan();
-      error.setStatus(Status.ERROR);
+      error.setStatus(StatusCanonicalCode.ERROR, null);
       error.end();
     }
   }

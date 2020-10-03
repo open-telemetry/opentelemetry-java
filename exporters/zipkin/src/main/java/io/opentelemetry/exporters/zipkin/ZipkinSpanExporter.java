@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -140,7 +139,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
             spanBuilder.putTag(key.getKey(), valueToString(key, value));
           }
         });
-    Status status = spanData.getStatus();
+    SpanData.Status status = spanData.getStatus();
     // for GRPC spans, include status code & description.
     if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE) != null) {
       spanBuilder.putTag(OTEL_STATUS_CODE, status.getCanonicalCode().toString());

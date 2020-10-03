@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +74,7 @@ public class SpanPipelineBenchmark {
     span.setAttribute(STRING_ATTRIBUTE_KEY, "test_value");
     span.setAttribute(DOUBLE_ATTRIBUTE_KEY, 4844.44d);
     span.setAttribute(BOOLEAN_ATTRIBUTE_KEY, false);
-    span.setStatus(Status.OK);
+    span.setStatus(StatusCanonicalCode.OK, null);
 
     span.addEvent("testEvent");
     span.end();

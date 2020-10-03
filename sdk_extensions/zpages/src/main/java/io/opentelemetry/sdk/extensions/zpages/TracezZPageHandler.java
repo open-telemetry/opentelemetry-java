@@ -16,8 +16,7 @@ import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Status.CanonicalCode;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -325,7 +324,7 @@ final class TracezZPageHandler extends ZPageHandler {
         "<tr style=\"background-color: %s;\"><td></td><td class=\"border-left-dark\">"
             + "</td><td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\">",
         zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
-    Status status = span.getStatus();
+    SpanData.Status status = span.getStatus();
     if (status != null) {
       formatter.format("%s | ", htmlEscaper().escape(status.toString()));
     }
@@ -461,7 +460,7 @@ final class TracezZPageHandler extends ZPageHandler {
                       latencyBoundary.getLatencyLowerBound(),
                       latencyBoundary.getLatencyUpperBound());
             } else {
-              if (subtype < 0 || subtype >= CanonicalCode.values().length) {
+              if (subtype < 0 || subtype >= StatusCanonicalCode.values().length) {
                 // N/A or out-of-bound cueck for error based subtype, valid values: [0, 15]
                 return;
               }

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -81,7 +81,7 @@ public class SpanBenchmark {
   private static void doSpanWork(RecordEventsReadableSpan span) {
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
-    span.setStatus(Status.OK);
+    span.setStatus(StatusCanonicalCode.OK, null);
 
     span.addEvent("testEvent");
     span.end();

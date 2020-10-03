@@ -9,6 +9,7 @@ import io.grpc.Context;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -201,17 +202,20 @@ public interface Span {
   void addEvent(String name, Attributes attributes, long timestamp);
 
   /**
-   * Sets the {@link Status} to the {@code Span}.
+   * Sets the status to the {@code Span}.
    *
-   * <p>If used, this will override the default {@code Span} status. Default is {@link Status#OK}.
+   * <p>If used, this will override the default {@code Span} status. Default status code is {@link
+   * StatusCanonicalCode#UNSET}.
    *
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param status the {@link Status} to set.
+   * @param canonicalCode the {@link StatusCanonicalCode} to set.
+   * @param description the description of the {@code Status}.
    * @since 0.1.0
    */
-  void setStatus(Status status);
+  // TODO: Add a setStatus overload without description.
+  void setStatus(StatusCanonicalCode canonicalCode, @Nullable String description);
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.

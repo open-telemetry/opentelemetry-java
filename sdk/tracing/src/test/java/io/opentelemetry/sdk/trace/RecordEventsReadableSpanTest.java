@@ -26,12 +26,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.ImmutableLink;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
@@ -101,7 +102,7 @@ class RecordEventsReadableSpanTest {
     span.end();
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
     // and are ignored.
-    spanDoWork(span, Status.ERROR.withDescription("CANCELLED"));
+    spanDoWork(span, StatusCanonicalCode.ERROR, "CANCELLED");
     SpanData spanData = span.toSpanData();
     verifySpanData(
         spanData,
@@ -111,7 +112,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NAME,
         START_EPOCH_NANOS,
         START_EPOCH_NANOS,
-        Status.UNSET,
+        ImmutableStatus.UNSET,
         /*hasEnded=*/ true);
   }
 
@@ -130,7 +131,7 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       assertThat(span.hasEnded()).isFalse();
-      spanDoWork(span, null);
+      spanDoWork(span, null, null);
       SpanData spanData = span.toSpanData();
       Event event =
           ImmutableEvent.create(
@@ -143,7 +144,7 @@ class RecordEventsReadableSpanTest {
           SPAN_NEW_NAME,
           START_EPOCH_NANOS,
           0,
-          Status.UNSET,
+          ImmutableStatus.UNSET,
           /*hasEnded=*/ false);
       assertThat(span.hasEnded()).isFalse();
     } finally {
@@ -156,7 +157,7 @@ class RecordEventsReadableSpanTest {
   void toSpanData_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
-      spanDoWork(span, Status.ERROR.withDescription("CANCELLED"));
+      spanDoWork(span, StatusCanonicalCode.ERROR, "CANCELLED");
     } finally {
       span.end();
     }
@@ -173,7 +174,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NEW_NAME,
         START_EPOCH_NANOS,
         testClock.now(),
-        Status.ERROR.withDescription("CANCELLED"),
+        ImmutableStatus.ERROR.withDescription("CANCELLED"),
         /*hasEnded=*/ true);
   }
 
@@ -201,7 +202,7 @@ class RecordEventsReadableSpanTest {
   void toSpanData_RootSpan() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
-      spanDoWork(span, null);
+      spanDoWork(span, null, null);
     } finally {
       span.end();
     }
@@ -258,14 +259,15 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.UNSET);
-      span.setStatus(Status.ERROR.withDescription("CANCELLED"));
+      assertThat(span.toSpanData().getStatus()).isEqualTo(ImmutableStatus.UNSET);
+      span.setStatus(StatusCanonicalCode.ERROR, "CANCELLED");
       assertThat(span.toSpanData().getStatus())
-          .isEqualTo(Status.ERROR.withDescription("CANCELLED"));
+          .isEqualTo(ImmutableStatus.ERROR.withDescription("CANCELLED"));
     } finally {
       span.end();
     }
-    assertThat(span.toSpanData().getStatus()).isEqualTo(Status.ERROR.withDescription("CANCELLED"));
+    assertThat(span.toSpanData().getStatus())
+        .isEqualTo(ImmutableStatus.ERROR.withDescription("CANCELLED"));
   }
 
   @Test
@@ -491,8 +493,7 @@ class RecordEventsReadableSpanTest {
   void droppingAttributes() {
     final int maxNumberOfAttributes = 8;
     TraceConfig traceConfig =
-        TraceConfig.getDefault()
-            .toBuilder()
+        TraceConfig.getDefault().toBuilder()
             .setMaxNumberOfAttributes(maxNumberOfAttributes)
             .build();
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
@@ -515,8 +516,7 @@ class RecordEventsReadableSpanTest {
   void droppingAndAddingAttributes() {
     final int maxNumberOfAttributes = 8;
     TraceConfig traceConfig =
-        TraceConfig.getDefault()
-            .toBuilder()
+        TraceConfig.getDefault().toBuilder()
             .setMaxNumberOfAttributes(maxNumberOfAttributes)
             .build();
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
@@ -687,7 +687,7 @@ class RecordEventsReadableSpanTest {
 
     // Should be no exceptions
     span.setAttribute(null, 0L);
-    span.setStatus(null);
+    span.setStatus(null, null);
     span.updateName(null);
     span.addEvent(null);
     span.addEvent(null, 0);
@@ -699,7 +699,7 @@ class RecordEventsReadableSpanTest {
     // Ignored the bad calls
     SpanData data = span.toSpanData();
     assertThat(data.getAttributes().isEmpty()).isTrue();
-    assertThat(data.getStatus()).isEqualTo(Status.UNSET);
+    assertThat(data.getStatus()).isEqualTo(ImmutableStatus.UNSET);
     assertThat(data.getName()).isEqualTo(SPAN_NAME);
   }
 
@@ -762,15 +762,18 @@ class RecordEventsReadableSpanTest {
     return span;
   }
 
-  private void spanDoWork(RecordEventsReadableSpan span, @Nullable Status status) {
+  private void spanDoWork(
+      RecordEventsReadableSpan span,
+      @Nullable StatusCanonicalCode canonicalCode,
+      @Nullable String descriptio) {
     span.setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     attributes.forEach(span::setAttribute);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addEvent("event2", Attributes.empty());
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.updateName(SPAN_NEW_NAME);
-    if (status != null) {
-      span.setStatus(status);
+    if (canonicalCode != null) {
+      span.setStatus(canonicalCode, descriptio);
     }
   }
 
@@ -782,7 +785,7 @@ class RecordEventsReadableSpanTest {
       String spanName,
       long startEpochNanos,
       long endEpochNanos,
-      Status status,
+      SpanData.Status status,
       boolean hasEnded) {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
@@ -875,7 +878,7 @@ class RecordEventsReadableSpanTest {
         name,
         startEpochNanos,
         endEpochNanos,
-        Status.UNSET,
+        ImmutableStatus.UNSET,
         /* hasEnded= */ true);
     assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
     assertThat(result.isSampled()).isEqualTo(false);

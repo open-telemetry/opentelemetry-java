@@ -45,7 +45,7 @@ class DefaultSpanTest {
     span.addEvent("event", 0);
     span.addEvent("event", Attributes.of(booleanKey("MyBooleanAttributeKey"), true));
     span.addEvent("event", Attributes.of(booleanKey("MyBooleanAttributeKey"), true), 0);
-    span.setStatus(Status.OK);
+    span.setStatus(StatusCanonicalCode.OK, null);
     span.recordException(new IllegalStateException());
     span.recordException(new IllegalStateException(), Attributes.empty());
     span.end();
