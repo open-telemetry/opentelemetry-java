@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;

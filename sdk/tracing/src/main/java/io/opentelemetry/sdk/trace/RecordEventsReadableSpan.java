@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeConsumer;

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.nestedcallbacks;
 
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;

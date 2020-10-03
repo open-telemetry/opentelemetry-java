@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.extensions.incubator.trace.data;
 
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.AttributesKeys;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -23,8 +23,7 @@ import org.junit.jupiter.api.Test;
 
 class DelegatingSpanDataTest {
 
-  private static final AttributeKey<String> CLIENT_TYPE_KEY =
-      AttributesKeys.stringKey("client_type");
+  private static final AttributeKey<String> CLIENT_TYPE_KEY = stringKey("client_type");
 
   private static final class NoOpDelegatingSpanData extends DelegatingSpanData {
     private NoOpDelegatingSpanData(SpanData delegate) {

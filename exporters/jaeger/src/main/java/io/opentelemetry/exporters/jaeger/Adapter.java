@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
