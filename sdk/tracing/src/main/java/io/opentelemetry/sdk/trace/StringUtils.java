@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
-public class StringUtils {
+final class StringUtils {
   /**
    * If given attribute is of type STRING and has more characters than given {@code limit} then
    * return new value with string truncated to {@code limit} characters.
