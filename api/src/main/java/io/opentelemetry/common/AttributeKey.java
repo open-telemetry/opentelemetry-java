@@ -27,42 +27,42 @@ public interface AttributeKey<T> extends Comparable<AttributeKey> {
   @Nonnull
   AttributeType getType();
 
-  /** Create a new AttributeKey for String valued attributes. */
+  /** Returns a new AttributeKey for String valued attributes. */
   static AttributeKey<String> stringKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.STRING);
   }
 
-  /** Create a new AttributeKey for Boolean valued attributes. */
+  /** Returns a new AttributeKey for Boolean valued attributes. */
   static AttributeKey<Boolean> booleanKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.BOOLEAN);
   }
 
-  /** Create a new AttributeKey for Long valued attributes. */
+  /** Returns a new AttributeKey for Long valued attributes. */
   static AttributeKey<Long> longKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.LONG);
   }
 
-  /** Create a new AttributeKey for Double valued attributes. */
+  /** Returns a new AttributeKey for Double valued attributes. */
   static AttributeKey<Double> doubleKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.DOUBLE);
   }
 
-  /** Create a new AttributeKey for List&lt;String&gt; valued attributes. */
+  /** Returns a new AttributeKey for List&lt;String&gt; valued attributes. */
   static AttributeKey<List<String>> stringArrayKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.STRING_ARRAY);
   }
 
-  /** Create a new AttributeKey for List&lt;Boolean&gt; valued attributes. */
+  /** Returns a new AttributeKey for List&lt;Boolean&gt; valued attributes. */
   static AttributeKey<List<Boolean>> booleanArrayKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.BOOLEAN_ARRAY);
   }
 
-  /** Create a new AttributeKey for List&lt;Long&gt; valued attributes. */
+  /** Returns a new AttributeKey for List&lt;Long&gt; valued attributes. */
   static AttributeKey<List<Long>> longArrayKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.LONG_ARRAY);
   }
 
-  /** Create a new AttributeKey for List&lt;Double&gt; valued attributes. */
+  /** Returns a new AttributeKey for List&lt;Double&gt; valued attributes. */
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
     return AttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
