@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -98,7 +99,7 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
    * @throws NullPointerException if the {@code spanProcessor} is {@code null}.
    */
   public static Builder newBuilder(SpanProcessor spanProcessor) {
-    return new Builder(Preconditions.checkNotNull(spanProcessor));
+    return new Builder(Objects.requireNonNull(spanProcessor));
   }
 
   /** Builder class for {@link DisruptorAsyncSpanProcessor}. */

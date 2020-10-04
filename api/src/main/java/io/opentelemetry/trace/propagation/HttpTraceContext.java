@@ -6,7 +6,6 @@
 package io.opentelemetry.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkArgument;
-import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -22,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -91,8 +91,8 @@ public class HttpTraceContext implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
-    checkNotNull(context, "context");
-    checkNotNull(setter, "setter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(setter, "setter");
 
     SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
     if (!spanContext.isValid()) {
@@ -140,9 +140,9 @@ public class HttpTraceContext implements TextMapPropagator {
   @Override
   public <C /*>>> extends @NonNull Object*/> Context extract(
       Context context, C carrier, Getter<C> getter) {
-    checkNotNull(context, "context");
-    checkNotNull(carrier, "carrier");
-    checkNotNull(getter, "getter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(carrier, "carrier");
+    Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext = extractImpl(carrier, getter);
     if (!spanContext.isValid()) {

@@ -5,11 +5,8 @@
 
 package io.opentelemetry.internal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Date;
 import org.junit.jupiter.api.Test;
 
 class UtilsTest {
@@ -48,63 +45,7 @@ class UtilsTest {
 
   @Test
   void checkState() {
-    Utils.checkNotNull(true, TEST_MESSAGE);
     assertThrows(
         IllegalStateException.class, () -> Utils.checkState(false, TEST_MESSAGE), TEST_MESSAGE);
-  }
-
-  @Test
-  void checkNotNull() {
-    Utils.checkNotNull(new Object(), TEST_MESSAGE);
-    assertThrows(
-        NullPointerException.class, () -> Utils.checkNotNull(null, TEST_MESSAGE), TEST_MESSAGE);
-  }
-
-  @Test
-  void checkIndex_Valid() {
-    Utils.checkIndex(1, 2);
-  }
-
-  @Test
-  void checkIndex_NegativeSize() {
-    assertThrows(
-        IllegalArgumentException.class, () -> Utils.checkIndex(0, -1), "Negative size: -1");
-  }
-
-  @Test
-  void checkIndex_NegativeIndex() {
-    assertThrows(
-        IndexOutOfBoundsException.class,
-        () -> Utils.checkIndex(-2, 10),
-        "Index out of bounds: size=10, index=-2");
-  }
-
-  @Test
-  void checkIndex_IndexEqualToSize() {
-    assertThrows(
-        IndexOutOfBoundsException.class,
-        () -> Utils.checkIndex(5, 5),
-        "Index out of bounds: size=5, index=5");
-  }
-
-  @Test
-  void checkIndex_IndexGreaterThanSize() {
-    assertThrows(
-        IndexOutOfBoundsException.class,
-        () -> Utils.checkIndex(11, 10),
-        "Index out of bounds: size=10, index=11");
-  }
-
-  @Test
-  void equalsObjects_Equal() {
-    assertTrue(Utils.equalsObjects(null, null));
-    assertTrue(Utils.equalsObjects(new Date(1L), new Date(1L)));
-  }
-
-  @Test
-  void equalsObjects_Unequal() {
-    assertFalse(Utils.equalsObjects(null, new Object()));
-    assertFalse(Utils.equalsObjects(new Object(), null));
-    assertFalse(Utils.equalsObjects(new Object(), new Object()));
   }
 }

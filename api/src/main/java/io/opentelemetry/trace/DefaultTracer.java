@@ -10,6 +10,7 @@ import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -70,7 +71,7 @@ public final class DefaultTracer implements Tracer {
 
     @Override
     public NoopSpanBuilder setParent(Context context) {
-      Utils.checkNotNull(context, "context");
+      Objects.requireNonNull(context, "context");
       spanContext = TracingContextUtils.getSpan(context).getContext();
       return this;
     }
@@ -93,32 +94,32 @@ public final class DefaultTracer implements Tracer {
 
     @Override
     public NoopSpanBuilder setAttribute(String key, String value) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, long value) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, double value) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, boolean value) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 
     @Override
     public <T> NoopSpanBuilder setAttribute(AttributeKey<T> key, T value) {
-      Utils.checkNotNull(key, "key");
-      Utils.checkNotNull(value, "value");
+      Objects.requireNonNull(key, "key");
+      Objects.requireNonNull(value, "value");
       return this;
     }
 
@@ -134,7 +135,7 @@ public final class DefaultTracer implements Tracer {
     }
 
     private NoopSpanBuilder(String name) {
-      Utils.checkNotNull(name, "name");
+      Objects.requireNonNull(name, "name");
     }
   }
 }
