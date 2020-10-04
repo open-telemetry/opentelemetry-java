@@ -585,7 +585,7 @@ class SpanBuilderSdkTest {
               tracerSdk
                   .spanBuilder(SPAN_NAME)
                   .setNoParent()
-                  .setParent(OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current()))
+                  .setParent(OpenTelemetry.getTracer().contextWithSpan(parent, Context.current()))
                   .startSpan();
       try {
         assertThat(span.getContext().getTraceIdAsHexString())
@@ -598,7 +598,7 @@ class SpanBuilderSdkTest {
                 tracerSdk
                     .spanBuilder(SPAN_NAME)
                     .setNoParent()
-                    .setParent(OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current()))
+                    .setParent(OpenTelemetry.getTracer().contextWithSpan(parent, Context.current()))
                     .startSpan();
         try {
           assertThat(span2.getContext().getTraceIdAsHexString())
@@ -624,7 +624,7 @@ class SpanBuilderSdkTest {
               tracerSdk
                   .spanBuilder(SPAN_NAME)
                   .setNoParent()
-                  .setParent(OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current()))
+                  .setParent(OpenTelemetry.getTracer().contextWithSpan(parent, Context.current()))
                   .startSpan();
       try {
         assertThat(span.getContext().getTraceIdAsHexString())
@@ -642,7 +642,7 @@ class SpanBuilderSdkTest {
   @Test
   void parent_fromContext() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context context = OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current());
+    Context context = OpenTelemetry.getTracer().contextWithSpan(parent, Context.current());
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
@@ -712,7 +712,7 @@ class SpanBuilderSdkTest {
         (RecordEventsReadableSpan)
             tracerSdk
                 .spanBuilder(SPAN_NAME)
-                .setParent(OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current()))
+                .setParent(OpenTelemetry.getTracer().contextWithSpan(parent, Context.current()))
                 .startSpan();
     try {
       assertThat(span.getContext().getTraceIdAsHexString())

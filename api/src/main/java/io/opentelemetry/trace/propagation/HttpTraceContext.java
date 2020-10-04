@@ -149,7 +149,7 @@ public class HttpTraceContext implements TextMapPropagator {
       return context;
     }
 
-    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().contextWithSpan(DefaultSpan.create(spanContext), context);
   }
 
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {

@@ -25,7 +25,7 @@ final class Propagation extends BaseShimObject {
   public void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
     Context context =
         OpenTelemetry.getTracer()
-            .setCurrentSpan(DefaultSpan.create(contextShim.getSpanContext()), Context.current());
+            .contextWithSpan(DefaultSpan.create(contextShim.getSpanContext()), Context.current());
     context = BaggageUtils.withBaggage(contextShim.getBaggage(), context);
 
     propagators().getTextMapPropagator().inject(context, carrier, TextMapSetter.INSTANCE);

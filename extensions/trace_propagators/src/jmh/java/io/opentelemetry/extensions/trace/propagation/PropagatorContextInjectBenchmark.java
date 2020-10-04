@@ -64,7 +64,7 @@ public class PropagatorContextInjectBenchmark {
     public Map<String, String> measureInject() {
       Context context =
           OpenTelemetry.getTracer()
-              .setCurrentSpan(DefaultSpan.create(contextToTest), Context.current());
+              .contextWithSpan(DefaultSpan.create(contextToTest), Context.current());
       doInject(context, carrier);
       return carrier;
     }

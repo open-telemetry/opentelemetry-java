@@ -97,7 +97,7 @@ public interface Tracer {
   }
 
   /** Sets the Span for the specified Context. */
-  default Context setCurrentSpan(Span span, Context context) {
+  default Context contextWithSpan(Span span, Context context) {
     return TracingContextUtils.withSpan(span, context);
   }
 

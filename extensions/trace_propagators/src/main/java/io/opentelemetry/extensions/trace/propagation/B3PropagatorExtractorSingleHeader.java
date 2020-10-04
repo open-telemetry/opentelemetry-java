@@ -31,7 +31,7 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
       return context;
     }
 
-    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().contextWithSpan(DefaultSpan.create(spanContext), context);
   }
 
   @SuppressWarnings("StringSplitter")

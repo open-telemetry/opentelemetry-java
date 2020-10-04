@@ -102,7 +102,8 @@ class HandlerTest {
       client =
           new Client(
               new RequestHandler(
-                  tracer, OpenTelemetry.getTracer().setCurrentSpan(parentSpan, Context.current())));
+                  tracer,
+                  OpenTelemetry.getTracer().contextWithSpan(parentSpan, Context.current())));
       String response = client.send("correct_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("correct_parent:response");
     } finally {

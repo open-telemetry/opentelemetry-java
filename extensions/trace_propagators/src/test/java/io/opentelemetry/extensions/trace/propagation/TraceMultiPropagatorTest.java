@@ -48,7 +48,7 @@ class TraceMultiPropagatorTest {
   }
 
   private static Context withSpan(Span span, Context context) {
-    return OpenTelemetry.getTracer().setCurrentSpan(span, context);
+    return OpenTelemetry.getTracer().contextWithSpan(span, context);
   }
 
   @BeforeEach

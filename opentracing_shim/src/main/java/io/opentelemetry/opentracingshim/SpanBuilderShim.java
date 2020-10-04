@@ -185,13 +185,13 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       builder.setNoParent();
     } else if (parentSpan != null) {
       builder.setParent(
-          OpenTelemetry.getTracer().setCurrentSpan(parentSpan.getSpan(), Context.ROOT));
+          OpenTelemetry.getTracer().contextWithSpan(parentSpan.getSpan(), Context.ROOT));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
       distContext = contextShim == null ? null : contextShim.getBaggage();
     } else if (parentSpanContext != null) {
       builder.setParent(
           OpenTelemetry.getTracer()
-              .setCurrentSpan(
+              .contextWithSpan(
                   DefaultSpan.create(parentSpanContext.getSpanContext()), Context.ROOT));
       distContext = parentSpanContext.getBaggage();
     }

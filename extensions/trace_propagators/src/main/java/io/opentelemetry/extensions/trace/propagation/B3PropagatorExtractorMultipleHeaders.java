@@ -32,7 +32,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       return context;
     }
 
-    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().contextWithSpan(DefaultSpan.create(spanContext), context);
   }
 
   private static <C> SpanContext getSpanContextFromMultipleHeaders(

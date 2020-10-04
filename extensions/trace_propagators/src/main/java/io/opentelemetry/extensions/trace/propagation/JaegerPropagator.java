@@ -118,7 +118,7 @@ public class JaegerPropagator implements TextMapPropagator {
       return context;
     }
 
-    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().contextWithSpan(DefaultSpan.create(spanContext), context);
   }
 
   @SuppressWarnings("StringSplitter")

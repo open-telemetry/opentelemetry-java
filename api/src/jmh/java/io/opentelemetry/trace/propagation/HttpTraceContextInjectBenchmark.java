@@ -76,7 +76,7 @@ public class HttpTraceContextInjectBenchmark {
     List<Context> contexts = new ArrayList<>();
     for (SpanContext context : spanContexts) {
       contexts.add(
-          OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(context), Context.ROOT));
+          OpenTelemetry.getTracer().contextWithSpan(DefaultSpan.create(context), Context.ROOT));
     }
     return contexts;
   }

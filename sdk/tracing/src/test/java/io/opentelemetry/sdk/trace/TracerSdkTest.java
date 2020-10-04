@@ -64,7 +64,7 @@ class TracerSdkTest {
   void getCurrentSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Context origContext =
-        OpenTelemetry.getTracer().setCurrentSpan(span, Context.current()).attach();
+        OpenTelemetry.getTracer().contextWithSpan(span, Context.current()).attach();
     // Make sure context is detached even if test fails.
     try {
       assertThat(tracer.getCurrentSpan()).isSameAs(span);

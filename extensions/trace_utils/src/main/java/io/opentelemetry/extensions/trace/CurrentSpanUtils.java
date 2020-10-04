@@ -55,7 +55,7 @@ public final class CurrentSpanUtils {
     @Override
     public void run() {
       Context origContext =
-          OpenTelemetry.getTracer().setCurrentSpan(span, Context.current()).attach();
+          OpenTelemetry.getTracer().contextWithSpan(span, Context.current()).attach();
       try {
         runnable.run();
       } catch (Throwable t) {
@@ -89,7 +89,7 @@ public final class CurrentSpanUtils {
     @Override
     public V call() throws Exception {
       Context origContext =
-          OpenTelemetry.getTracer().setCurrentSpan(span, Context.current()).attach();
+          OpenTelemetry.getTracer().contextWithSpan(span, Context.current()).attach();
       try {
         return callable.call();
       } catch (Exception e) {

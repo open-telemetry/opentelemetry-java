@@ -91,7 +91,7 @@ public class Application {
                       .setParent(context)
                       .startSpan();
 
-              Context withSpanContext = OpenTelemetry.getTracer().setCurrentSpan(span, context);
+              Context withSpanContext = OpenTelemetry.getTracer().contextWithSpan(span, context);
 
               // Make a new request using the builder
               okhttp3.Request.Builder reqBuilder = new okhttp3.Request.Builder();

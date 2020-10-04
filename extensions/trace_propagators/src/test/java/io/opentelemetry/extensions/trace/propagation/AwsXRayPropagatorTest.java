@@ -244,7 +244,7 @@ class AwsXRayPropagatorTest {
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().contextWithSpan(DefaultSpan.create(spanContext), context);
   }
 
   private static SpanContext getSpanContext(Context context) {
