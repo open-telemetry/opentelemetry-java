@@ -13,16 +13,16 @@ project.
 
 This project contains the following top level components:
 
-* [api](api/): The OpenTelemetry API.
-  * [trace](api/src/main/java/io/opentelemetry/trace/): The tracing api. Includes `Tracer`, `Span` and `SpanContext`.
-  * [correlationcontext](/api/src/main/java/io/opentelemetry/correlationcontext): Collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
-  * [context](api/src/main/java/io/opentelemetry/context/): In-process and inter-process propagation layer.
-  * [metrics](api/src/main/java/io/opentelemetry/metrics/): Metrics layer.
-* [extensions](extensions/): Additional extensions API, which are not part of the core API.
-* [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
-* [sdk_extensions](sdk_extensions/): Additional extensions to SDK.
-* [OpenTracing shim](opentracing_shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
-* [Examples](examples/): Various examples on how to use the APIs, SDK, and standard exporters.
+* [OpenTelemetry API](api/):
+  * [tracing api](api/src/main/java/io/opentelemetry/trace/) includes `Tracer`, `Span` and `SpanContext`.
+  * [baggage api](/api/src/main/java/io/opentelemetry/baggage) defines a collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
+  * [context api](api/src/main/java/io/opentelemetry/context/) defines the in-process and inter-process propagation layer.
+  * [metrics api](api/src/main/java/io/opentelemetry/metrics/).
+* [extensions](extensions/) define additional API extensions, which are not part of the core API.
+* [sdk](sdk/) define the reference implementation complying to the OpenTelemetry API.
+* [sdk extensions](sdk_extensions/) define Additional extensions to SDK.
+* [OpenTracing shim](opentracing_shim/) defines A bridge layer from OpenTelemetry to the OpenTracing API.
+* [examples](examples/) on how to use the APIs, SDK, and standard exporters.
 
 We would love to hear from the larger community: please provide feedback proactively.
 
