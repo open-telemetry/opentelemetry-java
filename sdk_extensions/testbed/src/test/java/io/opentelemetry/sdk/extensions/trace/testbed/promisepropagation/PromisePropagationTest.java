@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.promisepropagation;
 
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.AttributeKey;

@@ -5,8 +5,8 @@
 
 package io.opentelemetry.extensions.trace;
 
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
