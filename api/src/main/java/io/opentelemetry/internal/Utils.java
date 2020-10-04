@@ -5,8 +5,7 @@
 
 package io.opentelemetry.internal;
 
-import java.util.Map;
-import javax.annotation.Nullable;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /** General internal utility methods. */
@@ -62,66 +61,6 @@ public final class Utils {
     if (!isValid) {
       throw new IllegalStateException(String.valueOf(errorMessage));
     }
-  }
-
-  /**
-   * Validates an index in an array or other container. This method throws an {@link
-   * IllegalArgumentException} if the size is negative and throws an {@link
-   * IndexOutOfBoundsException} if the index is negative or greater than or equal to the size. This
-   * method is similar to {@code Preconditions.checkElementIndex(int, int)} from Guava.
-   *
-   * @param index the index to validate.
-   * @param size the size of the array or container.
-   */
-  public static void checkIndex(int index, int size) {
-    if (size < 0) {
-      throw new IllegalArgumentException("Negative size: " + size);
-    }
-    if (index < 0 || index >= size) {
-      throw new IndexOutOfBoundsException("Index out of bounds: size=" + size + ", index=" + index);
-    }
-  }
-
-  /**
-   * Throws a {@link NullPointerException} if the argument is null. This method is similar to {@code
-   * Preconditions.checkNotNull(Object, Object)} from Guava.
-   *
-   * @param arg the argument to check for null.
-   * @param errorMessage the message to use for the exception.
-   * @param <T> type of an argument to check.
-   * @return the argument, if it passes the null check.
-   */
-  public static <T> T checkNotNull(T arg, String errorMessage) {
-    if (arg == null) {
-      throw new NullPointerException(errorMessage);
-    }
-    return arg;
-  }
-
-  /**
-   * Throws a {@link NullPointerException} if any of the map elements is null.
-   *
-   * @param map the argument map to check for null.
-   * @param errorMessage the message to use for the exception.
-   */
-  public static <K, V> void checkMapKeysNotNull(Map<K, V> map, String errorMessage) {
-    for (Map.Entry<K, V> entry : map.entrySet()) {
-      if (entry.getKey() == null) {
-        throw new NullPointerException(errorMessage);
-      }
-    }
-  }
-
-  /**
-   * Compares two Objects for equality. This functionality is provided by {@code
-   * Objects.equal(Object, Object)} in Java 7 but is not available in Android API level 14.
-   *
-   * @param x object to compare with.
-   * @param y object to compare to.
-   * @return {@code true} if x is the same as the y; {@code false} otherwise.
-   */
-  public static boolean equalsObjects(@Nullable Object x, @Nullable Object y) {
-    return x == null ? y == null : x.equals(y);
   }
 
   /**
@@ -187,7 +126,7 @@ public final class Utils {
         "You must provide an even number of key/value pair arguments.");
     for (int i = 0; i < keyValuePairs.length; i += 2) {
       String key = keyValuePairs[i];
-      checkNotNull(key, "You cannot provide null keys for label creation.");
+      Objects.requireNonNull(key, "You cannot provide null keys for label creation.");
     }
   }
 }

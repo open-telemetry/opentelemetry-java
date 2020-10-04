@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.logging;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class LogSinkSdkProvider {
   private final LogSink logSink = new SdkLogSink();
@@ -24,7 +24,7 @@ public class LogSinkSdkProvider {
   }
 
   public void addLogProcessor(LogProcessor processor) {
-    processors.add(Utils.checkNotNull(processor, "Processor can not be null"));
+    processors.add(Objects.requireNonNull(processor, "Processor can not be null"));
   }
 
   /**

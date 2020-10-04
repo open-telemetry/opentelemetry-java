@@ -5,7 +5,6 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.internal.Utils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -111,7 +110,7 @@ public final class Status {
   @Nullable private final String description;
 
   private Status(CanonicalCode canonicalCode, @Nullable String description) {
-    this.canonicalCode = Utils.checkNotNull(canonicalCode, "canonicalCode");
+    this.canonicalCode = Objects.requireNonNull(canonicalCode, "canonicalCode");
     this.description = description;
   }
 

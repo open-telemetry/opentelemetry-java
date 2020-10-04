@@ -5,7 +5,7 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.internal.Utils;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -98,7 +98,7 @@ public final class TraceId {
    * @since 0.1.0
    */
   public static byte[] bytesFromHex(String src, int srcOffset) {
-    Utils.checkNotNull(src, "src");
+    Objects.requireNonNull(src, "src");
     return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
   }
 

@@ -11,7 +11,6 @@ import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.internal.Obfuscated;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
@@ -21,6 +20,7 @@ import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.spi.TracerProviderFactory;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -169,7 +169,7 @@ public final class OpenTelemetry {
    * @since 0.3.0
    */
   public static void setPropagators(ContextPropagators propagators) {
-    Utils.checkNotNull(propagators, "propagators");
+    Objects.requireNonNull(propagators, "propagators");
     getInstance().propagators = propagators;
   }
 

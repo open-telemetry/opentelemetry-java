@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.logging.LogProcessor;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -236,7 +237,7 @@ public class BatchLogProcessor implements LogProcessor {
     private long exporterTimeoutMillis = DEFAULT_EXPORT_TIMEOUT_MILLIS;
 
     public Builder(LogExporter logExporter) {
-      this.logExporter = Utils.checkNotNull(logExporter, "Exporter argument can not be null");
+      this.logExporter = Objects.requireNonNull(logExporter, "Exporter argument can not be null");
     }
 
     public Builder newBuilder(LogExporter logExporter) {

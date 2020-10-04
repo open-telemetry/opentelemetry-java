@@ -7,7 +7,7 @@ package io.opentelemetry.baggage;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.internal.Utils;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -50,13 +50,13 @@ public final class DefaultBaggageManager implements BaggageManager {
   private static final class NoopBaggageBuilder implements Baggage.Builder {
     @Override
     public Baggage.Builder setParent(Baggage parent) {
-      Utils.checkNotNull(parent, "parent");
+      Objects.requireNonNull(parent, "parent");
       return this;
     }
 
     @Override
     public Baggage.Builder setParent(Context context) {
-      Utils.checkNotNull(context, "context");
+      Objects.requireNonNull(context, "context");
       return this;
     }
 
@@ -67,15 +67,15 @@ public final class DefaultBaggageManager implements BaggageManager {
 
     @Override
     public Baggage.Builder put(String key, String value, EntryMetadata entryMetadata) {
-      Utils.checkNotNull(key, "key");
-      Utils.checkNotNull(value, "value");
-      Utils.checkNotNull(entryMetadata, "entryMetadata");
+      Objects.requireNonNull(key, "key");
+      Objects.requireNonNull(value, "value");
+      Objects.requireNonNull(entryMetadata, "entryMetadata");
       return this;
     }
 
     @Override
     public Baggage.Builder remove(String key) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 

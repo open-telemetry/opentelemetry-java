@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -327,7 +328,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
     private Builder(SpanExporter spanExporter) {
-      this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+      this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     }
 
     /**
