@@ -6,8 +6,8 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -131,7 +131,9 @@ public class TraceMultiPropagator implements TextMapPropagator {
   }
 
   private static boolean isSpanContextExtracted(Context context) {
-    return TracingContextUtils.getSpanWithoutDefault(context) != null;
+    // TODO: Wonder: if the user extracts an invalid Span, is that something we want
+    // to keep?
+    return OpenTelemetry.getTracer().getCurrentSpan(context).getContext().isValid();
   }
 
   /**

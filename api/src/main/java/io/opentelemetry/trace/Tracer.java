@@ -6,6 +6,8 @@
 package io.opentelemetry.trace;
 
 import com.google.errorprone.annotations.MustBeClosed;
+import io.grpc.Context;
+import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -73,7 +75,31 @@ public interface Tracer {
    *     from the Context.
    * @since 0.1.0
    */
-  Span getCurrentSpan();
+  default Span getCurrentSpan() {
+    return TracingContextUtils.getSpan(Context.current());
+  }
+
+  /**
+   * Gets the current Span from the specified Context.
+   *
+   * <p>To install a {@link Span} to the specified Context use {@link #withSpan(Span)}.
+   *
+   * <p>startSpan methods do NOT modify the current Context {@code Span}.
+   *
+   * @param context The {@code Context} to get the current Span from.
+   * @return a default {@code Span} that does nothing and has an invalid {@link SpanContext} if no
+   *     {@code Span} is associated with the current Context, otherwise the current {@code Span}
+   *     from the Context.
+   * @since 0.1.0
+   */
+  default Span getCurrentSpan(Context context) {
+    return TracingContextUtils.getSpan(context);
+  }
+
+  /** Sets the Span for the specified Context. */
+  default Context setCurrentSpan(Span span, Context context) {
+    return TracingContextUtils.withSpan(span, context);
+  }
 
   /**
    * Enters the scope of code where the given {@link Span} is in the current Context, and returns an
@@ -126,7 +152,29 @@ public interface Tracer {
    * @since 0.1.0
    */
   @MustBeClosed
-  Scope withSpan(Span span);
+  default Scope withSpan(Span span) {
+    return ContextUtils.withScopedContext(TracingContextUtils.withSpan(span, Context.current()));
+  }
+
+  /**
+   * Enters the scope of code where the given {@link Span} is in the specified Context, and returns
+   * an object that represents that scope. The scope is exited when the returned object is closed.
+   *
+   * <p>Supports try-with-resource idiom.
+   *
+   * <p>Can be called with {@link DefaultSpan} to enter a scope of code where tracing is stopped.
+   *
+   * @param span The {@link Span} to be set to the specified Context.
+   * @return an object that defines a scope where the given {@link Span} will be set to the
+   *     specified Context.
+   * @throws NullPointerException if {@code span} is {@code null}.
+   * @throws NullPointerException if {@code context} is {@code null}.
+   * @since 0.1.0
+   */
+  @MustBeClosed
+  default Scope withSpan(Span span, Context context) {
+    return ContextUtils.withScopedContext(TracingContextUtils.withSpan(span, context));
+  }
 
   /**
    * Returns a {@link Span.Builder} to create and start a new {@link Span}.

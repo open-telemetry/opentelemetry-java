@@ -11,6 +11,7 @@ import static io.opentelemetry.common.AttributesKeys.longKey;
 import static io.opentelemetry.common.AttributesKeys.stringKey;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
@@ -30,7 +31,6 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -175,7 +175,7 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span startSpan() {
     final Context parentContext =
         isRootSpan ? Context.ROOT : parent == null ? Context.current() : parent;
-    final Span parentSpan = TracingContextUtils.getSpan(parentContext);
+    final Span parentSpan = OpenTelemetry.getTracer().getCurrentSpan(parentContext);
     final SpanContext parentSpanContext = parentSpan.getContext();
     String traceId;
     String spanId = idsGenerator.generateSpanId();

@@ -5,14 +5,13 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import static io.opentelemetry.trace.TracingContextUtils.getSpan;
-import static io.opentelemetry.trace.TracingContextUtils.withSpan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -43,6 +42,14 @@ class TraceMultiPropagatorTest {
               SpanId.fromLong(12345),
               TraceFlags.getDefault(),
               TraceState.getDefault()));
+
+  private static Span getSpan(Context context) {
+    return OpenTelemetry.getTracer().getCurrentSpan(context);
+  }
+
+  private static Context withSpan(Span span, Context context) {
+    return OpenTelemetry.getTracer().setCurrentSpan(span, context);
+  }
 
   @BeforeEach
   void init() {

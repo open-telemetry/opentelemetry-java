@@ -8,6 +8,7 @@ package io.opentelemetry.extensions.trace.propagation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.trace.DefaultSpan;
@@ -16,7 +17,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -48,11 +48,11 @@ class B3PropagatorTest {
   private final B3Propagator b3PropagatorSingleHeader = B3Propagator.getSingleHeaderPropagator();
 
   private static SpanContext getSpanContext(Context context) {
-    return TracingContextUtils.getSpan(context).getContext();
+    return OpenTelemetry.getTracer().getCurrentSpan(context).getContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
   }
 
   @Test

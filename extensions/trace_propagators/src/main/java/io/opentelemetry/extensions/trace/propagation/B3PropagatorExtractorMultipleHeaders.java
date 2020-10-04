@@ -10,10 +10,10 @@ import static io.opentelemetry.extensions.trace.propagation.B3Propagator.SPAN_ID
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.TRACE_ID_HEADER;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -32,7 +32,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
   }
 
   private static <C> SpanContext getSpanContextFromMultipleHeaders(

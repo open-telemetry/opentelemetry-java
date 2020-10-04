@@ -9,12 +9,12 @@ import static io.opentelemetry.extensions.trace.propagation.AwsXRayPropagator.TR
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -244,10 +244,10 @@ class AwsXRayPropagatorTest {
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
   }
 
   private static SpanContext getSpanContext(Context context) {
-    return TracingContextUtils.getSpan(context).getContext();
+    return OpenTelemetry.getTracer().getCurrentSpan(context).getContext();
   }
 }

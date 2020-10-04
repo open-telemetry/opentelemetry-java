@@ -6,9 +6,9 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,7 +55,7 @@ public class PropagatorContextExtractBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Span measureExtract() {
-      return TracingContextUtils.getSpan(doExtract());
+      return OpenTelemetry.getTracer().getCurrentSpan(doExtract());
     }
 
     protected abstract Context doExtract();

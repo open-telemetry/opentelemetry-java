@@ -6,11 +6,11 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
@@ -30,7 +30,7 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    SpanContext spanContext = OpenTelemetry.getTracer().getCurrentSpan(context).getContext();
     if (!spanContext.isValid()) {
       return;
     }

@@ -60,6 +60,16 @@ public final class OpenTelemetry {
   }
 
   /**
+   * Gets or creates a default-named tracer instance.
+   *
+   * @return a tracer instance.
+   * @since 0.8.0
+   */
+  public static Tracer getTracer() {
+    return getTracerProvider().get("default");
+  }
+
+  /**
    * Gets or creates a named tracer instance.
    *
    * <p>This is a shortcut method for <code>getTracerProvider().get(instrumentationName)</code>.

@@ -6,6 +6,7 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -14,7 +15,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -85,7 +85,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    Span span = TracingContextUtils.getSpan(context);
+    Span span = OpenTelemetry.getTracer().getCurrentSpan(context);
     if (!span.getContext().isValid()) {
       return;
     }
@@ -128,7 +128,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
   }
 
   private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {

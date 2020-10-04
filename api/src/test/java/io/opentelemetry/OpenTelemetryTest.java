@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.grpc.Context;
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.baggage.DefaultBaggageManager;
@@ -254,7 +255,19 @@ class OpenTelemetryTest {
 
     @Nullable
     @Override
+    public Span getCurrentSpan(Context context) {
+      return null;
+    }
+
+    @Nullable
+    @Override
     public Scope withSpan(Span span) {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public Scope withSpan(Span span, Context context) {
       return null;
     }
 

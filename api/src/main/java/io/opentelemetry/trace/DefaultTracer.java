@@ -8,7 +8,6 @@ package io.opentelemetry.trace;
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -30,16 +29,6 @@ public final class DefaultTracer implements Tracer {
    */
   public static Tracer getInstance() {
     return INSTANCE;
-  }
-
-  @Override
-  public Span getCurrentSpan() {
-    return TracingContextUtils.getCurrentSpan();
-  }
-
-  @Override
-  public Scope withSpan(Span span) {
-    return TracingContextUtils.currentContextWith(span);
   }
 
   @Override

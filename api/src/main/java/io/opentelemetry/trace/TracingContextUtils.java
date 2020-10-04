@@ -17,7 +17,7 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public final class TracingContextUtils {
+final class TracingContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
       Context.key("opentelemetry-trace-span-key");
 

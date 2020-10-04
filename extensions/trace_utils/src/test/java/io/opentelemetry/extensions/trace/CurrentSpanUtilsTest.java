@@ -9,10 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -205,6 +205,6 @@ class CurrentSpanUtilsTest {
   }
 
   private static Span getCurrentSpan() {
-    return TracingContextUtils.getCurrentSpan();
+    return OpenTelemetry.getTracer().getCurrentSpan();
   }
 }

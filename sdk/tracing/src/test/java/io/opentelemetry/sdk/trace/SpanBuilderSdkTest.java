@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
@@ -34,7 +35,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -585,7 +585,7 @@ class SpanBuilderSdkTest {
               tracerSdk
                   .spanBuilder(SPAN_NAME)
                   .setNoParent()
-                  .setParent(TracingContextUtils.withSpan(parent, Context.current()))
+                  .setParent(OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current()))
                   .startSpan();
       try {
         assertThat(span.getContext().getTraceIdAsHexString())
@@ -598,7 +598,7 @@ class SpanBuilderSdkTest {
                 tracerSdk
                     .spanBuilder(SPAN_NAME)
                     .setNoParent()
-                    .setParent(TracingContextUtils.withSpan(parent, Context.current()))
+                    .setParent(OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current()))
                     .startSpan();
         try {
           assertThat(span2.getContext().getTraceIdAsHexString())
@@ -624,7 +624,7 @@ class SpanBuilderSdkTest {
               tracerSdk
                   .spanBuilder(SPAN_NAME)
                   .setNoParent()
-                  .setParent(TracingContextUtils.withSpan(parent, Context.current()))
+                  .setParent(OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current()))
                   .startSpan();
       try {
         assertThat(span.getContext().getTraceIdAsHexString())
@@ -642,7 +642,7 @@ class SpanBuilderSdkTest {
   @Test
   void parent_fromContext() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context context = TracingContextUtils.withSpan(parent, Context.current());
+    Context context = OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current());
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
@@ -666,7 +666,7 @@ class SpanBuilderSdkTest {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       RecordEventsReadableSpan span;
-      try (Scope scope = TracingContextUtils.currentContextWith(parent)) {
+      try (Scope scope = OpenTelemetry.getTracer().withSpan(parent)) {
         span =
             (RecordEventsReadableSpan)
                 tracerSdk.spanBuilder(SPAN_NAME).setParent(emptyContext).startSpan();
@@ -712,7 +712,7 @@ class SpanBuilderSdkTest {
         (RecordEventsReadableSpan)
             tracerSdk
                 .spanBuilder(SPAN_NAME)
-                .setParent(TracingContextUtils.withSpan(parent, Context.current()))
+                .setParent(OpenTelemetry.getTracer().setCurrentSpan(parent, Context.current()))
                 .startSpan();
     try {
       assertThat(span.getContext().getTraceIdAsHexString())

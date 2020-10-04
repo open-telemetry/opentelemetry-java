@@ -8,11 +8,11 @@ package io.opentelemetry.extensions.trace.propagation;
 import static io.opentelemetry.extensions.trace.propagation.Common.MAX_TRACE_ID_LENGTH;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +54,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (context == null || setter == null) {
       return;
     }
-    final SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    final SpanContext spanContext = OpenTelemetry.getTracer().getCurrentSpan(context).getContext();
     if (!spanContext.isValid()) {
       return;
     }
@@ -79,7 +79,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (!spanContext.isValid()) {
       return context;
     }
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return OpenTelemetry.getTracer().setCurrentSpan(DefaultSpan.create(spanContext), context);
   }
 
   static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {

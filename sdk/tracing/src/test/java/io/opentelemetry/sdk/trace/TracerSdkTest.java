@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -17,7 +18,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +63,8 @@ class TracerSdkTest {
   @Test
   void getCurrentSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
+    Context origContext =
+        OpenTelemetry.getTracer().setCurrentSpan(span, Context.current()).attach();
     // Make sure context is detached even if test fails.
     try {
       assertThat(tracer.getCurrentSpan()).isSameAs(span);
