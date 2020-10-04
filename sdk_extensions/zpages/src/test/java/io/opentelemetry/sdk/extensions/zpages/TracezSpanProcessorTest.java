@@ -10,10 +10,10 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
@@ -38,7 +38,7 @@ class TracezSpanProcessorTest {
           TraceFlags.getSampled(),
           TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
-  private static final Status SPAN_STATUS = Status.ERROR;
+  private static final SpanData.Status SPAN_STATUS = ImmutableStatus.ERROR;
 
   private static void assertSpanCacheSizes(
       TracezSpanProcessor spanProcessor, int runningSpanCacheSize, int completedSpanCacheSize) {

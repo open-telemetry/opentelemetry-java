@@ -43,7 +43,7 @@ public abstract class ImmutableStatus implements SpanData.Status {
    */
   public static SpanData.Status create(
       StatusCanonicalCode canonicalCode, @Nullable String description) {
-    return new AutoValue_ImmutableStatus(canonicalCode, description);
+    return createInternal(canonicalCode, description);
   }
 
   private static ImmutableStatus createInternal(
