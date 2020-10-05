@@ -1,4 +1,10 @@
 /*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// Includes work from:
+/*
  * Copyright 2010, Guava Authors
  * SPDX-License-Identifier: Apache-2.0
  */

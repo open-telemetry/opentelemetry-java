@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.sherter.google-java-format" apply false
+    id "com.diffplug.spotless" version "5.6.1"
     id "com.jfrog.artifactory" apply false
     id "com.jfrog.bintray" version "1.8.4" apply false // Need *specific* version.
     id "net.ltgt.errorprone" apply false
@@ -137,7 +137,7 @@ configure(opentelemetryProjects) {
     apply plugin: 'signing'
     apply plugin: 'jacoco'
 
-    apply plugin: 'com.github.sherter.google-java-format'
+    apply plugin: 'com.diffplug.spotless'
     apply plugin: 'net.ltgt.errorprone'
 
     repositories {
@@ -299,8 +299,11 @@ configure(opentelemetryProjects) {
 
     jacoco { toolVersion = "0.8.5" }
 
-    googleJavaFormat {
-        toolVersion = '1.7'
+    spotless {
+        java {
+            googleJavaFormat("1.7")
+            licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
+        }
     }
 
     configurations {
@@ -363,17 +366,7 @@ configure(opentelemetryProjects) {
         addBooleanOption('Xdoclint:all,-missing', true)
     }
 
-    afterEvaluate {  // Allow subproject to add more source sets.
-        tasks.googleJavaFormat {
-            source = sourceSets*.allJava
-            include '**/*.java'
-        }
-
-        tasks.verifyGoogleJavaFormat {
-            source = sourceSets*.allJava
-            include '**/*.java'
-        }
-
+    afterEvaluate {
         jar {
             inputs.property("moduleName", moduleName)
 
