@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.otlp;
@@ -36,9 +25,9 @@ import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -120,7 +109,7 @@ final class SpanAdapter {
       builder.addEvents(toProtoSpanEvent(event));
     }
     builder.setDroppedEventsCount(spanData.getTotalRecordedEvents() - spanData.getEvents().size());
-    for (Link link : spanData.getLinks()) {
+    for (SpanData.Link link : spanData.getLinks()) {
       builder.addLinks(toProtoSpanLink(link));
     }
     builder.setDroppedLinksCount(spanData.getTotalRecordedLinks() - spanData.getLinks().size());
@@ -162,7 +151,7 @@ final class SpanAdapter {
     return builder.build();
   }
 
-  static Span.Link toProtoSpanLink(Link link) {
+  static Span.Link toProtoSpanLink(SpanData.Link link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsHexString()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsHexString()));
@@ -180,9 +169,13 @@ final class SpanAdapter {
     return builder.build();
   }
 
-  static Status toStatusProto(io.opentelemetry.trace.Status status) {
-    Status.Builder builder =
-        Status.newBuilder().setCode(StatusCode.forNumber(status.getCanonicalCode().value()));
+  static Status toStatusProto(SpanData.Status status) {
+    // todo: Update this when the proto definitions are updated to include UNSET and ERROR
+    StatusCode protoStatusCode = StatusCode.STATUS_CODE_OK;
+    if (status.getCanonicalCode() == StatusCanonicalCode.ERROR) {
+      protoStatusCode = StatusCode.STATUS_CODE_UNKNOWN_ERROR;
+    }
+    Status.Builder builder = Status.newBuilder().setCode(protoStatusCode);
     if (status.getDescription() != null) {
       builder.setMessage(status.getDescription());
     }

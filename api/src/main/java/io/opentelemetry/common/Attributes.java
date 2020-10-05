@@ -1,34 +1,22 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longArrayKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -37,6 +25,10 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>The keys are {@link AttributeKey}s and the values are Object instances that match the type of
  * the provided key.
+ *
+ * <p>Null keys will be silently dropped.
+ *
+ * <p>Note: The behavior of null-valued attributes is undefined, and hence strongly discouraged.
  */
 @SuppressWarnings("rawtypes")
 @Immutable
@@ -145,11 +137,41 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
         key5, value5);
   }
 
+  /**
+   * Returns a {@link Attributes} instance with the given key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
+   */
+  public static <T, U, V, W, X, Y> Attributes of(
+      AttributeKey<T> key1,
+      T value1,
+      AttributeKey<U> key2,
+      U value2,
+      AttributeKey<V> key3,
+      V value3,
+      AttributeKey<W> key4,
+      W value4,
+      AttributeKey<X> key5,
+      X value5,
+      AttributeKey<Y> key6,
+      Y value6) {
+    return sortAndFilterToAttributes(
+        key1, value1,
+        key2, value2,
+        key3, value3,
+        key4, value4,
+        key5, value5,
+        key6, value6);
+  }
+
   private static Attributes sortAndFilterToAttributes(Object... data) {
-    // null out any empty keys
+    // null out any empty keys or keys with null values
+    // so they will then be removed by the sortAndFilter method.
     for (int i = 0; i < data.length; i += 2) {
       AttributeKey<?> key = (AttributeKey<?>) data[i];
       if (key != null && (key.getKey() == null || "".equals(key.getKey()))) {
+        data[i] = null;
+      }
+      if (data[i + 1] == null) {
         data[i] = null;
       }
     }
@@ -164,13 +186,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   /** Returns a new {@link Builder} instance from ReadableAttributes. */
   public static Builder newBuilder(ReadableAttributes attributes) {
     final Builder builder = new Builder();
-    attributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
-            builder.setAttribute(key, value);
-          }
-        });
+    attributes.forEach(builder::setAttribute);
     return builder;
   }
 
@@ -198,25 +214,13 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /** Sets a {@link AttributeKey} with associated value into this. */
+    public <T> Builder setAttribute(AttributeKey<Long> key, int value) {
+      return setAttribute(key, (long) value);
+    }
+
+    /** Sets a {@link AttributeKey} with associated value into this. */
     public <T> Builder setAttribute(AttributeKey<T> key, T value) {
-      if (key == null || key.getKey() == null || key.getKey().length() == 0) {
-        return this;
-      }
-      if (value == null) {
-        // Remove key/value pairs
-        Iterator<Object> itr = data.iterator();
-        while (itr.hasNext()) {
-          AttributeKey k = (AttributeKey) itr.next();
-          if (key.equals(k)) {
-            // delete key and value
-            itr.remove();
-            itr.next();
-            itr.remove();
-          } else {
-            // skip the value part
-            itr.next();
-          }
-        }
+      if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
         return this;
       }
       data.add(key);

@@ -1,30 +1,22 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.inmemory;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.trace.propagation.HttpTraceContext;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * InMemoryTracing is an utility class that helps installing the {@link SimpleSpanProcessor} and an
- * instance of the {@link InMemorySpanExporter} to a given {@link TracerSdkProvider}. Can be used to
- * test OpenTelemetry integration.
+ * instance of the {@link InMemorySpanExporter} to a given {@link TracerSdkManagement}. Can be used
+ * to test OpenTelemetry integration.
  *
  * <p>Example usage:
  *
@@ -33,7 +25,7 @@ import javax.annotation.concurrent.Immutable;
  *   public void testCondition() {
  *     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build()
  *     InMemoryTracing tracing =
- *         InMemoryTracing.builder().setTracerSdkProvider(tracerSdkProvider).build();
+ *         InMemoryTracing.builder().setTracerSdkManagement(tracerSdkProvider).build();
  *     Tracer tracer = tracerSdkProvider.getTracer("MyTestClass");
  *     tracer.spanBuilder("span").startSpan().end();
  *
@@ -49,12 +41,12 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class InMemoryTracing {
   /**
-   * Returns the {@code TracerSdkProvider} passed during construction.
+   * Returns the {@code TracerSdkManagement} passed during construction.
    *
-   * @return the {@code TracerSdkProvider} passed during construction.
+   * @return the {@code TracerSdkManagement} passed during construction.
    * @since 0.1.0
    */
-  abstract TracerSdkProvider getTracerProvider();
+  abstract TracerSdkManagement getTracerSdkManagement();
 
   /**
    * Returns the installed {@link InMemorySpanExporter}.
@@ -80,11 +72,11 @@ public abstract class InMemoryTracing {
    */
   @AutoValue.Builder
   public abstract static class Builder {
-    public abstract Builder setTracerProvider(TracerSdkProvider tracerProvider);
+    public abstract Builder setTracerSdkManagement(TracerSdkManagement tracerSdkManagement);
 
     abstract Builder setSpanExporter(InMemorySpanExporter exporter);
 
-    abstract TracerSdkProvider getTracerProvider();
+    abstract TracerSdkManagement getTracerSdkManagement();
 
     abstract InMemoryTracing autoBuild();
 
@@ -95,8 +87,13 @@ public abstract class InMemoryTracing {
      * @since 0.3.0
      */
     public final InMemoryTracing build() {
+      // install the HttpTraceContext propagator into the API for testing with.
+      OpenTelemetry.setPropagators(
+          DefaultContextPropagators.builder()
+              .addTextMapPropagator(HttpTraceContext.getInstance())
+              .build());
       InMemorySpanExporter exporter = InMemorySpanExporter.create();
-      getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
+      getTracerSdkManagement().addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
       return setSpanExporter(exporter).autoBuild();
     }
   }

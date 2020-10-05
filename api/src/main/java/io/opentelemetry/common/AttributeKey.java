@@ -1,21 +1,11 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.common;
 
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
@@ -36,4 +26,44 @@ public interface AttributeKey<T> extends Comparable<AttributeKey> {
   /** Returns the type of attribute for this key. Useful for building switch statements. */
   @Nonnull
   AttributeType getType();
+
+  /** Returns a new AttributeKey for String valued attributes. */
+  static AttributeKey<String> stringKey(String key) {
+    return AttributeKeyImpl.create(key, AttributeType.STRING);
+  }
+
+  /** Returns a new AttributeKey for Boolean valued attributes. */
+  static AttributeKey<Boolean> booleanKey(String key) {
+    return AttributeKeyImpl.create(key, AttributeType.BOOLEAN);
+  }
+
+  /** Returns a new AttributeKey for Long valued attributes. */
+  static AttributeKey<Long> longKey(String key) {
+    return AttributeKeyImpl.create(key, AttributeType.LONG);
+  }
+
+  /** Returns a new AttributeKey for Double valued attributes. */
+  static AttributeKey<Double> doubleKey(String key) {
+    return AttributeKeyImpl.create(key, AttributeType.DOUBLE);
+  }
+
+  /** Returns a new AttributeKey for List&lt;String&gt; valued attributes. */
+  static AttributeKey<List<String>> stringArrayKey(String key) {
+    return AttributeKeyImpl.create(key, AttributeType.STRING_ARRAY);
+  }
+
+  /** Returns a new AttributeKey for List&lt;Boolean&gt; valued attributes. */
+  static AttributeKey<List<Boolean>> booleanArrayKey(String key) {
+    return AttributeKeyImpl.create(key, AttributeType.BOOLEAN_ARRAY);
+  }
+
+  /** Returns a new AttributeKey for List&lt;Long&gt; valued attributes. */
+  static AttributeKey<List<Long>> longArrayKey(String key) {
+    return AttributeKeyImpl.create(key, AttributeType.LONG_ARRAY);
+  }
+
+  /** Returns a new AttributeKey for List&lt;Double&gt; valued attributes. */
+  static AttributeKey<List<Double>> doubleArrayKey(String key) {
+    return AttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
+  }
 }

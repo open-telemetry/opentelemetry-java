@@ -37,13 +37,14 @@ include ":opentelemetry-all",
         ":opentelemetry-integration-tests-tracecontext",
         ":opentelemetry-opentracing-shim",
         ":opentelemetry-proto",
+        ":opentelemetry-sdk-baggage",
         ":opentelemetry-sdk-common",
-        ":opentelemetry-sdk-correlation-context",
         ":opentelemetry-sdk-metrics",
         ":opentelemetry-sdk-tracing",
         ":opentelemetry-sdk",
         ":opentelemetry-sdk-extension-async-processor",
         ":opentelemetry-sdk-extension-aws-v1-support",
+        ":opentelemetry-sdk-extension-logging",
         ":opentelemetry-sdk-extension-otproto",
         ":opentelemetry-sdk-extension-resources",
         ":opentelemetry-sdk-extension-testbed",
@@ -55,14 +56,14 @@ include ":opentelemetry-all",
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name
-        .replace("opentelemetry-integration-tests-", "integration_tests/")
-        .replace("opentelemetry-exporters-", "exporters/")
-        .replace("opentelemetry-extension-", "extensions/")
-        .replace("opentelemetry-sdk-extension-", "sdk_extensions/")
-        .replace("opentelemetry-sdk-", "sdk/")
-        .replace("logging-", "logging/")
-        .replace("opentelemetry-", "")
-        .replace("-", "_") as File
+            .replace("opentelemetry-integration-tests-", "integration_tests/")
+            .replace("opentelemetry-exporters-", "exporters/")
+            .replace("opentelemetry-extension-", "extensions/")
+            .replace("opentelemetry-sdk-extension-", "sdk_extensions/")
+            .replace("opentelemetry-sdk-", "sdk/")
+            .replace("logging-", "logging/")
+            .replace("opentelemetry-", "")
+            .replace("-", "_") as File
 }
 
 project(":opentelemetry-sdk").projectDir = "$rootDir/sdk/all" as File

@@ -1,28 +1,17 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.opentracingshim;
 
-import static io.opentelemetry.OpenTelemetry.getCorrelationContextManager;
+import static io.opentelemetry.OpenTelemetry.getBaggageManager;
 import static io.opentelemetry.OpenTelemetry.getTracerProvider;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import org.junit.jupiter.api.Test;
 
@@ -32,14 +21,14 @@ class TraceShimTest {
   void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim();
     assertEquals(OpenTelemetry.getTracer("opentracingshim"), tracerShim.tracer());
-    assertEquals(OpenTelemetry.getCorrelationContextManager(), tracerShim.contextManager());
+    assertEquals(OpenTelemetry.getBaggageManager(), tracerShim.contextManager());
   }
 
   @Test
   void createTracerShim_nullTracer() {
     assertThrows(
         NullPointerException.class,
-        () -> TraceShim.createTracerShim(null, getCorrelationContextManager()),
+        () -> TraceShim.createTracerShim(null, getBaggageManager()),
         "tracerProvider");
   }
 
@@ -54,7 +43,7 @@ class TraceShimTest {
   @Test
   void createTracerShim() {
     TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-    CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
+    BaggageManagerSdk contextManager = new BaggageManagerSdk();
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(sdk, contextManager);
     assertEquals(sdk.get("opentracingshim"), tracerShim.tracer());
     assertEquals(contextManager, tracerShim.contextManager());

@@ -1,24 +1,13 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace.attributes;
 
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
@@ -184,8 +173,7 @@ public final class SemanticAttributes {
    * For db.system == redis, the index of the database being accessed as used in the SELECT command,
    * provided as an integer. To be used instead of the generic db.name attribute.
    */
-  public static final AttributeKey<String> REDIS_DATABASE_INDEX =
-      stringKey("db.redis.database_index");
+  public static final AttributeKey<Long> REDIS_DATABASE_INDEX = longKey("db.redis.database_index");
   /**
    * For db.system == mongodb, the collection being accessed within the database stated in db.name
    */
@@ -242,7 +230,7 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
 
   /**
-   * The name of an {@link io.opentelemetry.trace.Event} describing an exception.
+   * The name of an event describing an exception.
    *
    * <p>Typically an event with that name should not be manually created. Instead {@link
    * io.opentelemetry.trace.Span#recordException(Throwable)} should be used.

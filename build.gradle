@@ -331,6 +331,7 @@ configure(opentelemetryProjects) {
                 libraries.mockito,
                 libraries.mockito_junit_jupiter,
                 libraries.assertj,
+                libraries.awaitility,
                 libraries.guava_testlib
 
         testRuntimeOnly libraries.junit_jupiter_engine,

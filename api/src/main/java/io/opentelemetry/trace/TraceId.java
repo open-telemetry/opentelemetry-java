@@ -1,22 +1,11 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.internal.Utils;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -109,7 +98,7 @@ public final class TraceId {
    * @since 0.1.0
    */
   public static byte[] bytesFromHex(String src, int srcOffset) {
-    Utils.checkNotNull(src, "src");
+    Objects.requireNonNull(src, "src");
     return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
   }
 

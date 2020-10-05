@@ -1,32 +1,20 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -34,7 +22,8 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -61,7 +50,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable private Context parent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private AttributesMap attributes;
-  @Nullable private List<io.opentelemetry.trace.Link> links;
+  @Nullable private List<ImmutableLink> links;
   private int totalNumberOfLinksAdded = 0;
   private long startEpochNanos = 0;
   private boolean isRootSpan;
@@ -106,7 +95,7 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder addLink(SpanContext spanContext) {
-    addLink(Link.create(spanContext));
+    addLink(ImmutableLink.create(spanContext));
     return this;
   }
 
@@ -114,7 +103,7 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span.Builder addLink(SpanContext spanContext, Attributes attributes) {
     int totalAttributeCount = attributes.size();
     addLink(
-        Link.create(
+        ImmutableLink.create(
             spanContext,
             RecordEventsReadableSpan.copyAndLimitAttributes(
                 attributes, traceConfig.getMaxNumberOfAttributesPerLink()),
@@ -122,8 +111,7 @@ final class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
-  @Override
-  public Span.Builder addLink(io.opentelemetry.trace.Link link) {
+  private void addLink(ImmutableLink link) {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     if (links == null) {
@@ -132,11 +120,10 @@ final class SpanBuilderSdk implements Span.Builder {
 
     // don't bother doing anything with any links beyond the max.
     if (links.size() == traceConfig.getMaxNumberOfLinks()) {
-      return this;
+      return;
     }
 
     links.add(link);
-    return this;
   }
 
   @Override
@@ -163,9 +150,6 @@ final class SpanBuilderSdk implements Span.Builder {
   public <T> Span.Builder setAttribute(AttributeKey<T> key, T value) {
     Objects.requireNonNull(key, "key");
     if (value == null) {
-      if (attributes != null) {
-        attributes.remove(key);
-      }
       return this;
     }
     if (attributes == null) {
@@ -204,10 +188,8 @@ final class SpanBuilderSdk implements Span.Builder {
       traceId = parentSpanContext.getTraceIdAsHexString();
       traceState = parentSpanContext.getTraceState();
     }
-    List<io.opentelemetry.trace.Link> immutableLinks =
-        links == null
-            ? Collections.<io.opentelemetry.trace.Link>emptyList()
-            : Collections.unmodifiableList(links);
+    List<SpanData.Link> immutableLinks =
+        links == null ? Collections.emptyList() : Collections.unmodifiableList(links);
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;

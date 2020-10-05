@@ -1,29 +1,18 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longArrayKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,8 +24,8 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -63,7 +52,7 @@ class SpanBuilderSdkTest {
           TraceState.getDefault());
 
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
-  private final TracerSdk tracerSdk = tracerSdkFactory.get("SpanBuilderSdkTest");
+  private final TracerSdk tracerSdk = (TracerSdk) tracerSdkFactory.get("SpanBuilderSdkTest");
 
   @Test
   void setSpanKind_null() {
@@ -81,13 +70,12 @@ class SpanBuilderSdkTest {
   void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      assertThat(span.toSpanData().getLinks()).hasSize(3);
+      assertThat(span.toSpanData().getLinks()).hasSize(2);
     } finally {
       span.end();
     }
@@ -111,10 +99,10 @@ class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       SpanData spanData = span.toSpanData();
-      List<Link> links = spanData.getLinks();
+      List<SpanData.Link> links = spanData.getLinks();
       assertThat(links).hasSize(maxNumberOfLinks);
       for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(links.get(i)).isEqualTo(Link.create(sampledSpanContext));
+        assertThat(links.get(i)).isEqualTo(ImmutableLink.create(sampledSpanContext));
         assertThat(spanData.getTotalRecordedLinks()).isEqualTo(2 * maxNumberOfLinks);
       }
     } finally {
@@ -143,7 +131,7 @@ class SpanBuilderSdkTest {
     try {
       assertThat(span.toSpanData().getLinks())
           .containsExactly(
-              Link.create(sampledSpanContext, Attributes.of(stringKey("key0"), "str"), 3));
+              ImmutableLink.create(sampledSpanContext, Attributes.of(stringKey("key0"), "str"), 3));
     } finally {
       span.end();
       tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
@@ -157,7 +145,7 @@ class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
+          .containsExactly(ImmutableLink.create(sampledSpanContext, Attributes.empty()));
       // Use a different sampledSpanContext to ensure no logic that avoids duplicate links makes
       // this test to pass.
       spanBuilder.addLink(
@@ -167,24 +155,15 @@ class SpanBuilderSdkTest {
               TraceFlags.getSampled(),
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
+          .containsExactly(ImmutableLink.create(sampledSpanContext, Attributes.empty()));
     } finally {
       span.end();
     }
   }
 
   @Test
-  void addLink_null() {
-    assertThrows(
-        NullPointerException.class,
-        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink((io.opentelemetry.trace.Link) null));
-  }
-
-  @Test
   void addLinkSpanContext_null() {
-    assertThrows(
-        NullPointerException.class,
-        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink((SpanContext) null));
+    assertThrows(NullPointerException.class, () -> tracerSdk.spanBuilder(SPAN_NAME).addLink(null));
   }
 
   @Test
@@ -286,9 +265,6 @@ class SpanBuilderSdkTest {
     spanBuilder.setAttribute(stringKey("emptyStringAttributeValue"), "");
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
-    span.setAttribute("emptyString", null);
-    span.setAttribute("emptyStringAttributeValue", null);
-    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test
@@ -335,16 +311,6 @@ class SpanBuilderSdkTest {
     spanBuilder.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
-    span.setAttribute("emptyString", null);
-    span.setAttribute(stringKey("emptyStringAttributeValue"), null);
-    span.setAttribute(longKey("longAttribute"), null);
-    span.setAttribute(booleanKey("boolAttribute"), null);
-    span.setAttribute(doubleKey("doubleAttribute"), null);
-    span.setAttribute(stringArrayKey("stringArrayAttribute"), null);
-    span.setAttribute(booleanArrayKey("boolArrayAttribute"), null);
-    span.setAttribute(longArrayKey("longArrayAttribute"), null);
-    span.setAttribute(doubleArrayKey("doubleArrayAttribute"), null);
-    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test
@@ -535,7 +501,7 @@ class SpanBuilderSdkTest {
                           String name,
                           Kind spanKind,
                           ReadableAttributes attributes,
-                          List<io.opentelemetry.trace.Link> parentLinks) {
+                          List<SpanData.Link> parentLinks) {
                         return new SamplingResult() {
                           @Override
                           public Decision getDecision() {

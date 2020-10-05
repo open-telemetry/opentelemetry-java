@@ -1,44 +1,18 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.otlp;
 
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CLIENT;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_ABORTED;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_ALREADY_EXISTS;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_CANCELLED;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_DATA_LOSS;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_DEADLINE_EXCEEDED;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_FAILED_PRECONDITION;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_INTERNAL_ERROR;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_INVALID_ARGUMENT;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_NOT_FOUND;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_OK;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_OUT_OF_RANGE;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_PERMISSION_DENIED;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_RESOURCE_EXHAUSTED;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNAUTHENTICATED;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNAVAILABLE;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNIMPLEMENTED;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNKNOWN_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,8 +23,9 @@ import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventImpl;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.ImmutableEvent;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -89,11 +64,11 @@ class SpanAdapterTest {
                 .setTotalAttributeCount(2)
                 .setEvents(
                     Collections.singletonList(
-                        EventImpl.create(12347, "my_event", Attributes.empty())))
+                        ImmutableEvent.create(12347, "my_event", Attributes.empty())))
                 .setTotalRecordedEvents(3)
-                .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
+                .setLinks(Collections.singletonList(ImmutableLink.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
-                .setStatus(io.opentelemetry.trace.Status.OK)
+                .setStatus(ImmutableStatus.OK)
                 .build());
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
@@ -135,125 +110,23 @@ class SpanAdapterTest {
 
   @Test
   void toProtoStatus() {
-    assertThat(SpanAdapter.toStatusProto(io.opentelemetry.trace.Status.OK))
+    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.UNSET))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.CANCELLED.withDescription("CANCELLED")))
+    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.ERROR.withDescription("ERROR")))
         .isEqualTo(
-            Status.newBuilder().setCode(STATUS_CODE_CANCELLED).setMessage("CANCELLED").build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.UNKNOWN.withDescription("UNKNOWN")))
+            Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("ERROR").build());
+    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.ERROR.withDescription("UNKNOWN")))
         .isEqualTo(
             Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("UNKNOWN").build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.INVALID_ARGUMENT.withDescription("INVALID_ARGUMENT")))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_INVALID_ARGUMENT)
-                .setMessage("INVALID_ARGUMENT")
-                .build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.DEADLINE_EXCEEDED.withDescription(
-                    "DEADLINE_EXCEEDED")))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_DEADLINE_EXCEEDED)
-                .setMessage("DEADLINE_EXCEEDED")
-                .build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.NOT_FOUND.withDescription("NOT_FOUND")))
-        .isEqualTo(
-            Status.newBuilder().setCode(STATUS_CODE_NOT_FOUND).setMessage("NOT_FOUND").build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.ALREADY_EXISTS.withDescription("ALREADY_EXISTS")))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_ALREADY_EXISTS)
-                .setMessage("ALREADY_EXISTS")
-                .build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.PERMISSION_DENIED.withDescription(
-                    "PERMISSION_DENIED")))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_PERMISSION_DENIED)
-                .setMessage("PERMISSION_DENIED")
-                .build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.RESOURCE_EXHAUSTED.withDescription(
-                    "RESOURCE_EXHAUSTED")))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_RESOURCE_EXHAUSTED)
-                .setMessage("RESOURCE_EXHAUSTED")
-                .build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.FAILED_PRECONDITION.withDescription(
-                    "FAILED_PRECONDITION")))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_FAILED_PRECONDITION)
-                .setMessage("FAILED_PRECONDITION")
-                .build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.ABORTED.withDescription("ABORTED")))
-        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_ABORTED).setMessage("ABORTED").build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.OUT_OF_RANGE.withDescription("OUT_OF_RANGE")))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_OUT_OF_RANGE)
-                .setMessage("OUT_OF_RANGE")
-                .build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.UNIMPLEMENTED.withDescription("UNIMPLEMENTED")))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_UNIMPLEMENTED)
-                .setMessage("UNIMPLEMENTED")
-                .build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.INTERNAL.withDescription("INTERNAL")))
-        .isEqualTo(
-            Status.newBuilder().setCode(STATUS_CODE_INTERNAL_ERROR).setMessage("INTERNAL").build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.UNAVAILABLE.withDescription("UNAVAILABLE")))
-        .isEqualTo(
-            Status.newBuilder().setCode(STATUS_CODE_UNAVAILABLE).setMessage("UNAVAILABLE").build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.DATA_LOSS.withDescription("DATA_LOSS")))
-        .isEqualTo(
-            Status.newBuilder().setCode(STATUS_CODE_DATA_LOSS).setMessage("DATA_LOSS").build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.UNAUTHENTICATED.withDescription("UNAUTHENTICATED")))
-        .isEqualTo(
-            Status.newBuilder()
-                .setCode(STATUS_CODE_UNAUTHENTICATED)
-                .setMessage("UNAUTHENTICATED")
-                .build());
+    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.OK.withDescription("OK_OVERRIDE")))
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
   }
 
   @Test
   void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                EventImpl.create(12345, "test_without_attributes", Attributes.empty())))
+                ImmutableEvent.create(12345, "test_without_attributes", Attributes.empty())))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -265,7 +138,7 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                EventImpl.create(
+                ImmutableEvent.create(
                     12345,
                     "test_with_attributes",
                     Attributes.of(stringKey("key_string"), "string"),
@@ -285,7 +158,7 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(Link.create(SPAN_CONTEXT)))
+    assertThat(SpanAdapter.toProtoSpanLink(ImmutableLink.create(SPAN_CONTEXT)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -297,7 +170,8 @@ class SpanAdapterTest {
   void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
-                Link.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
+                ImmutableLink.create(
+                    SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))

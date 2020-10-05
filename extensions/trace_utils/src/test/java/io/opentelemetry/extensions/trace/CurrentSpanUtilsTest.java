@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.extensions.trace;
@@ -22,7 +11,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,7 +89,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeRunnableAndExpectError(runnable, error);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("MyError"));
+    verify(span).setStatus(StatusCanonicalCode.ERROR, "MyError");
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -116,7 +105,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeRunnableAndExpectError(runnable, error);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("AssertionError"));
+    verify(span).setStatus(StatusCanonicalCode.ERROR, "AssertionError");
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -162,7 +151,7 @@ class CurrentSpanUtilsTest {
           throw exception;
         };
     executeCallableAndExpectError(callable, exception);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("MyException"));
+    verify(span).setStatus(StatusCanonicalCode.ERROR, "MyException");
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -178,7 +167,7 @@ class CurrentSpanUtilsTest {
           throw exception;
         };
     executeCallableAndExpectError(callable, exception);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("Exception"));
+    verify(span).setStatus(StatusCanonicalCode.ERROR, "Exception");
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -194,7 +183,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeCallableAndExpectError(callable, error);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("MyError"));
+    verify(span).setStatus(StatusCanonicalCode.ERROR, "MyError");
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -210,7 +199,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeCallableAndExpectError(callable, error);
-    verify(span).setStatus(Status.UNKNOWN.withDescription("AssertionError"));
+    verify(span).setStatus(StatusCanonicalCode.ERROR, "AssertionError");
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }

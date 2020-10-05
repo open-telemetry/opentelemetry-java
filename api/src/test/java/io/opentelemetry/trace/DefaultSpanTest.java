@@ -1,28 +1,17 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace;
 
-import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
-import static io.opentelemetry.common.AttributesKeys.longArrayKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Attributes;
@@ -44,6 +33,7 @@ class DefaultSpanTest {
     span.setAttribute(stringKey("MyStringAttributeKey"), "MyStringAttributeValue");
     span.setAttribute(booleanKey("MyBooleanAttributeKey"), true);
     span.setAttribute(longKey("MyLongAttributeKey"), 123L);
+    span.setAttribute(longKey("MyLongAttributeKey"), 123);
     span.setAttribute("NullString", null);
     span.setAttribute("EmptyString", "");
     span.setAttribute(stringArrayKey("NullArrayString"), null);
@@ -55,10 +45,7 @@ class DefaultSpanTest {
     span.addEvent("event", 0);
     span.addEvent("event", Attributes.of(booleanKey("MyBooleanAttributeKey"), true));
     span.addEvent("event", Attributes.of(booleanKey("MyBooleanAttributeKey"), true), 0);
-    span.addEvent(new TestEvent());
-    span.addEvent(new TestEvent(), 0);
-    span.addEvent((Event) null);
-    span.setStatus(Status.OK);
+    span.setStatus(StatusCanonicalCode.OK, null);
     span.recordException(new IllegalStateException());
     span.recordException(new IllegalStateException(), Attributes.empty());
     span.end();
@@ -70,17 +57,5 @@ class DefaultSpanTest {
   void defaultSpan_ToString() {
     Span span = DefaultSpan.getInvalid();
     assertThat(span.toString()).isEqualTo("DefaultSpan");
-  }
-
-  static final class TestEvent implements Event {
-    @Override
-    public String getName() {
-      return "name";
-    }
-
-    @Override
-    public Attributes getAttributes() {
-      return Attributes.empty();
-    }
   }
 }

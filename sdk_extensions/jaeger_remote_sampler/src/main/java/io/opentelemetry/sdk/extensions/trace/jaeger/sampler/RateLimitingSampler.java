@@ -1,30 +1,21 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
+
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.AttributesKeys;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.trace.Link;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
@@ -35,8 +26,8 @@ import java.util.List;
  */
 class RateLimitingSampler implements Sampler {
   static final String TYPE = "ratelimiting";
-  static final AttributeKey<String> SAMPLER_TYPE = AttributesKeys.stringKey("sampler.type");
-  static final AttributeKey<Double> SAMPLER_PARAM = AttributesKeys.doubleKey("sampler.param");
+  static final AttributeKey<String> SAMPLER_TYPE = stringKey("sampler.type");
+  static final AttributeKey<Double> SAMPLER_PARAM = doubleKey("sampler.param");
 
   private final double maxTracesPerSecond;
   private final RateLimiter rateLimiter;
@@ -65,13 +56,13 @@ class RateLimitingSampler implements Sampler {
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
-      List<Link> parentLinks) {
+      List<SpanData.Link> parentLinks) {
     if (parentContext.isSampled()) {
       return Samplers.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
     if (parentLinks != null) {
-      for (Link parentLink : parentLinks) {
+      for (SpanData.Link parentLink : parentLinks) {
         if (parentLink.getContext().isSampled()) {
           return Samplers.alwaysOn()
               .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);

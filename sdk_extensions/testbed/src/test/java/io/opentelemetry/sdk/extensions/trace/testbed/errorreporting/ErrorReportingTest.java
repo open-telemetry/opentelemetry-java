@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.testbed.errorreporting;
@@ -29,7 +18,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -42,7 +31,7 @@ public final class ErrorReportingTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(ErrorReportingTest.class.getName());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -53,7 +42,7 @@ public final class ErrorReportingTest {
     try (Scope ignored = tracer.withSpan(span)) {
       throw new RuntimeException("Invalid state");
     } catch (Exception e) {
-      span.setStatus(Status.UNKNOWN);
+      span.setStatus(StatusCanonicalCode.ERROR, null);
     } finally {
       span.end();
     }
@@ -62,8 +51,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getStatus().getCanonicalCode().value())
-        .isEqualTo(Status.UNKNOWN.getCanonicalCode().value());
+    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCanonicalCode.ERROR);
   }
 
   /* Error handling in a callback capturing/activating the Span */
@@ -75,7 +63,7 @@ public final class ErrorReportingTest {
           try (Scope ignored = tracer.withSpan(span)) {
             throw new RuntimeException("Invalid state");
           } catch (Exception exc) {
-            span.setStatus(Status.UNKNOWN);
+            span.setStatus(StatusCanonicalCode.ERROR, null);
           } finally {
             span.end();
           }
@@ -87,8 +75,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getStatus().getCanonicalCode())
-        .isEqualTo(Status.UNKNOWN.getCanonicalCode());
+    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCanonicalCode.ERROR);
   }
 
   /* Error handling for a max-retries task (such as url fetching).
@@ -108,15 +95,14 @@ public final class ErrorReportingTest {
       }
     }
 
-    span.setStatus(Status.UNKNOWN); // Could not fetch anything.
+    span.setStatus(StatusCanonicalCode.ERROR, null); // Could not fetch anything.
     span.end();
 
     assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getStatus().getCanonicalCode())
-        .isEqualTo(Status.UNKNOWN.getCanonicalCode());
+    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCanonicalCode.ERROR);
 
     List<Event> events = spans.get(0).getEvents();
     assertEquals(events.size(), maxRetries);
@@ -136,7 +122,7 @@ public final class ErrorReportingTest {
                 try {
                   throw new RuntimeException("Invalid state");
                 } catch (Exception exc) {
-                  tracer.getCurrentSpan().setStatus(Status.UNKNOWN);
+                  tracer.getCurrentSpan().setStatus(StatusCanonicalCode.ERROR, null);
                 } finally {
                   tracer.getCurrentSpan().end();
                 }
@@ -150,7 +136,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCanonicalCode.ERROR);
   }
 
   private static class ScopedRunnable implements Runnable {

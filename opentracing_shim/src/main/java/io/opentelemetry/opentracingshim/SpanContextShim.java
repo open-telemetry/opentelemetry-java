@@ -1,24 +1,13 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.correlationcontext.CorrelationContext;
-import io.opentelemetry.correlationcontext.Entry;
-import io.opentelemetry.correlationcontext.EntryMetadata;
+import io.opentelemetry.baggage.Baggage;
+import io.opentelemetry.baggage.Entry;
+import io.opentelemetry.baggage.EntryMetadata;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,30 +17,30 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
       EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
 
   private final io.opentelemetry.trace.SpanContext context;
-  private final CorrelationContext distContext;
+  private final Baggage distContext;
 
   public SpanContextShim(SpanShim spanShim) {
     this(
         spanShim.telemetryInfo(),
         spanShim.getSpan().getContext(),
-        spanShim.telemetryInfo().emptyCorrelationContext());
+        spanShim.telemetryInfo().emptyBaggage());
   }
 
   public SpanContextShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.SpanContext context) {
-    this(telemetryInfo, context, telemetryInfo.emptyCorrelationContext());
+    this(telemetryInfo, context, telemetryInfo.emptyBaggage());
   }
 
   public SpanContextShim(
       TelemetryInfo telemetryInfo,
       io.opentelemetry.trace.SpanContext context,
-      CorrelationContext distContext) {
+      Baggage distContext) {
     super(telemetryInfo);
     this.context = context;
     this.distContext = distContext;
   }
 
   SpanContextShim newWithKeyValue(String key, String value) {
-    CorrelationContext.Builder builder = contextManager().contextBuilder().setParent(distContext);
+    Baggage.Builder builder = contextManager().baggageBuilder().setParent(distContext);
     builder.put(key, value, DEFAULT_ENTRY_METADATA);
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());
@@ -61,7 +50,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
     return context;
   }
 
-  CorrelationContext getCorrelationContext() {
+  Baggage getBaggage() {
     return distContext;
   }
 

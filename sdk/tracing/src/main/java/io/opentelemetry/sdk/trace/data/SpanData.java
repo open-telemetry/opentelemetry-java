@@ -1,32 +1,22 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace.data;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -164,9 +154,10 @@ public interface SpanData {
   int getTotalRecordedEvents();
 
   /**
-   * The total number of {@link Link} links that were recorded on this span. This number may be
-   * larger than the number of links that are attached to this span, if the total number recorded
-   * was greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfLinks()}
+   * The total number of {@link ImmutableLink} links that were recorded on this span. This number
+   * may be larger than the number of links that are attached to this span, if the total number
+   * recorded was greater than the configured maximum value. See: {@link
+   * TraceConfig#getMaxNumberOfLinks()}
    *
    * @return The total number of links recorded on this span.
    */
@@ -181,48 +172,28 @@ public interface SpanData {
    */
   int getTotalAttributeCount();
 
-  /** An immutable implementation of {@link io.opentelemetry.trace.Link}. */
-  @Immutable
-  @AutoValue
-  abstract class Link implements io.opentelemetry.trace.Link {
-
-    private static final Attributes DEFAULT_ATTRIBUTE_COLLECTION = Attributes.empty();
-    private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
+  /**
+   * A link to a {@link Span}.
+   *
+   * <p>Used (for example) in batching operations, where a single batch handler processes multiple
+   * requests from different traces. Link can be also used to reference spans from the same trace.
+   */
+  interface Link {
+    /**
+     * Returns the {@code SpanContext}.
+     *
+     * @return the {@code SpanContext}.
+     * @since 0.1.0
+     */
+    SpanContext getContext();
 
     /**
-     * Returns a new immutable {@code Link}.
+     * Returns the set of attributes.
      *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
-     * @return a new immutable {@code Event<T>}
+     * @return the set of attributes.
+     * @since 0.1.0
      */
-    public static Link create(SpanContext spanContext) {
-      return new AutoValue_SpanData_Link(
-          spanContext, DEFAULT_ATTRIBUTE_COLLECTION, DEFAULT_ATTRIBUTE_COUNT);
-    }
-
-    /**
-     * Returns a new immutable {@code Link}.
-     *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
-     * @param attributes the attributes of this {@code Link}.
-     * @return a new immutable {@code Event<T>}
-     */
-    public static Link create(SpanContext spanContext, Attributes attributes) {
-      return new AutoValue_SpanData_Link(spanContext, attributes, attributes.size());
-    }
-
-    /**
-     * Returns a new immutable {@code Link}.
-     *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
-     * @param attributes the attributes of this {@code Link}.
-     * @param totalAttributeCount the total number of attributed for this {@code Link}.
-     * @return a new immutable {@code Event<T>}
-     */
-    public static Link create(
-        SpanContext spanContext, Attributes attributes, int totalAttributeCount) {
-      return new AutoValue_SpanData_Link(spanContext, attributes, totalAttributeCount);
-    }
+    Attributes getAttributes();
 
     /**
      * The total number of attributes that were recorded on this Link. This number may be larger
@@ -232,12 +203,26 @@ public interface SpanData {
      *
      * @return The number of attributes on this link.
      */
-    public abstract int getTotalAttributeCount();
-
-    Link() {}
+    int getTotalAttributeCount();
   }
 
-  interface Event extends io.opentelemetry.trace.Event {
+  interface Event {
+    /**
+     * Return the name of the {@code Event}.
+     *
+     * @return the name of the {@code Event}.
+     * @since 0.1.0
+     */
+    String getName();
+
+    /**
+     * Return the attributes of the {@code Event}.
+     *
+     * @return the attributes of the {@code Event}.
+     * @since 0.1.0
+     */
+    Attributes getAttributes();
+
     /**
      * Returns the epoch time in nanos of this event.
      *
@@ -254,5 +239,47 @@ public interface SpanData {
      * @return The total number of attributes on this event.
      */
     int getTotalAttributeCount();
+  }
+
+  /**
+   * Defines the status of a {@link Span} by providing a standard {@link StatusCanonicalCode} in
+   * conjunction with an optional descriptive message.
+   */
+  interface Status {
+    /**
+     * Returns the canonical status code.
+     *
+     * @return the canonical status code.
+     */
+    StatusCanonicalCode getCanonicalCode();
+
+    /**
+     * Returns the description of this {@code Status} for human consumption.
+     *
+     * @return the description of this {@code Status}.
+     */
+    @Nullable
+    String getDescription();
+
+    /**
+     * Returns {@code true} if this {@code Status} is UNSET, i.e., not an error.
+     *
+     * @return {@code true} if this {@code Status} is UNSET.
+     */
+    // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
+    default boolean isUnset() {
+      return StatusCanonicalCode.UNSET == getCanonicalCode();
+    }
+
+    /**
+     * Returns {@code true} if this {@code Status} is ok, i.e., status is not set, or has been
+     * overridden to be ok by an operator.
+     *
+     * @return {@code true} if this {@code Status} is OK or UNSET.
+     */
+    // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
+    default boolean isOk() {
+      return isUnset() || StatusCanonicalCode.OK == getCanonicalCode();
+    }
   }
 }

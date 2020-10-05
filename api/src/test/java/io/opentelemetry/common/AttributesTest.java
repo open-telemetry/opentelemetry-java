@@ -1,29 +1,19 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longArrayKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
@@ -138,6 +128,7 @@ class AttributesTest {
         Attributes.newBuilder()
             .setAttribute("string", "value1")
             .setAttribute("long", 100)
+            .setAttribute(longKey("long2"), 10)
             .setAttribute("double", 33.44)
             .setAttribute("boolean", "duplicateShouldBeRemoved")
             .setAttribute("boolean", false)
@@ -149,6 +140,8 @@ class AttributesTest {
             "value1",
             longKey("long"),
             100L,
+            longKey("long2"),
+            10L,
             doubleKey("double"),
             33.44,
             booleanKey("boolean"),
@@ -164,6 +157,8 @@ class AttributesTest {
                 "value1",
                 longKey("long"),
                 100L,
+                longKey("long2"),
+                10L,
                 doubleKey("double"),
                 33.44,
                 booleanKey("boolean"),
@@ -255,24 +250,34 @@ class AttributesTest {
   }
 
   @Test
-  void deleteByNull() {
-    Attributes.Builder attributes = Attributes.newBuilder();
-    attributes.setAttribute(stringKey("attrValue"), "attrValue");
-    attributes.setAttribute("string", "string");
-    attributes.setAttribute("long", 10);
-    attributes.setAttribute("double", 1.0);
-    attributes.setAttribute("bool", true);
-    attributes.setAttribute("arrayString", new String[] {"string"});
-    attributes.setAttribute("arrayLong", new Long[] {10L});
-    attributes.setAttribute("arrayDouble", new Double[] {1.0});
-    attributes.setAttribute("arrayBool", new Boolean[] {true});
-    assertThat(attributes.build().size()).isEqualTo(9);
-    attributes.setAttribute(stringKey("attrValue"), null);
-    attributes.setAttribute("string", (String) null);
-    attributes.setAttribute("arrayString", (String[]) null);
-    attributes.setAttribute("arrayLong", (Long[]) null);
-    attributes.setAttribute("arrayDouble", (Double[]) null);
-    attributes.setAttribute("arrayBool", (Boolean[]) null);
-    assertThat(attributes.build().size()).isEqualTo(3);
+  void nullsAreNoOps() {
+    Attributes.Builder builder = Attributes.newBuilder();
+    builder.setAttribute(stringKey("attrValue"), "attrValue");
+    builder.setAttribute("string", "string");
+    builder.setAttribute("long", 10);
+    builder.setAttribute("double", 1.0);
+    builder.setAttribute("bool", true);
+    builder.setAttribute("arrayString", new String[] {"string"});
+    builder.setAttribute("arrayLong", new Long[] {10L});
+    builder.setAttribute("arrayDouble", new Double[] {1.0});
+    builder.setAttribute("arrayBool", new Boolean[] {true});
+    assertThat(builder.build().size()).isEqualTo(9);
+
+    // note: currently these are no-op calls; that behavior is not required, so if it needs to
+    // change, that is fine.
+    builder.setAttribute(stringKey("attrValue"), null);
+    builder.setAttribute("string", (String) null);
+    builder.setAttribute("arrayString", (String[]) null);
+    builder.setAttribute("arrayLong", (Long[]) null);
+    builder.setAttribute("arrayDouble", (Double[]) null);
+    builder.setAttribute("arrayBool", (Boolean[]) null);
+
+    Attributes attributes = builder.build();
+    assertThat(attributes.size()).isEqualTo(9);
+    assertThat(attributes.get(stringKey("string"))).isEqualTo("string");
+    assertThat(attributes.get(stringArrayKey("arrayString"))).isEqualTo(singletonList("string"));
+    assertThat(attributes.get(longArrayKey("arrayLong"))).isEqualTo(singletonList(10L));
+    assertThat(attributes.get(doubleArrayKey("arrayDouble"))).isEqualTo(singletonList(1.0d));
+    assertThat(attributes.get(booleanArrayKey("arrayBool"))).isEqualTo(singletonList(true));
   }
 }

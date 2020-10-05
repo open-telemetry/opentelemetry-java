@@ -1,30 +1,19 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
@@ -60,7 +49,7 @@ public final class TestUtils {
         .setName("span")
         .setKind(Kind.SERVER)
         .setStartEpochNanos(TimeUnit.SECONDS.toNanos(100) + 100)
-        .setStatus(Status.OK)
+        .setStatus(ImmutableStatus.OK)
         .setEndEpochNanos(TimeUnit.SECONDS.toNanos(200) + 200)
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
@@ -74,9 +63,9 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkProvider tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
+      TracerSdkManagement tracerSdkManagement, Tracer tracer, String spanName, Sampler sampler) {
     return startSpanWithSampler(
-        tracerSdkFactory, tracer, spanName, sampler, Collections.emptyMap());
+        tracerSdkManagement, tracer, spanName, sampler, Collections.emptyMap());
   }
 
   /**
@@ -86,13 +75,13 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkProvider tracerSdkFactory,
+      TracerSdkManagement tracerSdkManagement,
       Tracer tracer,
       String spanName,
       Sampler sampler,
       Map<String, String> attributes) {
-    TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
-    tracerSdkFactory.updateActiveTraceConfig(
+    TraceConfig originalConfig = tracerSdkManagement.getActiveTraceConfig();
+    tracerSdkManagement.updateActiveTraceConfig(
         originalConfig.toBuilder().setSampler(sampler).build());
     try {
       Span.Builder builder = tracer.spanBuilder(spanName);
@@ -100,7 +89,7 @@ public final class TestUtils {
 
       return builder;
     } finally {
-      tracerSdkFactory.updateActiveTraceConfig(originalConfig);
+      tracerSdkManagement.updateActiveTraceConfig(originalConfig);
     }
   }
 }

@@ -1,22 +1,11 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.jaeger;
 
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
@@ -27,9 +16,9 @@ import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,8 +34,8 @@ final class Adapter {
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
   static final String KEY_SPAN_STATUS_CODE = "span.status.code";
-  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.instrumentation_library.name";
-  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.instrumentation_library.version";
+  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
+  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
   private Adapter() {}
 
@@ -234,28 +223,28 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Link}s into a collection of Jaeger's {@link Model.SpanRef}.
+   * Converts {@link ImmutableLink}s into a collection of Jaeger's {@link Model.SpanRef}.
    *
    * @param links the span's links property to be converted
    * @return a collection of Jaeger span references
    */
   @VisibleForTesting
-  static Collection<Model.SpanRef> toSpanRefs(List<Link> links) {
+  static Collection<Model.SpanRef> toSpanRefs(List<SpanData.Link> links) {
     List<Model.SpanRef> spanRefs = new ArrayList<>(links.size());
-    for (Link link : links) {
+    for (SpanData.Link link : links) {
       spanRefs.add(toSpanRef(link));
     }
     return spanRefs;
   }
 
   /**
-   * Converts a single {@link Link} into a Jaeger's {@link Model.SpanRef}.
+   * Converts a single {@link ImmutableLink} into a Jaeger's {@link Model.SpanRef}.
    *
    * @param link the OpenTelemetry link to be converted
    * @return the Jaeger span reference
    */
   @VisibleForTesting
-  static Model.SpanRef toSpanRef(Link link) {
+  static Model.SpanRef toSpanRef(SpanData.Link link) {
     Model.SpanRef.Builder builder = Model.SpanRef.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsHexString()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsHexString()));

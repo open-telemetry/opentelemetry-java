@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.incubator.trace.data;
@@ -21,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
 import org.junit.jupiter.api.Test;
 
 class SpanDataBuilderTest {
@@ -40,7 +29,7 @@ class SpanDataBuilderTest {
           .setStartEpochNanos(0)
           .setEndEpochNanos(100)
           .setKind(Span.Kind.SERVER)
-          .setStatus(Status.UNKNOWN)
+          .setStatus(ImmutableStatus.ERROR)
           .setAttributes(
               Attributes.newBuilder()
                   .setAttribute("cat", "meow")
@@ -58,10 +47,12 @@ class SpanDataBuilderTest {
 
   @Test
   void modifySpanData() {
-    assertThat(TEST_SPAN_DATA.getStatus()).isEqualTo(Status.UNKNOWN);
+    assertThat(TEST_SPAN_DATA.getStatus()).isEqualTo(ImmutableStatus.ERROR);
     SpanData modified =
-        SpanDataBuilder.newBuilder(TEST_SPAN_DATA).setStatus(Status.ABORTED).build();
-    assertThat(modified.getStatus()).isEqualTo(Status.ABORTED);
+        SpanDataBuilder.newBuilder(TEST_SPAN_DATA)
+            .setStatus(ImmutableStatus.ERROR.withDescription("ABORTED"))
+            .build();
+    assertThat(modified.getStatus()).isEqualTo(ImmutableStatus.ERROR.withDescription("ABORTED"));
   }
 
   @Test
@@ -73,7 +64,9 @@ class SpanDataBuilderTest {
             SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build(),
             SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build())
         .addEqualityGroup(
-            SpanDataBuilder.newBuilder(TEST_SPAN_DATA).setStatus(Status.ABORTED).build());
+            SpanDataBuilder.newBuilder(TEST_SPAN_DATA)
+                .setStatus(ImmutableStatus.ERROR.withDescription("ABORTED"))
+                .build());
     tester.testEquals();
   }
 }

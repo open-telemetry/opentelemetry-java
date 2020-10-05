@@ -1,44 +1,32 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.TimedEvent.RawTimedEventWithEvent;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.ImmutableEvent;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
@@ -70,7 +58,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
   // List of recorded links to parent and child spans.
-  private final List<io.opentelemetry.trace.Link> links;
+  private final List<SpanData.Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
 
@@ -95,14 +83,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
-  private final EvictingQueue<TimedEvent> events;
+  private final EvictingQueue<ImmutableEvent> events;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
-  private Status status;
+  private SpanData.Status status = ImmutableStatus.UNSET;
   // The end time of the span.
   @GuardedBy("lock")
   private long endEpochNanos;
@@ -122,7 +110,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links,
+      List<SpanData.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
@@ -158,7 +146,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param clock the clock used to get the time.
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
-   * @param links the links set during span creation, may be truncated.
+   * @param links the links set during span creation, may be truncated. The list MUST be immutable.
    * @return a new and started span.
    */
   static RecordEventsReadableSpan startSpan(
@@ -173,7 +161,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links,
+      List<SpanData.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     RecordEventsReadableSpan span =
@@ -204,7 +192,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     synchronized (lock) {
       return SpanWrapper.create(
           this,
-          getImmutableLinks(),
+          links,
           getImmutableTimedEvents(),
           getImmutableAttributes(),
           (attributes == null) ? 0 : attributes.getTotalAddedValues(),
@@ -308,18 +296,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public <T> void setAttribute(AttributeKey<T> key, T value) {
-    if (key == null || key.getKey() == null || key.getKey().length() == 0) {
+    if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
       return;
     }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
-        return;
-      }
-      if (value == null) {
-        if (attributes != null) {
-          attributes.remove(key);
-        }
         return;
       }
       if (attributes == null) {
@@ -339,7 +321,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(TimedEvent.create(clock.now(), name, Attributes.empty(), 0));
+    addTimedEvent(ImmutableEvent.create(clock.now(), name, Attributes.empty(), 0));
   }
 
   @Override
@@ -347,7 +329,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(TimedEvent.create(timestamp, name, Attributes.empty(), 0));
+    addTimedEvent(ImmutableEvent.create(timestamp, name, Attributes.empty(), 0));
   }
 
   @Override
@@ -357,7 +339,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        TimedEvent.create(
+        ImmutableEvent.create(
             clock.now(),
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
@@ -371,27 +353,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        TimedEvent.create(
+        ImmutableEvent.create(
             timestamp,
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
-  }
-
-  @Override
-  public void addEvent(io.opentelemetry.trace.Event event) {
-    if (event == null) {
-      return;
-    }
-    addTimedEvent(TimedEvent.create(clock.now(), event));
-  }
-
-  @Override
-  public void addEvent(io.opentelemetry.trace.Event event, long timestamp) {
-    if (event == null) {
-      return;
-    }
-    addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
   static Attributes copyAndLimitAttributes(final Attributes attributes, final int limit) {
@@ -404,7 +370,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return result.build();
   }
 
-  private void addTimedEvent(TimedEvent timedEvent) {
+  private void addTimedEvent(ImmutableEvent timedEvent) {
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
@@ -416,8 +382,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void setStatus(Status status) {
-    if (status == null) {
+  public void setStatus(StatusCanonicalCode canonicalCode, @Nullable String description) {
+    if (canonicalCode == null) {
       return;
     }
     synchronized (lock) {
@@ -425,7 +391,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return;
       }
-      this.status = status;
+      // TODO: Optimize this to not always allocate a new Status object if description is null.
+      this.status = ImmutableStatus.create(canonicalCode, description);
     }
   }
 
@@ -509,9 +476,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private Status getStatusWithDefault() {
+  private SpanData.Status getStatusWithDefault() {
     synchronized (lock) {
-      return status == null ? Status.OK : status;
+      return status;
     }
   }
 
@@ -540,47 +507,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private List<Link> getImmutableLinks() {
-    if (links.isEmpty()) {
-      return Collections.emptyList();
-    }
-    List<Link> result = new ArrayList<>(links.size());
-    for (io.opentelemetry.trace.Link link : links) {
-      Link newLink;
-      if (!(link instanceof Link)) {
-        // Make a copy because the given Link may not be immutable and we may reference a lot of
-        // memory.
-        newLink = Link.create(link.getContext(), link.getAttributes());
-      } else {
-        newLink = (Link) link;
-      }
-      result.add(newLink);
-    }
-    return Collections.unmodifiableList(result);
-  }
-
-  @GuardedBy("lock")
   private List<Event> getImmutableTimedEvents() {
     if (events.isEmpty()) {
       return Collections.emptyList();
     }
 
-    List<Event> results = new ArrayList<>(events.size());
-    for (TimedEvent event : events) {
-      if (event instanceof RawTimedEventWithEvent) {
-        // make sure to copy the data if the event is wrapping another one,
-        // so we don't hold on the caller's memory
-        results.add(
-            TimedEvent.create(
-                event.getEpochNanos(),
-                event.getName(),
-                event.getAttributes(),
-                event.getTotalAttributeCount()));
-      } else {
-        results.add(event);
-      }
-    }
-    return Collections.unmodifiableList(results);
+    return Collections.unmodifiableList(new ArrayList<>(events));
   }
 
   @GuardedBy("lock")
@@ -601,13 +533,13 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   public String toString() {
     String name;
     String attributes;
-    Status status;
+    String status;
     long totalRecordedEvents;
     long endEpochNanos;
     synchronized (lock) {
       name = this.name;
       attributes = String.valueOf(this.attributes);
-      status = this.status;
+      status = String.valueOf(this.status);
       totalRecordedEvents = this.totalRecordedEvents;
       endEpochNanos = this.endEpochNanos;
     }

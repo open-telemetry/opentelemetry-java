@@ -1,23 +1,11 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkArgument;
-import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -33,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -72,6 +61,7 @@ public class HttpTraceContext implements TextMapPropagator {
   private static final Pattern TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN =
       Pattern.compile("[ \t]*" + TRACESTATE_ENTRY_DELIMITER + "[ \t]*");
   private static final Set<String> VALID_VERSIONS;
+  private static final String VERSION_00 = "00";
   private static final HttpTraceContext INSTANCE = new HttpTraceContext();
 
   static {
@@ -101,8 +91,8 @@ public class HttpTraceContext implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
-    checkNotNull(context, "context");
-    checkNotNull(setter, "setter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(setter, "setter");
 
     SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
     if (!spanContext.isValid()) {
@@ -150,9 +140,9 @@ public class HttpTraceContext implements TextMapPropagator {
   @Override
   public <C /*>>> extends @NonNull Object*/> Context extract(
       Context context, C carrier, Getter<C> getter) {
-    checkNotNull(context, "context");
-    checkNotNull(carrier, "carrier");
-    checkNotNull(getter, "getter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(carrier, "carrier");
+    Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext = extractImpl(carrier, getter);
     if (!spanContext.isValid()) {
@@ -209,6 +199,9 @@ public class HttpTraceContext implements TextMapPropagator {
     try {
       String version = traceparent.substring(0, 2);
       if (!VALID_VERSIONS.contains(version)) {
+        return SpanContext.getInvalid();
+      }
+      if (version.equals(VERSION_00) && traceparent.length() > TRACEPARENT_HEADER_SIZE) {
         return SpanContext.getInvalid();
       }
 
