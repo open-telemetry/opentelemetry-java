@@ -396,7 +396,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return;
       }
-      // TODO: Optimize this to not always allocate a new Status object if description is null.
       this.status = ImmutableStatus.create(canonicalCode, description);
     }
   }
