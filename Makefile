@@ -19,7 +19,7 @@ init-git-submodules:
 
 .PHONY: verify-format
 verify-format:
-	./gradlew verGJF
+	./gradlew spotlessCheck
 
 .PHONY: publish-snapshots
 publish-snapshots:
