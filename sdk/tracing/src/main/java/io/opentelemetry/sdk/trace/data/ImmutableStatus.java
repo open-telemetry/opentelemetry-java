@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.data;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.StatusCanonicalCode;
-import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -26,13 +25,13 @@ public abstract class ImmutableStatus implements SpanData.Status {
    * The operation has been validated by an Application developers or Operator to have completed
    * successfully.
    */
-  public static final ImmutableStatus OK = createInternal(StatusCanonicalCode.OK, null);
+  public static final SpanData.Status OK = create(StatusCanonicalCode.OK, null);
 
   /** The default status. */
-  public static final ImmutableStatus UNSET = createInternal(StatusCanonicalCode.UNSET, null);
+  public static final SpanData.Status UNSET = create(StatusCanonicalCode.UNSET, null);
 
   /** The operation contains an error. */
-  public static final ImmutableStatus ERROR = createInternal(StatusCanonicalCode.ERROR, null);
+  public static final SpanData.Status ERROR = create(StatusCanonicalCode.ERROR, null);
 
   /**
    * Creates a derived instance of {@code Status} with the given description.
@@ -43,26 +42,6 @@ public abstract class ImmutableStatus implements SpanData.Status {
    */
   public static SpanData.Status create(
       StatusCanonicalCode canonicalCode, @Nullable String description) {
-    return createInternal(canonicalCode, description);
-  }
-
-  private static ImmutableStatus createInternal(
-      StatusCanonicalCode canonicalCode, @Nullable String description) {
     return new AutoValue_ImmutableStatus(canonicalCode, description);
-  }
-
-  /**
-   * Creates a derived instance of {@code Status} with the given description.
-   *
-   * @param description the new description of the {@code Status}.
-   * @return The newly created {@code Status} with the given description.
-   * @since 0.1.0
-   */
-  // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
-  public ImmutableStatus withDescription(@Nullable String description) {
-    if (Objects.equals(getDescription(), description)) {
-      return this;
-    }
-    return createInternal(getCanonicalCode(), description);
   }
 }
