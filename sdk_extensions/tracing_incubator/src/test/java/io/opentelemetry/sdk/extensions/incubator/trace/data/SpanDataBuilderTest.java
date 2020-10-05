@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import org.junit.jupiter.api.Test;
 
 class SpanDataBuilderTest {
@@ -50,9 +51,10 @@ class SpanDataBuilderTest {
     assertThat(TEST_SPAN_DATA.getStatus()).isEqualTo(ImmutableStatus.ERROR);
     SpanData modified =
         SpanDataBuilder.newBuilder(TEST_SPAN_DATA)
-            .setStatus(ImmutableStatus.ERROR.withDescription("ABORTED"))
+            .setStatus(ImmutableStatus.create(StatusCanonicalCode.ERROR, "ABORTED"))
             .build();
-    assertThat(modified.getStatus()).isEqualTo(ImmutableStatus.ERROR.withDescription("ABORTED"));
+    assertThat(modified.getStatus())
+        .isEqualTo(ImmutableStatus.create(StatusCanonicalCode.ERROR, "ABORTED"));
   }
 
   @Test
@@ -65,7 +67,7 @@ class SpanDataBuilderTest {
             SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build())
         .addEqualityGroup(
             SpanDataBuilder.newBuilder(TEST_SPAN_DATA)
-                .setStatus(ImmutableStatus.ERROR.withDescription("ABORTED"))
+                .setStatus(ImmutableStatus.create(StatusCanonicalCode.ERROR, "ABORTED"))
                 .build());
     tester.testEquals();
   }

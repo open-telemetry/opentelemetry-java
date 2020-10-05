@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
@@ -112,13 +113,17 @@ class SpanAdapterTest {
   void toProtoStatus() {
     assertThat(SpanAdapter.toStatusProto(ImmutableStatus.UNSET))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
-    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.ERROR.withDescription("ERROR")))
+    assertThat(
+            SpanAdapter.toStatusProto(ImmutableStatus.create(StatusCanonicalCode.ERROR, "ERROR")))
         .isEqualTo(
             Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("ERROR").build());
-    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.ERROR.withDescription("UNKNOWN")))
+    assertThat(
+            SpanAdapter.toStatusProto(ImmutableStatus.create(StatusCanonicalCode.ERROR, "UNKNOWN")))
         .isEqualTo(
             Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("UNKNOWN").build());
-    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.OK.withDescription("OK_OVERRIDE")))
+    assertThat(
+            SpanAdapter.toStatusProto(
+                ImmutableStatus.create(StatusCanonicalCode.OK, "OK_OVERRIDE")))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
   }
 

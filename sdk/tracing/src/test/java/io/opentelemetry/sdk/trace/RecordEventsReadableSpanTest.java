@@ -174,7 +174,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NEW_NAME,
         START_EPOCH_NANOS,
         testClock.now(),
-        ImmutableStatus.ERROR.withDescription("CANCELLED"),
+        ImmutableStatus.create(StatusCanonicalCode.ERROR, "CANCELLED"),
         /*hasEnded=*/ true);
   }
 
@@ -262,12 +262,12 @@ class RecordEventsReadableSpanTest {
       assertThat(span.toSpanData().getStatus()).isEqualTo(ImmutableStatus.UNSET);
       span.setStatus(StatusCanonicalCode.ERROR, "CANCELLED");
       assertThat(span.toSpanData().getStatus())
-          .isEqualTo(ImmutableStatus.ERROR.withDescription("CANCELLED"));
+          .isEqualTo(ImmutableStatus.create(StatusCanonicalCode.ERROR, "CANCELLED"));
     } finally {
       span.end();
     }
     assertThat(span.toSpanData().getStatus())
-        .isEqualTo(ImmutableStatus.ERROR.withDescription("CANCELLED"));
+        .isEqualTo(ImmutableStatus.create(StatusCanonicalCode.ERROR, "CANCELLED"));
   }
 
   @Test
