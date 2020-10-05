@@ -26,10 +26,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
-class OtlpPipelineDriver {
+/** A testing tool. */
+public class OtlpPipelineDriver {
 
   public static final String COLLECTOR_PROXY_PORT = "44444";
 
+  /** Shut up, checkstyle. */
   public static void main(String[] args) throws InterruptedException, IOException {
     ToxiproxyClient toxiproxyClient = new ToxiproxyClient();
     toxiproxyClient.reset();
