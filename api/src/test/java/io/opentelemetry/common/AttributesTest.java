@@ -233,7 +233,8 @@ class AttributesTest {
         Attributes.newBuilder().setAttribute("cat", "meow").setAttribute("dog", "bark").build();
 
     Attributes fromEmpty =
-        Attributes.empty().toBuilder()
+        Attributes.empty()
+            .toBuilder()
             .setAttribute("cat", "meow")
             .setAttribute("dog", "bark")
             .build();
