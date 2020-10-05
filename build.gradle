@@ -354,9 +354,19 @@ configure(opentelemetryProjects) {
         }
     }
 
-    test {
+    tasks.withType(Test) {
         systemProperties project.properties.subMap(["enable.docker.tests"])
         useJUnitPlatform()
+
+        // At a test failure, log the stack trace to the console so that we don't
+        // have to open the HTML in a browser.
+        testLogging {
+            exceptionFormat = 'full'
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+        }
+        maxHeapSize = '1500m'
     }
 
     javadoc.options {
@@ -379,18 +389,6 @@ configure(opentelemetryProjects) {
     signing {
         required false
         sign configurations.archives
-    }
-
-    // At a test failure, log the stack trace to the console so that we don't
-    // have to open the HTML in a browser.
-    test {
-        testLogging {
-            exceptionFormat = 'full'
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-        }
-        maxHeapSize = '1500m'
     }
 
     plugins.withId("ru.vyarus.animalsniffer") {
