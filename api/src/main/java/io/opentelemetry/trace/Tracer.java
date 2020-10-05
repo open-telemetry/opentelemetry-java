@@ -15,10 +15,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Users may choose to use manual or automatic Context propagation. Because of that this class
  * offers APIs to facilitate both usages.
  *
- * <p>The automatic context propagation is done using {@link io.grpc.Context} which is a gRPC
- * independent implementation for in-process Context propagation mechanism which can carry
+ * <p>The automatic context propagation is done using {@link io.opentelemetry.context.Context} which
+ * is a gRPC independent implementation for in-process Context propagation mechanism which can carry
  * scoped-values across API boundaries and between threads. Users of the library must propagate the
- * {@link io.grpc.Context} between different threads.
+ * {@link io.opentelemetry.context.Context} between different threads.
  *
  * <p>Example usage with automatic context propagation:
  *

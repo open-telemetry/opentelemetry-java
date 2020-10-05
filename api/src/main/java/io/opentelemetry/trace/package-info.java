@@ -14,9 +14,9 @@
  *
  * <p>{@link io.opentelemetry.trace.Span} represents a single operation within a trace.
  *
- * <p>{@link io.opentelemetry.trace.Span Spans} are propagated in-process in the {@code
- * io.grpc.Context} and between process using one of the wire propagation formats supported in the
- * {@code opentelemetry.trace.propagation} package.
+ * <p>{@link io.opentelemetry.trace.Span Spans} are propagated in-process in the {@link
+ * io.opentelemetry.context.Context} and between process using one of the wire propagation formats
+ * supported in the {@code opentelemetry.trace.propagation} package.
  */
 // TODO: Add code examples.
 package io.opentelemetry.trace;

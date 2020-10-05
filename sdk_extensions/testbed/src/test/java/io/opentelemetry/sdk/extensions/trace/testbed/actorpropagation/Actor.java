@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.actorpropagation;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;

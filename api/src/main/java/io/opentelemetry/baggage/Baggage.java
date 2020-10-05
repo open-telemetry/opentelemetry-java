@@ -5,7 +5,7 @@
 
 package io.opentelemetry.baggage;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;

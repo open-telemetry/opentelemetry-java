@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthan
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;

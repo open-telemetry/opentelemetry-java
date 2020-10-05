@@ -7,7 +7,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import static io.opentelemetry.extensions.trace.propagation.Common.MAX_TRACE_ID_LENGTH;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;

@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.baggage;
 
-import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
+import io.opentelemetry.context.Context;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;

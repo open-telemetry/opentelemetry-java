@@ -7,11 +7,11 @@ package io.opentelemetry.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link TracingContextUtils}. */
-public final class TracingContextUtilsTest {
+class TracingContextUtilsTest {
 
   @Test
   void testGetCurrentSpan_Default() {
@@ -22,11 +22,8 @@ public final class TracingContextUtilsTest {
   @Test
   void testGetCurrentSpan_SetSpan() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
-    Context orig = TracingContextUtils.withSpan(span, Context.current()).attach();
-    try {
+    try (Scope ignored = TracingContextUtils.withSpan(span, Context.current()).makeCurrent()) {
       assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(span);
-    } finally {
-      Context.current().detach(orig);
     }
   }
 
