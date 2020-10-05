@@ -1,5 +1,5 @@
 plugins {
-    id "com.diffplug.spotless" version "5.6.1" apply false
+    id "com.diffplug.spotless" version "5.6.1"
     id "com.jfrog.artifactory" apply false
     id "com.jfrog.bintray" version "1.8.4" apply false // Need *specific* version.
     id "net.ltgt.errorprone" apply false
@@ -304,7 +304,6 @@ configure(opentelemetryProjects) {
             googleJavaFormat("1.9")
             licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
         }
-
     }
 
     configurations {

@@ -44,11 +44,10 @@ you can add [git pre-commit hook](https://git-scm.com/docs/githooks).
 We provide an example script in `buildscripts/pre-commit` file.
 Just copy or symlink it into `.git/hooks` folder.
 
-
 ### Editorconfig 
 As additional convenience for IntelliJ Idea users, we provide `.editorconfig` file.
 Idea will automatically use it to adjust its code formatting settings.
-It does not support all required rules, so you still have to run `googleJavaFormat` from time to time.
+It does not support all required rules, so you still have to run `spotlessApply` from time to time.
 
 ### Javadoc
 

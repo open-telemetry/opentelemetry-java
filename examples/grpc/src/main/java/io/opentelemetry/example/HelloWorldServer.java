@@ -41,7 +41,8 @@ public class HelloWorldServer {
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text
-  TextMapPropagator textFormat = OpenTelemetry.getPropagators().getTextMapPropagator();;
+  TextMapPropagator textFormat = OpenTelemetry.getPropagators().getTextMapPropagator();
+  ;
 
   // Extract the Distributed Context from the gRPC metadata
   TextMapPropagator.Getter<Metadata> getter =
