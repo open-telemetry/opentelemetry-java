@@ -33,8 +33,7 @@ public class TraceConfigSystemPropertiesTest {
     System.setProperty("otel.config.max.event.attrs", "7");
     System.setProperty("otel.config.max.link.attrs", "11");
     TraceConfig traceConfig =
-        TraceConfig.getDefault()
-            .toBuilder()
+        TraceConfig.getDefault().toBuilder()
             .readEnvironmentVariables()
             .readSystemProperties()
             .build();

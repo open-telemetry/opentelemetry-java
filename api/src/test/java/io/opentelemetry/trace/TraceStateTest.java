@@ -215,8 +215,7 @@ class TraceStateTest {
   @Test
   void addAndUpdateEntry() {
     assertThat(
-            firstTraceState
-                .toBuilder()
+            firstTraceState.toBuilder()
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .set(SECOND_KEY, FIRST_VALUE) // add a new entry
                 .build()
@@ -229,8 +228,7 @@ class TraceStateTest {
   @Test
   void addSameKey() {
     assertThat(
-            EMPTY
-                .toBuilder()
+            EMPTY.toBuilder()
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .set(FIRST_KEY, FIRST_VALUE) // add a new entry
                 .build()
@@ -247,8 +245,7 @@ class TraceStateTest {
   @Test
   void addAndRemoveEntry() {
     assertThat(
-            EMPTY
-                .toBuilder()
+            EMPTY.toBuilder()
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .remove(FIRST_KEY) // add a new entry
                 .build())
