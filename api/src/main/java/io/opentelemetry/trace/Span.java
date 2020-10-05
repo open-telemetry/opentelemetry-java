@@ -202,19 +202,35 @@ public interface Span {
   void addEvent(String name, Attributes attributes, long timestamp);
 
   /**
-   * Sets the status to the {@code Span}.
+   * Sets the status for this {@link Span} without a description.
    *
-   * <p>If used, this will override the default {@code Span} status. Default status code is {@link
-   * StatusCanonicalCode#UNSET}.
+   * <p>If used, this will override the default span {@linkplain StatusCanonicalCode status code} of
+   * {@link StatusCanonicalCode#UNSET}.
    *
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
    * @param canonicalCode the {@link StatusCanonicalCode} to set.
-   * @param description the description of the {@code Status}.
    * @since 0.1.0
    */
-  // TODO: Add a setStatus overload without description.
+  default void setStatus(StatusCanonicalCode canonicalCode) {
+    setStatus(canonicalCode, null);
+  }
+
+  /**
+   * Sets the status for this {@link Span} with the provided description.
+   *
+   * <p>If used, this will override the default span {@linkplain StatusCanonicalCode status code} of
+   * {@link StatusCanonicalCode#UNSET}.
+   *
+   * <p>Only the value of the last call will be recorded, and implementations are free to ignore
+   * previous calls.
+   *
+   * @param canonicalCode the {@link StatusCanonicalCode} to set.
+   * @param description the description of the {@code Status}. If {@code null}, no description is
+   *     set.
+   * @since 0.1.0
+   */
   void setStatus(StatusCanonicalCode canonicalCode, @Nullable String description);
 
   /**

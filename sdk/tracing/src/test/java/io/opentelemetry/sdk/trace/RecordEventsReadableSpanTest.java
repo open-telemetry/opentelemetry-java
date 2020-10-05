@@ -260,6 +260,20 @@ class RecordEventsReadableSpanTest {
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
       assertThat(span.toSpanData().getStatus()).isEqualTo(ImmutableStatus.UNSET);
+      span.setStatus(StatusCanonicalCode.ERROR);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(ImmutableStatus.ERROR);
+    } finally {
+      span.end();
+    }
+    assertThat(span.toSpanData().getStatus()).isEqualTo(ImmutableStatus.ERROR);
+  }
+
+  @Test
+  void setStatusWithDescription() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
+    try {
+      testClock.advanceMillis(MILLIS_PER_SECOND);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(ImmutableStatus.UNSET);
       span.setStatus(StatusCanonicalCode.ERROR, "CANCELLED");
       assertThat(span.toSpanData().getStatus())
           .isEqualTo(ImmutableStatus.ERROR.withDescription("CANCELLED"));
