@@ -74,7 +74,7 @@ public class SpanPipelineBenchmark {
     span.setAttribute(STRING_ATTRIBUTE_KEY, "test_value");
     span.setAttribute(DOUBLE_ATTRIBUTE_KEY, 4844.44d);
     span.setAttribute(BOOLEAN_ATTRIBUTE_KEY, false);
-    span.setStatus(StatusCanonicalCode.OK, null);
+    span.setStatus(StatusCanonicalCode.OK);
 
     span.addEvent("testEvent");
     span.end();

@@ -7,7 +7,6 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -78,7 +77,10 @@ public final class DefaultSpan implements Span {
   public void addEvent(String name, Attributes attributes, long timestamp) {}
 
   @Override
-  public void setStatus(StatusCanonicalCode canonicalCode, @Nullable String description) {}
+  public void setStatus(StatusCanonicalCode canonicalCode) {}
+
+  @Override
+  public void setStatus(StatusCanonicalCode canonicalCode, String description) {}
 
   @Override
   public void recordException(Throwable exception) {}

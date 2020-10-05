@@ -81,7 +81,7 @@ public class SpanBenchmark {
   private static void doSpanWork(RecordEventsReadableSpan span) {
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
-    span.setStatus(StatusCanonicalCode.OK, null);
+    span.setStatus(StatusCanonicalCode.OK);
 
     span.addEvent("testEvent");
     span.end();
