@@ -14,28 +14,29 @@ Make sure to review the projects [license](LICENSE) and sign the
 [CNCF CLA](https://identity.linuxfoundation.org/projects/cncf). A signed CLA will be enforced by an
 automatic check once you submit a PR, but you can also sign it after opening your PR.
 
+## Checks
+
+Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
+with the `check` task.
+
+```bash
+$ ./gradlew check
+```
+
 ## Style guideline
 
 We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). 
-Our build will fail if source code is not formatted according to that style.
+Our build will fail if source code is not formatted according to that style. To fix any
+style failures the above [checks](#checks) show, automatically apply the formatting with
+
+```bash
+$ ./gradlew spotlessApply
+```
 
 To verify code style manually run the following command, 
 which uses [google-java-format](https://github.com/google/google-java-format) library:
 
-`./gradlew verifyGoogleJavaFormat`
-
-or on Windows
-
-`gradlew.bat verifyGoogleJavaFormat`
-
-Instead of fixing style inconsistencies by hand, you can run gradle task `googleJavaFormat`
-to automatically fix all found issues:
-
-`./gradlew googleJavaFormat`
-
-or on Windows
-
-`gradlew.bat googleJavaFormat`
+`./gradlew spotless`
 
 ### Pre-commit hook
 To completely delegate code style formatting to the machine, 
