@@ -28,10 +28,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.ImmutableEvent;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Arrays;
@@ -198,7 +198,7 @@ class ZipkinSpanExporterTest {
         buildStandardSpan()
             .setAttributes(attributeMap)
             .setKind(Kind.CLIENT)
-            .setStatus(Status.ERROR)
+            .setStatus(ImmutableStatus.ERROR)
             .build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
@@ -219,7 +219,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(Status.ERROR.withDescription(errorMessage))
+            .setStatus(ImmutableStatus.ERROR.withDescription(errorMessage))
             .setAttributes(attributeMap)
             .build();
 
@@ -309,7 +309,7 @@ class ZipkinSpanExporterTest {
         .setSpanId(SPAN_ID)
         .setParentSpanId(PARENT_SPAN_ID)
         .setSampled(true)
-        .setStatus(Status.OK)
+        .setStatus(ImmutableStatus.OK)
         .setKind(Kind.SERVER)
         .setHasRemoteParent(true)
         .setName("Recv.helloworld.Greeter.SayHello")

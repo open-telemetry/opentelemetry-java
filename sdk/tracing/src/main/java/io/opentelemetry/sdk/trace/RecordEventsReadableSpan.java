@@ -20,12 +20,13 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.ImmutableEvent;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
@@ -89,7 +90,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
-  private Status status = Status.UNSET;
+  private SpanData.Status status = ImmutableStatus.UNSET;
   // The end time of the span.
   @GuardedBy("lock")
   private long endEpochNanos;
@@ -381,8 +382,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void setStatus(Status status) {
-    if (status == null) {
+  public void setStatus(StatusCanonicalCode canonicalCode, @Nullable String description) {
+    if (canonicalCode == null) {
       return;
     }
     synchronized (lock) {
@@ -390,7 +391,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return;
       }
-      this.status = status;
+      // TODO: Optimize this to not always allocate a new Status object if description is null.
+      this.status = ImmutableStatus.create(canonicalCode, description);
     }
   }
 
@@ -474,7 +476,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private Status getStatusWithDefault() {
+  private SpanData.Status getStatusWithDefault() {
     synchronized (lock) {
       return status;
     }
@@ -531,13 +533,13 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   public String toString() {
     String name;
     String attributes;
-    Status status;
+    String status;
     long totalRecordedEvents;
     long endEpochNanos;
     synchronized (lock) {
       name = this.name;
       attributes = String.valueOf(this.attributes);
-      status = this.status;
+      status = String.valueOf(this.status);
       totalRecordedEvents = this.totalRecordedEvents;
       endEpochNanos = this.endEpochNanos;
     }

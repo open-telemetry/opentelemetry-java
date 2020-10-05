@@ -13,9 +13,10 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -238,5 +239,47 @@ public interface SpanData {
      * @return The total number of attributes on this event.
      */
     int getTotalAttributeCount();
+  }
+
+  /**
+   * Defines the status of a {@link Span} by providing a standard {@link StatusCanonicalCode} in
+   * conjunction with an optional descriptive message.
+   */
+  interface Status {
+    /**
+     * Returns the canonical status code.
+     *
+     * @return the canonical status code.
+     */
+    StatusCanonicalCode getCanonicalCode();
+
+    /**
+     * Returns the description of this {@code Status} for human consumption.
+     *
+     * @return the description of this {@code Status}.
+     */
+    @Nullable
+    String getDescription();
+
+    /**
+     * Returns {@code true} if this {@code Status} is UNSET, i.e., not an error.
+     *
+     * @return {@code true} if this {@code Status} is UNSET.
+     */
+    // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
+    default boolean isUnset() {
+      return StatusCanonicalCode.UNSET == getCanonicalCode();
+    }
+
+    /**
+     * Returns {@code true} if this {@code Status} is ok, i.e., status is not set, or has been
+     * overridden to be ok by an operator.
+     *
+     * @return {@code true} if this {@code Status} is OK or UNSET.
+     */
+    // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
+    default boolean isOk() {
+      return isUnset() || StatusCanonicalCode.OK == getCanonicalCode();
+    }
   }
 }

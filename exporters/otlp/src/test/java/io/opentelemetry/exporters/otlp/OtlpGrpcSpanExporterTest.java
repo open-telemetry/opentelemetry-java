@@ -11,6 +11,7 @@ import static org.awaitility.Awaitility.await;
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
+import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -22,9 +23,9 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -148,7 +149,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_Cancelled() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.CANCELLED);
+    fakeCollector.setReturnedStatus(Status.CANCELLED);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -161,7 +162,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_DeadlineExceeded() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.DEADLINE_EXCEEDED);
+    fakeCollector.setReturnedStatus(Status.DEADLINE_EXCEEDED);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -174,7 +175,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_ResourceExhausted() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.RESOURCE_EXHAUSTED);
+    fakeCollector.setReturnedStatus(Status.RESOURCE_EXHAUSTED);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -187,7 +188,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_OutOfRange() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.OUT_OF_RANGE);
+    fakeCollector.setReturnedStatus(Status.OUT_OF_RANGE);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -200,7 +201,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_Unavailable() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.UNAVAILABLE);
+    fakeCollector.setReturnedStatus(Status.UNAVAILABLE);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -213,7 +214,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_DataLoss() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.DATA_LOSS);
+    fakeCollector.setReturnedStatus(Status.DATA_LOSS);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -226,7 +227,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_PermissionDenied() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.PERMISSION_DENIED);
+    fakeCollector.setReturnedStatus(Status.PERMISSION_DENIED);
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
@@ -248,7 +249,7 @@ class OtlpGrpcSpanExporterTest {
         .setName("GET /api/endpoint")
         .setStartEpochNanos(startNs)
         .setEndEpochNanos(endNs)
-        .setStatus(Status.OK)
+        .setStatus(ImmutableStatus.OK)
         .setKind(Kind.SERVER)
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
@@ -258,7 +259,7 @@ class OtlpGrpcSpanExporterTest {
 
   private static final class FakeCollector extends TraceServiceGrpc.TraceServiceImplBase {
     private final List<ResourceSpans> receivedSpans = new ArrayList<>();
-    private io.grpc.Status returnedStatus = io.grpc.Status.OK;
+    private Status returnedStatus = Status.OK;
 
     @Override
     public void export(
@@ -281,7 +282,7 @@ class OtlpGrpcSpanExporterTest {
       return receivedSpans;
     }
 
-    void setReturnedStatus(io.grpc.Status returnedStatus) {
+    void setReturnedStatus(Status returnedStatus) {
       this.returnedStatus = returnedStatus;
     }
   }

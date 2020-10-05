@@ -13,8 +13,7 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Status.CanonicalCode;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -66,7 +65,7 @@ class TracezZPageHandlerTest {
     latencySpan.end(endOptions);
 
     Span errorSpan = tracer.spanBuilder(ERROR_SPAN).startSpan();
-    errorSpan.setStatus(CanonicalCode.ERROR.toStatus());
+    errorSpan.setStatus(StatusCanonicalCode.ERROR, null);
     errorSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
@@ -245,9 +244,9 @@ class TracezZPageHandlerTest {
     Span errorSpan2 = tracer.spanBuilder(ERROR_SPAN).startSpan();
     Span errorSpan3 = tracer.spanBuilder(ERROR_SPAN).startSpan();
     Span finishedSpan = tracer.spanBuilder(FINISHED_SPAN_ONE).startSpan();
-    errorSpan1.setStatus(Status.ERROR.withDescription("CANCELLED"));
-    errorSpan2.setStatus(Status.ERROR.withDescription("ABORTED"));
-    errorSpan3.setStatus(Status.ERROR.withDescription("DEADLINE_EXCEEDED"));
+    errorSpan1.setStatus(StatusCanonicalCode.ERROR, "CANCELLED");
+    errorSpan2.setStatus(StatusCanonicalCode.ERROR, "ABORTED");
+    errorSpan3.setStatus(StatusCanonicalCode.ERROR, "DEADLINE_EXCEEDED");
     errorSpan1.end();
     errorSpan2.end();
     errorSpan3.end();
@@ -312,8 +311,8 @@ class TracezZPageHandlerTest {
     OutputStream output = new ByteArrayOutputStream();
     Span errorSpan1 = tracer.spanBuilder(ERROR_SPAN).startSpan();
     Span errorSpan2 = tracer.spanBuilder(ERROR_SPAN).startSpan();
-    errorSpan1.setStatus(Status.ERROR.withDescription("CANCELLED"));
-    errorSpan2.setStatus(Status.ERROR.withDescription("ABORTED"));
+    errorSpan1.setStatus(StatusCanonicalCode.ERROR, "CANCELLED");
+    errorSpan2.setStatus(StatusCanonicalCode.ERROR, "ABORTED");
     errorSpan1.end();
     errorSpan2.end();
     Map<String, String> queryMap =

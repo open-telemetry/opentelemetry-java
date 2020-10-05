@@ -25,6 +25,7 @@ import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.ImmutableEvent;
 import io.opentelemetry.sdk.trace.data.ImmutableLink;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -67,7 +68,7 @@ class SpanAdapterTest {
                 .setTotalRecordedEvents(3)
                 .setLinks(Collections.singletonList(ImmutableLink.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
-                .setStatus(io.opentelemetry.trace.Status.OK)
+                .setStatus(ImmutableStatus.OK)
                 .build());
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
@@ -109,20 +110,15 @@ class SpanAdapterTest {
 
   @Test
   void toProtoStatus() {
-    assertThat(SpanAdapter.toStatusProto(io.opentelemetry.trace.Status.UNSET))
+    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.UNSET))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
-    assertThat(
-            SpanAdapter.toStatusProto(io.opentelemetry.trace.Status.ERROR.withDescription("ERROR")))
+    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.ERROR.withDescription("ERROR")))
         .isEqualTo(
             Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("ERROR").build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.ERROR.withDescription("UNKNOWN")))
+    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.ERROR.withDescription("UNKNOWN")))
         .isEqualTo(
             Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("UNKNOWN").build());
-    assertThat(
-            SpanAdapter.toStatusProto(
-                io.opentelemetry.trace.Status.OK.withDescription("OK_OVERRIDE")))
+    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.OK.withDescription("OK_OVERRIDE")))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
   }
 

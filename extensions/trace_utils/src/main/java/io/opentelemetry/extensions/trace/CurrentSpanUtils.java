@@ -7,7 +7,7 @@ package io.opentelemetry.extensions.trace;
 
 import io.grpc.Context;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 
@@ -110,7 +110,7 @@ public final class CurrentSpanUtils {
 
   private static void setErrorStatus(Span span, Throwable t) {
     span.setStatus(
-        Status.ERROR.withDescription(
-            t.getMessage() == null ? t.getClass().getSimpleName() : t.getMessage()));
+        StatusCanonicalCode.ERROR,
+        t.getMessage() == null ? t.getClass().getSimpleName() : t.getMessage());
   }
 }

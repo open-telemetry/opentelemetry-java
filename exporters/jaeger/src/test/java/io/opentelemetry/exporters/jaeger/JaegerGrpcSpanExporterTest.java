@@ -27,9 +27,9 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
@@ -86,7 +86,7 @@ class JaegerGrpcSpanExporterTest {
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.OK)
+            .setStatus(ImmutableStatus.OK)
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)

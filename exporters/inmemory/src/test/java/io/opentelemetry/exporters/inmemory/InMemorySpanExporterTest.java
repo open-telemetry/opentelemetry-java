@@ -9,11 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
@@ -94,7 +94,7 @@ class InMemorySpanExporterTest {
         .setName("span")
         .setKind(Kind.SERVER)
         .setStartEpochNanos(100_000_000_100L)
-        .setStatus(Status.OK)
+        .setStatus(ImmutableStatus.OK)
         .setEndEpochNanos(200_000_000_200L)
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
