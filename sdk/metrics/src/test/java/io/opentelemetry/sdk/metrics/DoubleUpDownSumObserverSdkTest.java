@@ -105,4 +105,53 @@ class DoubleUpDownSumObserverSdkTest {
                         Labels.of("k", "v"),
                         12.1d))));
   }
+
+  @Test
+  void collectMetrics_Observation() {
+    DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
+        testSdk
+            .doubleUpDownSumObserverBuilder("testObserver")
+            .setDescription("My own LongSumObserver")
+            .setUnit("ms")
+            .build();
+    assertThat(doubleUpDownSumObserver.observation(10.1d)).isEqualTo(doubleUpDownSumObserver);
+  }
+
+  @Test
+  void collectMetrics_WithOneObservation() {
+    DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
+        testSdk.doubleUpDownSumObserverBuilder("testObserver").build();
+    BatchObserverSdk observer =
+        testSdk.newBatchObserver(
+            "observer",
+            result ->
+                result.observe(Labels.of("k", "v"), doubleUpDownSumObserver.observation(12.1d)));
+
+    testClock.advanceNanos(SECOND_NANOS);
+    assertThat(observer.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.singletonList(
+                    DoublePoint.create(
+                        testClock.now() - SECOND_NANOS,
+                        testClock.now(),
+                        Labels.of("k", "v"),
+                        12.1d))));
+    testClock.advanceNanos(SECOND_NANOS);
+    assertThat(observer.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.singletonList(
+                    DoublePoint.create(
+                        testClock.now() - SECOND_NANOS,
+                        testClock.now(),
+                        Labels.of("k", "v"),
+                        12.1d))));
+  }
 }
