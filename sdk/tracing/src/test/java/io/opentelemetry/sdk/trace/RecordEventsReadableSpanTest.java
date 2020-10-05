@@ -689,6 +689,7 @@ class RecordEventsReadableSpanTest {
 
     // Should be no exceptions
     span.setAttribute(null, 0L);
+    span.setStatus(null);
     span.setStatus(null, null);
     span.updateName(null);
     span.addEvent(null);

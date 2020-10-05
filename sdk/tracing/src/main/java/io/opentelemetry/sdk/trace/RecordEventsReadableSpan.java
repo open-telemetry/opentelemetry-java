@@ -382,6 +382,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
+  public void setStatus(StatusCanonicalCode canonicalCode) {
+    setStatus(canonicalCode, null);
+  }
+
+  @Override
   public void setStatus(StatusCanonicalCode canonicalCode, @Nullable String description) {
     if (canonicalCode == null) {
       return;

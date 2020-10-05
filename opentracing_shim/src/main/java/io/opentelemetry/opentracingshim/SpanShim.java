@@ -67,7 +67,7 @@ final class SpanShim extends BaseShimObject implements Span {
     } else if (Tags.ERROR.getKey().equals(key)) {
       StatusCanonicalCode canonicalCode =
           Boolean.parseBoolean(value) ? StatusCanonicalCode.ERROR : StatusCanonicalCode.UNSET;
-      span.setStatus(canonicalCode, null);
+      span.setStatus(canonicalCode);
     } else {
       span.setAttribute(key, value);
     }
@@ -80,7 +80,7 @@ final class SpanShim extends BaseShimObject implements Span {
     if (Tags.ERROR.getKey().equals(key)) {
       StatusCanonicalCode canonicalCode =
           value ? StatusCanonicalCode.ERROR : StatusCanonicalCode.UNSET;
-      span.setStatus(canonicalCode, null);
+      span.setStatus(canonicalCode);
     } else {
       span.setAttribute(key, value);
     }

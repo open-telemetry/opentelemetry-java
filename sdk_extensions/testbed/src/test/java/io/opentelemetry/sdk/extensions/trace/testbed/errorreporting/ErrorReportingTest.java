@@ -42,7 +42,7 @@ public final class ErrorReportingTest {
     try (Scope ignored = tracer.withSpan(span)) {
       throw new RuntimeException("Invalid state");
     } catch (Exception e) {
-      span.setStatus(StatusCanonicalCode.ERROR, null);
+      span.setStatus(StatusCanonicalCode.ERROR);
     } finally {
       span.end();
     }
@@ -63,7 +63,7 @@ public final class ErrorReportingTest {
           try (Scope ignored = tracer.withSpan(span)) {
             throw new RuntimeException("Invalid state");
           } catch (Exception exc) {
-            span.setStatus(StatusCanonicalCode.ERROR, null);
+            span.setStatus(StatusCanonicalCode.ERROR);
           } finally {
             span.end();
           }
@@ -95,7 +95,7 @@ public final class ErrorReportingTest {
       }
     }
 
-    span.setStatus(StatusCanonicalCode.ERROR, null); // Could not fetch anything.
+    span.setStatus(StatusCanonicalCode.ERROR); // Could not fetch anything.
     span.end();
 
     assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
@@ -122,7 +122,7 @@ public final class ErrorReportingTest {
                 try {
                   throw new RuntimeException("Invalid state");
                 } catch (Exception exc) {
-                  tracer.getCurrentSpan().setStatus(StatusCanonicalCode.ERROR, null);
+                  tracer.getCurrentSpan().setStatus(StatusCanonicalCode.ERROR);
                 } finally {
                   tracer.getCurrentSpan().end();
                 }

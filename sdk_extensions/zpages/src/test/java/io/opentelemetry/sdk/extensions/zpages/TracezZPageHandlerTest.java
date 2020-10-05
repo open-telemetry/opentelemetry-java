@@ -65,7 +65,7 @@ class TracezZPageHandlerTest {
     latencySpan.end(endOptions);
 
     Span errorSpan = tracer.spanBuilder(ERROR_SPAN).startSpan();
-    errorSpan.setStatus(StatusCanonicalCode.ERROR, null);
+    errorSpan.setStatus(StatusCanonicalCode.ERROR);
     errorSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
