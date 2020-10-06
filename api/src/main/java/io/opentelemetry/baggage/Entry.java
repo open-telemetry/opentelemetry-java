@@ -8,6 +8,7 @@ package io.opentelemetry.baggage;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -24,8 +25,8 @@ public abstract class Entry {
   /**
    * Creates an {@code Entry} from the given key, value and metadata.
    *
-   * @param key the entry key.
-   * @param value the entry value.
+   * @param key           the entry key.
+   * @param value         the entry value.
    * @param entryMetadata the entry metadata.
    * @return a {@code Entry}.
    * @since 0.9.0
@@ -70,6 +71,7 @@ public abstract class Entry {
    * @return the {@code EntryMetadata}.
    * @since 0.9.0
    */
+  @Nullable
   public abstract EntryMetadata getEntryMetadata();
 
   /**
