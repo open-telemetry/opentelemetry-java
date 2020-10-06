@@ -121,11 +121,9 @@ class DoubleUpDownSumObserverSdkTest {
   void collectMetrics_WithOneObservation() {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk.doubleUpDownSumObserverBuilder("testObserver").build();
-    BatchObserverSdk observer =
-        testSdk.newBatchObserver(
-            "observer",
-            result ->
-                result.observe(Labels.of("k", "v"), doubleUpDownSumObserver.observation(12.1d)));
+    BatchObserverSdk observer = testSdk.newBatchObserver("observer");
+    observer.setFunction(
+        result -> result.observe(Labels.of("k", "v"), doubleUpDownSumObserver.observation(12.1d)));
 
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(observer.collectAll())

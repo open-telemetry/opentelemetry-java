@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.BatchObserver.BatchObserverFunction;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -105,13 +104,13 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public BatchObserverSdk newBatchObserver(String name, BatchObserverFunction function) {
+  public BatchObserverSdk newBatchObserver(String name) {
     InstrumentDescriptor descriptor =
         InstrumentDescriptor.create(
             name, "", "", InstrumentType.BATCH_OBSERVER, InstrumentValueType.BATCH_OBSERVER);
     BatchObserverSdk batchObserver =
         BatchObserverSdk.newBatchObserverSdk(
-            descriptor, this, meterProviderSharedState, meterSharedState, function);
+            descriptor, this, meterProviderSharedState, meterSharedState);
     meterSharedState.getInstrumentRegistry().register(batchObserver);
     return batchObserver;
   }

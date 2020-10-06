@@ -46,13 +46,13 @@ class BatchObserverSdkTest {
 
   @Test
   void batchObserver_nullFunction() {
-    BatchObserverSdk batchObserver = testSdk.newBatchObserver("key", null);
+    BatchObserverSdk batchObserver = testSdk.newBatchObserver("key");
     assertThat(batchObserver.collectAll()).isEqualTo(Collections.emptyList());
   }
 
   @Test
   void batchObserverCanCreateInstruments() {
-    BatchObserverSdk batchObserver = testSdk.newBatchObserver("test", result -> {});
+    BatchObserverSdk batchObserver = testSdk.newBatchObserver("test");
 
     batchObserver.longValueObserverBuilder("longValueObserver").build();
     batchObserver.longValueObserverBuilder("negativeLongValueObserver").build();
@@ -72,51 +72,52 @@ class BatchObserverSdkTest {
 
   @Test
   void batchObserverRecord() {
+    BatchObserverSdk batchObserver = testSdk.newBatchObserver("observe");
+
     LongValueObserver longValueObserver =
-        testSdk.longValueObserverBuilder("longValueObserver").build();
+        batchObserver.longValueObserverBuilder("longValueObserver").build();
     LongValueObserver negativeLongValueObserver =
-        testSdk.longValueObserverBuilder("negativeLongValueObserver").build();
+        batchObserver.longValueObserverBuilder("negativeLongValueObserver").build();
     DoubleValueObserver doubleValueObserver =
-        testSdk.doubleValueObserverBuilder("doubleValueObserver").build();
+        batchObserver.doubleValueObserverBuilder("doubleValueObserver").build();
     DoubleValueObserver negativeDoubleValueObserver =
-        testSdk.doubleValueObserverBuilder("negativeDoubleValueObserver").build();
+        batchObserver.doubleValueObserverBuilder("negativeDoubleValueObserver").build();
 
     LongUpDownSumObserver longUpDownObserver =
-        testSdk.longUpDownSumObserverBuilder("longUpDownObserver").build();
+        batchObserver.longUpDownSumObserverBuilder("longUpDownObserver").build();
     LongUpDownSumObserver negativeLongUpDownObserver =
-        testSdk.longUpDownSumObserverBuilder("negativeLongUpDownObserver").build();
+        batchObserver.longUpDownSumObserverBuilder("negativeLongUpDownObserver").build();
     DoubleUpDownSumObserver doubleUpDownObserver =
-        testSdk.doubleUpDownSumObserverBuilder("doubleUpDownObserver").build();
+        batchObserver.doubleUpDownSumObserverBuilder("doubleUpDownObserver").build();
     DoubleUpDownSumObserver negativeDoubleUpDownObserver =
-        testSdk.doubleUpDownSumObserverBuilder("negativeDoubleUpDownObserver").build();
+        batchObserver.doubleUpDownSumObserverBuilder("negativeDoubleUpDownObserver").build();
 
-    LongSumObserver longSumObserver = testSdk.longSumObserverBuilder("longSumObserver").build();
+    LongSumObserver longSumObserver =
+        batchObserver.longSumObserverBuilder("longSumObserver").build();
     LongSumObserver negativeLongSumObserver =
-        testSdk.longSumObserverBuilder("negativeLongSumObserver").build();
+        batchObserver.longSumObserverBuilder("negativeLongSumObserver").build();
     DoubleSumObserver doubleSumObserver =
-        testSdk.doubleSumObserverBuilder("doubleSumObserver").build();
+        batchObserver.doubleSumObserverBuilder("doubleSumObserver").build();
     DoubleSumObserver negativeDoubleSumObserver =
-        testSdk.doubleSumObserverBuilder("negativeDoubleSumObserver").build();
+        batchObserver.doubleSumObserverBuilder("negativeDoubleSumObserver").build();
 
-    BatchObserverSdk batchObserver =
-        testSdk.newBatchObserver(
-            "observe",
-            result -> {
-              result.observe(
-                  labelSet,
-                  longValueObserver.observation(44L),
-                  negativeLongValueObserver.observation(-44L),
-                  doubleValueObserver.observation(77.556d),
-                  negativeDoubleValueObserver.observation(-77.556d),
-                  longUpDownObserver.observation(44L),
-                  negativeLongUpDownObserver.observation(-44L),
-                  doubleUpDownObserver.observation(77.556d),
-                  negativeDoubleUpDownObserver.observation(-77.556d),
-                  longSumObserver.observation(44L),
-                  negativeLongSumObserver.observation(-44L),
-                  doubleSumObserver.observation(77.556d),
-                  negativeDoubleSumObserver.observation(-77.556d));
-            });
+    batchObserver.setFunction(
+        result -> {
+          result.observe(
+              labelSet,
+              longValueObserver.observation(44L),
+              negativeLongValueObserver.observation(-44L),
+              doubleValueObserver.observation(77.556d),
+              negativeDoubleValueObserver.observation(-77.556d),
+              longUpDownObserver.observation(44L),
+              negativeLongUpDownObserver.observation(-44L),
+              doubleUpDownObserver.observation(77.556d),
+              negativeDoubleUpDownObserver.observation(-77.556d),
+              longSumObserver.observation(44L),
+              negativeLongSumObserver.observation(-44L),
+              doubleSumObserver.observation(77.556d),
+              negativeDoubleSumObserver.observation(-77.556d));
+        });
 
     List<MetricData> output = batchObserver.collectAll();
     MetricData[] expected = new MetricData[12];
@@ -147,51 +148,52 @@ class BatchObserverSdkTest {
     final MeterSdk testSdk =
         new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
 
+    BatchObserverSdk batchObserver = testSdk.newBatchObserver("observe");
+
     LongValueObserver longValueObserver =
-        testSdk.longValueObserverBuilder("longValueObserver").build();
+        batchObserver.longValueObserverBuilder("longValueObserver").build();
     LongValueObserver negativeLongValueObserver =
-        testSdk.longValueObserverBuilder("negativeLongValueObserver").build();
+        batchObserver.longValueObserverBuilder("negativeLongValueObserver").build();
     DoubleValueObserver doubleValueObserver =
-        testSdk.doubleValueObserverBuilder("doubleValueObserver").build();
+        batchObserver.doubleValueObserverBuilder("doubleValueObserver").build();
     DoubleValueObserver negativeDoubleValueObserver =
-        testSdk.doubleValueObserverBuilder("negativeDoubleValueObserver").build();
+        batchObserver.doubleValueObserverBuilder("negativeDoubleValueObserver").build();
 
     LongUpDownSumObserver longUpDownObserver =
-        testSdk.longUpDownSumObserverBuilder("longUpDownObserver").build();
+        batchObserver.longUpDownSumObserverBuilder("longUpDownObserver").build();
     LongUpDownSumObserver negativeLongUpDownObserver =
-        testSdk.longUpDownSumObserverBuilder("negativeLongUpDownObserver").build();
+        batchObserver.longUpDownSumObserverBuilder("negativeLongUpDownObserver").build();
     DoubleUpDownSumObserver doubleUpDownObserver =
-        testSdk.doubleUpDownSumObserverBuilder("doubleUpDownObserver").build();
+        batchObserver.doubleUpDownSumObserverBuilder("doubleUpDownObserver").build();
     DoubleUpDownSumObserver negativeDoubleUpDownObserver =
-        testSdk.doubleUpDownSumObserverBuilder("negativeDoubleUpDownObserver").build();
+        batchObserver.doubleUpDownSumObserverBuilder("negativeDoubleUpDownObserver").build();
 
-    LongSumObserver longSumObserver = testSdk.longSumObserverBuilder("longSumObserver").build();
+    LongSumObserver longSumObserver =
+        batchObserver.longSumObserverBuilder("longSumObserver").build();
     LongSumObserver negativeLongSumObserver =
-        testSdk.longSumObserverBuilder("negativeLongSumObserver").build();
+        batchObserver.longSumObserverBuilder("negativeLongSumObserver").build();
     DoubleSumObserver doubleSumObserver =
-        testSdk.doubleSumObserverBuilder("doubleSumObserver").build();
+        batchObserver.doubleSumObserverBuilder("doubleSumObserver").build();
     DoubleSumObserver negativeDoubleSumObserver =
-        testSdk.doubleSumObserverBuilder("negativeDoubleSumObserver").build();
+        batchObserver.doubleSumObserverBuilder("negativeDoubleSumObserver").build();
 
-    BatchObserverSdk batchObserver =
-        testSdk.newBatchObserver(
-            "observe",
-            result -> {
-              result.observe(
-                  labelSet,
-                  longValueObserver.observation(44L),
-                  negativeLongValueObserver.observation(-44L),
-                  doubleValueObserver.observation(77.556d),
-                  negativeDoubleValueObserver.observation(-77.556d),
-                  longUpDownObserver.observation(44L),
-                  negativeLongUpDownObserver.observation(-44L),
-                  doubleUpDownObserver.observation(77.556d),
-                  negativeDoubleUpDownObserver.observation(-77.556d),
-                  longSumObserver.observation(44L),
-                  negativeLongSumObserver.observation(-44L),
-                  doubleSumObserver.observation(77.556d),
-                  negativeDoubleSumObserver.observation(-77.556d));
-            });
+    batchObserver.setFunction(
+        result -> {
+          result.observe(
+              labelSet,
+              longValueObserver.observation(44L),
+              negativeLongValueObserver.observation(-44L),
+              doubleValueObserver.observation(77.556d),
+              negativeDoubleValueObserver.observation(-77.556d),
+              longUpDownObserver.observation(44L),
+              negativeLongUpDownObserver.observation(-44L),
+              doubleUpDownObserver.observation(77.556d),
+              negativeDoubleUpDownObserver.observation(-77.556d),
+              longSumObserver.observation(44L),
+              negativeLongSumObserver.observation(-44L),
+              doubleSumObserver.observation(77.556d),
+              negativeDoubleSumObserver.observation(-77.556d));
+        });
 
     List<MetricData> output = batchObserver.collectAll();
     assertThat(output.size()).isEqualTo(12);

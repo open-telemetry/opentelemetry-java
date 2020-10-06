@@ -121,10 +121,9 @@ class LongUpDownSumObserverSdkTest {
   void collectMetrics_WithOneObservation() {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk.longUpDownSumObserverBuilder("testObserver").build();
-    BatchObserverSdk observer =
-        testSdk.newBatchObserver(
-            "observer",
-            result -> result.observe(Labels.of("k", "v"), longUpDownSumObserver.observation(12)));
+    BatchObserverSdk observer = testSdk.newBatchObserver("observer");
+    observer.setFunction(
+        result -> result.observe(Labels.of("k", "v"), longUpDownSumObserver.observation(12)));
 
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(observer.collectAll())

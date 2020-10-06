@@ -9,7 +9,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.AsynchronousInstrument.Observation;
-import io.opentelemetry.metrics.BatchObserver.BatchObserverFunction;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -131,8 +130,7 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public BatchObserver newBatchObserver(String name, BatchObserverFunction function) {
-    Objects.requireNonNull(function, "function");
+  public BatchObserver newBatchObserver(String name) {
     return NoopBatchObserver.INSTANCE;
   }
 
@@ -652,6 +650,9 @@ public final class DefaultMeter implements Meter {
     public LongValueObserver.Builder longValueObserverBuilder(String name) {
       return DefaultMeter.INSTANCE.longValueObserverBuilder(name);
     }
+
+    @Override
+    public void setFunction(BatchObserverFunction function) {}
   }
 
   /** No-op implementation of {@link BatchRecorder} interface. */

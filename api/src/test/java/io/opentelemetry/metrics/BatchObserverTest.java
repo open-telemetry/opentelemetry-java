@@ -7,18 +7,11 @@ package io.opentelemetry.metrics;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.metrics.BatchObserver.BatchObserverFunction;
 import org.junit.jupiter.api.Test;
 
 class BatchObserverTest {
   private static final Meter meter = DefaultMeter.getInstance();
-  private static final BatchObserverFunction function = result -> {};
-  private static final BatchObserver observer = meter.newBatchObserver("test", function);
-
-  @Test
-  void testNewBatchObserver_badFunction() {
-    assertThrows(NullPointerException.class, () -> meter.newBatchObserver("key", null), "function");
-  }
+  private static final BatchObserver observer = meter.newBatchObserver("test");
 
   @Test
   void preventNull_SumLong() {
@@ -51,6 +44,12 @@ class BatchObserverTest {
   void preventNull_ValueDouble() {
     assertThrows(
         NullPointerException.class, () -> observer.doubleValueObserverBuilder(null), "name");
+  }
+
+  @Test
+  void testNewBatchObserver_acceptNullFunction() {
+    BatchObserver b = meter.newBatchObserver("key");
+    b.setFunction(null);
   }
 
   @Test

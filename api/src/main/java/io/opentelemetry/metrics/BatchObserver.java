@@ -42,6 +42,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface BatchObserver extends ObserverInstruments {
 
+  void setFunction(BatchObserverFunction function);
+
   interface BatchObserverFunction {
     void observe(BatchObserverResult result);
   }

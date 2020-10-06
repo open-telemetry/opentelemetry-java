@@ -17,7 +17,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.metrics.BatchObserver;
-import io.opentelemetry.metrics.BatchObserver.BatchObserverFunction;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;
@@ -375,7 +374,7 @@ class OpenTelemetryTest {
     }
 
     @Override
-    public BatchObserver newBatchObserver(String name, BatchObserverFunction function) {
+    public BatchObserver newBatchObserver(String name) {
       return null;
     }
 

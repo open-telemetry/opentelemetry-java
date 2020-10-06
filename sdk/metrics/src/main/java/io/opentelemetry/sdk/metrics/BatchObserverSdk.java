@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 final class BatchObserverSdk extends AbstractInstrument implements BatchObserver {
 
   private final MeterSdk meter;
-  private final BatchObserverFunction function;
+  private BatchObserverFunction function;
   private final BatchObserverBatcher batcher;
   private final ReentrantLock collectLock = new ReentrantLock();
 
@@ -41,11 +41,14 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       MeterSdk meterSdk,
-      BatchObserverBatcher batcher,
-      BatchObserverFunction function) {
+      BatchObserverBatcher batcher) {
     super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
     this.meter = meterSdk;
     this.batcher = batcher;
+  }
+
+  @Override
+  public void setFunction(BatchObserverFunction function) {
     this.function = function;
   }
 
@@ -112,8 +115,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
       InstrumentDescriptor descriptor,
       MeterSdk meterSdk,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      BatchObserverFunction function) {
+      MeterSharedState meterSharedState) {
 
     BatchObserverBatcher batcher =
         new BatchObserverBatcher(
@@ -122,7 +124,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
             NoopAggregator.getFactory(),
             meterProviderSharedState.getClock());
     return new BatchObserverSdk(
-        descriptor, meterProviderSharedState, meterSharedState, meterSdk, batcher, function);
+        descriptor, meterProviderSharedState, meterSharedState, meterSdk, batcher);
   }
 
   /** Internal batcher used by the {@link BatchObserver}. */

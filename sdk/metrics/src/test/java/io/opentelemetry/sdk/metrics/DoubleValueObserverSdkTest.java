@@ -128,10 +128,9 @@ class DoubleValueObserverSdkTest {
   void collectMetrics_WithOneObservation() {
     DoubleValueObserverSdk doubleValueObserver =
         testSdk.doubleValueObserverBuilder("testObserver").build();
-    BatchObserverSdk observer =
-        testSdk.newBatchObserver(
-            "observer",
-            result -> result.observe(Labels.of("k", "v"), doubleValueObserver.observation(12.1d)));
+    BatchObserverSdk observer = testSdk.newBatchObserver("observer");
+    observer.setFunction(
+        result -> result.observe(Labels.of("k", "v"), doubleValueObserver.observation(12.1d)));
 
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(observer.collectAll())
