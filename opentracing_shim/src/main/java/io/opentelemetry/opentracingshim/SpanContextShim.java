@@ -14,8 +14,6 @@ import java.util.Map;
 
 final class SpanContextShim extends BaseShimObject implements SpanContext {
 
-  static final EntryMetadata DEFAULT_ENTRY_METADATA = EntryMetadata.create("testmetadata");
-
   private final io.opentelemetry.trace.SpanContext context;
   private final Baggage distContext;
 
@@ -41,7 +39,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   SpanContextShim newWithKeyValue(String key, String value) {
     Baggage.Builder builder = contextManager().baggageBuilder().setParent(distContext);
-    builder.put(key, value, DEFAULT_ENTRY_METADATA);
+    builder.put(key, value, EntryMetadata.EMPTY);
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());
   }
