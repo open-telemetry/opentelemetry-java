@@ -251,7 +251,6 @@ class CompletableResultCodeTest {
             });
     thread.start();
     thread.interrupt();
-    assertThat(thread.isInterrupted()).isTrue();
     // Different thread so wait a bit for result to be propagated.
     await().untilAsserted(() -> assertThat(result.isDone()).isTrue());
     assertThat(result.isSuccess()).isFalse();
