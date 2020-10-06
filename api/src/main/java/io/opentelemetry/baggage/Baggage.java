@@ -5,7 +5,6 @@
 
 package io.opentelemetry.baggage;
 
-import io.grpc.Context;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -46,55 +45,6 @@ public interface Baggage {
    * @since 0.9.0
    */
   interface Builder {
-    /**
-     * Sets the parent {@link Baggage} to use. If no parent is provided, the value of {@link
-     * BaggageManager#getCurrentBaggage()} at {@link #build()} time will be used as parent, unless
-     * {@link #setNoParent()} was called.
-     *
-     * <p>This <b>must</b> be used to create a {@link Baggage} when manual Context propagation is
-     * used.
-     *
-     * <p>If called multiple times, only the last specified value will be used.
-     *
-     * @param parent the {@link Baggage} used as parent, not null.
-     * @return this.
-     * @throws NullPointerException if {@code parent} is {@code null}.
-     * @see #setNoParent()
-     * @since 0.9.0
-     */
-    Builder setParent(Baggage parent);
-
-    /**
-     * Sets the parent {@link Baggage} to use from the specified {@code Context}. If no parent
-     * {@link Baggage} is provided, the value of {@link BaggageManager#getCurrentBaggage()} at
-     * {@link #build()} time will be used as parent, unless {@link #setNoParent()} was called.
-     *
-     * <p>If no parent {@link Baggage} is available in the specified {@code Context}, the resulting
-     * {@link Baggage} will become a root instance, as if {@link #setNoParent()} had been called.
-     *
-     * <p>This <b>must</b> be used to create a {@link Baggage} when manual Context propagation is
-     * used.
-     *
-     * <p>If called multiple times, only the last specified value will be used.
-     *
-     * @param context the {@code Context}.
-     * @return this.
-     * @throws NullPointerException if {@code context} is {@code null}.
-     * @see #setNoParent()
-     * @since 0.9.0
-     */
-    Builder setParent(Context context);
-
-    /**
-     * Sets the option to become a root {@link Baggage} with no parent. If <b>not</b> called, the
-     * value provided using {@link #setParent(Baggage)} or otherwise {@link
-     * BaggageManager#getCurrentBaggage()} at {@link #build()} time will be used as parent.
-     *
-     * @return this.
-     * @since 0.9.0
-     */
-    Builder setNoParent();
-
     /**
      * Adds the key/value pair and metadata regardless of whether the key is present.
      *

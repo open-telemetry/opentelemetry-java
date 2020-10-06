@@ -5,16 +5,13 @@
 
 package io.opentelemetry.sdk.baggage;
 
-import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -27,49 +24,27 @@ class BaggageSdk implements Baggage {
 
   // The types of the EntryKey and Entry must match for each entry.
   private final Map<String, Entry> entries;
-  @Nullable private final Baggage parent;
 
   /**
    * Creates a new {@link BaggageSdk} with the given entries.
    *
    * @param entries the initial entries for this {@code BaggageSdk}.
-   * @param parent providing a default set of entries
    */
-  private BaggageSdk(Map<String, ? extends Entry> entries, Baggage parent) {
+  private BaggageSdk(Map<String, ? extends Entry> entries) {
     this.entries =
         Collections.unmodifiableMap(new HashMap<>(Objects.requireNonNull(entries, "entries")));
-    this.parent = parent;
   }
 
   @Override
   public Collection<Entry> getEntries() {
-    Map<String, Entry> combined = new HashMap<>(entries);
-    if (parent != null) {
-      for (Entry entry : parent.getEntries()) {
-        if (!combined.containsKey(entry.getKey())) {
-          combined.put(entry.getKey(), entry);
-        }
-      }
-    }
-    // Clean out any null values that may have been added by Builder.remove.
-    for (Iterator<Entry> it = combined.values().iterator(); it.hasNext(); ) {
-      if (it.next() == null) {
-        it.remove();
-      }
-    }
-
-    return Collections.unmodifiableCollection(combined.values());
+    return Collections.unmodifiableCollection(entries.values());
   }
 
   @Nullable
   @Override
   public String getEntryValue(String entryKey) {
     Entry entry = entries.get(entryKey);
-    if (entry != null) {
-      return entry.getValue();
-    } else {
-      return parent == null ? null : parent.getEntryValue(entryKey);
-    }
+    return entry != null ? entry.getValue() : null;
   }
 
   @Override
@@ -77,55 +52,27 @@ class BaggageSdk implements Baggage {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof BaggageSdk)) {
+    if (!(o instanceof BaggageSdk)) {
       return false;
     }
-
-    BaggageSdk distContextSdk = (BaggageSdk) o;
-
-    if (!entries.equals(distContextSdk.entries)) {
-      return false;
-    }
-    return parent != null ? parent.equals(distContextSdk.parent) : distContextSdk.parent == null;
+    BaggageSdk that = (BaggageSdk) o;
+    return Objects.equals(entries, that.entries);
   }
 
   @Override
   public int hashCode() {
-    int result = entries.hashCode();
-    result = 31 * result + (parent != null ? parent.hashCode() : 0);
-    return result;
+    return Objects.hash(entries);
   }
 
   // TODO: Migrate to AutoValue.Builder
   // @AutoValue.Builder
   static class Builder implements Baggage.Builder {
-    @Nullable private Baggage parent;
-    private boolean noImplicitParent;
+
     private final Map<String, Entry> entries;
 
     /** Create a new empty Baggage builder. */
     Builder() {
       this.entries = new HashMap<>();
-    }
-
-    @Override
-    public Baggage.Builder setParent(Baggage parent) {
-      this.parent = Objects.requireNonNull(parent, "parent");
-      return this;
-    }
-
-    @Override
-    public Baggage.Builder setParent(Context context) {
-      Objects.requireNonNull(context, "context");
-      setParent(BaggageUtils.getBaggage(context));
-      return this;
-    }
-
-    @Override
-    public Baggage.Builder setNoParent() {
-      this.parent = null;
-      noImplicitParent = true;
-      return this;
     }
 
     @Override
@@ -142,18 +89,22 @@ class BaggageSdk implements Baggage {
     @Override
     public Baggage.Builder remove(String key) {
       entries.remove(Objects.requireNonNull(key, "key"));
-      if (parent != null && parent.getEntryValue(key) != null) {
-        entries.put(key, null);
-      }
       return this;
     }
 
     @Override
     public BaggageSdk build() {
-      if (parent == null && !noImplicitParent) {
-        parent = OpenTelemetry.getBaggageManager().getCurrentBaggage();
-      }
-      return new BaggageSdk(entries, parent);
+      // todo: is this implicit parenting part of the baggage spec?
+      Baggage parent = OpenTelemetry.getBaggageManager().getCurrentBaggage();
+      parent
+          .getEntries()
+          .forEach(
+              entry -> {
+                if (!entries.containsKey(entry.getKey())) {
+                  put(entry.getKey(), entry.getValue(), entry.getEntryMetadata());
+                }
+              });
+      return new BaggageSdk(entries);
     }
   }
 }

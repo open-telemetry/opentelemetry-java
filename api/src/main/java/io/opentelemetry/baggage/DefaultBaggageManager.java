@@ -5,7 +5,6 @@
 
 package io.opentelemetry.baggage;
 
-import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
@@ -42,29 +41,12 @@ public final class DefaultBaggageManager implements BaggageManager {
   }
 
   @Override
-  public Scope withContext(Baggage distContext) {
-    return BaggageUtils.currentContextWith(distContext);
+  public Scope withBaggage(Baggage baggage) {
+    return BaggageUtils.currentContextWith(baggage);
   }
 
   @Immutable
   private static final class NoopBaggageBuilder implements Baggage.Builder {
-    @Override
-    public Baggage.Builder setParent(Baggage parent) {
-      Objects.requireNonNull(parent, "parent");
-      return this;
-    }
-
-    @Override
-    public Baggage.Builder setParent(Context context) {
-      Objects.requireNonNull(context, "context");
-      return this;
-    }
-
-    @Override
-    public Baggage.Builder setNoParent() {
-      return this;
-    }
-
     @Override
     public Baggage.Builder put(String key, String value, EntryMetadata entryMetadata) {
       Objects.requireNonNull(key, "key");

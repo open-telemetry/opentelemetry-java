@@ -15,6 +15,7 @@ import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class DefaultBaggageManagerTest {
+
   private static final BaggageManager DEFAULT_BAGGAGE_MANAGER = DefaultBaggageManager.getInstance();
   private static final String KEY = "key";
   private static final String VALUE = "value";
@@ -59,7 +60,7 @@ class DefaultBaggageManagerTest {
   @Test
   void withContext() {
     assertThat(DEFAULT_BAGGAGE_MANAGER.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
-    try (Scope wtm = DEFAULT_BAGGAGE_MANAGER.withContext(DIST_CONTEXT)) {
+    try (Scope wtm = DEFAULT_BAGGAGE_MANAGER.withBaggage(DIST_CONTEXT)) {
       assertThat(DEFAULT_BAGGAGE_MANAGER.getCurrentBaggage()).isSameAs(DIST_CONTEXT);
     }
     assertThat(DEFAULT_BAGGAGE_MANAGER.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
@@ -68,7 +69,7 @@ class DefaultBaggageManagerTest {
   @Test
   void withContext_nullContext() {
     assertThat(DEFAULT_BAGGAGE_MANAGER.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
-    try (Scope wtm = DEFAULT_BAGGAGE_MANAGER.withContext(null)) {
+    try (Scope wtm = DEFAULT_BAGGAGE_MANAGER.withBaggage(null)) {
       assertThat(DEFAULT_BAGGAGE_MANAGER.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
     }
     assertThat(DEFAULT_BAGGAGE_MANAGER.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
@@ -77,7 +78,7 @@ class DefaultBaggageManagerTest {
   @Test
   void withContextUsingWrap() {
     Runnable runnable;
-    try (Scope wtm = DEFAULT_BAGGAGE_MANAGER.withContext(DIST_CONTEXT)) {
+    try (Scope wtm = DEFAULT_BAGGAGE_MANAGER.withBaggage(DIST_CONTEXT)) {
       assertThat(DEFAULT_BAGGAGE_MANAGER.getCurrentBaggage()).isSameAs(DIST_CONTEXT);
       runnable =
           Context.current()
@@ -89,25 +90,6 @@ class DefaultBaggageManagerTest {
     assertThat(DEFAULT_BAGGAGE_MANAGER.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
     // When we run the runnable we will have the Baggage in the current Context.
     runnable.run();
-  }
-
-  @Test
-  void noopContextBuilder_SetParent_DisallowsNullParent() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
-    assertThrows(NullPointerException.class, () -> noopBuilder.setParent((Baggage) null));
-  }
-
-  @Test
-  void noopContextBuilder_SetParent_DisallowsNullContext() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
-    assertThrows(NullPointerException.class, () -> noopBuilder.setParent((Context) null));
-    ;
-  }
-
-  @Test
-  void noopContextBuilder_SetParent_fromContext() {
-    Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
-    noopBuilder.setParent(Context.current()); // No error.
   }
 
   @Test

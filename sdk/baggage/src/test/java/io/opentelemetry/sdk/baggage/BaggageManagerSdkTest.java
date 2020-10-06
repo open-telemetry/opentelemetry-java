@@ -50,7 +50,7 @@ class BaggageManagerSdkTest {
   @Test
   void testWithBaggage() {
     assertThat(contextManager.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
-    try (Scope wtm = contextManager.withContext(distContext)) {
+    try (Scope wtm = contextManager.withBaggage(distContext)) {
       assertThat(contextManager.getCurrentBaggage()).isSameAs(distContext);
     }
     assertThat(contextManager.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
@@ -59,7 +59,7 @@ class BaggageManagerSdkTest {
   @Test
   void testWithBaggageUsingWrap() {
     Runnable runnable;
-    try (Scope wtm = contextManager.withContext(distContext)) {
+    try (Scope wtm = contextManager.withBaggage(distContext)) {
       assertThat(contextManager.getCurrentBaggage()).isSameAs(distContext);
       runnable =
           Context.current()
