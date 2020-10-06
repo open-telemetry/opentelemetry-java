@@ -25,8 +25,8 @@ public abstract class Entry {
   /**
    * Creates an {@code Entry} from the given key, value and metadata.
    *
-   * @param key           the entry key.
-   * @param value         the entry value.
+   * @param key the entry key.
+   * @param value the entry value.
    * @param entryMetadata the entry metadata.
    * @return a {@code Entry}.
    * @since 0.9.0
@@ -40,8 +40,8 @@ public abstract class Entry {
   /**
    * Creates an {@code Entry} from the given key, value, with no metadata.
    *
-   * @param key           the entry key.
-   * @param value         the entry value.
+   * @param key the entry key.
+   * @param value the entry value.
    * @return a {@code Entry}.
    * @since 0.9.0
    */
