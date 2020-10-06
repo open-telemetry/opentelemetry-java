@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.StatusCanonicalCode;
 import org.junit.jupiter.api.Test;
 
@@ -16,12 +17,12 @@ class ImmutableStatusTest {
   void defaultConstants() {
     StatusCanonicalCode[] codes = StatusCanonicalCode.values();
     assertThat(codes).hasSize(3);
-    assertThat(ImmutableStatus.UNSET.getCanonicalCode()).isEqualTo(StatusCanonicalCode.UNSET);
-    assertThat(ImmutableStatus.UNSET.getDescription()).isNull();
-    assertThat(ImmutableStatus.OK.getCanonicalCode()).isEqualTo(StatusCanonicalCode.OK);
-    assertThat(ImmutableStatus.OK.getDescription()).isNull();
-    assertThat(ImmutableStatus.ERROR.getCanonicalCode()).isEqualTo(StatusCanonicalCode.ERROR);
-    assertThat(ImmutableStatus.ERROR.getDescription()).isNull();
+    assertThat(Status.unset().getCanonicalCode()).isEqualTo(StatusCanonicalCode.UNSET);
+    assertThat(Status.unset().getDescription()).isNull();
+    assertThat(Status.ok().getCanonicalCode()).isEqualTo(StatusCanonicalCode.OK);
+    assertThat(Status.ok().getDescription()).isNull();
+    assertThat(Status.error().getCanonicalCode()).isEqualTo(StatusCanonicalCode.ERROR);
+    assertThat(Status.error().getDescription()).isNull();
   }
 
   @Test

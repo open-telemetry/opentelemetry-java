@@ -22,27 +22,27 @@ import javax.annotation.concurrent.Immutable;
  */
 @AutoValue
 @Immutable
-public abstract class ImmutableStatus implements SpanData.Status {
+abstract class ImmutableStatus implements SpanData.Status {
   /**
    * The operation has been validated by an Application developers or Operator to have completed
    * successfully.
    */
-  public static final SpanData.Status OK = createInternal(StatusCanonicalCode.OK, null);
+  static final SpanData.Status OK = createInternal(StatusCanonicalCode.OK, null);
 
   /** The default status. */
-  public static final SpanData.Status UNSET = createInternal(StatusCanonicalCode.UNSET, null);
+  static final SpanData.Status UNSET = createInternal(StatusCanonicalCode.UNSET, null);
 
   /** The operation contains an error. */
-  public static final SpanData.Status ERROR = createInternal(StatusCanonicalCode.ERROR, null);
+  static final SpanData.Status ERROR = createInternal(StatusCanonicalCode.ERROR, null);
 
   // Visible for test
   static final EnumMap<StatusCanonicalCode, Status> codeToStatus =
       new EnumMap<>(StatusCanonicalCode.class);
 
   static {
-    codeToStatus.put(StatusCanonicalCode.UNSET, UNSET);
-    codeToStatus.put(StatusCanonicalCode.OK, OK);
-    codeToStatus.put(StatusCanonicalCode.ERROR, ERROR);
+    codeToStatus.put(StatusCanonicalCode.UNSET, Status.unset());
+    codeToStatus.put(StatusCanonicalCode.OK, Status.ok());
+    codeToStatus.put(StatusCanonicalCode.ERROR, Status.error());
 
     // Ensure all values are in the map, even if we don't have constants defined.
     // This can happen if the API version is newer than the SDK and new values were added there.

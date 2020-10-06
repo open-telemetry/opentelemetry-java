@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
@@ -73,7 +72,7 @@ public class MultiSpanExporterBenchmark {
               .setName("noop")
               .setKind(Span.Kind.CLIENT)
               .setStartEpochNanos(1)
-              .setStatus(ImmutableStatus.OK)
+              .setStatus(SpanData.Status.ok())
               .setEndEpochNanos(2)
               .setHasEnded(true)
               .build();
