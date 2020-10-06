@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Test;
  * <p>Tests for scope management with {@link BaggageManagerSdk} are in {@link ScopedBaggageTest}.
  */
 class BaggageSdkTest {
+
   private final BaggageManager contextManager = new BaggageManagerSdk();
 
-  private static final EntryMetadata TMD =
-      EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
+  private static final EntryMetadata TMD = EntryMetadata.create("tmd");
 
   private static final String K1 = "k1";
   private static final String K2 = "k2";

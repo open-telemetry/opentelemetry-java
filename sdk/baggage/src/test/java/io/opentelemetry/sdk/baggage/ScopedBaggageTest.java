@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
  * interact with the current {@link BaggageSdk}.
  */
 class ScopedBaggageTest {
+
   private static final String KEY_1 = "key 1";
   private static final String KEY_2 = "key 2";
   private static final String KEY_3 = "key 3";
@@ -30,9 +31,8 @@ class ScopedBaggageTest {
   private static final String VALUE_4 = "value 4";
 
   private static final EntryMetadata METADATA_UNLIMITED_PROPAGATION =
-      EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
-  private static final EntryMetadata METADATA_NO_PROPAGATION =
-      EntryMetadata.create(EntryMetadata.EntryTtl.NO_PROPAGATION);
+      EntryMetadata.create("unlimited");
+  private static final EntryMetadata METADATA_NO_PROPAGATION = EntryMetadata.create("noprop");
 
   private final BaggageManager contextManager = new BaggageManagerSdk();
 
