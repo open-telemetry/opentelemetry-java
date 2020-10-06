@@ -17,7 +17,7 @@ import io.opentelemetry.common.Attributes;
  * specifications.
  *
  * @see <a
- *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md">Semantic
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/trace/semantic_conventions">Semantic
  *     Conventions</a>
  */
 public final class SemanticAttributes {
