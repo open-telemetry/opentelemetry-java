@@ -18,14 +18,14 @@ class DefaultBaggageManagerTest {
   private static final BaggageManager DEFAULT_BAGGAGE_MANAGER = DefaultBaggageManager.getInstance();
   private static final String KEY = "key";
   private static final String VALUE = "value";
+  private static final EntryMetadata SAMPLE_METADATA = EntryMetadata.create("sample");
 
   private static final Baggage DIST_CONTEXT =
       new Baggage() {
 
         @Override
         public Collection<Entry> getEntries() {
-          return Collections.singletonList(
-              Entry.create(KEY, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
+          return Collections.singletonList(Entry.create(KEY, VALUE, SAMPLE_METADATA));
         }
 
         @Override
@@ -113,17 +113,13 @@ class DefaultBaggageManagerTest {
   @Test
   void noopContextBuilder_Put_DisallowsNullKey() {
     Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
-    assertThrows(
-        NullPointerException.class,
-        () -> noopBuilder.put(null, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
+    assertThrows(NullPointerException.class, () -> noopBuilder.put(null, VALUE, SAMPLE_METADATA));
   }
 
   @Test
   void noopContextBuilder_Put_DisallowsNullValue() {
     Baggage.Builder noopBuilder = DEFAULT_BAGGAGE_MANAGER.baggageBuilder();
-    assertThrows(
-        NullPointerException.class,
-        () -> noopBuilder.put(KEY, null, Entry.METADATA_UNLIMITED_PROPAGATION));
+    assertThrows(NullPointerException.class, () -> noopBuilder.put(KEY, null, SAMPLE_METADATA));
   }
 
   @Test
