@@ -16,11 +16,11 @@ import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BatchLogProcessorTest {
+class BatchLogProcessorTest {
   @Test
-  public void testBuilder() {
+  void testBuilder() {
     Properties props = new Properties();
     long delay = 1234L;
     int queue = 2345;
@@ -54,7 +54,7 @@ public class BatchLogProcessorTest {
   }
 
   @Test
-  public void testForceExport() {
+  void testForceExport() {
     int batchSize = 10;
     int testRecordsToSend = 17; // greater than, but not a multiple of batch
     TestLogExporter exporter = new TestLogExporter();
@@ -70,7 +70,7 @@ public class BatchLogProcessorTest {
     }
     await().until(() -> exporter.getCallCount() > 0);
     assertThat(exporter.getRecords().size()).isEqualTo(batchSize);
-    processor.forceFlush().join(500, TimeUnit.MILLISECONDS);
+    processor.forceFlush().join(1, TimeUnit.SECONDS);
     assertThat(exporter.getRecords().size()).isEqualTo(testRecordsToSend);
   }
 }
