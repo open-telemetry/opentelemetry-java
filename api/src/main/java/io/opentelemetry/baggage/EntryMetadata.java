@@ -33,9 +33,9 @@ public abstract class EntryMetadata {
   }
 
   /**
-   * Returns the {@link EntryTtl} of this {@link EntryMetadata}.
+   * Returns the String value of this {@link EntryMetadata}.
    *
-   * @return the {@code EntryTtl}.
+   * @return the raw metadata value.
    * @since 0.9.0
    */
   public abstract String getValue();
