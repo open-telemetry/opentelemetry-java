@@ -41,7 +41,6 @@ subprojects {
 
                     pom {
                         name = 'OpenTelemetry Java'
-                        packaging = 'jar'
                         url = 'https://github.com/open-telemetry/opentelemetry-java'
 
                         licenses {
