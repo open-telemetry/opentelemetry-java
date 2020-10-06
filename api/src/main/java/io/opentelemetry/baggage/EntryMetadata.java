@@ -17,7 +17,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class EntryMetadata {
-  public static EntryMetadata EMPTY = create("");
+  public static final EntryMetadata EMPTY = create("");
 
   EntryMetadata() {}
 
