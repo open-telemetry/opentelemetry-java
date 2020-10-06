@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
-import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
@@ -38,7 +38,7 @@ class SamplersTest {
   private final SpanContext notSampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
   private final SpanContext invalidSpanContext = SpanContext.getInvalid();
-  private final ImmutableLink sampledParentLink = ImmutableLink.create(sampledSpanContext);
+  private final Link sampledParentLink = Link.create(sampledSpanContext);
   private final SpanContext sampledRemoteSpanContext =
       SpanContext.createFromRemoteParent(
           traceId, parentSpanId, TraceFlags.getSampled(), traceState);

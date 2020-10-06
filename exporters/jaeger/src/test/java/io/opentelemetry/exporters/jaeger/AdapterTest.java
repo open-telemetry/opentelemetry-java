@@ -24,11 +24,10 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.ImmutableEvent;
-import io.opentelemetry.sdk.trace.data.ImmutableLink;
-import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
@@ -123,7 +122,7 @@ class AdapterTest {
   @Test
   void testJaegerLog() {
     // prepare
-    ImmutableEvent event = getTimedEvent();
+    Event event = getTimedEvent();
 
     // test
     Model.Log log = Adapter.toJaegerLog(event);
@@ -182,9 +181,8 @@ class AdapterTest {
   @Test
   void testSpanRefs() {
     // prepare
-    ImmutableLink link =
-        ImmutableLink.create(
-            createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+    Link link =
+        Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -196,7 +194,7 @@ class AdapterTest {
   @Test
   void testSpanRef() {
     // prepare
-    ImmutableLink link = ImmutableLink.create(createSpanContext(TRACE_ID, SPAN_ID));
+    Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
@@ -220,7 +218,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(ImmutableStatus.ERROR)
+            .setStatus(Status.error())
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
             .build();
@@ -247,7 +245,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(ImmutableStatus.ERROR)
+            .setStatus(Status.error())
             .setAttributes(attributes)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
@@ -262,17 +260,16 @@ class AdapterTest {
     assertTrue(error.getVBool());
   }
 
-  private static ImmutableEvent getTimedEvent() {
+  private static Event getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     Attributes attributes = Attributes.of(stringKey("foo"), "bar");
-    return ImmutableEvent.create(epochNanos, "the log message", attributes);
+    return Event.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
-    ImmutableLink link =
-        ImmutableLink.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return TestSpanData.newBuilder()
         .setHasEnded(true)
@@ -289,7 +286,7 @@ class AdapterTest {
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Attributes.empty()))
-        .setStatus(ImmutableStatus.OK)
+        .setStatus(Status.ok())
         .build();
   }
 

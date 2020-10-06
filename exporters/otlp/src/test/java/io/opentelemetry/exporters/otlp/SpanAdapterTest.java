@@ -23,9 +23,9 @@ import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.ImmutableEvent;
-import io.opentelemetry.sdk.trace.data.ImmutableLink;
-import io.opentelemetry.sdk.trace.data.ImmutableStatus;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -64,12 +64,11 @@ class SpanAdapterTest {
                 .setAttributes(Attributes.of(booleanKey("key"), true))
                 .setTotalAttributeCount(2)
                 .setEvents(
-                    Collections.singletonList(
-                        ImmutableEvent.create(12347, "my_event", Attributes.empty())))
+                    Collections.singletonList(Event.create(12347, "my_event", Attributes.empty())))
                 .setTotalRecordedEvents(3)
-                .setLinks(Collections.singletonList(ImmutableLink.create(SPAN_CONTEXT)))
+                .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
-                .setStatus(ImmutableStatus.OK)
+                .setStatus(SpanData.Status.ok())
                 .build());
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
@@ -111,19 +110,19 @@ class SpanAdapterTest {
 
   @Test
   void toProtoStatus() {
-    assertThat(SpanAdapter.toStatusProto(ImmutableStatus.UNSET))
+    assertThat(SpanAdapter.toStatusProto(SpanData.Status.unset()))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
     assertThat(
-            SpanAdapter.toStatusProto(ImmutableStatus.create(StatusCanonicalCode.ERROR, "ERROR")))
+            SpanAdapter.toStatusProto(SpanData.Status.create(StatusCanonicalCode.ERROR, "ERROR")))
         .isEqualTo(
             Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("ERROR").build());
     assertThat(
-            SpanAdapter.toStatusProto(ImmutableStatus.create(StatusCanonicalCode.ERROR, "UNKNOWN")))
+            SpanAdapter.toStatusProto(SpanData.Status.create(StatusCanonicalCode.ERROR, "UNKNOWN")))
         .isEqualTo(
             Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("UNKNOWN").build());
     assertThat(
             SpanAdapter.toStatusProto(
-                ImmutableStatus.create(StatusCanonicalCode.OK, "OK_OVERRIDE")))
+                SpanData.Status.create(StatusCanonicalCode.OK, "OK_OVERRIDE")))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
   }
 
@@ -131,7 +130,7 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                ImmutableEvent.create(12345, "test_without_attributes", Attributes.empty())))
+                Event.create(12345, "test_without_attributes", Attributes.empty())))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -143,7 +142,7 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                ImmutableEvent.create(
+                Event.create(
                     12345,
                     "test_with_attributes",
                     Attributes.of(stringKey("key_string"), "string"),
@@ -163,7 +162,7 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(ImmutableLink.create(SPAN_CONTEXT)))
+    assertThat(SpanAdapter.toProtoSpanLink(Link.create(SPAN_CONTEXT)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -175,8 +174,7 @@ class SpanAdapterTest {
   void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
-                ImmutableLink.create(
-                    SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
+                Link.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
