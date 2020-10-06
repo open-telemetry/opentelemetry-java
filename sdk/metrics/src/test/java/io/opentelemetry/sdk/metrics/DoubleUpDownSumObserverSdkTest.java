@@ -131,9 +131,12 @@ class DoubleUpDownSumObserverSdkTest {
     assertThat(observer.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "",
+                "1",
+                MetricData.Type.NON_MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -144,9 +147,12 @@ class DoubleUpDownSumObserverSdkTest {
     assertThat(observer.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "",
+                "1",
+                MetricData.Type.NON_MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,

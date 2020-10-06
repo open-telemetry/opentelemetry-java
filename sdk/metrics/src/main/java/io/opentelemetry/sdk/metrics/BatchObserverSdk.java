@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.metrics;
@@ -31,8 +20,8 @@ import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -115,7 +104,7 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
   interface SdkObservation extends Observation {
     Aggregator record();
 
-    Descriptor getObservationDescriptor();
+    InstrumentDescriptor getObservationDescriptor();
   }
 
   /** Creates a new instance of the {@link BatchObserverSdk}. */
@@ -169,11 +158,6 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     }
 
     @Override
-    public Descriptor getDescriptor() {
-      return null;
-    }
-
-    @Override
     public final void batch(Labels labelSet, Aggregator aggregator, boolean unmappedAggregator) {}
 
     private void batch(SdkObservation observation) {
@@ -186,12 +170,16 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
       long epochNanos = clock.now();
       for (Report report : reportList) {
         Point point = report.getAggregator().toPoint(startEpochNanos, epochNanos, this.labels);
+        InstrumentDescriptor descriptor = report.getDescriptor();
         if (point != null) {
           points.add(
               MetricData.create(
-                  report.getDescriptor(),
                   resource,
                   instrumentationLibraryInfo,
+                  descriptor.getName(),
+                  descriptor.getDescription(),
+                  descriptor.getUnit(),
+                  getRegisteredAggregation(descriptor),
                   Collections.singletonList(point)));
         }
       }
@@ -201,15 +189,15 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
     }
 
     private static class Report {
-      private final Descriptor descriptor;
+      private final InstrumentDescriptor descriptor;
       private final Aggregator aggregator;
 
-      Report(Descriptor descriptor, Aggregator aggregator) {
-        this.aggregator = aggregator;
+      Report(InstrumentDescriptor descriptor, Aggregator aggregator) {
         this.descriptor = descriptor;
+        this.aggregator = aggregator;
       }
 
-      public Descriptor getDescriptor() {
+      public InstrumentDescriptor getDescriptor() {
         return descriptor;
       }
 
@@ -217,5 +205,24 @@ final class BatchObserverSdk extends AbstractInstrument implements BatchObserver
         return aggregator;
       }
     }
+  }
+
+  private static MetricData.Type getRegisteredAggregation(InstrumentDescriptor descriptor) {
+    switch (descriptor.getType()) {
+      case COUNTER:
+      case UP_DOWN_COUNTER:
+        return Aggregations.sum()
+            .getDescriptorType(descriptor.getType(), descriptor.getValueType());
+      case VALUE_RECORDER:
+      case VALUE_OBSERVER:
+      case BATCH_OBSERVER:
+        return Aggregations.minMaxSumCount()
+            .getDescriptorType(descriptor.getType(), descriptor.getValueType());
+      case SUM_OBSERVER:
+      case UP_DOWN_SUM_OBSERVER:
+        return Aggregations.lastValue()
+            .getDescriptorType(descriptor.getType(), descriptor.getValueType());
+    }
+    throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());
   }
 }

@@ -1,22 +1,11 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.common.Attributes;
@@ -32,7 +21,6 @@ import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -132,21 +120,21 @@ class BatchObserverSdkTest {
 
     List<MetricData> output = batchObserver.collectAll();
     MetricData[] expected = new MetricData[12];
-    expected[0] = create("longValueObserver", 44L, Descriptor.Type.SUMMARY);
-    expected[1] = create("negativeLongValueObserver", -44L, Descriptor.Type.SUMMARY);
-    expected[2] = create("doubleValueObserver", 77.556d, Descriptor.Type.SUMMARY);
-    expected[3] = create("negativeDoubleValueObserver", -77.556d, Descriptor.Type.SUMMARY);
+    expected[0] = create("longValueObserver", 44L, MetricData.Type.SUMMARY);
+    expected[1] = create("negativeLongValueObserver", -44L, MetricData.Type.SUMMARY);
+    expected[2] = create("doubleValueObserver", 77.556d, MetricData.Type.SUMMARY);
+    expected[3] = create("negativeDoubleValueObserver", -77.556d, MetricData.Type.SUMMARY);
 
-    expected[4] = create("longUpDownObserver", 44L, Descriptor.Type.NON_MONOTONIC_LONG);
-    expected[5] = create("negativeLongUpDownObserver", -44L, Descriptor.Type.NON_MONOTONIC_LONG);
-    expected[6] = create("doubleUpDownObserver", 77.556d, Descriptor.Type.NON_MONOTONIC_DOUBLE);
+    expected[4] = create("longUpDownObserver", 44L, MetricData.Type.NON_MONOTONIC_LONG);
+    expected[5] = create("negativeLongUpDownObserver", -44L, MetricData.Type.NON_MONOTONIC_LONG);
+    expected[6] = create("doubleUpDownObserver", 77.556d, MetricData.Type.NON_MONOTONIC_DOUBLE);
     expected[7] =
-        create("negativeDoubleUpDownObserver", -77.556d, Descriptor.Type.NON_MONOTONIC_DOUBLE);
+        create("negativeDoubleUpDownObserver", -77.556d, MetricData.Type.NON_MONOTONIC_DOUBLE);
 
-    expected[8] = create("longSumObserver", 44L, Descriptor.Type.MONOTONIC_LONG);
-    expected[9] = create("negativeLongSumObserver", -44L, Descriptor.Type.MONOTONIC_LONG);
-    expected[10] = create("doubleSumObserver", 77.556d, Descriptor.Type.MONOTONIC_DOUBLE);
-    expected[11] = create("negativeDoubleSumObserver", -77.556d, Descriptor.Type.MONOTONIC_DOUBLE);
+    expected[8] = create("longSumObserver", 44L, MetricData.Type.MONOTONIC_LONG);
+    expected[9] = create("negativeLongSumObserver", -44L, MetricData.Type.MONOTONIC_LONG);
+    expected[10] = create("doubleSumObserver", 77.556d, MetricData.Type.MONOTONIC_DOUBLE);
+    expected[11] = create("negativeDoubleSumObserver", -77.556d, MetricData.Type.MONOTONIC_DOUBLE);
 
     assertThat(output).containsExactly(expected);
   }
@@ -221,9 +209,9 @@ class BatchObserverSdkTest {
     return data.getPoints().toArray(new MetricData.Point[0])[0];
   }
 
-  private static MetricData create(String name, long value, Descriptor.Type type) {
+  private static MetricData create(String name, long value, MetricData.Type type) {
     MetricData.Point point =
-        Descriptor.Type.SUMMARY.equals(type)
+        MetricData.Type.SUMMARY.equals(type)
             ? SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
@@ -233,15 +221,18 @@ class BatchObserverSdkTest {
                 valueAtPercentiles(value, value))
             : LongPoint.create(testClock.now(), testClock.now(), labelSet, value);
     return MetricData.create(
-        Descriptor.create(name, "", "1", type),
         RESOURCE,
         INSTRUMENTATION_LIBRARY_INFO,
+        name,
+        "",
+        "1",
+        type,
         Collections.singletonList(point));
   }
 
-  private static MetricData create(String name, double value, Descriptor.Type type) {
+  private static MetricData create(String name, double value, MetricData.Type type) {
     MetricData.Point point =
-        Descriptor.Type.SUMMARY.equals(type)
+        MetricData.Type.SUMMARY.equals(type)
             ? SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
@@ -251,9 +242,12 @@ class BatchObserverSdkTest {
                 valueAtPercentiles(value, value))
             : DoublePoint.create(testClock.now(), testClock.now(), labelSet, value);
     return MetricData.create(
-        Descriptor.create(name, "", "1", type),
         RESOURCE,
         INSTRUMENTATION_LIBRARY_INFO,
+        name,
+        "",
+        "1",
+        type,
         Collections.singletonList(point));
   }
 

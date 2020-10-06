@@ -8,9 +8,9 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import java.util.Objects;
 import io.opentelemetry.metrics.AsynchronousInstrument.Observation;
 import io.opentelemetry.metrics.BatchObserver.BatchObserverFunction;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -132,7 +132,7 @@ public final class DefaultMeter implements Meter {
 
   @Override
   public BatchObserver newBatchObserver(String name, BatchObserverFunction function) {
-    Utils.checkNotNull(function, "function");
+    Objects.requireNonNull(function, "function");
     return NoopBatchObserver.INSTANCE;
   }
 

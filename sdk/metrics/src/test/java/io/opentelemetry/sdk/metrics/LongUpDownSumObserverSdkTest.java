@@ -130,9 +130,12 @@ class LongUpDownSumObserverSdkTest {
     assertThat(observer.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "",
+                "1",
+                MetricData.Type.NON_MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -143,9 +146,12 @@ class LongUpDownSumObserverSdkTest {
     assertThat(observer.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testObserver", "", "1", Descriptor.Type.NON_MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "",
+                "1",
+                MetricData.Type.NON_MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,

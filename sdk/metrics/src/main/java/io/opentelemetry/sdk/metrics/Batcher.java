@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import java.util.List;
 
 /**
@@ -28,13 +27,6 @@ interface Batcher {
    * @return the {@link Aggregator} used to aggregate individual events.
    */
   Aggregator getAggregator();
-
-  /**
-   * Returns the {@link Descriptor} that should be used by the observers.
-   *
-   * @return the {@link Descriptor} used to describe the metadata about the measurement.
-   */
-  Descriptor getDescriptor();
 
   /**
    * Batches multiple entries together that are part of the same metric. It may remove labels from

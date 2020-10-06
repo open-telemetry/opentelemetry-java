@@ -10,7 +10,6 @@ import io.opentelemetry.metrics.AsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.BatchObserverSdk.SdkObservation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -95,8 +94,8 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     }
 
     @Override
-    public Descriptor getObservationDescriptor() {
-      return this.getActiveBatcher().getDescriptor();
+    public InstrumentDescriptor getObservationDescriptor() {
+      return this.getDescriptor();
     }
 
     private static final class LongResultSdk implements LongResult {
@@ -148,8 +147,8 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     }
 
     @Override
-    public Descriptor getObservationDescriptor() {
-      return this.getActiveBatcher().getDescriptor();
+    public InstrumentDescriptor getObservationDescriptor() {
+      return this.getDescriptor();
     }
 
     private static final class DoubleResultSdk implements DoubleResult {
