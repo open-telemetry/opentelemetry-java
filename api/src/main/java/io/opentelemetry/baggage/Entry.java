@@ -8,7 +8,6 @@ package io.opentelemetry.baggage;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -71,7 +70,6 @@ public abstract class Entry {
    * @return the {@code EntryMetadata}.
    * @since 0.9.0
    */
-  @Nullable
   public abstract EntryMetadata getEntryMetadata();
 
   /**
