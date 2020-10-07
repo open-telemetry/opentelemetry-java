@@ -88,7 +88,7 @@ public abstract class InMemoryTracing {
      */
     public final InMemoryTracing build() {
       // install the HttpTraceContext propagator into the API for testing with.
-      OpenTelemetry.setPropagators(
+      OpenTelemetry.setGlobalPropagators(
           DefaultContextPropagators.builder()
               .addTextMapPropagator(HttpTraceContext.getInstance())
               .build());

@@ -5,25 +5,32 @@
 
 package io.opentelemetry;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MeterProviderFactory;
 import io.opentelemetry.spi.OpenTelemetryFactory;
 import io.opentelemetry.trace.DefaultTracerProvider;
-import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.spi.TracerProviderFactory;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.ThreadSafe;
 
-public class DefaultOpenTelemetry implements OpenTelemetry {
+/**
+ * The default OpenTelemetry API, which tries to find API implementations via SPI or otherwise
+ * fallsback to no-op default implementations.
+ */
+class DefaultOpenTelemetry implements OpenTelemetry {
+
+  static Builder newBuilder() {
+    return new Builder();
+  }
 
   static OpenTelemetry getGlobalOpenTelemetry() {
     if (globalOpenTelemetry == null) {
@@ -33,7 +40,7 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
           if (openTelemetryFactory != null) {
             globalOpenTelemetry = openTelemetryFactory.create();
           } else {
-            globalOpenTelemetry = new DefaultOpenTelemetry();
+            globalOpenTelemetry = newBuilder().build();
           }
         }
       }
@@ -63,31 +70,6 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
     this.contextPropagators = contextPropagators;
   }
 
-  protected DefaultOpenTelemetry() {
-    this(DefaultContextPropagators.builder().build());
-  }
-
-  protected DefaultOpenTelemetry(ContextPropagators propagators) {
-    TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
-    this.tracerProvider =
-        tracerProviderFactory != null
-            ? new ObfuscatedTracerProvider(tracerProviderFactory.create())
-            : DefaultTracerProvider.getInstance();
-
-    MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
-    this.meterProvider =
-        meterProviderFactory != null
-            ? meterProviderFactory.create()
-            : DefaultMeterProvider.getInstance();
-    BaggageManagerFactory baggageManagerFactory = loadSpi(BaggageManagerFactory.class);
-    this.baggageManager =
-        baggageManagerFactory != null
-            ? baggageManagerFactory.create()
-            : DefaultBaggageManager.getInstance();
-
-    this.contextPropagators = propagators;
-  }
-
   @Override
   public TracerProvider getTracerProvider() {
     return tracerProvider;
@@ -109,8 +91,12 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   @Override
-  public OpenTelemetry withPropagators(ContextPropagators propagators) {
-    return new DefaultOpenTelemetry(tracerProvider, meterProvider, baggageManager, propagators);
+  public Builder toBuilder() {
+    return new Builder()
+        .setTracerProvider(tracerProvider)
+        .setMeterProvider(meterProvider)
+        .setBaggageManager(baggageManager)
+        .setPropagators(contextPropagators);
   }
 
   /**
@@ -143,35 +129,74 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
     globalOpenTelemetry = null;
   }
 
-  /**
-   * A {@link TracerProvider} wrapper that forces users to access the SDK specific implementation
-   * via the SDK, instead of via the API and casting it to the SDK specific implementation.
-   *
-   * @see Obfuscated
-   */
-  @ThreadSafe
-  private static class ObfuscatedTracerProvider
-      implements TracerProvider, Obfuscated<TracerProvider> {
+  public static class Builder implements OpenTelemetry.Builder<Builder> {
+    private ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
-    private final TracerProvider delegate;
+    private TracerProvider tracerProvider;
+    private MeterProvider meterProvider;
+    private BaggageManager baggageManager;
 
-    private ObfuscatedTracerProvider(TracerProvider delegate) {
-      this.delegate = delegate;
+    @Override
+    public Builder setTracerProvider(TracerProvider tracerProvider) {
+      requireNonNull(tracerProvider, "tracerProvider");
+      this.tracerProvider = tracerProvider;
+      return this;
     }
 
     @Override
-    public Tracer get(String instrumentationName) {
-      return delegate.get(instrumentationName);
+    public Builder setMeterProvider(MeterProvider meterProvider) {
+      requireNonNull(meterProvider, "meterProvider");
+      this.meterProvider = meterProvider;
+      return this;
     }
 
     @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return delegate.get(instrumentationName, instrumentationVersion);
+    public Builder setBaggageManager(BaggageManager baggageManager) {
+      requireNonNull(baggageManager, "baggageManager");
+      this.baggageManager = baggageManager;
+      return this;
     }
 
     @Override
-    public TracerProvider unobfuscate() {
-      return delegate;
+    public Builder setPropagators(ContextPropagators propagators) {
+      requireNonNull(propagators, "propagators");
+      this.propagators = propagators;
+      return this;
+    }
+
+    @Override
+    public DefaultOpenTelemetry build() {
+      BaggageManager baggageManager = this.baggageManager;
+      if (baggageManager == null) {
+        BaggageManagerFactory baggageManagerFactory = loadSpi(BaggageManagerFactory.class);
+        if (baggageManagerFactory != null) {
+          baggageManager = baggageManagerFactory.create();
+        } else {
+          baggageManager = DefaultBaggageManager.getInstance();
+        }
+      }
+
+      MeterProvider meterProvider = this.meterProvider;
+      if (meterProvider == null) {
+        MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
+        if (meterProviderFactory != null) {
+          meterProvider = meterProviderFactory.create();
+        } else {
+          meterProvider = DefaultMeterProvider.getInstance();
+        }
+      }
+
+      TracerProvider tracerProvider = this.tracerProvider;
+      if (tracerProvider == null) {
+        TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
+        if (tracerProviderFactory != null) {
+          tracerProvider = tracerProviderFactory.create();
+        } else {
+          tracerProvider = DefaultTracerProvider.getInstance();
+        }
+      }
+
+      return new DefaultOpenTelemetry(tracerProvider, meterProvider, baggageManager, propagators);
     }
   }
 }

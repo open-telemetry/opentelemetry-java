@@ -26,6 +26,7 @@ import java.util.logging.Logger;
  * can create one as needed.
  */
 public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
+
   private static final Logger logger = Logger.getLogger(TracerProvider.class.getName());
   private final TracerSharedState sharedState;
   private final TracerSdkComponentRegistry tracerSdkComponentRegistry;

@@ -34,7 +34,7 @@ public class Application {
 
   /** Entry point. */
   public static void main(String[] args) {
-    OpenTelemetry.setPropagators(
+    OpenTelemetry.setGlobalPropagators(
         DefaultContextPropagators.builder()
             .addTextMapPropagator(HttpTraceContext.getInstance())
             .build());

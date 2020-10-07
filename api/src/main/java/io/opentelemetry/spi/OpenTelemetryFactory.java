@@ -7,7 +7,16 @@ package io.opentelemetry.spi;
 
 import io.opentelemetry.OpenTelemetry;
 
+/**
+ * A service provider interface (SPI) for a {@link OpenTelemetry}. Fully qualified class name of the
+ * implementation should be registered in a resource file {@code
+ * META-INF/services/io.opentelemetry.spi.OpenTelemetryFactory}.
+ *
+ * <p>A specific implementation can be selected by setting the system property {@code
+ * io.opentelemetry.spi.OpenTelemetryFactor} with the value of the fully qualified class name.
+ */
 public interface OpenTelemetryFactory {
 
+  /** Returns a new {@link OpenTelemetry}. */
   OpenTelemetry create();
 }

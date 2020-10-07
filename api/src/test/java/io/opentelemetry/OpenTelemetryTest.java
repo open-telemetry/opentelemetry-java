@@ -201,13 +201,13 @@ class OpenTelemetryTest {
   @Test
   void testPropagatorsSet() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
-    OpenTelemetry.setPropagators(propagators);
+    OpenTelemetry.setGlobalPropagators(propagators);
     assertThat(OpenTelemetry.getGlobalPropagators()).isEqualTo(propagators);
   }
 
   @Test
   void testPropagatorsSetNull() {
-    assertThrows(NullPointerException.class, () -> OpenTelemetry.setPropagators(null));
+    assertThrows(NullPointerException.class, () -> OpenTelemetry.setGlobalPropagators(null));
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {

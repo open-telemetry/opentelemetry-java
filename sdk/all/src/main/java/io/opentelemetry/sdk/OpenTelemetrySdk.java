@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk;
 
+import static java.util.Objects.requireNonNull;
+
+import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.baggage.DefaultBaggageManager;
@@ -26,36 +29,45 @@ import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.spi.TracerProviderFactory;
-import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * This class provides a static global accessor for SDK telemetry objects {@link
- * TracerSdkManagement}, {@link MeterSdkProvider} and {@link BaggageManagerSdk}.
- *
- * <p>This is a convenience class getting and casting the telemetry objects from {@link
- * OpenTelemetry}.
- *
- * @see OpenTelemetry
- */
+/** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
 public final class OpenTelemetrySdk implements OpenTelemetry {
 
   /**
-   * Returns a {@link TracerSdkManagement}.
+   * Returns a new {@link Builder} for configuring an instance of {@linkplain OpenTelemetrySdk the
+   * OpenTelemetry SDK}.
+   */
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
+  /** Returns the global {@link OpenTelemetrySdk}. */
+  public static OpenTelemetrySdk getGlobalOpenTelemetry() {
+    return (OpenTelemetrySdk) OpenTelemetry.getGlobalOpenTelemetry();
+  }
+
+  /**
+   * Returns the global {@link TracerSdkManagement}.
    *
    * @return TracerProvider returned by {@link OpenTelemetry#getGlobalTracerProvider()}.
    */
   public static TracerSdkManagement getGlobalTracerManagement() {
-    return (TracerSdkProvider)
-        ((Obfuscated<?>) OpenTelemetry.getGlobalTracerProvider()).unobfuscate();
+    TracerProvider tracerProvider = OpenTelemetry.getGlobalTracerProvider();
+    if (!(tracerProvider instanceof ObfuscatedTracerProvider)) {
+      throw new IllegalStateException(
+          "Trying to access global TracerSdkManagement but global TracerProvider is not an "
+              + "instance created by this SDK.");
+    }
+    return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
   /**
-   * Returns a {@link MeterSdkProvider}.
+   * Returns the global {@link MeterSdkProvider}.
    *
    * @return MeterProvider returned by {@link OpenTelemetry#getGlobalMeterProvider()}.
    */
@@ -64,7 +76,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   }
 
   /**
-   * Returns a {@link BaggageManagerSdk}.
+   * Returns the global {@link BaggageManagerSdk}.
    *
    * @return context manager returned by {@link OpenTelemetry#getGlobalBaggageManager()}.
    */
@@ -87,7 +99,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   private final Clock clock;
   private final Resource resource;
 
-  OpenTelemetrySdk(
+  private OpenTelemetrySdk(
       TracerProvider tracerProvider,
       MeterProvider meterProvider,
       BaggageManager baggageManager,
@@ -122,21 +134,35 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return contextPropagators;
   }
 
+  /** Returns the {@link Resource} for this {@link OpenTelemetrySdk}. */
+  public Resource getResource() {
+    return resource;
+  }
+
+  /** Returns the {@link Clock} for this {@link OpenTelemetrySdk}. */
+  public Clock getClock() {
+    return clock;
+  }
+
+  /** Returns the {@link TracerSdkManagement} for this {@link OpenTelemetrySdk}. */
+  public TracerSdkManagement getTracerManagement() {
+    return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
+  }
+
+  /** Returns a new {@link Builder} initialized with the values of this {@link OpenTelemetrySdk}. */
   @Override
-  public OpenTelemetry withPropagators(ContextPropagators propagators) {
-    return new OpenTelemetrySdk(
-        tracerProvider, meterProvider, baggageManager, propagators, clock, resource);
-  }
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
   public Builder toBuilder() {
-    return builder().setClock(clock).setPropagators(getPropagators()).setResource(resource);
+    return newBuilder()
+        .setTracerProvider(tracerProvider)
+        .setMeterProvider(meterProvider)
+        .setBaggageManager(baggageManager)
+        .setPropagators(getPropagators())
+        .setClock(clock)
+        .setResource(resource);
   }
 
-  public static class Builder {
+  /** A builder for configuring an {@link OpenTelemetrySdk}. */
+  public static class Builder implements OpenTelemetry.Builder<Builder> {
     private Clock clock = MillisClock.getInstance();
     private Resource resource = Resource.getDefault();
     private ContextPropagators propagators = DefaultContextPropagators.builder().build();
@@ -146,26 +172,36 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     private BaggageManager baggageManager;
 
     /**
-     * Assign a {@link Clock}.
+     * Sets the {@link TracerProvider} to use. This can be used to configure tracing settings by
+     * returning the instance created by a {@link TracerSdkProvider.Builder}.
      *
-     * @param clock The clock to use for all temporal needs.
-     * @return this
+     * @see TracerSdkProvider#builder()
      */
-    public Builder setClock(Clock clock) {
-      Objects.requireNonNull(clock, "clock");
-      this.clock = clock;
+    @Override
+    public Builder setTracerProvider(TracerProvider tracerProvider) {
+      requireNonNull(tracerProvider, "tracerProvider");
+      this.tracerProvider = tracerProvider;
       return this;
     }
 
     /**
-     * Assign a {@link Resource} to be attached to all Spans created by Tracers.
+     * Sets the {@link MeterProvider} to use.. This can be used to configure tracing settings by
+     * returning the instance created by a {@link MeterSdkProvider.Builder}.
      *
-     * @param resource A Resource implementation.
-     * @return this
+     * @see MeterSdkProvider#builder()
      */
-    public Builder setResource(Resource resource) {
-      Objects.requireNonNull(resource, "resource");
-      this.resource = resource;
+    @Override
+    public Builder setMeterProvider(MeterProvider meterProvider) {
+      requireNonNull(meterProvider, "meterProvider");
+      this.meterProvider = meterProvider;
+      return this;
+    }
+
+    /** Sets the {@link BaggageManager} to use. */
+    @Override
+    public Builder setBaggageManager(BaggageManager baggageManager) {
+      requireNonNull(baggageManager, "baggageManager");
+      this.baggageManager = baggageManager;
       return this;
     }
 
@@ -177,18 +213,44 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
      * @throws IllegalStateException if a specified manager (via system properties) could not be
      *     found.
      * @throws NullPointerException if {@code propagators} is {@code null}.
-     * @since 0.3.0
      */
+    @Override
     public Builder setPropagators(ContextPropagators propagators) {
-      Objects.requireNonNull(propagators, "propagators");
+      requireNonNull(propagators, "propagators");
       this.propagators = propagators;
+      return this;
+    }
+
+    /**
+     * Sets the {@link Clock} to be used for measuring timings.
+     *
+     * @param clock The clock to use for all temporal needs.
+     * @return this
+     */
+    public Builder setClock(Clock clock) {
+      requireNonNull(clock, "clock");
+      this.clock = clock;
+      return this;
+    }
+
+    /**
+     * Sets the {@link Resource} to be attached to all telemetry reported by this SDK.
+     *
+     * @param resource A Resource implementation.
+     * @return this
+     */
+    public Builder setResource(Resource resource) {
+      requireNonNull(resource, "resource");
+      this.resource = resource;
       return this;
     }
 
     /**
      * Returns a new {@link OpenTelemetrySdk} built with the configuration of this {@link Builder}.
      */
+    @Override
     public OpenTelemetrySdk build() {
+      BaggageManager baggageManager = this.baggageManager;
       if (baggageManager == null) {
         BaggageManagerFactory baggageManagerFactory = loadSpi(BaggageManagerFactory.class);
         if (baggageManagerFactory != null) {
@@ -200,6 +262,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
         }
       }
 
+      MeterProvider meterProvider = this.meterProvider;
       if (meterProvider == null) {
         MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
         if (meterProviderFactory != null) {
@@ -211,6 +274,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
         }
       }
 
+      TracerProvider tracerProvider = this.tracerProvider;
       if (tracerProvider == null) {
         TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
         if (tracerProviderFactory != null) {
@@ -276,8 +340,8 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
    * @see Obfuscated
    */
   @ThreadSafe
-  private static class ObfuscatedTracerProvider
-      implements TracerProvider, Obfuscated<TracerProvider> {
+  @VisibleForTesting
+  static class ObfuscatedTracerProvider implements TracerProvider, Obfuscated<TracerProvider> {
 
     private final TracerProvider delegate;
 
