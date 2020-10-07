@@ -10,7 +10,6 @@ import static java.util.Collections.singletonList;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.baggage.Baggage.Builder;
 import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.EmptyBaggage;
@@ -31,7 +30,7 @@ public class W3CBaggagePropagator implements TextMapPropagator {
 
   private final BaggageManager baggageManager;
 
-  //visible for testing
+  // visible for testing
   W3CBaggagePropagator(BaggageManager baggageManager) {
     this.baggageManager = baggageManager;
   }
@@ -80,7 +79,7 @@ public class W3CBaggagePropagator implements TextMapPropagator {
       return BaggageUtils.withBaggage(EmptyBaggage.getInstance(), context);
     }
 
-    Builder baggageBuilder = baggageManager.baggageBuilder();
+    Baggage.Builder baggageBuilder = baggageManager.baggageBuilder();
     try {
       extractEntries(baggageHeader, baggageBuilder);
     } catch (Exception e) {
@@ -89,8 +88,10 @@ public class W3CBaggagePropagator implements TextMapPropagator {
     return BaggageUtils.withBaggage(baggageBuilder.build(), context);
   }
 
-  private void extractEntries(String baggageHeader, Builder baggageBuilder) {
-    //todo: optimize this implementation; it can probably done with a single pass through the string.
+  @SuppressWarnings("StringSplitter")
+  private static void extractEntries(String baggageHeader, Baggage.Builder baggageBuilder) {
+    // todo: optimize this implementation; it can probably done with a single pass through the
+    // string.
     String[] entries = baggageHeader.split(",");
     for (String entry : entries) {
       String metadata = "";
