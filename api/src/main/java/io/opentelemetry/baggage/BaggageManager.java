@@ -16,7 +16,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>Implementations may have different constraints and are free to convert entry contexts to their
  * own subtypes. This means callers cannot assume the {@link #getCurrentBaggage() current context}
- * is the same instance as the one {@link #withBaggage(Baggage) placed into scope}.
+ * is the same instance as the one {@linkplain #withBaggage(Baggage) placed into scope}.
  *
  * @since 0.9.0
  */
