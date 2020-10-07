@@ -1,0 +1,75 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.context;
+
+/**
+ * The storage for storing and retrieving the current {@link Context}.
+ *
+ * <p>If you want to implement your own storage or add some hooks when a {@link Context} is attached
+ * and restored, you should use {@link ContextStorageProvider}. Here's an example that sets MDC
+ * before {@link Context} is attached:
+ *
+ * <pre>{@code
+ * > public class MyStorage implements ContextStorageProvider {
+ * >
+ * >   @Override
+ * >   public ContextStorage get() {
+ * >     ContextStorage threadLocalStorage = Context.threadLocalStorage();
+ * >     return new RequestContextStorage() {
+ * >       @Override
+ * >       public Scope T attach(Context toAttach) {
+ * >         Context current = current();
+ * >         setMdc(toAttach);
+ * >         Scope scope = threadLocalStorage.attach(toAttach);
+ * >         return () -> {
+ * >           clearMdc();
+ * >           setMdc(current);
+ * >           scope.close();
+ * >         }
+ * >       }
+ * >
+ * >       @Override
+ * >       public Context current() {
+ * >         return threadLocalStorage.current();
+ * >       }
+ * >     }
+ * >   }
+ * > }
+ * }</pre>
+ */
+public interface ContextStorage {
+
+  /**
+   * Returns the {@link ContextStorage} being used by this application. This is only for use when
+   * integrating with other context propagation mechanisms and not meant for direct use. To attach
+   * or detach a {@link Context} in an application, use {@link Context#makeCurrent()} and {@link
+   * Scope#close()}.
+   */
+  static ContextStorage get() {
+    return LazyStorage.storage;
+  }
+
+  /**
+   * Sets the specified {@link Context} as the current {@link Context} and returns a {@link Scope}
+   * representing the scope of execution. {@link Scope#close()} must be called when the current
+   * {@link Context} should be restored to what it was before attaching {@code toAttach}.
+   */
+  Scope attach(Context toAttach);
+
+  /**
+   * Returns the current {@link DefaultContext}. If no {@link DefaultContext} has been attached yet,
+   * this will be the {@linkplain Context#root()} root context}.
+   */
+  Context current();
+
+  /**
+   * Returns a {@link ContextKey} for the given name. This is only useful when integrating with a
+   * separate context propagation mechanism, where
+   */
+  default <T> ContextKey<T> contextKey(String name) {
+    return new DefaultContextKey<>(name);
+  }
+}

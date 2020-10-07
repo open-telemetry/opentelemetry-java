@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.logging;
@@ -27,12 +16,9 @@ import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import io.opentelemetry.sdk.logging.util.TestLogProcessor;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
-public class LogSinkSdkProviderTest {
+class LogSinkSdkProviderTest {
 
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
     return new LogRecord.Builder()
@@ -43,7 +29,7 @@ public class LogSinkSdkProviderTest {
   }
 
   @Test
-  public void testLogSinkSdkProvider() {
+  void testLogSinkSdkProvider() {
     TestLogExporter exporter = new TestLogExporter();
     LogProcessor processor = BatchLogProcessor.builder(exporter).build();
     LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
@@ -55,11 +41,11 @@ public class LogSinkSdkProviderTest {
   }
 
   @Test
-  public void testBatchSize() {
+  void testBatchSize() {
     TestLogExporter exporter = new TestLogExporter();
     LogProcessor processor =
         BatchLogProcessor.builder(exporter)
-            .setScheduleDelayMillis(3000) // Long enough to not be in play
+            .setScheduleDelayMillis(10000) // Long enough to not be in play
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
@@ -71,7 +57,7 @@ public class LogSinkSdkProviderTest {
       sink.offer(createLog(Severity.WARN, "test #" + i));
     }
     // Ensure that more than batch size kicks off a flush
-    await().atMost(500, TimeUnit.MILLISECONDS).until(() -> exporter.getRecords().size() > 0);
+    await().atMost(5, TimeUnit.SECONDS).until(() -> exporter.getRecords().size() > 0);
     // Ensure that everything gets through
     CompletableResultCode result = provider.forceFlush();
     result.join(1, TimeUnit.SECONDS);
@@ -79,7 +65,7 @@ public class LogSinkSdkProviderTest {
   }
 
   @Test
-  public void testNoBlocking() {
+  void testNoBlocking() {
     TestLogExporter exporter = new TestLogExporter();
     exporter.setOnCall(
         () -> {
@@ -111,7 +97,7 @@ public class LogSinkSdkProviderTest {
   }
 
   @Test
-  public void testMultipleProcessors() {
+  void testMultipleProcessors() {
     TestLogProcessor processorOne = new TestLogProcessor();
     TestLogProcessor processorTwo = new TestLogProcessor();
     LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();

@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
@@ -24,7 +13,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,10 +38,10 @@ public abstract class TestSpanData implements SpanData {
     return new AutoValue_TestSpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
-        .setLinks(Collections.<Link>emptyList())
+        .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Attributes.empty())
-        .setEvents(Collections.<Event>emptyList())
+        .setEvents(Collections.emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
@@ -74,7 +62,7 @@ public abstract class TestSpanData implements SpanData {
 
     abstract List<Event> getEvents();
 
-    abstract List<Link> getLinks();
+    abstract List<SpanData.Link> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -215,10 +203,9 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param links A List&lt;Link&gt;
      * @return this
-     * @see io.opentelemetry.trace.Link
      * @since 0.1.0
      */
-    public abstract Builder setLinks(List<Link> links);
+    public abstract Builder setLinks(List<SpanData.Link> links);
 
     /**
      * Sets to true if the span has a parent on a different process.

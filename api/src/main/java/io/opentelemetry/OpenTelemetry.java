@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry;
@@ -21,6 +10,8 @@ import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
@@ -29,6 +20,8 @@ import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
+import io.opentelemetry.trace.spi.TracerProviderFactory;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -198,9 +191,9 @@ public interface OpenTelemetry {
    * @throws NullPointerException if {@code propagators} is {@code null}.
    * @since 0.3.0
    */
-  static void setPropagators(ContextPropagators propagators) {
-    Utils.checkNotNull(propagators, "propagators");
-    setGlobalOpenTelemetry(getGlobalOpenTelemetry().withPropagators(propagators));
+  public static void setPropagators(ContextPropagators propagators) {
+    Objects.requireNonNull(propagators, "propagators");
+    getInstance().propagators = propagators;
   }
 
   OpenTelemetry withPropagators(ContextPropagators propagators);

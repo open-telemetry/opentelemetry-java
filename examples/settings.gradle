@@ -1,7 +1,6 @@
 pluginManagement {
     plugins {
-        id 'com.github.sherter.google-java-format' version "0.8"
-        id "com.jfrog.artifactory" version "4.13.0"
+        id "com.diffplug.spotless" version "5.6.1"
         id 'com.google.protobuf' version '0.8.8'
     }
 

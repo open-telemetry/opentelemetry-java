@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.zpages;
@@ -24,8 +13,7 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Status.CanonicalCode;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -77,7 +65,7 @@ class TracezZPageHandlerTest {
     latencySpan.end(endOptions);
 
     Span errorSpan = tracer.spanBuilder(ERROR_SPAN).startSpan();
-    errorSpan.setStatus(CanonicalCode.ERROR.toStatus());
+    errorSpan.setStatus(StatusCanonicalCode.ERROR);
     errorSpan.end();
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
@@ -256,9 +244,9 @@ class TracezZPageHandlerTest {
     Span errorSpan2 = tracer.spanBuilder(ERROR_SPAN).startSpan();
     Span errorSpan3 = tracer.spanBuilder(ERROR_SPAN).startSpan();
     Span finishedSpan = tracer.spanBuilder(FINISHED_SPAN_ONE).startSpan();
-    errorSpan1.setStatus(Status.ERROR.withDescription("CANCELLED"));
-    errorSpan2.setStatus(Status.ERROR.withDescription("ABORTED"));
-    errorSpan3.setStatus(Status.ERROR.withDescription("DEADLINE_EXCEEDED"));
+    errorSpan1.setStatus(StatusCanonicalCode.ERROR, "CANCELLED");
+    errorSpan2.setStatus(StatusCanonicalCode.ERROR, "ABORTED");
+    errorSpan3.setStatus(StatusCanonicalCode.ERROR, "DEADLINE_EXCEEDED");
     errorSpan1.end();
     errorSpan2.end();
     errorSpan3.end();
@@ -323,8 +311,8 @@ class TracezZPageHandlerTest {
     OutputStream output = new ByteArrayOutputStream();
     Span errorSpan1 = tracer.spanBuilder(ERROR_SPAN).startSpan();
     Span errorSpan2 = tracer.spanBuilder(ERROR_SPAN).startSpan();
-    errorSpan1.setStatus(Status.ERROR.withDescription("CANCELLED"));
-    errorSpan2.setStatus(Status.ERROR.withDescription("ABORTED"));
+    errorSpan1.setStatus(StatusCanonicalCode.ERROR, "CANCELLED");
+    errorSpan2.setStatus(StatusCanonicalCode.ERROR, "ABORTED");
     errorSpan1.end();
     errorSpan2.end();
     Map<String, String> queryMap =

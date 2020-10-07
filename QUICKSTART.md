@@ -388,9 +388,9 @@ a particular backend. OpenTelemetry offers four exporters out of the box:
 Other exporters can be found in the [OpenTelemetry Registry].
 
 ```java
-tracerProvider.addSpanProcessor(
+tracerSdkManagement.addSpanProcessor(
     SimpleSpanProcessor.newBuilder(InMemorySpanExporter.create()).build());
-tracerProvider.addSpanProcessor(
+tracerSdkManagement.addSpanProcessor(
     SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build());
 
 ManagedChannel jaegerChannel =
@@ -398,19 +398,19 @@ ManagedChannel jaegerChannel =
 JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.newBuilder()
     .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
     .build();
-tracerProvider.addSpanProcessor(BatchSpanProcessor.newBuilder(
+tracerSdkManagement.addSpanProcessor(BatchSpanProcessor.newBuilder(
     jaegerExporter
 ).build());
 ```
 
 ### TraceConfig
 
-The `TraceConfig` associated with a `TracerSdkProvider` can be updated via system properties, 
+The `TraceConfig` associated with a Tracer SDK can be updated via system properties, 
 environment variables and builder `set*` methods.  
 
 ```java
-// Get TraceConfig associated with TracerSdkProvider 
-TraceConfig traceConfig = OpenTelemetrySdk.getTracerProvider().getActiveTraceConfig();
+// Get TraceConfig associated with TracerSdk 
+TracerConfig traceConfig = OpenTelemetrySdk.getTracerSdkManagement().getActiveTraceConfig();
 
 // Get TraceConfig Builder
 Builder builder = traceConfig.toBuilder();
@@ -425,7 +425,7 @@ builder.readEnvironmentVariables()
 builder.setMaxNumberOfLinks(10);
 
 // Update the resulting TraceConfig instance
-OpenTelemetrySdk.getTracerProvider().updateActiveTraceConfig(builder.build());
+OpenTelemetrySdk.getTracerSdkManagement().updateActiveTraceConfig(builder.build());
 ```
 
 Supported system properties and environment variables:

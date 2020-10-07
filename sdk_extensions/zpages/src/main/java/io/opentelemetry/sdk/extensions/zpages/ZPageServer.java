@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.zpages;
@@ -22,7 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,14 +58,14 @@ public final class ZPageServer {
       TracezSpanProcessor.newBuilder().build();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
-  private static final TracerSdkProvider tracerProvider =
+  private static final TracerSdkManagement TRACER_SDK_MANAGEMENT =
       OpenTelemetrySdk.getGlobalTracerProvider();
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
       new TracezZPageHandler(tracezDataAggregator);
   // Handler for /traceconfigz page
   private static final ZPageHandler traceConfigzZPageHandler =
-      new TraceConfigzZPageHandler(tracerProvider);
+      new TraceConfigzZPageHandler(TRACER_SDK_MANAGEMENT);
   // Handler for index page, **please include all available ZPageHandlers in the constructor**
   private static final ZPageHandler indexZPageHandler =
       new IndexZPageHandler(ImmutableList.of(tracezZPageHandler, traceConfigzZPageHandler));
@@ -88,10 +77,10 @@ public final class ZPageServer {
   @Nullable
   private static HttpServer server;
 
-  /** Function that adds the {@link TracezSpanProcessor} to the {@link TracerSdkProvider}. */
+  /** Function that adds the {@link TracezSpanProcessor} to the {@link TracerSdkManagement}. */
   private static void addTracezSpanProcessor() {
     if (isTracezSpanProcesserAdded.compareAndSet(/* expectedValue=*/ false, /* newValue=*/ true)) {
-      tracerProvider.addSpanProcessor(tracezSpanProcessor);
+      TRACER_SDK_MANAGEMENT.addSpanProcessor(tracezSpanProcessor);
     }
   }
 

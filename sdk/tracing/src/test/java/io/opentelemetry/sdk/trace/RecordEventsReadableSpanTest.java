@@ -1,29 +1,18 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longArrayKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -35,14 +24,14 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
@@ -85,7 +74,7 @@ class RecordEventsReadableSpanTest {
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<AttributeKey, Object> attributes = new HashMap<>();
   private Attributes expectedAttributes;
-  private final io.opentelemetry.trace.Link link = Link.create(spanContext);
+  private final Link link = Link.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
 
   private TestClock testClock;
@@ -112,7 +101,7 @@ class RecordEventsReadableSpanTest {
     span.end();
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
     // and are ignored.
-    spanDoWork(span, Status.ERROR.withDescription("CANCELLED"));
+    spanDoWork(span, StatusCanonicalCode.ERROR, "CANCELLED");
     SpanData spanData = span.toSpanData();
     verifySpanData(
         spanData,
@@ -122,37 +111,8 @@ class RecordEventsReadableSpanTest {
         SPAN_NAME,
         START_EPOCH_NANOS,
         START_EPOCH_NANOS,
-        Status.UNSET,
+        Status.unset(),
         /*hasEnded=*/ true);
-  }
-
-  @Test
-  void lazyLinksAreResolved() {
-    final Attributes attributes = Attributes.of(stringKey("attr"), "val");
-    io.opentelemetry.trace.Link link =
-        new io.opentelemetry.trace.Link() {
-          @Override
-          public SpanContext getContext() {
-            return spanContext;
-          }
-
-          @Override
-          public Attributes getAttributes() {
-            return attributes;
-          }
-        };
-    RecordEventsReadableSpan span =
-        createTestSpan(
-            Kind.CLIENT,
-            TraceConfig.getDefault(),
-            parentSpanId,
-            null,
-            Collections.singletonList(link));
-
-    Link resultingLink = span.toSpanData().getLinks().get(0);
-    assertThat(resultingLink.getTotalAttributeCount()).isEqualTo(1);
-    assertThat(resultingLink.getContext()).isSameAs(spanContext);
-    assertThat(resultingLink.getAttributes()).isEqualTo(attributes);
   }
 
   @Test
@@ -170,10 +130,10 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       assertThat(span.hasEnded()).isFalse();
-      spanDoWork(span, null);
+      spanDoWork(span, null, null);
       SpanData spanData = span.toSpanData();
       Event event =
-          TimedEvent.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+          Event.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
       verifySpanData(
           spanData,
           expectedAttributes,
@@ -182,7 +142,7 @@ class RecordEventsReadableSpanTest {
           SPAN_NEW_NAME,
           START_EPOCH_NANOS,
           0,
-          Status.UNSET,
+          Status.unset(),
           /*hasEnded=*/ false);
       assertThat(span.hasEnded()).isFalse();
     } finally {
@@ -195,14 +155,14 @@ class RecordEventsReadableSpanTest {
   void toSpanData_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
-      spanDoWork(span, Status.ERROR.withDescription("CANCELLED"));
+      spanDoWork(span, StatusCanonicalCode.ERROR, "CANCELLED");
     } finally {
       span.end();
     }
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
     Event event =
-        TimedEvent.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+        Event.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
     verifySpanData(
         spanData,
         expectedAttributes,
@@ -211,7 +171,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NEW_NAME,
         START_EPOCH_NANOS,
         testClock.now(),
-        Status.ERROR.withDescription("CANCELLED"),
+        Status.create(StatusCanonicalCode.ERROR, "CANCELLED"),
         /*hasEnded=*/ true);
   }
 
@@ -232,14 +192,14 @@ class RecordEventsReadableSpanTest {
 
     assertThrows(
         UnsupportedOperationException.class,
-        () -> spanData.getEvents().add(EventImpl.create(1000, "test", Attributes.empty())));
+        () -> spanData.getEvents().add(Event.create(1000, "test", Attributes.empty())));
   }
 
   @Test
   void toSpanData_RootSpan() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
-      spanDoWork(span, null);
+      spanDoWork(span, null, null);
     } finally {
       span.end();
     }
@@ -296,14 +256,15 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.UNSET);
-      span.setStatus(Status.ERROR.withDescription("CANCELLED"));
+      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.unset());
+      span.setStatus(StatusCanonicalCode.ERROR, "CANCELLED");
       assertThat(span.toSpanData().getStatus())
-          .isEqualTo(Status.ERROR.withDescription("CANCELLED"));
+          .isEqualTo(Status.create(StatusCanonicalCode.ERROR, "CANCELLED"));
     } finally {
       span.end();
     }
-    assertThat(span.toSpanData().getStatus()).isEqualTo(Status.ERROR.withDescription("CANCELLED"));
+    assertThat(span.toSpanData().getStatus())
+        .isEqualTo(Status.create(StatusCanonicalCode.ERROR, "CANCELLED"));
   }
 
   @Test
@@ -515,33 +476,14 @@ class RecordEventsReadableSpanTest {
   @Test
   void addEvent() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    io.opentelemetry.trace.Event customEvent =
-        new io.opentelemetry.trace.Event() {
-          @Override
-          public String getName() {
-            return "event3";
-          }
-
-          @Override
-          public Attributes getAttributes() {
-            return Attributes.empty();
-          }
-        };
     try {
       span.addEvent("event1");
       span.addEvent("event2", Attributes.of(stringKey("e1key"), "e1Value"));
-      span.addEvent(customEvent);
     } finally {
       span.end();
     }
     List<Event> events = span.toSpanData().getEvents();
-    assertThat(events.size()).isEqualTo(3);
-    for (Event event : events) {
-      // make sure that we aren't holding on to the memory from the custom event, in case it
-      // references
-      // some heavyweight thing.
-      assertThat(event).isNotInstanceOf(TimedEvent.RawTimedEventWithEvent.class);
-    }
+    assertThat(events.size()).isEqualTo(2);
   }
 
   @Test
@@ -622,7 +564,7 @@ class RecordEventsReadableSpanTest {
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
         Event expectedEvent =
-            TimedEvent.create(
+            Event.create(
                 START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
                 "event2",
                 Attributes.empty(),
@@ -637,7 +579,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
       Event expectedEvent =
-          TimedEvent.create(
+          Event.create(
               START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
               "event2",
               Attributes.empty(),
@@ -745,11 +687,10 @@ class RecordEventsReadableSpanTest {
     // Should be no exceptions
     span.setAttribute(null, 0L);
     span.setStatus(null);
+    span.setStatus(null, null);
     span.updateName(null);
-    span.addEvent((Event) null);
-    span.addEvent((String) null);
-    span.addEvent((Event) null, 0);
-    span.addEvent((String) null, 0);
+    span.addEvent(null);
+    span.addEvent(null, 0);
     span.addEvent(null, null);
     span.addEvent(null, null, 0);
     span.recordException(null);
@@ -758,7 +699,7 @@ class RecordEventsReadableSpanTest {
     // Ignored the bad calls
     SpanData data = span.toSpanData();
     assertThat(data.getAttributes().isEmpty()).isTrue();
-    assertThat(data.getStatus()).isEqualTo(Status.UNSET);
+    assertThat(data.getStatus()).isEqualTo(Status.unset());
     assertThat(data.getName()).isEqualTo(SPAN_NAME);
   }
 
@@ -799,7 +740,7 @@ class RecordEventsReadableSpanTest {
       TraceConfig config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links) {
+      List<Link> links) {
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
@@ -821,15 +762,18 @@ class RecordEventsReadableSpanTest {
     return span;
   }
 
-  private void spanDoWork(RecordEventsReadableSpan span, @Nullable Status status) {
+  private void spanDoWork(
+      RecordEventsReadableSpan span,
+      @Nullable StatusCanonicalCode canonicalCode,
+      @Nullable String descriptio) {
     span.setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     attributes.forEach(span::setAttribute);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addEvent("event2", Attributes.empty());
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.updateName(SPAN_NEW_NAME);
-    if (status != null) {
-      span.setStatus(status);
+    if (canonicalCode != null) {
+      span.setStatus(canonicalCode, descriptio);
     }
   }
 
@@ -837,7 +781,7 @@ class RecordEventsReadableSpanTest {
       SpanData spanData,
       final ReadableAttributes attributes,
       List<Event> eventData,
-      List<io.opentelemetry.trace.Link> links,
+      List<Link> links,
       String spanName,
       long startEpochNanos,
       long endEpochNanos,
@@ -920,9 +864,8 @@ class RecordEventsReadableSpanTest {
 
     List<Event> events =
         Arrays.asList(
-            TimedEvent.create(
-                firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
-            TimedEvent.create(
+            Event.create(firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
+            Event.create(
                 secondEventTimeNanos, "event2", event2Attributes, event2Attributes.size()));
 
     SpanData result = readableSpan.toSpanData();
@@ -934,7 +877,7 @@ class RecordEventsReadableSpanTest {
         name,
         startEpochNanos,
         endEpochNanos,
-        Status.UNSET,
+        Status.unset(),
         /* hasEnded= */ true);
     assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
     assertThat(result.isSampled()).isEqualTo(false);

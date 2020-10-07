@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace;
@@ -161,7 +150,7 @@ public interface Span {
   }
 
   /**
-   * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
+   * Adds an event to the {@link Span}. The timestamp of the event will be the current time.
    *
    * @param name the name of the event.
    * @since 0.1.0
@@ -184,8 +173,8 @@ public interface Span {
   void addEvent(String name, long timestamp);
 
   /**
-   * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the *
-   * {@link Event} will be the current time.
+   * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the event
+   * will be the current time.
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
@@ -212,40 +201,33 @@ public interface Span {
   void addEvent(String name, Attributes attributes, long timestamp);
 
   /**
-   * Adds an event to the {@link Span}. The timestamp of the {@link Event} will be the current time.
+   * Sets the status to the {@code Span}.
    *
-   * @param event the event to add.
-   * @since 0.1.0
-   */
-  void addEvent(Event event);
-
-  /**
-   * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
-   * this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed using
-   * it, for example, by taking a difference of readings from {@link System#nanoTime()} and adding
-   * to the span start time.
-   *
-   * <p>When possible, it is preferred to use {@link #addEvent(String)} at the time the event
-   * occurred.
-   *
-   * @param event the event to add.
-   * @param timestamp the explicit event timestamp in nanos since epoch.
-   * @since 0.1.0
-   */
-  void addEvent(Event event, long timestamp);
-
-  /**
-   * Sets the {@link Status} to the {@code Span}.
-   *
-   * <p>If used, this will override the default {@code Span} status. Default is {@link Status#OK}.
+   * <p>If used, this will override the default {@code Span} status. Default status code is {@link
+   * StatusCanonicalCode#UNSET}.
    *
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param status the {@link Status} to set.
-   * @since 0.1.0
+   * @param canonicalCode the {@link StatusCanonicalCode} to set.
+   * @since 0.9.0
    */
-  void setStatus(Status status);
+  void setStatus(StatusCanonicalCode canonicalCode);
+
+  /**
+   * Sets the status to the {@code Span}.
+   *
+   * <p>If used, this will override the default {@code Span} status. Default status code is {@link
+   * StatusCanonicalCode#UNSET}.
+   *
+   * <p>Only the value of the last call will be recorded, and implementations are free to ignore
+   * previous calls.
+   *
+   * @param canonicalCode the {@link StatusCanonicalCode} to set.
+   * @param description the description of the {@code Status}.
+   * @since 0.9.0
+   */
+  void setStatus(StatusCanonicalCode canonicalCode, String description);
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
@@ -442,42 +424,34 @@ public interface Span {
     Builder setNoParent();
 
     /**
-     * Adds a {@link Link} to the newly created {@code Span}.
+     * Adds a link to the newly created {@code Span}.
+     *
+     * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
+     * operations, where a single batch handler processes multiple requests from different traces or
+     * the same trace.
      *
      * @param spanContext the context of the linked {@code Span}.
      * @return this.
      * @throws NullPointerException if {@code spanContext} is {@code null}.
-     * @see #addLink(Link)
      * @since 0.1.0
      */
     Builder addLink(SpanContext spanContext);
 
     /**
-     * Adds a {@link Link} to the newly created {@code Span}.
+     * Adds a link to the newly created {@code Span}.
+     *
+     * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
+     * operations, where a single batch handler processes multiple requests from different traces or
+     * the same trace.
      *
      * @param spanContext the context of the linked {@code Span}.
      * @param attributes the attributes of the {@code Link}.
      * @return this.
      * @throws NullPointerException if {@code spanContext} is {@code null}.
      * @throws NullPointerException if {@code attributes} is {@code null}.
-     * @see #addLink(Link)
      * @since 0.1.0
      */
     Builder addLink(SpanContext spanContext, Attributes attributes);
-
-    /**
-     * Adds a {@link Link} to the newly created {@code Span}.
-     *
-     * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
-     * operations, where a single batch handler processes multiple requests from different traces or
-     * the same trace.
-     *
-     * @param link the {@link Link} to be added.
-     * @return this.
-     * @throws NullPointerException if {@code link} is {@code null}.
-     * @since 0.1.0
-     */
-    Builder addLink(Link link);
 
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously

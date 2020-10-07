@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.logging.sdk;
@@ -27,11 +16,11 @@ import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BatchLogProcessorTest {
+class BatchLogProcessorTest {
   @Test
-  public void testBuilder() {
+  void testBuilder() {
     Properties props = new Properties();
     long delay = 1234L;
     int queue = 2345;
@@ -65,7 +54,7 @@ public class BatchLogProcessorTest {
   }
 
   @Test
-  public void testForceExport() {
+  void testForceExport() {
     int batchSize = 10;
     int testRecordsToSend = 17; // greater than, but not a multiple of batch
     TestLogExporter exporter = new TestLogExporter();
@@ -81,7 +70,7 @@ public class BatchLogProcessorTest {
     }
     await().until(() -> exporter.getCallCount() > 0);
     assertThat(exporter.getRecords().size()).isEqualTo(batchSize);
-    processor.forceFlush().join(500, TimeUnit.MILLISECONDS);
+    processor.forceFlush().join(1, TimeUnit.SECONDS);
     assertThat(exporter.getRecords().size()).isEqualTo(testRecordsToSend);
   }
 }

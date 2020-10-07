@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.zipkin;
@@ -22,11 +11,9 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -56,8 +43,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.of(
-          EventImpl.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
-          EventImpl.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
+          Event.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
+          Event.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
@@ -154,7 +141,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setSpanId(SPAN_ID)
         .setParentSpanId(PARENT_SPAN_ID)
         .setSampled(true)
-        .setStatus(Status.OK)
+        .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)
         .setHasRemoteParent(true)
         .setName(SPAN_NAME)
