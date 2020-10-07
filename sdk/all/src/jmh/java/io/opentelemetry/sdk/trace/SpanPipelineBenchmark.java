@@ -48,7 +48,7 @@ public class SpanPipelineBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     SpanExporter exporter = new NoOpSpanExporter();
-    OpenTelemetrySdk.getGlobalTracerProvider()
+    OpenTelemetrySdk.getGlobalTracerManagement()
         .addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
 

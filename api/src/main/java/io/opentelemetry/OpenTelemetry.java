@@ -5,13 +5,12 @@
 
 package io.opentelemetry;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.internal.Utils;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
@@ -20,8 +19,6 @@ import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
-import io.opentelemetry.trace.spi.TracerProviderFactory;
-import java.util.Objects;
 import java.util.ServiceLoader;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -191,9 +188,9 @@ public interface OpenTelemetry {
    * @throws NullPointerException if {@code propagators} is {@code null}.
    * @since 0.3.0
    */
-  public static void setPropagators(ContextPropagators propagators) {
-    Objects.requireNonNull(propagators, "propagators");
-    getInstance().propagators = propagators;
+  static void setPropagators(ContextPropagators propagators) {
+    requireNonNull(propagators, "propagators");
+    setGlobalOpenTelemetry(getGlobalOpenTelemetry().withPropagators(propagators));
   }
 
   OpenTelemetry withPropagators(ContextPropagators propagators);

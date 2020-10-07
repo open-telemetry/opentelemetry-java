@@ -30,8 +30,7 @@ public class TracezDataAggregatorBenchmark {
   private static final String runningSpan = "RUNNING_SPAN";
   private static final String latencySpan = "LATENCY_SPAN";
   private static final String errorSpan = "ERROR_SPAN";
-  private final Tracer tracer =
-      OpenTelemetry.getGlobalTracer("TracezDataAggregatorBenchmark");
+  private final Tracer tracer = OpenTelemetry.getGlobalTracer("TracezDataAggregatorBenchmark");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
 

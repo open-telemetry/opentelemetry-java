@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link TraceConfigzZPageHandler}. */
 public final class TraceConfigzZPageHandlerTest {
   private static final TracerSdkManagement TRACER_SDK_MANAGEMENT =
-      OpenTelemetrySdk.getGlobalTracerProvider();
+      OpenTelemetrySdk.getGlobalTracerManagement();
   private static final Map<String, String> emptyQueryMap = ImmutableMap.of();
 
   @BeforeEach

@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
@@ -29,7 +30,6 @@ import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -49,7 +49,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
    *
    * @return TracerProvider returned by {@link OpenTelemetry#getGlobalTracerProvider()}.
    */
-  public static TracerSdkProvider getGlobalTracerProvider() {
+  public static TracerSdkManagement getGlobalTracerManagement() {
     return (TracerSdkProvider)
         ((Obfuscated<?>) OpenTelemetry.getGlobalTracerProvider()).unobfuscate();
   }
