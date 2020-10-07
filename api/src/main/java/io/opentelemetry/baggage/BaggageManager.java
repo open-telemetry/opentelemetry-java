@@ -16,7 +16,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>Implementations may have different constraints and are free to convert entry contexts to their
  * own subtypes. This means callers cannot assume the {@link #getCurrentBaggage() current context}
- * is the same instance as the one {@link #withContext(Baggage) placed into scope}.
+ * is the same instance as the one {@link #withBaggage(Baggage) placed into scope}.
  *
  * @since 0.9.0
  */
@@ -44,10 +44,10 @@ public interface BaggageManager {
    * the previous {@code Baggage}) and returns an object that represents that scope. The scope is
    * exited when the returned object is closed.
    *
-   * @param distContext the {@code Baggage} to be set as the current context.
+   * @param baggage the {@code Baggage} to be set as the current context.
    * @return an object that defines a scope where the given {@code Baggage} is set as the current
    *     context.
    * @since 0.9.0
    */
-  Scope withContext(Baggage distContext);
+  Scope withBaggage(Baggage baggage);
 }

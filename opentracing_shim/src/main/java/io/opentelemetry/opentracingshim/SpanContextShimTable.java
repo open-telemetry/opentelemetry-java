@@ -77,7 +77,7 @@ final class SpanContextShimTable {
     return create(spanShim, spanShim.telemetryInfo().emptyBaggage());
   }
 
-  public SpanContextShim create(SpanShim spanShim, Baggage distContext) {
+  public SpanContextShim create(SpanShim spanShim, Baggage baggage) {
     lock.writeLock().lock();
     try {
       SpanContextShim contextShim = shimsMap.get(spanShim.getSpan());
@@ -86,8 +86,7 @@ final class SpanContextShimTable {
       }
 
       contextShim =
-          new SpanContextShim(
-              spanShim.telemetryInfo(), spanShim.getSpan().getContext(), distContext);
+          new SpanContextShim(spanShim.telemetryInfo(), spanShim.getSpan().getContext(), baggage);
       shimsMap.put(spanShim.getSpan(), contextShim);
       return contextShim;
 
