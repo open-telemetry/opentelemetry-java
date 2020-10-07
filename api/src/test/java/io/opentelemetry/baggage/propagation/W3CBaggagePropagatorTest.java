@@ -5,6 +5,8 @@
 
 package io.opentelemetry.baggage.propagation;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -19,6 +21,7 @@ import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -155,6 +158,35 @@ class W3CBaggagePropagatorTest {
             ImmutableMap::get);
 
     assertThat(BaggageUtils.getBaggage(result)).isEqualTo(EmptyBaggage.getInstance());
+  }
+
+  @Test
+  void inject_noBaggage() {
+    W3CBaggagePropagator propagator = new W3CBaggagePropagator(baggageManager);
+    Map<String, String> carrier = new HashMap<>();
+    propagator.inject(Context.ROOT, carrier, Map::put);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
+  void inject_emptyBaggage() {
+    Baggage baggage = new TestBaggage(emptyMap());
+    W3CBaggagePropagator propagator = new W3CBaggagePropagator(baggageManager);
+    Map<String, String> carrier = new HashMap<>();
+    propagator.inject(BaggageUtils.withBaggage(baggage, Context.ROOT), carrier, Map::put);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
+  void inject() {
+    LinkedHashMap<String, Entry> data = new LinkedHashMap<>();
+    data.put("nometa", Entry.create("nometa", "nometa-value"));
+    data.put("meta", Entry.create("meta", "meta-value", EntryMetadata.create("somemetadata; someother=foo")));
+    Baggage baggage = new TestBaggage(data);
+    W3CBaggagePropagator propagator = new W3CBaggagePropagator(baggageManager);
+    Map<String, String> carrier = new HashMap<>();
+    propagator.inject(BaggageUtils.withBaggage(baggage, Context.ROOT), carrier, Map::put);
+    assertThat(carrier).containsExactlyInAnyOrderEntriesOf(singletonMap("baggage", "nometa=nometa-value,meta=meta-value;somemetadata; someother=foo"));
   }
 
   private static class TestBaggageBuilder implements Builder {

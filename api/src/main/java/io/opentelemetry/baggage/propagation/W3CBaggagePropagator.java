@@ -9,10 +9,12 @@ import static java.util.Collections.singletonList;
 
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.Baggage.Builder;
 import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.EmptyBaggage;
+import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.List;
@@ -49,7 +51,23 @@ public class W3CBaggagePropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
-    //todo: implement
+    Baggage baggage = BaggageUtils.getBaggage(context);
+    if (baggage == null) {
+      return;
+    }
+    StringBuilder headerContent = new StringBuilder();
+    for (Entry entry : baggage.getEntries()) {
+      headerContent.append(entry.getKey()).append("=").append(entry.getValue());
+      String metadataValue = entry.getEntryMetadata().getValue();
+      if (metadataValue != null && !metadataValue.isEmpty()) {
+        headerContent.append(";").append(metadataValue);
+      }
+      headerContent.append(",");
+    }
+    if (headerContent.length() > 0) {
+      headerContent.setLength(headerContent.length() - 1);
+      setter.set(carrier, FIELD, headerContent.toString());
+    }
   }
 
   @Override
