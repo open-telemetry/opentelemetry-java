@@ -55,7 +55,7 @@ class BaggageSdkTest {
   void getEntries_chain() {
     Entry t1alt = Entry.create(K1, V2, TMD);
     Baggage parent = listToBaggage(T1, T2);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.ROOT);
+    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
     Baggage baggage =
         contextManager
             .baggageBuilder()
@@ -68,7 +68,7 @@ class BaggageSdkTest {
   @Test
   void put_newKey() {
     Baggage parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.ROOT);
+    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
     assertThat(
             contextManager
                 .baggageBuilder()
@@ -82,7 +82,7 @@ class BaggageSdkTest {
   @Test
   void put_existingKey() {
     BaggageSdk parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.ROOT);
+    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
     assertThat(
             contextManager
                 .baggageBuilder()
@@ -96,7 +96,7 @@ class BaggageSdkTest {
   @Test
   void put_nullKey() {
     Baggage parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.ROOT);
+    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
     Baggage.Builder builder = contextManager.baggageBuilder().setParent(parentContext);
     assertThrows(NullPointerException.class, () -> builder.put(null, V2, TMD), "key");
   }
@@ -104,7 +104,7 @@ class BaggageSdkTest {
   @Test
   void put_nullValue() {
     BaggageSdk parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.ROOT);
+    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
     Baggage.Builder builder = contextManager.baggageBuilder().setParent(parentContext);
     assertThrows(NullPointerException.class, () -> builder.put(K2, null, TMD), "value");
   }
@@ -136,7 +136,7 @@ class BaggageSdkTest {
   @Test
   void setParent_setNoParent() {
     BaggageSdk parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.ROOT);
+    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
     Baggage baggage =
         contextManager.baggageBuilder().setParent(parentContext).setNoParent().build();
     assertThat(baggage.getEntries()).isEmpty();
@@ -163,7 +163,7 @@ class BaggageSdkTest {
   @Test
   void remove_keyFromParent() {
     BaggageSdk parent = listToBaggage(T1, T2);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.ROOT);
+    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
     assertThat(
             contextManager
                 .baggageBuilder()

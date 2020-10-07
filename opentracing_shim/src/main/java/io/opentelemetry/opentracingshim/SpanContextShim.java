@@ -5,11 +5,11 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.grpc.Context;
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
+import io.opentelemetry.context.Context;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
@@ -61,7 +61,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   @Override
   public String toSpanId() {
-    return context.getSpanIdAsHexString().toString();
+    return context.getSpanIdAsHexString();
   }
 
   @Override
