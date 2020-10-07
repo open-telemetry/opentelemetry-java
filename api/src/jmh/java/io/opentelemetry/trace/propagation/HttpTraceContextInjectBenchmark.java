@@ -5,7 +5,7 @@
 
 package io.opentelemetry.trace.propagation;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
@@ -75,7 +75,7 @@ public class HttpTraceContextInjectBenchmark {
   private static List<Context> createContexts(List<SpanContext> spanContexts) {
     List<Context> contexts = new ArrayList<>();
     for (SpanContext context : spanContexts) {
-      contexts.add(TracingContextUtils.withSpan(DefaultSpan.create(context), Context.ROOT));
+      contexts.add(TracingContextUtils.withSpan(DefaultSpan.create(context), Context.root()));
     }
     return contexts;
   }

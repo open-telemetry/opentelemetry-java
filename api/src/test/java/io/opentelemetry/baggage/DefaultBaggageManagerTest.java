@@ -8,7 +8,7 @@ package io.opentelemetry.baggage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,13 +46,10 @@ class DefaultBaggageManagerTest {
 
   @Test
   void getCurrentContext_ContextSetToNull() {
-    Context orig = BaggageUtils.withBaggage(null, Context.current()).attach();
-    try {
+    try (Scope ignored = BaggageUtils.withBaggage(null, Context.current()).makeCurrent()) {
       Baggage distContext = DEFAULT_BAGGAGE_MANAGER.getCurrentBaggage();
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
-    } finally {
-      Context.current().detach(orig);
     }
   }
 
