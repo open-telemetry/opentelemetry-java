@@ -7,7 +7,6 @@ package io.opentelemetry.baggage.propagation;
 
 import static java.util.Collections.singletonList;
 
-import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.BaggageManager;
@@ -15,6 +14,7 @@ import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.EmptyBaggage;
 import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.List;
 
