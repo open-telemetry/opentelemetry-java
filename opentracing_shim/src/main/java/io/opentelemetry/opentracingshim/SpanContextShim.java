@@ -5,7 +5,6 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.grpc.Context;
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.Entry;
