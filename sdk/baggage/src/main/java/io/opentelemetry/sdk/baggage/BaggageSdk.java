@@ -14,7 +14,6 @@ import io.opentelemetry.context.Context;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -52,11 +51,7 @@ class BaggageSdk implements Baggage {
       }
     }
     // Clean out any null values that may have been added by Builder.remove.
-    for (Iterator<Entry> it = combined.values().iterator(); it.hasNext(); ) {
-      if (it.next() == null) {
-        it.remove();
-      }
-    }
+    combined.values().removeIf(Objects::isNull);
 
     return Collections.unmodifiableCollection(combined.values());
   }
@@ -77,7 +72,7 @@ class BaggageSdk implements Baggage {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof BaggageSdk)) {
+    if (!(o instanceof BaggageSdk)) {
       return false;
     }
 
@@ -86,7 +81,7 @@ class BaggageSdk implements Baggage {
     if (!entries.equals(distContextSdk.entries)) {
       return false;
     }
-    return parent != null ? parent.equals(distContextSdk.parent) : distContextSdk.parent == null;
+    return Objects.equals(parent, distContextSdk.parent);
   }
 
   @Override

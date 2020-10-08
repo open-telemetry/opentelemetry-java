@@ -205,7 +205,7 @@ class TracerSdkTest {
 
   private static class CountingSpanExporter implements SpanExporter {
 
-    public AtomicLong numberOfSpansExported = new AtomicLong();
+    public final AtomicLong numberOfSpansExported = new AtomicLong();
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {

@@ -32,22 +32,9 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(1);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.succeed();
-              }
-            })
-        .start();
+    new Thread(resultCode::succeed).start();
 
-    resultCode.whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            completions.countDown();
-          }
-        });
+    resultCode.whenComplete(completions::countDown);
 
     completions.await(3, TimeUnit.SECONDS);
 
@@ -60,22 +47,9 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(1);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.fail();
-              }
-            })
-        .start();
+    new Thread(resultCode::fail).start();
 
-    resultCode.whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            completions.countDown();
-          }
-        });
+    resultCode.whenComplete(completions::countDown);
 
     completions.await(3, TimeUnit.SECONDS);
 
@@ -88,30 +62,9 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(2);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.succeed();
-              }
-            })
-        .start();
+    new Thread(resultCode::succeed).start();
 
-    resultCode
-        .whenComplete(
-            new Runnable() {
-              @Override
-              public void run() {
-                completions.countDown();
-              }
-            })
-        .whenComplete(
-            new Runnable() {
-              @Override
-              public void run() {
-                completions.countDown();
-              }
-            });
+    resultCode.whenComplete(completions::countDown).whenComplete(completions::countDown);
 
     completions.await(3, TimeUnit.SECONDS);
 
@@ -124,29 +77,13 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(2);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.succeed();
-              }
-            })
-        .start();
+    new Thread(resultCode::succeed).start();
 
     resultCode.whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            completions.countDown();
+        () -> {
+          completions.countDown();
 
-            resultCode.whenComplete(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    completions.countDown();
-                  }
-                });
-          }
+          resultCode.whenComplete(completions::countDown);
         });
 
     completions.await(3, TimeUnit.SECONDS);
@@ -160,22 +97,9 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(1);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.succeed().fail();
-              }
-            })
-        .start();
+    new Thread(() -> resultCode.succeed().fail()).start();
 
-    resultCode.whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            completions.countDown();
-          }
-        });
+    resultCode.whenComplete(completions::countDown);
 
     completions.await(3, TimeUnit.SECONDS);
 
@@ -244,11 +168,7 @@ class CompletableResultCodeTest {
   @Test
   void joinInterrupted() {
     CompletableResultCode result = new CompletableResultCode();
-    Thread thread =
-        new Thread(
-            () -> {
-              result.join(10, TimeUnit.SECONDS);
-            });
+    Thread thread = new Thread(() -> result.join(10, TimeUnit.SECONDS));
     thread.start();
     thread.interrupt();
     // Different thread so wait a bit for result to be propagated.

@@ -59,12 +59,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final List<SpanData.Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
-
-  // Lock used to internally guard the mutable state of this instance
-  private final Object lock = new Object();
-
-  @GuardedBy("lock")
-  private String name;
   // The kind of the span.
   private final Kind kind;
   // The clock used to get the time.
@@ -75,6 +69,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   // The start time of the span.
   private final long startEpochNanos;
+  // Lock used to internally guard the mutable state of this instance
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
+  private String name;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
   @GuardedBy("lock")
   @Nullable
@@ -236,18 +235,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   @Override
   public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
     return instrumentationLibraryInfo;
-  }
-
-  /**
-   * Returns the end nano time (see {@link System#nanoTime()}) or zero if the current {@code Span}
-   * is not ended.
-   *
-   * @return the end nano time.
-   */
-  long getEndEpochNanos() {
-    synchronized (lock) {
-      return endEpochNanos;
-    }
   }
 
   /**

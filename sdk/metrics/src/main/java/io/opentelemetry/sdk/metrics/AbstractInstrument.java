@@ -50,8 +50,7 @@ abstract class AbstractInstrument implements Instrument {
   }
 
   /**
-   * Collects records from all the entries (labelSet, Bound) that changed since the last {@link
-   * AbstractInstrument#collectAll()} call.
+   * Collects records from all the entries (labelSet, Bound) that changed since the previous call.
    */
   abstract List<MetricData> collectAll();
 

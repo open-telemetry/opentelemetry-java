@@ -85,9 +85,7 @@ class SpanBuilderSdkTest {
   void truncateLink() {
     final int maxNumberOfLinks = 8;
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxNumberOfLinks(maxNumberOfLinks)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -114,9 +112,7 @@ class SpanBuilderSdkTest {
   @Test
   void truncateLinkAttributes() {
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxNumberOfAttributesPerLink(1)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -344,9 +340,7 @@ class SpanBuilderSdkTest {
   void droppingAttributes() {
     final int maxNumberOfAttrs = 8;
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxNumberOfAttributes(maxNumberOfAttrs)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -370,14 +364,12 @@ class SpanBuilderSdkTest {
   @Test
   public void tooLargeAttributeValuesAreTruncated() {
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxLengthOfAttributeValues(10)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    spanBuilder.setAttribute("builderStringNull", (String) null);
+    spanBuilder.setAttribute("builderStringNull", null);
     spanBuilder.setAttribute("builderStringSmall", "small");
     spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
     spanBuilder.setAttribute("builderLong", 42L);
@@ -421,9 +413,7 @@ class SpanBuilderSdkTest {
   @Test
   void addAttributes_OnlyViaSampler() {
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setSampler(Samplers.traceIdRatioBased(1))
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
