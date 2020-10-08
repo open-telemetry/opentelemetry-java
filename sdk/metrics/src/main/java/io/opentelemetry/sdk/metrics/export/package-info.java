@@ -31,4 +31,7 @@
  *   <li>{@code OTEL_IMR_EXPORT_INTERVAL}: sets the export interval between pushes to the exporter.
  * </ul>
  */
+@ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.metrics.export;
+
+import javax.annotation.ParametersAreNonnullByDefault;

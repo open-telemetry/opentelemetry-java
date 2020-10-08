@@ -19,4 +19,7 @@
  * supported in the {@code opentelemetry.trace.propagation} package.
  */
 // TODO: Add code examples.
+@ParametersAreNonnullByDefault
 package io.opentelemetry.trace;
+
+import javax.annotation.ParametersAreNonnullByDefault;

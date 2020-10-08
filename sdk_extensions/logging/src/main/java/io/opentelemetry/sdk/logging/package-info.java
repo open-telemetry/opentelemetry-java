@@ -3,8 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/** Provides implementations of SDK interfaces which integrate natively with AWS infrastructure. */
+/**
+ * The OpenTelemetry SDK implementation of logging.
+ *
+ * @see io.opentelemetry.sdk.logging.LogSinkSdkProvider
+ */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.sdk.extensions.trace.aws;
+package io.opentelemetry.sdk.logging;
 
 import javax.annotation.ParametersAreNonnullByDefault;
