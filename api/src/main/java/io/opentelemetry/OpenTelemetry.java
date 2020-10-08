@@ -168,8 +168,6 @@ public interface OpenTelemetry {
    * Gets or creates a named tracer instance from the {@link TracerProvider} for this {@link
    * OpenTelemetry}.
    *
-   * <p>This is a shortcut method for {@code getTracerProvider().get(instrumentationName)}.
-   *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
    * @return a tracer instance.
@@ -181,9 +179,6 @@ public interface OpenTelemetry {
   /**
    * Gets or creates a named and versioned tracer instance from the {@link TracerProvider} in this
    * {@link OpenTelemetry}.
-   *
-   * <p>This is a shortcut method for {@code getTracerProvider().get(instrumentationName,
-   * instrumentationVersion)}.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
@@ -202,8 +197,6 @@ public interface OpenTelemetry {
    * Gets or creates a named meter instance from the {@link MeterProvider} in this {@link
    * OpenTelemetry}.
    *
-   * <p>This is a shortcut method for {@code getMeterProvider().get(instrumentationName)}.
-   *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
    * @return a tracer instance.
@@ -215,9 +208,6 @@ public interface OpenTelemetry {
   /**
    * Gets or creates a named and versioned meter instance from the {@link MeterProvider} in this
    * {@link OpenTelemetry}.
-   *
-   * <p>This is a shortcut method for {@code getMeterProvider().get(instrumentationName,
-   * instrumentationVersion)}.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
