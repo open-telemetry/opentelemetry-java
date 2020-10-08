@@ -47,24 +47,6 @@ public interface Baggage {
    */
   interface Builder {
     /**
-     * Sets the parent {@link Baggage} to use. If no parent is provided, the value of {@link
-     * BaggageManager#getCurrentBaggage()} at {@link #build()} time will be used as parent, unless
-     * {@link #setNoParent()} was called.
-     *
-     * <p>This <b>must</b> be used to create a {@link Baggage} when manual Context propagation is
-     * used.
-     *
-     * <p>If called multiple times, only the last specified value will be used.
-     *
-     * @param parent the {@link Baggage} used as parent, not null.
-     * @return this.
-     * @throws NullPointerException if {@code parent} is {@code null}.
-     * @see #setNoParent()
-     * @since 0.9.0
-     */
-    Builder setParent(Baggage parent);
-
-    /**
      * Sets the parent {@link Baggage} to use from the specified {@code Context}. If no parent
      * {@link Baggage} is provided, the value of {@link BaggageManager#getCurrentBaggage()} at
      * {@link #build()} time will be used as parent, unless {@link #setNoParent()} was called.
@@ -87,7 +69,7 @@ public interface Baggage {
 
     /**
      * Sets the option to become a root {@link Baggage} with no parent. If <b>not</b> called, the
-     * value provided using {@link #setParent(Baggage)} or otherwise {@link
+     * value provided using {@link #setParent(Context)} or otherwise {@link
      * BaggageManager#getCurrentBaggage()} at {@link #build()} time will be used as parent.
      *
      * @return this.

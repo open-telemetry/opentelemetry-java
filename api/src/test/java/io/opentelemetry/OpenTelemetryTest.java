@@ -410,7 +410,7 @@ class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public Scope withContext(Baggage distContext) {
+    public Scope withBaggage(Baggage baggage) {
       return null;
     }
   }

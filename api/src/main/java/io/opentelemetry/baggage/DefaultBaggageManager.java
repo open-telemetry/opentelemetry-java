@@ -42,18 +42,12 @@ public final class DefaultBaggageManager implements BaggageManager {
   }
 
   @Override
-  public Scope withContext(Baggage distContext) {
-    return BaggageUtils.currentContextWith(distContext);
+  public Scope withBaggage(Baggage baggage) {
+    return BaggageUtils.currentContextWith(baggage);
   }
 
   @Immutable
   private static final class NoopBaggageBuilder implements Baggage.Builder {
-    @Override
-    public Baggage.Builder setParent(Baggage parent) {
-      Objects.requireNonNull(parent, "parent");
-      return this;
-    }
-
     @Override
     public Baggage.Builder setParent(Context context) {
       Objects.requireNonNull(context, "context");
