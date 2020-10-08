@@ -17,4 +17,7 @@
  * io.grpc.Context}, such as trace ID.
  */
 // TODO: Add code examples.
+@ParametersAreNonnullByDefault
 package io.opentelemetry.baggage;
+
+import javax.annotation.ParametersAreNonnullByDefault;

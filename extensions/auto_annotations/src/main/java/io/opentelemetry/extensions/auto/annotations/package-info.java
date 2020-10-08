@@ -13,4 +13,7 @@
  * useless without some kind of annotation processing, such as bytecode manipulation during runtime.
  * You cannot guarantee that users of your library will use that in their production system.
  */
+@ParametersAreNonnullByDefault
 package io.opentelemetry.extensions.auto.annotations;
+
+import javax.annotation.ParametersAreNonnullByDefault;

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/** Provides implementations of SDK interfaces which integrate natively with AWS infrastructure. */
+/** Experimental utilities for working with exported trace data. */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.sdk.extensions.trace.aws;
+package io.opentelemetry.sdk.extensions.incubator.trace.data;
 
 import javax.annotation.ParametersAreNonnullByDefault;

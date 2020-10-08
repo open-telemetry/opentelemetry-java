@@ -76,4 +76,7 @@
  *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
  * </ul>
  */
+@ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.trace.export;
+
+import javax.annotation.ParametersAreNonnullByDefault;
