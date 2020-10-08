@@ -6,12 +6,6 @@ receivers:
 exporters:
   logging:
 
-# Alternatively, use jaeger_thrift_http with the settings below. In this case
-# update the list of exporters on the traces pipeline.
-#
-#  jaeger_thrift_http:
-#    url: http://jaeger-all-in-one:14268/api/traces
-
 processors:
   batch:
   queued_retry:
