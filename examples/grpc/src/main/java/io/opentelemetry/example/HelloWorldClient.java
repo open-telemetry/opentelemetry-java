@@ -22,10 +22,10 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -68,7 +68,7 @@ public class HelloWorldClient {
 
   private void initTracer() {
     // Use the OpenTelemetry SDK
-    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+    TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
     // Set to process the spans by the log exporter
     tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
@@ -94,12 +94,10 @@ public class HelloWorldClient {
       HelloRequest request = HelloRequest.newBuilder().setName(name).build();
       try {
         HelloReply response = blockingStub.sayHello(request);
-        span.setStatus(Status.OK);
         logger.info("Greeting: " + response.getMessage());
       } catch (StatusRuntimeException e) {
         logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-        // TODO create mapping for io.grpc.Status<->io.opentelemetry.trace.Status
-        span.setStatus(Status.UNKNOWN.withDescription("gRPC status: " + e.getStatus()));
+        span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + e.getStatus());
       }
     } finally {
       span.end();
@@ -111,7 +109,7 @@ public class HelloWorldClient {
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
         MethodDescriptor<ReqT, RespT> methodDescriptor, CallOptions callOptions, Channel channel) {
-      return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
+      return new ForwardingClientCall.SimpleForwardingClientCall<>(
           channel.newCall(methodDescriptor, callOptions)) {
         @Override
         public void start(Listener<RespT> responseListener, Metadata headers) {
