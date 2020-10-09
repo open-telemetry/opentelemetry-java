@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
 final class SpanBuilderSdk implements Span.Builder {
+
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final SpanProcessor spanProcessor;
@@ -204,13 +205,11 @@ final class SpanBuilderSdk implements Span.Builder {
                 immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
-    TraceState samplingResultTraceState = samplingResult.getTraceState();
+    TraceState samplingResultTraceState =
+        samplingResult.traceStateUpdate().apply(parentSpanContext.getTraceState());
     SpanContext spanContext =
         createSpanContext(
-            traceId,
-            spanId,
-            samplingResultTraceState == null ? TraceState.getDefault() : samplingResultTraceState,
-            Samplers.isSampled(samplingDecision));
+            traceId, spanId, samplingResultTraceState, Samplers.isSampled(samplingDecision));
 
     if (!Samplers.isRecording(samplingDecision)) {
       return DefaultSpan.create(spanContext);

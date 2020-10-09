@@ -48,49 +48,42 @@ class SamplersTest {
 
   @Test
   void emptySamplingDecision() {
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState))
-        .isEqualTo(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState));
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState))
-        .isEqualTo(Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState));
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE))
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE));
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP))
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.DROP));
 
-    assertThat(
-            Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState)
-                .getDecision())
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE).getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(
-            Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState)
+            Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE)
                 .getAttributes()
                 .isEmpty())
         .isTrue();
-    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState).getDecision())
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP).getDecision())
         .isEqualTo(Decision.DROP);
-    assertThat(
-            Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState)
-                .getAttributes()
-                .isEmpty())
+    assertThat(Samplers.emptySamplingResult(Sampler.Decision.DROP).getAttributes().isEmpty())
         .isTrue();
   }
 
   @Test
   void samplingDecisionEmpty() {
-    assertThat(
-            Samplers.samplingResult(
-                Sampler.Decision.RECORD_AND_SAMPLE, Attributes.empty(), traceState))
-        .isEqualTo(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE, traceState));
-    assertThat(Samplers.samplingResult(Sampler.Decision.DROP, Attributes.empty(), traceState))
-        .isEqualTo(Samplers.emptySamplingResult(Sampler.Decision.DROP, traceState));
+    assertThat(Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLE, Attributes.empty()))
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.RECORD_AND_SAMPLE));
+    assertThat(Samplers.samplingResult(Sampler.Decision.DROP, Attributes.empty()))
+        .isSameAs(Samplers.emptySamplingResult(Sampler.Decision.DROP));
   }
 
   @Test
   void samplingDecisionAttrs() {
     final Attributes attrs = Attributes.of(longKey("foo"), 42L, stringKey("bar"), "baz");
     final SamplingResult sampledSamplingResult =
-        Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLE, attrs, traceState);
+        Samplers.samplingResult(Sampler.Decision.RECORD_AND_SAMPLE, attrs);
     assertThat(sampledSamplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLE);
     assertThat(sampledSamplingResult.getAttributes()).isEqualTo(attrs);
 
     final SamplingResult notSampledSamplingResult =
-        Samplers.samplingResult(Sampler.Decision.DROP, attrs, traceState);
+        Samplers.samplingResult(Sampler.Decision.DROP, attrs);
     assertThat(notSampledSamplingResult.getDecision()).isEqualTo(Decision.DROP);
     assertThat(notSampledSamplingResult.getAttributes()).isEqualTo(attrs);
   }

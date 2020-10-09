@@ -14,6 +14,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
+import java.util.function.Function;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Sampler is used to make decisions on {@link Span} sampling. */
@@ -80,12 +81,12 @@ public interface Sampler {
     Attributes getAttributes();
 
     /**
-     * Return the {@link TraceState} that should be associated with the resulting Span. This may be
-     * the same {@link TraceState} that was provided originally, or an updated one.
-     *
-     * <p>Note: if a null is returned, the TraceState will be reset to {@link
-     * TraceState#getDefault()}.
+     * Return a function that may update the incoming parent {@link TraceState}. This may return the
+     * same {@link TraceState} that was provided originally, or an updated one.
      */
-    TraceState getTraceState();
+    @SuppressWarnings("NoFunctionalReturnType")
+    default Function<TraceState, TraceState> traceStateUpdate() {
+      return Function.identity();
+    }
   }
 }

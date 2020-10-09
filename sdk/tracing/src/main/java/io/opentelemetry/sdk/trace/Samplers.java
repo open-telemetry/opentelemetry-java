@@ -19,7 +19,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
@@ -39,6 +38,13 @@ public final class Samplers {
   // Visible for tests.
   static final AttributeKey<Double> SAMPLING_PROBABILITY = doubleKey("sampling.probability");
 
+  private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLE);
+  private static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT =
+      SamplingResultImpl.createWithoutAttributes(Decision.DROP);
+  private static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
+      SamplingResultImpl.createWithoutAttributes(Decision.RECORD_ONLY);
+
   // No instance of this class.
   private Samplers() {}
 
@@ -56,22 +62,20 @@ public final class Samplers {
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Using {@link #emptySamplingResult(Decision, TraceState)} instead of this method is slightly
-   * faster and shorter if you don't need attributes.
+   * <p>Using {@link #emptySamplingResult(Decision)} instead of this method is slightly faster and
+   * shorter if you don't need attributes.
    *
    * @param decision The decision made on the span.
    * @param attributes The attributes to return from {@link SamplingResult#getAttributes()}. A
    *     different object instance with the same elements may be returned.
-   * @param traceState The {@link TraceState} to use.
    * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and the
    *     provided {@code decision}.
    */
-  public static SamplingResult samplingResult(
-      Decision decision, Attributes attributes, TraceState traceState) {
+  public static SamplingResult samplingResult(Decision decision, Attributes attributes) {
     Objects.requireNonNull(attributes, "attributes");
     return attributes.isEmpty()
-        ? emptySamplingResult(decision, traceState)
-        : SamplingResultImpl.create(decision, attributes, traceState);
+        ? emptySamplingResult(decision)
+        : SamplingResultImpl.create(decision, attributes);
   }
 
   /**
@@ -80,20 +84,19 @@ public final class Samplers {
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Use {@link #samplingResult(Decision, Attributes, TraceState)} if you need attributes.
+   * <p>Use {@link #samplingResult(Decision, Attributes)} if you need attributes.
    *
    * @param decision The decision made on the span.
-   * @param traceState The {@link TraceState} to use.
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
-  public static SamplingResult emptySamplingResult(Decision decision, TraceState traceState) {
+  public static SamplingResult emptySamplingResult(Decision decision) {
     switch (decision) {
       case RECORD_AND_SAMPLE:
-        return SamplingResultImpl.createWithoutAttributes(Decision.RECORD_AND_SAMPLE, traceState);
+        return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
       case RECORD_ONLY:
-        return SamplingResultImpl.createWithoutAttributes(Decision.RECORD_ONLY, traceState);
+        return EMPTY_RECORDED_SAMPLING_RESULT;
       case DROP:
-        return SamplingResultImpl.createWithoutAttributes(Decision.DROP, traceState);
+        return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
     }
     throw new AssertionError("unrecognised samplingResult");
   }
@@ -171,8 +174,7 @@ public final class Samplers {
         Kind spanKind,
         ReadableAttributes attributes,
         List<SpanData.Link> parentLinks) {
-      return SamplingResultImpl.createWithoutAttributes(
-          Decision.RECORD_AND_SAMPLE, parentContext.getTraceState());
+      return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
     }
 
     @Override
@@ -194,8 +196,7 @@ public final class Samplers {
         Kind spanKind,
         ReadableAttributes attributes,
         List<SpanData.Link> parentLinks) {
-      return SamplingResultImpl.createWithoutAttributes(
-          Decision.DROP, parentContext.getTraceState());
+      return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
     }
 
     @Override
@@ -420,22 +421,20 @@ public final class Samplers {
       } else {
         idUpperBound = (long) (ratio * Long.MAX_VALUE);
       }
-      return new AutoValue_Samplers_TraceIdRatioBased(ratio, idUpperBound);
+      return new AutoValue_Samplers_TraceIdRatioBased(
+          ratio,
+          idUpperBound,
+          SamplingResultImpl.createWithProbability(Decision.RECORD_AND_SAMPLE, ratio),
+          SamplingResultImpl.createWithProbability(Decision.DROP, ratio));
     }
 
     abstract double getRatio();
 
     abstract long getIdUpperBound();
 
-    private SamplingResult getPositiveSamplingResult(SpanContext parentContext) {
-      return SamplingResultImpl.createWithProbability(
-          Decision.RECORD_AND_SAMPLE, getRatio(), parentContext.getTraceState());
-    }
+    abstract SamplingResult getPositiveSamplingResult();
 
-    private SamplingResult getNegativeSamplingResult(SpanContext parentContext) {
-      return SamplingResultImpl.createWithProbability(
-          Decision.DROP, getRatio(), parentContext.getTraceState());
-    }
+    abstract SamplingResult getNegativeSamplingResult();
 
     @Override
     public final SamplingResult shouldSample(
@@ -454,8 +453,8 @@ public final class Samplers {
       // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
       // code is executed in-line for every Span creation).
       return Math.abs(TraceId.getTraceIdRandomPart(traceId)) < getIdUpperBound()
-          ? getPositiveSamplingResult(parentContext)
-          : getNegativeSamplingResult(parentContext);
+          ? getPositiveSamplingResult()
+          : getNegativeSamplingResult();
     }
 
     @Override
@@ -472,22 +471,19 @@ public final class Samplers {
      *
      * @param decision the decision on sampling and recording
      * @param probability the probability that was used for the samplingResult.
-     * @param traceState the {@link TraceState} to use.
      */
-    static SamplingResult createWithProbability(
-        Decision decision, double probability, TraceState traceState) {
+    static SamplingResult createWithProbability(Decision decision, double probability) {
       return new AutoValue_Samplers_SamplingResultImpl(
-          decision, Attributes.of(SAMPLING_PROBABILITY, probability), traceState);
+          decision, Attributes.of(SAMPLING_PROBABILITY, probability));
     }
 
     /**
      * Creates sampling result without attributes.
      *
      * @param decision sampling samplingResult
-     * @param traceState the {@link TraceState} to use.
      */
-    static SamplingResult createWithoutAttributes(Decision decision, TraceState traceState) {
-      return new AutoValue_Samplers_SamplingResultImpl(decision, Attributes.empty(), traceState);
+    static SamplingResult createWithoutAttributes(Decision decision) {
+      return new AutoValue_Samplers_SamplingResultImpl(decision, Attributes.empty());
     }
 
     /**
@@ -495,10 +491,9 @@ public final class Samplers {
      *
      * @param decision sampling decisionq
      * @param attributes attributes. Will not be copied, so do not modify afterwards.
-     * @param traceState the {@link TraceState} to use.
      */
-    static SamplingResult create(Decision decision, Attributes attributes, TraceState traceState) {
-      return new AutoValue_Samplers_SamplingResultImpl(decision, attributes, traceState);
+    static SamplingResult create(Decision decision, Attributes attributes) {
+      return new AutoValue_Samplers_SamplingResultImpl(decision, attributes);
     }
 
     @Override
@@ -506,8 +501,5 @@ public final class Samplers {
 
     @Override
     public abstract Attributes getAttributes();
-
-    @Override
-    public abstract TraceState getTraceState();
   }
 }

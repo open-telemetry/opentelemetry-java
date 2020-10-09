@@ -38,11 +38,13 @@ import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanBuilderSdk}. */
 class SpanBuilderSdkTest {
+
   private static final String SPAN_NAME = "span_name";
   private final SpanContext sampledSpanContext =
       SpanContext.create(
@@ -512,11 +514,6 @@ class SpanBuilderSdkTest {
                           public Attributes getAttributes() {
                             return Attributes.of(samplerAttributeKey, "bar");
                           }
-
-                          @Override
-                          public TraceState getTraceState() {
-                            return null;
-                          }
                         };
                       }
 
@@ -554,7 +551,7 @@ class SpanBuilderSdkTest {
                           String name,
                           Kind spanKind,
                           ReadableAttributes attributes,
-                          List<io.opentelemetry.trace.Link> parentLinks) {
+                          List<Link> parentLinks) {
                         return new SamplingResult() {
                           @Override
                           public Decision getDecision() {
@@ -567,12 +564,10 @@ class SpanBuilderSdkTest {
                           }
 
                           @Override
-                          public TraceState getTraceState() {
-                            return parentContext
-                                .getTraceState()
-                                .toBuilder()
-                                .set("newkey", "newValue")
-                                .build();
+                          @SuppressWarnings("NoFunctionalReturnType")
+                          public Function<TraceState, TraceState> traceStateUpdate() {
+                            return traceState ->
+                                traceState.toBuilder().set("newkey", "newValue").build();
                           }
                         };
                       }

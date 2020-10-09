@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceState;
 import java.util.List;
 
 /**
@@ -32,7 +31,8 @@ class RateLimitingSampler implements Sampler {
 
   private final double maxTracesPerSecond;
   private final RateLimiter rateLimiter;
-  private final Attributes attributes;
+  private final SamplingResult onSamplingResult;
+  private final SamplingResult offSamplingResult;
 
   /**
    * Creates rate limiting sampler.
@@ -43,7 +43,10 @@ class RateLimitingSampler implements Sampler {
     this.maxTracesPerSecond = maxTracesPerSecond;
     double maxBalance = maxTracesPerSecond < 1.0 ? 1.0 : maxTracesPerSecond;
     this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance, MillisClock.getInstance());
-    this.attributes = Attributes.of(SAMPLER_TYPE, TYPE, SAMPLER_PARAM, (double) maxTracesPerSecond);
+    Attributes attributes =
+        Attributes.of(SAMPLER_TYPE, TYPE, SAMPLER_PARAM, (double) maxTracesPerSecond);
+    this.onSamplingResult = Samplers.samplingResult(Decision.RECORD_AND_SAMPLE, attributes);
+    this.offSamplingResult = Samplers.samplingResult(Decision.DROP, attributes);
   }
 
   @Override
@@ -58,31 +61,13 @@ class RateLimitingSampler implements Sampler {
       return Samplers.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
-    if (parentLinks != null) {
-      for (SpanData.Link parentLink : parentLinks) {
-        if (parentLink.getContext().isSampled()) {
-          return Samplers.alwaysOn()
-              .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
-        }
+    for (SpanData.Link parentLink : parentLinks) {
+      if (parentLink.getContext().isSampled()) {
+        return Samplers.alwaysOn()
+            .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
       }
     }
-    return this.rateLimiter.checkCredit(1.0)
-        ? onSamplingResult(parentContext)
-        : offSamplingResult(parentContext);
-  }
-
-  private SamplingResult onSamplingResult(SpanContext parentContext) {
-    return Samplers.samplingResult(
-        Decision.RECORD_AND_SAMPLE,
-        attributes,
-        parentContext == null ? TraceState.getDefault() : parentContext.getTraceState());
-  }
-
-  private SamplingResult offSamplingResult(SpanContext parentContext) {
-    return Samplers.samplingResult(
-        Decision.DROP,
-        attributes,
-        parentContext == null ? TraceState.getDefault() : parentContext.getTraceState());
+    return this.rateLimiter.checkCredit(1.0) ? onSamplingResult : offSamplingResult;
   }
 
   @Override
