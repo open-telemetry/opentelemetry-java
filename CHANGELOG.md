@@ -25,7 +25,7 @@
     - BUGFIX: the `noParent` option on a Span was being ignored if it was set after setting an explicit parent.
     - BUGFIX: Attributes and Labels now preserve the latest added entry when an existing key has been used.
     - BUGFIX: Updated some of the W3C traceparent validation logic to better match the spec.
-    - FAAS semantic attributes have been added
+    - FaaS semantic attributes have been added
     - Semantic attribute for "exception.escaped" added
 
 - SDK
