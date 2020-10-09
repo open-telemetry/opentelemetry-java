@@ -62,7 +62,7 @@ Published releases are available on maven central.
 
 ```groovy
 dependencies {
-	compile('io.opentelemetry:opentelemetry-api:0.8.0')
+	implementation('io.opentelemetry:opentelemetry-api:0.8.0')
 }
 ```
 
@@ -97,7 +97,7 @@ repositories {
 }
 
 dependencies {
-	compile('io.opentelemetry:opentelemetry-api:0.8.0-SNAPSHOT')
+	implementation('io.opentelemetry:opentelemetry-api:0.9.0-SNAPSHOT')
 }
 ```
 
@@ -110,23 +110,22 @@ OpenTelemetry Java is under active development. Releases aren't guaranteed
 to conform to a specific version of the specification. Future releases will
 not attempt to maintain backwards compatibility with previous releases.
 
-The latest version of the libraries were released on September 1st, 2020.
-See the [v0.8.0 beta release](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v0.8.0).
+Check out information about the [latest release](https://github.com/open-telemetry/opentelemetry-java/releases).
 
 This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Tracing API                 | v0.8.0  |
-| Tracing SDK                 | v0.8.0  |
-| Metrics API                 | v0.8.0  |
-| Metrics SDK                 | v0.8.0  |
-| OTLP Exporter               | v0.8.0  |
-| Jaeger Trace Exporter       | v0.8.0  |
-| Zipkin Trace Exporter       | v0.8.0  |
-| Prometheus Metrics Exporter | v0.8.0  |
-| Context Propagation         | v0.8.0  |
-| OpenTracing Bridge          | v0.8.0  |
+| Tracing API                 | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
+| Tracing SDK                 | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
+| Metrics API                 | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
+| Metrics SDK                 | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
+| OTLP Exporter               | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
+| Prometheus Metrics Exporter | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
+| Context Propagation         | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
+| OpenTracing Bridge          | v<!--VERSION_STABLE-->0.8.0<!--/VERSION_STABLE-->  |
 | OpenCensus Bridge           | N/A     |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
