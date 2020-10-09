@@ -62,4 +62,7 @@
  *       link.
  * </ul>
  */
+@ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.trace.config;
+
+import javax.annotation.ParametersAreNonnullByDefault;

@@ -10,11 +10,11 @@ import static io.opentelemetry.common.AttributeKey.doubleKey;
 import static io.opentelemetry.common.AttributeKey.longKey;
 import static io.opentelemetry.common.AttributeKey.stringKey;
 
-import io.grpc.Context;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -22,8 +22,8 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.ImmutableLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -50,7 +50,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable private Context parent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private AttributesMap attributes;
-  @Nullable private List<ImmutableLink> links;
+  @Nullable private List<Link> links;
   private int totalNumberOfLinksAdded = 0;
   private long startEpochNanos = 0;
   private boolean isRootSpan;
@@ -95,7 +95,7 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder addLink(SpanContext spanContext) {
-    addLink(ImmutableLink.create(spanContext));
+    addLink(Link.create(spanContext));
     return this;
   }
 
@@ -103,7 +103,7 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span.Builder addLink(SpanContext spanContext, Attributes attributes) {
     int totalAttributeCount = attributes.size();
     addLink(
-        ImmutableLink.create(
+        Link.create(
             spanContext,
             RecordEventsReadableSpan.copyAndLimitAttributes(
                 attributes, traceConfig.getMaxNumberOfAttributesPerLink()),
@@ -111,7 +111,7 @@ final class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
-  private void addLink(ImmutableLink link) {
+  private void addLink(Link link) {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     if (links == null) {
@@ -174,7 +174,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span startSpan() {
     final Context parentContext =
-        isRootSpan ? Context.ROOT : parent == null ? Context.current() : parent;
+        isRootSpan ? Context.root() : parent == null ? Context.current() : parent;
     final Span parentSpan = TracingContextUtils.getSpan(parentContext);
     final SpanContext parentSpanContext = parentSpan.getContext();
     String traceId;

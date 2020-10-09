@@ -228,7 +228,7 @@ public final class TracezDataAggregatorTest {
     /* getErrorSpanCounts should return a an empty map */
     Span span = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     Map<String, Integer> counts = dataAggregator.getErrorSpanCounts();
-    span.setStatus(StatusCanonicalCode.ERROR, null);
+    span.setStatus(StatusCanonicalCode.ERROR);
     span.end();
     assertThat(counts).isEmpty();
   }
@@ -238,7 +238,7 @@ public final class TracezDataAggregatorTest {
     for (StatusCanonicalCode errorCode : StatusCanonicalCode.values()) {
       if (errorCode.equals(StatusCanonicalCode.ERROR)) {
         Span span = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
-        span.setStatus(errorCode, null);
+        span.setStatus(errorCode);
         span.end();
       }
     }
@@ -249,10 +249,10 @@ public final class TracezDataAggregatorTest {
   @Test
   void getErrorSpanCounts_twoSpanNames() {
     Span span1 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
-    span1.setStatus(StatusCanonicalCode.ERROR, null);
+    span1.setStatus(StatusCanonicalCode.ERROR);
     span1.end();
     Span span2 = tracer.spanBuilder(SPAN_NAME_TWO).startSpan();
-    span2.setStatus(StatusCanonicalCode.ERROR, null);
+    span2.setStatus(StatusCanonicalCode.ERROR);
     span2.end();
     /* getErrorSpanCounts should return a map with 2 different span names */
     Map<String, Integer> errorCounts = dataAggregator.getErrorSpanCounts();
@@ -273,7 +273,7 @@ public final class TracezDataAggregatorTest {
     Span span2 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     /* getErrorSpans should return an empty List */
     assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE)).isEmpty();
-    span1.setStatus(StatusCanonicalCode.ERROR, null);
+    span1.setStatus(StatusCanonicalCode.ERROR);
     span1.end();
     span2.setStatus(StatusCanonicalCode.ERROR, "ABORTED");
     span2.end();
@@ -290,9 +290,9 @@ public final class TracezDataAggregatorTest {
     /* getErrorSpans should return an empty List for each span name */
     assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE)).isEmpty();
     assertThat(dataAggregator.getErrorSpans(SPAN_NAME_TWO)).isEmpty();
-    span1.setStatus(StatusCanonicalCode.ERROR, null);
+    span1.setStatus(StatusCanonicalCode.ERROR);
     span1.end();
-    span2.setStatus(StatusCanonicalCode.ERROR, null);
+    span2.setStatus(StatusCanonicalCode.ERROR);
     span2.end();
     /* getErrorSpans should return a List with only the corresponding span */
     assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE))

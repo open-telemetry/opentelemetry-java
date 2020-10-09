@@ -5,16 +5,15 @@
 
 package io.opentelemetry.sdk.baggage;
 
-import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
+import io.opentelemetry.context.Context;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -52,11 +51,7 @@ class BaggageSdk implements Baggage {
       }
     }
     // Clean out any null values that may have been added by Builder.remove.
-    for (Iterator<Entry> it = combined.values().iterator(); it.hasNext(); ) {
-      if (it.next() == null) {
-        it.remove();
-      }
-    }
+    combined.values().removeIf(Objects::isNull);
 
     return Collections.unmodifiableCollection(combined.values());
   }
@@ -77,16 +72,16 @@ class BaggageSdk implements Baggage {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof BaggageSdk)) {
+    if (!(o instanceof BaggageSdk)) {
       return false;
     }
 
-    BaggageSdk distContextSdk = (BaggageSdk) o;
+    BaggageSdk baggageSdk = (BaggageSdk) o;
 
-    if (!entries.equals(distContextSdk.entries)) {
+    if (!entries.equals(baggageSdk.entries)) {
       return false;
     }
-    return parent != null ? parent.equals(distContextSdk.parent) : distContextSdk.parent == null;
+    return parent != null ? parent.equals(baggageSdk.parent) : baggageSdk.parent == null;
   }
 
   @Override
@@ -109,15 +104,9 @@ class BaggageSdk implements Baggage {
     }
 
     @Override
-    public Baggage.Builder setParent(Baggage parent) {
-      this.parent = Objects.requireNonNull(parent, "parent");
-      return this;
-    }
-
-    @Override
     public Baggage.Builder setParent(Context context) {
       Objects.requireNonNull(context, "context");
-      setParent(BaggageUtils.getBaggage(context));
+      parent = BaggageUtils.getBaggage(context);
       return this;
     }
 

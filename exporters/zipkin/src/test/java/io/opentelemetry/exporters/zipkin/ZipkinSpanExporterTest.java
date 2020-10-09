@@ -27,11 +27,10 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.ImmutableEvent;
-import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Arrays;
@@ -66,8 +65,8 @@ class ZipkinSpanExporterTest {
   private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.of(
-          ImmutableEvent.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
-          ImmutableEvent.create(1505855799_459486280L, "SENT", Attributes.empty()));
+          Event.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
+          Event.create(1505855799_459486280L, "SENT", Attributes.empty()));
 
   @Test
   void generateSpan_remoteParent() {
@@ -198,7 +197,7 @@ class ZipkinSpanExporterTest {
         buildStandardSpan()
             .setAttributes(attributeMap)
             .setKind(Kind.CLIENT)
-            .setStatus(ImmutableStatus.ERROR)
+            .setStatus(SpanData.Status.error())
             .build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
@@ -219,7 +218,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(ImmutableStatus.ERROR.withDescription(errorMessage))
+            .setStatus(SpanData.Status.create(StatusCanonicalCode.ERROR, errorMessage))
             .setAttributes(attributeMap)
             .build();
 
@@ -309,7 +308,7 @@ class ZipkinSpanExporterTest {
         .setSpanId(SPAN_ID)
         .setParentSpanId(PARENT_SPAN_ID)
         .setSampled(true)
-        .setStatus(ImmutableStatus.OK)
+        .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)
         .setHasRemoteParent(true)
         .setName("Recv.helloworld.Greeter.SayHello")

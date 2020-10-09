@@ -11,10 +11,9 @@ ext {
     opentelemetryProjects = subprojects - project(":opentelemetry-bom")
 }
 
-version = "0.9.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
-
 subprojects {
     group = "io.opentelemetry"
+    version = "0.10.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
 
     plugins.withId("maven-publish") {
         // Always include the artifactory/bintray plugins to do the deployment.
@@ -42,7 +41,6 @@ subprojects {
 
                     pom {
                         name = 'OpenTelemetry Java'
-                        packaging = 'jar'
                         url = 'https://github.com/open-telemetry/opentelemetry-java'
 
                         licenses {
@@ -440,7 +438,7 @@ configure(opentelemetryProjects) {
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = '6.5.1'
+    gradleVersion = '6.6'
 }
 
 tasks.register("prepareRelease") {

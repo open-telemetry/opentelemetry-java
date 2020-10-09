@@ -9,7 +9,7 @@ import static io.opentelemetry.extensions.trace.propagation.B3Propagator.SAMPLED
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.SPAN_ID_HEADER;
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.TRACE_ID_HEADER;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;

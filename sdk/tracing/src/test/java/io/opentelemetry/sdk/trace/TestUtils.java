@@ -9,8 +9,8 @@ import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -49,7 +49,7 @@ public final class TestUtils {
         .setName("span")
         .setKind(Kind.SERVER)
         .setStartEpochNanos(TimeUnit.SECONDS.toNanos(100) + 100)
-        .setStatus(ImmutableStatus.OK)
+        .setStatus(Status.ok())
         .setEndEpochNanos(TimeUnit.SECONDS.toNanos(200) + 200)
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)

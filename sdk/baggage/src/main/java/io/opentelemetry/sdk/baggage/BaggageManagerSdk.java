@@ -24,7 +24,7 @@ public class BaggageManagerSdk implements BaggageManager {
   }
 
   @Override
-  public Scope withContext(Baggage distContext) {
-    return BaggageUtils.currentContextWith(distContext);
+  public Scope withBaggage(Baggage baggage) {
+    return BaggageUtils.currentContextWith(baggage);
   }
 }

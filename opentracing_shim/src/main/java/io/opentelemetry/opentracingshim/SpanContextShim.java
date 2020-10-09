@@ -6,18 +6,18 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.baggage.Baggage;
+import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
+import io.opentelemetry.context.Context;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
 
 final class SpanContextShim extends BaseShimObject implements SpanContext {
-  static final EntryMetadata DEFAULT_ENTRY_METADATA =
-      EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
 
   private final io.opentelemetry.trace.SpanContext context;
-  private final Baggage distContext;
+  private final Baggage baggage;
 
   public SpanContextShim(SpanShim spanShim) {
     this(
@@ -31,17 +31,17 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   }
 
   public SpanContextShim(
-      TelemetryInfo telemetryInfo,
-      io.opentelemetry.trace.SpanContext context,
-      Baggage distContext) {
+      TelemetryInfo telemetryInfo, io.opentelemetry.trace.SpanContext context, Baggage baggage) {
     super(telemetryInfo);
     this.context = context;
-    this.distContext = distContext;
+    this.baggage = baggage;
   }
 
   SpanContextShim newWithKeyValue(String key, String value) {
-    Baggage.Builder builder = contextManager().baggageBuilder().setParent(distContext);
-    builder.put(key, value, DEFAULT_ENTRY_METADATA);
+    Context parentContext = BaggageUtils.withBaggage(baggage, Context.current());
+
+    Baggage.Builder builder = contextManager().baggageBuilder().setParent(parentContext);
+    builder.put(key, value, EntryMetadata.EMPTY);
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());
   }
@@ -51,7 +51,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   }
 
   Baggage getBaggage() {
-    return distContext;
+    return baggage;
   }
 
   @Override
@@ -61,21 +61,22 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   @Override
   public String toSpanId() {
-    return context.getSpanIdAsHexString().toString();
+    return context.getSpanIdAsHexString();
   }
 
   @Override
   public Iterable<Map.Entry<String, String>> baggageItems() {
-    final Iterator<Entry> iterator = distContext.getEntries().iterator();
+    final Iterator<Entry> iterator = baggage.getEntries().iterator();
     return new BaggageIterable(iterator);
   }
 
   @SuppressWarnings("ReturnMissingNullable")
   String getBaggageItem(String key) {
-    return distContext.getEntryValue(key);
+    return baggage.getEntryValue(key);
   }
 
   static class BaggageIterable implements Iterable<Map.Entry<String, String>> {
+
     final Iterator<Entry> iterator;
 
     BaggageIterable(Iterator<Entry> iterator) {
@@ -102,6 +103,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   }
 
   static class BaggageEntry implements Map.Entry<String, String> {
+
     final Entry entry;
 
     BaggageEntry(Entry entry) {

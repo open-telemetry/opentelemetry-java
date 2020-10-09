@@ -11,8 +11,6 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.ImmutableEvent;
-import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
@@ -45,8 +43,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.of(
-          ImmutableEvent.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
-          ImmutableEvent.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
+          Event.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
+          Event.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
@@ -143,7 +141,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setSpanId(SPAN_ID)
         .setParentSpanId(PARENT_SPAN_ID)
         .setSampled(true)
-        .setStatus(ImmutableStatus.OK)
+        .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)
         .setHasRemoteParent(true)
         .setName(SPAN_NAME)

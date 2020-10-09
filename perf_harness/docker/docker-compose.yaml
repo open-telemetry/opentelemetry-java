@@ -1,0 +1,23 @@
+version: "2"
+services:
+
+  # Toxi-proxy
+  toxiproxy:
+    image: shopify/toxiproxy
+    ports:
+      - "8474:8474"  # control port
+      - "44444:44444" # proxy port
+    depends_on:
+      - otel-collector
+
+  # Collector
+  otel-collector:
+    image: ${OTELCOL_IMG}
+    command: ["--config=/etc/otel-collector-config-perf.yaml", "${OTELCOL_ARGS}"]
+    volumes:
+      - ./otel-collector-config-perf.yaml:/etc/otel-collector-config-perf.yaml
+    ports:
+      - "1888:1888"   # pprof extension
+      - "13133:13133" # health_check extension
+      - "55681:55679" # zpages extension
+      - "55680:55680" # otlp receiver

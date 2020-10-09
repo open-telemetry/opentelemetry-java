@@ -8,7 +8,7 @@ package io.opentelemetry.extensions.trace.propagation;
 import static io.opentelemetry.extensions.trace.propagation.AwsXRayPropagator.TRACE_HEADER_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;

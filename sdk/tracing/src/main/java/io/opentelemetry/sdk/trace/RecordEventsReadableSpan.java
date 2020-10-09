@@ -19,8 +19,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.ImmutableEvent;
-import io.opentelemetry.sdk.trace.data.ImmutableStatus;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.EndSpanOptions;
@@ -83,14 +81,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
-  private final EvictingQueue<ImmutableEvent> events;
+  private final EvictingQueue<Event> events;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
-  private SpanData.Status status = ImmutableStatus.UNSET;
+  private SpanData.Status status = SpanData.Status.unset();
   // The end time of the span.
   @GuardedBy("lock")
   private long endEpochNanos;
@@ -321,7 +319,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(ImmutableEvent.create(clock.now(), name, Attributes.empty(), 0));
+    addTimedEvent(Event.create(clock.now(), name, Attributes.empty(), 0));
   }
 
   @Override
@@ -329,7 +327,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return;
     }
-    addTimedEvent(ImmutableEvent.create(timestamp, name, Attributes.empty(), 0));
+    addTimedEvent(Event.create(timestamp, name, Attributes.empty(), 0));
   }
 
   @Override
@@ -339,7 +337,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        ImmutableEvent.create(
+        Event.create(
             clock.now(),
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
@@ -353,7 +351,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        ImmutableEvent.create(
+        Event.create(
             timestamp,
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
@@ -370,7 +368,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return result.build();
   }
 
-  private void addTimedEvent(ImmutableEvent timedEvent) {
+  private void addTimedEvent(Event timedEvent) {
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
@@ -379,6 +377,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       events.add(timedEvent);
       totalRecordedEvents++;
     }
+  }
+
+  @Override
+  public void setStatus(StatusCanonicalCode canonicalCode) {
+    setStatus(canonicalCode, null);
   }
 
   @Override
@@ -391,8 +394,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return;
       }
-      // TODO: Optimize this to not always allocate a new Status object if description is null.
-      this.status = ImmutableStatus.create(canonicalCode, description);
+      this.status = SpanData.Status.create(canonicalCode, description);
     }
   }
 

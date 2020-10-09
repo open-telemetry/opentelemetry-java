@@ -167,10 +167,6 @@ For more details how to read context from remote processes, see
 
 ### Context Propagation
 
-In-process propagation leverages [gRPC Context](https://grpc.github.io/grpc-java/javadoc/io/grpc/Context.html),
-a well established context propagation library, contained in a small artifact, which is non-dependent on the
-entire gRPC engine.
-
 OpenTelemetry provides a text-based approach to propagate context to remote services using the
 [W3C Trace Context](https://www.w3.org/TR/trace-context/) HTTP headers.
 

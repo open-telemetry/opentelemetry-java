@@ -5,21 +5,21 @@
 
 package io.opentelemetry.baggage;
 
-import io.grpc.Context;
-import io.opentelemetry.context.ContextUtils;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Utility methods for accessing the {@link Baggage} contained in the {@link io.grpc.Context}.
+ * Utility methods for accessing the {@link Baggage} contained in the {@link Context}.
  *
  * @since 0.9.0
  */
 @Immutable
 public final class BaggageUtils {
-  private static final Context.Key<Baggage> CORR_CONTEXT_KEY =
-      Context.key("opentelemetry-corr-context-key");
+  private static final ContextKey<Baggage> CORR_CONTEXT_KEY =
+      ContextKey.named("opentelemetry-corr-context-key");
 
   /**
    * Creates a new {@code Context} with the given value set.
@@ -30,7 +30,7 @@ public final class BaggageUtils {
    * @since 0.9.0
    */
   public static Context withBaggage(Baggage baggage, Context context) {
-    return context.withValue(CORR_CONTEXT_KEY, baggage);
+    return context.withValues(CORR_CONTEXT_KEY, baggage);
   }
 
   /**
@@ -53,7 +53,7 @@ public final class BaggageUtils {
    * @since 0.9.0
    */
   public static Baggage getBaggage(Context context) {
-    Baggage baggage = CORR_CONTEXT_KEY.get(context);
+    Baggage baggage = context.getValue(CORR_CONTEXT_KEY);
     return baggage == null ? EmptyBaggage.getInstance() : baggage;
   }
 
@@ -67,7 +67,7 @@ public final class BaggageUtils {
    */
   @Nullable
   public static Baggage getBaggageWithoutDefault(Context context) {
-    return CORR_CONTEXT_KEY.get(context);
+    return context.getValue(CORR_CONTEXT_KEY);
   }
 
   /**
@@ -80,7 +80,7 @@ public final class BaggageUtils {
    */
   public static Scope currentContextWith(Baggage baggage) {
     Context context = withBaggage(baggage, Context.current());
-    return ContextUtils.withScopedContext(context);
+    return context.makeCurrent();
   }
 
   private BaggageUtils() {}

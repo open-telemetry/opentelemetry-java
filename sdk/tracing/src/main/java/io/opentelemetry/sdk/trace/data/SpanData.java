@@ -179,6 +179,40 @@ public interface SpanData {
    * requests from different traces. Link can be also used to reference spans from the same trace.
    */
   interface Link {
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @return a new immutable {@code Event<T>}
+     */
+    static Link create(SpanContext spanContext) {
+      return ImmutableLink.create(spanContext);
+    }
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param attributes the attributes of this {@code Link}.
+     * @return a new immutable {@code Event<T>}
+     */
+    static Link create(SpanContext spanContext, Attributes attributes) {
+      return ImmutableLink.create(spanContext, attributes);
+    }
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param attributes the attributes of this {@code Link}.
+     * @param totalAttributeCount the total number of attributed for this {@code Link}.
+     * @return a new immutable {@code Event<T>}
+     */
+    static Link create(SpanContext spanContext, Attributes attributes, int totalAttributeCount) {
+      return ImmutableLink.create(spanContext, attributes, totalAttributeCount);
+    }
+
     /**
      * Returns the {@code SpanContext}.
      *
@@ -207,6 +241,33 @@ public interface SpanData {
   }
 
   interface Event {
+
+    /**
+     * Returns a new immutable {@code Event}.
+     *
+     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
+     * @param name the name of the {@code Event}.
+     * @param attributes the attributes of the {@code Event}.
+     * @return a new immutable {@code Event<T>}
+     */
+    static Event create(long epochNanos, String name, Attributes attributes) {
+      return ImmutableEvent.create(epochNanos, name, attributes);
+    }
+
+    /**
+     * Returns a new immutable {@code Event}.
+     *
+     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
+     * @param name the name of the {@code Event}.
+     * @param attributes the attributes of the {@code Event}.
+     * @param totalAttributeCount the total number of attributes for this {@code} Event.
+     * @return a new immutable {@code Event<T>}
+     */
+    static Event create(
+        long epochNanos, String name, Attributes attributes, int totalAttributeCount) {
+      return ImmutableEvent.create(epochNanos, name, attributes, totalAttributeCount);
+    }
+
     /**
      * Return the name of the {@code Event}.
      *
@@ -246,6 +307,33 @@ public interface SpanData {
    * conjunction with an optional descriptive message.
    */
   interface Status {
+
+    /**
+     * Returns a {@link Status} indicating the operation has been validated by an application
+     * developer or operator to have completed successfully.
+     */
+    static Status ok() {
+      return ImmutableStatus.OK;
+    }
+
+    /** Returns the default {@link Status}. */
+    static Status unset() {
+      return ImmutableStatus.UNSET;
+    }
+
+    /** Returns a {@link Status} indicating an error occurred. */
+    static Status error() {
+      return ImmutableStatus.ERROR;
+    }
+
+    /**
+     * Returns a {@link Status} with the given {@code code} and {@code description}. If {@code
+     * description} is {@code null}, the returned {@link Status} does not have a description.
+     */
+    static Status create(StatusCanonicalCode code, @Nullable String description) {
+      return ImmutableStatus.create(code, description);
+    }
+
     /**
      * Returns the canonical status code.
      *

@@ -10,7 +10,7 @@ import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACE_STATE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.trace.DefaultSpan;
