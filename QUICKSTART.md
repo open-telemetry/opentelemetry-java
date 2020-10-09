@@ -312,7 +312,7 @@ traces to a logging stream.
 
 ```java
 // Get the tracer
-TracerSdkManagement tracerSdkManagement = OpenTelemetrySdk.getTracerSdkManagement();
+TracerSdkManagement tracerSdkManagement = OpenTelemetrySdk.getTracerManagement();
 
 // Set to export the traces to a logging stream
 tracerSdkManagement.addSpanProcessor(
@@ -406,7 +406,7 @@ environment variables and builder `set*` methods.
 
 ```java
 // Get TraceConfig associated with TracerSdk 
-TracerConfig traceConfig = OpenTelemetrySdk.getTracerSdkManagement().getActiveTraceConfig();
+TracerConfig traceConfig = OpenTelemetrySdk.getTracerManagement().getActiveTraceConfig();
 
 // Get TraceConfig Builder
 Builder builder = traceConfig.toBuilder();
@@ -421,7 +421,7 @@ builder.readEnvironmentVariables()
 builder.setMaxNumberOfLinks(10);
 
 // Update the resulting TraceConfig instance
-OpenTelemetrySdk.getTracerSdkManagement().updateActiveTraceConfig(builder.build());
+OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(builder.build());
 ```
 
 Supported system properties and environment variables:
