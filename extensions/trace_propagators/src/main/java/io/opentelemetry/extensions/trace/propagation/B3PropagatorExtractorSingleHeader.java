@@ -14,6 +14,7 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
@@ -23,15 +24,16 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
       Logger.getLogger(B3PropagatorExtractorSingleHeader.class.getName());
 
   @Override
-  public <C> Context extract(Context context, C carrier, TextMapPropagator.Getter<C> getter) {
+  public <C> Optional<Context> extract(
+      Context context, C carrier, TextMapPropagator.Getter<C> getter) {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
     SpanContext spanContext = getSpanContextFromSingleHeader(carrier, getter);
     if (!spanContext.isValid()) {
-      return null;
+      return Optional.empty();
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return Optional.of(TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context));
   }
 
   @SuppressWarnings("StringSplitter")
