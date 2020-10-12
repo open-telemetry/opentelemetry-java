@@ -26,6 +26,7 @@ import java.util.Collections;
  * of this module.
  */
 public class OtlpExporterExample {
+
   public static void main(String[] args) throws InterruptedException {
     // this will make sure that a proper service.name attribute is set on all the spans/metrics.
     // note: this is not something you should generally do in code, but should be provided on the
@@ -36,7 +37,7 @@ public class OtlpExporterExample {
     OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.getDefault();
     BatchSpanProcessor spanProcessor =
         BatchSpanProcessor.newBuilder(spanExporter).setScheduleDelayMillis(100).build();
-    OpenTelemetrySdk.getTracerProvider().addSpanProcessor(spanProcessor);
+    OpenTelemetrySdk.getTracerManagement().addSpanProcessor(spanProcessor);
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
     OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.getDefault();
@@ -67,7 +68,7 @@ public class OtlpExporterExample {
     // sleep for a bit to let everything settle
     Thread.sleep(2000);
 
-    OpenTelemetrySdk.getTracerProvider().shutdown();
+    OpenTelemetrySdk.getTracerManagement().shutdown();
     intervalMetricReader.shutdown();
   }
 }

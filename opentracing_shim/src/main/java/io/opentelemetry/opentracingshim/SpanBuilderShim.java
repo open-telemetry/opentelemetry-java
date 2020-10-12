@@ -10,9 +10,9 @@ import static io.opentelemetry.common.AttributeKey.doubleKey;
 import static io.opentelemetry.common.AttributeKey.longKey;
 import static io.opentelemetry.common.AttributeKey.stringKey;
 
-import io.grpc.Context;
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.StatusCanonicalCode;
@@ -178,20 +178,20 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public Span start() {
-    Baggage distContext = null;
+    Baggage baggage = null;
     io.opentelemetry.trace.Span.Builder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      builder.setParent(TracingContextUtils.withSpan(parentSpan.getSpan(), Context.ROOT));
+      builder.setParent(TracingContextUtils.withSpan(parentSpan.getSpan(), Context.root()));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
-      distContext = contextShim == null ? null : contextShim.getBaggage();
+      baggage = contextShim == null ? null : contextShim.getBaggage();
     } else if (parentSpanContext != null) {
       builder.setParent(
           TracingContextUtils.withSpan(
-              DefaultSpan.create(parentSpanContext.getSpanContext()), Context.ROOT));
-      distContext = parentSpanContext.getBaggage();
+              DefaultSpan.create(parentSpanContext.getSpanContext()), Context.root()));
+      baggage = parentSpanContext.getBaggage();
     }
 
     for (io.opentelemetry.trace.SpanContext link : parentLinks) {
@@ -215,8 +215,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
     SpanShim spanShim = new SpanShim(telemetryInfo(), span);
 
-    if (distContext != null && distContext != telemetryInfo().emptyBaggage()) {
-      spanContextTable().create(spanShim, distContext);
+    if (baggage != null && baggage != telemetryInfo().emptyBaggage()) {
+      spanContextTable().create(spanShim, baggage);
     }
 
     return spanShim;

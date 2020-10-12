@@ -10,11 +10,11 @@ import static io.opentelemetry.common.AttributeKey.doubleKey;
 import static io.opentelemetry.common.AttributeKey.longKey;
 import static io.opentelemetry.common.AttributeKey.stringKey;
 
-import io.grpc.Context;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -174,7 +174,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span startSpan() {
     final Context parentContext =
-        isRootSpan ? Context.ROOT : parent == null ? Context.current() : parent;
+        isRootSpan ? Context.root() : parent == null ? Context.current() : parent;
     final Span parentSpan = TracingContextUtils.getSpan(parentContext);
     final SpanContext parentSpanContext = parentSpan.getContext();
     String traceId;

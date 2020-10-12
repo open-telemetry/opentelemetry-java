@@ -7,7 +7,7 @@ package io.opentelemetry.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkArgument;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.TemporaryBuffers;
 import io.opentelemetry.trace.DefaultSpan;

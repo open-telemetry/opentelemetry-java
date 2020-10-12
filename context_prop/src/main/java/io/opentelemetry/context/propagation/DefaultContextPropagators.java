@@ -5,7 +5,7 @@
 
 package io.opentelemetry.context.propagation;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;

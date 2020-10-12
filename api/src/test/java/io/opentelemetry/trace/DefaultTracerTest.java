@@ -8,8 +8,7 @@ package io.opentelemetry.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.grpc.Context;
-import io.opentelemetry.context.ContextUtils;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
@@ -74,7 +73,8 @@ class DefaultTracerTest {
     Span span =
         defaultTracer
             .spanBuilder(SPAN_NAME)
-            .setParent(TracingContextUtils.withSpan(DefaultSpan.create(spanContext), Context.ROOT))
+            .setParent(
+                TracingContextUtils.withSpan(DefaultSpan.create(spanContext), Context.root()))
             .startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
   }
@@ -86,7 +86,7 @@ class DefaultTracerTest {
     Span span =
         defaultTracer
             .spanBuilder(SPAN_NAME)
-            .setParent(TracingContextUtils.withSpan(parent, Context.ROOT))
+            .setParent(TracingContextUtils.withSpan(parent, Context.root()))
             .startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
   }
@@ -141,7 +141,7 @@ class DefaultTracerTest {
   void testSpanContextPropagationCurrentSpanContext() {
     Context context =
         TracingContextUtils.withSpan(DefaultSpan.create(spanContext), Context.current());
-    try (Scope scope = ContextUtils.withScopedContext(context)) {
+    try (Scope scope = context.makeCurrent()) {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameAs(spanContext);
     }

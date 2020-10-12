@@ -438,5 +438,22 @@ configure(opentelemetryProjects) {
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = '6.5.1'
+    gradleVersion = '6.6'
+}
+
+tasks.register("prepareRelease") {
+    doLast {
+        def versionParts = version.toString().split('\\.')
+        def minorVersionNumber = Integer.parseInt(versionParts[1])
+        def nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.${versionParts[2]}-SNAPSHOT"
+
+        def readmeText = file("README.md").text
+        def updatedText = readmeText
+                .replaceAll("<version>\\d+\\.\\d+\\.\\d+</version>", "<version>${version}</version>")
+                .replaceAll("<version>\\d+\\.\\d+\\.\\d+-SNAPSHOT</version>", "<version>${nextSnapshot}</version>")
+                .replaceAll("implementation\\('io.opentelemetry:opentelemetry-api:\\d+\\.\\d+\\.\\d+'\\)", "implementation('io.opentelemetry:opentelemetry-api:${version}')")
+                .replaceAll("implementation\\('io.opentelemetry:opentelemetry-api:\\d+\\.\\d+\\.\\d+-SNAPSHOT'\\)", "implementation('io.opentelemetry:opentelemetry-api:${nextSnapshot}')")
+                .replaceAll("<!--VERSION_STABLE-->.*<!--/VERSION_STABLE-->", "<!--VERSION_STABLE-->${version}<!--/VERSION_STABLE-->")
+        file("README.md").text = updatedText
+    }
 }

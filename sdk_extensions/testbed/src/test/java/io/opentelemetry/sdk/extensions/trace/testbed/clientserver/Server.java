@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.clientserver;
 
-import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.trace.Span;

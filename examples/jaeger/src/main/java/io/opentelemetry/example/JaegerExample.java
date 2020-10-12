@@ -10,14 +10,13 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 
 public class JaegerExample {
+
   // Jaeger Endpoint URL and PORT
-  private String ip; // = "jaeger";
-  private int port; // = 14250;
+  private final String ip; // = "jaeger";
+  private final int port; // = 14250;
 
   // OTel API
-  private Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.JaegerExample");
-  // Export traces to Jaeger
-  private JaegerGrpcSpanExporter jaegerExporter;
+  private final Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.JaegerExample");
 
   public JaegerExample(String ip, int port) {
     this.ip = ip;
@@ -29,7 +28,8 @@ public class JaegerExample {
     ManagedChannel jaegerChannel =
         ManagedChannelBuilder.forAddress(ip, port).usePlaintext().build();
     // Export traces to Jaeger
-    this.jaegerExporter =
+    // Export traces to Jaeger
+    JaegerGrpcSpanExporter jaegerExporter =
         JaegerGrpcSpanExporter.newBuilder()
             .setServiceName("example")
             .setChannel(jaegerChannel)
@@ -37,8 +37,8 @@ public class JaegerExample {
             .build();
 
     // Set to process the spans by the Jaeger Exporter
-    OpenTelemetrySdk.getTracerProvider()
-        .addSpanProcessor(SimpleSpanProcessor.newBuilder(this.jaegerExporter).build());
+    OpenTelemetrySdk.getTracerManagement()
+        .addSpanProcessor(SimpleSpanProcessor.newBuilder(jaegerExporter).build());
   }
 
   private void myWonderfulUseCase() {
@@ -55,12 +55,13 @@ public class JaegerExample {
     try {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
+      // do the right thing here
     }
   }
 
   // graceful shutdown
   public void shutdown() {
-    OpenTelemetrySdk.getTracerProvider().shutdown();
+    OpenTelemetrySdk.getTracerManagement().shutdown();
   }
 
   public static void main(String[] args) {

@@ -9,8 +9,8 @@ import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.grpc.Context;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.trace.Span.Kind;
 import org.junit.jupiter.api.Test;
 
@@ -22,8 +22,8 @@ class SpanBuilderTest {
   void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(TracingContextUtils.withSpan(DefaultSpan.create(null), Context.ROOT));
-    spanBuilder.setParent(Context.ROOT);
+    spanBuilder.setParent(TracingContextUtils.withSpan(DefaultSpan.create(null), Context.root()));
+    spanBuilder.setParent(Context.root());
     spanBuilder.setNoParent();
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());

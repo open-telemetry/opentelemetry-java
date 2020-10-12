@@ -10,9 +10,9 @@ import static io.opentelemetry.extensions.trace.propagation.JaegerPropagator.PRO
 import static io.opentelemetry.extensions.trace.propagation.JaegerPropagator.PROPAGATION_HEADER_DELIMITER;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.grpc.Context;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import io.opentelemetry.trace.DefaultSpan;

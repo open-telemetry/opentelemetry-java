@@ -5,9 +5,9 @@
 
 package io.opentelemetry.trace;
 
-import io.grpc.Context;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
 import java.util.Objects;

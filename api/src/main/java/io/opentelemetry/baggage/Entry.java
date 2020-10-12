@@ -6,7 +6,6 @@
 package io.opentelemetry.baggage;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.baggage.EntryMetadata.EntryTtl;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
@@ -19,23 +18,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class Entry {
-  /**
-   * The maximum length for an entry key name. The value is {@value #MAX_KEY_LENGTH}.
-   *
-   * @since 0.9.0
-   */
-  public static final int MAX_KEY_LENGTH = 255;
-
-  /**
-   * The maximum length for a entry value. The value is {@value #MAX_VALUE_LENGTH}.
-   *
-   * @since 0.9.0
-   */
-  public static final int MAX_VALUE_LENGTH = 255;
-
-  /** Default propagation metadata - unlimited propagation. */
-  public static final EntryMetadata METADATA_UNLIMITED_PROPAGATION =
-      EntryMetadata.create(EntryTtl.UNLIMITED_PROPAGATION);
 
   Entry() {}
 
@@ -55,6 +37,18 @@ public abstract class Entry {
   }
 
   /**
+   * Creates an {@code Entry} from the given key, value, with no metadata.
+   *
+   * @param key the entry key.
+   * @param value the entry value.
+   * @return a {@code Entry}.
+   * @since 0.9.0
+   */
+  public static Entry create(String key, String value) {
+    return create(key, value, EntryMetadata.EMPTY);
+  }
+
+  /**
    * Returns the entry's key.
    *
    * @return the entry's key.
@@ -71,7 +65,7 @@ public abstract class Entry {
   public abstract String getValue();
 
   /**
-   * Returns the {@link EntryMetadata} associated with this {@link Entry}.
+   * Returns the (optional) {@link EntryMetadata} associated with this {@link Entry}.
    *
    * @return the {@code EntryMetadata}.
    * @since 0.9.0
@@ -85,9 +79,7 @@ public abstract class Entry {
    * @return whether the name is valid.
    */
   private static boolean keyIsValid(String name) {
-    return !name.isEmpty()
-        && name.length() <= MAX_KEY_LENGTH
-        && StringUtils.isPrintableString(name);
+    return !name.isEmpty() && StringUtils.isPrintableString(name);
   }
 
   /**
@@ -97,6 +89,6 @@ public abstract class Entry {
    * @return whether the value is valid.
    */
   private static boolean isValueValid(String value) {
-    return value.length() <= MAX_VALUE_LENGTH && StringUtils.isPrintableString(value);
+    return StringUtils.isPrintableString(value);
   }
 }

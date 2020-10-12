@@ -5,11 +5,12 @@
 
 package io.opentelemetry.sdk.example;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Tracer;
@@ -21,11 +22,11 @@ public class ConfigureSpanProcessorExample {
   static LoggingSpanExporter exporter = new LoggingSpanExporter();
 
   // Get the Tracer Provider
-  static TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+  static TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
   // Acquire a tracer
-  static Tracer tracer = tracerProvider.get("ConfigureSpanProcessorExample");
+  static Tracer tracer = OpenTelemetry.getTracer("ConfigureSpanProcessorExample");
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
 
     // Example how to configure the default SpanProcessors.
     defaultSpanProcessors();

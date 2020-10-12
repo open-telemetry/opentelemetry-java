@@ -7,7 +7,7 @@ import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.io.File;
 import java.util.ArrayList;
@@ -43,8 +43,7 @@ public class DoubleCounterExample {
       extensionsToFind.add("exe");
       example.calculateSpaceUsedByFilesWithExtension(extensionsToFind, directoryToCountIn);
     } catch (Exception e) {
-      Status status = Status.UNKNOWN.withDescription("Error while calculating used space");
-      span.setStatus(status);
+      span.setStatus(StatusCanonicalCode.ERROR, "Error while calculating used space");
     } finally {
       span.end();
     }
