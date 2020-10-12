@@ -17,7 +17,7 @@ class DoubleValueObserverTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Meter meter = OpenTelemetry.getGlobalMeter("DoubleSumObserverTest");
+  private static final Meter meter = OpenTelemetry.get().getMeter("DoubleSumObserverTest");
 
   @Test
   void preventNull_Name() {

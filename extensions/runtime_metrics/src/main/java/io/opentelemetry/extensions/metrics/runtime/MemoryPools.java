@@ -53,7 +53,7 @@ public final class MemoryPools {
   public MemoryPools() {
     this.memoryBean = ManagementFactory.getMemoryMXBean();
     this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
-    this.meter = OpenTelemetry.getGlobalMeter("io.opentelemetry.extensions.metrics.runtime.memory");
+    this.meter = OpenTelemetry.get().getMeter("io.opentelemetry.extensions.metrics.runtime.memory");
   }
 
   /** Export only the "area" metric. */

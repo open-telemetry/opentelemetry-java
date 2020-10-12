@@ -47,17 +47,13 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   }
 
   /** Returns the global {@link OpenTelemetrySdk}. */
-  public static OpenTelemetrySdk getGlobalOpenTelemetry() {
-    return (OpenTelemetrySdk) OpenTelemetry.getGlobalOpenTelemetry();
+  public static OpenTelemetrySdk get() {
+    return (OpenTelemetrySdk) OpenTelemetry.get();
   }
 
-  /**
-   * Returns the global {@link TracerSdkManagement}.
-   *
-   * @return TracerProvider returned by {@link OpenTelemetry#getGlobalTracerProvider()}.
-   */
+  /** Returns the global {@link TracerSdkManagement}. */
   public static TracerSdkManagement getGlobalTracerManagement() {
-    TracerProvider tracerProvider = OpenTelemetry.getGlobalTracerProvider();
+    TracerProvider tracerProvider = OpenTelemetry.get().getTracerProvider();
     if (!(tracerProvider instanceof ObfuscatedTracerProvider)) {
       throw new IllegalStateException(
           "Trying to access global TracerSdkManagement but global TracerProvider is not an "
@@ -66,22 +62,14 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
-  /**
-   * Returns the global {@link MeterSdkProvider}.
-   *
-   * @return MeterProvider returned by {@link OpenTelemetry#getGlobalMeterProvider()}.
-   */
+  /** Returns the global {@link MeterSdkProvider}. */
   public static MeterSdkProvider getGlobalMeterProvider() {
-    return (MeterSdkProvider) OpenTelemetry.getGlobalMeterProvider();
+    return (MeterSdkProvider) OpenTelemetry.get().getMeterProvider();
   }
 
-  /**
-   * Returns the global {@link BaggageManagerSdk}.
-   *
-   * @return context manager returned by {@link OpenTelemetry#getGlobalBaggageManager()}.
-   */
+  /** Returns the global {@link BaggageManagerSdk}. */
   public static BaggageManagerSdk getGlobalBaggageManager() {
-    return (BaggageManagerSdk) OpenTelemetry.getGlobalBaggageManager();
+    return (BaggageManagerSdk) OpenTelemetry.get().getBaggageManager();
   }
 
   private static final boolean HAS_BAGGAGE_SDK =
@@ -293,7 +281,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
               tracerProvider, meterProvider, baggageManager, propagators, clock, resource);
       // Automatically initialize global OpenTelemetry with the first SDK we build.
       if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
-        OpenTelemetry.setGlobalOpenTelemetry(sdk);
+        OpenTelemetry.set(sdk);
       }
       return sdk;
     }

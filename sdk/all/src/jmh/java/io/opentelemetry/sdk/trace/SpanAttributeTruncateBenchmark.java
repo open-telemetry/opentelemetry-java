@@ -26,7 +26,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanAttributeTruncateBenchmark {
 
-  private final Tracer tracerSdk = OpenTelemetry.getGlobalTracer("benchmarkTracer");
+  private final Tracer tracerSdk = OpenTelemetry.get().getTracer("benchmarkTracer");
   private SpanBuilderSdk spanBuilderSdk;
 
   public String shortValue = "short";

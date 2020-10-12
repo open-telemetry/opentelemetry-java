@@ -140,7 +140,7 @@ class BaggageSdk implements Baggage {
     @Override
     public BaggageSdk build() {
       if (parent == null && !noImplicitParent) {
-        parent = OpenTelemetry.getGlobalBaggageManager().getCurrentBaggage();
+        parent = OpenTelemetry.get().getBaggageManager().getCurrentBaggage();
       }
       return new BaggageSdk(entries, parent);
     }

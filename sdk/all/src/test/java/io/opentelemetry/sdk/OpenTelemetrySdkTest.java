@@ -37,23 +37,23 @@ class OpenTelemetrySdkTest {
   @Test
   void testGlobalDefault() {
     assertThat(((TracerSdkProvider) OpenTelemetrySdk.getGlobalTracerManagement()).get(""))
-        .isSameAs(OpenTelemetry.getGlobalTracerProvider().get(""));
+        .isSameAs(OpenTelemetry.get().getTracerProvider().get(""));
     assertThat(OpenTelemetrySdk.getGlobalBaggageManager())
-        .isSameAs(OpenTelemetry.getGlobalBaggageManager());
+        .isSameAs(OpenTelemetry.get().getBaggageManager());
     assertThat(OpenTelemetrySdk.getGlobalMeterProvider())
-        .isSameAs(OpenTelemetry.getGlobalMeterProvider());
+        .isSameAs(OpenTelemetry.get().getMeterProvider());
   }
 
   @Test
   void testShortcutVersions() {
-    assertThat(OpenTelemetry.getGlobalTracer("testTracer1"))
-        .isEqualTo(OpenTelemetry.getGlobalTracerProvider().get("testTracer1"));
-    assertThat(OpenTelemetry.getGlobalTracer("testTracer2", "testVersion"))
-        .isEqualTo(OpenTelemetry.getGlobalTracerProvider().get("testTracer2", "testVersion"));
-    assertThat(OpenTelemetry.getGlobalMeter("testMeter1"))
-        .isEqualTo(OpenTelemetry.getGlobalMeterProvider().get("testMeter1"));
-    assertThat(OpenTelemetry.getGlobalMeter("testMeter2", "testVersion"))
-        .isEqualTo(OpenTelemetry.getGlobalMeterProvider().get("testMeter2", "testVersion"));
+    assertThat(OpenTelemetry.get().getTracer("testTracer1"))
+        .isEqualTo(OpenTelemetry.get().getTracerProvider().get("testTracer1"));
+    assertThat(OpenTelemetry.get().getTracer("testTracer2", "testVersion"))
+        .isEqualTo(OpenTelemetry.get().getTracerProvider().get("testTracer2", "testVersion"));
+    assertThat(OpenTelemetry.get().getMeter("testMeter1"))
+        .isEqualTo(OpenTelemetry.get().getMeterProvider().get("testMeter1"));
+    assertThat(OpenTelemetry.get().getMeter("testMeter2", "testVersion"))
+        .isEqualTo(OpenTelemetry.get().getMeterProvider().get("testMeter2", "testVersion"));
   }
 
   @Test
@@ -91,17 +91,16 @@ class OpenTelemetrySdkTest {
     assertThat(openTelemetry.getResource()).isEqualTo(resource);
     assertThat(openTelemetry.getClock()).isEqualTo(clock);
 
-    OpenTelemetrySdk previousOpenTelemetry = OpenTelemetrySdk.getGlobalOpenTelemetry();
+    OpenTelemetrySdk previousOpenTelemetry = OpenTelemetrySdk.get();
     try {
-      OpenTelemetry.setGlobalOpenTelemetry(
-          previousOpenTelemetry.toBuilder().setResource(resource).build());
+      OpenTelemetry.set(previousOpenTelemetry.toBuilder().setResource(resource).build());
 
-      assertThat(OpenTelemetry.getGlobalOpenTelemetry())
+      assertThat(OpenTelemetry.get())
           .isInstanceOfSatisfying(
               OpenTelemetrySdk.class, sdk -> assertThat(sdk.getResource()).isEqualTo(resource));
     } finally {
-      OpenTelemetry.setGlobalOpenTelemetry(previousOpenTelemetry);
+      OpenTelemetry.set(previousOpenTelemetry);
     }
-    assertThat(OpenTelemetry.getGlobalOpenTelemetry()).isEqualTo(previousOpenTelemetry);
+    assertThat(OpenTelemetry.get()).isEqualTo(previousOpenTelemetry);
   }
 }

@@ -24,14 +24,14 @@ import org.junit.jupiter.api.Test;
 
 class OpenTelemetryInteroperabilityTest {
   private final io.opentelemetry.trace.Tracer tracer =
-      OpenTelemetry.getGlobalTracer("opentracingshim");
+      OpenTelemetry.get().getTracer("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder()
           .setTracerSdkManagement(OpenTelemetrySdk.getGlobalTracerManagement())
           .build();
   private final Tracer otTracer =
       TraceShim.createTracerShim(
-          OpenTelemetry.getGlobalTracerProvider(), DefaultBaggageManager.getInstance());
+          OpenTelemetry.get().getTracerProvider(), DefaultBaggageManager.getInstance());
 
   @BeforeEach
   void before() {

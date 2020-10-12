@@ -20,7 +20,7 @@ public final class LongValueRecorderTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Meter meter = OpenTelemetry.getGlobalMeter("LongValueRecorderTest");
+  private static final Meter meter = OpenTelemetry.get().getMeter("LongValueRecorderTest");
 
   @Test
   void preventNull_Name() {
