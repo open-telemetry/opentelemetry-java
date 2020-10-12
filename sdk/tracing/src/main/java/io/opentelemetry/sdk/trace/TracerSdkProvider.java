@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import com.google.common.collect.ImmutableList;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -14,6 +15,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,9 +42,17 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     return new Builder();
   }
 
-  private TracerSdkProvider(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+  private TracerSdkProvider(
+      Clock clock,
+      IdsGenerator idsGenerator,
+      Resource resource,
+      List<SpanProcessor> spanProcessors,
+      TraceConfig traceConfig) {
     this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
+
+    spanProcessors.forEach(sharedState::addSpanProcessor);
+    sharedState.updateActiveTraceConfig(traceConfig);
   }
 
   @Override
@@ -94,6 +104,9 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     private IdsGenerator idsGenerator = new RandomIdsGenerator();
     private Resource resource = Resource.getDefault();
 
+    private List<SpanProcessor> spanProcessors = ImmutableList.of();
+    private TraceConfig traceConfig = TraceConfig.getDefault();
+
     /**
      * Assign a {@link Clock}.
      *
@@ -131,13 +144,33 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
       return this;
     }
 
+    /** Sets the {@link SpanProcessor}s to be invoked for all Spans created by Tracers. */
+    public Builder setSpanProcessors(SpanProcessor... spanProcessors) {
+      Objects.requireNonNull(spanProcessors, "spanProcessors");
+      return setSpanProcessors(ImmutableList.copyOf(spanProcessors));
+    }
+
+    /** Sets the {@link SpanProcessor}s to be invoked for all Spans created by Tracers. */
+    public Builder setSpanProcessors(Iterable<SpanProcessor> spanProcessors) {
+      Objects.requireNonNull(spanProcessors, "spanProcessors");
+      this.spanProcessors = ImmutableList.copyOf(spanProcessors);
+      return this;
+    }
+
+    /** Sets the {@link TraceConfig} to be used by all Tracers. */
+    public Builder setTraceConfig(TraceConfig traceConfig) {
+      Objects.requireNonNull(traceConfig, "traceConfig");
+      this.traceConfig = traceConfig;
+      return this;
+    }
+
     /**
      * Create a new TracerSdkFactory instance.
      *
      * @return An initialized TracerSdkFactory.
      */
     public TracerSdkProvider build() {
-      return new TracerSdkProvider(clock, idsGenerator, resource);
+      return new TracerSdkProvider(clock, idsGenerator, resource, spanProcessors, traceConfig);
     }
 
     private Builder() {}
