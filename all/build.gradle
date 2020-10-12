@@ -63,6 +63,9 @@ jacocoTestReport {
     sourceDirectories.from = files(subprojects.sourceSets.main.allSource.srcDirs)
     classDirectories.from = files(subprojects.sourceSets.main.output)
     classDirectories.from = files(classDirectories.files.collect {
-        fileTree(dir: it)
+        fileTree(dir: it, excludes: [
+                // Ignore generated code
+                "io/opentelemetry/exporters/jaeger/proto/**"
+        ])
     })
 }
