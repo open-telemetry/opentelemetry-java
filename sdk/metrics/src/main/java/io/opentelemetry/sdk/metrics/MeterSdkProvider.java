@@ -31,10 +31,11 @@ public final class MeterSdkProvider implements MeterProvider {
   private final MeterSdkComponentRegistry registry;
   private final MetricProducer metricProducer;
 
-  private MeterSdkProvider(Clock clock, Resource resource) {
+  private MeterSdkProvider(Clock clock, Resource resource,
+      MeterSharedState.Builder meterSharedStateBuilder) {
     this.registry =
         new MeterSdkComponentRegistry(
-            MeterProviderSharedState.create(clock, resource), new ViewRegistry());
+            MeterProviderSharedState.create(clock, resource), new ViewRegistry(), meterSharedStateBuilder);
     this.metricProducer = new MetricProducerSdk(this.registry);
   }
 
@@ -81,6 +82,7 @@ public final class MeterSdkProvider implements MeterProvider {
 
     private Clock clock = MillisClock.getInstance();
     private Resource resource = Resource.getDefault();
+    private final MeterSharedState.Builder meterSharedStateBuilder = MeterSharedState.builder();
 
     private Builder() {}
 
@@ -108,29 +110,37 @@ public final class MeterSdkProvider implements MeterProvider {
       return this;
     }
 
+    public Builder addMetricsProcessor(MetricsProcessor metricsProcessor) {
+      Objects.requireNonNull(meterSharedStateBuilder).metricsProcessorsBuilder().add(metricsProcessor);
+      return this;
+    }
+
     /**
      * Create a new TracerSdkFactory instance.
      *
      * @return An initialized TracerSdkFactory.
      */
     public MeterSdkProvider build() {
-      return new MeterSdkProvider(clock, resource);
+      return new MeterSdkProvider(clock, resource, meterSharedStateBuilder);
     }
   }
 
   private static final class MeterSdkComponentRegistry extends ComponentRegistry<MeterSdk> {
     private final MeterProviderSharedState meterProviderSharedState;
     private final ViewRegistry viewRegistry;
+    private final MeterSharedState.Builder meterSharedStateBuilder;
 
     private MeterSdkComponentRegistry(
-        MeterProviderSharedState meterProviderSharedState, ViewRegistry viewRegistry) {
+        MeterProviderSharedState meterProviderSharedState, ViewRegistry viewRegistry,
+        MeterSharedState.Builder meterSharedStateBuilder) {
       this.meterProviderSharedState = meterProviderSharedState;
       this.viewRegistry = viewRegistry;
+      this.meterSharedStateBuilder = meterSharedStateBuilder;
     }
 
     @Override
     public MeterSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo, viewRegistry);
+      return new MeterSdk(meterProviderSharedState, meterSharedStateBuilder.build(), viewRegistry);
     }
   }
 

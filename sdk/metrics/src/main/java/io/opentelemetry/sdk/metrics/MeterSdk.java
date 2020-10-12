@@ -23,7 +23,15 @@ final class MeterSdk implements Meter {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       ViewRegistry viewRegistry) {
     this.meterProviderSharedState = meterProviderSharedState;
-    this.meterSharedState = MeterSharedState.create(instrumentationLibraryInfo);
+    this.meterSharedState = MeterSharedState.builder().setInstrumentationLibraryInfo(instrumentationLibraryInfo).build();
+    this.viewRegistry = viewRegistry;
+  }
+  MeterSdk(
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      ViewRegistry viewRegistry) {
+    this.meterProviderSharedState = meterProviderSharedState;
+    this.meterSharedState = meterSharedState;
     this.viewRegistry = viewRegistry;
   }
 

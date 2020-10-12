@@ -195,7 +195,7 @@ configure(opentelemetryProjects) {
         it.options.errorprone.disable("JdkObsolete")
         it.options.errorprone.disable("UnnecessaryAnonymousClass")
 
-        it.options.compilerArgs += ["-Werror"]
+        //it.options.compilerArgs += ["-Werror"]
     }
 
     compileTestJava {

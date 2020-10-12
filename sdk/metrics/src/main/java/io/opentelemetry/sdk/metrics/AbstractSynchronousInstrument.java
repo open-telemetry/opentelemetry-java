@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.common.Labels;
+import io.opentelemetry.common.ReadWriteLabels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,9 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
 
   public B bind(Labels labels) {
     Objects.requireNonNull(labels, "labels");
+    ReadWriteLabels rwLabels = new ReadWriteLabels(labels);
+    getMeterSharedState().getMetricsProcessors().forEach(p -> p.onLabelsBound(this, rwLabels));
+    labels = rwLabels.toLabels();
     B binding = boundLabels.get(labels);
     if (binding != null && binding.bind()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
