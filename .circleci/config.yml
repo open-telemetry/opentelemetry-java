@@ -114,11 +114,3 @@ workflows:
     jobs:
       - build
       - java11
-  build_and_release:
-    jobs:
-      - release_job:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
