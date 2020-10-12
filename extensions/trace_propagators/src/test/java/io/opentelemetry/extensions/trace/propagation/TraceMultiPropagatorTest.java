@@ -34,7 +34,7 @@ import org.mockito.MockitoAnnotations;
 class TraceMultiPropagatorTest {
   private static final TextMapPropagator PROPAGATOR1 = B3Propagator.getInstance();
   private static final TextMapPropagator PROPAGATOR2 =
-      B3Propagator.builder().injectFromMultipleHeaders().build();
+      B3Propagator.builder().injectMultipleHeaders().build();
   private static final TextMapPropagator PROPAGATOR3 = HttpTraceContext.getInstance();
 
   private static final Span SPAN =

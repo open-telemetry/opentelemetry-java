@@ -39,7 +39,7 @@ import javax.annotation.concurrent.Immutable;
  * OpenTelemetry.setPropagators(
  *   DefaultContextPropagators
  *     .builder()
- *     .addTextMapPropagator(B3Propagator.builder().injectFromMultipleHeaders().build())
+ *     .addTextMapPropagator(B3Propagator.builder().injectMultipleHeaders().build())
  *     .build());
  * }</pre>
  */
@@ -89,7 +89,7 @@ public class B3Propagator implements TextMapPropagator {
       injectSingleHeader = true;
     }
 
-    public Builder injectFromMultipleHeaders() {
+    public Builder injectMultipleHeaders() {
       this.injectSingleHeader = false;
       return this;
     }

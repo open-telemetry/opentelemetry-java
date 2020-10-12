@@ -46,8 +46,7 @@ class B3PropagatorTest {
           return carrier.get(key);
         }
       };
-  private final B3Propagator b3Propagator =
-      B3Propagator.builder().injectFromMultipleHeaders().build();
+  private final B3Propagator b3Propagator = B3Propagator.builder().injectMultipleHeaders().build();
   private final B3Propagator b3PropagatorSingleHeader = B3Propagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {

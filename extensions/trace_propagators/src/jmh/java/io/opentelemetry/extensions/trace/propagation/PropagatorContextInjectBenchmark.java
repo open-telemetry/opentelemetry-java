@@ -122,7 +122,7 @@ public class PropagatorContextInjectBenchmark {
       extends AbstractContextInjectBenchmark {
 
     private final B3Propagator b3Propagator =
-        B3Propagator.builder().injectFromMultipleHeaders().build();
+        B3Propagator.builder().injectMultipleHeaders().build();
     private final TextMapPropagator.Setter<Map<String, String>> setter =
         new TextMapPropagator.Setter<Map<String, String>>() {
           @Override
