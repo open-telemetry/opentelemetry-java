@@ -13,7 +13,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -21,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleValueObserverSdk}. */
 class DoubleValueObserverSdkTest {
+
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
@@ -64,7 +64,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "My own DoubleValueObserver",
                 "ms",
-                Descriptor.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_DOUBLE,
                 Collections.emptyList()));
   }
 
@@ -82,7 +82,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                Descriptor.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -98,7 +98,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                Descriptor.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,

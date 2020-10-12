@@ -13,7 +13,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -64,7 +63,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "My own LongValueObserver",
                 "ms",
-                Descriptor.Type.NON_MONOTONIC_LONG,
+                MetricData.Type.NON_MONOTONIC_LONG,
                 Collections.emptyList()));
   }
 
@@ -82,7 +81,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                Descriptor.Type.NON_MONOTONIC_LONG,
+                MetricData.Type.NON_MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -98,7 +97,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                Descriptor.Type.NON_MONOTONIC_LONG,
+                MetricData.Type.NON_MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
