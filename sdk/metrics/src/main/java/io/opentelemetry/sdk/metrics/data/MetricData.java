@@ -19,6 +19,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class MetricData {
+
   MetricData() {}
 
   /** The kind of metric. It describes how the data is reported. */
@@ -41,6 +42,18 @@ public abstract class MetricData {
      * recorded.
      */
     SUMMARY,
+
+    /**
+     * A Gauge represents a measurement of a long value at a moment in time. Generally only one
+     * instance of a given Gauge metric will be reported per reporting interval.
+     */
+    GAUGE_LONG,
+
+    /**
+     * A Gauge represents a measurement of a double value at a moment in time. Generally only one
+     * instance of a given Gauge metric will be reported per reporting interval.
+     */
+    GAUGE_DOUBLE
   }
 
   /**
@@ -110,6 +123,7 @@ public abstract class MetricData {
 
   @Immutable
   public abstract static class Point {
+
     Point() {}
 
     /**
@@ -145,6 +159,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class LongPoint extends Point {
+
     LongPoint() {}
 
     /**
@@ -167,6 +182,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class DoublePoint extends Point {
+
     DoublePoint() {}
 
     /**
@@ -229,6 +245,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class ValueAtPercentile {
+
     ValueAtPercentile() {}
 
     /**

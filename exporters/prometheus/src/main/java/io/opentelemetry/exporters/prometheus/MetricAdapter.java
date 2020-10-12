@@ -63,6 +63,8 @@ final class MetricAdapter {
     switch (type) {
       case NON_MONOTONIC_LONG:
       case NON_MONOTONIC_DOUBLE:
+      case GAUGE_LONG:
+      case GAUGE_DOUBLE:
         return Collector.Type.GAUGE;
       case MONOTONIC_LONG:
       case MONOTONIC_DOUBLE:
@@ -92,11 +94,13 @@ final class MetricAdapter {
       switch (type) {
         case MONOTONIC_DOUBLE:
         case NON_MONOTONIC_DOUBLE:
+        case GAUGE_DOUBLE:
           DoublePoint doublePoint = (DoublePoint) point;
           samples.add(new Sample(name, labelNames, labelValues, doublePoint.getValue()));
           break;
         case MONOTONIC_LONG:
         case NON_MONOTONIC_LONG:
+        case GAUGE_LONG:
           LongPoint longPoint = (LongPoint) point;
           samples.add(new Sample(name, labelNames, labelValues, longPoint.getValue()));
           break;
@@ -154,15 +158,9 @@ final class MetricAdapter {
   }
 
   private static int estimateNumSamples(int numPoints, MetricData.Type type) {
-    switch (type) {
-      case NON_MONOTONIC_LONG:
-      case NON_MONOTONIC_DOUBLE:
-      case MONOTONIC_LONG:
-      case MONOTONIC_DOUBLE:
-        return numPoints;
-      case SUMMARY:
-        // count + sum + estimated 2 percentiles (default MinMaxSumCount aggregator).
-        return numPoints * 4;
+    if (type == MetricData.Type.SUMMARY) {
+      // count + sum + estimated 2 percentiles (default MinMaxSumCount aggregator).
+      return numPoints * 4;
     }
     return numPoints;
   }
