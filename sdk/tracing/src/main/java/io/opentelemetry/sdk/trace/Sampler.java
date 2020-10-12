@@ -84,8 +84,10 @@ public interface Sampler {
      * Return an optionally-updated {@link TraceState}, based on the parent TraceState. This may
      * return the same {@link TraceState} that was provided originally, or an updated one.
      *
-     * @param parentTraceState The TraceState from any parent span. Might be an empty TraceState, if
-     *     there is no parent.
+     * @param parentTraceState The TraceState from the parent span. Might be an empty TraceState, if
+     *     there is no parent. This will be the same TraceState that was passed in via the {@link
+     *     SpanContext} parameter on the {@link #shouldSample(SpanContext, String, String, Kind,
+     *     ReadableAttributes, List)} call.
      */
     default TraceState getUpdatedTraceState(TraceState parentTraceState) {
       return parentTraceState;
