@@ -4,4 +4,7 @@
  */
 
 /** This package describes the Metrics API that can be used to record application Metrics. */
+@ParametersAreNonnullByDefault
 package io.opentelemetry.metrics;
+
+import javax.annotation.ParametersAreNonnullByDefault;

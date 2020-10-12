@@ -76,12 +76,12 @@ class BaggageSdk implements Baggage {
       return false;
     }
 
-    BaggageSdk distContextSdk = (BaggageSdk) o;
+    BaggageSdk baggageSdk = (BaggageSdk) o;
 
-    if (!entries.equals(distContextSdk.entries)) {
+    if (!entries.equals(baggageSdk.entries)) {
       return false;
     }
-    return Objects.equals(parent, distContextSdk.parent);
+    return Objects.equals(parent, baggageSdk.parent);
   }
 
   @Override
@@ -104,15 +104,9 @@ class BaggageSdk implements Baggage {
     }
 
     @Override
-    public Baggage.Builder setParent(Baggage parent) {
-      this.parent = Objects.requireNonNull(parent, "parent");
-      return this;
-    }
-
-    @Override
     public Baggage.Builder setParent(Context context) {
       Objects.requireNonNull(context, "context");
-      setParent(BaggageUtils.getBaggage(context));
+      parent = BaggageUtils.getBaggage(context);
       return this;
     }
 

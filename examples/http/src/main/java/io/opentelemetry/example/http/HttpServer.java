@@ -5,22 +5,21 @@
 
 package io.opentelemetry.example.http;
 
+import static io.opentelemetry.common.AttributeKey.stringKey;
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -42,11 +41,7 @@ public class HttpServer {
               .extract(Context.current(), exchange, getter);
 
       Span span =
-          tracer
-              .spanBuilder("/")
-              .setParent(TracingContextUtils.getSpan(context))
-              .setSpanKind(Span.Kind.SERVER)
-              .startSpan();
+          tracer.spanBuilder("/").setParent(context).setSpanKind(Span.Kind.SERVER).startSpan();
 
       try (Scope scope = tracer.withSpan(span)) {
         // Set the Semantic Convention
@@ -83,12 +78,8 @@ public class HttpServer {
       System.out.println("Served Client: " + he.getRemoteAddress());
 
       // Generate an Event with an attribute
-      Attributes eventAttributes =
-          Attributes.of("answer", AttributeValue.stringAttributeValue(response));
+      Attributes eventAttributes = Attributes.of(stringKey("answer"), response);
       span.addEvent("Finish Processing", eventAttributes);
-
-      // Everything works fine in this example
-      span.setStatus(Status.OK);
     }
   }
 
@@ -124,11 +115,11 @@ public class HttpServer {
 
   private void initTracer() {
     // Get the tracer
-    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getTracerManagement();
     // Show that multiple exporters can be used
 
     // Set to export the traces also to a log file
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(loggingExporter).build());
+    tracerManagement.addSpanProcessor(SimpleSpanProcessor.newBuilder(loggingExporter).build());
   }
 
   private void stop() {

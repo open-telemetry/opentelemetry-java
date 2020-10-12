@@ -8,24 +8,21 @@ package io.opentelemetry.baggage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.baggage.EntryMetadata.EntryTtl;
 import org.junit.jupiter.api.Test;
 
 class EntryMetadataTest {
 
   @Test
-  void testGetEntryTtl() {
-    EntryMetadata entryMetadata = EntryMetadata.create(EntryTtl.NO_PROPAGATION);
-    assertThat(entryMetadata.getEntryTtl()).isEqualTo(EntryTtl.NO_PROPAGATION);
+  void getValue() {
+    EntryMetadata entryMetadata = EntryMetadata.create("metadata;value=foo");
+    assertThat(entryMetadata.getValue()).isEqualTo("metadata;value=foo");
   }
 
   @Test
   void testEquals() {
     new EqualsTester()
-        .addEqualityGroup(
-            EntryMetadata.create(EntryTtl.NO_PROPAGATION),
-            EntryMetadata.create(EntryTtl.NO_PROPAGATION))
-        .addEqualityGroup(EntryMetadata.create(EntryTtl.UNLIMITED_PROPAGATION))
+        .addEqualityGroup(EntryMetadata.create("value"), EntryMetadata.create("value"))
+        .addEqualityGroup(EntryMetadata.create("other value"))
         .testEquals();
   }
 }
