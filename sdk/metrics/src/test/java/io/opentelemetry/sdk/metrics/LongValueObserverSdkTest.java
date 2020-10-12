@@ -13,12 +13,9 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongValueObserverSdk}. */
@@ -66,7 +63,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "My own LongValueObserver",
                 "ms",
-                MetricData.Type.SUMMARY,
+                MetricData.Type.NON_MONOTONIC_LONG,
                 Collections.emptyList()));
   }
 
@@ -84,15 +81,13 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.SUMMARY,
+                MetricData.Type.NON_MONOTONIC_LONG,
                 Collections.singletonList(
-                    SummaryPoint.create(
+                    LongPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
                         Labels.of("k", "v"),
-                        1,
-                        12,
-                        valueAtPercentiles(12, 12)))));
+                        12))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longValueObserver.collectAll())
         .containsExactly(
@@ -102,18 +97,12 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.SUMMARY,
+                MetricData.Type.NON_MONOTONIC_LONG,
                 Collections.singletonList(
-                    SummaryPoint.create(
+                    LongPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
                         Labels.of("k", "v"),
-                        1,
-                        12,
-                        valueAtPercentiles(12, 12)))));
-  }
-
-  private static List<ValueAtPercentile> valueAtPercentiles(double min, double max) {
-    return Arrays.asList(ValueAtPercentile.create(0, min), ValueAtPercentile.create(100, max));
+                        12))));
   }
 }
