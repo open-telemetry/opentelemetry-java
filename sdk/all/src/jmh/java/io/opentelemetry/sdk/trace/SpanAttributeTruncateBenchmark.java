@@ -29,8 +29,8 @@ public class SpanAttributeTruncateBenchmark {
   private final Tracer tracerSdk = OpenTelemetry.getTracer("benchmarkTracer");
   private SpanBuilderSdk spanBuilderSdk;
 
-  public String shortValue = "short";
-  public String longValue = "very_long_attribute_and_then_some_more";
+  public final String shortValue = "short";
+  public final String longValue = "very_long_attribute_and_then_some_more";
   public String veryLongValue;
 
   @Param({"10", "1000000"})

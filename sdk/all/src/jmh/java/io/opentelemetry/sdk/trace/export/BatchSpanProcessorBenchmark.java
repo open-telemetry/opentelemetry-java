@@ -47,15 +47,7 @@ public class BatchSpanProcessorBenchmark {
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
       final CompletableResultCode result = new CompletableResultCode();
-      executor.schedule(
-          new Runnable() {
-            @Override
-            public void run() {
-              result.succeed();
-            }
-          },
-          delayMs,
-          TimeUnit.MILLISECONDS);
+      executor.schedule((Runnable) result::succeed, delayMs, TimeUnit.MILLISECONDS);
       return result;
     }
 

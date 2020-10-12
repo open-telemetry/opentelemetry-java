@@ -13,13 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class LongSumAggregator extends AbstractAggregator {
 
   private static final long DEFAULT_VALUE = 0L;
-  private static final AggregatorFactory AGGREGATOR_FACTORY =
-      new AggregatorFactory() {
-        @Override
-        public Aggregator getAggregator() {
-          return new LongSumAggregator();
-        }
-      };
+  private static final AggregatorFactory AGGREGATOR_FACTORY = LongSumAggregator::new;
 
   // TODO: Change to use LongAdder when changed to java8.
   private final AtomicLong current = new AtomicLong(DEFAULT_VALUE);

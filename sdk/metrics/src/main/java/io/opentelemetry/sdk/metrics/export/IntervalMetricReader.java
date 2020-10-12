@@ -195,14 +195,11 @@ public final class IntervalMetricReader {
           final CompletableResultCode result =
               internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
           result.whenComplete(
-              new Runnable() {
-                @Override
-                public void run() {
-                  if (!result.isSuccess()) {
-                    logger.log(Level.FINE, "Exporter failed");
-                  }
-                  exportAvailable.set(true);
+              () -> {
+                if (!result.isSuccess()) {
+                  logger.log(Level.FINE, "Exporter failed");
                 }
+                exportAvailable.set(true);
               });
         } catch (Exception e) {
           logger.log(Level.WARNING, "Exporter threw an Exception", e);

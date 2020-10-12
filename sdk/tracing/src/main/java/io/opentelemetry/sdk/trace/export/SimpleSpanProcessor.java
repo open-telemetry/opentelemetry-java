@@ -74,12 +74,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
       List<SpanData> spans = Collections.singletonList(span.toSpanData());
       final CompletableResultCode result = spanExporter.export(spans);
       result.whenComplete(
-          new Runnable() {
-            @Override
-            public void run() {
-              if (!result.isSuccess()) {
-                logger.log(Level.FINE, "Exporter failed");
-              }
+          () -> {
+            if (!result.isSuccess()) {
+              logger.log(Level.FINE, "Exporter failed");
             }
           });
     } catch (Exception e) {

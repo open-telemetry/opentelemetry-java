@@ -81,7 +81,7 @@ class BaggageSdk implements Baggage {
     if (!entries.equals(baggageSdk.entries)) {
       return false;
     }
-    return parent != null ? parent.equals(baggageSdk.parent) : baggageSdk.parent == null;
+    return Objects.equals(parent, baggageSdk.parent);
   }
 
   @Override

@@ -39,10 +39,6 @@ final class AttributesMap implements ReadableAttributes {
     data.put(key, value);
   }
 
-  void remove(AttributeKey key) {
-    data.remove(key);
-  }
-
   int getTotalAddedValues() {
     return totalAddedValues;
   }

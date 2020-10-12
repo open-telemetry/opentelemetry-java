@@ -93,7 +93,7 @@ public final class PullExporter {
 
   public PushExporter(Collection<MetricProducer> producers) {
     metricExporter = new PullMetricExporter();
-    producers = Collections.unmodifiableCollection(new ArrayList<MetricProducer>(producers));
+    producers = Collections.unmodifiableCollection(new ArrayList<>(producers));
   }
 
   // Can be accessed by any "push based" library to export metrics.

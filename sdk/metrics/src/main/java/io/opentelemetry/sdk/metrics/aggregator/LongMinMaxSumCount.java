@@ -18,13 +18,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class LongMinMaxSumCount extends AbstractAggregator {
 
-  private static final AggregatorFactory AGGREGATOR_FACTORY =
-      new AggregatorFactory() {
-        @Override
-        public Aggregator getAggregator() {
-          return new LongMinMaxSumCount();
-        }
-      };
+  private static final AggregatorFactory AGGREGATOR_FACTORY = LongMinMaxSumCount::new;
 
   // The current value. This controls its own internal thread-safety via method access. Don't
   // try to use its fields directly.

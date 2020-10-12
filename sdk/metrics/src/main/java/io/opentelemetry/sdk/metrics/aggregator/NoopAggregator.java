@@ -11,13 +11,7 @@ import javax.annotation.Nullable;
 
 public final class NoopAggregator implements Aggregator {
   private static final Aggregator NOOP_AGGREGATOR = new NoopAggregator();
-  private static final AggregatorFactory AGGREGATOR_FACTORY =
-      new AggregatorFactory() {
-        @Override
-        public Aggregator getAggregator() {
-          return NOOP_AGGREGATOR;
-        }
-      };
+  private static final AggregatorFactory AGGREGATOR_FACTORY = () -> NOOP_AGGREGATOR;
 
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;

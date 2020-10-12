@@ -22,13 +22,7 @@ import javax.annotation.Nullable;
 public final class LongLastValueAggregator extends AbstractAggregator {
 
   @Nullable private static final Long DEFAULT_VALUE = null;
-  private static final AggregatorFactory AGGREGATOR_FACTORY =
-      new AggregatorFactory() {
-        @Override
-        public Aggregator getAggregator() {
-          return new LongLastValueAggregator();
-        }
-      };
+  private static final AggregatorFactory AGGREGATOR_FACTORY = LongLastValueAggregator::new;
 
   private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 

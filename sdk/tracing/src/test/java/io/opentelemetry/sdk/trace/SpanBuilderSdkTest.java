@@ -377,7 +377,7 @@ class SpanBuilderSdkTest {
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    spanBuilder.setAttribute("builderStringNull", (String) null);
+    spanBuilder.setAttribute("builderStringNull", null);
     spanBuilder.setAttribute("builderStringSmall", "small");
     spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
     spanBuilder.setAttribute("builderLong", 42L);
