@@ -55,8 +55,7 @@ try (Scope scope = tracer.withSpan(span)) {
 	// your use case
 	...
 } catch (Throwable t) {
-    Status status = Status.ERROR.withDescription("Change it to your error message");
-    span.setStatus(status);
+    span.setStatus(StatusCanonicalCode.ERROR, "Change it to your error message");
 } finally {
     span.end(); // closing the scope does not end the span, this has to be done manually
 }
@@ -88,7 +87,7 @@ The OpenTelemetry API offers also an automated way to propagate the `parentSpan`
 ```java
 void a() {
   Span parentSpan = tracer.spanBuilder("a").startSpan();
-  try(Scope scope = tracer.withSpan(parentSpan)){
+  try(Scope scope = tracer.withSpan(parentSpan)) {
     b();
   } finally {
     parentSpan.end();
@@ -96,11 +95,14 @@ void a() {
 }
 void b() {
   Span childSpan = tracer.spanBuilder("b")
-     // NOTE: setParent(parentSpan) is not required anymore, 
-     // `tracer.getCurrentSpan()` is automatically added as parent
+    // NOTE: setParent(parentSpan) is not required; 
+    // `tracer.getCurrentSpan()` is automatically added as parent
     .startSpan();
-  // do stuff
-  childSpan.end();
+  try(Scope scope = tracer.withSpan(childSpan)) {
+    // do stuff
+  } finally {
+    childSpan.end();
+  }
 }
 ``` 
 
@@ -124,7 +126,7 @@ span.setAttribute("http.url", url.toString());
 
 Some of these operations represent calls that use well-known protocols like HTTP or database calls. 
 For these, OpenTelemetry requires specific attributes to be set. The full attribute list is
-available in the [Semantic Conventions] in the cross-language specification.
+available in the [Semantic Conventions](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/README.md) in the cross-language specification.
 
 ### Create Spans with events
 
@@ -140,8 +142,8 @@ span.addEvent("End");
 
 ```java
 Attributes eventAttributes = Attributes.of(
-    "key", AttributeValue.stringAttributeValue("value"),
-    "result", AttributeValue.longAttributeValue(0L));
+    AttributeKey.stringKey("key"), "value",
+    AttributeKey.longKey("result"), 0L);
 
 span.addEvent("End Computation", eventAttributes);
 ```
@@ -152,11 +154,9 @@ represent batched operations where a Span was initiated by multiple initiating S
 representing a single incoming item being processed in the batch.
 
 ```java
-Link link1 = SpanData.Link.create(parentSpan1.getContext());
-Link link2 = SpanData.Link.create(parentSpan2.getContext());
 Span child = tracer.spanBuilder("childWithLink")
-        .addLink(link1)
-        .addLink(link2)
+        .addLink(parentSpan1.getContext())
+        .addLink(parentSpan2.getContext())
         .addLink(parentSpan3.getContext())
         .addLink(remoteContext)
     .startSpan();
@@ -312,10 +312,10 @@ traces to a logging stream.
 
 ```java
 // Get the tracer
-TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+TracerSdkManagement tracerSdkManagement = OpenTelemetrySdk.getTracerManagement();
 
 // Set to export the traces to a logging stream
-tracerProvider.addSpanProcessor(
+tracerSdkManagement.addSpanProcessor(
     SimpleSpanProcessor.newBuilder(
         new LoggingSpanExporter()
     ).build());
@@ -359,13 +359,13 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 `MultiSpanProcessor`.
 
 ```java
-tracerProvider.addSpanProcessor(
+tracerSdkManagement.addSpanProcessor(
     SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
 );
-tracerProvider.addSpanProcessor(
+tracerSdkManagement.addSpanProcessor(
     BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
 );
-tracerProvider.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
+tracerSdkManagement.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
             SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build(),
             BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
 )));
@@ -406,7 +406,7 @@ environment variables and builder `set*` methods.
 
 ```java
 // Get TraceConfig associated with TracerSdk 
-TracerConfig traceConfig = OpenTelemetrySdk.getTracerSdkManagement().getActiveTraceConfig();
+TracerConfig traceConfig = OpenTelemetrySdk.getTracerManagement().getActiveTraceConfig();
 
 // Get TraceConfig Builder
 Builder builder = traceConfig.toBuilder();
@@ -421,7 +421,7 @@ builder.readEnvironmentVariables()
 builder.setMaxNumberOfLinks(10);
 
 // Update the resulting TraceConfig instance
-OpenTelemetrySdk.getTracerSdkManagement().updateActiveTraceConfig(builder.build());
+OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(builder.build());
 ```
 
 Supported system properties and environment variables:
