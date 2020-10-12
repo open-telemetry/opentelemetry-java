@@ -1,3 +1,4 @@
+# Releases a new minor / major version from the HEAD of the main branch
 name: Release Build
 on:
   workflow_dispatch:
@@ -19,7 +20,7 @@ jobs:
           java-version: 11
       - uses: burrunan/gradle-cache-action@v1.5
         with:
-          job-id: jdk8
+          job-id: jdk11
           remote-build-cache-proxy-enabled: false
           arguments: prepareRelease build --stacktrace -Prelease.version=${{ github.event.inputs.version }}
           properties: |
@@ -33,7 +34,6 @@ jobs:
       - name: Publish artifacts
         run: ./gradlew final --stacktrace -Prelease.version=${{ github.event.inputs.version }}
         env:
-          CI: true
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
           GRGIT_USER: ${{ github.actor }}

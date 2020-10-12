@@ -1,3 +1,5 @@
+# Releases a patch by cherrypicking commits into a release branch based on the previous
+# release tag.
 name: Patch Release Build
 on:
   workflow_dispatch:
@@ -76,9 +78,8 @@ jobs:
           remote-build-cache-proxy-enabled: false
           arguments: final --stacktrace -Prelease.version=${{ github.event.inputs.version }}
           properties: |
-            enable.docker.tests=trued
+            enable.docker.tests=true
         env:
-          CI: true
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
           GRGIT_USER: ${{ github.actor }}
