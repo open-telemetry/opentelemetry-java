@@ -11,10 +11,10 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -35,12 +35,12 @@ public class HttpClient {
       URLConnection::setRequestProperty;
 
   private static void initTracerSdk() {
-    // Get the tracer
-    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+    // Get the tracer management instance.
+    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getTracerManagement();
     // Show that multiple exporters can be used
 
     // Set to export the traces also to a log file
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(loggingExporter).build());
+    tracerManagement.addSpanProcessor(SimpleSpanProcessor.newBuilder(loggingExporter).build());
   }
 
   private HttpClient() throws Exception {
@@ -83,11 +83,8 @@ public class HttpClient {
           content.append(inputLine);
         }
         in.close();
-        // Close the Span
-        span.setStatus(Status.OK);
       } catch (Exception e) {
-        // TODO create mapping for Http Error Codes <-> io.opentelemetry.trace.Status
-        span.setStatus(Status.UNKNOWN.withDescription("HTTP Code: " + status));
+        span.setStatus(StatusCanonicalCode.ERROR, "HTTP Code: " + status);
       }
     } finally {
       span.end();
