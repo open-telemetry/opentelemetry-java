@@ -206,7 +206,7 @@ final class SpanBuilderSdk implements Span.Builder {
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
     TraceState samplingResultTraceState =
-        samplingResult.traceStateUpdate().apply(parentSpanContext.getTraceState());
+        samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
         createSpanContext(
             traceId, spanId, samplingResultTraceState, Samplers.isSampled(samplingDecision));

@@ -38,7 +38,6 @@ import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -564,10 +563,8 @@ class SpanBuilderSdkTest {
                           }
 
                           @Override
-                          @SuppressWarnings("NoFunctionalReturnType")
-                          public Function<TraceState, TraceState> traceStateUpdate() {
-                            return traceState ->
-                                traceState.toBuilder().set("newkey", "newValue").build();
+                          public TraceState getUpdatedTraceState(TraceState parentTraceState) {
+                            return parentTraceState.toBuilder().set("newkey", "newValue").build();
                           }
                         };
                       }
