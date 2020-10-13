@@ -1,7 +1,10 @@
+import nebula.plugin.release.git.opinion.Strategies
+
 plugins {
     id "com.diffplug.spotless" version "5.6.1"
     id "com.jfrog.artifactory" apply false
     id "com.jfrog.bintray" version "1.8.4" apply false // Need *specific* version.
+    id "nebula.release"
     id "net.ltgt.errorprone" apply false
     id "ru.vyarus.animalsniffer" apply false
     id "io.morethan.jmhreport" apply false
@@ -11,14 +14,34 @@ ext {
     opentelemetryProjects = subprojects - project(":opentelemetry-bom")
 }
 
+release {
+    defaultVersionStrategy = Strategies.getSNAPSHOT()
+}
+
+nebulaRelease {
+    addReleaseBranchPattern(/v\d+\.\d+\.x/)
+}
+
+def releaseTask = tasks.named("release")
+releaseTask.configure {
+    mustRunAfter("snapshotSetup", "finalSetup")
+}
+
 subprojects {
     group = "io.opentelemetry"
-    version = "0.10.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
 
     plugins.withId("maven-publish") {
         // Always include the artifactory/bintray plugins to do the deployment.
         pluginManager.apply "com.jfrog.artifactory"
         pluginManager.apply "com.jfrog.bintray"
+
+        releaseTask.configure {
+            if (version.toString().endsWith('-SNAPSHOT')) {
+                finalizedBy(tasks.named('artifactoryPublish'))
+            } else {
+                finalizedBy(tasks.named('bintrayUpload'))
+            }
+        }
 
         publishing {
             publications {
@@ -72,6 +95,7 @@ subprojects {
                 }
             }
         }
+
 
         // Snapshot publishing.
         artifactory {
@@ -441,11 +465,11 @@ wrapper {
     gradleVersion = '6.6'
 }
 
-tasks.register("prepareRelease") {
+tasks.register("updateVersionInDocs") {
     doLast {
         def versionParts = version.toString().split('\\.')
         def minorVersionNumber = Integer.parseInt(versionParts[1])
-        def nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.${versionParts[2]}-SNAPSHOT"
+        def nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
 
         def readmeText = file("README.md").text
         def updatedText = readmeText

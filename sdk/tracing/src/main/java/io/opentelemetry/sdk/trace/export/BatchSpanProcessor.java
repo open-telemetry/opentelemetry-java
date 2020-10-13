@@ -87,7 +87,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
             scheduleDelayMillis,
             maxExportBatchSize,
             exporterTimeoutMillis,
-            new ArrayBlockingQueue<ReadableSpan>(maxQueueSize));
+            new ArrayBlockingQueue<>(maxQueueSize));
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
     this.sampled = sampled;
@@ -245,23 +245,17 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
       final CompletableResultCode flushResult = forceFlush();
       flushResult.whenComplete(
-          new Runnable() {
-            @Override
-            public void run() {
-              continueWork = false;
-              final CompletableResultCode shutdownResult = spanExporter.shutdown();
-              shutdownResult.whenComplete(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
-                        result.fail();
-                      } else {
-                        result.succeed();
-                      }
-                    }
-                  });
-            }
+          () -> {
+            continueWork = false;
+            final CompletableResultCode shutdownResult = spanExporter.shutdown();
+            shutdownResult.whenComplete(
+                () -> {
+                  if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
+                    result.fail();
+                  } else {
+                    result.succeed();
+                  }
+                });
           });
 
       return result;

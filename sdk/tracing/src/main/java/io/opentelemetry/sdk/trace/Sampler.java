@@ -12,12 +12,14 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Sampler is used to make decisions on {@link Span} sampling. */
 @ThreadSafe
 public interface Sampler {
+
   /**
    * Called during {@link Span} creation to make a sampling samplingResult.
    *
@@ -77,5 +79,18 @@ public interface Sampler {
      *     {@link Decision#RECORD_AND_SAMPLE}.
      */
     Attributes getAttributes();
+
+    /**
+     * Return an optionally-updated {@link TraceState}, based on the parent TraceState. This may
+     * return the same {@link TraceState} that was provided originally, or an updated one.
+     *
+     * @param parentTraceState The TraceState from the parent span. Might be an empty TraceState, if
+     *     there is no parent. This will be the same TraceState that was passed in via the {@link
+     *     SpanContext} parameter on the {@link #shouldSample(SpanContext, String, String, Kind,
+     *     ReadableAttributes, List)} call.
+     */
+    default TraceState getUpdatedTraceState(TraceState parentTraceState) {
+      return parentTraceState;
+    }
   }
 }

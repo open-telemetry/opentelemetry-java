@@ -350,27 +350,19 @@ public final class Samplers {
 
       ParentBased that = (ParentBased) o;
 
-      if (root != null ? !root.equals(that.root) : that.root != null) {
+      if (!Objects.equals(root, that.root)) {
         return false;
       }
-      if (remoteParentSampled != null
-          ? !remoteParentSampled.equals(that.remoteParentSampled)
-          : that.remoteParentSampled != null) {
+      if (!Objects.equals(remoteParentSampled, that.remoteParentSampled)) {
         return false;
       }
-      if (remoteParentNotSampled != null
-          ? !remoteParentNotSampled.equals(that.remoteParentNotSampled)
-          : that.remoteParentNotSampled != null) {
+      if (!Objects.equals(remoteParentNotSampled, that.remoteParentNotSampled)) {
         return false;
       }
-      if (localParentSampled != null
-          ? !localParentSampled.equals(that.localParentSampled)
-          : that.localParentSampled != null) {
+      if (!Objects.equals(localParentSampled, that.localParentSampled)) {
         return false;
       }
-      return localParentNotSampled != null
-          ? localParentNotSampled.equals(that.localParentNotSampled)
-          : that.localParentNotSampled == null;
+      return Objects.equals(localParentNotSampled, that.localParentNotSampled);
     }
 
     @Override

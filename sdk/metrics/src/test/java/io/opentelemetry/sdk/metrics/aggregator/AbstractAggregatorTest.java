@@ -44,8 +44,8 @@ public class AbstractAggregatorTest {
   }
 
   private static class TestAggregator extends AbstractAggregator {
-    AtomicLong recordedLong = new AtomicLong();
-    AtomicDouble recordedDouble = new AtomicDouble();
+    final AtomicLong recordedLong = new AtomicLong();
+    final AtomicDouble recordedDouble = new AtomicDouble();
 
     @Override
     public MetricData.Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {

@@ -43,18 +43,15 @@ public class CompletableResultCode {
     final AtomicBoolean failed = new AtomicBoolean();
     for (final CompletableResultCode code : codes) {
       code.whenComplete(
-          new Runnable() {
-            @Override
-            public void run() {
-              if (!code.isSuccess()) {
-                failed.set(true);
-              }
-              if (pending.decrementAndGet() == 0) {
-                if (failed.get()) {
-                  result.fail();
-                } else {
-                  result.succeed();
-                }
+          () -> {
+            if (!code.isSuccess()) {
+              failed.set(true);
+            }
+            if (pending.decrementAndGet() == 0) {
+              if (failed.get()) {
+                result.fail();
+              } else {
+                result.succeed();
               }
             }
           });
@@ -149,13 +146,7 @@ public class CompletableResultCode {
       return this;
     }
     final CountDownLatch latch = new CountDownLatch(1);
-    whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            latch.countDown();
-          }
-        });
+    whenComplete(latch::countDown);
     try {
       if (!latch.await(timeout, unit)) {
         fail();

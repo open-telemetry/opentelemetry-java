@@ -320,25 +320,19 @@ class BatchSpanProcessorTest {
             CompletableResultCode result = super.export(spans);
             Thread exporterThread =
                 new Thread(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        try {
-                          // sleep longer than the configured timeout of 100ms
-                          Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                          interruptMarker.countDown();
-                        }
+                    () -> {
+                      try {
+                        // sleep longer than the configured timeout of 100ms
+                        Thread.sleep(1000);
+                      } catch (InterruptedException e) {
+                        interruptMarker.countDown();
                       }
                     });
             exporterThread.start();
             result.whenComplete(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    if (!result.isSuccess()) {
-                      exporterThread.interrupt();
-                    }
+                () -> {
+                  if (!result.isSuccess()) {
+                    exporterThread.interrupt();
                   }
                 });
             return result;

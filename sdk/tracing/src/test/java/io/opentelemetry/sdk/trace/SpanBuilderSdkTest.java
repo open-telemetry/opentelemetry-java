@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanBuilderSdk}. */
 class SpanBuilderSdkTest {
+
   private static final String SPAN_NAME = "span_name";
   private final SpanContext sampledSpanContext =
       SpanContext.create(
@@ -377,7 +378,7 @@ class SpanBuilderSdkTest {
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    spanBuilder.setAttribute("builderStringNull", (String) null);
+    spanBuilder.setAttribute("builderStringNull", null);
     spanBuilder.setAttribute("builderStringSmall", "small");
     spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
     spanBuilder.setAttribute("builderLong", 42L);
@@ -525,6 +526,61 @@ class SpanBuilderSdkTest {
     try {
       assertThat(span.getContext().isSampled()).isTrue();
       assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
+      assertThat(span.toSpanData().getTraceState()).isEqualTo(TraceState.getDefault());
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void sampler_updatedTraceState() {
+    final String samplerAttributeName = "sampler-attribute";
+    AttributeKey<String> samplerAttributeKey = stringKey(samplerAttributeName);
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
+            TestUtils.startSpanWithSampler(
+                    tracerSdkFactory,
+                    tracerSdk,
+                    SPAN_NAME,
+                    new Sampler() {
+                      @Override
+                      public SamplingResult shouldSample(
+                          SpanContext parentContext,
+                          String traceId,
+                          String name,
+                          Kind spanKind,
+                          ReadableAttributes attributes,
+                          List<Link> parentLinks) {
+                        return new SamplingResult() {
+                          @Override
+                          public Decision getDecision() {
+                            return Decision.RECORD_AND_SAMPLE;
+                          }
+
+                          @Override
+                          public Attributes getAttributes() {
+                            return Attributes.empty();
+                          }
+
+                          @Override
+                          public TraceState getUpdatedTraceState(TraceState parentTraceState) {
+                            return parentTraceState.toBuilder().set("newkey", "newValue").build();
+                          }
+                        };
+                      }
+
+                      @Override
+                      public String getDescription() {
+                        return "test sampler";
+                      }
+                    },
+                    Collections.singletonMap(samplerAttributeKey.getKey(), "none"))
+                .startSpan();
+    try {
+      assertThat(span.getContext().isSampled()).isTrue();
+      assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
+      assertThat(span.toSpanData().getTraceState())
+          .isEqualTo(TraceState.builder().set("newkey", "newValue").build());
     } finally {
       span.end();
     }

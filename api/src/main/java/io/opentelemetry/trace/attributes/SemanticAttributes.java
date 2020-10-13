@@ -229,6 +229,15 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
 
+  /** The value for {@link #MESSAGING_OPERATION} for a send operation. */
+  public static final String MESSAGING_OPERATION_SEND = "send";
+
+  /** The value for {@link #MESSAGING_OPERATION} for a receive operation. */
+  public static final String MESSAGING_OPERATION_RECEIVE = "receive";
+
+  /** The value for {@link #MESSAGING_OPERATION} for a process operation. */
+  public static final String MESSAGING_OPERATION_PROCESS = "process";
+
   /**
    * The name of an event describing an exception.
    *

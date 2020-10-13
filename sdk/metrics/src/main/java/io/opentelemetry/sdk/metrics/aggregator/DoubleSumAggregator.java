@@ -13,13 +13,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 public final class DoubleSumAggregator extends AbstractAggregator {
 
   private static final double DEFAULT_VALUE = 0.0;
-  private static final AggregatorFactory AGGREGATOR_FACTORY =
-      new AggregatorFactory() {
-        @Override
-        public Aggregator getAggregator() {
-          return new DoubleSumAggregator();
-        }
-      };
+  private static final AggregatorFactory AGGREGATOR_FACTORY = DoubleSumAggregator::new;
 
   // TODO: Change to use DoubleAdder when changed to java8.
   private final AtomicDouble current = new AtomicDouble(DEFAULT_VALUE);

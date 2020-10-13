@@ -29,37 +29,37 @@ final class BatchRecorderSdk implements BatchRecorder {
 
   @Override
   public BatchRecorder put(LongValueRecorder valueRecorder, long value) {
-    ((LongValueRecorderSdk) valueRecorder).record(value, labelSet);
+    valueRecorder.record(value, labelSet);
     return this;
   }
 
   @Override
   public BatchRecorder put(DoubleValueRecorder valueRecorder, double value) {
-    ((DoubleValueRecorderSdk) valueRecorder).record(value, labelSet);
+    valueRecorder.record(value, labelSet);
     return this;
   }
 
   @Override
   public BatchRecorder put(LongCounter counter, long value) {
-    ((LongCounterSdk) counter).add(value, labelSet);
+    counter.add(value, labelSet);
     return this;
   }
 
   @Override
   public BatchRecorder put(DoubleCounter counter, double value) {
-    ((DoubleCounterSdk) counter).add(value, labelSet);
+    counter.add(value, labelSet);
     return this;
   }
 
   @Override
   public BatchRecorder put(LongUpDownCounter upDownCounter, long value) {
-    ((LongUpDownCounterSdk) upDownCounter).add(value, labelSet);
+    upDownCounter.add(value, labelSet);
     return this;
   }
 
   @Override
   public BatchRecorder put(DoubleUpDownCounter upDownCounter, double value) {
-    ((DoubleUpDownCounterSdk) upDownCounter).add(value, labelSet);
+    upDownCounter.add(value, labelSet);
     return this;
   }
 

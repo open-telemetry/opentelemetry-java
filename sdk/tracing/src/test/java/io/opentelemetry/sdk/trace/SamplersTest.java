@@ -115,19 +115,6 @@ class SamplersTest {
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(Decision.RECORD_AND_SAMPLE);
-
-    // Null parent.
-    assertThat(
-            Samplers.alwaysOn()
-                .shouldSample(
-                    null,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -155,19 +142,6 @@ class SamplersTest {
             Samplers.alwaysOff()
                 .shouldSample(
                     notSampledSpanContext,
-                    traceId,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(Decision.DROP);
-
-    // Null parent.
-    assertThat(
-            Samplers.alwaysOff()
-                .shouldSample(
-                    null,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,

@@ -63,8 +63,8 @@ class ViewRegistry {
       case UP_DOWN_COUNTER:
         return Aggregations.sum();
       case VALUE_RECORDER:
-      case VALUE_OBSERVER:
         return Aggregations.minMaxSumCount();
+      case VALUE_OBSERVER:
       case SUM_OBSERVER:
       case UP_DOWN_SUM_OBSERVER:
         return Aggregations.lastValue();
