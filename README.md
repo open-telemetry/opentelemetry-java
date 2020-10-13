@@ -97,7 +97,7 @@ repositories {
 }
 
 dependencies {
-	implementation('io.opentelemetry:opentelemetry-api:0.9.0-SNAPSHOT')
+	implementation('io.opentelemetry:opentelemetry-api:0.10.0-SNAPSHOT')
 }
 ```
 
