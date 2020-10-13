@@ -145,10 +145,12 @@ class RecordEventsReadableSpanTest {
           Status.unset(),
           /*hasEnded=*/ false);
       assertThat(span.hasEnded()).isFalse();
+      assertThat(span.isRecording()).isTrue();
     } finally {
       span.end();
     }
     assertThat(span.hasEnded()).isTrue();
+    assertThat(span.isRecording()).isFalse();
   }
 
   @Test

@@ -461,7 +461,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public boolean isRecording() {
-    return true;
+    synchronized (lock) {
+      return !hasEnded;
+    }
   }
 
   @GuardedBy("lock")
