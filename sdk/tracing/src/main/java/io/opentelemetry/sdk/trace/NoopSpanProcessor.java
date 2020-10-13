@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 
 final class NoopSpanProcessor implements SpanProcessor {
@@ -15,7 +16,7 @@ final class NoopSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadWriteSpan span) {}
+  public void onStart(ReadWriteSpan span, Context parentContext) {}
 
   @Override
   public boolean isStartRequired() {

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -87,7 +88,7 @@ class SimpleSpanProcessorTest {
 
   @Test
   void onStartSync() {
-    simpleSampledSpansProcessor.onStart(readWriteSpan);
+    simpleSampledSpansProcessor.onStart(readWriteSpan, Context.root());
     verifyNoInteractions(spanExporter);
   }
 

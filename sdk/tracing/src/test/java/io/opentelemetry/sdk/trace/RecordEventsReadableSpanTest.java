@@ -20,6 +20,7 @@ import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
@@ -752,6 +753,7 @@ class RecordEventsReadableSpanTest {
             kind,
             parentSpanId,
             /* hasRemoteParent= */ true,
+            Context.root(),
             config,
             spanProcessor,
             testClock,
@@ -760,7 +762,7 @@ class RecordEventsReadableSpanTest {
             links,
             1,
             0);
-    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span);
+    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span, Context.root());
     return span;
   }
 
@@ -844,6 +846,7 @@ class RecordEventsReadableSpanTest {
             kind,
             parentSpanId,
             /* hasRemoteParent= */ EXPECTED_HAS_REMOTE_PARENT,
+            Context.root(),
             traceConfig,
             spanProcessor,
             clock,

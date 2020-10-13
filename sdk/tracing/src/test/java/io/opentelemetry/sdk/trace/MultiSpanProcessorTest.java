@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,7 +44,7 @@ class MultiSpanProcessorTest {
   @Test
   void empty() {
     SpanProcessor multiSpanProcessor = MultiSpanProcessor.create(Collections.emptyList());
-    multiSpanProcessor.onStart(readWriteSpan);
+    multiSpanProcessor.onStart(readWriteSpan, Context.root());
     multiSpanProcessor.onEnd(readableSpan);
     multiSpanProcessor.shutdown();
   }
@@ -52,8 +53,8 @@ class MultiSpanProcessorTest {
   void oneSpanProcessor() {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Collections.singletonList(spanProcessor1));
-    multiSpanProcessor.onStart(readWriteSpan);
-    verify(spanProcessor1).onStart(same(readWriteSpan));
+    multiSpanProcessor.onStart(readWriteSpan, Context.root());
+    verify(spanProcessor1).onStart(same(readWriteSpan), same(Context.root()));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1).onEnd(same(readableSpan));
@@ -78,7 +79,7 @@ class MultiSpanProcessorTest {
     assertThat(multiSpanProcessor.isStartRequired()).isFalse();
     assertThat(multiSpanProcessor.isEndRequired()).isFalse();
 
-    multiSpanProcessor.onStart(readWriteSpan);
+    multiSpanProcessor.onStart(readWriteSpan, Context.root());
     verifyNoMoreInteractions(spanProcessor1);
 
     multiSpanProcessor.onEnd(readableSpan);
@@ -95,9 +96,9 @@ class MultiSpanProcessorTest {
   void twoSpanProcessor() {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Arrays.asList(spanProcessor1, spanProcessor2));
-    multiSpanProcessor.onStart(readWriteSpan);
-    verify(spanProcessor1).onStart(same(readWriteSpan));
-    verify(spanProcessor2).onStart(same(readWriteSpan));
+    multiSpanProcessor.onStart(readWriteSpan, Context.root());
+    verify(spanProcessor1).onStart(same(readWriteSpan), same(Context.root()));
+    verify(spanProcessor2).onStart(same(readWriteSpan), same(Context.root()));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1).onEnd(same(readableSpan));
@@ -122,9 +123,9 @@ class MultiSpanProcessorTest {
     assertThat(multiSpanProcessor.isStartRequired()).isTrue();
     assertThat(multiSpanProcessor.isEndRequired()).isTrue();
 
-    multiSpanProcessor.onStart(readWriteSpan);
-    verify(spanProcessor1).onStart(same(readWriteSpan));
-    verify(spanProcessor2, times(0)).onStart(any(ReadWriteSpan.class));
+    multiSpanProcessor.onStart(readWriteSpan, Context.root());
+    verify(spanProcessor1).onStart(same(readWriteSpan), same(Context.root()));
+    verify(spanProcessor2, times(0)).onStart(any(ReadWriteSpan.class), any(Context.class));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1, times(0)).onEnd(any(ReadableSpan.class));

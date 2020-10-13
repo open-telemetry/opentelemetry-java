@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -56,7 +57,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadWriteSpan span) {
+  public void onStart(ReadWriteSpan span, Context parentContext) {
     // Do nothing.
   }
 
