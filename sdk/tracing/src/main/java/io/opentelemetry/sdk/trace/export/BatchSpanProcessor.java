@@ -295,7 +295,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
    * @return a new {@link BatchSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public static Builder newBuilder(SpanExporter spanExporter) {
+  public static Builder builder(SpanExporter spanExporter) {
     return new Builder(spanExporter);
   }
 

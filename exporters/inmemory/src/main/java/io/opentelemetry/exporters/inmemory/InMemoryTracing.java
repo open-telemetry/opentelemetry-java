@@ -93,7 +93,7 @@ public abstract class InMemoryTracing {
               .addTextMapPropagator(HttpTraceContext.getInstance())
               .build());
       InMemorySpanExporter exporter = InMemorySpanExporter.create();
-      getTracerSdkManagement().addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
+      getTracerSdkManagement().addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
       return setSpanExporter(exporter).autoBuild();
     }
   }

@@ -54,7 +54,7 @@ class TracezSpanProcessorTest {
 
   @Test
   void onStart_sampledSpan_inCache() {
-    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
     /* Return a sampled span, which should be added to the running cache by default */
     when(readWriteSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readWriteSpan);
@@ -63,7 +63,7 @@ class TracezSpanProcessorTest {
 
   @Test
   void onEnd_sampledSpan_inCache() {
-    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
     /* Return a sampled span, which should be added to the completed cache upon ending */
     when(readWriteSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readWriteSpan.getName()).thenReturn(SPAN_NAME);
@@ -79,7 +79,7 @@ class TracezSpanProcessorTest {
 
   @Test
   void onStart_notSampledSpan_inCache() {
-    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
     /* Return a non-sampled span, which should not be added to the running cache by default */
     when(readWriteSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readWriteSpan);
@@ -88,7 +88,7 @@ class TracezSpanProcessorTest {
 
   @Test
   void onEnd_notSampledSpan_notInCache() {
-    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
     /* Return a non-sampled span, which should not be added to the running cache by default */
     when(readWriteSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
@@ -103,7 +103,7 @@ class TracezSpanProcessorTest {
     Properties properties = new Properties();
     properties.setProperty("otel.zpages.export.sampled", "true");
     TracezSpanProcessor spanProcessor =
-        TracezSpanProcessor.newBuilder().readProperties(properties).build();
+        TracezSpanProcessor.builder().readProperties(properties).build();
 
     /* Return a non-sampled span, which should not be added to the completed cache */
     when(readWriteSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
@@ -120,7 +120,7 @@ class TracezSpanProcessorTest {
     Properties properties = new Properties();
     properties.setProperty("otel.zpages.export.sampled", "false");
     TracezSpanProcessor spanProcessor =
-        TracezSpanProcessor.newBuilder().readProperties(properties).build();
+        TracezSpanProcessor.builder().readProperties(properties).build();
 
     /* Return a non-sampled span, which should be added to the caches */
     when(readWriteSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);

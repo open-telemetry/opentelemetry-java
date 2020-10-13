@@ -25,7 +25,7 @@ import java.util.List;
  *
  *   {@literal @}Before
  *   public void setup() {
- *     tracer.addSpanProcessor(SimpleSampledSpansProcessor.newBuilder(testExporter).build());
+ *     tracer.addSpanProcessor(SimpleSampledSpansProcessor.builder(testExporter).build());
  *   }
  *
  *   {@literal @}Test

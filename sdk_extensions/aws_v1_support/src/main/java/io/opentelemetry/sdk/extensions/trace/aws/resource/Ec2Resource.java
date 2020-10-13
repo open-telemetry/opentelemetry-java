@@ -148,7 +148,7 @@ public class Ec2Resource extends ResourceProvider {
 
     String hostname = fetchHostname(token);
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.builder();
     attrBuilders.setAttribute(
         ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 

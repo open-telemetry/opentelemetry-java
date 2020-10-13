@@ -29,7 +29,7 @@ class InMemorySpanExporterTest {
 
   @BeforeEach
   void setup() {
-    tracerSdkProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
+    tracerSdkProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
   }
 
   @Test
@@ -87,7 +87,7 @@ class InMemorySpanExporterTest {
   }
 
   static SpanData makeBasicSpan() {
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setHasEnded(true)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())

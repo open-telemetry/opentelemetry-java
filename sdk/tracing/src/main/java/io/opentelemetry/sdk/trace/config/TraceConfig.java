@@ -93,7 +93,7 @@ public abstract class TraceConfig {
     return DEFAULT;
   }
 
-  private static final TraceConfig DEFAULT = TraceConfig.newBuilder().build();
+  private static final TraceConfig DEFAULT = TraceConfig.builder().build();
 
   /**
    * Returns the global default {@code Sampler} which is used when constructing a new {@code Span}.
@@ -154,7 +154,7 @@ public abstract class TraceConfig {
    *
    * @return a new {@link Builder}.
    */
-  private static Builder newBuilder() {
+  private static Builder builder() {
     return new AutoValue_TraceConfig.Builder()
         .setSampler(DEFAULT_SAMPLER)
         .setMaxNumberOfAttributes(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES)

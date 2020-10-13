@@ -79,7 +79,7 @@ class JaegerGrpcSpanExporterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
     SpanData span =
-        TestSpanData.newBuilder()
+        TestSpanData.builder()
             .setHasEnded(true)
             .setTraceId(TRACE_ID)
             .setSpanId(SPAN_ID)
@@ -97,7 +97,7 @@ class JaegerGrpcSpanExporterTest {
 
     // test
     JaegerGrpcSpanExporter exporter =
-        JaegerGrpcSpanExporter.newBuilder().setServiceName("test").setChannel(channel).build();
+        JaegerGrpcSpanExporter.builder().setServiceName("test").setChannel(channel).build();
     exporter.export(Collections.singletonList(span));
 
     // verify
@@ -158,7 +158,7 @@ class JaegerGrpcSpanExporterTest {
     String endpoint = "127.0.0.1:9090";
     options.put("otel.exporter.jaeger.service.name", serviceName);
     options.put("otel.exporter.jaeger.endpoint", endpoint);
-    JaegerGrpcSpanExporter.Builder config = JaegerGrpcSpanExporter.newBuilder();
+    JaegerGrpcSpanExporter.Builder config = JaegerGrpcSpanExporter.builder();
     JaegerGrpcSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
     Mockito.verify(spy).setServiceName(serviceName);

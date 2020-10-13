@@ -30,7 +30,7 @@ import java.util.List;
  *     super(delegate);
  *     String clientType = ClientConfig.parseUserAgent(
  *       delegate.getAttributes().get(SemanticAttributes.HTTP_USER_AGENT).getStringValue());
- *     Attributes.Builder newAttributes = Attributes.newBuilder(delegate.getAttributes());
+ *     Attributes.Builder newAttributes = Attributes.builder(delegate.getAttributes());
  *     newAttributes.setAttribute("client_type", clientType);
  *     attributes = newAttributes.build();
  *   }

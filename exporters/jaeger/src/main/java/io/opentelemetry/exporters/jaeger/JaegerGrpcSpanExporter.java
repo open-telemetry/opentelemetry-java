@@ -152,7 +152,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 

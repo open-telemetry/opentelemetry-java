@@ -14,7 +14,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
 
-  private static final Labels EMPTY = Labels.newBuilder().build();
+  private static final Labels EMPTY = Labels.builder().build();
 
   public abstract void forEach(LabelConsumer consumer);
 
@@ -117,7 +117,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
   }
 
   /** Creates a new {@link Builder} instance for creating arbitrary {@link Labels}. */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 

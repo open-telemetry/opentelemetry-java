@@ -50,7 +50,7 @@ class AttributesTest {
 
   @Test
   void builder_nullKey() {
-    Attributes attributes = Attributes.newBuilder().setAttribute(stringKey(null), "value").build();
+    Attributes attributes = Attributes.builder().setAttribute(stringKey(null), "value").build();
     assertThat(attributes).isEqualTo(Attributes.empty());
   }
 
@@ -125,7 +125,7 @@ class AttributesTest {
   @Test
   void builder() {
     Attributes attributes =
-        Attributes.newBuilder()
+        Attributes.builder()
             .setAttribute("string", "value1")
             .setAttribute("long", 100)
             .setAttribute(longKey("long2"), 10)
@@ -148,7 +148,7 @@ class AttributesTest {
             false);
     assertThat(attributes).isEqualTo(wantAttributes);
 
-    Attributes.Builder newAttributes = Attributes.newBuilder(attributes);
+    Attributes.Builder newAttributes = Attributes.builder(attributes);
     newAttributes.setAttribute("newKey", "newValue");
     assertThat(newAttributes.build())
         .isEqualTo(
@@ -172,7 +172,7 @@ class AttributesTest {
   @Test
   void builder_arrayTypes() {
     Attributes attributes =
-        Attributes.newBuilder()
+        Attributes.builder()
             .setAttribute("string", "value1", "value2")
             .setAttribute("long", 100L, 200L)
             .setAttribute("double", 33.44, -44.33)
@@ -230,7 +230,7 @@ class AttributesTest {
   @Test
   void toBuilder() {
     Attributes filled =
-        Attributes.newBuilder().setAttribute("cat", "meow").setAttribute("dog", "bark").build();
+        Attributes.builder().setAttribute("cat", "meow").setAttribute("dog", "bark").build();
 
     Attributes fromEmpty =
         Attributes.empty()
@@ -242,16 +242,16 @@ class AttributesTest {
     // Original not mutated.
     assertThat(Attributes.empty().isEmpty()).isTrue();
 
-    Attributes partial = Attributes.newBuilder().setAttribute("cat", "meow").build();
+    Attributes partial = Attributes.builder().setAttribute("cat", "meow").build();
     Attributes fromPartial = partial.toBuilder().setAttribute("dog", "bark").build();
     assertThat(fromPartial).isEqualTo(filled);
     // Original not mutated.
-    assertThat(partial).isEqualTo(Attributes.newBuilder().setAttribute("cat", "meow").build());
+    assertThat(partial).isEqualTo(Attributes.builder().setAttribute("cat", "meow").build());
   }
 
   @Test
   void nullsAreNoOps() {
-    Attributes.Builder builder = Attributes.newBuilder();
+    Attributes.Builder builder = Attributes.builder();
     builder.setAttribute(stringKey("attrValue"), "attrValue");
     builder.setAttribute("string", "string");
     builder.setAttribute("long", 10);
