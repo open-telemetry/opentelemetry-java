@@ -465,7 +465,7 @@ wrapper {
     gradleVersion = '6.6'
 }
 
-tasks.register("prepareRelease") {
+tasks.register("updateVersionInDocs") {
     doLast {
         def versionParts = version.toString().split('\\.')
         def minorVersionNumber = Integer.parseInt(versionParts[1])

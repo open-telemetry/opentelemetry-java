@@ -58,6 +58,7 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
       - name: Cherrypicks
+        if: ${{ github.event.inputs.commits != '' }}
         run: |
           git fetch origin master
           echo ${{ github.event.inputs.commits }} | sed -n 1'p' | tr ',' '\n' | while read word; do
@@ -93,7 +94,7 @@ jobs:
         with:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
-          arguments: prepareRelease --stacktrace -Prelease.version=${{ github.event.inputs.version }}
+          arguments: updateVersionInDocs --stacktrace -Prelease.version=${{ github.event.inputs.version }}
       - name: Commit README changes
         run: |
           git commit -am "README update for patch release ${{ github.event.inputs.version }}"
