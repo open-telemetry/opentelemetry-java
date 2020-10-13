@@ -26,7 +26,7 @@ public class W3CBaggagePropagator implements TextMapPropagator {
   private static final String FIELD = "baggage";
   private static final List<String> FIELDS = singletonList(FIELD);
   private static final W3CBaggagePropagator INSTANCE =
-      new W3CBaggagePropagator(OpenTelemetry.getBaggageManager());
+      new W3CBaggagePropagator(OpenTelemetry.get().getBaggageManager());
 
   private final BaggageManager baggageManager;
 

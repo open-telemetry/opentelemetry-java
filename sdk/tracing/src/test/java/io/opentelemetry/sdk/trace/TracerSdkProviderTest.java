@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,30 +48,33 @@ class TracerSdkProviderTest {
                 .setClock(mock(Clock.class))
                 .setResource(mock(Resource.class))
                 .setIdsGenerator(mock(IdsGenerator.class))
+                .setSpanProcessors(spanProcessor)
+                .setTraceConfig(TraceConfig.getDefault())
                 .build())
         .isNotNull();
   }
 
   @Test
-  void builder_NullClock() {
-    assertThrows(
-        NullPointerException.class, () -> TracerSdkProvider.builder().setClock(null), "clock");
-  }
-
-  @Test
-  void builder_NullResource() {
-    assertThrows(
-        NullPointerException.class,
-        () -> TracerSdkProvider.builder().setResource(null),
-        "resource");
-  }
-
-  @Test
-  void builder_NullIdsGenerator() {
-    assertThrows(
-        NullPointerException.class,
-        () -> TracerSdkProvider.builder().setIdsGenerator(null),
-        "idsGenerator");
+  void builder_nullsThrow() {
+    assertThatThrownBy(() -> TracerSdkProvider.builder().setClock(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("clock");
+    assertThatThrownBy(() -> TracerSdkProvider.builder().setResource(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("resource");
+    assertThatThrownBy(() -> TracerSdkProvider.builder().setIdsGenerator(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("idsGenerator");
+    assertThatThrownBy(() -> TracerSdkProvider.builder().setSpanProcessors((SpanProcessor[]) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("spanProcessors");
+    assertThatThrownBy(
+            () -> TracerSdkProvider.builder().setSpanProcessors((Iterable<SpanProcessor>) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("spanProcessors");
+    assertThatThrownBy(() -> TracerSdkProvider.builder().setTraceConfig(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("traceConfig");
   }
 
   @Test
