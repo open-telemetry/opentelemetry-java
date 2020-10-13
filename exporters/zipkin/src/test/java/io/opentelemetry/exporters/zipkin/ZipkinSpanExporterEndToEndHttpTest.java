@@ -58,7 +58,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   public void testExportWithDefaultEncoding() {
 
     ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.newBuilder()
+        ZipkinSpanExporter.builder()
             .setEndpoint(zipkin.httpUrl() + ENDPOINT_V2_SPANS)
             .setServiceName(SERVICE_NAME)
             .build();
@@ -110,7 +110,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
   private static ZipkinSpanExporter buildZipkinExporter(
       String endpoint, Encoding encoding, SpanBytesEncoder encoder) {
-    return ZipkinSpanExporter.newBuilder()
+    return ZipkinSpanExporter.builder()
         .setSender(OkHttpSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
         .setServiceName(SERVICE_NAME)
         .setEncoder(encoder)
@@ -136,7 +136,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   }
 
   private static TestSpanData.Builder buildStandardSpan() {
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setTraceId(TRACE_ID)
         .setSpanId(SPAN_ID)
         .setParentSpanId(PARENT_SPAN_ID)

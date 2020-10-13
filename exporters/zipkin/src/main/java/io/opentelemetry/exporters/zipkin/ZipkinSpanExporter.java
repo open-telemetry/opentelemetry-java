@@ -283,7 +283,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
    *
    * @return a new {@link ZipkinSpanExporter}.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 

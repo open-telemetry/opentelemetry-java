@@ -125,7 +125,7 @@ final class TracezSpanProcessor implements SpanProcessor {
    *
    * @return a new {@link TracezSpanProcessor}.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 

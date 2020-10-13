@@ -43,7 +43,7 @@ class JaegerRemoteSamplerIntegrationTest {
     String jaegerHost =
         String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
-        JaegerRemoteSampler.newBuilder()
+        JaegerRemoteSampler.builder()
             .setChannel(ManagedChannelBuilder.forTarget(jaegerHost).usePlaintext().build())
             .setServiceName(SERVICE_NAME)
             .build();
@@ -60,7 +60,7 @@ class JaegerRemoteSamplerIntegrationTest {
     String jaegerHost =
         String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
-        JaegerRemoteSampler.newBuilder()
+        JaegerRemoteSampler.builder()
             .setChannel(ManagedChannelBuilder.forTarget(jaegerHost).usePlaintext().build())
             .setServiceName(SERVICE_NAME_RATE_LIMITING)
             .build();

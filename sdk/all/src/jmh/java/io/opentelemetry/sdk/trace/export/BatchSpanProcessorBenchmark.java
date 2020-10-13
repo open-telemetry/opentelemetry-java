@@ -75,7 +75,7 @@ public class BatchSpanProcessorBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     SpanExporter exporter = new DelayingSpanExporter(delayMs);
-    processor = BatchSpanProcessor.newBuilder(exporter).build();
+    processor = BatchSpanProcessor.builder(exporter).build();
 
     ImmutableList.Builder<Span> spans = ImmutableList.builderWithExpectedSize(spanCount);
     Tracer tracer = OpenTelemetry.getTracerProvider().get("benchmarkTracer");

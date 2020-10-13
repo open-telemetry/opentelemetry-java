@@ -32,7 +32,7 @@ public class SendTraceToJaeger {
         ManagedChannelBuilder.forAddress(ip, port).usePlaintext().build();
     // Export traces to Jaeger
     JaegerGrpcSpanExporter jaegerExporter =
-        JaegerGrpcSpanExporter.newBuilder()
+        JaegerGrpcSpanExporter.builder()
             .setServiceName("integration test")
             .setChannel(jaegerChannel)
             .setDeadlineMs(30000)
@@ -40,7 +40,7 @@ public class SendTraceToJaeger {
 
     // Set to process the spans by the Jaeger Exporter
     OpenTelemetrySdk.getTracerManagement()
-        .addSpanProcessor(SimpleSpanProcessor.newBuilder(jaegerExporter).build());
+        .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
   }
 
   private void myWonderfulUseCase() {

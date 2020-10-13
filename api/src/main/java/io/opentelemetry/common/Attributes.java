@@ -34,7 +34,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Object>
     implements ReadableAttributes {
-  private static final Attributes EMPTY = Attributes.newBuilder().build();
+  private static final Attributes EMPTY = Attributes.builder().build();
 
   @AutoValue
   @Immutable
@@ -179,12 +179,12 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   }
 
   /** Returns a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 
   /** Returns a new {@link Builder} instance from ReadableAttributes. */
-  public static Builder newBuilder(ReadableAttributes attributes) {
+  public static Builder builder(ReadableAttributes attributes) {
     final Builder builder = new Builder();
     attributes.forEach(builder::setAttribute);
     return builder;

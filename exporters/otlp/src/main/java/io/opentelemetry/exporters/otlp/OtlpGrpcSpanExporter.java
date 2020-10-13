@@ -144,7 +144,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 
@@ -157,7 +157,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * @since 0.5.0
    */
   public static OtlpGrpcSpanExporter getDefault() {
-    return newBuilder().readEnvironmentVariables().readSystemProperties().build();
+    return builder().readEnvironmentVariables().readSystemProperties().build();
   }
 
   /**

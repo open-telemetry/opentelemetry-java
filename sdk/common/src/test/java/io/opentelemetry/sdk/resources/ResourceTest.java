@@ -54,7 +54,7 @@ class ResourceTest {
 
   @Test
   void create_ignoreNull() {
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.builder();
 
     attributes.setAttribute(stringKey("string"), null);
     Resource resource = Resource.create(attributes.build());
@@ -95,7 +95,7 @@ class ResourceTest {
 
   @Test
   void create_NullEmptyArray() {
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.builder();
 
     // Empty arrays should be maintained
     attributes.setAttribute(stringArrayKey("stringArrayAttribute"), Collections.emptyList());

@@ -47,7 +47,7 @@ public abstract class Resource {
   static {
     TELEMETRY_SDK =
         create(
-            Attributes.newBuilder()
+            Attributes.builder()
                 .setAttribute(SDK_NAME, "opentelemetry")
                 .setAttribute(SDK_LANGUAGE, "java")
                 .setAttribute(SDK_VERSION, readVersion())
@@ -77,7 +77,7 @@ public abstract class Resource {
 
   private static Resource readResourceFromProviders() {
     ResourcesConfig resourcesConfig =
-        ResourcesConfig.newBuilder().readEnvironmentVariables().readSystemProperties().build();
+        ResourcesConfig.builder().readEnvironmentVariables().readSystemProperties().build();
     Resource result = Resource.EMPTY;
     for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
       if (resourcesConfig
@@ -157,7 +157,7 @@ public abstract class Resource {
       return this;
     }
 
-    Attributes.Builder attrBuilder = Attributes.newBuilder();
+    Attributes.Builder attrBuilder = Attributes.builder();
     Merger merger = new Merger(attrBuilder);
     other.getAttributes().forEach(merger);
     this.getAttributes().forEach(merger);

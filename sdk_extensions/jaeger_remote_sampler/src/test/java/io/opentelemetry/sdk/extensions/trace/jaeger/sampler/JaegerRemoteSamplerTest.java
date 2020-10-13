@@ -90,7 +90,7 @@ class JaegerRemoteSamplerTest {
         ArgumentCaptor.forClass(Sampling.SamplingStrategyParameters.class);
 
     JaegerRemoteSampler sampler =
-        JaegerRemoteSampler.newBuilder()
+        JaegerRemoteSampler.builder()
             .setChannel(inProcessChannel)
             .setServiceName(SERVICE_NAME)
             .build();
@@ -108,7 +108,7 @@ class JaegerRemoteSamplerTest {
   @Test
   void description() {
     JaegerRemoteSampler sampler =
-        JaegerRemoteSampler.newBuilder()
+        JaegerRemoteSampler.builder()
             .setChannel(inProcessChannel)
             .setServiceName(SERVICE_NAME)
             .build();
