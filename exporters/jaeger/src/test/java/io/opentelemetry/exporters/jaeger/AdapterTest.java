@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
@@ -80,7 +81,7 @@ class AdapterTest {
     assertEquals(Timestamps.fromMillis(startMs), jaegerSpan.getStartTime());
     assertEquals(duration, Durations.toMillis(jaegerSpan.getDuration()));
 
-    assertEquals(5, jaegerSpan.getTagsCount());
+    assertEquals(8, jaegerSpan.getTagsCount());
     Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
     assertNotNull(keyValue);
     assertEquals("server", keyValue.getVStr());
@@ -91,6 +92,15 @@ class AdapterTest {
     keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_MESSAGE);
     assertNotNull(keyValue);
     assertEquals("", keyValue.getVStr());
+    keyValue = getValue(jaegerSpan.getTagsList(), "otel.library.name");
+    assertNotNull(keyValue);
+    assertEquals("lib-name", keyValue.getVStr());
+    keyValue = getValue(jaegerSpan.getTagsList(), "otel.library.version");
+    assertNotNull(keyValue);
+    assertEquals("lib-version", keyValue.getVStr());
+    keyValue = getValue(jaegerSpan.getTagsList(), "resource-attr-key");
+    assertNotNull(keyValue);
+    assertEquals("resource-attr-value", keyValue.getVStr());
 
     assertEquals(1, jaegerSpan.getLogsCount());
     Model.Log log = jaegerSpan.getLogs(0);
@@ -145,6 +155,10 @@ class AdapterTest {
     Model.KeyValue kvD = Adapter.toKeyValue(doubleKey("valueD"), 1.);
     Model.KeyValue kvI = Adapter.toKeyValue(longKey("valueI"), 2L);
     Model.KeyValue kvS = Adapter.toKeyValue(stringKey("valueS"), "foobar");
+    Model.KeyValue kvLibraryName =
+        Adapter.toKeyValue(stringKey("InstrumentationLibrary.name"), "lib-name");
+    Model.KeyValue kvLibraryVersion =
+        Adapter.toKeyValue(stringKey("InstrumentationLibrary.version"), "lib-version");
     Model.KeyValue kvArrayB =
         Adapter.toKeyValue(booleanArrayKey("valueArrayB"), Arrays.asList(true, false));
     Model.KeyValue kvArrayD =
@@ -164,6 +178,14 @@ class AdapterTest {
     assertEquals("foobar", kvS.getVStr());
     assertEquals("foobar", kvS.getVStrBytes().toStringUtf8());
     assertEquals(Model.ValueType.STRING, kvS.getVType());
+    assertEquals("lib-name", kvLibraryName.getVStr());
+    assertEquals("lib-name", kvLibraryName.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvLibraryName.getVType());
+    assertEquals("otel.library.name", kvLibraryName.getKey());
+    assertEquals("lib-version", kvLibraryVersion.getVStr());
+    assertEquals("lib-version", kvLibraryVersion.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvLibraryVersion.getVType());
+    assertEquals("otel.library.version", kvLibraryVersion.getKey());
     assertEquals("[true,false]", kvArrayB.getVStr());
     assertEquals("[true,false]", kvArrayB.getVStrBytes().toStringUtf8());
     assertEquals(Model.ValueType.STRING, kvArrayB.getVType());
@@ -285,7 +307,12 @@ class AdapterTest {
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
-        .setResource(Resource.create(Attributes.empty()))
+        .setResource(
+            Resource.create(
+                Attributes.of(
+                    AttributeKey.stringKey("InstrumentationLibrary.name"), "lib-name",
+                    AttributeKey.stringKey("InstrumentationLibrary.version"), "lib-version",
+                    AttributeKey.stringKey("resource-attr-key"), "resource-attr-value")))
         .setStatus(Status.ok())
         .build();
   }

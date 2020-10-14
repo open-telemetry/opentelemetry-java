@@ -75,6 +75,10 @@ final class Adapter {
     target.addAllLogs(toJaegerLogs(span.getEvents()));
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
+    if (span.getResource() != null && span.getResource().getAttributes() != null) {
+      target.addAllTags(toKeyValues(span.getResource().getAttributes()));
+    }
+
     // add the parent span
     if (SpanId.isValid(span.getParentSpanId())) {
       target.addReferences(
@@ -192,7 +196,10 @@ final class Adapter {
   @VisibleForTesting
   static <T> Model.KeyValue toKeyValue(AttributeKey<T> key, T value) {
     Model.KeyValue.Builder builder = Model.KeyValue.newBuilder();
-    builder.setKey(key.getKey());
+    builder.setKey(
+        key.getKey()
+            .replace("InstrumentationLibrary.name", "otel.library.name")
+            .replace("InstrumentationLibrary.version", "otel.library.version"));
 
     switch (key.getType()) {
       case STRING:
