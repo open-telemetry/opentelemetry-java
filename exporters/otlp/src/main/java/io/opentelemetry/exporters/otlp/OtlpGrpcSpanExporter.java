@@ -100,18 +100,6 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private OtlpGrpcSpanExporter(ManagedChannel channel, long deadlineMs) {
     this.managedChannel = channel;
     this.deadlineMs = deadlineMs;
-    //    managedChannel.notifyWhenStateChanged(ConnectivityState.READY, () -> {
-    //      System.out.println("READY");
-    //    });
-    //    managedChannel.notifyWhenStateChanged(ConnectivityState.CONNECTING, () -> {
-    //      System.out.println("CONNECTING");
-    //    });
-    //    managedChannel.notifyWhenStateChanged(ConnectivityState.TRANSIENT_FAILURE, () -> {
-    //      System.out.println("TRANSIENT FAILURE");
-    //    });
-    //    managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, () -> {
-    //      System.out.println("SHUTDOWN");
-    //    });
     this.traceService = TraceServiceGrpc.newFutureStub(channel);
   }
 
