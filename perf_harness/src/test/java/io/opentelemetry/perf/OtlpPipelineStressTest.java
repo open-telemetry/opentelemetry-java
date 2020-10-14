@@ -47,7 +47,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @SuppressWarnings({"FutureReturnValueIgnored", "CatchAndPrintStackTrace"})
 public class OtlpPipelineStressTest {
 
