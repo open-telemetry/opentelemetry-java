@@ -81,7 +81,7 @@ public interface Tracer {
    *
    * <p>Supports try-with-resource idiom.
    *
-   * <p>Can be called with {@code Span.wrapWithNoOp(span.getContext())} to enter a scope of code
+   * <p>Can be called with {@code Span.getPropagated(span.getContext())} to enter a scope of code
    * where tracing is stopped.
    *
    * <p>Example of usage:
