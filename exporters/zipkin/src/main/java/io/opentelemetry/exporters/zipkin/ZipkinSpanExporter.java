@@ -314,7 +314,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @return this.
      * @see io.opentelemetry.sdk.resources.Resource
      * @see io.opentelemetry.sdk.resources.ResourceAttributes
-     * @since 0.4.0
      */
     public Builder setServiceName(String serviceName) {
       this.serviceName = serviceName;
@@ -329,7 +328,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      *
      * @param sender the Zipkin sender implementation.
      * @return this.
-     * @since 0.4.0
      */
     public Builder setSender(Sender sender) {
       this.sender = sender;
@@ -343,7 +341,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @param encoder the {@code BytesEncoder} to use.
      * @return this.
      * @see SpanBytesEncoder
-     * @since 0.4.0
      */
     public Builder setEncoder(BytesEncoder<Span> encoder) {
       this.encoder = encoder;
@@ -357,7 +354,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
      * @return this.
      * @see OkHttpSender
-     * @since 0.4.0
      */
     public Builder setEndpoint(String endpoint) {
       this.endpoint = endpoint;
@@ -389,7 +385,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * Builds a {@link ZipkinSpanExporter}.
      *
      * @return a {@code ZipkinSpanExporter}.
-     * @since 0.4.0
      */
     public ZipkinSpanExporter build() {
       if (sender == null) {

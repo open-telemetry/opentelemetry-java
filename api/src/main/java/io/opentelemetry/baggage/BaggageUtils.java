@@ -11,11 +11,7 @@ import io.opentelemetry.context.Scope;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * Utility methods for accessing the {@link Baggage} contained in the {@link Context}.
- *
- * @since 0.9.0
- */
+/** Utility methods for accessing the {@link Baggage} contained in the {@link Context}. */
 @Immutable
 public final class BaggageUtils {
   private static final ContextKey<Baggage> CORR_CONTEXT_KEY =
@@ -27,7 +23,6 @@ public final class BaggageUtils {
    * @param baggage the value to be set.
    * @param context the parent {@code Context}.
    * @return a new context with the given value set.
-   * @since 0.9.0
    */
   public static Context withBaggage(Baggage baggage, Context context) {
     return context.withValues(CORR_CONTEXT_KEY, baggage);
@@ -38,7 +33,6 @@ public final class BaggageUtils {
    * to an empty {@link Baggage}.
    *
    * @return the {@link Baggage} from the {@linkplain Context#current current context}.
-   * @since 0.9.0
    */
   public static Baggage getCurrentBaggage() {
     return getBaggage(Context.current());
@@ -50,7 +44,6 @@ public final class BaggageUtils {
    *
    * @param context the specified {@code Context}.
    * @return the {@link Baggage} from the specified {@code Context}.
-   * @since 0.9.0
    */
   public static Baggage getBaggage(Context context) {
     Baggage baggage = context.getValue(CORR_CONTEXT_KEY);
@@ -63,7 +56,6 @@ public final class BaggageUtils {
    *
    * @param context the specified {@code Context}.
    * @return the {@link Baggage} from the specified {@code Context}.
-   * @since 0.9.0
    */
   @Nullable
   public static Baggage getBaggageWithoutDefault(Context context) {
@@ -76,7 +68,6 @@ public final class BaggageUtils {
    *
    * @param baggage the {@link Baggage} to be added to the current {@code Context}.
    * @return the {@link Scope} for the updated {@code Context}.
-   * @since 0.9.0
    */
   public static Scope currentContextWith(Baggage baggage) {
     Context context = withBaggage(baggage, Context.current());

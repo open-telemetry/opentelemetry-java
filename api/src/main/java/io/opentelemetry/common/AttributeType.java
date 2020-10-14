@@ -8,8 +8,6 @@ package io.opentelemetry.common;
 /**
  * An enum that represents all the possible value types for an {@code AttributeKey} and hence the
  * types of values that are allowed for {@link Attributes}.
- *
- * @since 0.1.0
  */
 public enum AttributeType {
   STRING,

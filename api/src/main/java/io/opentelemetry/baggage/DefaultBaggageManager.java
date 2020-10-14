@@ -11,11 +11,7 @@ import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * No-op implementations of {@link BaggageManager}.
- *
- * @since 0.9.0
- */
+/** No-op implementations of {@link BaggageManager}. */
 @ThreadSafe
 public final class DefaultBaggageManager implements BaggageManager {
   private static final DefaultBaggageManager INSTANCE = new DefaultBaggageManager();

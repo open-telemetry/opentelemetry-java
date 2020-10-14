@@ -11,8 +11,6 @@ import javax.annotation.concurrent.Immutable;
  * Helper methods for dealing with a span identifier. A valid span identifier is an 8-byte array
  * with at least one non-zero byte. In base-16 representation, a 16 character hex String, where at
  * least one of the characters is not a '0'.
- *
- * @since 0.1.0
  */
 @Immutable
 public final class SpanId {
@@ -29,17 +27,12 @@ public final class SpanId {
    * Returns the size in bytes of the {@code SpanId}.
    *
    * @return the size in bytes of the {@code SpanId}.
-   * @since 0.1.0
    */
   public static int getSize() {
     return SIZE;
   }
 
-  /**
-   * Returns the length of the base16 (hex) representation of the {@code SpanId}.
-   *
-   * @since 0.8.0
-   */
+  /** Returns the length of the base16 (hex) representation of the {@code SpanId}. */
   public static int getHexLength() {
     return HEX_SIZE;
   }
@@ -48,7 +41,6 @@ public final class SpanId {
    * Returns the invalid {@code SpanId}. All bytes are 0.
    *
    * @return the invalid {@code SpanId}.
-   * @since 0.1.0
    */
   public static String getInvalid() {
     return INVALID;
@@ -80,7 +72,6 @@ public final class SpanId {
    * @throws NullPointerException if {@code src} is null.
    * @throws IllegalArgumentException if not enough characters in the {@code src} from the {@code
    *     srcOffset}.
-   * @since 0.1.0
    */
   public static byte[] bytesFromHex(String src, int srcOffset) {
     return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
@@ -91,7 +82,6 @@ public final class SpanId {
    * at least one non-zero byte.
    *
    * @return {@code true} if the span identifier is valid.
-   * @since 0.1.0
    */
   public static boolean isValid(String spanId) {
     return (spanId.length() == HEX_SIZE)

@@ -213,7 +213,6 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
      *
      * @param endpoint The Jaeger endpoint URL, ex. "jaegerhost:14250".
      * @return this.
-     * @since 0.7.0
      */
     public Builder setEndpoint(String endpoint) {
       this.endpoint = endpoint;
@@ -236,7 +235,6 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
      *
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
-     * @since 0.7.0
      */
     @Override
     protected Builder fromConfigMap(

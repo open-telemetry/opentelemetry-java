@@ -25,7 +25,6 @@ public interface MeterProviderFactory {
    * Creates a new meter registry instance.
    *
    * @return a meter factory instance.
-   * @since 0.1.0
    */
   MeterProvider create();
 }

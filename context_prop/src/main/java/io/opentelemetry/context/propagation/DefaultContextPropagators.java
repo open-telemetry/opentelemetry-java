@@ -20,8 +20,6 @@ import java.util.Set;
  * synchronically upon injection and extraction.
  *
  * <p>The propagation fields retrieved from all registered propagators are de-duplicated.
- *
- * @since 0.3.0
  */
 public final class DefaultContextPropagators implements ContextPropagators {
   private final TextMapPropagator textMapPropagator;
@@ -36,7 +34,6 @@ public final class DefaultContextPropagators implements ContextPropagators {
    * object.
    *
    * @return a {@link DefaultContextPropagators.Builder}.
-   * @since 0.3.0
    */
   public static Builder builder() {
     return new Builder();
@@ -59,8 +56,6 @@ public final class DefaultContextPropagators implements ContextPropagators {
    *     .addTextMapPropagator(new MyCustomContextPropagator())
    *     .build();
    * }</pre>
-   *
-   * @since 0.3.0
    */
   public static final class Builder {
     List<TextMapPropagator> textPropagators = new ArrayList<>();
@@ -74,7 +69,6 @@ public final class DefaultContextPropagators implements ContextPropagators {
      * @param textMapPropagator the propagator to be added.
      * @return this.
      * @throws NullPointerException if {@code textMapPropagator} is {@code null}.
-     * @since 0.3.0
      */
     public Builder addTextMapPropagator(TextMapPropagator textMapPropagator) {
       if (textMapPropagator == null) {
@@ -89,7 +83,6 @@ public final class DefaultContextPropagators implements ContextPropagators {
      * Builds a new {@code ContextPropagators} with the specified propagators.
      *
      * @return the newly created {@code ContextPropagators} instance.
-     * @since 0.3.0
      */
     public ContextPropagators build() {
       if (textPropagators.isEmpty()) {

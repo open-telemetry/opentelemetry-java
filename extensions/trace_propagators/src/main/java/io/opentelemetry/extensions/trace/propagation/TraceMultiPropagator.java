@@ -47,8 +47,6 @@ import javax.annotation.concurrent.Immutable;
  * Context context = OpenTelemetry.getPropagators().getTextMapPropagator()
  *   .extract(context, carrier, carrierGetter);
  * }</pre>
- *
- * @since 0.6.0
  */
 @Immutable
 public class TraceMultiPropagator implements TextMapPropagator {
@@ -71,7 +69,6 @@ public class TraceMultiPropagator implements TextMapPropagator {
    * object.
    *
    * @return a {@link TraceMultiPropagator.Builder}.
-   * @since 0.6.0
    */
   public static Builder builder() {
     return new Builder();
@@ -82,7 +79,6 @@ public class TraceMultiPropagator implements TextMapPropagator {
    * read-only.
    *
    * @return list of fields defined in all the registered propagators.
-   * @since 0.6.0
    */
   @Override
   public List<String> fields() {
@@ -97,7 +93,6 @@ public class TraceMultiPropagator implements TextMapPropagator {
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param setter invoked for each propagation key to add or remove.
    * @param <C> carrier of propagation fields, such as an http request
-   * @since 0.6.0
    */
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
@@ -116,7 +111,6 @@ public class TraceMultiPropagator implements TextMapPropagator {
    * @param getter invoked for each propagation key to get.
    * @param <C> carrier of propagation fields, such as an http request.
    * @return the {@code Context} containing the extracted value.
-   * @since 0.6.0
    */
   @Override
   public <C> Context extract(Context context, C carrier, Getter<C> getter) {
@@ -137,8 +131,6 @@ public class TraceMultiPropagator implements TextMapPropagator {
   /**
    * {@link Builder} is used to construct a new {@code TraceMultiPropagator} object with the
    * specified propagators.
-   *
-   * @since 0.6.0
    */
   public static class Builder {
     private final List<TextMapPropagator> propagators;
@@ -156,7 +148,6 @@ public class TraceMultiPropagator implements TextMapPropagator {
      * @param propagator the propagator to be added.
      * @return this.
      * @throws NullPointerException if {@code propagator} is {@code null}.
-     * @since 0.6.0
      */
     public Builder addPropagator(TextMapPropagator propagator) {
       Objects.requireNonNull(propagator, "propagator");
@@ -169,7 +160,6 @@ public class TraceMultiPropagator implements TextMapPropagator {
      * Builds a new {@code TraceMultiPropagator} with the specified propagators.
      *
      * @return the newly created {@code TraceMultiPropagator} instance.
-     * @since 0.6.0
      */
     public TraceMultiPropagator build() {
       return new TraceMultiPropagator(propagators);

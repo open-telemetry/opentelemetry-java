@@ -12,8 +12,6 @@ import javax.annotation.concurrent.Immutable;
  * Helper methods for dealing with a trace identifier. A valid trace identifier is a 16-byte array
  * with at least one non-zero byte. In base-16 representation, a 32 character hex String, where at
  * least one of the characters is not a '0'.
- *
- * @since 0.1.0
  */
 @Immutable
 public final class TraceId {
@@ -29,17 +27,12 @@ public final class TraceId {
    * Returns the size in bytes of the {@code TraceId}.
    *
    * @return the size in bytes of the {@code TraceId}.
-   * @since 0.1.0
    */
   public static int getSize() {
     return SIZE_IN_BYTES;
   }
 
-  /**
-   * Returns the length of the base16 (hex) representation of the {@code TraceId}.
-   *
-   * @since 0.8.0
-   */
+  /** Returns the length of the base16 (hex) representation of the {@code TraceId}. */
   public static int getHexLength() {
     return HEX_SIZE;
   }
@@ -48,7 +41,6 @@ public final class TraceId {
    * Returns the invalid {@code TraceId}. All bytes are '\0'.
    *
    * @return the invalid {@code TraceId}.
-   * @since 0.1.0
    */
   public static String getInvalid() {
     return INVALID;
@@ -67,7 +59,6 @@ public final class TraceId {
    *
    * @param idHi the higher part of the {@code TraceId}.
    * @param idLo the lower part of the {@code TraceId}.
-   * @since 0.1.0
    */
   public static String fromLongs(long idHi, long idLo) {
     char[] chars = getTemporaryBuffer();
@@ -95,7 +86,6 @@ public final class TraceId {
    * @throws NullPointerException if {@code src} is null.
    * @throws IllegalArgumentException if not enough characters in the {@code src} from the {@code
    *     srcOffset}.
-   * @since 0.1.0
    */
   public static byte[] bytesFromHex(String src, int srcOffset) {
     Objects.requireNonNull(src, "src");
@@ -110,7 +100,6 @@ public final class TraceId {
    * @param destOffset the starting offset in the destination buffer.
    * @throws IndexOutOfBoundsException if {@code destOffset + 2 * TraceId.getSize()} is greater than
    *     {@code dest.length}.
-   * @since 0.1.0
    */
   public static void copyHexInto(byte[] traceId, char[] dest, int destOffset) {
     BigendianEncoding.longToBase16String(
@@ -124,7 +113,6 @@ public final class TraceId {
    * at least one non-zero byte.
    *
    * @return {@code true} if the {@code TraceId} is valid.
-   * @since 0.1.0
    */
   public static boolean isValid(CharSequence traceId) {
     return (traceId.length() == HEX_SIZE)
@@ -136,7 +124,6 @@ public final class TraceId {
    * Returns the lowercase base16 encoding of this {@code TraceId}.
    *
    * @return the lowercase base16 encoding of this {@code TraceId}.
-   * @since 0.1.0
    */
   public static String bytesToHex(byte[] traceId) {
     char[] chars = new char[HEX_SIZE];
