@@ -124,7 +124,7 @@ class TracerSdkTest {
   @Test
   void stressTest_withBatchSpanProcessor() {
     CountingSpanExporter countingSpanExporter = new CountingSpanExporter();
-    SpanProcessor spanProcessor = BatchSpanProcessor.newBuilder(countingSpanExporter).build();
+    SpanProcessor spanProcessor = BatchSpanProcessor.builder(countingSpanExporter).build();
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =
@@ -153,7 +153,7 @@ class TracerSdkTest {
     private final AtomicLong numberOfSpansFinished = new AtomicLong();
 
     @Override
-    public void onStart(ReadWriteSpan span) {
+    public void onStart(ReadWriteSpan span, Context parentContext) {
       numberOfSpansStarted.incrementAndGet();
     }
 

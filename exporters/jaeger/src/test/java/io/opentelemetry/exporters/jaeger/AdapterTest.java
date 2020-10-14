@@ -210,7 +210,7 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        TestSpanData.newBuilder()
+        TestSpanData.builder()
             .setHasEnded(true)
             .setTraceId(TRACE_ID)
             .setSpanId(SPAN_ID)
@@ -237,7 +237,7 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        TestSpanData.newBuilder()
+        TestSpanData.builder()
             .setHasEnded(true)
             .setTraceId(TRACE_ID)
             .setSpanId(SPAN_ID)
@@ -271,7 +271,7 @@ class AdapterTest {
 
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setHasEnded(true)
         .setTraceId(TRACE_ID)
         .setSpanId(SPAN_ID)

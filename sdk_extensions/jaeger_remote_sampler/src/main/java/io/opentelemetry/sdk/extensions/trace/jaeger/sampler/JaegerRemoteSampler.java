@@ -116,7 +116,7 @@ public class JaegerRemoteSampler implements Sampler {
     return this.sampler;
   }
 
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 

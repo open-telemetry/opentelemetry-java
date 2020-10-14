@@ -28,7 +28,7 @@ public final class TracezDataAggregatorTest {
   private final TracerSdkProvider tracerSdkProvider =
       TracerSdkProvider.builder().setClock(testClock).build();
   private final Tracer tracer = tracerSdkProvider.get("TracezDataAggregatorTest");
-  private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+  private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
 
   @BeforeEach

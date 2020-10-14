@@ -41,7 +41,7 @@ class TracezZPageHandlerTest {
   private final TracerSdkProvider tracerSdkProvider =
       TracerSdkProvider.builder().setClock(testClock).build();
   private final Tracer tracer = tracerSdkProvider.get("TracezZPageHandlerTest");
-  private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+  private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
   private final Map<String, String> emptyQueryMap = ImmutableMap.of();
 

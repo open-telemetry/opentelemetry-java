@@ -16,7 +16,7 @@ import java.lang.management.RuntimeMXBean;
 public class ProcessResource extends ResourceProvider {
   @Override
   protected Attributes getAttributes() {
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.builder();
 
     // TODO(anuraaga): Use reflection to get more stable values on Java 9+
     RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();

@@ -66,7 +66,7 @@ public class MultiSpanExporterBenchmark {
     TestSpanData[] spans = new TestSpanData[spanCount];
     for (int i = 0; i < spans.length; i++) {
       spans[i] =
-          TestSpanData.newBuilder()
+          TestSpanData.builder()
               .setTraceId(TraceId.fromLongs(1, 1))
               .setSpanId(SpanId.fromLong(1))
               .setName("noop")

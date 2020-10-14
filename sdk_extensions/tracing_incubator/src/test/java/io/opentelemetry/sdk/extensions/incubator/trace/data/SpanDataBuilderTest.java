@@ -22,7 +22,7 @@ class SpanDataBuilderTest {
   private static final String SPAN_ID = "0000000000def456";
 
   private static final TestSpanData TEST_SPAN_DATA =
-      TestSpanData.newBuilder()
+      TestSpanData.builder()
           .setHasEnded(true)
           .setTraceId(TRACE_ID)
           .setSpanId(SPAN_ID)
@@ -32,17 +32,14 @@ class SpanDataBuilderTest {
           .setKind(Span.Kind.SERVER)
           .setStatus(Status.error())
           .setAttributes(
-              Attributes.newBuilder()
-                  .setAttribute("cat", "meow")
-                  .setAttribute("dog", "bark")
-                  .build())
+              Attributes.builder().setAttribute("cat", "meow").setAttribute("dog", "bark").build())
           .setTotalRecordedEvents(1000)
           .setTotalRecordedLinks(2300)
           .build();
 
   @Test
   void noOp() {
-    assertThat(SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build())
+    assertThat(SpanDataBuilder.builder(TEST_SPAN_DATA).build())
         .isEqualToComparingFieldByField(TEST_SPAN_DATA);
   }
 
@@ -50,7 +47,7 @@ class SpanDataBuilderTest {
   void modifySpanData() {
     assertThat(TEST_SPAN_DATA.getStatus()).isEqualTo(Status.error());
     SpanData modified =
-        SpanDataBuilder.newBuilder(TEST_SPAN_DATA)
+        SpanDataBuilder.builder(TEST_SPAN_DATA)
             .setStatus(Status.create(StatusCanonicalCode.ERROR, "ABORTED"))
             .build();
     assertThat(modified.getStatus()).isEqualTo(Status.create(StatusCanonicalCode.ERROR, "ABORTED"));
@@ -58,14 +55,14 @@ class SpanDataBuilderTest {
 
   @Test
   void equalsHashCode() {
-    assertThat(SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build()).isEqualTo(TEST_SPAN_DATA);
+    assertThat(SpanDataBuilder.builder(TEST_SPAN_DATA).build()).isEqualTo(TEST_SPAN_DATA);
     EqualsTester tester = new EqualsTester();
     tester
         .addEqualityGroup(
-            SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build(),
-            SpanDataBuilder.newBuilder(TEST_SPAN_DATA).build())
+            SpanDataBuilder.builder(TEST_SPAN_DATA).build(),
+            SpanDataBuilder.builder(TEST_SPAN_DATA).build())
         .addEqualityGroup(
-            SpanDataBuilder.newBuilder(TEST_SPAN_DATA)
+            SpanDataBuilder.builder(TEST_SPAN_DATA)
                 .setStatus(Status.create(StatusCanonicalCode.ERROR, "ABORTED"))
                 .build());
     tester.testEquals();

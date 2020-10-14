@@ -20,6 +20,7 @@ import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
@@ -86,7 +87,7 @@ class RecordEventsReadableSpanTest {
     attributes.put(longKey("MyLongAttributeKey"), 123L);
     attributes.put(booleanKey("MyBooleanAttributeKey"), false);
     Attributes.Builder builder =
-        Attributes.newBuilder()
+        Attributes.builder()
             .setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     for (Map.Entry<AttributeKey, Object> entry : attributes.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
@@ -611,7 +612,7 @@ class RecordEventsReadableSpanTest {
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
     assertThat(event.getAttributes())
         .isEqualTo(
-            Attributes.newBuilder()
+            Attributes.builder()
                 .setAttribute(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalStateException")
                 .setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
                 .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
@@ -674,7 +675,7 @@ class RecordEventsReadableSpanTest {
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
     assertThat(event.getAttributes())
         .isEqualTo(
-            Attributes.newBuilder()
+            Attributes.builder()
                 .setAttribute("key1", "this is an additional attribute")
                 .setAttribute("exception.type", "java.lang.IllegalStateException")
                 .setAttribute("exception.message", "this is a precedence attribute")
@@ -752,6 +753,7 @@ class RecordEventsReadableSpanTest {
             kind,
             parentSpanId,
             /* hasRemoteParent= */ true,
+            Context.root(),
             config,
             spanProcessor,
             testClock,
@@ -760,7 +762,7 @@ class RecordEventsReadableSpanTest {
             links,
             1,
             0);
-    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span);
+    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span, Context.root());
     return span;
   }
 
@@ -844,6 +846,7 @@ class RecordEventsReadableSpanTest {
             kind,
             parentSpanId,
             /* hasRemoteParent= */ EXPECTED_HAS_REMOTE_PARENT,
+            Context.root(),
             traceConfig,
             spanProcessor,
             clock,

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.trace.Span;
 
@@ -21,8 +22,9 @@ public interface SpanProcessor {
    * execution thread.
    *
    * @param span the {@code ReadableSpan} that just started.
+   * @param parentContext the parent {@code Context} of the span that just started.
    */
-  void onStart(ReadWriteSpan span);
+  void onStart(ReadWriteSpan span, Context parentContext);
 
   /**
    * Returns {@code true} if this {@link SpanProcessor} requires start events.

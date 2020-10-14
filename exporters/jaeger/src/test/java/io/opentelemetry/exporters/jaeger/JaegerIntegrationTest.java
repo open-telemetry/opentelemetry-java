@@ -59,13 +59,13 @@ class JaegerIntegrationTest {
             .usePlaintext()
             .build();
     SpanExporter jaegerExporter =
-        JaegerGrpcSpanExporter.newBuilder()
+        JaegerGrpcSpanExporter.builder()
             .setServiceName(SERVICE_NAME)
             .setChannel(jaegerChannel)
             .setDeadlineMs(30000)
             .build();
     OpenTelemetrySdk.getGlobalTracerManagement()
-        .addSpanProcessor(SimpleSpanProcessor.newBuilder(jaegerExporter).build());
+        .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
   }
 
   private void imitateWork() {

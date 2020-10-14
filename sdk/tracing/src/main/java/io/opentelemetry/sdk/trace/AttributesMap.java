@@ -83,7 +83,7 @@ final class AttributesMap implements ReadableAttributes {
 
   @SuppressWarnings("rawtypes")
   ReadableAttributes immutableCopy() {
-    Attributes.Builder builder = Attributes.newBuilder();
+    Attributes.Builder builder = Attributes.builder();
     for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }

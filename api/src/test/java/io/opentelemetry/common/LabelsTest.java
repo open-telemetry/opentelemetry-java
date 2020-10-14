@@ -98,7 +98,7 @@ class LabelsTest {
   @Test
   void builder() {
     Labels labels =
-        Labels.newBuilder()
+        Labels.builder()
             .setLabel("key1", "duplicateShouldBeIgnored")
             .setLabel("key1", "value1")
             .setLabel("key2", "value2")

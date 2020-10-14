@@ -42,7 +42,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static SpanData makeBasicSpan() {
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setHasEnded(true)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())

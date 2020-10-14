@@ -90,7 +90,7 @@ public abstract class LogRecord {
     private String severityText;
     private String name;
     private AnyValue body = AnyValue.stringAnyValue("");
-    private final Attributes.Builder attributeBuilder = Attributes.newBuilder();
+    private final Attributes.Builder attributeBuilder = Attributes.builder();
 
     public Builder setUnixTimeNano(long timestamp) {
       this.timeUnixNano = timestamp;

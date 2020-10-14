@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extensions.trace.export;
 import com.google.common.base.Preconditions;
 import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -56,11 +57,11 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   // TODO: Add metrics for dropped spans.
 
   @Override
-  public void onStart(ReadWriteSpan span) {
+  public void onStart(ReadWriteSpan span, Context parentContext) {
     if (!startRequired) {
       return;
     }
-    disruptorEventQueue.enqueueStartEvent(span);
+    disruptorEventQueue.enqueueStartEvent(span, parentContext);
   }
 
   @Override
@@ -98,7 +99,7 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
    * @return a new {@link DisruptorAsyncSpanProcessor}.
    * @throws NullPointerException if the {@code spanProcessor} is {@code null}.
    */
-  public static Builder newBuilder(SpanProcessor spanProcessor) {
+  public static Builder builder(SpanProcessor spanProcessor) {
     return new Builder(Objects.requireNonNull(spanProcessor));
   }
 

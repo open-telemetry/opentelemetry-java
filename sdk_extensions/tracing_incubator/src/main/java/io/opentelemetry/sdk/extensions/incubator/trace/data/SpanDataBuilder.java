@@ -22,10 +22,10 @@ import javax.annotation.concurrent.Immutable;
  * <pre>{@code
  * String clientType = ClientConfig.parseUserAgent(
  *   data.getAttributes().get(SemanticAttributes.HTTP_USER_AGENT).getStringValue());
- * Attributes newAttributes = Attributes.newBuilder(data.getAttributes())
+ * Attributes newAttributes = Attributes.builder(data.getAttributes())
  *   .setAttribute("client_type", clientType)
  *   .build();
- * data = io.opentelemetry.sdk.extensions.incubator.trace.data.SpanData.newBuilder(data)
+ * data = io.opentelemetry.sdk.extensions.incubator.trace.data.SpanData.builder(data)
  *   .setAttributes(newAttributes)
  *   .build();
  * exporter.export(data);
@@ -42,7 +42,7 @@ public abstract class SpanDataBuilder implements SpanData {
    * Returns a {@link SpanDataBuilder.Builder} populated with the information in the provided {@link
    * SpanData}.
    */
-  public static SpanDataBuilder.Builder newBuilder(SpanData spanData) {
+  public static SpanDataBuilder.Builder builder(SpanData spanData) {
     return new AutoValue_SpanDataBuilder.Builder()
         .setTraceId(spanData.getTraceId())
         .setSpanId(spanData.getSpanId())

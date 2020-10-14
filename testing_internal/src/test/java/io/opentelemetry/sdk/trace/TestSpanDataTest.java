@@ -105,7 +105,7 @@ class TestSpanDataTest {
   }
 
   private static TestSpanData.Builder createBasicSpanBuilder() {
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setHasEnded(true)
         .setSpanId(SpanId.getInvalid())
         .setTraceId(TraceId.getInvalid())
