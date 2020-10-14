@@ -24,6 +24,17 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface Span {
 
   /**
+   * Returns the {@link Span} from the current {@code Context}, falling back to a default, no-op
+   * {@link Span} if there is no current span in the context. This is generally used to access a
+   * {@link Span} that you did not create, for example one created by instrumentation of a request
+   * handler. There is some overhead in accessing the current span statically, so if you have
+   * created the {@link Span} yourself it is recommended to maintain a reference to it instead.
+   */
+  static Span current() {
+    return TracingContextUtils.getCurrentSpan();
+  }
+
+  /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
    * parent/child relationship.
    *

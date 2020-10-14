@@ -15,7 +15,7 @@ class TracingContextUtilsTest {
 
   @Test
   void testGetCurrentSpan_Default() {
-    Span span = TracingContextUtils.getCurrentSpan();
+    Span span = Span.current();
     assertThat(span).isSameAs(DefaultSpan.getInvalid());
   }
 
@@ -23,7 +23,7 @@ class TracingContextUtilsTest {
   void testGetCurrentSpan_SetSpan() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     try (Scope ignored = TracingContextUtils.withSpan(span, Context.current()).makeCurrent()) {
-      assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(span);
+      assertThat(Span.current()).isSameAs(span);
     }
   }
 

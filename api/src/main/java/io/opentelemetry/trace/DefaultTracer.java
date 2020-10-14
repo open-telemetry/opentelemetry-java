@@ -35,7 +35,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return TracingContextUtils.getCurrentSpan();
+    return Span.current();
   }
 
   @Override
@@ -61,7 +61,7 @@ public final class DefaultTracer implements Tracer {
     @Override
     public Span startSpan() {
       if (spanContext == null) {
-        spanContext = TracingContextUtils.getCurrentSpan().getContext();
+        spanContext = Span.current().getContext();
       }
 
       return spanContext != null && !SpanContext.getInvalid().equals(spanContext)

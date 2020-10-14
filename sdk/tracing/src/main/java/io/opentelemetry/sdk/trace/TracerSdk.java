@@ -24,7 +24,7 @@ final class TracerSdk implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return TracingContextUtils.getCurrentSpan();
+    return Span.current();
   }
 
   @Override

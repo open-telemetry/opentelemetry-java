@@ -33,14 +33,7 @@ public final class TracingContextUtils {
     return context.withValues(CONTEXT_SPAN_KEY, span);
   }
 
-  /**
-   * Returns the {@link Span} from the current {@code Context}, falling back to a default, no-op
-   * {@link Span}.
-   *
-   * @return the {@link Span} from the current {@code Context}.
-   * @since 0.3.0
-   */
-  public static Span getCurrentSpan() {
+  static Span getCurrentSpan() {
     return getSpan(io.opentelemetry.context.Context.current());
   }
 
