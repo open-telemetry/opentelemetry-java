@@ -11,7 +11,6 @@ import javax.annotation.concurrent.Immutable;
  * Helper methods for dealing with a span identifier. A valid span identifier is an 8-byte array
  * with at least one non-zero byte. In base-16 representation, a 16 character hex String, where at
  * least one of the characters is not a '0'.
- *
  */
 @Immutable
 public final class SpanId {
@@ -33,10 +32,7 @@ public final class SpanId {
     return SIZE;
   }
 
-  /**
-   * Returns the length of the base16 (hex) representation of the {@code SpanId}.
-   *
-   */
+  /** Returns the length of the base16 (hex) representation of the {@code SpanId}. */
   public static int getHexLength() {
     return HEX_SIZE;
   }

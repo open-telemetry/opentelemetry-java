@@ -34,7 +34,6 @@ import javax.annotation.concurrent.Immutable;
  *     assertThat(spans.get(0).getName()).isEqualTo("span");
  *   }
  * </code></pre>
- *
  */
 @AutoValue
 @Immutable
@@ -62,10 +61,7 @@ public abstract class InMemoryTracing {
     return new AutoValue_InMemoryTracing.Builder();
   }
 
-  /**
-   * Builder for {@link InMemoryTracing}.
-   *
-   */
+  /** Builder for {@link InMemoryTracing}. */
   @AutoValue.Builder
   public abstract static class Builder {
     public abstract Builder setTracerSdkManagement(TracerSdkManagement tracerSdkManagement);

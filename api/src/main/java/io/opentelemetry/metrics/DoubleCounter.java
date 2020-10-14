@@ -36,7 +36,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
  */
 @ThreadSafe
 public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter> {
@@ -63,10 +62,7 @@ public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter>
   @Override
   BoundDoubleCounter bind(Labels labels);
 
-  /**
-   * A {@code Bound Instrument} for a {@link DoubleCounter}.
-   *
-   */
+  /** A {@code Bound Instrument} for a {@link DoubleCounter}. */
   @ThreadSafe
   interface BoundDoubleCounter extends SynchronousInstrument.BoundInstrument {
     /**

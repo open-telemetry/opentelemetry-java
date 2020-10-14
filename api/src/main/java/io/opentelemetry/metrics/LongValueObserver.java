@@ -41,7 +41,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
  */
 @ThreadSafe
 public interface LongValueObserver extends AsynchronousInstrument<LongResult> {

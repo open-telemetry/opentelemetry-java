@@ -48,7 +48,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
  */
 @ThreadSafe
 public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleValueRecorder> {
@@ -74,10 +73,7 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
   @Override
   BoundDoubleValueRecorder bind(Labels labels);
 
-  /**
-   * A {@code Bound Instrument} for a {@link DoubleValueRecorder}.
-   *
-   */
+  /** A {@code Bound Instrument} for a {@link DoubleValueRecorder}. */
   @ThreadSafe
   interface BoundDoubleValueRecorder extends SynchronousInstrument.BoundInstrument {
     /**

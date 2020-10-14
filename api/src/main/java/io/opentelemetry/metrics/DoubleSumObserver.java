@@ -45,7 +45,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
  */
 @ThreadSafe
 public interface DoubleSumObserver extends AsynchronousInstrument<DoubleResult> {

@@ -15,7 +15,6 @@ import javax.annotation.concurrent.Immutable;
  * trace_id} and {@link SpanId span_id}) associated with the {@link Span} and a set of options
  * (currently only whether the context is sampled or not), as well as the {@link TraceState
  * traceState} and the {@link boolean remote} flag.
- *
  */
 @Immutable
 @AutoValue
@@ -88,7 +87,6 @@ public abstract class SpanContext {
   /**
    * Returns the byte[] representation of the trace identifier associated with this {@link
    * SpanContext}.
-   *
    */
   @Memoized
   public byte[] getTraceIdBytes() {
@@ -107,7 +105,6 @@ public abstract class SpanContext {
   /**
    * Returns the byte[] representation of the span identifier associated with this {@link
    * SpanContext}.
-   *
    */
   @Memoized
   public byte[] getSpanIdBytes() {

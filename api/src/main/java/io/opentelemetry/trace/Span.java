@@ -17,7 +17,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Spans are created by the {@link Builder#startSpan} method.
  *
  * <p>{@code Span} <b>must</b> be ended by calling {@link #end()}.
- *
  */
 @ThreadSafe
 public interface Span {
@@ -25,24 +24,16 @@ public interface Span {
   /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
    * parent/child relationship.
-   *
    */
   enum Kind {
-    /**
-     * Default value. Indicates that the span is used internally.
-     *
-     */
+    /** Default value. Indicates that the span is used internally. */
     INTERNAL,
 
-    /**
-     * Indicates that the span covers server-side handling of an RPC or other remote request.
-     *
-     */
+    /** Indicates that the span covers server-side handling of an RPC or other remote request. */
     SERVER,
 
     /**
      * Indicates that the span covers the client-side wrapper around an RPC or other remote request.
-     *
      */
     CLIENT,
 
@@ -50,7 +41,6 @@ public interface Span {
      * Indicates that the span describes producer sending a message to a broker. Unlike client and
      * server, there is no direct critical path latency relationship between producer and consumer
      * spans.
-     *
      */
     PRODUCER,
 
@@ -58,7 +48,6 @@ public interface Span {
      * Indicates that the span describes consumer receiving a message from a broker. Unlike client
      * and server, there is no direct critical path latency relationship between producer and
      * consumer spans.
-     *
      */
     CONSUMER
   }
@@ -246,7 +235,6 @@ public interface Span {
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
    * implementations are free to ignore all further calls.
-   *
    */
   void end();
 
@@ -364,7 +352,6 @@ public interface Span {
    *
    * <p>If your Java version is less than Java SE 7, see {@link Builder#startSpan} for usage
    * examples.
-   *
    */
   interface Builder {
 

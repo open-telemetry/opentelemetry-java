@@ -10,7 +10,6 @@ package io.opentelemetry.common;
  *
  * <p>This interface should be considered to be a FunctionalInterface in the java 8+ meaning of that
  * term.
- *
  */
 public interface LabelConsumer {
   void consume(String key, String value);

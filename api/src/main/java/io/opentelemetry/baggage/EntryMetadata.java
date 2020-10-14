@@ -11,7 +11,6 @@ import javax.annotation.concurrent.Immutable;
 /**
  * {@link EntryMetadata} contains properties associated with an {@link Entry}. This is an opaque
  * wrapper for a String metadata value.
- *
  */
 @Immutable
 @AutoValue

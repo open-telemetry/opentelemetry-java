@@ -8,7 +8,6 @@ package io.opentelemetry.trace;
 /**
  * The set of canonical status codes. If new codes are added over time they must choose a numerical
  * value that does not collide with any previously used value.
- *
  */
 public enum StatusCanonicalCode {
 

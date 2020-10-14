@@ -47,7 +47,6 @@ import javax.annotation.concurrent.Immutable;
  * Context context = OpenTelemetry.getPropagators().getTextMapPropagator()
  *   .extract(context, carrier, carrierGetter);
  * }</pre>
- *
  */
 @Immutable
 public class TraceMultiPropagator implements TextMapPropagator {
@@ -132,7 +131,6 @@ public class TraceMultiPropagator implements TextMapPropagator {
   /**
    * {@link Builder} is used to construct a new {@code TraceMultiPropagator} object with the
    * specified propagators.
-   *
    */
   public static class Builder {
     private final List<TextMapPropagator> propagators;

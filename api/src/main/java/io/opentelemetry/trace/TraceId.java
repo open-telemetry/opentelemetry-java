@@ -12,7 +12,6 @@ import javax.annotation.concurrent.Immutable;
  * Helper methods for dealing with a trace identifier. A valid trace identifier is a 16-byte array
  * with at least one non-zero byte. In base-16 representation, a 32 character hex String, where at
  * least one of the characters is not a '0'.
- *
  */
 @Immutable
 public final class TraceId {
@@ -33,10 +32,7 @@ public final class TraceId {
     return SIZE_IN_BYTES;
   }
 
-  /**
-   * Returns the length of the base16 (hex) representation of the {@code TraceId}.
-   *
-   */
+  /** Returns the length of the base16 (hex) representation of the {@code TraceId}. */
   public static int getHexLength() {
     return HEX_SIZE;
   }

@@ -80,7 +80,6 @@ public interface BatchRecorder {
    *
    * <p>This method records all measurements every time it is called, so make sure it is not called
    * twice if not needed.
-   *
    */
   void record();
 }

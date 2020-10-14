@@ -16,7 +16,6 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>For example, {@code Baggage}s can be used to label stats, log messages, or debugging
  * information.
- *
  */
 @Immutable
 public interface Baggage {
@@ -38,10 +37,7 @@ public interface Baggage {
   @Nullable
   String getEntryValue(String entryKey);
 
-  /**
-   * Builder for the {@link Baggage} class.
-   *
-   */
+  /** Builder for the {@link Baggage} class. */
   interface Builder {
     /**
      * Sets the parent {@link Baggage} to use from the specified {@code Context}. If no parent

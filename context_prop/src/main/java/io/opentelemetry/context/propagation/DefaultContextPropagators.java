@@ -20,7 +20,6 @@ import java.util.Set;
  * synchronically upon injection and extraction.
  *
  * <p>The propagation fields retrieved from all registered propagators are de-duplicated.
- *
  */
 public final class DefaultContextPropagators implements ContextPropagators {
   private final TextMapPropagator textMapPropagator;
@@ -57,7 +56,6 @@ public final class DefaultContextPropagators implements ContextPropagators {
    *     .addTextMapPropagator(new MyCustomContextPropagator())
    *     .build();
    * }</pre>
-   *
    */
   public static final class Builder {
     List<TextMapPropagator> textPropagators = new ArrayList<>();

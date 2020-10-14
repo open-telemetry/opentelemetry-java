@@ -14,7 +14,6 @@ import javax.annotation.concurrent.Immutable;
  * implementation is available. All operations are no-op except context propagation.
  *
  * <p>Used also to stop tracing, see {@link Tracer#withSpan}.
- *
  */
 @Immutable
 public final class DefaultSpan implements Span {

@@ -21,7 +21,6 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Immutable representation of all data collected by the {@link io.opentelemetry.trace.Span} class.
- *
  */
 @Immutable
 @AutoValue
@@ -48,10 +47,7 @@ public abstract class TestSpanData implements SpanData {
         .setTotalAttributeCount(0);
   }
 
-  /**
-   * A {@code Builder} class for {@link TestSpanData}.
-   *
-   */
+  /** A {@code Builder} class for {@link TestSpanData}. */
   @AutoValue.Builder
   public abstract static class Builder {
 

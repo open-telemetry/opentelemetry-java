@@ -17,7 +17,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * that are returned from the API, and cast them to their SDK specific implementations, then those
  * casts will fail under auto-instrumentation, because auto-instrumentation takes over the static
  * global providers returned by the API and points them to it's embedded SDK.
- *
  */
 @ThreadSafe
 public interface Obfuscated<T> {

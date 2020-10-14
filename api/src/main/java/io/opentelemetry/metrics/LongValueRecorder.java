@@ -48,7 +48,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
  */
 @ThreadSafe
 public interface LongValueRecorder extends SynchronousInstrument<BoundLongValueRecorder> {
@@ -74,10 +73,7 @@ public interface LongValueRecorder extends SynchronousInstrument<BoundLongValueR
   @Override
   BoundLongValueRecorder bind(Labels labels);
 
-  /**
-   * A {@code Bound Instrument} for a {@link LongValueRecorder}.
-   *
-   */
+  /** A {@code Bound Instrument} for a {@link LongValueRecorder}. */
   @ThreadSafe
   interface BoundLongValueRecorder extends SynchronousInstrument.BoundInstrument {
     /**

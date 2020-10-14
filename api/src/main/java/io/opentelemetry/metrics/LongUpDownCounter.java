@@ -39,7 +39,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
  */
 @ThreadSafe
 public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDownCounter> {
@@ -66,10 +65,7 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
   @Override
   BoundLongUpDownCounter bind(Labels labels);
 
-  /**
-   * A {@code Bound Instrument} for a {@link LongUpDownCounter}.
-   *
-   */
+  /** A {@code Bound Instrument} for a {@link LongUpDownCounter}. */
   @ThreadSafe
   interface BoundLongUpDownCounter extends BoundInstrument {
 

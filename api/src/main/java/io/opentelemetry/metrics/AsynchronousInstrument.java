@@ -22,10 +22,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface AsynchronousInstrument<R extends Result> extends Instrument {
-  /**
-   * A {@code Callback} for a {@code AsynchronousInstrument}.
-   *
-   */
+  /** A {@code Callback} for a {@code AsynchronousInstrument}. */
   interface Callback<R extends Result> {
     void update(R result);
   }

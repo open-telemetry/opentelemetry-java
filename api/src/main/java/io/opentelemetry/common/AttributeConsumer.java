@@ -5,10 +5,7 @@
 
 package io.opentelemetry.common;
 
-/**
- * Used for iterating over all the key/value pairs in an {@link Attributes} instance.
- *
- */
+/** Used for iterating over all the key/value pairs in an {@link Attributes} instance. */
 public interface AttributeConsumer {
   <T> void consume(AttributeKey<T> key, T value);
 }

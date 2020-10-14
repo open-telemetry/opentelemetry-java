@@ -39,7 +39,6 @@ public interface SynchronousInstrument<B extends BoundInstrument> extends Instru
      *
      * <p>After this method returns the current instance {@code Bound} is considered invalid (not
      * being managed by the instrument).
-     *
      */
     void unbind();
   }

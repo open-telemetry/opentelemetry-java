@@ -11,17 +11,13 @@ import javax.annotation.concurrent.Immutable;
 /**
  * A class that enables overriding the default values used when ending a {@link Span}. Allows
  * overriding the endTimestamp.
- *
  */
 @Immutable
 @AutoValue
 public abstract class EndSpanOptions {
   private static final EndSpanOptions DEFAULT = builder().build();
 
-  /**
-   * The default {@code EndSpanOptions}.
-   *
-   */
+  /** The default {@code EndSpanOptions}. */
   static EndSpanOptions getDefault() {
     return DEFAULT;
   }
@@ -44,10 +40,7 @@ public abstract class EndSpanOptions {
    */
   public abstract long getEndTimestamp();
 
-  /**
-   * Builder class for {@link EndSpanOptions}.
-   *
-   */
+  /** Builder class for {@link EndSpanOptions}. */
   @AutoValue.Builder
   public abstract static class Builder {
     /**

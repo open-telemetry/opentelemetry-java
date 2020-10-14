@@ -11,10 +11,7 @@ import io.opentelemetry.context.Scope;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * Util methods/functionality to interact with the {@link Context}.
- *
- */
+/** Util methods/functionality to interact with the {@link Context}. */
 @Immutable
 public final class TracingContextUtils {
   private static final ContextKey<Span> CONTEXT_SPAN_KEY =

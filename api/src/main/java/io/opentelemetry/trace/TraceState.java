@@ -26,7 +26,6 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the
  * range 0x20 to 0x7E) except comma , and =.
- *
  */
 @Immutable
 @AutoValue
@@ -90,10 +89,7 @@ public abstract class TraceState {
     return new Builder(this);
   }
 
-  /**
-   * Builder class for {@link TraceState}.
-   *
-   */
+  /** Builder class for {@link TraceState}. */
   public static final class Builder {
     private final TraceState parent;
     @Nullable private ArrayList<Entry> entries;
@@ -171,10 +167,7 @@ public abstract class TraceState {
     }
   }
 
-  /**
-   * Immutable key-value pair for {@code TraceState}.
-   *
-   */
+  /** Immutable key-value pair for {@code TraceState}. */
   @Immutable
   @AutoValue
   public abstract static class Entry {

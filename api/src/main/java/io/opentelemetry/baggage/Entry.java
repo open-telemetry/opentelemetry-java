@@ -10,10 +10,7 @@ import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * String-String key-value pair, along with {@link EntryMetadata}.
- *
- */
+/** String-String key-value pair, along with {@link EntryMetadata}. */
 @Immutable
 @AutoValue
 public abstract class Entry {

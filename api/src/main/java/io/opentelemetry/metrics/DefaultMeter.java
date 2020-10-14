@@ -12,10 +12,7 @@ import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * No-op implementations of {@link Meter}.
- *
- */
+/** No-op implementations of {@link Meter}. */
 @ThreadSafe
 public final class DefaultMeter implements Meter {
 

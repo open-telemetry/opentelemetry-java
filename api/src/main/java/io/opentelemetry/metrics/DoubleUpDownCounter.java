@@ -39,7 +39,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
  */
 @ThreadSafe
 public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUpDownCounter> {
@@ -66,10 +65,7 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
   @Override
   BoundDoubleUpDownCounter bind(Labels labels);
 
-  /**
-   * A {@code Bound Instrument} for a {@link DoubleUpDownCounter}.
-   *
-   */
+  /** A {@code Bound Instrument} for a {@link DoubleUpDownCounter}. */
   @ThreadSafe
   interface BoundDoubleUpDownCounter extends BoundInstrument {
     /**
