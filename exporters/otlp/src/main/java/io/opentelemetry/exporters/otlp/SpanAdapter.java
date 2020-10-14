@@ -19,7 +19,6 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
-import io.opentelemetry.proto.trace.v1.Status.StatusCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
@@ -27,7 +26,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -171,9 +170,9 @@ final class SpanAdapter {
 
   static Status toStatusProto(SpanData.Status status) {
     // todo: Update this when the proto definitions are updated to include UNSET and ERROR
-    StatusCode protoStatusCode = StatusCode.STATUS_CODE_OK;
-    if (status.getCanonicalCode() == StatusCanonicalCode.ERROR) {
-      protoStatusCode = StatusCode.STATUS_CODE_UNKNOWN_ERROR;
+    Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
+    if (status.getCanonicalCode() == StatusCode.ERROR) {
+      protoStatusCode = Status.StatusCode.STATUS_CODE_UNKNOWN_ERROR;
     }
     Status.Builder builder = Status.newBuilder().setCode(protoStatusCode);
     if (status.getDescription() != null) {

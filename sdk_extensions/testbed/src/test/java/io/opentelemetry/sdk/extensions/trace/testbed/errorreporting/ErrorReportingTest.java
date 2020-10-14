@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
@@ -42,7 +42,7 @@ public final class ErrorReportingTest {
     try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
       throw new RuntimeException("Invalid state");
     } catch (Exception e) {
-      span.setStatus(StatusCanonicalCode.ERROR);
+      span.setStatus(StatusCode.ERROR);
     } finally {
       span.end();
     }
@@ -51,7 +51,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCanonicalCode.ERROR);
+    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCode.ERROR);
   }
 
   /* Error handling in a callback capturing/activating the Span */
@@ -63,7 +63,7 @@ public final class ErrorReportingTest {
           try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
             throw new RuntimeException("Invalid state");
           } catch (Exception exc) {
-            span.setStatus(StatusCanonicalCode.ERROR);
+            span.setStatus(StatusCode.ERROR);
           } finally {
             span.end();
           }
@@ -75,7 +75,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCanonicalCode.ERROR);
+    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCode.ERROR);
   }
 
   /* Error handling for a max-retries task (such as url fetching).
@@ -95,14 +95,14 @@ public final class ErrorReportingTest {
       }
     }
 
-    span.setStatus(StatusCanonicalCode.ERROR); // Could not fetch anything.
+    span.setStatus(StatusCode.ERROR); // Could not fetch anything.
     span.end();
 
     assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCanonicalCode.ERROR);
+    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCode.ERROR);
 
     List<Event> events = spans.get(0).getEvents();
     assertEquals(events.size(), maxRetries);
@@ -122,7 +122,7 @@ public final class ErrorReportingTest {
                 try {
                   throw new RuntimeException("Invalid state");
                 } catch (Exception exc) {
-                  TracingContextUtils.getCurrentSpan().setStatus(StatusCanonicalCode.ERROR);
+                  TracingContextUtils.getCurrentSpan().setStatus(StatusCode.ERROR);
                 } finally {
                   TracingContextUtils.getCurrentSpan().end();
                 }
@@ -136,7 +136,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCanonicalCode.ERROR);
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
   }
 
   private static class ScopedRunnable implements Runnable {

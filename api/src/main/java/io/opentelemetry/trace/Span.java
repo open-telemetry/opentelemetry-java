@@ -196,28 +196,28 @@ public interface Span {
    * Sets the status to the {@code Span}.
    *
    * <p>If used, this will override the default {@code Span} status. Default status code is {@link
-   * StatusCanonicalCode#UNSET}.
+   * StatusCode#UNSET}.
    *
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param canonicalCode the {@link StatusCanonicalCode} to set.
+   * @param canonicalCode the {@link StatusCode} to set.
    */
-  void setStatus(StatusCanonicalCode canonicalCode);
+  void setStatus(StatusCode canonicalCode);
 
   /**
    * Sets the status to the {@code Span}.
    *
    * <p>If used, this will override the default {@code Span} status. Default status code is {@link
-   * StatusCanonicalCode#UNSET}.
+   * StatusCode#UNSET}.
    *
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param canonicalCode the {@link StatusCanonicalCode} to set.
+   * @param canonicalCode the {@link StatusCode} to set.
    * @param description the description of the {@code Status}.
    */
-  void setStatus(StatusCanonicalCode canonicalCode, String description);
+  void setStatus(StatusCode canonicalCode, String description);
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.

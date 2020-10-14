@@ -16,7 +16,7 @@ import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -460,7 +460,7 @@ final class TracezZPageHandler extends ZPageHandler {
                       latencyBoundary.getLatencyLowerBound(),
                       latencyBoundary.getLatencyUpperBound());
             } else {
-              if (subtype < 0 || subtype >= StatusCanonicalCode.values().length) {
+              if (subtype < 0 || subtype >= StatusCode.values().length) {
                 // N/A or out-of-bound cueck for error based subtype, valid values: [0, 15]
                 return;
               }

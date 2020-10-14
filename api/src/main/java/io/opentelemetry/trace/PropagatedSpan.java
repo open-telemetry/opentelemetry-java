@@ -52,10 +52,10 @@ final class PropagatedSpan implements Span {
   public void addEvent(String name, Attributes attributes, long timestamp) {}
 
   @Override
-  public void setStatus(StatusCanonicalCode canonicalCode) {}
+  public void setStatus(StatusCode canonicalCode) {}
 
   @Override
-  public void setStatus(StatusCanonicalCode canonicalCode, String description) {}
+  public void setStatus(StatusCode canonicalCode, String description) {}
 
   @Override
   public void recordException(Throwable exception) {}

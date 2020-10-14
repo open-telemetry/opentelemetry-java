@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -56,7 +56,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCanonicalCode.ERROR);
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
   }
 
   /* Error handling in a callback capturing/activating the Span */
@@ -80,7 +80,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCanonicalCode.ERROR);
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
   }
 
   /* Error handling for a max-retries task (such as url fetching).
@@ -111,7 +111,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCanonicalCode.ERROR);
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
 
     List<Event> events = spans.get(0).getEvents();
     assertEquals(events.size(), maxRetries);
@@ -148,7 +148,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCanonicalCode.ERROR);
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
   }
 
   static class ScopedRunnable implements Runnable {

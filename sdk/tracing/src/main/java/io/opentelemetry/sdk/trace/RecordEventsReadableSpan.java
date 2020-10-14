@@ -25,7 +25,7 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
@@ -370,12 +370,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void setStatus(StatusCanonicalCode canonicalCode) {
+  public void setStatus(StatusCode canonicalCode) {
     setStatus(canonicalCode, null);
   }
 
   @Override
-  public void setStatus(StatusCanonicalCode canonicalCode, @Nullable String description) {
+  public void setStatus(StatusCode canonicalCode, @Nullable String description) {
     if (canonicalCode == null) {
       return;
     }
