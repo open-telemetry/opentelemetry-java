@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +35,9 @@ public final class MultiSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadWriteSpan readableSpan) {
+  public void onStart(ReadWriteSpan readableSpan, Context parentContext) {
     for (SpanProcessor spanProcessor : spanProcessorsStart) {
-      spanProcessor.onStart(readableSpan);
+      spanProcessor.onStart(readableSpan, parentContext);
     }
   }
 

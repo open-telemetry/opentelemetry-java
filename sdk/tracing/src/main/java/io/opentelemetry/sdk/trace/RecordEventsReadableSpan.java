@@ -15,6 +15,7 @@ import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
@@ -153,6 +155,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Kind kind,
       @Nullable String parentSpanId,
       boolean hasRemoteParent,
+      @Nonnull Context parentContext,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
@@ -179,7 +182,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             startEpochNanos == 0 ? clock.now() : startEpochNanos);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
-    spanProcessor.onStart(span);
+    spanProcessor.onStart(span, parentContext);
     return span;
   }
 
