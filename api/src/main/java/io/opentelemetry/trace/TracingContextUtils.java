@@ -54,7 +54,7 @@ public final class TracingContextUtils {
    */
   public static Span getSpan(Context context) {
     Span span = context.getValue(CONTEXT_SPAN_KEY);
-    return span == null ? DefaultSpan.getInvalid() : span;
+    return span == null ? Span.getInvalid() : span;
   }
 
   /**

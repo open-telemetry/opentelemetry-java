@@ -13,7 +13,6 @@ import static io.opentelemetry.common.AttributeKey.stringKey;
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -190,7 +189,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     } else if (parentSpanContext != null) {
       builder.setParent(
           TracingContextUtils.withSpan(
-              DefaultSpan.create(parentSpanContext.getSpanContext()), Context.root()));
+              io.opentelemetry.trace.Span.getPropagated(parentSpanContext.getSpanContext()),
+              Context.root()));
       baggage = parentSpanContext.getBaggage();
     }
 

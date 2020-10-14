@@ -24,6 +24,26 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface Span {
 
   /**
+   * Returns an invalid {@link Span}. An invalid {@link Span} is used when tracing is disabled,
+   * usually because there is no OpenTelemetry SDK installed.
+   */
+  static Span getInvalid() {
+    return PropagatedSpan.INVALID;
+  }
+
+  /**
+   * Returns a non-recording {@link Span} that holds the provided {@link SpanContext} but has no
+   * functionality. It will not be exported and all tracing operations are no-op, but it can be used
+   * to propagate a valid {@link SpanContext} downstream.
+   */
+  static Span getPropagated(SpanContext spanContext) {
+    if (spanContext == null || !spanContext.isValid()) {
+      return getInvalid();
+    }
+    return new PropagatedSpan(spanContext);
+  }
+
+  /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
    * parent/child relationship.
    *
@@ -303,6 +323,15 @@ public interface Span {
    * @since 0.1.0
    */
   boolean isRecording();
+
+  /**
+   * Returns whether this {@link Span} is valid.
+   *
+   * @see Span#getInvalid()
+   */
+  default boolean isValid() {
+    return getContext().isValid();
+  }
 
   /**
    * {@link Builder} is used to construct {@link Span} instances which define arbitrary scopes of

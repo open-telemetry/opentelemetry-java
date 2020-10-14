@@ -10,7 +10,7 @@ import static io.opentelemetry.extensions.trace.propagation.B3Propagator.COMBINE
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
@@ -33,7 +33,7 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
       return Optional.empty();
     }
 
-    return Optional.of(TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context));
+    return Optional.of(TracingContextUtils.withSpan(Span.getPropagated(spanContext), context));
   }
 
   @SuppressWarnings("StringSplitter")

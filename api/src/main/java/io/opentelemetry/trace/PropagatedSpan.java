@@ -13,39 +13,16 @@ import javax.annotation.concurrent.Immutable;
  * The {@code DefaultSpan} is the default {@link Span} that is used when no {@code Span}
  * implementation is available. All operations are no-op except context propagation.
  *
- * <p>Used also to stop tracing, see {@link Tracer#withSpan}.
- *
  * @since 0.1.0
  */
 @Immutable
-public final class DefaultSpan implements Span {
+final class PropagatedSpan implements Span {
 
-  private static final DefaultSpan INVALID = new DefaultSpan(SpanContext.getInvalid());
-
-  /**
-   * Returns a {@link DefaultSpan} with an invalid {@link SpanContext}.
-   *
-   * @return a {@code DefaultSpan} with an invalid {@code SpanContext}.
-   * @since 0.1.0
-   */
-  public static Span getInvalid() {
-    return INVALID;
-  }
-
-  /**
-   * Creates an instance of this class with the {@link SpanContext}.
-   *
-   * @param spanContext the {@code SpanContext}.
-   * @return a {@link DefaultSpan}.
-   * @since 0.1.0
-   */
-  public static Span create(SpanContext spanContext) {
-    return new DefaultSpan(spanContext);
-  }
+  static final PropagatedSpan INVALID = new PropagatedSpan(SpanContext.getInvalid());
 
   private final SpanContext spanContext;
 
-  DefaultSpan(SpanContext spanContext) {
+  PropagatedSpan(SpanContext spanContext) {
     this.spanContext = spanContext;
   }
 

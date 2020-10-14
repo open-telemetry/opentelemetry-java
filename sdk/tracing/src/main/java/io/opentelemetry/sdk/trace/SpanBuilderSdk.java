@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -212,7 +211,7 @@ final class SpanBuilderSdk implements Span.Builder {
             traceId, spanId, samplingResultTraceState, Samplers.isSampled(samplingDecision));
 
     if (!Samplers.isRecording(samplingDecision)) {
-      return DefaultSpan.create(spanContext);
+      return Span.getPropagated(spanContext);
     }
     ReadableAttributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {

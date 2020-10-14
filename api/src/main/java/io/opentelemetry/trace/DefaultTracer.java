@@ -64,9 +64,7 @@ public final class DefaultTracer implements Tracer {
         spanContext = TracingContextUtils.getCurrentSpan().getContext();
       }
 
-      return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
-          ? new DefaultSpan(spanContext)
-          : DefaultSpan.getInvalid();
+      return Span.getPropagated(spanContext);
     }
 
     @Override
