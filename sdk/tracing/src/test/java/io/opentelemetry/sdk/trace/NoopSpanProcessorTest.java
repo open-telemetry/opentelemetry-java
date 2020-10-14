@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -25,7 +26,7 @@ class NoopSpanProcessorTest {
   @Test
   void noCrash() {
     SpanProcessor noopSpanProcessor = NoopSpanProcessor.getInstance();
-    noopSpanProcessor.onStart(readWriteSpan);
+    noopSpanProcessor.onStart(readWriteSpan, Context.root());
     assertThat(noopSpanProcessor.isStartRequired()).isFalse();
     noopSpanProcessor.onEnd(readableSpan);
     assertThat(noopSpanProcessor.isEndRequired()).isFalse();

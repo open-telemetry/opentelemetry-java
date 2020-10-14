@@ -239,6 +239,7 @@ final class SpanBuilderSdk implements Span.Builder {
         spanKind,
         parentSpanContext.getSpanIdAsHexString(),
         parentSpanContext.isRemote(),
+        parentContext,
         traceConfig,
         spanProcessor,
         getClock(parentSpan, clock),

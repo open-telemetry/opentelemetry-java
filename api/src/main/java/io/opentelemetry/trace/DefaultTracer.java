@@ -14,11 +14,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * No-op implementations of {@link Tracer}.
- *
- * @since 0.1.0
- */
+/** No-op implementations of {@link Tracer}. */
 @ThreadSafe
 public final class DefaultTracer implements Tracer {
   private static final DefaultTracer INSTANCE = new DefaultTracer();
@@ -27,7 +23,6 @@ public final class DefaultTracer implements Tracer {
    * Returns a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
    *
    * @return a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
-   * @since 0.1.0
    */
   public static Tracer getInstance() {
     return INSTANCE;

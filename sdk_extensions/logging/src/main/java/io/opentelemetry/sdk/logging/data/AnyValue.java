@@ -16,8 +16,6 @@ import javax.annotation.concurrent.Immutable;
  * types of values: {@code String}, {@code boolean}, {@code int}, {@code double}, {@code array}, or
  * {@code kvlist}. represented through {@code AnyValue.Type}. A {@code array} or a {@code kvlist}
  * can in turn hold other {@code AnyValue} instances, allowing for mapping to JSON-like structures.
- *
- * @since 0.9.0
  */
 @Immutable
 public abstract class AnyValue {

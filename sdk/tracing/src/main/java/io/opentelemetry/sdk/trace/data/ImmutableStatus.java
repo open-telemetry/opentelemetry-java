@@ -60,7 +60,6 @@ abstract class ImmutableStatus implements SpanData.Status {
    *
    * @param description the new description of the {@code Status}.
    * @return The newly created {@code Status} with the given description.
-   * @since 0.1.0
    */
   public static SpanData.Status create(
       StatusCanonicalCode canonicalCode, @Nullable String description) {

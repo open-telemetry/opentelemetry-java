@@ -20,8 +20,6 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>It requires a {@link Type type} and a message id that serves to uniquely identify each
  * message. It can optionally have information about the message size.
- *
- * @since 0.1.0
  */
 @Immutable
 public final class MessageEvent {
@@ -32,23 +30,11 @@ public final class MessageEvent {
   private static final AttributeKey<Long> COMPRESSED_SIZE = longKey("message.compressed_size");
   private static final AttributeKey<Long> UNCOMPRESSED_SIZE = longKey("message.uncompressed_size");
 
-  /**
-   * Available types for a {@code MessageEvent}.
-   *
-   * @since 0.1.0
-   */
+  /** Available types for a {@code MessageEvent}. */
   public enum Type {
-    /**
-     * When the message was sent.
-     *
-     * @since 0.1.0
-     */
+    /** When the message was sent. */
     SENT,
-    /**
-     * When the message was received.
-     *
-     * @since 0.1.0
-     */
+    /** When the message was received. */
     RECEIVED,
   }
 
@@ -62,7 +48,6 @@ public final class MessageEvent {
    *     available use 0.
    * @param compressedSize represents the compressed size in bytes of this message. If not available
    *     use 0.
-   * @since 0.1.0
    */
   public static void record(
       Span span, Type type, long messageId, long uncompressedSize, long compressedSize) {

@@ -19,7 +19,6 @@ public final class TraceShim {
    * {@code OpenTelemetry.getBaggageManager()}.
    *
    * @return a {@code io.opentracing.Tracer}.
-   * @since 0.1.0
    */
   public static io.opentracing.Tracer createTracerShim() {
     return new TracerShim(
@@ -36,7 +35,6 @@ public final class TraceShim {
    * @param tracerProvider the {@code TracerProvider} used by this shim.
    * @param contextManager the {@code BaggageManager} used by this shim.
    * @return a {@code io.opentracing.Tracer}.
-   * @since 0.1.0
    */
   public static io.opentracing.Tracer createTracerShim(
       TracerProvider tracerProvider, BaggageManager contextManager) {

@@ -45,8 +45,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
- * @since 0.1.0
  */
 @ThreadSafe
 public interface LongUpDownSumObserver extends AsynchronousInstrument<LongResult> {

@@ -39,8 +39,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
- * @since 0.1.0
  */
 @ThreadSafe
 public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDownCounter> {
@@ -52,7 +50,6 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
    *
    * @param increment the value to add.
    * @param labels the set of labels to be associated to this recording.
-   * @since 0.1.0
    */
   void add(long increment, Labels labels);
 
@@ -62,18 +59,13 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
    * <p>The value added is associated with the current {@code Context} and empty labels.
    *
    * @param increment the value to add.
-   * @since 0.8.0
    */
   void add(long increment);
 
   @Override
   BoundLongUpDownCounter bind(Labels labels);
 
-  /**
-   * A {@code Bound Instrument} for a {@link LongUpDownCounter}.
-   *
-   * @since 0.1.0
-   */
+  /** A {@code Bound Instrument} for a {@link LongUpDownCounter}. */
   @ThreadSafe
   interface BoundLongUpDownCounter extends BoundInstrument {
 
@@ -83,7 +75,6 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
      * <p>The value added is associated with the current {@code Context}.
      *
      * @param increment the value to add.
-     * @since 0.1.0
      */
     void add(long increment);
 

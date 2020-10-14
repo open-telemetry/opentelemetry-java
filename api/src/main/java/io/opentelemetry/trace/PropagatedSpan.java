@@ -13,7 +13,6 @@ import javax.annotation.concurrent.Immutable;
  * The {@code DefaultSpan} is the default {@link Span} that is used when no {@code Span}
  * implementation is available. All operations are no-op except context propagation.
  *
- * @since 0.1.0
  */
 @Immutable
 final class PropagatedSpan implements Span {
