@@ -53,7 +53,6 @@ public final class OpenTelemetry {
    * @return registered TracerProvider or default via {@link DefaultTracerProvider#getInstance()}.
    * @throws IllegalStateException if a specified TracerProvider (via system properties) could not
    *     be found.
-   * @since 0.1.0
    */
   public static TracerProvider getTracerProvider() {
     return getInstance().tracerProvider;
@@ -67,7 +66,6 @@ public final class OpenTelemetry {
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
    * @return a tracer instance.
-   * @since 0.5.0
    */
   public static Tracer getTracer(String instrumentationName) {
     return getTracerProvider().get(instrumentationName);
@@ -84,7 +82,6 @@ public final class OpenTelemetry {
    * @param instrumentationVersion The version of the instrumentation library (e.g.,
    *     "semver:1.0.0").
    * @return a tracer instance.
-   * @since 0.5.0
    */
   public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
     return getTracerProvider().get(instrumentationName, instrumentationVersion);
@@ -96,7 +93,6 @@ public final class OpenTelemetry {
    * @return registered MeterProvider or default via {@link DefaultMeterProvider#getInstance()}.
    * @throws IllegalStateException if a specified MeterProvider (via system properties) could not be
    *     found.
-   * @since 0.1.0
    */
   public static MeterProvider getMeterProvider() {
     return getInstance().meterProvider;
@@ -110,7 +106,6 @@ public final class OpenTelemetry {
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
    * @return a tracer instance.
-   * @since 0.5.0
    */
   public static Meter getMeter(String instrumentationName) {
     return getMeterProvider().get(instrumentationName);
@@ -126,7 +121,6 @@ public final class OpenTelemetry {
    *     instrument*ed* library.
    * @param instrumentationVersion The version of the instrumentation library.
    * @return a tracer instance.
-   * @since 0.5.0
    */
   public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
     return getMeterProvider().get(instrumentationName, instrumentationVersion);
@@ -138,7 +132,6 @@ public final class OpenTelemetry {
    * @return registered manager or default via {@link DefaultBaggageManager#getInstance()}.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
-   * @since 0.1.0
    */
   public static BaggageManager getBaggageManager() {
     return getInstance().contextManager;
@@ -152,7 +145,6 @@ public final class OpenTelemetry {
    *     with {@link HttpTraceContext} registered.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
-   * @since 0.3.0
    */
   public static ContextPropagators getPropagators() {
     return getInstance().propagators;
@@ -166,7 +158,6 @@ public final class OpenTelemetry {
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
    * @throws NullPointerException if {@code propagators} is {@code null}.
-   * @since 0.3.0
    */
   public static void setPropagators(ContextPropagators propagators) {
     Objects.requireNonNull(propagators, "propagators");

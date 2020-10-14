@@ -57,7 +57,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * }
  * }</pre>
  *
- * @since 0.1.0
  */
 @ThreadSafe
 public interface Tracer {
@@ -71,7 +70,6 @@ public interface Tracer {
    * @return a default {@code Span} that does nothing and has an invalid {@link SpanContext} if no
    *     {@code Span} is associated with the current Context, otherwise the current {@code Span}
    *     from the Context.
-   * @since 0.1.0
    */
   Span getCurrentSpan();
 
@@ -123,7 +121,6 @@ public interface Tracer {
    * @return an object that defines a scope where the given {@link Span} will be set to the current
    *     Context.
    * @throws NullPointerException if {@code span} is {@code null}.
-   * @since 0.1.0
    */
   @MustBeClosed
   Scope withSpan(Span span);
@@ -136,7 +133,6 @@ public interface Tracer {
    * @param spanName The name of the returned Span.
    * @return a {@code Span.Builder} to create and start a new {@code Span}.
    * @throws NullPointerException if {@code spanName} is {@code null}.
-   * @since 0.1.0
    */
   Span.Builder spanBuilder(String spanName);
 }

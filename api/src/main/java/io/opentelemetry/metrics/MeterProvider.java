@@ -13,7 +13,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * @see io.opentelemetry.OpenTelemetry
  * @see io.opentelemetry.metrics.Meter
- * @since 0.1.0
  */
 @ThreadSafe
 public interface MeterProvider {
@@ -24,7 +23,6 @@ public interface MeterProvider {
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
    * @return a tracer instance.
-   * @since 0.1.0
    */
   Meter get(String instrumentationName);
 
@@ -35,7 +33,6 @@ public interface MeterProvider {
    *     instrument*ed* library.
    * @param instrumentationVersion The version of the instrumentation library.
    * @return a tracer instance.
-   * @since 0.1.0
    */
   Meter get(String instrumentationName, String instrumentationVersion);
 }

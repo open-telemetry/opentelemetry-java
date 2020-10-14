@@ -27,7 +27,6 @@ import javax.annotation.concurrent.Immutable;
  * <p>Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the
  * range 0x20 to 0x7E) except comma , and =.
  *
- * @since 0.1.0
  */
 @Immutable
 @AutoValue
@@ -43,7 +42,6 @@ public abstract class TraceState {
    * Returns the default {@code TraceState} with no entries.
    *
    * @return the default {@code TraceState}.
-   * @since 0.1.0
    */
   public static TraceState getDefault() {
     return DEFAULT;
@@ -56,7 +54,6 @@ public abstract class TraceState {
    * @param key with which the specified value is to be associated
    * @return the value to which the specified key is mapped, or null if this map contains no mapping
    *     for the key.
-   * @since 0.1.0
    */
   @Nullable
   public String get(String key) {
@@ -72,7 +69,6 @@ public abstract class TraceState {
    * Returns a {@link List} view of the mappings contained in this {@code TraceState}.
    *
    * @return a {@link List} view of the mappings contained in this {@code TraceState}.
-   * @since 0.1.0
    */
   public abstract List<Entry> getEntries();
 
@@ -80,7 +76,6 @@ public abstract class TraceState {
    * Returns a {@code Builder} based on an empty {@code TraceState}.
    *
    * @return a {@code Builder} based on an empty {@code TraceState}.
-   * @since 0.1.0
    */
   public static Builder builder() {
     return new Builder(Builder.EMPTY);
@@ -90,7 +85,6 @@ public abstract class TraceState {
    * Returns a {@code Builder} based on this {@code TraceState}.
    *
    * @return a {@code Builder} based on this {@code TraceState}.
-   * @since 0.1.0
    */
   public Builder toBuilder() {
     return new Builder(this);
@@ -99,7 +93,6 @@ public abstract class TraceState {
   /**
    * Builder class for {@link TraceState}.
    *
-   * @since 0.1.0
    */
   public static final class Builder {
     private final TraceState parent;
@@ -122,7 +115,6 @@ public abstract class TraceState {
      * @param key the key for the {@code Entry} to be added.
      * @param value the value for the {@code Entry} to be added.
      * @return this.
-     * @since 0.1.0
      */
     public Builder set(String key, String value) {
       // Initially create the Entry to validate input.
@@ -148,7 +140,6 @@ public abstract class TraceState {
      *
      * @param key the key for the {@code Entry} to be removed.
      * @return this.
-     * @since 0.1.0
      */
     public Builder remove(String key) {
       Objects.requireNonNull(key, "key");
@@ -171,7 +162,6 @@ public abstract class TraceState {
      * and removing duplicate entries.
      *
      * @return a TraceState with the new entries.
-     * @since 0.1.0
      */
     public TraceState build() {
       if (entries == null) {
@@ -184,7 +174,6 @@ public abstract class TraceState {
   /**
    * Immutable key-value pair for {@code TraceState}.
    *
-   * @since 0.1.0
    */
   @Immutable
   @AutoValue
@@ -195,7 +184,6 @@ public abstract class TraceState {
      * @param key the Entry's key.
      * @param value the Entry's value.
      * @return the new {@code Entry}.
-     * @since 0.1.0
      */
     public static Entry create(String key, String value) {
       Objects.requireNonNull(key, "key");
@@ -209,7 +197,6 @@ public abstract class TraceState {
      * Returns the key {@code String}.
      *
      * @return the key {@code String}.
-     * @since 0.1.0
      */
     public abstract String getKey();
 
@@ -217,7 +204,6 @@ public abstract class TraceState {
      * Returns the value {@code String}.
      *
      * @return the value {@code String}.
-     * @since 0.1.0
      */
     public abstract String getValue();
 

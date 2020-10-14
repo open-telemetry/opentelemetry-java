@@ -42,7 +42,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * }
  * }</pre>
  *
- * @since 0.5.0
  */
 @ThreadSafe
 public interface DoubleValueObserver extends AsynchronousInstrument<DoubleResult> {

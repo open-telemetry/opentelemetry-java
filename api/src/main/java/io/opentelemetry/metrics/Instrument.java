@@ -10,7 +10,6 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * Base interface for all metrics defined in this package.
  *
- * @since 0.1.0
  */
 @ThreadSafe
 @SuppressWarnings("InterfaceWithOnlyStatics")

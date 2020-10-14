@@ -12,7 +12,6 @@ import javax.annotation.concurrent.Immutable;
  * {@link Span spans}. These determine features such as whether a {@code Span} should be traced. It
  * is implemented as a bitmask.
  *
- * @since 0.1.0
  */
 @Immutable
 public final class TraceFlags {
@@ -29,7 +28,6 @@ public final class TraceFlags {
   /**
    * Returns the size in Hex of trace flags.
    *
-   * @since 0.9.0
    */
   public static int getHexLength() {
     return BASE16_SIZE;
@@ -39,7 +37,6 @@ public final class TraceFlags {
    * Returns the default {@code TraceFlags}.
    *
    * @return the default {@code TraceFlags}.
-   * @since 0.1.0
    */
   public static byte getDefault() {
     return DEFAULT;

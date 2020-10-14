@@ -15,7 +15,6 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>Used also to stop tracing, see {@link Tracer#withSpan}.
  *
- * @since 0.1.0
  */
 @Immutable
 public final class DefaultSpan implements Span {
@@ -26,7 +25,6 @@ public final class DefaultSpan implements Span {
    * Returns a {@link DefaultSpan} with an invalid {@link SpanContext}.
    *
    * @return a {@code DefaultSpan} with an invalid {@code SpanContext}.
-   * @since 0.1.0
    */
   public static Span getInvalid() {
     return INVALID;
@@ -37,7 +35,6 @@ public final class DefaultSpan implements Span {
    *
    * @param spanContext the {@code SpanContext}.
    * @return a {@link DefaultSpan}.
-   * @since 0.1.0
    */
   public static Span create(SpanContext spanContext) {
     return new DefaultSpan(spanContext);

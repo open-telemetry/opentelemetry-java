@@ -40,7 +40,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * }
  * }</pre>
  *
- * @since 0.1.0
  */
 @ThreadSafe
 public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUpDownCounter> {
@@ -52,7 +51,6 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
    *
    * @param increment the value to add.
    * @param labels the labels to be associated to this recording.
-   * @since 0.1.0
    */
   void add(double increment, Labels labels);
 
@@ -62,7 +60,6 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
    * <p>The value added is associated with the current {@code Context} and empty labels.
    *
    * @param increment the value to add.
-   * @since 0.8.0
    */
   void add(double increment);
 
@@ -72,7 +69,6 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
   /**
    * A {@code Bound Instrument} for a {@link DoubleUpDownCounter}.
    *
-   * @since 0.1.0
    */
   @ThreadSafe
   interface BoundDoubleUpDownCounter extends BoundInstrument {
@@ -82,7 +78,6 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
      * <p>The value added is associated with the current {@code Context}.
      *
      * @param increment the value to add.
-     * @since 0.1.0
      */
     void add(double increment);
 

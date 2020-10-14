@@ -67,7 +67,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * }
  * }</pre>
  *
- * @since 0.3.0
  */
 @ThreadSafe
 public interface ContextPropagators {
@@ -80,7 +79,6 @@ public interface ContextPropagators {
    * instance.
    *
    * @return the {@link TextMapPropagator} propagator to inject and extract data.
-   * @since 0.3.0
    */
   TextMapPropagator getTextMapPropagator();
 }

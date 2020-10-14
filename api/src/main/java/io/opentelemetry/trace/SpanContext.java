@@ -16,7 +16,6 @@ import javax.annotation.concurrent.Immutable;
  * (currently only whether the context is sampled or not), as well as the {@link TraceState
  * traceState} and the {@link boolean remote} flag.
  *
- * @since 0.1.0
  */
 @Immutable
 @AutoValue
@@ -46,7 +45,6 @@ public abstract class SpanContext {
    * @param traceFlags the byte representation of the {@link TraceFlags}
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
-   * @since 0.1.0
    */
   public static SpanContext create(
       String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
@@ -68,7 +66,6 @@ public abstract class SpanContext {
    * @param traceFlags the byte representation of the {@link TraceFlags}
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
-   * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
       String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
@@ -83,7 +80,6 @@ public abstract class SpanContext {
    * Returns the trace identifier associated with this {@code SpanContext}.
    *
    * @return the trace identifier associated with this {@code SpanContext}.
-   * @since 0.1.0
    */
   public String getTraceIdAsHexString() {
     return getTraceIdHex();
@@ -93,7 +89,6 @@ public abstract class SpanContext {
    * Returns the byte[] representation of the trace identifier associated with this {@link
    * SpanContext}.
    *
-   * @since 0.8.0
    */
   @Memoized
   public byte[] getTraceIdBytes() {
@@ -104,7 +99,6 @@ public abstract class SpanContext {
    * Returns the span identifier associated with this {@code SpanContext}.
    *
    * @return the span identifier associated with this {@code SpanContext}.
-   * @since 0.1.0
    */
   public String getSpanIdAsHexString() {
     return getSpanIdHex();
@@ -114,7 +108,6 @@ public abstract class SpanContext {
    * Returns the byte[] representation of the span identifier associated with this {@link
    * SpanContext}.
    *
-   * @since 0.8.0
    */
   @Memoized
   public byte[] getSpanIdBytes() {
@@ -138,7 +131,6 @@ public abstract class SpanContext {
    * Returns the {@code TraceState} associated with this {@code SpanContext}.
    *
    * @return the {@code TraceState} associated with this {@code SpanContext}.
-   * @since 0.1.0
    */
   public abstract TraceState getTraceState();
 
@@ -146,7 +138,6 @@ public abstract class SpanContext {
    * Returns {@code true} if this {@code SpanContext} is valid.
    *
    * @return {@code true} if this {@code SpanContext} is valid.
-   * @since 0.1.0
    */
   @Memoized
   public boolean isValid() {
@@ -157,7 +148,6 @@ public abstract class SpanContext {
    * Returns {@code true} if the {@code SpanContext} was propagated from a remote parent.
    *
    * @return {@code true} if the {@code SpanContext} was propagated from a remote parent.
-   * @since 0.1.0
    */
   public abstract boolean isRemote();
 }

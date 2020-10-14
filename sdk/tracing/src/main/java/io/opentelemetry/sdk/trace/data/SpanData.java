@@ -217,7 +217,6 @@ public interface SpanData {
      * Returns the {@code SpanContext}.
      *
      * @return the {@code SpanContext}.
-     * @since 0.1.0
      */
     SpanContext getContext();
 
@@ -225,7 +224,6 @@ public interface SpanData {
      * Returns the set of attributes.
      *
      * @return the set of attributes.
-     * @since 0.1.0
      */
     Attributes getAttributes();
 
@@ -272,7 +270,6 @@ public interface SpanData {
      * Return the name of the {@code Event}.
      *
      * @return the name of the {@code Event}.
-     * @since 0.1.0
      */
     String getName();
 
@@ -280,7 +277,6 @@ public interface SpanData {
      * Return the attributes of the {@code Event}.
      *
      * @return the attributes of the {@code Event}.
-     * @since 0.1.0
      */
     Attributes getAttributes();
 

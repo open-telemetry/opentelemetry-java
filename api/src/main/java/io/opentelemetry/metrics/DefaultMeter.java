@@ -15,7 +15,6 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * No-op implementations of {@link Meter}.
  *
- * @since 0.1.0
  */
 @ThreadSafe
 public final class DefaultMeter implements Meter {
@@ -32,7 +31,6 @@ public final class DefaultMeter implements Meter {
    * Returns a {@code Meter} singleton that is the default implementations for {@link Meter}.
    *
    * @return a {@code Meter} singleton that is the default implementations for {@link Meter}.
-   * @since 0.1.0
    */
   public static Meter getInstance() {
     return INSTANCE;

@@ -110,7 +110,6 @@ public abstract class SpanDataBuilder implements SpanData {
   /**
    * A {@code Builder} class for {@link SpanDataBuilder}.
    *
-   * @since 0.1.0
    */
   @AutoValue.Builder
   abstract static class Builder {

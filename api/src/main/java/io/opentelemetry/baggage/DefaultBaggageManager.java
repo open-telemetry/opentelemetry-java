@@ -14,7 +14,6 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * No-op implementations of {@link BaggageManager}.
  *
- * @since 0.9.0
  */
 @ThreadSafe
 public final class DefaultBaggageManager implements BaggageManager {

@@ -17,7 +17,6 @@ import javax.annotation.concurrent.Immutable;
  * <p>For example, {@code Baggage}s can be used to label stats, log messages, or debugging
  * information.
  *
- * @since 0.9.0
  */
 @Immutable
 public interface Baggage {
@@ -26,7 +25,6 @@ public interface Baggage {
    * guaranteed.
    *
    * @return an immutable collection of the entries in this {@code Baggage}.
-   * @since 0.9.0
    */
   Collection<Entry> getEntries();
 
@@ -43,7 +41,6 @@ public interface Baggage {
   /**
    * Builder for the {@link Baggage} class.
    *
-   * @since 0.9.0
    */
   interface Builder {
     /**
@@ -63,7 +60,6 @@ public interface Baggage {
      * @return this.
      * @throws NullPointerException if {@code context} is {@code null}.
      * @see #setNoParent()
-     * @since 0.9.0
      */
     Builder setParent(Context context);
 
@@ -73,7 +69,6 @@ public interface Baggage {
      * BaggageManager#getCurrentBaggage()} at {@link #build()} time will be used as parent.
      *
      * @return this.
-     * @since 0.9.0
      */
     Builder setNoParent();
 
@@ -84,7 +79,6 @@ public interface Baggage {
      * @param value the {@code String} value to set for the given key.
      * @param entryMetadata the {@code EntryMetadata} associated with this {@link Entry}.
      * @return this
-     * @since 0.9.0
      */
     Builder put(String key, String value, EntryMetadata entryMetadata);
 
@@ -93,7 +87,6 @@ public interface Baggage {
      *
      * @param key the {@code String} key which will be removed.
      * @return this
-     * @since 0.9.0
      */
     Builder remove(String key);
 
@@ -101,7 +94,6 @@ public interface Baggage {
      * Creates a {@code Baggage} from this builder.
      *
      * @return a {@code Baggage} with the same entries as this builder.
-     * @since 0.9.0
      */
     Baggage build();
   }

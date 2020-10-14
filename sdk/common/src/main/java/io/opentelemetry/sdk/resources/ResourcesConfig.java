@@ -47,7 +47,6 @@ public abstract class ResourcesConfig {
    * Returns the default {@code ResourcesConfig}.
    *
    * @return the default {@code ResourcesConfig}.
-   * @since 0.9.0
    */
   public static ResourcesConfig getDefault() {
     return DEFAULT;
