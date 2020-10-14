@@ -44,7 +44,7 @@ class DelegatingSpanDataTest {
       } else {
         clientType = "unknown";
       }
-      Attributes.Builder newAttributes = Attributes.newBuilder();
+      Attributes.Builder newAttributes = Attributes.builder();
       delegate.getAttributes().forEach(newAttributes::setAttribute);
       newAttributes.setAttribute("client_type", clientType);
       attributes = newAttributes.build();
@@ -101,7 +101,7 @@ class DelegatingSpanDataTest {
   }
 
   private static TestSpanData.Builder createBasicSpanBuilder() {
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setHasEnded(true)
         .setSpanId(SpanId.getInvalid())
         .setTraceId(TraceId.getInvalid())

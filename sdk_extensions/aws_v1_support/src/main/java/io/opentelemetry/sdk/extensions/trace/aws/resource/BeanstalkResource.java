@@ -53,7 +53,7 @@ public class BeanstalkResource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.builder();
     try (JsonParser parser = JSON_FACTORY.createParser(configFile)) {
       parser.nextToken();
 

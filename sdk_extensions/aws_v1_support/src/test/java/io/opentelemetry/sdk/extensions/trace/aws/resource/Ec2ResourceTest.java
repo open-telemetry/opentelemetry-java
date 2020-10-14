@@ -69,7 +69,7 @@ public class Ec2ResourceTest {
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
     Attributes attributes = populator.getAttributes();
-    Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
+    Attributes.Builder expectedAttrBuilders = Attributes.builder();
 
     expectedAttrBuilders.setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws");
     expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_ID, "i-1234567890abcdef0");
@@ -104,7 +104,7 @@ public class Ec2ResourceTest {
     Attributes attributes = populator.getAttributes();
 
     Attributes.Builder expectedAttrBuilders =
-        Attributes.newBuilder()
+        Attributes.builder()
             .setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws")
             .setAttribute(ResourceAttributes.HOST_ID, "i-1234567890abcdef0")
             .setAttribute(ResourceAttributes.CLOUD_ZONE, "us-west-2b")

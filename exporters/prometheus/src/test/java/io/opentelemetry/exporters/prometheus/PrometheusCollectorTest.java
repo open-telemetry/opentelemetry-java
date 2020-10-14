@@ -34,7 +34,7 @@ class PrometheusCollectorTest {
   void setUp() {
     MockitoAnnotations.initMocks(this);
     prometheusCollector =
-        PrometheusCollector.newBuilder().setMetricProducer(metricProducer).buildAndRegister();
+        PrometheusCollector.builder().setMetricProducer(metricProducer).buildAndRegister();
   }
 
   @Test

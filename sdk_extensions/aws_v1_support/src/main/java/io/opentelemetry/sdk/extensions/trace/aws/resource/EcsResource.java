@@ -50,7 +50,7 @@ public class EcsResource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.builder();
     attrBuilders.setAttribute(
         ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
     try {

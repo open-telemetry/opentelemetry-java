@@ -55,7 +55,7 @@ public final class ZPageServer {
   private static final int HTTPSERVER_STOP_DELAY = 1;
   // Tracez SpanProcessor and DataAggregator for constructing TracezZPageHandler
   private static final TracezSpanProcessor tracezSpanProcessor =
-      TracezSpanProcessor.newBuilder().build();
+      TracezSpanProcessor.builder().build();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
   private static final TracerSdkManagement TRACER_SDK_MANAGEMENT =

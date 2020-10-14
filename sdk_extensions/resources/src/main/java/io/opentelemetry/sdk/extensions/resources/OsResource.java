@@ -27,7 +27,7 @@ public class OsResource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    Attributes.Builder attributes = Attributes.newBuilder();
+    Attributes.Builder attributes = Attributes.builder();
 
     String osName = getOs(os);
     if (osName != null) {

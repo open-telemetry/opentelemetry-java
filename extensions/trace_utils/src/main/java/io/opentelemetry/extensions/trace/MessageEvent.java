@@ -66,7 +66,7 @@ public final class MessageEvent {
    */
   public static void record(
       Span span, Type type, long messageId, long uncompressedSize, long compressedSize) {
-    Attributes.Builder attributeBuilder = Attributes.newBuilder();
+    Attributes.Builder attributeBuilder = Attributes.builder();
     attributeBuilder.setAttribute(
         TYPE, type == Type.SENT ? Type.SENT.name() : Type.RECEIVED.name());
     attributeBuilder.setAttribute(ID, messageId);

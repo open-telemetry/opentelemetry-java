@@ -110,7 +110,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
    * @return a new {@link SimpleSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public static Builder newBuilder(SpanExporter spanExporter) {
+  public static Builder builder(SpanExporter spanExporter) {
     return new Builder(spanExporter);
   }
 

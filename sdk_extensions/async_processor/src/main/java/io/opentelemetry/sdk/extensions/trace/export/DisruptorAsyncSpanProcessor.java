@@ -98,7 +98,7 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
    * @return a new {@link DisruptorAsyncSpanProcessor}.
    * @throws NullPointerException if the {@code spanProcessor} is {@code null}.
    */
-  public static Builder newBuilder(SpanProcessor spanProcessor) {
+  public static Builder builder(SpanProcessor spanProcessor) {
     return new Builder(Objects.requireNonNull(spanProcessor));
   }
 

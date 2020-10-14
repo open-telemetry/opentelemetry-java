@@ -34,7 +34,7 @@ public abstract class TestSpanData implements SpanData {
    * @return a new Builder.
    * @since 0.1.0
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new AutoValue_TestSpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())

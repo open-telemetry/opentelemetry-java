@@ -32,7 +32,7 @@ class ResourcesConfigTest {
         "otel.java.disabled.resource_providers",
         "com.package.provider.ToDisable1, com.package.provider.ToDisable2");
     ResourcesConfig resourcesConfig =
-        ResourcesConfig.newBuilder().readSystemProperties().readEnvironmentVariables().build();
+        ResourcesConfig.builder().readSystemProperties().readEnvironmentVariables().build();
     assertThat(resourcesConfig.getDisabledResourceProviders())
         .isEqualTo(
             ImmutableSet.of("com.package.provider.ToDisable1", "com.package.provider.ToDisable2"));
@@ -42,14 +42,14 @@ class ResourcesConfigTest {
   void updateResourcesConfig_EmptyDisabledResourceProviders() {
     System.setProperty("otel.java.disabled.resource_providers", "");
     ResourcesConfig resourcesConfig =
-        ResourcesConfig.newBuilder().readSystemProperties().readEnvironmentVariables().build();
+        ResourcesConfig.builder().readSystemProperties().readEnvironmentVariables().build();
     assertThat(resourcesConfig.getDisabledResourceProviders()).isEqualTo(ImmutableSet.of());
   }
 
   @Test
   void updateResourcesConfig_All() {
     ResourcesConfig resourcesConfig =
-        ResourcesConfig.newBuilder()
+        ResourcesConfig.builder()
             .setDisabledResourceProviders(ImmutableSet.of("com.package.provider.ToDisable"))
             .build();
     assertThat(resourcesConfig.getDisabledResourceProviders())

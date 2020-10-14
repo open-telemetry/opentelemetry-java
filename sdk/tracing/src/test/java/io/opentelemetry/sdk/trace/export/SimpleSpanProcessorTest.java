@@ -63,7 +63,7 @@ class SimpleSpanProcessorTest {
 
   @BeforeEach
   void setUp() {
-    simpleSampledSpansProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    simpleSampledSpansProcessor = SimpleSpanProcessor.builder(spanExporter).build();
   }
 
   @Test
@@ -71,7 +71,7 @@ class SimpleSpanProcessorTest {
     Map<String, String> options = new HashMap<>();
     options.put("otel.ssp.export.sampled", "false");
     SimpleSpanProcessor.Builder config =
-        SimpleSpanProcessor.newBuilder(spanExporter)
+        SimpleSpanProcessor.builder(spanExporter)
             .fromConfigMap(options, ConfigTester.getNamingDot());
     assertThat(config.getExportOnlySampled()).isEqualTo(false);
   }
@@ -79,7 +79,7 @@ class SimpleSpanProcessorTest {
   @Test
   void configTest_EmptyOptions() {
     SimpleSpanProcessor.Builder config =
-        SimpleSpanProcessor.newBuilder(spanExporter)
+        SimpleSpanProcessor.builder(spanExporter)
             .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
     assertThat(config.getExportOnlySampled())
         .isEqualTo(SimpleSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
@@ -113,7 +113,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verifyNoInteractions(spanExporter);
   }
@@ -124,7 +124,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(TestUtils.makeBasicSpan()));
   }
@@ -135,7 +135,7 @@ class SimpleSpanProcessorTest {
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
 
     tracerSdkFactory.addSpanProcessor(
-        BatchSpanProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.builder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
@@ -164,7 +164,7 @@ class SimpleSpanProcessorTest {
     // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
     /*
     tracer.addSpanProcessor(
-        BatchSpanProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.builder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .reportOnlySampled(false)
             .build());
@@ -202,7 +202,7 @@ class SimpleSpanProcessorTest {
   void buildFromProperties_defaultSampledFlag() {
     Properties properties = new Properties();
     SimpleSpanProcessor spanProcessor =
-        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+        SimpleSpanProcessor.builder(spanExporter).readProperties(properties).build();
 
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onEnd(readableSpan);
@@ -214,7 +214,7 @@ class SimpleSpanProcessorTest {
     Properties properties = new Properties();
     properties.setProperty("otel.ssp.export.sampled", "true");
     SimpleSpanProcessor spanProcessor =
-        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+        SimpleSpanProcessor.builder(spanExporter).readProperties(properties).build();
 
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onEnd(readableSpan);
@@ -226,7 +226,7 @@ class SimpleSpanProcessorTest {
     Properties properties = new Properties();
     properties.setProperty("otel.ssp.export.sampled", "false");
     SimpleSpanProcessor spanProcessor =
-        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+        SimpleSpanProcessor.builder(spanExporter).readProperties(properties).build();
     SpanData spanData = TestUtils.makeBasicSpan();
 
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);

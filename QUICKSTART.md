@@ -316,7 +316,7 @@ TracerSdkManagement tracerSdkManagement = OpenTelemetrySdk.getTracerManagement()
 
 // Set to export the traces to a logging stream
 tracerSdkManagement.addSpanProcessor(
-    SimpleSpanProcessor.newBuilder(
+    SimpleSpanProcessor.builder(
         new LoggingSpanExporter()
     ).build());
 ```
@@ -360,14 +360,14 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 
 ```java
 tracerSdkManagement.addSpanProcessor(
-    SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
+    SimpleSpanProcessor.builder(new LoggingSpanExporter()).build()
 );
 tracerSdkManagement.addSpanProcessor(
-    BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
+    BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
 );
 tracerSdkManagement.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
-            SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build(),
-            BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
+            SimpleSpanProcessor.builder(new LoggingSpanExporter()).build(),
+            BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
 )));
 ```
 
@@ -385,16 +385,16 @@ Other exporters can be found in the [OpenTelemetry Registry].
 
 ```java
 tracerSdkManagement.addSpanProcessor(
-    SimpleSpanProcessor.newBuilder(InMemorySpanExporter.create()).build());
+    SimpleSpanProcessor.builder(InMemorySpanExporter.create()).build());
 tracerSdkManagement.addSpanProcessor(
-    SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build());
+    SimpleSpanProcessor.builder(new LoggingSpanExporter()).build());
 
 ManagedChannel jaegerChannel =
     ManagedChannelBuilder.forAddress([ip:String], [port:int]).usePlaintext().build();
-JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.newBuilder()
+JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
     .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
     .build();
-tracerSdkManagement.addSpanProcessor(BatchSpanProcessor.newBuilder(
+tracerSdkManagement.addSpanProcessor(BatchSpanProcessor.builder(
     jaegerExporter
 ).build());
 ```
