@@ -58,7 +58,7 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testBuilderDefaults() {
-    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.newBuilder().build();
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
     assertThat(openTelemetry.getTracerProvider())
         .isInstanceOfSatisfying(
             ObfuscatedTracerProvider.class,
@@ -73,10 +73,9 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testReconfigure() {
-    Resource resource =
-        Resource.create(Attributes.newBuilder().setAttribute("cat", "meow").build());
+    Resource resource = Resource.create(Attributes.builder().setAttribute("cat", "meow").build());
     OpenTelemetrySdk openTelemetry =
-        OpenTelemetrySdk.newBuilder()
+        OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
             .setMeterProvider(meterProvider)
             .setBaggageManager(baggageManager)

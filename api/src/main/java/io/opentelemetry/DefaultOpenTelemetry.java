@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
  */
 class DefaultOpenTelemetry implements OpenTelemetry {
 
-  static Builder newBuilder() {
+  static Builder builder() {
     return new Builder();
   }
 
@@ -40,7 +40,7 @@ class DefaultOpenTelemetry implements OpenTelemetry {
           if (openTelemetryFactory != null) {
             globalOpenTelemetry = openTelemetryFactory.create();
           } else {
-            globalOpenTelemetry = newBuilder().build();
+            globalOpenTelemetry = builder().build();
           }
         }
       }

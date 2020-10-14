@@ -42,7 +42,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
    * Returns a new {@link Builder} for configuring an instance of {@linkplain OpenTelemetrySdk the
    * OpenTelemetry SDK}.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 
@@ -140,7 +140,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   /** Returns a new {@link Builder} initialized with the values of this {@link OpenTelemetrySdk}. */
   @Override
   public Builder toBuilder() {
-    return newBuilder()
+    return builder()
         .setTracerProvider(tracerProvider)
         .setMeterProvider(meterProvider)
         .setBaggageManager(baggageManager)

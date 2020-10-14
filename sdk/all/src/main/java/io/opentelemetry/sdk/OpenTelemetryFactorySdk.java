@@ -15,6 +15,6 @@ import io.opentelemetry.spi.OpenTelemetryFactory;
 public class OpenTelemetryFactorySdk implements OpenTelemetryFactory {
   @Override
   public OpenTelemetry create() {
-    return OpenTelemetrySdk.newBuilder().build();
+    return OpenTelemetrySdk.builder().build();
   }
 }

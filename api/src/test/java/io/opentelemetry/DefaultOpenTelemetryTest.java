@@ -28,7 +28,7 @@ class DefaultOpenTelemetryTest {
 
   @Test
   void defaultIsAllDefault() {
-    OpenTelemetry openTelemetry = DefaultOpenTelemetry.newBuilder().build();
+    OpenTelemetry openTelemetry = DefaultOpenTelemetry.builder().build();
     assertThat(openTelemetry.getTracerProvider()).isInstanceOf(DefaultTracerProvider.class);
     assertThat(openTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
     assertThat(openTelemetry.getBaggageManager()).isInstanceOf(BaggageManager.class);
@@ -37,7 +37,7 @@ class DefaultOpenTelemetryTest {
   @Test
   void canReconfigure() {
     OpenTelemetry openTelemetry =
-        DefaultOpenTelemetry.newBuilder()
+        DefaultOpenTelemetry.builder()
             .setTracerProvider(tracerProvider)
             .setMeterProvider(meterProvider)
             .setBaggageManager(baggageManager)
