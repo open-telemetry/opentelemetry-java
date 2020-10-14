@@ -42,11 +42,11 @@ should not setup your own.
 You can setup a basic configuration that exports traces to a logging stream like this:
 
 ```java
-OpenTelemetry openTelemetry = OpenTelemetrySdk.newBuilder()
+OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
     .setTracerProvider(
         TracerSdkProvider.builder()
             .setSpanProcessors(
-                SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build())
+                SimpleSpanProcessor.builder(new LoggingSpanExporter()).build())
             .build())
     .build();
 ```
@@ -354,7 +354,7 @@ TraceConfig half = TraceConfig.getDefault().toBuilder().setSampler(
         Samplers.probability(0.5)
 ).build();
 // Configure the sampler to use when initializing the SDK
-OpenTelemetry openTelemetry = OpenTelemetrySdk.newBuilder()
+OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
     .setTracerProvider(
         TracerSdkProvider.builder()
             ...
@@ -372,17 +372,17 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 
 ```java
 TracerSdkProvider.builder()
-    .setSpanProcessor(SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build())
+    .setSpanProcessor(SimpleSpanProcessor.builder(new LoggingSpanExporter()).build())
 
 TracerSdkProvider.builder()
-    .setSpanProcessor(BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build())
+    .setSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build())
 
 TracerSdkProvider.builder()
     .setSpanProcessor(
       MultiSpanProcessor.create(
         Arrays.asList(
-          SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build(),
-          BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()))
+          SimpleSpanProcessor.builder(new LoggingSpanExporter()).build(),
+          BatchSpanProcessor.builder(new LoggingSpanExporter()).build()))
 ```
 
 ### Exporter
@@ -399,17 +399,17 @@ Other exporters can be found in the [OpenTelemetry Registry].
 
 ```java
 TracerSdkProvider.builder()
-    .setSpanProcessor(SimpleSpanProcessor.newBuilder(InMemorySpanExporter.create()).build())
+    .setSpanProcessor(SimpleSpanProcessor.builder(InMemorySpanExporter.create()).build())
 TracerSdkProvider.builder()
-    .setSpanProcessor(SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build())
+    .setSpanProcessor(SimpleSpanProcessor.builder(new LoggingSpanExporter()).build())
 
 ManagedChannel jaegerChannel =
     ManagedChannelBuilder.forAddress([ip:String], [port:int]).usePlaintext().build();
-JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.newBuilder()
+JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
     .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
     .build();
 TracerSdkProvider.builder()
-    .setSpanProcessor(BatchSpanProcessor.newBuilder(jaegerExporter).build())
+    .setSpanProcessor(BatchSpanProcessor.builder(jaegerExporter).build())
 ```
 
 ### TraceConfig
@@ -434,7 +434,7 @@ builder.readEnvironmentVariables()
 builder.setMaxNumberOfLinks(10);
 
 // Update the resulting TraceConfig instance
-OpenTelemetry openTelemetry = OpenTelemetrySdk.newBuilder()
+OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
     .setTracerProvider(
         TracerSdkProvider.builder()
             ...
