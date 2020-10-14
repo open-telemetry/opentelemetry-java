@@ -53,7 +53,7 @@ class CurrentSpanUtilsTest {
 
   @Test
   void withSpanRunnable() {
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Runnable runnable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -61,12 +61,12 @@ class CurrentSpanUtilsTest {
         };
     CurrentSpanUtils.withSpan(span, false, runnable).run();
     verifyNoInteractions(span);
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpanRunnable_EndSpan() {
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Runnable runnable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -74,13 +74,13 @@ class CurrentSpanUtilsTest {
         };
     CurrentSpanUtils.withSpan(span, true, runnable).run();
     verify(span).end();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpanRunnable_WithError() {
     final AssertionError error = new AssertionError("MyError");
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Runnable runnable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -90,13 +90,13 @@ class CurrentSpanUtilsTest {
     executeRunnableAndExpectError(runnable, error);
     verify(span).setStatus(StatusCanonicalCode.ERROR, "MyError");
     verify(span).end();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpanRunnable_WithErrorNoMessage() {
     final AssertionError error = new AssertionError();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Runnable runnable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -106,13 +106,13 @@ class CurrentSpanUtilsTest {
     executeRunnableAndExpectError(runnable, error);
     verify(span).setStatus(StatusCanonicalCode.ERROR, "AssertionError");
     verify(span).end();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpanCallable() throws Exception {
     final Object ret = new Object();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -121,13 +121,13 @@ class CurrentSpanUtilsTest {
         };
     assertThat(CurrentSpanUtils.withSpan(span, false, callable).call()).isEqualTo(ret);
     verifyNoInteractions(span);
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpanCallable_EndSpan() throws Exception {
     final Object ret = new Object();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -136,13 +136,13 @@ class CurrentSpanUtilsTest {
         };
     assertThat(CurrentSpanUtils.withSpan(span, true, callable).call()).isEqualTo(ret);
     verify(span).end();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpanCallable_WithException() {
     final Exception exception = new Exception("MyException");
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -152,13 +152,13 @@ class CurrentSpanUtilsTest {
     executeCallableAndExpectError(callable, exception);
     verify(span).setStatus(StatusCanonicalCode.ERROR, "MyException");
     verify(span).end();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpanCallable_WithExceptionNoMessage() {
     final Exception exception = new Exception();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -168,13 +168,13 @@ class CurrentSpanUtilsTest {
     executeCallableAndExpectError(callable, exception);
     verify(span).setStatus(StatusCanonicalCode.ERROR, "Exception");
     verify(span).end();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpanCallable_WithError() {
     final AssertionError error = new AssertionError("MyError");
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -184,13 +184,13 @@ class CurrentSpanUtilsTest {
     executeCallableAndExpectError(callable, error);
     verify(span).setStatus(StatusCanonicalCode.ERROR, "MyError");
     verify(span).end();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpanCallable_WithErrorNoMessage() {
     final AssertionError error = new AssertionError();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
     Callable<Object> callable =
         () -> {
           // When we run the runnable we will have the span in the current Context.
@@ -200,7 +200,7 @@ class CurrentSpanUtilsTest {
     executeCallableAndExpectError(callable, error);
     verify(span).setStatus(StatusCanonicalCode.ERROR, "AssertionError");
     verify(span).end();
-    assertThat(getCurrentSpan().isValid()).isFalse();
+    assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   private static Span getCurrentSpan() {

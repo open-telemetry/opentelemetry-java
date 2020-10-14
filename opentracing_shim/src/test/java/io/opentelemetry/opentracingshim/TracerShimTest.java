@@ -81,6 +81,6 @@ class TracerShimTest {
     tracerShim.close();
     Span otSpan = tracerShim.buildSpan(null).start();
     io.opentelemetry.trace.Span span = ((SpanShim) otSpan).getSpan();
-    assertThat(span.isValid()).isFalse();
+    assertThat(span.getContext().isValid()).isFalse();
   }
 }

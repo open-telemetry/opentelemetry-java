@@ -34,7 +34,7 @@ public interface Span {
    * functionality. It will not be exported and all tracing operations are no-op, but it can be used
    * to propagate a valid {@link SpanContext} downstream.
    */
-  static Span getPropagated(SpanContext spanContext) {
+  static Span wrap(SpanContext spanContext) {
     if (spanContext == null || !spanContext.isValid()) {
       return getInvalid();
     }
@@ -285,15 +285,6 @@ public interface Span {
    * @return {@code true} if this {@code Span} records tracing events.
    */
   boolean isRecording();
-
-  /**
-   * Returns whether this {@link Span} is valid.
-   *
-   * @see Span#getInvalid()
-   */
-  default boolean isValid() {
-    return getContext().isValid();
-  }
 
   /**
    * {@link Builder} is used to construct {@link Span} instances which define arbitrary scopes of

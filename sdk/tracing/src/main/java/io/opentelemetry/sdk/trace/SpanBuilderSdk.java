@@ -211,7 +211,7 @@ final class SpanBuilderSdk implements Span.Builder {
             traceId, spanId, samplingResultTraceState, Samplers.isSampled(samplingDecision));
 
     if (!Samplers.isRecording(samplingDecision)) {
-      return Span.getPropagated(spanContext);
+      return Span.wrap(spanContext);
     }
     ReadableAttributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {

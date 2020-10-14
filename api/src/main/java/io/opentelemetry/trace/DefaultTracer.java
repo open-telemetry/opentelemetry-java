@@ -59,7 +59,7 @@ public final class DefaultTracer implements Tracer {
         spanContext = TracingContextUtils.getCurrentSpan().getContext();
       }
 
-      return Span.getPropagated(spanContext);
+      return Span.wrap(spanContext);
     }
 
     @Override

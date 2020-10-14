@@ -34,7 +34,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       return Optional.empty();
     }
 
-    return Optional.of(TracingContextUtils.withSpan(Span.getPropagated(spanContext), context));
+    return Optional.of(TracingContextUtils.withSpan(Span.wrap(spanContext), context));
   }
 
   private static <C> SpanContext getSpanContextFromMultipleHeaders(

@@ -75,7 +75,7 @@ public class HttpTraceContextInjectBenchmark {
   private static List<Context> createContexts(List<SpanContext> spanContexts) {
     List<Context> contexts = new ArrayList<>();
     for (SpanContext context : spanContexts) {
-      contexts.add(TracingContextUtils.withSpan(Span.getPropagated(context), Context.root()));
+      contexts.add(TracingContextUtils.withSpan(Span.wrap(context), Context.root()));
     }
     return contexts;
   }

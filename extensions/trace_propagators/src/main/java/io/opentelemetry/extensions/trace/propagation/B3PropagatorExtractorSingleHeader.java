@@ -33,7 +33,7 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
       return Optional.empty();
     }
 
-    return Optional.of(TracingContextUtils.withSpan(Span.getPropagated(spanContext), context));
+    return Optional.of(TracingContextUtils.withSpan(Span.wrap(spanContext), context));
   }
 
   @SuppressWarnings("StringSplitter")

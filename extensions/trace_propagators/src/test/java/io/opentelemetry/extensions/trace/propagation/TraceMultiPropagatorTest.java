@@ -37,7 +37,7 @@ class TraceMultiPropagatorTest {
   private static final TextMapPropagator PROPAGATOR3 = HttpTraceContext.getInstance();
 
   private static final Span SPAN =
-      Span.getPropagated(
+      Span.wrap(
           SpanContext.createFromRemoteParent(
               TraceId.fromLongs(1245, 67890),
               SpanId.fromLong(12345),

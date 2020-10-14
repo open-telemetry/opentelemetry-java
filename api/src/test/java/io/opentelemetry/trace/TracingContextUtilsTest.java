@@ -21,7 +21,7 @@ class TracingContextUtilsTest {
 
   @Test
   void testGetCurrentSpan_SetSpan() {
-    Span span = Span.getPropagated(SpanContext.getInvalid());
+    Span span = Span.wrap(SpanContext.getInvalid());
     try (Scope ignored = TracingContextUtils.withSpan(span, Context.current()).makeCurrent()) {
       assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(span);
     }
@@ -35,7 +35,7 @@ class TracingContextUtilsTest {
 
   @Test
   void testGetSpan_ExplicitContext() {
-    Span span = Span.getPropagated(SpanContext.getInvalid());
+    Span span = Span.wrap(SpanContext.getInvalid());
     Context context = TracingContextUtils.withSpan(span, Context.current());
     assertThat(TracingContextUtils.getSpan(context)).isSameAs(span);
   }
@@ -48,7 +48,7 @@ class TracingContextUtilsTest {
 
   @Test
   void testGetSpanWithoutDefault_ExplicitContext() {
-    Span span = Span.getPropagated(SpanContext.getInvalid());
+    Span span = Span.wrap(SpanContext.getInvalid());
     Context context = TracingContextUtils.withSpan(span, Context.current());
     assertThat(TracingContextUtils.getSpanWithoutDefault(context)).isSameAs(span);
   }

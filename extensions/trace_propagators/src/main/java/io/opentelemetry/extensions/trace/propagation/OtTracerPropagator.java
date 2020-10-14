@@ -79,7 +79,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (!spanContext.isValid()) {
       return context;
     }
-    return TracingContextUtils.withSpan(Span.getPropagated(spanContext), context);
+    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
   }
 
   static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
