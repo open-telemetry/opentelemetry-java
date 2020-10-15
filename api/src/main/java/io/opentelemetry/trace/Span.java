@@ -299,8 +299,8 @@ public interface Span {
    *   void doWork {
    *     // Create a Span as a child of the current Span.
    *     Span span = tracer.spanBuilder("MyChildSpan").startSpan();
-   *     try (Scope ss = TracingContextUtils.currentContextWith(span)) {
-   *       TracingContextUtils.getCurrentSpan().addEvent("my event");
+   *     try (Scope ss = tracer.withSpan(span)) {
+   *       tracer.getCurrentSpan().addEvent("my event");
    *       doSomeWork();  // Here the new span is in the current Context, so it can be used
    *                      // implicitly anywhere down the stack.
    *     } finally {
@@ -327,8 +327,8 @@ public interface Span {
    *   }
    *
    *   public void onExecuteHandler(ServerCallHandler serverCallHandler) {
-   *     try (Scope ws = TracingContextUtils.currentContextWith(mySpan)) {
-   *       TracingContextUtils.getCurrentSpan().addEvent("Start rpc execution.");
+   *     try (Scope ws = tracer.withSpan(mySpan)) {
+   *       tracer.getCurrentSpan().addEvent("Start rpc execution.");
    *       serverCallHandler.run();  // Here the new span is in the current Context, so it can be
    *                                 // used implicitly anywhere down the stack.
    *     }

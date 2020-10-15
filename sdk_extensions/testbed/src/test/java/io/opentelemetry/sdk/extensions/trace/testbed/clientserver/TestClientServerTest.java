@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +62,6 @@ class TestClientServerTest {
     assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
     assertThat(finished.get(1).getKind()).isEqualTo(Kind.SERVER);
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(Span.getInvalid());
   }
 }

@@ -248,6 +248,18 @@ class OpenTelemetryTest {
 
     @Nullable
     @Override
+    public Span getCurrentSpan() {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public Scope withSpan(Span span) {
+      return null;
+    }
+
+    @Nullable
+    @Override
     public Span.Builder spanBuilder(String spanName) {
       return null;
     }

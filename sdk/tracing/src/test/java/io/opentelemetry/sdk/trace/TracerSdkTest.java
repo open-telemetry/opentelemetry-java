@@ -50,8 +50,41 @@ class TracerSdkTest {
   }
 
   @Test
+  void defaultGetCurrentSpan() {
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
+  }
+
+  @Test
   void defaultSpanBuilder() {
     assertThat(tracer.spanBuilder(SPAN_NAME)).isInstanceOf(SpanBuilderSdk.class);
+  }
+
+  @Test
+  void getCurrentSpan() {
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
+    // Make sure context is detached even if test fails.
+    try (Scope ignored = TracingContextUtils.withSpan(span, Context.current()).makeCurrent()) {
+      assertThat(tracer.getCurrentSpan()).isSameAs(span);
+    }
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
+  }
+
+  @Test
+  void withSpan_NullSpan() {
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
+    try (Scope ignored = tracer.withSpan(null)) {
+      assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
+    }
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
+  }
+
+  @Test
+  void getCurrentSpan_WithSpan() {
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
+    try (Scope ignored = tracer.withSpan(span)) {
+      assertThat(tracer.getCurrentSpan()).isSameAs(span);
+    }
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
@@ -161,7 +194,7 @@ class TracerSdkTest {
     @Override
     public void update() {
       Span span = tracer.spanBuilder("testSpan").startSpan();
-      try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+      try (Scope ignored = tracer.withSpan(span)) {
         span.setAttribute("testAttribute", "testValue");
       } finally {
         span.end();

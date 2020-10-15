@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -49,7 +48,7 @@ class ActorPropagationTest {
       phaser.register();
       Span parent = tracer.spanBuilder("actorTell").setSpanKind(Kind.PRODUCER).startSpan();
       parent.setAttribute("component", "example-actor");
-      try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
+      try (Scope ignored = tracer.withSpan(parent)) {
         actor.tell("my message 1");
         actor.tell("my message 2");
       } finally {
@@ -73,7 +72,7 @@ class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+      assertThat(tracer.getCurrentSpan()).isSameAs(Span.getInvalid());
     }
   }
 
@@ -86,7 +85,7 @@ class ActorPropagationTest {
       Span span = tracer.spanBuilder("actorAsk").setSpanKind(Kind.PRODUCER).startSpan();
       span.setAttribute("component", "example-actor");
 
-      try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+      try (Scope ignored = tracer.withSpan(span)) {
         future1 = actor.ask("my message 1");
         future2 = actor.ask("my message 2");
       } finally {
@@ -114,7 +113,7 @@ class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+      assertThat(tracer.getCurrentSpan()).isSameAs(Span.getInvalid());
     }
   }
 }

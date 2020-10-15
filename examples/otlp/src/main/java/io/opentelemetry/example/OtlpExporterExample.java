@@ -55,7 +55,7 @@ public class OtlpExporterExample {
 
     for (int i = 0; i < 10; i++) {
       Span exampleSpan = tracer.spanBuilder("exampleSpan").startSpan();
-      try (Scope scope = TracingContextUtils.currentContextWith(exampleSpan)) {
+      try (Scope scope = tracer.withSpan(exampleSpan)) {
         counter.add(1);
         exampleSpan.setAttribute("good", "true");
         exampleSpan.setAttribute("exampleNumber", i);

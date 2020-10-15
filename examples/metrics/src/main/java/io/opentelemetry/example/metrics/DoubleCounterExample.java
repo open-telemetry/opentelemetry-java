@@ -36,7 +36,7 @@ public class DoubleCounterExample {
   public static void main(String[] args) {
     Span span = tracer.spanBuilder("calculate space").setSpanKind(Kind.INTERNAL).startSpan();
     DoubleCounterExample example = new DoubleCounterExample();
-    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+    try (Scope scope = tracer.withSpan(span)) {
       List<String> extensionsToFind = new ArrayList<>();
       extensionsToFind.add("dll");
       extensionsToFind.add("png");

@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DefaultTracer}. */
@@ -29,6 +30,20 @@ class DefaultTracerTest {
           TraceState.getDefault());
 
   @Test
+  void defaultGetCurrentSpan() {
+    assertThat(defaultTracer.getCurrentSpan().getContext().isValid()).isFalse();
+  }
+
+  @Test
+  void getCurrentSpan_WithSpan() {
+    assertThat(defaultTracer.getCurrentSpan().getContext().isValid()).isFalse();
+    try (Scope ws = defaultTracer.withSpan(Span.getInvalid())) {
+      assertThat(defaultTracer.getCurrentSpan().getContext().isValid()).isFalse();
+    }
+    assertThat(defaultTracer.getCurrentSpan().getContext().isValid()).isFalse();
+  }
+
+  @Test
   void spanBuilderWithName_NullName() {
     assertThrows(NullPointerException.class, () -> defaultTracer.spanBuilder(null));
   }
@@ -36,6 +51,21 @@ class DefaultTracerTest {
   @Test
   void defaultSpanBuilderWithName() {
     assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan().getContext().isValid()).isFalse();
+  }
+
+  @Test
+  void testInProcessContext() {
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+    try (Scope scope = defaultTracer.withSpan(span)) {
+      assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
+      Span secondSpan = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+      try (Scope secondScope = defaultTracer.withSpan(secondSpan)) {
+        assertThat(defaultTracer.getCurrentSpan()).isEqualTo(secondSpan);
+      } finally {
+        assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
+      }
+    }
+    assertThat(defaultTracer.getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
@@ -69,7 +99,8 @@ class DefaultTracerTest {
   @Test
   void testSpanContextPropagation_nullContext() {
     assertThrows(
-        NullPointerException.class, () -> defaultTracer.spanBuilder(SPAN_NAME).setParent(null));
+        NullPointerException.class,
+        () -> defaultTracer.spanBuilder(SPAN_NAME).setParent((Context) null));
   }
 
   @Test
@@ -94,5 +125,23 @@ class DefaultTracerTest {
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
     assertThat(span.getContext()).isEqualTo(SpanContext.getInvalid());
+  }
+
+  @Test
+  void testSpanContextPropagationCurrentSpan() {
+    Span parent = Span.wrap(spanContext);
+    try (Scope scope = defaultTracer.withSpan(parent)) {
+      Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+      assertThat(span.getContext()).isSameAs(spanContext);
+    }
+  }
+
+  @Test
+  void testSpanContextPropagationCurrentSpanContext() {
+    Context context = TracingContextUtils.withSpan(Span.wrap(spanContext), Context.current());
+    try (Scope scope = context.makeCurrent()) {
+      Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+      assertThat(span.getContext()).isSameAs(spanContext);
+    }
   }
 }

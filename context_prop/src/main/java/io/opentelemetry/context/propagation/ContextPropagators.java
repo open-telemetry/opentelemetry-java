@@ -22,7 +22,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <pre>{@code
  * private static final Tracer tracer = OpenTelemetry.getTracer();
  * void onSendRequest() {
- *   try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+ *   try (Scope scope = tracer.withSpan(span)) {
  *     ContextPropagators propagators = OpenTelemetry.getPropagators();
  *     TextMapPropagator textMapPropagator = propagators.getTextMapPropagator();
  *
@@ -59,7 +59,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   Span span = tracer.spanBuilder("MyRequest")
  *       .setParent(context)
  *       .setSpanKind(Span.Kind.SERVER).startSpan();
- *   try (Scope ss = TracingContextUtils.currentContextWith(span)) {
+ *   try (Scope ss = tracer.withSpan(span)) {
  *     // Handle request and send response back.
  *   } finally {
  *     span.end();

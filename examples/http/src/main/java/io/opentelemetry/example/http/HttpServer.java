@@ -43,7 +43,7 @@ public class HttpServer {
       Span span =
           tracer.spanBuilder("/").setParent(context).setSpanKind(Span.Kind.SERVER).startSpan();
 
-      try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+      try (Scope scope = tracer.withSpan(span)) {
         // Set the Semantic Convention
         span.setAttribute("component", "http");
         span.setAttribute("http.method", "GET");

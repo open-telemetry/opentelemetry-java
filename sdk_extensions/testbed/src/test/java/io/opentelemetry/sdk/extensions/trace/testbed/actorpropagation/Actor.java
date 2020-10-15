@@ -10,7 +10,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -45,7 +44,7 @@ final class Actor implements AutoCloseable {
                   .setParent(parent)
                   .setSpanKind(Kind.CONSUMER)
                   .startSpan();
-          try (Scope ignored = TracingContextUtils.currentContextWith(child)) {
+          try (Scope ignored = tracer.withSpan(child)) {
             phaser.arriveAndAwaitAdvance(); // child tracer started
             child.addEvent("received " + message);
             phaser.arriveAndAwaitAdvance(); // assert size

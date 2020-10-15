@@ -37,7 +37,7 @@ public class LongCounterExample {
   public static void main(String[] args) {
     Span span = tracer.spanBuilder("workflow").setSpanKind(Kind.INTERNAL).startSpan();
     LongCounterExample example = new LongCounterExample();
-    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+    try (Scope scope = tracer.withSpan(span)) {
       homeDirectoryCounter.add(1); // count root directory
       example.findFile("file_to_find.txt", homeDirectory);
     } catch (Exception e) {

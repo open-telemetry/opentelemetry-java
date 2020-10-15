@@ -12,6 +12,7 @@ import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
 class TracingContextUtilsTest {
+
   @Test
   void testGetCurrentSpan_Default() {
     Span span = TracingContextUtils.getCurrentSpan();
@@ -50,20 +51,5 @@ class TracingContextUtilsTest {
     Span span = Span.wrap(SpanContext.getInvalid());
     Context context = TracingContextUtils.withSpan(span, Context.current());
     assertThat(TracingContextUtils.getSpanWithoutDefault(context)).isSameAs(span);
-  }
-
-  @Test
-  void testInProcessContext() {
-    Span span = Span.wrap(SpanContext.getInvalid());
-    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
-      assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(span);
-      Span secondSpan = Span.wrap(SpanContext.getInvalid());
-      try (Scope secondScope = TracingContextUtils.currentContextWith(secondSpan)) {
-        assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(secondSpan);
-      } finally {
-        assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(span);
-      }
-    }
-    assertThat(TracingContextUtils.getCurrentSpan().getContext().isValid()).isFalse();
   }
 }

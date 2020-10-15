@@ -9,7 +9,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 
 /**
  * One instance per Client. 'beforeRequest' and 'afterResponse' are executed in the same thread for
@@ -31,13 +30,13 @@ final class RequestHandler {
   /** beforeRequest handler....... */
   public void beforeRequest(Object request) {
     Span span = tracer.spanBuilder(OPERATION_NAME).setSpanKind(Kind.SERVER).startSpan();
-    tlsScope.set(TracingContextUtils.currentContextWith(span));
+    tlsScope.set(tracer.withSpan(span));
   }
 
   /** afterResponse handler....... */
   public void afterResponse(Object response) {
     // Finish the Span
-    TracingContextUtils.getCurrentSpan().end();
+    tracer.getCurrentSpan().end();
 
     // Deactivate the Span
     tlsScope.get().close();

@@ -13,7 +13,7 @@ which try-with-resources does not allow. Take this example:
 
 ```java
 Span span = tracer.spanBuilder("someWork").startSpan();
-try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+try (Scope scope = tracer.withSpan(span)) {
     // Do things.
 } catch (Exception ex) {
     span.recordException(ex);
