@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -40,7 +40,7 @@ class OtTracerPropagatorTest {
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
   }
 
   @Test

@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collection;
@@ -52,7 +51,7 @@ class TracerSdkTest {
 
   @Test
   void defaultGetCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
@@ -62,30 +61,30 @@ class TracerSdkTest {
 
   @Test
   void getCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
     // Make sure context is detached even if test fails.
     try (Scope ignored = TracingContextUtils.withSpan(span, Context.current()).makeCurrent()) {
       assertThat(tracer.getCurrentSpan()).isSameAs(span);
     }
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void withSpan_NullSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
     try (Scope ignored = tracer.withSpan(null)) {
-      assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+      assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
     }
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test
   void getCurrentSpan_WithSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
     try (Scope ignored = tracer.withSpan(span)) {
       assertThat(tracer.getCurrentSpan()).isSameAs(span);
     }
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(tracer.getCurrentSpan().getContext().isValid()).isFalse();
   }
 
   @Test

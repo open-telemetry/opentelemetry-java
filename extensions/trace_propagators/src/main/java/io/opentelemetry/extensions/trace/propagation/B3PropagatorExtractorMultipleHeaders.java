@@ -11,7 +11,7 @@ import static io.opentelemetry.extensions.trace.propagation.B3Propagator.TRACE_I
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
@@ -34,7 +34,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       return Optional.empty();
     }
 
-    return Optional.of(TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context));
+    return Optional.of(TracingContextUtils.withSpan(Span.wrap(spanContext), context));
   }
 
   private static <C> SpanContext getSpanContextFromMultipleHeaders(

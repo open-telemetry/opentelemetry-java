@@ -16,7 +16,6 @@ import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
@@ -54,7 +53,7 @@ public final class NestedCallbacksTest {
       assertThat(attrs.get(stringKey("key" + i))).isEqualTo(Integer.toString(i));
     }
 
-    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(Span.getInvalid());
   }
 
   private void submitCallbacks(final Span span) {

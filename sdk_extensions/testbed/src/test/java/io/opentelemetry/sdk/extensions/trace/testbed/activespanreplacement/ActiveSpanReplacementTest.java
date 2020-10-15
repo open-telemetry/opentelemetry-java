@@ -15,7 +15,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
@@ -61,7 +60,7 @@ class ActiveSpanReplacementTest {
     assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
     assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
+    assertThat(tracer.getCurrentSpan()).isSameAs(Span.getInvalid());
   }
 
   private void submitAnotherTask(final Span initialSpan) {

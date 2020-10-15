@@ -8,7 +8,6 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.propagation.TextMapExtract;
@@ -24,8 +23,7 @@ final class Propagation extends BaseShimObject {
 
   public void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
     Context context =
-        TracingContextUtils.withSpan(
-            DefaultSpan.create(contextShim.getSpanContext()), Context.current());
+        TracingContextUtils.withSpan(Span.wrap(contextShim.getSpanContext()), Context.current());
     context = BaggageUtils.withBaggage(contextShim.getBaggage(), context);
 
     propagators().getTextMapPropagator().inject(context, carrier, TextMapSetter.INSTANCE);
