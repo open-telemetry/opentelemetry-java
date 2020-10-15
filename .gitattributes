@@ -1,23 +1,7 @@
 * text=auto eol=lf
 
-*.java text
-*.gradle text
-*.json text
-*.xml text
-*.yml text
-*.yaml text
-*.proto text
-*.md text
-*.properties text
-
-*.sh text
 *.bat text eol=crlf
-
-.env text
-.editorconfig text
-.gitattributes text
-.gitignore text
-.gitignore text
+*.cmd text eol=crlf
 
 *.jar -text
 *.png -text
