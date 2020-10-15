@@ -8,18 +8,11 @@ package io.opentelemetry;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.baggage.BaggageManager;
-import io.opentelemetry.baggage.DefaultBaggageManager;
-import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
-import io.opentelemetry.metrics.spi.MeterProviderFactory;
-import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
-import io.opentelemetry.trace.spi.TracerProviderFactory;
-import java.util.Objects;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
