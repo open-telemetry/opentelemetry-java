@@ -25,7 +25,6 @@ public interface TracerProviderFactory {
    * Creates a new TracerProvider.
    *
    * @return a new TracerProvider.
-   * @since 0.1.0
    */
   TracerProvider create();
 }

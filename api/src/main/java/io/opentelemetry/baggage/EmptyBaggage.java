@@ -17,7 +17,6 @@ public class EmptyBaggage implements Baggage {
    * Returns the single instance of the {@link EmptyBaggage} class.
    *
    * @return the single instance of the {@code EmptyBaggage} class.
-   * @since 0.9.0
    */
   public static Baggage getInstance() {
     return INSTANCE;

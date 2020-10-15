@@ -22,18 +22,18 @@ class SpanBuilderTest {
   void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(TracingContextUtils.withSpan(DefaultSpan.create(null), Context.root()));
+    spanBuilder.setParent(TracingContextUtils.withSpan(Span.wrap(null), Context.root()));
     spanBuilder.setParent(Context.root());
     spanBuilder.setNoParent();
-    spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
-    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
+    spanBuilder.addLink(Span.getInvalid().getContext());
+    spanBuilder.addLink(Span.getInvalid().getContext(), Attributes.empty());
     spanBuilder.setAttribute("key", "value");
     spanBuilder.setAttribute("key", 12345L);
     spanBuilder.setAttribute("key", .12345);
     spanBuilder.setAttribute("key", true);
     spanBuilder.setAttribute(stringKey("key"), "value");
     spanBuilder.setStartTimestamp(12345L);
-    assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(spanBuilder.startSpan().getContext().isValid()).isFalse();
   }
 
   @Test

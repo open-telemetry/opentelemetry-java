@@ -82,7 +82,6 @@ public final class IntervalMetricReader {
    * the environment. If a configuration value is missing, it uses the default value.
    *
    * @return a new {@link Builder} for {@link IntervalMetricReader}.
-   * @since 0.4.0
    */
   public static Builder builderFromDefaultSources() {
     return builder().readEnvironmentVariables().readSystemProperties();

@@ -7,11 +7,7 @@ package io.opentelemetry.metrics;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * Base interface for all metrics defined in this package.
- *
- * @since 0.1.0
- */
+/** Base interface for all metrics defined in this package. */
 @ThreadSafe
 @SuppressWarnings("InterfaceWithOnlyStatics")
 public interface Instrument {

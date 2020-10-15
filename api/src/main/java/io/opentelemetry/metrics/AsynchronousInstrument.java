@@ -19,15 +19,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * kept.
  *
  * @param <R> the callback Result type.
- * @since 0.1.0
  */
 @ThreadSafe
 public interface AsynchronousInstrument<R extends Result> extends Instrument {
-  /**
-   * A {@code Callback} for a {@code AsynchronousInstrument}.
-   *
-   * @since 0.1.0
-   */
+  /** A {@code Callback} for a {@code AsynchronousInstrument}. */
   interface Callback<R extends Result> {
     void update(R result);
   }
@@ -39,7 +34,6 @@ public interface AsynchronousInstrument<R extends Result> extends Instrument {
    * exported then it will never be called.
    *
    * @param callback the callback to be executed before export.
-   * @since 0.1.0
    */
   void setCallback(Callback<R> callback);
 

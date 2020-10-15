@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import org.junit.jupiter.api.BeforeEach;
@@ -131,7 +130,7 @@ class TracerSdkProviderTest {
   void returnNoopSpanAfterShutdown() {
     tracerFactory.shutdown();
     Span span = tracerFactory.get("noop").spanBuilder("span").startSpan();
-    assertThat(span).isInstanceOf(DefaultSpan.class);
+    assertThat(span.getContext().isValid()).isFalse();
     span.end();
   }
 }

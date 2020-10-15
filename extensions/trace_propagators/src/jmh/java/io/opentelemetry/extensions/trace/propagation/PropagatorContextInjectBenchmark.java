@@ -7,7 +7,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
@@ -62,8 +62,7 @@ public class PropagatorContextInjectBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Map<String, String> measureInject() {
-      Context context =
-          TracingContextUtils.withSpan(DefaultSpan.create(contextToTest), Context.current());
+      Context context = TracingContextUtils.withSpan(Span.wrap(contextToTest), Context.current());
       doInject(context, carrier);
       return carrier;
     }

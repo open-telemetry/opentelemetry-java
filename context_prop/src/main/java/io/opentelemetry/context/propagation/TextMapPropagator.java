@@ -36,8 +36,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
- * @since 0.1.0
  */
 @ThreadSafe
 public interface TextMapPropagator {
@@ -50,7 +48,6 @@ public interface TextMapPropagator {
    * successive calls should clear these fields first.
    *
    * @return list of fields that will be used by this formatter.
-   * @since 0.1.0
    */
   // The use cases of this are:
   // * allow pre-allocation of fields, especially in systems like gRPC Metadata
@@ -66,7 +63,6 @@ public interface TextMapPropagator {
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param setter invoked for each propagation key to add or remove.
    * @param <C> carrier of propagation fields, such as an http request
-   * @since 0.1.0
    */
   <C> void inject(Context context, @Nullable C carrier, Setter<C> setter);
 
@@ -77,7 +73,6 @@ public interface TextMapPropagator {
    * allocations.
    *
    * @param <C> carrier of propagation fields, such as an http request
-   * @since 0.1.0
    */
   interface Setter<C> {
 
@@ -91,7 +86,6 @@ public interface TextMapPropagator {
      *     facilitate implementations as java lambdas, this parameter may be null.
      * @param key the key of the field.
      * @param value the value of the field.
-     * @since 0.1.0
      */
     void set(@Nullable C carrier, String key, String value);
   }
@@ -108,7 +102,6 @@ public interface TextMapPropagator {
    * @param getter invoked for each propagation key to get.
    * @param <C> carrier of propagation fields, such as an http request.
    * @return the {@code Context} containing the extracted value.
-   * @since 0.1.0
    */
   <C> Context extract(Context context, C carrier, Getter<C> getter);
 
@@ -119,7 +112,6 @@ public interface TextMapPropagator {
    * allocations.
    *
    * @param <C> carrier of propagation fields, such as an http request.
-   * @since 0.1.0
    */
   interface Getter<C> {
 
@@ -129,7 +121,6 @@ public interface TextMapPropagator {
      * @param carrier carrier of propagation fields, such as an http request.
      * @param key the key of the field.
      * @return the first value of the given propagation {@code key} or returns {@code null}.
-     * @since 0.1.0
      */
     @Nullable
     String get(C carrier, String key);

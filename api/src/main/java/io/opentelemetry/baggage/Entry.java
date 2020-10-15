@@ -10,11 +10,7 @@ import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * String-String key-value pair, along with {@link EntryMetadata}.
- *
- * @since 0.9.0
- */
+/** String-String key-value pair, along with {@link EntryMetadata}. */
 @Immutable
 @AutoValue
 public abstract class Entry {
@@ -28,7 +24,6 @@ public abstract class Entry {
    * @param value the entry value.
    * @param entryMetadata the entry metadata.
    * @return a {@code Entry}.
-   * @since 0.9.0
    */
   public static Entry create(String key, String value, EntryMetadata entryMetadata) {
     Utils.checkArgument(keyIsValid(key), "Invalid entry key name: %s", key);
@@ -42,7 +37,6 @@ public abstract class Entry {
    * @param key the entry key.
    * @param value the entry value.
    * @return a {@code Entry}.
-   * @since 0.9.0
    */
   public static Entry create(String key, String value) {
     return create(key, value, EntryMetadata.EMPTY);
@@ -52,7 +46,6 @@ public abstract class Entry {
    * Returns the entry's key.
    *
    * @return the entry's key.
-   * @since 0.9.0
    */
   public abstract String getKey();
 
@@ -60,7 +53,6 @@ public abstract class Entry {
    * Returns the entry's value.
    *
    * @return the entry's value.
-   * @since 0.9.0
    */
   public abstract String getValue();
 
@@ -68,7 +60,6 @@ public abstract class Entry {
    * Returns the (optional) {@link EntryMetadata} associated with this {@link Entry}.
    *
    * @return the {@code EntryMetadata}.
-   * @since 0.9.0
    */
   public abstract EntryMetadata getEntryMetadata();
 

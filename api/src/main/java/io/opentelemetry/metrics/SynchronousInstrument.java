@@ -17,7 +17,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * properties of the associated trace and distributed correlation values.
  *
  * @param <B> the specific type of Bound Instrument this instrument can provide.
- * @since 0.3.0
  */
 @ThreadSafe
 public interface SynchronousInstrument<B extends BoundInstrument> extends Instrument {
@@ -31,7 +30,6 @@ public interface SynchronousInstrument<B extends BoundInstrument> extends Instru
    * @param labels the set of labels, as key-value pairs.
    * @return a {@code Bound Instrument}
    * @throws NullPointerException if {@code labelValues} is null.
-   * @since 0.1.0
    */
   B bind(Labels labels);
 
@@ -41,8 +39,6 @@ public interface SynchronousInstrument<B extends BoundInstrument> extends Instru
      *
      * <p>After this method returns the current instance {@code Bound} is considered invalid (not
      * being managed by the instrument).
-     *
-     * @since 0.3.0
      */
     void unbind();
   }
