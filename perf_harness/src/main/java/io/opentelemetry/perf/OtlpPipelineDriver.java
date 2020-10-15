@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -104,7 +105,7 @@ public class OtlpPipelineDriver {
         : i < numberOfSpans) {
       //    for (int i = 0; i < 10000; i++) {
       Span exampleSpan = tracer.spanBuilder("exampleSpan").startSpan();
-      try (Scope scope = tracer.withSpan(exampleSpan)) {
+      try (Scope scope = TracingContextUtils.currentContextWith(exampleSpan)) {
         exampleSpan.setAttribute("exampleNumber", i++);
         exampleSpan.setAttribute("attribute0", "attvalue-0");
         exampleSpan.setAttribute("attribute1", "attvalue-1");

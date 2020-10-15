@@ -51,7 +51,7 @@ To create a basic span, you only need to specify the name of the span.
 The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
 Span span = tracer.spanBuilder("my span").startSpan();
-try (Scope scope = tracer.withSpan(span)) {
+try (Scope scope = TracingContextUtils.currentContextWith(span)) {
 	// your use case
 	...
 } catch (Throwable t) {
@@ -87,7 +87,7 @@ The OpenTelemetry API offers also an automated way to propagate the `parentSpan`
 ```java
 void a() {
   Span parentSpan = tracer.spanBuilder("a").startSpan();
-  try(Scope scope = tracer.withSpan(parentSpan)) {
+  try(Scope scope = TracingContextUtils.currentContextWith(parentSpan)) {
     b();
   } finally {
     parentSpan.end();
@@ -96,9 +96,9 @@ void a() {
 void b() {
   Span childSpan = tracer.spanBuilder("b")
     // NOTE: setParent(parentSpan) is not required; 
-    // `tracer.getCurrentSpan()` is automatically added as parent
+    // `TracingContextUtils.getCurrentSpan()` is automatically added as parent
     .startSpan();
-  try(Scope scope = tracer.withSpan(childSpan)) {
+  try(Scope scope = TracingContextUtils.currentContextWith(childSpan)) {
     // do stuff
   } finally {
     childSpan.end();
@@ -185,7 +185,7 @@ TextMapPropagator.Setter<HttpURLConnection> setter =
 
 URL url = new URL("http://127.0.0.1:8080/resource");
 Span outGoing = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.CLIENT).startSpan();
-try (Scope scope = tracer.withSpan(outGoing)) {
+try (Scope scope = TracingContextUtils.currentContextWith(outGoing)) {
   // Semantic Convention.
   // (Observe that to set these, Span does not *need* to be the current instance.)
   outGoing.setAttribute("http.method", "GET");
