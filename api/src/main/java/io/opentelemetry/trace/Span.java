@@ -17,37 +17,43 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Spans are created by the {@link Builder#startSpan} method.
  *
  * <p>{@code Span} <b>must</b> be ended by calling {@link #end()}.
- *
- * @since 0.1.0
  */
 @ThreadSafe
 public interface Span {
 
   /**
+   * Returns an invalid {@link Span}. An invalid {@link Span} is used when tracing is disabled,
+   * usually because there is no OpenTelemetry SDK installed.
+   */
+  static Span getInvalid() {
+    return PropagatedSpan.INVALID;
+  }
+
+  /**
+   * Returns a non-recording {@link Span} that holds the provided {@link SpanContext} but has no
+   * functionality. It will not be exported and all tracing operations are no-op, but it can be used
+   * to propagate a valid {@link SpanContext} downstream.
+   */
+  static Span wrap(SpanContext spanContext) {
+    if (spanContext == null || !spanContext.isValid()) {
+      return getInvalid();
+    }
+    return new PropagatedSpan(spanContext);
+  }
+
+  /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
    * parent/child relationship.
-   *
-   * @since 0.1.0
    */
   enum Kind {
-    /**
-     * Default value. Indicates that the span is used internally.
-     *
-     * @since 0.1.0
-     */
+    /** Default value. Indicates that the span is used internally. */
     INTERNAL,
 
-    /**
-     * Indicates that the span covers server-side handling of an RPC or other remote request.
-     *
-     * @since 0.1.0
-     */
+    /** Indicates that the span covers server-side handling of an RPC or other remote request. */
     SERVER,
 
     /**
      * Indicates that the span covers the client-side wrapper around an RPC or other remote request.
-     *
-     * @since 0.1.0
      */
     CLIENT,
 
@@ -55,8 +61,6 @@ public interface Span {
      * Indicates that the span describes producer sending a message to a broker. Unlike client and
      * server, there is no direct critical path latency relationship between producer and consumer
      * spans.
-     *
-     * @since 0.1.0
      */
     PRODUCER,
 
@@ -64,8 +68,6 @@ public interface Span {
      * Indicates that the span describes consumer receiving a message from a broker. Unlike client
      * and server, there is no direct critical path latency relationship between producer and
      * consumer spans.
-     *
-     * @since 0.1.0
      */
     CONSUMER
   }
@@ -82,7 +84,6 @@ public interface Span {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
-   * @since 0.1.0
    */
   void setAttribute(String key, @Nonnull String value);
 
@@ -95,7 +96,6 @@ public interface Span {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
-   * @since 0.1.0
    */
   void setAttribute(String key, long value);
 
@@ -108,7 +108,6 @@ public interface Span {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
-   * @since 0.1.0
    */
   void setAttribute(String key, double value);
 
@@ -121,7 +120,6 @@ public interface Span {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
-   * @since 0.1.0
    */
   void setAttribute(String key, boolean value);
 
@@ -133,7 +131,6 @@ public interface Span {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
-   * @since 0.1.0
    */
   <T> void setAttribute(AttributeKey<T> key, @Nonnull T value);
 
@@ -143,7 +140,6 @@ public interface Span {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
-   * @since 0.1.0
    */
   default void setAttribute(AttributeKey<Long> key, int value) {
     setAttribute(key, (long) value);
@@ -153,7 +149,6 @@ public interface Span {
    * Adds an event to the {@link Span}. The timestamp of the event will be the current time.
    *
    * @param name the name of the event.
-   * @since 0.1.0
    */
   void addEvent(String name);
 
@@ -168,7 +163,6 @@ public interface Span {
    *
    * @param name the name of the event.
    * @param timestamp the explicit event timestamp in nanos since epoch.
-   * @since 0.1.0
    */
   void addEvent(String name, long timestamp);
 
@@ -179,7 +173,6 @@ public interface Span {
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
    *     the {@code Span} as for {@code setAttribute()}.
-   * @since 0.1.0
    */
   void addEvent(String name, Attributes attributes);
 
@@ -196,7 +189,6 @@ public interface Span {
    * @param attributes the attributes that will be added; these are associated with this event, not
    *     the {@code Span} as for {@code setAttribute()}.
    * @param timestamp the explicit event timestamp in nanos since epoch.
-   * @since 0.1.0
    */
   void addEvent(String name, Attributes attributes, long timestamp);
 
@@ -210,7 +202,6 @@ public interface Span {
    * previous calls.
    *
    * @param canonicalCode the {@link StatusCanonicalCode} to set.
-   * @since 0.9.0
    */
   void setStatus(StatusCanonicalCode canonicalCode);
 
@@ -225,7 +216,6 @@ public interface Span {
    *
    * @param canonicalCode the {@link StatusCanonicalCode} to set.
    * @param description the description of the {@code Status}.
-   * @since 0.9.0
    */
   void setStatus(StatusCanonicalCode canonicalCode, String description);
 
@@ -237,7 +227,6 @@ public interface Span {
    * #recordException(Throwable, Attributes)} if you know that an exception is escaping.
    *
    * @param exception the {@link Throwable} to record.
-   * @since 0.7.0
    */
   void recordException(Throwable exception);
 
@@ -246,7 +235,6 @@ public interface Span {
    *
    * @param exception the {@link Throwable} to record.
    * @param additionalAttributes the additional {@link Attributes} to record.
-   * @since 0.8.0
    */
   void recordException(Throwable exception, Attributes additionalAttributes);
 
@@ -259,7 +247,6 @@ public interface Span {
    * implementation.
    *
    * @param name the {@code Span} name.
-   * @since 0.1
    */
   void updateName(String name);
 
@@ -268,8 +255,6 @@ public interface Span {
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
    * implementations are free to ignore all further calls.
-   *
-   * @since 0.1.0
    */
   void end();
 
@@ -283,7 +268,6 @@ public interface Span {
    * explicit values are required, use {@link #end()}.
    *
    * @param endOptions the explicit {@link EndSpanOptions} for this {@code Span}.
-   * @since 0.1.0
    */
   void end(EndSpanOptions endOptions);
 
@@ -291,7 +275,6 @@ public interface Span {
    * Returns the {@code SpanContext} associated with this {@code Span}.
    *
    * @return the {@code SpanContext} associated with this {@code Span}.
-   * @since 0.1.0
    */
   SpanContext getContext();
 
@@ -300,7 +283,6 @@ public interface Span {
    * #addEvent(String)}, {@link #setAttribute(String, long)}).
    *
    * @return {@code true} if this {@code Span} records tracing events.
-   * @since 0.1.0
    */
   boolean isRecording();
 
@@ -390,8 +372,6 @@ public interface Span {
    *
    * <p>If your Java version is less than Java SE 7, see {@link Builder#startSpan} for usage
    * examples.
-   *
-   * @since 0.1.0
    */
   interface Builder {
 
@@ -408,7 +388,6 @@ public interface Span {
      * @param context the {@code Context}.
      * @return this.
      * @throws NullPointerException if {@code context} is {@code null}.
-     * @since 0.7.0
      */
     Builder setParent(Context context);
 
@@ -419,7 +398,6 @@ public interface Span {
      * <p>Observe that any previously set parent will be discarded.
      *
      * @return this.
-     * @since 0.1.0
      */
     Builder setNoParent();
 
@@ -433,7 +411,6 @@ public interface Span {
      * @param spanContext the context of the linked {@code Span}.
      * @return this.
      * @throws NullPointerException if {@code spanContext} is {@code null}.
-     * @since 0.1.0
      */
     Builder addLink(SpanContext spanContext);
 
@@ -449,7 +426,6 @@ public interface Span {
      * @return this.
      * @throws NullPointerException if {@code spanContext} is {@code null}.
      * @throws NullPointerException if {@code attributes} is {@code null}.
-     * @since 0.1.0
      */
     Builder addLink(SpanContext spanContext, Attributes attributes);
 
@@ -467,7 +443,6 @@ public interface Span {
      * @param value the value for this attribute.
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.3.0
      */
     Builder setAttribute(String key, @Nonnull String value);
 
@@ -482,7 +457,6 @@ public interface Span {
      * @param value the value for this attribute.
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.3.0
      */
     Builder setAttribute(String key, long value);
 
@@ -497,7 +471,6 @@ public interface Span {
      * @param value the value for this attribute.
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.3.0
      */
     Builder setAttribute(String key, double value);
 
@@ -512,7 +485,6 @@ public interface Span {
      * @param value the value for this attribute.
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.3.0
      */
     Builder setAttribute(String key, boolean value);
 
@@ -527,7 +499,6 @@ public interface Span {
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
      * @throws NullPointerException if {@code value} is {@code null}.
-     * @since 0.3.0
      */
     <T> Builder setAttribute(AttributeKey<T> key, @Nonnull T value);
 
@@ -537,7 +508,6 @@ public interface Span {
      *
      * @param spanKind the kind of the newly created {@code Span}.
      * @return this.
-     * @since 0.1.0
      */
     Builder setSpanKind(Span.Kind spanKind);
 
@@ -552,7 +522,6 @@ public interface Span {
      * @param startTimestamp the explicit start timestamp of the newly created {@code Span} in nanos
      *     since epoch.
      * @return this.
-     * @since 0.1.0
      */
     Builder setStartTimestamp(long startTimestamp);
 
@@ -587,7 +556,6 @@ public interface Span {
      * }</pre>
      *
      * @return the newly created {@code Span}.
-     * @since 0.1.0
      */
     Span startSpan();
   }

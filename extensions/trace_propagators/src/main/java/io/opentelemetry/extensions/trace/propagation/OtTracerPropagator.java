@@ -9,7 +9,7 @@ import static io.opentelemetry.extensions.trace.propagation.Common.MAX_TRACE_ID_
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TracingContextUtils;
@@ -79,7 +79,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (!spanContext.isValid()) {
       return context;
     }
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
   }
 
   static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {

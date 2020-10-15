@@ -48,8 +48,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
- * @since 0.1.0
  */
 @ThreadSafe
 public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleValueRecorder> {
@@ -61,7 +59,6 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
    * @param value the measurement to record.
    * @param labels the set of labels to be associated to this recording
    * @throws IllegalArgumentException if value is negative.
-   * @since 0.3.0
    */
   void record(double value, Labels labels);
 
@@ -70,18 +67,13 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
    *
    * @param value the measurement to record.
    * @throws IllegalArgumentException if value is negative.
-   * @since 0.8.0
    */
   void record(double value);
 
   @Override
   BoundDoubleValueRecorder bind(Labels labels);
 
-  /**
-   * A {@code Bound Instrument} for a {@link DoubleValueRecorder}.
-   *
-   * @since 0.1.0
-   */
+  /** A {@code Bound Instrument} for a {@link DoubleValueRecorder}. */
   @ThreadSafe
   interface BoundDoubleValueRecorder extends SynchronousInstrument.BoundInstrument {
     /**
@@ -89,7 +81,6 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
      *
      * @param value the measurement to record.
      * @throws IllegalArgumentException if value is negative.
-     * @since 0.1.0
      */
     void record(double value);
 

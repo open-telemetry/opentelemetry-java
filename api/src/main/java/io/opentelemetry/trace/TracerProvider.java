@@ -14,7 +14,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * @see io.opentelemetry.OpenTelemetry
  * @see io.opentelemetry.trace.Tracer
- * @since 0.1.0
  */
 @ThreadSafe
 public interface TracerProvider {
@@ -25,7 +24,6 @@ public interface TracerProvider {
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
    * @return a tracer instance.
-   * @since 0.1.0
    */
   Tracer get(String instrumentationName);
 
@@ -37,7 +35,6 @@ public interface TracerProvider {
    * @param instrumentationVersion The version of the instrumentation library (e.g.,
    *     "semver:1.0.0").
    * @return a tracer instance.
-   * @since 0.1.0
    */
   Tracer get(String instrumentationName, String instrumentationVersion);
 }

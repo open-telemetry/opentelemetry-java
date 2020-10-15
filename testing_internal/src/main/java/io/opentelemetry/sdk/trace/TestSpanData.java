@@ -21,8 +21,6 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Immutable representation of all data collected by the {@link io.opentelemetry.trace.Span} class.
- *
- * @since 0.1.0
  */
 @Immutable
 @AutoValue
@@ -32,7 +30,6 @@ public abstract class TestSpanData implements SpanData {
    * Creates a new Builder for creating an SpanData instance.
    *
    * @return a new Builder.
-   * @since 0.1.0
    */
   public static Builder builder() {
     return new AutoValue_TestSpanData.Builder()
@@ -50,11 +47,7 @@ public abstract class TestSpanData implements SpanData {
         .setTotalAttributeCount(0);
   }
 
-  /**
-   * A {@code Builder} class for {@link TestSpanData}.
-   *
-   * @since 0.1.0
-   */
+  /** A {@code Builder} class for {@link TestSpanData}. */
   @AutoValue.Builder
   public abstract static class Builder {
 
@@ -68,7 +61,6 @@ public abstract class TestSpanData implements SpanData {
      * Create a new SpanData instance from the data in this.
      *
      * @return a new SpanData instance
-     * @since 0.1.0
      */
     public TestSpanData build() {
       // make unmodifiable copies of any collections
@@ -108,7 +100,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param parentSpanId the SpanId of the parent
      * @return this.
-     * @since 0.1.0
      */
     public abstract Builder setParentSpanId(String parentSpanId);
 
@@ -117,7 +108,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param resource the Resource that generated this span.
      * @return this
-     * @since 0.1.0
      */
     public abstract Builder setResource(Resource resource);
 
@@ -127,7 +117,6 @@ public abstract class TestSpanData implements SpanData {
      * @param instrumentationLibraryInfo the instrumentation library of the tracer which created
      *     this span.
      * @return this
-     * @since 0.2.0
      */
     public abstract Builder setInstrumentationLibraryInfo(
         InstrumentationLibraryInfo instrumentationLibraryInfo);
@@ -137,7 +126,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param name the name.
      * @return this
-     * @since 0.1.0
      */
     public abstract Builder setName(String name);
 
@@ -146,7 +134,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param epochNanos the start epoch timestamp in nanos.
      * @return this
-     * @since 0.1.0
      */
     public abstract Builder setStartEpochNanos(long epochNanos);
 
@@ -155,7 +142,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param epochNanos the end epoch timestamp in nanos.
      * @return this
-     * @since 0.1.0
      */
     public abstract Builder setEndEpochNanos(long epochNanos);
 
@@ -166,7 +152,6 @@ public abstract class TestSpanData implements SpanData {
      * @param attributes {@link ReadableAttributes} for this span.
      * @return this
      * @see ReadableAttributes
-     * @since 0.1.0
      */
     public abstract Builder setAttributes(ReadableAttributes attributes);
 
@@ -176,7 +161,6 @@ public abstract class TestSpanData implements SpanData {
      * @param events A List&lt;Event&gt; of events associated with this span.
      * @return this
      * @see Event
-     * @since 0.1.0
      */
     public abstract Builder setEvents(List<Event> events);
 
@@ -185,7 +169,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param status The Status of this span.
      * @return this
-     * @since 0.1.0
      */
     public abstract Builder setStatus(Status status);
 
@@ -194,7 +177,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param kind The Kind of span.
      * @return this
-     * @since 0.1.0
      */
     public abstract Builder setKind(Kind kind);
 
@@ -203,7 +185,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param links A List&lt;Link&gt;
      * @return this
-     * @since 0.1.0
      */
     public abstract Builder setLinks(List<SpanData.Link> links);
 
@@ -212,7 +193,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param hasRemoteParent A boolean indicating if the span has a remote parent.
      * @return this
-     * @since 0.3.0
      */
     public abstract Builder setHasRemoteParent(boolean hasRemoteParent);
 
@@ -221,7 +201,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param hasEnded A boolean indicating if the span has been ended.
      * @return this
-     * @since 0.4.0
      */
     public abstract Builder setHasEnded(boolean hasEnded);
 
@@ -230,7 +209,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param totalRecordedEvents The total number of events recorded.
      * @return this
-     * @since 0.4.0
      */
     public abstract Builder setTotalRecordedEvents(int totalRecordedEvents);
 
@@ -239,7 +217,6 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param totalRecordedLinks The total number of links recorded.
      * @return this
-     * @since 0.4.0
      */
     public abstract Builder setTotalRecordedLinks(int totalRecordedLinks);
 

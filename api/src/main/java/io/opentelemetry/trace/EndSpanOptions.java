@@ -11,19 +11,13 @@ import javax.annotation.concurrent.Immutable;
 /**
  * A class that enables overriding the default values used when ending a {@link Span}. Allows
  * overriding the endTimestamp.
- *
- * @since 0.1
  */
 @Immutable
 @AutoValue
 public abstract class EndSpanOptions {
   private static final EndSpanOptions DEFAULT = builder().build();
 
-  /**
-   * The default {@code EndSpanOptions}.
-   *
-   * @since 0.1
-   */
+  /** The default {@code EndSpanOptions}. */
   static EndSpanOptions getDefault() {
     return DEFAULT;
   }
@@ -32,7 +26,6 @@ public abstract class EndSpanOptions {
    * Returns a new {@link Builder} with default options.
    *
    * @return a new {@code Builder} with default options.
-   * @since 0.1
    */
   public static Builder builder() {
     return new AutoValue_EndSpanOptions.Builder().setEndTimestamp(0);
@@ -44,15 +37,10 @@ public abstract class EndSpanOptions {
    * <p>Important this is NOT equivalent with System.nanoTime().
    *
    * @return the end timestamp.
-   * @since 0.1
    */
   public abstract long getEndTimestamp();
 
-  /**
-   * Builder class for {@link EndSpanOptions}.
-   *
-   * @since 0.1
-   */
+  /** Builder class for {@link EndSpanOptions}. */
   @AutoValue.Builder
   public abstract static class Builder {
     /**
@@ -62,7 +50,6 @@ public abstract class EndSpanOptions {
      *
      * @param endTimestamp the end timestamp in nanos since epoch.
      * @return this.
-     * @since 0.1
      */
     public abstract Builder setEndTimestamp(long endTimestamp);
 
@@ -70,7 +57,6 @@ public abstract class EndSpanOptions {
      * Builds and returns a {@code EndSpanOptions} with the desired settings.
      *
      * @return a {@code EndSpanOptions} with the desired settings.
-     * @since 0.1
      */
     public abstract EndSpanOptions build();
 

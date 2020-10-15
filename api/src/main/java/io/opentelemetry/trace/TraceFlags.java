@@ -11,8 +11,6 @@ import javax.annotation.concurrent.Immutable;
  * Helper methods for dealing with trace flags options. These options are propagated to all child
  * {@link Span spans}. These determine features such as whether a {@code Span} should be traced. It
  * is implemented as a bitmask.
- *
- * @since 0.1.0
  */
 @Immutable
 public final class TraceFlags {
@@ -26,11 +24,7 @@ public final class TraceFlags {
   private static final int SIZE = 1;
   private static final int BASE16_SIZE = 2 * SIZE;
 
-  /**
-   * Returns the size in Hex of trace flags.
-   *
-   * @since 0.9.0
-   */
+  /** Returns the size in Hex of trace flags. */
   public static int getHexLength() {
     return BASE16_SIZE;
   }
@@ -39,7 +33,6 @@ public final class TraceFlags {
    * Returns the default {@code TraceFlags}.
    *
    * @return the default {@code TraceFlags}.
-   * @since 0.1.0
    */
   public static byte getDefault() {
     return DEFAULT;

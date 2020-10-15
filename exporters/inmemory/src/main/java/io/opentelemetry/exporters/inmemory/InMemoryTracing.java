@@ -34,8 +34,6 @@ import javax.annotation.concurrent.Immutable;
  *     assertThat(spans.get(0).getName()).isEqualTo("span");
  *   }
  * </code></pre>
- *
- * @since 0.1.0
  */
 @AutoValue
 @Immutable
@@ -44,7 +42,6 @@ public abstract class InMemoryTracing {
    * Returns the {@code TracerSdkManagement} passed during construction.
    *
    * @return the {@code TracerSdkManagement} passed during construction.
-   * @since 0.1.0
    */
   abstract TracerSdkManagement getTracerSdkManagement();
 
@@ -52,7 +49,6 @@ public abstract class InMemoryTracing {
    * Returns the installed {@link InMemorySpanExporter}.
    *
    * @return the installed {@link InMemorySpanExporter}.
-   * @since 0.1.0
    */
   public abstract InMemorySpanExporter getSpanExporter();
 
@@ -65,11 +61,7 @@ public abstract class InMemoryTracing {
     return new AutoValue_InMemoryTracing.Builder();
   }
 
-  /**
-   * Builder for {@link InMemoryTracing}.
-   *
-   * @since 0.3.0
-   */
+  /** Builder for {@link InMemoryTracing}. */
   @AutoValue.Builder
   public abstract static class Builder {
     public abstract Builder setTracerSdkManagement(TracerSdkManagement tracerSdkManagement);
@@ -84,7 +76,6 @@ public abstract class InMemoryTracing {
      * Builds a new {@link InMemoryTracing} with current settings.
      *
      * @return a {@code InMemoryTracing}.
-     * @since 0.3.0
      */
     public final InMemoryTracing build() {
       // install the HttpTraceContext propagator into the API for testing with.

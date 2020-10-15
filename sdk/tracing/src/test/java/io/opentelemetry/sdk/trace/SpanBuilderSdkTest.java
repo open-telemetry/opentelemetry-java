@@ -26,7 +26,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -81,8 +80,8 @@ class SpanBuilderSdkTest {
   void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
-    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
+    spanBuilder.addLink(Span.getInvalid().getContext());
+    spanBuilder.addLink(Span.getInvalid().getContext(), Attributes.empty());
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
@@ -188,8 +187,7 @@ class SpanBuilderSdkTest {
   void addLinkSpanContextAttributes_nullAttributes() {
     assertThrows(
         NullPointerException.class,
-        () ->
-            tracerSdk.spanBuilder(SPAN_NAME).addLink(DefaultSpan.getInvalid().getContext(), null));
+        () -> tracerSdk.spanBuilder(SPAN_NAME).addLink(Span.getInvalid().getContext(), null));
   }
 
   @Test
@@ -783,7 +781,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void parent_invalidContext() {
-    Span parent = DefaultSpan.getInvalid();
+    Span parent = Span.getInvalid();
 
     final Context parentContext = TracingContextUtils.withSpan(parent, Context.current());
     RecordEventsReadableSpan span =

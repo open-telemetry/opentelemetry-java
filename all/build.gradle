@@ -7,6 +7,7 @@ ext.moduleName = "io.opentelemetry.all"
 
 def subprojects = [
         project(':opentelemetry-api'),
+        project(':opentelemetry-context'),
         project(':opentelemetry-context-prop'),
         project(':opentelemetry-extension-runtime-metrics'),
         project(':opentelemetry-extension-trace-propagators'),

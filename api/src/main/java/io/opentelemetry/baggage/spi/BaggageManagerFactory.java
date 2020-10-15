@@ -25,7 +25,6 @@ public interface BaggageManagerFactory {
    * Creates a new {@code BaggageManager} instance.
    *
    * @return a {@code BaggageManager} instance.
-   * @since 0.9.0
    */
   BaggageManager create();
 }

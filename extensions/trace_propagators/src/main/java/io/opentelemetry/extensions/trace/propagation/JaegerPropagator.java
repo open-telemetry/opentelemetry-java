@@ -7,7 +7,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -118,7 +118,7 @@ public class JaegerPropagator implements TextMapPropagator {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
   }
 
   @SuppressWarnings("StringSplitter")
