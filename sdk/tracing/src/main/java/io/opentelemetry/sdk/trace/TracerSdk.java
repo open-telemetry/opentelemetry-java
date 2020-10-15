@@ -5,12 +5,10 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 final class TracerSdk implements Tracer {
@@ -20,16 +18,6 @@ final class TracerSdk implements Tracer {
   TracerSdk(TracerSharedState sharedState, InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.sharedState = sharedState;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-  }
-
-  @Override
-  public Span getCurrentSpan() {
-    return TracingContextUtils.getCurrentSpan();
-  }
-
-  @Override
-  public Scope withSpan(Span span) {
-    return TracingContextUtils.currentContextWith(span);
   }
 
   @Override

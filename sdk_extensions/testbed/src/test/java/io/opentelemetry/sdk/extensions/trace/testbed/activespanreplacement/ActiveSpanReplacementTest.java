@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,7 +38,7 @@ class ActiveSpanReplacementTest {
   void test() {
     // Start an isolated task and query for its result in another task/thread
     Span span = tracer.spanBuilder("initial").startSpan();
-    try (Scope scope = tracer.withSpan(span)) {
+    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
       // Explicitly pass a Span to be finished once a late calculation is done.
       submitAnotherTask(span);
     }
@@ -60,7 +61,7 @@ class ActiveSpanReplacementTest {
     assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
     assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(tracer.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
   }
 
   private void submitAnotherTask(final Span initialSpan) {
@@ -69,11 +70,11 @@ class ActiveSpanReplacementTest {
         () -> {
           // Create a new Span for this task
           Span taskSpan = tracer.spanBuilder("task").startSpan();
-          try (Scope scope = tracer.withSpan(taskSpan)) {
+          try (Scope scope = TracingContextUtils.currentContextWith(taskSpan)) {
 
             // Simulate work strictly related to the initial Span
             // and finish it.
-            try (Scope initialScope = tracer.withSpan(initialSpan)) {
+            try (Scope initialScope = TracingContextUtils.currentContextWith(initialSpan)) {
               sleep(50);
             } finally {
               initialSpan.end();
@@ -81,7 +82,7 @@ class ActiveSpanReplacementTest {
 
             // Restore the span for this task and create a subspan
             Span subTaskSpan = tracer.spanBuilder("subtask").startSpan();
-            try (Scope subTaskScope = tracer.withSpan(subTaskSpan)) {
+            try (Scope subTaskScope = TracingContextUtils.currentContextWith(subTaskSpan)) {
               sleep(50);
             } finally {
               subTaskSpan.end();

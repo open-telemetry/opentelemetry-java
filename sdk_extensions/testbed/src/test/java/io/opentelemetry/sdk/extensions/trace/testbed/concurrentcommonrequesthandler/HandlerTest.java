@@ -60,14 +60,14 @@ class HandlerTest {
     assertThat(finished.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
     assertThat(finished.get(1).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(tracer.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
   }
 
   /** Active parent is not picked up by child. */
   @Test
   void parent_not_picked_up() throws Exception {
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = tracer.withSpan(parentSpan)) {
+    try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
       String response = client.send("no_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("no_parent:response");
     } finally {
@@ -97,7 +97,7 @@ class HandlerTest {
   void bad_solution_to_set_parent() throws Exception {
     Client client;
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = tracer.withSpan(parentSpan)) {
+    try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
       client =
           new Client(
               new RequestHandler(

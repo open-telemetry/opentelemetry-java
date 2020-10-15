@@ -90,7 +90,7 @@ public class HelloWorldClient {
     span.setAttribute("net.peer.port", this.serverPort);
 
     // Set the context with the current span
-    try (Scope scope = tracer.withSpan(span)) {
+    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
       HelloRequest request = HelloRequest.newBuilder().setName(name).build();
       try {
         HelloReply response = blockingStub.sayHello(request);

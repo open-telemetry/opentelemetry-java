@@ -95,7 +95,7 @@ public class HelloWorldClientStream {
     StreamObserver<HelloRequest> requestObserver;
 
     // Set the context with the current span
-    try (Scope scope = tracer.withSpan(span)) {
+    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
       HelloReplyStreamObserver replyObserver = new HelloReplyStreamObserver();
       requestObserver = asyncStub.sayHelloStream(replyObserver);
       for (String name : names) {
@@ -126,14 +126,14 @@ public class HelloWorldClientStream {
 
     @Override
     public void onNext(HelloReply value) {
-      Span span = tracer.getCurrentSpan();
+      Span span = TracingContextUtils.getCurrentSpan();
       span.addEvent("Data received: " + value.getMessage());
       logger.info(value.getMessage());
     }
 
     @Override
     public void onError(Throwable t) {
-      Span span = tracer.getCurrentSpan();
+      Span span = TracingContextUtils.getCurrentSpan();
       logger.log(Level.WARNING, "RPC failed: {0}", t.getMessage());
       span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + t.getMessage());
     }
