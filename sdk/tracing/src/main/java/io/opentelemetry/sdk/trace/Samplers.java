@@ -181,6 +181,11 @@ public final class Samplers {
     public String getDescription() {
       return "AlwaysOnSampler";
     }
+
+    @Override
+    public String toString() {
+      return getDescription();
+    }
   }
 
   @Immutable
@@ -202,6 +207,11 @@ public final class Samplers {
     @Override
     public String getDescription() {
       return "AlwaysOffSampler";
+    }
+
+    @Override
+    public String toString() {
+      return getDescription();
     }
   }
 
@@ -267,6 +277,11 @@ public final class Samplers {
           this.remoteParentNotSampled.getDescription(),
           this.localParentSampled.getDescription(),
           this.localParentNotSampled.getDescription());
+    }
+
+    @Override
+    public String toString() {
+      return getDescription();
     }
 
     static class Builder {
@@ -375,22 +390,6 @@ public final class Samplers {
       result = 31 * result + (localParentNotSampled != null ? localParentNotSampled.hashCode() : 0);
       return result;
     }
-
-    @Override
-    public String toString() {
-      return "ParentBased{"
-          + "root="
-          + root
-          + ", remoteParentSampled="
-          + remoteParentSampled
-          + ", remoteParentNotSampled="
-          + remoteParentNotSampled
-          + ", localParentSampled="
-          + localParentSampled
-          + ", localParentNotSampled="
-          + localParentNotSampled
-          + '}';
-    }
   }
 
   /**
@@ -460,6 +459,11 @@ public final class Samplers {
     @Override
     public final String getDescription() {
       return String.format("TraceIdRatioBased{%.6f}", getRatio());
+    }
+
+    @Override
+    public final String toString() {
+      return getDescription();
     }
   }
 
