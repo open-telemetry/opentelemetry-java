@@ -27,7 +27,7 @@ final class Server extends Thread {
 
   private void process(Message message) {
     Context context =
-        OpenTelemetry.getPropagators()
+        OpenTelemetry.getGlobalPropagators()
             .getTextMapPropagator()
             .extract(
                 Context.current(),

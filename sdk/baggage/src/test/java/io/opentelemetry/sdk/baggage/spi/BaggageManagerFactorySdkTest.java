@@ -15,6 +15,6 @@ class BaggageManagerFactorySdkTest {
 
   @Test
   void testDefault() {
-    assertThat(OpenTelemetry.getBaggageManager()).isInstanceOf(BaggageManagerSdk.class);
+    assertThat(OpenTelemetry.getGlobalBaggageManager()).isInstanceOf(BaggageManagerSdk.class);
   }
 }

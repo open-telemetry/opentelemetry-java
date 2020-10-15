@@ -31,9 +31,9 @@ class TracerShimTest {
     tracerShim =
         new TracerShim(
             new TelemetryInfo(
-                OpenTelemetry.getTracer("opentracingshim"),
-                OpenTelemetry.getBaggageManager(),
-                OpenTelemetry.getPropagators()));
+                OpenTelemetry.getGlobalTracer("opentracingshim"),
+                OpenTelemetry.getGlobalBaggageManager(),
+                OpenTelemetry.getGlobalPropagators()));
   }
 
   @Test
