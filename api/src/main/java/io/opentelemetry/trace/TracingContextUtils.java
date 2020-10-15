@@ -82,27 +82,6 @@ public final class TracingContextUtils {
    * }
    * }</pre>
    *
-   * <p>Prior to Java SE 7, you can use a finally block to ensure that a resource is closed
-   * regardless of whether the try statement completes normally or abruptly.
-   *
-   * <p>Example of usage prior to Java SE7:
-   *
-   * <pre>{@code
-   * private static Tracer tracer = OpenTelemetry.getTracer();
-   * void doWork() {
-   *   // Create a Span as a child of the current Span.
-   *   Span span = tracer.spanBuilder("my span").startSpan();
-   *   Scope ws = TracingContextUtils.currentContextWith(span);
-   *   try {
-   *     TracingContextUtils.getCurrentSpan().addEvent("my event");
-   *     doSomeOtherWork();  // Here "span" is the current Span.
-   *   } finally {
-   *     ws.close();
-   *   }
-   *   span.end();
-   * }
-   * }</pre>
-   *
    * @param span the {@link Span} to be added to the current {@code Context}.
    * @return the {@link Scope} for the updated {@code Context}.
    */
