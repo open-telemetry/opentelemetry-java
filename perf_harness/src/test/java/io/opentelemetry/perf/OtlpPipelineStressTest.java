@@ -83,7 +83,7 @@ public class OtlpPipelineStressTest {
 
   @Container
   public static GenericContainer<?> toxiproxyContainer =
-      new GenericContainer<>(DockerImageName.parse("shopify/toxiproxy"))
+      new GenericContainer<>(DockerImageName.parse("shopify/toxiproxy:latest"))
           .withNetwork(network)
           .withNetworkAliases("toxiproxy")
           .withExposedPorts(TOXIPROXY_CONTROL_PORT, COLLECTOR_PROXY_PORT)

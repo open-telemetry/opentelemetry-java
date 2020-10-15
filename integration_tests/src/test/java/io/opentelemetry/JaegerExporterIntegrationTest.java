@@ -50,7 +50,8 @@ class JaegerExporterIntegrationTest {
   @SuppressWarnings("rawtypes")
   @Container
   public static GenericContainer jaegerContainer =
-      new GenericContainer<>(DockerImageName.parse("jaegertracing/all-in-one:" + JAEGER_VERSION))
+      new GenericContainer<>(
+              DockerImageName.parse("jaegertracing/all-in-one:" + JAEGER_VERSION + ":latest"))
           .withNetwork(network)
           .withNetworkAliases(JAEGER_HOSTNAME)
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
@@ -59,7 +60,7 @@ class JaegerExporterIntegrationTest {
   @SuppressWarnings("rawtypes")
   @Container
   public static GenericContainer jaegerExampleAppContainer =
-      new GenericContainer(DockerImageName.parse("adoptopenjdk/openjdk8"))
+      new GenericContainer(DockerImageName.parse("adoptopenjdk/openjdk8:latest"))
           .withNetwork(network)
           .withCopyFileToContainer(MountableFile.forHostPath(ARCHIVE_NAME), "/app/" + APP_NAME)
           .withCommand(
