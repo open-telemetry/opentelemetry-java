@@ -16,6 +16,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
+import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
@@ -66,6 +69,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
+
   public static final String DEFAULT_ENDPOINT = "localhost:55680";
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
 
@@ -75,6 +79,16 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private final TraceServiceFutureStub traceService;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
+
+  private final LongCounter spansSeen =
+      OpenTelemetry.getMeter("io.opentelemetry.exporters.otlp")
+          .longCounterBuilder("spansSeenByExporter")
+          .build();
+
+  private final LongCounter spansExported =
+      OpenTelemetry.getMeter("io.opentelemetry.exporters.otlp")
+          .longCounterBuilder("spansExportedByExporter")
+          .build();
 
   /**
    * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.
@@ -97,6 +111,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
+    spansSeen.add(
+        spans.size(), Labels.of("exporter", OtlpGrpcMetricExporter.class.getSimpleName()));
     ExportTraceServiceRequest exportTraceServiceRequest =
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
@@ -116,12 +132,21 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
         new FutureCallback<ExportTraceServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportTraceServiceResponse response) {
+            spansExported.add(
+                spans.size(),
+                Labels.of(
+                    "exporter", OtlpGrpcMetricExporter.class.getSimpleName(), "success", "true"));
             result.succeed();
           }
 
           @Override
           public void onFailure(Throwable t) {
-            logger.log(Level.WARNING, "Failed to export spans", t);
+            spansExported.add(
+                spans.size(),
+                Labels.of(
+                    "exporter", OtlpGrpcMetricExporter.class.getSimpleName(), "success", "false"));
+            logger.log(Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
+            logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
             result.fail();
           }
         },

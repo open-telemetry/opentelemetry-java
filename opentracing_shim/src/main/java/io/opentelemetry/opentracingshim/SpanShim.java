@@ -11,7 +11,7 @@ import static io.opentelemetry.common.AttributeKey.longKey;
 import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.log.Fields;
@@ -65,8 +65,7 @@ final class SpanShim extends BaseShimObject implements Span {
       // TODO: confirm we can safely ignore span.kind after Span was created
       // https://github.com/bogdandrutu/opentelemetry/issues/42
     } else if (Tags.ERROR.getKey().equals(key)) {
-      StatusCanonicalCode canonicalCode =
-          Boolean.parseBoolean(value) ? StatusCanonicalCode.ERROR : StatusCanonicalCode.UNSET;
+      StatusCode canonicalCode = Boolean.parseBoolean(value) ? StatusCode.ERROR : StatusCode.UNSET;
       span.setStatus(canonicalCode);
     } else {
       span.setAttribute(key, value);
@@ -78,8 +77,7 @@ final class SpanShim extends BaseShimObject implements Span {
   @Override
   public Span setTag(String key, boolean value) {
     if (Tags.ERROR.getKey().equals(key)) {
-      StatusCanonicalCode canonicalCode =
-          value ? StatusCanonicalCode.ERROR : StatusCanonicalCode.UNSET;
+      StatusCode canonicalCode = value ? StatusCode.ERROR : StatusCode.UNSET;
       span.setStatus(canonicalCode);
     } else {
       span.setAttribute(key, value);

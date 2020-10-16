@@ -196,28 +196,28 @@ public interface Span {
    * Sets the status to the {@code Span}.
    *
    * <p>If used, this will override the default {@code Span} status. Default status code is {@link
-   * StatusCanonicalCode#UNSET}.
+   * StatusCode#UNSET}.
    *
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param canonicalCode the {@link StatusCanonicalCode} to set.
+   * @param canonicalCode the {@link StatusCode} to set.
    */
-  void setStatus(StatusCanonicalCode canonicalCode);
+  void setStatus(StatusCode canonicalCode);
 
   /**
    * Sets the status to the {@code Span}.
    *
    * <p>If used, this will override the default {@code Span} status. Default status code is {@link
-   * StatusCanonicalCode#UNSET}.
+   * StatusCode#UNSET}.
    *
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param canonicalCode the {@link StatusCanonicalCode} to set.
+   * @param canonicalCode the {@link StatusCode} to set.
    * @param description the description of the {@code Status}.
    */
-  void setStatus(StatusCanonicalCode canonicalCode, String description);
+  void setStatus(StatusCode canonicalCode, String description);
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
@@ -299,8 +299,8 @@ public interface Span {
    *   void doWork {
    *     // Create a Span as a child of the current Span.
    *     Span span = tracer.spanBuilder("MyChildSpan").startSpan();
-   *     try (Scope ss = tracer.withSpan(span)) {
-   *       tracer.getCurrentSpan().addEvent("my event");
+   *     try (Scope ss = TracingContextUtils.currentContextWith(span)) {
+   *       TracingContextUtils.getCurrentSpan().addEvent("my event");
    *       doSomeWork();  // Here the new span is in the current Context, so it can be used
    *                      // implicitly anywhere down the stack.
    *     } finally {
@@ -327,8 +327,8 @@ public interface Span {
    *   }
    *
    *   public void onExecuteHandler(ServerCallHandler serverCallHandler) {
-   *     try (Scope ws = tracer.withSpan(mySpan)) {
-   *       tracer.getCurrentSpan().addEvent("Start rpc execution.");
+   *     try (Scope ws = TracingContextUtils.currentContextWith(mySpan)) {
+   *       TracingContextUtils.getCurrentSpan().addEvent("Start rpc execution.");
    *       serverCallHandler.run();  // Here the new span is in the current Context, so it can be
    *                                 // used implicitly anywhere down the stack.
    *     }

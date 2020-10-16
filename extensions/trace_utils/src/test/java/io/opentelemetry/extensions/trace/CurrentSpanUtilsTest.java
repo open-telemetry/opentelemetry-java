@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,7 +88,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeRunnableAndExpectError(runnable, error);
-    verify(span).setStatus(StatusCanonicalCode.ERROR, "MyError");
+    verify(span).setStatus(StatusCode.ERROR, "MyError");
     verify(span).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
@@ -104,7 +104,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeRunnableAndExpectError(runnable, error);
-    verify(span).setStatus(StatusCanonicalCode.ERROR, "AssertionError");
+    verify(span).setStatus(StatusCode.ERROR, "AssertionError");
     verify(span).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
@@ -150,7 +150,7 @@ class CurrentSpanUtilsTest {
           throw exception;
         };
     executeCallableAndExpectError(callable, exception);
-    verify(span).setStatus(StatusCanonicalCode.ERROR, "MyException");
+    verify(span).setStatus(StatusCode.ERROR, "MyException");
     verify(span).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
@@ -166,7 +166,7 @@ class CurrentSpanUtilsTest {
           throw exception;
         };
     executeCallableAndExpectError(callable, exception);
-    verify(span).setStatus(StatusCanonicalCode.ERROR, "Exception");
+    verify(span).setStatus(StatusCode.ERROR, "Exception");
     verify(span).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
@@ -182,7 +182,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeCallableAndExpectError(callable, error);
-    verify(span).setStatus(StatusCanonicalCode.ERROR, "MyError");
+    verify(span).setStatus(StatusCode.ERROR, "MyError");
     verify(span).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
@@ -198,7 +198,7 @@ class CurrentSpanUtilsTest {
           throw error;
         };
     executeCallableAndExpectError(callable, error);
-    verify(span).setStatus(StatusCanonicalCode.ERROR, "AssertionError");
+    verify(span).setStatus(StatusCode.ERROR, "AssertionError");
     verify(span).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }

@@ -51,13 +51,13 @@ class PerOperationSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return toString();
+    return String.format(
+        "PerOperationSampler{default=%s, perOperation=%s}",
+        this.defaultSampler, this.perOperationSampler);
   }
 
   @Override
   public String toString() {
-    return String.format(
-        "PerOperationSampler{default=%s, perOperation=%s}",
-        this.defaultSampler, this.perOperationSampler);
+    return getDescription();
   }
 }

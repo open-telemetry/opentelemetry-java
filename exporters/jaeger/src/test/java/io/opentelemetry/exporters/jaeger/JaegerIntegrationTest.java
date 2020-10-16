@@ -21,14 +21,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Testcontainers
-@EnabledIfSystemProperty(named = "enable.docker.tests", matches = "true")
+@Testcontainers(disabledWithoutDocker = true)
 class JaegerIntegrationTest {
 
   private static final int QUERY_PORT = 16686;

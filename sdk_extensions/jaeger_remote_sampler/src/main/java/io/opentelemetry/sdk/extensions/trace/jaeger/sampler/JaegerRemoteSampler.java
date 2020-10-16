@@ -103,12 +103,12 @@ public class JaegerRemoteSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return this.toString();
+    return String.format("JaegerRemoteSampler{%s}", this.sampler);
   }
 
   @Override
   public String toString() {
-    return String.format("JaegerRemoteSampler{%s}", this.sampler);
+    return getDescription();
   }
 
   @VisibleForTesting

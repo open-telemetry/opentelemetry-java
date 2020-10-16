@@ -55,7 +55,7 @@ public class HttpClient {
     // Name convention for the Span is not yet defined.
     // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
     Span span = tracer.spanBuilder("/").setSpanKind(Span.Kind.CLIENT).startSpan();
-    try (Scope scope = tracer.withSpan(span)) {
+    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
       // TODO provide semantic convention attributes to Span.Builder
       span.setAttribute("component", "http");
       span.setAttribute("http.method", "GET");

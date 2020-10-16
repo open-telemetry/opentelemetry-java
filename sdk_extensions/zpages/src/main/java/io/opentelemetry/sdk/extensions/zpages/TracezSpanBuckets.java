@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extensions.zpages;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.Map;
 
 final class TracezSpanBuckets {
   private final ImmutableMap<LatencyBoundary, SpanBucket> latencyBuckets;
-  private final ImmutableMap<StatusCanonicalCode, SpanBucket> errorBuckets;
+  private final ImmutableMap<StatusCode, SpanBucket> errorBuckets;
 
   TracezSpanBuckets() {
     ImmutableMap.Builder<LatencyBoundary, SpanBucket> latencyBucketsBuilder =
@@ -25,10 +25,9 @@ final class TracezSpanBuckets {
       latencyBucketsBuilder.put(bucket, new SpanBucket(/* isLatencyBucket= */ true));
     }
     latencyBuckets = latencyBucketsBuilder.build();
-    ImmutableMap.Builder<StatusCanonicalCode, SpanBucket> errorBucketsBuilder =
-        ImmutableMap.builder();
-    for (StatusCanonicalCode code : StatusCanonicalCode.values()) {
-      if (code == StatusCanonicalCode.ERROR) {
+    ImmutableMap.Builder<StatusCode, SpanBucket> errorBucketsBuilder = ImmutableMap.builder();
+    for (StatusCode code : StatusCode.values()) {
+      if (code == StatusCode.ERROR) {
         errorBucketsBuilder.put(code, new SpanBucket(/* isLatencyBucket= */ false));
       }
     }

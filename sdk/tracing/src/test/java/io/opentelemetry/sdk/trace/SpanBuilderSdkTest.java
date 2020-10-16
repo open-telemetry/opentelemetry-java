@@ -613,7 +613,7 @@ class SpanBuilderSdkTest {
   @Test
   void noParent() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope ignored = tracerSdk.withSpan(parent)) {
+    try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
       Span span = tracerSdk.spanBuilder(SPAN_NAME).setNoParent().startSpan();
       try {
         assertThat(span.getContext().getTraceIdAsHexString())
@@ -760,7 +760,7 @@ class SpanBuilderSdkTest {
   @Test
   void parentCurrentSpan() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope ignored = tracerSdk.withSpan(parent)) {
+    try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
       final Context implicitParent = Context.current();
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
@@ -809,7 +809,7 @@ class SpanBuilderSdkTest {
   @Test
   void parent_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope scope = tracerSdk.withSpan(parent)) {
+    try (Scope scope = TracingContextUtils.currentContextWith(parent)) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 
@@ -822,7 +822,7 @@ class SpanBuilderSdkTest {
   @Test
   void parentCurrentSpan_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope ignored = tracerSdk.withSpan(parent)) {
+    try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 
