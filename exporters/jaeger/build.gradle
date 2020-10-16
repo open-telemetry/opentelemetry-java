@@ -21,8 +21,9 @@ dependencies {
             libraries.protobuf_util
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}",
+            'com.fasterxml.jackson.core:jackson-databind',
             libraries.testcontainers,
-            libraries.rest_assured
+            libraries.okhttp
 
     testImplementation project(':opentelemetry-testing-internal')
 

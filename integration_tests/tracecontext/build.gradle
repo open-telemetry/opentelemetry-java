@@ -20,9 +20,9 @@ dependencies {
     api project(':opentelemetry-api')
 
     implementation project(':opentelemetry-sdk'),
-        project(':opentelemetry-extension-trace-propagators'),
+            project(':opentelemetry-extension-trace-propagators'),
+            libraries.okhttp,
         "com.sparkjava:spark-core:2.9.2",
-        "com.squareup.okhttp3:okhttp:3.14.9",
         "com.google.code.gson:gson:2.8.6"
 }
 
