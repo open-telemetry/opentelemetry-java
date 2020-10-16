@@ -13,7 +13,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for SDK telemetry objects {@link
- * TracerSdkManagement}, {@link MeterSdkProvider} and {@link BaggageManagerSdk}.
+ * TracerSdkManagement}, {@link MeterSdkProvider}.
  *
  * <p>This is a convenience class getting and casting the telemetry objects from {@link
  * OpenTelemetry}.
@@ -22,6 +22,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OpenTelemetrySdk {
+
   /**
    * Returns a {@link TracerSdkManagement}.
    *
