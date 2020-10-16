@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,20 @@ class AdapterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
   private static final String PARENT_SPAN_ID = "0000000000aef789";
+
+  @Test
+  void testGroupByResource() {
+    long duration = 900; // ms
+    long startMs = System.currentTimeMillis();
+    long endMs = startMs + duration;
+
+    SpanData span = getSpanData(startMs, endMs);
+    List<SpanData> spans = Collections.singletonList(span);
+
+    Map<Resource, List<SpanData>> resourceAndSpanData = Adapter.groupByResource(spans);
+    assertEquals(1, resourceAndSpanData.keySet().size());
+    assertEquals(1, resourceAndSpanData.values().size());
+  }
 
   @Test
   void testProtoSpans() {
@@ -155,10 +170,9 @@ class AdapterTest {
     Model.KeyValue kvD = Adapter.toKeyValue(doubleKey("valueD"), 1.);
     Model.KeyValue kvI = Adapter.toKeyValue(longKey("valueI"), 2L);
     Model.KeyValue kvS = Adapter.toKeyValue(stringKey("valueS"), "foobar");
-    Model.KeyValue kvLibraryName =
-        Adapter.toKeyValue(stringKey("InstrumentationLibrary.name"), "lib-name");
+    Model.KeyValue kvLibraryName = Adapter.toKeyValue(stringKey("otel.library.name"), "lib-name");
     Model.KeyValue kvLibraryVersion =
-        Adapter.toKeyValue(stringKey("InstrumentationLibrary.version"), "lib-version");
+        Adapter.toKeyValue(stringKey("otel.library.version"), "lib-version");
     Model.KeyValue kvArrayB =
         Adapter.toKeyValue(booleanArrayKey("valueArrayB"), Arrays.asList(true, false));
     Model.KeyValue kvArrayD =
@@ -310,8 +324,8 @@ class AdapterTest {
         .setResource(
             Resource.create(
                 Attributes.of(
-                    AttributeKey.stringKey("InstrumentationLibrary.name"), "lib-name",
-                    AttributeKey.stringKey("InstrumentationLibrary.version"), "lib-version",
+                    AttributeKey.stringKey("otel.library.name"), "lib-name",
+                    AttributeKey.stringKey("otel.library.version"), "lib-version",
                     AttributeKey.stringKey("resource-attr-key"), "resource-attr-value")))
         .setStatus(Status.ok())
         .build();

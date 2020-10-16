@@ -16,14 +16,17 @@ import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Adapts OpenTelemetry objects to Jaeger objects. */
@@ -38,6 +41,22 @@ final class Adapter {
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
   private Adapter() {}
+
+  /**
+   * Groups {@link SpanData}'s by {@link Resource}
+   *
+   * @param spans the list of spans to be grouped
+   * @return the map of grouped spans
+   */
+  static Map<Resource, List<SpanData>> groupByResource(Collection<SpanData> spans) {
+    Map<Resource, List<SpanData>> result = new HashMap<>();
+    for (SpanData spanData : spans) {
+      Resource resource = spanData.getResource();
+      List<SpanData> spanDataList = result.computeIfAbsent(resource, k -> new ArrayList<>());
+      spanDataList.add(spanData);
+    }
+    return result;
+  }
 
   /**
    * Converts a list of {@link SpanData} into a collection of Jaeger's {@link Model.Span}.
@@ -196,10 +215,7 @@ final class Adapter {
   @VisibleForTesting
   static <T> Model.KeyValue toKeyValue(AttributeKey<T> key, T value) {
     Model.KeyValue.Builder builder = Model.KeyValue.newBuilder();
-    builder.setKey(
-        key.getKey()
-            .replace("InstrumentationLibrary.name", "otel.library.name")
-            .replace("InstrumentationLibrary.version", "otel.library.version"));
+    builder.setKey(key.getKey());
 
     switch (key.getType()) {
       case STRING:
