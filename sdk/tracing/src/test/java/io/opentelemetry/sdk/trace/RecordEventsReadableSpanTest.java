@@ -32,7 +32,7 @@ import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
@@ -102,7 +102,7 @@ class RecordEventsReadableSpanTest {
     span.end();
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
     // and are ignored.
-    spanDoWork(span, StatusCanonicalCode.ERROR, "CANCELLED");
+    spanDoWork(span, StatusCode.ERROR, "CANCELLED");
     SpanData spanData = span.toSpanData();
     verifySpanData(
         spanData,
@@ -158,7 +158,7 @@ class RecordEventsReadableSpanTest {
   void toSpanData_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
-      spanDoWork(span, StatusCanonicalCode.ERROR, "CANCELLED");
+      spanDoWork(span, StatusCode.ERROR, "CANCELLED");
     } finally {
       span.end();
     }
@@ -174,7 +174,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NEW_NAME,
         START_EPOCH_NANOS,
         testClock.now(),
-        Status.create(StatusCanonicalCode.ERROR, "CANCELLED"),
+        Status.create(StatusCode.ERROR, "CANCELLED"),
         /*hasEnded=*/ true);
   }
 
@@ -260,14 +260,14 @@ class RecordEventsReadableSpanTest {
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
       assertThat(span.toSpanData().getStatus()).isEqualTo(Status.unset());
-      span.setStatus(StatusCanonicalCode.ERROR, "CANCELLED");
+      span.setStatus(StatusCode.ERROR, "CANCELLED");
       assertThat(span.toSpanData().getStatus())
-          .isEqualTo(Status.create(StatusCanonicalCode.ERROR, "CANCELLED"));
+          .isEqualTo(Status.create(StatusCode.ERROR, "CANCELLED"));
     } finally {
       span.end();
     }
     assertThat(span.toSpanData().getStatus())
-        .isEqualTo(Status.create(StatusCanonicalCode.ERROR, "CANCELLED"));
+        .isEqualTo(Status.create(StatusCode.ERROR, "CANCELLED"));
   }
 
   @Test
@@ -768,7 +768,7 @@ class RecordEventsReadableSpanTest {
 
   private void spanDoWork(
       RecordEventsReadableSpan span,
-      @Nullable StatusCanonicalCode canonicalCode,
+      @Nullable StatusCode canonicalCode,
       @Nullable String descriptio) {
     span.setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     attributes.forEach(span::setAttribute);

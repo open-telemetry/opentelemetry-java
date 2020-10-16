@@ -30,7 +30,7 @@ import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Arrays;
@@ -218,7 +218,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(SpanData.Status.create(StatusCanonicalCode.ERROR, errorMessage))
+            .setStatus(SpanData.Status.create(StatusCode.ERROR, errorMessage))
             .setAttributes(attributeMap)
             .build();
 

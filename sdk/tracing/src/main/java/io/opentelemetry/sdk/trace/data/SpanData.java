@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -299,8 +299,8 @@ public interface SpanData {
   }
 
   /**
-   * Defines the status of a {@link Span} by providing a standard {@link StatusCanonicalCode} in
-   * conjunction with an optional descriptive message.
+   * Defines the status of a {@link Span} by providing a standard {@link StatusCode} in conjunction
+   * with an optional descriptive message.
    */
   interface Status {
 
@@ -326,7 +326,7 @@ public interface SpanData {
      * Returns a {@link Status} with the given {@code code} and {@code description}. If {@code
      * description} is {@code null}, the returned {@link Status} does not have a description.
      */
-    static Status create(StatusCanonicalCode code, @Nullable String description) {
+    static Status create(StatusCode code, @Nullable String description) {
       return ImmutableStatus.create(code, description);
     }
 
@@ -335,7 +335,7 @@ public interface SpanData {
      *
      * @return the canonical status code.
      */
-    StatusCanonicalCode getCanonicalCode();
+    StatusCode getCanonicalCode();
 
     /**
      * Returns the description of this {@code Status} for human consumption.
@@ -352,7 +352,7 @@ public interface SpanData {
      */
     // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
     default boolean isUnset() {
-      return StatusCanonicalCode.UNSET == getCanonicalCode();
+      return StatusCode.UNSET == getCanonicalCode();
     }
 
     /**
@@ -363,7 +363,7 @@ public interface SpanData {
      */
     // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
     default boolean isOk() {
-      return isUnset() || StatusCanonicalCode.OK == getCanonicalCode();
+      return isUnset() || StatusCode.OK == getCanonicalCode();
     }
   }
 }

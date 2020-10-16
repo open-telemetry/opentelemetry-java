@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extensions.zpages;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,7 +85,7 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a Map of span names to counts for all {@link StatusCanonicalCode#OK} spans in {@link
+   * Returns a Map of span names to counts for all {@link StatusCode#OK} spans in {@link
    * TracezDataAggregator}.
    *
    * @return a Map of span names to counts, where the counts are further indexed by the latency
@@ -102,8 +102,8 @@ final class TracezDataAggregator {
   }
 
   /**
-   * Returns a List of all {@link StatusCanonicalCode#OK} spans with a given span name between
-   * [lowerBound, upperBound) for {@link TracezDataAggregator}.
+   * Returns a List of all {@link StatusCode#OK} spans with a given span name between [lowerBound,
+   * upperBound) for {@link TracezDataAggregator}.
    *
    * @param spanName name to filter returned spans.
    * @param lowerBound latency lower bound (inclusive)
