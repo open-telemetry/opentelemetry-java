@@ -43,7 +43,7 @@ final class Adapter {
   private Adapter() {}
 
   /**
-   * Groups {@link SpanData}'s by {@link Resource}
+   * Groups {@link SpanData}'s by {@link Resource}.
    *
    * @param spans the list of spans to be grouped
    * @return the map of grouped spans
