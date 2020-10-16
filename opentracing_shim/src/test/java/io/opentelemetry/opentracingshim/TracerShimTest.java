@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TracerShimTest {
+
   TracerShim tracerShim;
 
   @BeforeEach
@@ -30,9 +31,7 @@ class TracerShimTest {
     tracerShim =
         new TracerShim(
             new TelemetryInfo(
-                OpenTelemetry.getTracer("opentracingshim"),
-                OpenTelemetry.getBaggageManager(),
-                OpenTelemetry.getPropagators()));
+                OpenTelemetry.getTracer("opentracingshim"), OpenTelemetry.getPropagators()));
   }
 
   @Test

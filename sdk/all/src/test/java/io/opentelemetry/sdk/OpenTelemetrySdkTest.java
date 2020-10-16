@@ -17,7 +17,6 @@ class OpenTelemetrySdkTest {
   void testDefault() {
     assertThat(((TracerSdkProvider) OpenTelemetrySdk.getTracerManagement()).get(""))
         .isSameAs(OpenTelemetry.getTracerProvider().get(""));
-    assertThat(OpenTelemetrySdk.getBaggageManager()).isSameAs(OpenTelemetry.getBaggageManager());
     assertThat(OpenTelemetrySdk.getMeterProvider()).isSameAs(OpenTelemetry.getMeterProvider());
   }
 

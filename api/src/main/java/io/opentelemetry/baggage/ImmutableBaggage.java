@@ -3,13 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.baggage;
+package io.opentelemetry.baggage;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.baggage.BaggageUtils;
-import io.opentelemetry.baggage.Entry;
-import io.opentelemetry.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,22 +17,27 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 // TODO: Migrate to AutoValue
 // @AutoValue
-class BaggageSdk implements Baggage {
+public class ImmutableBaggage implements Baggage {
+  static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
 
   // The types of the EntryKey and Entry must match for each entry.
   private final Map<String, Entry> entries;
   @Nullable private final Baggage parent;
 
   /**
-   * Creates a new {@link BaggageSdk} with the given entries.
+   * Creates a new {@link ImmutableBaggage} with the given entries.
    *
    * @param entries the initial entries for this {@code BaggageSdk}.
    * @param parent providing a default set of entries
    */
-  private BaggageSdk(Map<String, ? extends Entry> entries, Baggage parent) {
+  private ImmutableBaggage(Map<String, ? extends Entry> entries, Baggage parent) {
     this.entries =
         Collections.unmodifiableMap(new HashMap<>(Objects.requireNonNull(entries, "entries")));
     this.parent = parent;
+  }
+
+  public static Baggage.Builder builder() {
+    return new Builder();
   }
 
   @Override
@@ -72,16 +72,16 @@ class BaggageSdk implements Baggage {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof BaggageSdk)) {
+    if (!(o instanceof ImmutableBaggage)) {
       return false;
     }
 
-    BaggageSdk baggageSdk = (BaggageSdk) o;
+    ImmutableBaggage baggage = (ImmutableBaggage) o;
 
-    if (!entries.equals(baggageSdk.entries)) {
+    if (!entries.equals(baggage.entries)) {
       return false;
     }
-    return Objects.equals(parent, baggageSdk.parent);
+    return Objects.equals(parent, baggage.parent);
   }
 
   @Override
@@ -89,6 +89,11 @@ class BaggageSdk implements Baggage {
     int result = entries.hashCode();
     result = 31 * result + (parent != null ? parent.hashCode() : 0);
     return result;
+  }
+
+  @Override
+  public String toString() {
+    return "ImmutableBaggage{" + "entries=" + entries + ", parent=" + parent + '}';
   }
 
   // TODO: Migrate to AutoValue.Builder
@@ -129,6 +134,14 @@ class BaggageSdk implements Baggage {
     }
 
     @Override
+    public Baggage.Builder put(String key, String value) {
+      entries.put(
+          Objects.requireNonNull(key, "key"),
+          Entry.create(key, Objects.requireNonNull(value, "value"), EntryMetadata.EMPTY));
+      return this;
+    }
+
+    @Override
     public Baggage.Builder remove(String key) {
       entries.remove(Objects.requireNonNull(key, "key"));
       if (parent != null && parent.getEntryValue(key) != null) {
@@ -138,11 +151,11 @@ class BaggageSdk implements Baggage {
     }
 
     @Override
-    public BaggageSdk build() {
+    public ImmutableBaggage build() {
       if (parent == null && !noImplicitParent) {
-        parent = OpenTelemetry.getBaggageManager().getCurrentBaggage();
+        parent = BaggageUtils.getCurrentBaggage();
       }
-      return new BaggageSdk(entries, parent);
+      return new ImmutableBaggage(entries, parent);
     }
   }
 }

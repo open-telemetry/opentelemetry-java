@@ -7,7 +7,6 @@ package io.opentelemetry.sdk;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Obfuscated;
-import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import javax.annotation.concurrent.ThreadSafe;
@@ -39,15 +38,6 @@ public final class OpenTelemetrySdk {
    */
   public static MeterSdkProvider getMeterProvider() {
     return (MeterSdkProvider) OpenTelemetry.getMeterProvider();
-  }
-
-  /**
-   * Returns a {@link BaggageManagerSdk}.
-   *
-   * @return context manager returned by {@link OpenTelemetry#getBaggageManager()}.
-   */
-  public static BaggageManagerSdk getBaggageManager() {
-    return (BaggageManagerSdk) OpenTelemetry.getBaggageManager();
   }
 
   private OpenTelemetrySdk() {}
