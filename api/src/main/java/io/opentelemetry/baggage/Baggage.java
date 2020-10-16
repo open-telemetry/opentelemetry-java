@@ -20,10 +20,12 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface Baggage {
 
+  /** Baggage with no entries. */
   static Baggage empty() {
     return ImmutableBaggage.EMPTY;
   }
 
+  /** Creates a new {@link Builder} for creating Baggage. */
   static Builder builder() {
     return ImmutableBaggage.builder();
   }
