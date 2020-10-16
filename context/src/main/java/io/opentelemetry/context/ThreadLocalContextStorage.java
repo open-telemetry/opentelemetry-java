@@ -36,7 +36,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
     return () -> {
       if (current() != toAttach) {
         logger.log(
-            Level.FINE,
+            Level.SEVERE,
             "Context in storage not the expected context, Scope.close was not called correctly");
       }
       THREAD_LOCAL_STORAGE.set(beforeAttach);
