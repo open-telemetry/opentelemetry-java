@@ -5,6 +5,9 @@ receivers:
 
 exporters:
   logging:
+    loglevel: info
+    sampling_initial: 1
+    sampling_thereafter: 1
 
 processors:
   batch:
