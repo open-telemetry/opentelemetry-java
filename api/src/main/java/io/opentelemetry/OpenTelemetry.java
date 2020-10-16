@@ -17,8 +17,8 @@ import io.opentelemetry.trace.TracerProvider;
 /**
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
  *
- * <p>A global singleton can be retrieved by {@link #get()}. The default for the returned {@link
- * OpenTelemetry}, will include any {@link io.opentelemetry.trace.spi.TracerProviderFactory}, {@link
+ * <p>The default for the OpenTelemetry API will include any {@link
+ * io.opentelemetry.trace.spi.TracerProviderFactory}, {@link
  * io.opentelemetry.metrics.spi.MeterProviderFactory}, or {@link
  * io.opentelemetry.baggage.spi.BaggageManagerFactory} found on the classpath, or otherwise will be
  * default, with no-op behavior.
@@ -29,23 +29,9 @@ import io.opentelemetry.trace.TracerProvider;
  */
 public interface OpenTelemetry {
 
-  /**
-   * Returns the registered global {@link OpenTelemetry}, a default {@link OpenTelemetry} composed
-   * of functionality any {@link io.opentelemetry.trace.spi.TracerProviderFactory}, {@link
-   * io.opentelemetry.metrics.spi.MeterProviderFactory}, or {@link
-   * io.opentelemetry.baggage.spi.BaggageManagerFactory} found on the classpath, or otherwise will
-   * be default, with no-op behavior.
-   *
-   * @throws IllegalStateException if a provider has been specified by system property using the
-   *     interface FQCN but the specified provider cannot be found.
-   */
-  static OpenTelemetry get() {
-    return DefaultOpenTelemetry.getGlobalOpenTelemetry();
-  }
-
   /** Returns the globally registered {@link TracerProvider}. */
   static TracerProvider getGlobalTracerProvider() {
-    return get().getTracerProvider();
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getTracerProvider();
   }
 
   /**
@@ -58,7 +44,7 @@ public interface OpenTelemetry {
    * @return a tracer instance.
    */
   static Tracer getGlobalTracer(String instrumentationName) {
-    return get().getTracer(instrumentationName);
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getTracer(instrumentationName);
   }
 
   /**
@@ -75,12 +61,13 @@ public interface OpenTelemetry {
    * @return a tracer instance.
    */
   static Tracer getGlobalTracer(String instrumentationName, String instrumentationVersion) {
-    return get().getTracer(instrumentationName, instrumentationVersion);
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry()
+        .getTracer(instrumentationName, instrumentationVersion);
   }
 
   /** Returns the globally registered {@link MeterProvider}. */
   static MeterProvider getGlobalMeterProvider() {
-    return get().getMeterProvider();
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMeterProvider();
   }
 
   /**
@@ -93,7 +80,7 @@ public interface OpenTelemetry {
    * @return a tracer instance.
    */
   static Meter getGlobalMeter(String instrumentationName) {
-    return get().getMeter(instrumentationName);
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMeter(instrumentationName);
   }
 
   /**
@@ -109,19 +96,20 @@ public interface OpenTelemetry {
    * @return a tracer instance.
    */
   static Meter getGlobalMeter(String instrumentationName, String instrumentationVersion) {
-    return get().getMeter(instrumentationName, instrumentationVersion);
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry()
+        .getMeter(instrumentationName, instrumentationVersion);
   }
 
   /** Returns the globally registered {@link BaggageManager}. */
   static BaggageManager getGlobalBaggageManager() {
-    return get().getBaggageManager();
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getBaggageManager();
   }
 
   /**
    * Returns the globally registered {@link ContextPropagators} for remote propagation of a context.
    */
   static ContextPropagators getGlobalPropagators() {
-    return get().getPropagators();
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getPropagators();
   }
 
   /**
@@ -130,7 +118,10 @@ public interface OpenTelemetry {
   static void setGlobalPropagators(ContextPropagators propagators) {
     requireNonNull(propagators, "propagators");
     DefaultOpenTelemetry.setGlobalOpenTelemetry(
-        ((DefaultOpenTelemetry) get()).toBuilder().setPropagators(propagators).build());
+        ((DefaultOpenTelemetry) DefaultOpenTelemetry.getGlobalOpenTelemetry())
+            .toBuilder()
+            .setPropagators(propagators)
+            .build());
   }
 
   /** Returns the {@link TracerProvider} for this {@link OpenTelemetry}. */

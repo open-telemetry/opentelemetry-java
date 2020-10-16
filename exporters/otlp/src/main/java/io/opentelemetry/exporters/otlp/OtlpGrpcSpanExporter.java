@@ -81,12 +81,12 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private final long deadlineMs;
 
   private final LongCounter spansSeen =
-      OpenTelemetry.getMeter("io.opentelemetry.exporters.otlp")
+      OpenTelemetry.getGlobalMeter("io.opentelemetry.exporters.otlp")
           .longCounterBuilder("spansSeenByExporter")
           .build();
 
   private final LongCounter spansExported =
-      OpenTelemetry.getMeter("io.opentelemetry.exporters.otlp")
+      OpenTelemetry.getGlobalMeter("io.opentelemetry.exporters.otlp")
           .longCounterBuilder("spansExportedByExporter")
           .build();
 

@@ -64,7 +64,7 @@ class DefaultOpenTelemetry implements OpenTelemetry {
   private final MeterProvider meterProvider;
   private final BaggageManager baggageManager;
 
-  private volatile ContextPropagators propagators = DefaultContextPropagators.builder().build();
+  private final ContextPropagators propagators;
 
   @Override
   public TracerProvider getTracerProvider() {
@@ -84,10 +84,6 @@ class DefaultOpenTelemetry implements OpenTelemetry {
   @Override
   public ContextPropagators getPropagators() {
     return propagators;
-  }
-
-  void setPropagators(ContextPropagators propagators) {
-    this.propagators = propagators;
   }
 
   DefaultOpenTelemetry(
@@ -131,7 +127,7 @@ class DefaultOpenTelemetry implements OpenTelemetry {
     globalOpenTelemetry = null;
   }
 
-  public Builder toBuilder() {
+  Builder toBuilder() {
     return new Builder()
         .setTracerProvider(tracerProvider)
         .setMeterProvider(meterProvider)
@@ -139,38 +135,38 @@ class DefaultOpenTelemetry implements OpenTelemetry {
         .setPropagators(propagators);
   }
 
-  public static class Builder {
+  static class Builder {
     private ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
     private TracerProvider tracerProvider;
     private MeterProvider meterProvider;
     private BaggageManager baggageManager;
 
-    public Builder setTracerProvider(TracerProvider tracerProvider) {
+    Builder setTracerProvider(TracerProvider tracerProvider) {
       requireNonNull(tracerProvider, "tracerProvider");
       this.tracerProvider = tracerProvider;
       return this;
     }
 
-    public Builder setMeterProvider(MeterProvider meterProvider) {
+    Builder setMeterProvider(MeterProvider meterProvider) {
       requireNonNull(meterProvider, "meterProvider");
       this.meterProvider = meterProvider;
       return this;
     }
 
-    public Builder setBaggageManager(BaggageManager baggageManager) {
+    Builder setBaggageManager(BaggageManager baggageManager) {
       requireNonNull(baggageManager, "baggageManager");
       this.baggageManager = baggageManager;
       return this;
     }
 
-    public Builder setPropagators(ContextPropagators propagators) {
+    Builder setPropagators(ContextPropagators propagators) {
       requireNonNull(propagators, "propagators");
       this.propagators = propagators;
       return this;
     }
 
-    public DefaultOpenTelemetry build() {
+    DefaultOpenTelemetry build() {
       BaggageManager baggageManager = this.baggageManager;
       if (baggageManager == null) {
         BaggageManagerFactory baggageManagerFactory = loadSpi(BaggageManagerFactory.class);
