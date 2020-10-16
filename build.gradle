@@ -248,6 +248,7 @@ configure(opentelemetryProjects) {
         findBugsJsr305Version = '3.0.2'
         grpcVersion = '1.30.2'
         guavaVersion = '28.2-android'
+        jacksonVersion = '2.11.3'
         jmhVersion = '1.19'
         junitVersion = '5.6.2'
         mockitoVersion = '3.3.3'
@@ -261,6 +262,7 @@ configure(opentelemetryProjects) {
         boms = [
                 grpc           : "io.grpc:grpc-bom:${grpcVersion}",
                 guava          : "com.google.guava:guava-bom:${guavaVersion}",
+                jackson        : "com.fasterxml.jackson:jackson-bom:2.11.3",
                 junit          : "org.junit:junit-bom:${junitVersion}",
                 protobuf       : "com.google.protobuf:protobuf-bom:${protobufVersion}",
                 zipkin_reporter: "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
@@ -302,6 +304,7 @@ configure(opentelemetryProjects) {
                 junit_vintage_engine    : 'org.junit.vintage:junit-vintage-engine',
                 mockito                 : "org.mockito:mockito-core:${mockitoVersion}",
                 mockito_junit_jupiter   : "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
+                okhttp                  : 'com.squareup.okhttp3:okhttp:3.14.9',
                 system_rules            : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
                 slf4jsimple             : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
                 awaitility              : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
@@ -343,6 +346,7 @@ configure(opentelemetryProjects) {
             if (it.name.endsWith('Classpath')) {
                 add(it.name, enforcedPlatform(boms.grpc))
                 add(it.name, enforcedPlatform(boms.guava))
+                add(it.name, enforcedPlatform(boms.jackson))
                 add(it.name, enforcedPlatform(boms.junit))
                 add(it.name, enforcedPlatform(boms.protobuf))
                 add(it.name, enforcedPlatform(boms.zipkin_reporter))
