@@ -36,12 +36,12 @@ import javax.annotation.concurrent.Immutable;
  * <ul>
  *   <li>{@code otel.config.sampler.probability}: to set the global default sampler which is used
  *       when constructing a new {@code Span}.
- *   <li>{@code otel.span.attribute.count.limit}: to set the global default max number of attributes per
+ *   <li>{@code otel.span.attribute.count.limit}: to set the global default max number of attributes
+ *       per {@link Span}.
+ *   <li>{@code otel.span.event.count.limit}: to set the global default max number of events per
  *       {@link Span}.
- *   <li>{@code otel.span.event.count.limit}: to set the global default max number of events per {@link
- *       Span}.
- *   <li>{@code otel.span.link.count.limit}: to set the global default max number of links per {@link
- *       Span}.
+ *   <li>{@code otel.span.link.count.limit}: to set the global default max number of links per
+ *       {@link Span}.
  *   <li>{@code otel.config.max.event.attrs}: to set the global default max number of attributes per
  *       event.
  *   <li>{@code otel.config.max.link.attrs}: to set the global default max number of attributes per
@@ -55,12 +55,12 @@ import javax.annotation.concurrent.Immutable;
  * <ul>
  *   <li>{@code OTEL_CONFIG_SAMPLER_PROBABILITY}: to set the global default sampler which is used
  *       when constructing a new {@code Span}.
- *   <li>{@code OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT}: to set the global default max number of attributes per
+ *   <li>{@code OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT}: to set the global default max number of attributes
+ *       per {@link Span}.
+ *   <li>{@code OTEL_SPAN_EVENT_COUNT_LIMIT}: to set the global default max number of events per
  *       {@link Span}.
- *   <li>{@code OTEL_SPAN_EVENT_COUNT_LIMIT}: to set the global default max number of events per {@link
- *       Span}.
- *   <li>{@code OTEL_SPAN_LINK_COUNT_LIMIT}: to set the global default max number of links per {@link
- *       Span}.
+ *   <li>{@code OTEL_SPAN_LINK_COUNT_LIMIT}: to set the global default max number of links per
+ *       {@link Span}.
  *   <li>{@code OTEL_CONFIG_MAX_EVENT_ATTRS}: to set the global default max number of attributes per
  *       event.
  *   <li>{@code OTEL_CONFIG_MAX_LINK_ATTRS}: to set the global default max number of attributes per
@@ -75,9 +75,9 @@ public abstract class TraceConfig {
   // These values are the default values for all the global parameters.
   // TODO: decide which default sampler to use
   private static final Sampler DEFAULT_SAMPLER = Samplers.parentBased(Samplers.alwaysOn());
-  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
-  private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
-  private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
+  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 1000;
+  private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 1000;
+  private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 1000;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
 
