@@ -36,11 +36,11 @@ import javax.annotation.concurrent.Immutable;
  * <ul>
  *   <li>{@code otel.config.sampler.probability}: to set the global default sampler which is used
  *       when constructing a new {@code Span}.
- *   <li>{@code otel.config.max.attrs}: to set the global default max number of attributes per
+ *   <li>{@code otel.span.attribute.count.limit}: to set the global default max number of attributes per
  *       {@link Span}.
- *   <li>{@code otel.config.max.events}: to set the global default max number of events per {@link
+ *   <li>{@code otel.span.event.count.limit}: to set the global default max number of events per {@link
  *       Span}.
- *   <li>{@code otel.config.max.links}: to set the global default max number of links per {@link
+ *   <li>{@code otel.span.link.count.limit}: to set the global default max number of links per {@link
  *       Span}.
  *   <li>{@code otel.config.max.event.attrs}: to set the global default max number of attributes per
  *       event.
@@ -55,11 +55,11 @@ import javax.annotation.concurrent.Immutable;
  * <ul>
  *   <li>{@code OTEL_CONFIG_SAMPLER_PROBABILITY}: to set the global default sampler which is used
  *       when constructing a new {@code Span}.
- *   <li>{@code OTEL_CONFIG_MAX_ATTRS}: to set the global default max number of attributes per
+ *   <li>{@code OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT}: to set the global default max number of attributes per
  *       {@link Span}.
- *   <li>{@code OTEL_CONFIG_MAX_EVENTS}: to set the global default max number of events per {@link
+ *   <li>{@code OTEL_SPAN_EVENT_COUNT_LIMIT}: to set the global default max number of events per {@link
  *       Span}.
- *   <li>{@code OTEL_CONFIG_MAX_LINKS}: to set the global default max number of links per {@link
+ *   <li>{@code OTEL_SPAN_LINK_COUNT_LIMIT}: to set the global default max number of links per {@link
  *       Span}.
  *   <li>{@code OTEL_CONFIG_MAX_EVENT_ATTRS}: to set the global default max number of attributes per
  *       event.
@@ -176,9 +176,9 @@ public abstract class TraceConfig {
   @AutoValue.Builder
   public abstract static class Builder extends ConfigBuilder<Builder> {
     private static final String KEY_SAMPLER_PROBABILITY = "otel.config.sampler.probability";
-    private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES = "otel.config.max.attrs";
-    private static final String KEY_SPAN_MAX_NUM_EVENTS = "otel.config.max.events";
-    private static final String KEY_SPAN_MAX_NUM_LINKS = "otel.config.max.links";
+    private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES = "otel.span.attribute.count.limit";
+    private static final String KEY_SPAN_MAX_NUM_EVENTS = "otel.span.event.count.limit";
+    private static final String KEY_SPAN_MAX_NUM_LINKS = "otel.span.link.count.limit";
     private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT =
         "otel.config.max.event.attrs";
     private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = "otel.config.max.link.attrs";
