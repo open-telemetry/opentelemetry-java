@@ -49,9 +49,13 @@ final class LazyStorage {
     }
 
     if (providerClassName.isEmpty()) {
+      if (providers.size() == 1) {
+        return providers.get(0).get();
+      }
+
       deferredStorageFailure.set(
           new IllegalStateException(
-              "Found ContextStorageProvider. Set the "
+              "Found multiple ContextStorageProvider. Set the "
                   + "io.opentelemetry.context.ContextStorageProvider property to the fully "
                   + "qualified class name of the provider to use. Falling back to default "
                   + "ContextStorage. Found providers: "
