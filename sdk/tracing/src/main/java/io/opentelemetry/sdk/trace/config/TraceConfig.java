@@ -176,9 +176,9 @@ public abstract class TraceConfig {
   @AutoValue.Builder
   public abstract static class Builder extends ConfigBuilder<Builder> {
     private static final String KEY_SAMPLER_PROBABILITY = "otel.config.sampler.probability";
-    private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES = "otel.span.attribute.count.limit";
-    private static final String KEY_SPAN_MAX_NUM_EVENTS = "otel.span.event.count.limit";
-    private static final String KEY_SPAN_MAX_NUM_LINKS = "otel.span.link.count.limit";
+    private static final String KEY_SPAN_ATTRIBUTE_COUNT_LIMIT = "otel.span.attribute.count.limit";
+    private static final String KEY_SPAN_EVENT_COUNT_LIMIT = "otel.span.event.count.limit";
+    private static final String KEY_SPAN_LINK_COUNT_LIMIT = "otel.span.link.count.limit";
     private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT =
         "otel.config.max.event.attrs";
     private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = "otel.config.max.link.attrs";
@@ -201,15 +201,15 @@ public abstract class TraceConfig {
       if (doubleValue != null) {
         this.setTraceIdRatioBased(doubleValue);
       }
-      Integer intValue = getIntProperty(KEY_SPAN_MAX_NUM_ATTRIBUTES, configMap);
+      Integer intValue = getIntProperty(KEY_SPAN_ATTRIBUTE_COUNT_LIMIT, configMap);
       if (intValue != null) {
         this.setMaxNumberOfAttributes(intValue);
       }
-      intValue = getIntProperty(KEY_SPAN_MAX_NUM_EVENTS, configMap);
+      intValue = getIntProperty(KEY_SPAN_EVENT_COUNT_LIMIT, configMap);
       if (intValue != null) {
         this.setMaxNumberOfEvents(intValue);
       }
-      intValue = getIntProperty(KEY_SPAN_MAX_NUM_LINKS, configMap);
+      intValue = getIntProperty(KEY_SPAN_LINK_COUNT_LIMIT, configMap);
       if (intValue != null) {
         this.setMaxNumberOfLinks(intValue);
       }
