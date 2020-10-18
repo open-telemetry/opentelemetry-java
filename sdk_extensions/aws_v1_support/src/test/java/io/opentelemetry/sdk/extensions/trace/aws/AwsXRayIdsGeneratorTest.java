@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.aws;
@@ -36,10 +25,10 @@ class AwsXRayIdsGeneratorTest {
   void shouldGenerateValidIds() {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
     for (int i = 0; i < 1000; i++) {
-      TraceId traceId = generator.generateTraceId();
-      assertThat(traceId.isValid()).isTrue();
-      SpanId spanId = generator.generateSpanId();
-      assertThat(spanId.isValid()).isTrue();
+      String traceId = generator.generateTraceId();
+      assertThat(TraceId.isValid(traceId)).isTrue();
+      String spanId = generator.generateSpanId();
+      assertThat(SpanId.isValid(spanId)).isTrue();
     }
   }
 
@@ -47,8 +36,8 @@ class AwsXRayIdsGeneratorTest {
   void shouldGenerateTraceIdsWithTimestampsWithAllowedXrayTimeRange() {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
     for (int i = 0; i < 1000; i++) {
-      TraceId traceId = generator.generateTraceId();
-      long unixSeconds = Long.valueOf(traceId.toLowerBase16().substring(0, 8), 16);
+      String traceId = generator.generateTraceId();
+      long unixSeconds = Long.valueOf(traceId.subSequence(0, 8).toString(), 16);
       long ts = unixSeconds * 1000L;
       long currentTs = System.currentTimeMillis();
       assertThat(ts).isLessThanOrEqualTo(currentTs);
@@ -61,8 +50,8 @@ class AwsXRayIdsGeneratorTest {
   void shouldGenerateUniqueIdsInMultithreadedEnvironment()
       throws BrokenBarrierException, InterruptedException {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
-    Set<TraceId> traceIds = new CopyOnWriteArraySet<>();
-    Set<SpanId> spanIds = new CopyOnWriteArraySet<>();
+    Set<String> traceIds = new CopyOnWriteArraySet<>();
+    Set<String> spanIds = new CopyOnWriteArraySet<>();
     int threads = 8;
     int generations = 128;
     CyclicBarrier barrier = new CyclicBarrier(threads + 1);
@@ -81,15 +70,15 @@ class AwsXRayIdsGeneratorTest {
     private final int generations;
     private final IdsGenerator idsGenerator;
     private final CyclicBarrier barrier;
-    private final Set<TraceId> traceIds;
-    private final Set<SpanId> spanIds;
+    private final Set<String> traceIds;
+    private final Set<String> spanIds;
 
     GenerateRunner(
         int generations,
         IdsGenerator idsGenerator,
         CyclicBarrier barrier,
-        Set<TraceId> traceIds,
-        Set<SpanId> spanIds) {
+        Set<String> traceIds,
+        Set<String> spanIds) {
       this.generations = generations;
       this.idsGenerator = idsGenerator;
       this.barrier = barrier;

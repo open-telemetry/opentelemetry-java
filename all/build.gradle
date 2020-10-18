@@ -7,6 +7,7 @@ ext.moduleName = "io.opentelemetry.all"
 
 def subprojects = [
         project(':opentelemetry-api'),
+        project(':opentelemetry-context'),
         project(':opentelemetry-context-prop'),
         project(':opentelemetry-extension-runtime-metrics'),
         project(':opentelemetry-extension-trace-propagators'),
@@ -19,10 +20,14 @@ def subprojects = [
         project(':opentelemetry-exporters-prometheus'),
         project(':opentelemetry-exporters-zipkin'),
         project(':opentelemetry-integration-tests'),
+        project(':opentelemetry-integration-tests-tracecontext'),
         project(':opentelemetry-opentracing-shim'),
+        project(':opentelemetry-sdk-baggage'),
+        project(':opentelemetry-sdk-common'),
+        project(':opentelemetry-sdk-metrics'),
+        project(':opentelemetry-sdk-tracing'),
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-extension-async-processor'),
-        project(':opentelemetry-sdk-extension-auto-config'),
         project(':opentelemetry-sdk-extension-otproto'),
         project(':opentelemetry-sdk-extension-testbed'),
         project(':opentelemetry-sdk-extension-jaeger-remote-sampler'),
@@ -59,6 +64,9 @@ jacocoTestReport {
     sourceDirectories.from = files(subprojects.sourceSets.main.allSource.srcDirs)
     classDirectories.from = files(subprojects.sourceSets.main.output)
     classDirectories.from = files(classDirectories.files.collect {
-        fileTree(dir: it)
+        fileTree(dir: it, excludes: [
+                // Ignore generated code
+                "io/opentelemetry/exporters/jaeger/proto/**"
+        ])
     })
 }

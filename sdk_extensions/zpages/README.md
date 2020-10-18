@@ -5,7 +5,7 @@
 This module contains code for the OpenTelemetry Java zPages, which are a collection of dynamic HTML
 web pages that display stats and trace data.
 
-* Java 7 compatible.
+* Java 8 compatible.
 
 <!--- TODO: Update javadoc -->
 [javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-contrib-auto-config.svg
@@ -21,17 +21,17 @@ For Maven, add the following to your `pom.xml`:
   <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-api</artifactId>
-        <version>0.7.0</version>
+        <version>0.8.0</version>
       </dependency>
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-sdk</artifactId>
-        <version>0.7.0</version>
+        <version>0.8.0</version>
       </dependency>
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-sdk-extension-zpages</artifactId>
-        <version>0.7.0</version>
+        <version>0.8.0</version>
       </dependency>
 </dependencies>
 ```
@@ -39,9 +39,9 @@ For Maven, add the following to your `pom.xml`:
 <!--- TODO: Verify gradle configuration -->
 For Gradle, add the following to your dependencies:
 ```groovy
-implementation 'io.opentelemetry:opentelemetry-api:0.7.0'
-implementation 'io.opentelemetry:opentelemetry-sdk:0.7.0'
-implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.7.0'
+implementation 'io.opentelemetry:opentelemetry-api:0.8.0'
+implementation 'io.opentelemetry:opentelemetry-sdk:0.8.0'
+implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.8.0'
 ```
 
 ### Register the zPages

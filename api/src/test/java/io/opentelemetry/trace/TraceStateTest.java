@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace;
@@ -72,8 +61,15 @@ class TraceStateTest {
 
   @Test
   void firstKeyCharacterDigitIsAllowed() {
-    TraceState result = EMPTY.toBuilder().set("1_key", FIRST_VALUE).build();
-    assertThat(result.get("1_key")).isEqualTo(FIRST_VALUE);
+    // note: a digit is only allowed if the key is in the tenant format (with an '@')
+    TraceState result = EMPTY.toBuilder().set("1@tenant", FIRST_VALUE).build();
+    assertThat(result.get("1@tenant")).isEqualTo(FIRST_VALUE);
+  }
+
+  @Test
+  void testValidLongTenantId() {
+    TraceState result = EMPTY.toBuilder().set("12345678901234567890@nr", FIRST_VALUE).build();
+    assertThat(result.get("12345678901234567890@nr")).isEqualTo(FIRST_VALUE);
   }
 
   @Test
@@ -86,6 +82,37 @@ class TraceStateTest {
   void testValidAtSignVendorNamePrefix() {
     TraceState result = EMPTY.toBuilder().set("1@nr", FIRST_VALUE).build();
     assertThat(result.get("1@nr")).isEqualTo(FIRST_VALUE);
+  }
+
+  @Test
+  void testVendorIdLongerThan13Characters() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set("1@nrabcdefghijkl", FIRST_VALUE).build());
+  }
+
+  @Test
+  void testVendorIdLongerThan13Characters_longTenantId() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set("12345678901234567890@nrabcdefghijkl", FIRST_VALUE).build());
+  }
+
+  @Test
+  void tenantIdLongerThan240Characters() {
+    char[] chars = new char[241];
+    Arrays.fill(chars, 'a');
+    String tenantId = new String(chars);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set(tenantId + "@nr", FIRST_VALUE).build());
+  }
+
+  @Test
+  void testNonVendorFormatFirstKeyCharacter() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> EMPTY.toBuilder().set("1acdfrgs", FIRST_VALUE).build());
   }
 
   @Test

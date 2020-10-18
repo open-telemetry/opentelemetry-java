@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
@@ -20,14 +9,12 @@ import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.OperationSamplingStrategy;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.trace.Link;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 /** {@link PerOperationSampler} samples spans per operation. */
 class PerOperationSampler implements Sampler {
@@ -42,18 +29,19 @@ class PerOperationSampler implements Sampler {
     for (OperationSamplingStrategy opSamplingStrategy : perOperationSampling) {
       this.perOperationSampler.put(
           opSamplingStrategy.getOperation(),
-          Samplers.probability(opSamplingStrategy.getProbabilisticSampling().getSamplingRate()));
+          Samplers.traceIdRatioBased(
+              opSamplingStrategy.getProbabilisticSampling().getSamplingRate()));
     }
   }
 
   @Override
   public SamplingResult shouldSample(
-      @Nullable SpanContext parentContext,
-      TraceId traceId,
+      SpanContext parentContext,
+      String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
-      List<Link> parentLinks) {
+      List<SpanData.Link> parentLinks) {
     Sampler sampler = this.perOperationSampler.get(name);
     if (sampler == null) {
       sampler = this.defaultSampler;
@@ -63,13 +51,13 @@ class PerOperationSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return toString();
+    return String.format(
+        "PerOperationSampler{default=%s, perOperation=%s}",
+        this.defaultSampler, this.perOperationSampler);
   }
 
   @Override
   public String toString() {
-    return String.format(
-        "PerOperationSampler{default=%s, perOperation=%s}",
-        this.defaultSampler, this.perOperationSampler);
+    return getDescription();
   }
 }

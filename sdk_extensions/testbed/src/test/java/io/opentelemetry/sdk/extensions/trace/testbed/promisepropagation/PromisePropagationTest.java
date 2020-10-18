@@ -1,23 +1,14 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.testbed.promisepropagation;
 
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
@@ -26,6 +17,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,7 +34,7 @@ import org.junit.jupiter.api.Test;
 class PromisePropagationTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(PromisePropagationTest.class.getName());
   private Phaser phaser;
 
@@ -62,18 +54,18 @@ class PromisePropagationTest {
       Span parentSpan = tracer.spanBuilder("promises").startSpan();
       parentSpan.setAttribute("component", "example-promises");
 
-      try (Scope ignored = tracer.withSpan(parentSpan)) {
+      try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
         Promise<String> successPromise = new Promise<>(context, tracer);
 
         successPromise.onSuccess(
             s -> {
-              tracer.getCurrentSpan().addEvent("Promised 1 " + s);
+              TracingContextUtils.getCurrentSpan().addEvent("Promised 1 " + s);
               successResult1.set(s);
               phaser.arriveAndAwaitAdvance(); // result set
             });
         successPromise.onSuccess(
             s -> {
-              tracer.getCurrentSpan().addEvent("Promised 2 " + s);
+              TracingContextUtils.getCurrentSpan().addEvent("Promised 2 " + s);
               successResult2.set(s);
               phaser.arriveAndAwaitAdvance(); // result set
             });
@@ -103,21 +95,21 @@ class PromisePropagationTest {
       List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(4);
 
-      String component = "component";
+      AttributeKey<String> component = stringKey("component");
       SpanData parentSpanProto = TestUtils.getOneByAttr(finished, component, "example-promises");
       assertThat(parentSpanProto).isNotNull();
-      assertThat(parentSpanProto.getParentSpanId().isValid()).isFalse();
+      assertThat(SpanId.isValid(parentSpanProto.getParentSpanId())).isFalse();
       List<SpanData> successSpans = TestUtils.getByAttr(finished, component, "success");
       assertThat(successSpans).hasSize(2);
 
-      SpanId parentId = parentSpanProto.getSpanId();
+      CharSequence parentId = parentSpanProto.getSpanId();
       for (SpanData span : successSpans) {
-        assertThat(span.getParentSpanId()).isEqualTo(parentId);
+        assertThat(span.getParentSpanId()).isEqualTo(parentId.toString());
       }
 
       SpanData errorSpan = TestUtils.getOneByAttr(finished, component, "error");
       assertThat(errorSpan).isNotNull();
-      assertThat(errorSpan.getParentSpanId()).isEqualTo(parentId);
+      assertThat(errorSpan.getParentSpanId()).isEqualTo(parentId.toString());
     }
   }
 }

@@ -1,26 +1,17 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.trace.DefaultSpan;
+import static io.opentelemetry.extensions.trace.propagation.Common.MAX_TRACE_ID_LENGTH;
+
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,7 +26,7 @@ import javax.annotation.concurrent.Immutable;
  * TextMapPropagator</a>.
  */
 @Immutable
-public class OtTracerPropagator implements HttpTextFormat {
+public class OtTracerPropagator implements TextMapPropagator {
 
   static final String TRACE_ID_HEADER = "ot-tracer-traceid";
   static final String SPAN_ID_HEADER = "ot-tracer-spanid";
@@ -63,17 +54,13 @@ public class OtTracerPropagator implements HttpTextFormat {
     if (context == null || setter == null) {
       return;
     }
-    final Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null) {
-      return;
-    }
-    final SpanContext spanContext = span.getContext();
+    final SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
     if (!spanContext.isValid()) {
       return;
     }
-    setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceId().toLowerBase16());
-    setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanId().toLowerBase16());
-    setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.getTraceFlags().isSampled()));
+    setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceIdAsHexString());
+    setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanIdAsHexString());
+    setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.isSampled()));
   }
 
   @Override
@@ -81,14 +68,18 @@ public class OtTracerPropagator implements HttpTextFormat {
     if (context == null || getter == null) {
       return context;
     }
-    String traceId = getter.get(carrier, TRACE_ID_HEADER);
+    String incomingTraceId = getter.get(carrier, TRACE_ID_HEADER);
+    String traceId =
+        incomingTraceId == null
+            ? TraceId.getInvalid()
+            : StringUtils.padLeft(incomingTraceId, MAX_TRACE_ID_LENGTH);
     String spanId = getter.get(carrier, SPAN_ID_HEADER);
     String sampled = getter.get(carrier, SAMPLED_HEADER);
     SpanContext spanContext = buildSpanContext(traceId, spanId, sampled);
     if (!spanContext.isValid()) {
       return context;
     }
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
   }
 
   static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {

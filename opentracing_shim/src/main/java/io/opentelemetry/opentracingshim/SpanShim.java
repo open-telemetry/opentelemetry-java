@@ -1,24 +1,17 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.common.AttributeValue;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
+
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCode;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.log.Fields;
@@ -72,8 +65,8 @@ final class SpanShim extends BaseShimObject implements Span {
       // TODO: confirm we can safely ignore span.kind after Span was created
       // https://github.com/bogdandrutu/opentelemetry/issues/42
     } else if (Tags.ERROR.getKey().equals(key)) {
-      Status status = Boolean.parseBoolean(value) ? Status.UNKNOWN : Status.OK;
-      span.setStatus(status);
+      StatusCode canonicalCode = Boolean.parseBoolean(value) ? StatusCode.ERROR : StatusCode.UNSET;
+      span.setStatus(canonicalCode);
     } else {
       span.setAttribute(key, value);
     }
@@ -84,8 +77,8 @@ final class SpanShim extends BaseShimObject implements Span {
   @Override
   public Span setTag(String key, boolean value) {
     if (Tags.ERROR.getKey().equals(key)) {
-      Status status = value ? Status.UNKNOWN : Status.OK;
-      span.setStatus(status);
+      StatusCode canonicalCode = value ? StatusCode.ERROR : StatusCode.UNSET;
+      span.setStatus(canonicalCode);
     } else {
       span.setAttribute(key, value);
     }
@@ -188,7 +181,7 @@ final class SpanShim extends BaseShimObject implements Span {
   }
 
   static Attributes convertToAttributes(Map<String, ?> fields) {
-    Attributes.Builder attributesBuilder = Attributes.newBuilder();
+    Attributes.Builder attributesBuilder = Attributes.builder();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
       String key = entry.getKey();
@@ -203,15 +196,13 @@ final class SpanShim extends BaseShimObject implements Span {
           || value instanceof Short
           || value instanceof Integer
           || value instanceof Long) {
-        attributesBuilder.setAttribute(
-            key, AttributeValue.longAttributeValue(((Number) value).longValue()));
+        attributesBuilder.setAttribute(longKey(key), ((Number) value).longValue());
       } else if (value instanceof Float || value instanceof Double) {
-        attributesBuilder.setAttribute(
-            key, AttributeValue.doubleAttributeValue(((Number) value).doubleValue()));
+        attributesBuilder.setAttribute(doubleKey(key), ((Number) value).doubleValue());
       } else if (value instanceof Boolean) {
-        attributesBuilder.setAttribute(key, AttributeValue.booleanAttributeValue((Boolean) value));
+        attributesBuilder.setAttribute(booleanKey(key), (Boolean) value);
       } else {
-        attributesBuilder.setAttribute(key, AttributeValue.stringAttributeValue(value.toString()));
+        attributesBuilder.setAttribute(stringKey(key), value.toString());
       }
     }
 

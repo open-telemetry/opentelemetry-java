@@ -1,24 +1,12 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -43,12 +31,12 @@ import javax.annotation.Nullable;
  * OpenTelemetry.setPropagators(
  *   DefaultContextPropagators
  *     .builder()
- *     .addHttpTextFormat(new HttpTraceContext())
- *     .addHttpTextFormat(new AWSXRayPropagator())
+ *     .addTextMapPropagator(new HttpTraceContext())
+ *     .addTextMapPropagator(new AWSXRayPropagator())
  *     .build());
  * }</pre>
  */
-public class AwsXRayPropagator implements HttpTextFormat {
+public class AwsXRayPropagator implements TextMapPropagator {
 
   // Visible for testing
   static final String TRACE_HEADER_KEY = "X-Amzn-Trace-Id";
@@ -76,6 +64,16 @@ public class AwsXRayPropagator implements HttpTextFormat {
 
   private static final List<String> FIELDS = Collections.singletonList(TRACE_HEADER_KEY);
 
+  private static final AwsXRayPropagator INSTANCE = new AwsXRayPropagator();
+
+  private AwsXRayPropagator() {
+    // singleton
+  }
+
+  public static AwsXRayPropagator getInstance() {
+    return INSTANCE;
+  }
+
   @Override
   public List<String> fields() {
     return FIELDS;
@@ -93,15 +91,15 @@ public class AwsXRayPropagator implements HttpTextFormat {
 
     SpanContext spanContext = span.getContext();
 
-    String otTraceId = spanContext.getTraceId().toLowerBase16();
+    String otTraceId = spanContext.getTraceIdAsHexString();
     String xrayTraceId =
         TRACE_ID_VERSION
             + TRACE_ID_DELIMITER
             + otTraceId.substring(0, TRACE_ID_FIRST_PART_LENGTH)
             + TRACE_ID_DELIMITER
             + otTraceId.substring(TRACE_ID_FIRST_PART_LENGTH);
-    String parentId = spanContext.getSpanId().toLowerBase16();
-    char samplingFlag = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
+    String parentId = spanContext.getSpanIdAsHexString();
+    char samplingFlag = spanContext.isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 
     String traceHeader =
@@ -129,7 +127,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
   }
 
   private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {
@@ -138,9 +136,9 @@ public class AwsXRayPropagator implements HttpTextFormat {
       return SpanContext.getInvalid();
     }
 
-    TraceId traceId = TraceId.getInvalid();
-    SpanId spanId = SpanId.getInvalid();
-    TraceFlags traceFlags = TraceFlags.getDefault();
+    String traceId = TraceId.getInvalid();
+    String spanId = SpanId.getInvalid();
+    Boolean isSampled = false;
 
     int pos = 0;
     while (pos < traceHeader.length()) {
@@ -171,12 +169,11 @@ public class AwsXRayPropagator implements HttpTextFormat {
       } else if (trimmedPart.startsWith(PARENT_ID_KEY)) {
         spanId = parseSpanId(value);
       } else if (trimmedPart.startsWith(SAMPLED_FLAG_KEY)) {
-        traceFlags = parseTraceFlag(value);
+        isSampled = parseTraceFlag(value);
       }
       // TODO: Put the arbitrary TraceHeader keys in OT trace state
     }
-
-    if (!traceId.isValid()) {
+    if (!TraceId.isValid(traceId)) {
       logger.fine(
           "Invalid TraceId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -186,7 +183,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
       return SpanContext.getInvalid();
     }
 
-    if (!spanId.isValid()) {
+    if (!SpanId.isValid(spanId)) {
       logger.fine(
           "Invalid ParentId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -196,7 +193,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
       return SpanContext.getInvalid();
     }
 
-    if (traceFlags == null) {
+    if (isSampled == null) {
       logger.fine(
           "Invalid Sampling flag in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -206,10 +203,11 @@ public class AwsXRayPropagator implements HttpTextFormat {
       return SpanContext.getInvalid();
     }
 
+    byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
     return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
-  private static TraceId parseTraceId(String xrayTraceId) {
+  private static String parseTraceId(String xrayTraceId) {
     if (xrayTraceId.length() != TRACE_ID_LENGTH) {
       return TraceId.getInvalid();
     }
@@ -229,28 +227,20 @@ public class AwsXRayPropagator implements HttpTextFormat {
         xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_1 + 1, TRACE_ID_DELIMITER_INDEX_2);
     String uniquePart = xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_2 + 1, TRACE_ID_LENGTH);
 
-    try {
-      // X-Ray trace id format is 1-{8 digit hex}-{24 digit hex}
-      return TraceId.fromLowerBase16(epochPart + uniquePart, 0);
-    } catch (Exception e) {
-      return TraceId.getInvalid();
-    }
+    // X-Ray trace id format is 1-{8 digit hex}-{24 digit hex}
+    return epochPart + uniquePart;
   }
 
-  private static SpanId parseSpanId(String xrayParentId) {
+  private static String parseSpanId(String xrayParentId) {
     if (xrayParentId.length() != PARENT_ID_LENGTH) {
       return SpanId.getInvalid();
     }
 
-    try {
-      return SpanId.fromLowerBase16(xrayParentId, 0);
-    } catch (Exception e) {
-      return SpanId.getInvalid();
-    }
+    return xrayParentId;
   }
 
   @Nullable
-  private static TraceFlags parseTraceFlag(String xraySampledFlag) {
+  private static Boolean parseTraceFlag(String xraySampledFlag) {
     if (xraySampledFlag.length() != SAMPLED_FLAG_LENGTH) {
       // Returning null as there is no invalid trace flag defined.
       return null;
@@ -258,9 +248,9 @@ public class AwsXRayPropagator implements HttpTextFormat {
 
     char flag = xraySampledFlag.charAt(0);
     if (flag == IS_SAMPLED) {
-      return TraceFlags.builder().setIsSampled(true).build();
+      return true;
     } else if (flag == NOT_SAMPLED) {
-      return TraceFlags.builder().setIsSampled(false).build();
+      return false;
     } else {
       return null;
     }

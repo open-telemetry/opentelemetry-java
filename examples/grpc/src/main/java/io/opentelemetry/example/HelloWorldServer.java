@@ -1,18 +1,7 @@
 /*
  * Copyright 2015 The gRPC Authors
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.example;
@@ -29,13 +18,12 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -44,27 +32,25 @@ import java.util.logging.Logger;
 /** Server that manages startup/shutdown of a {@code Greeter} server. */
 public class HelloWorldServer {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
+  private static final int PORT = 50051;
+
   private Server server;
-  private final int port = 50051;
 
   // OTel API
   Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text
-  HttpTextFormat textFormat = OpenTelemetry.getPropagators().getHttpTextFormat();;
+  TextMapPropagator textFormat = OpenTelemetry.getPropagators().getTextMapPropagator();
 
   // Extract the Distributed Context from the gRPC metadata
-  HttpTextFormat.Getter<Metadata> getter =
-      new HttpTextFormat.Getter<Metadata>() {
-        @Override
-        public String get(Metadata carrier, String key) {
-          Metadata.Key<String> k = Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER);
-          if (carrier.containsKey(k)) {
-            return carrier.get(k);
-          }
-          return "";
+  TextMapPropagator.Getter<Metadata> getter =
+      (carrier, key) -> {
+        Metadata.Key<String> k = Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER);
+        if (carrier.containsKey(k)) {
+          return carrier.get(k);
         }
+        return "";
       };
 
   public HelloWorldServer() {
@@ -75,28 +61,26 @@ public class HelloWorldServer {
     /* The port on which the server should run */
 
     server =
-        ServerBuilder.forPort(this.port)
+        ServerBuilder.forPort(PORT)
             .addService(new GreeterImpl())
             // Intercept gRPC calls
             .intercept(new OpenTelemetryServerInterceptor())
             .build()
             .start();
-    logger.info("Server started, listening on " + port);
+    logger.info("Server started, listening on " + PORT);
     Runtime.getRuntime()
         .addShutdownHook(
-            new Thread() {
-              @Override
-              public void run() {
-                // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-                System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                HelloWorldServer.this.stop();
-                System.err.println("*** server shut down");
-                System.err.println(
-                    "*** forcing also the Tracer Exporter to shutdown and process the remaining traces");
-                exporter.shutdown();
-                System.err.println("*** Trace Exporter shut down");
-              }
-            });
+            new Thread(
+                () -> {
+                  // Use stderr here since the logger may have been reset by its JVM shutdown hook.
+                  System.err.println("*** shutting down gRPC server since JVM is shutting down");
+                  HelloWorldServer.this.stop();
+                  System.err.println("*** server shut down");
+                  System.err.println(
+                      "*** forcing also the Tracer Exporter to shutdown and process the remaining traces");
+                  exporter.shutdown();
+                  System.err.println("*** Trace Exporter shut down");
+                }));
   }
 
   private void stop() {
@@ -106,10 +90,10 @@ public class HelloWorldServer {
   }
 
   private void initTracer() {
-    // Get the tracer
-    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+    // Get the tracer management instance
+    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getTracerManagement();
     // Set to process the the spans by the LogExporter
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
+    tracerManagement.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
 
   /** Await termination on the main thread since the grpc library uses daemon threads. */
@@ -119,7 +103,7 @@ public class HelloWorldServer {
     }
   }
 
-  class GreeterImpl extends GreeterGrpc.GreeterImplBase {
+  static class GreeterImpl extends GreeterGrpc.GreeterImplBase {
 
     // We serve a normal gRPC call
     @Override
@@ -134,7 +118,7 @@ public class HelloWorldServer {
     @Override
     public StreamObserver<HelloRequest> sayHelloStream(
         final StreamObserver<HelloReply> responseObserver) {
-      return new StreamObserver<HelloRequest>() {
+      return new StreamObserver<>() {
         @Override
         public void onNext(HelloRequest value) {
           responseObserver.onNext(
@@ -176,7 +160,6 @@ public class HelloWorldServer {
         span.setAttribute("net.peer.port", clientInfo.getPort());
         // Process the gRPC call normally
         try {
-          span.setStatus(Status.OK);
           return Contexts.interceptCall(Context.current(), call, headers, next);
         } finally {
           span.end();

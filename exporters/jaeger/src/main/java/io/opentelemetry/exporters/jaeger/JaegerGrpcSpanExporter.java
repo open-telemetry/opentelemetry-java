@@ -1,26 +1,21 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.jaeger;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
+import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
+import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansResponse;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -31,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
@@ -47,7 +43,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private static final String HOSTNAME_KEY = "hostname";
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
-  private final CollectorServiceGrpc.CollectorServiceBlockingStub blockingStub;
+  private final CollectorServiceGrpc.CollectorServiceFutureStub stub;
   private final Model.Process process;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
@@ -96,7 +92,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
             .build();
 
     this.managedChannel = channel;
-    this.blockingStub = CollectorServiceGrpc.newBlockingStub(channel);
+    this.stub = CollectorServiceGrpc.newFutureStub(channel);
     this.deadlineMs = deadlineMs;
   }
 
@@ -107,7 +103,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    * @return the result of the operation
    */
   @Override
-  public ResultCode export(Collection<SpanData> spans) {
+  public CompletableResultCode export(Collection<SpanData> spans) {
     Collector.PostSpansRequest request =
         Collector.PostSpansRequest.newBuilder()
             .setBatch(
@@ -117,20 +113,28 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
                     .build())
             .build();
 
-    try {
-      CollectorServiceGrpc.CollectorServiceBlockingStub stub = this.blockingStub;
-      if (deadlineMs > 0) {
-        stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
-      }
-
-      // for now, there's nothing to check in the response object
-      //noinspection ResultOfMethodCallIgnored
-      stub.postSpans(request);
-      return ResultCode.SUCCESS;
-    } catch (Throwable e) {
-      logger.log(Level.WARNING, "Failed to export spans", e);
-      return ResultCode.FAILURE;
+    CollectorServiceGrpc.CollectorServiceFutureStub stub = this.stub;
+    if (deadlineMs > 0) {
+      stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
     }
+
+    final CompletableResultCode result = new CompletableResultCode();
+    Futures.addCallback(
+        stub.postSpans(request),
+        new FutureCallback<PostSpansResponse>() {
+          @Override
+          public void onSuccess(@Nullable Collector.PostSpansResponse response) {
+            result.succeed();
+          }
+
+          @Override
+          public void onFailure(Throwable t) {
+            logger.log(Level.WARNING, "Failed to export spans", t);
+            result.fail();
+          }
+        },
+        MoreExecutors.directExecutor());
+    return result;
   }
 
   /**
@@ -139,8 +143,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    * @return always Success
    */
   @Override
-  public ResultCode flush() {
-    return ResultCode.SUCCESS;
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
   }
 
   /**
@@ -148,27 +152,33 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 
   /**
    * Initiates an orderly shutdown in which preexisting calls continue but new calls are immediately
-   * cancelled. The channel is forcefully closed after a timeout.
+   * cancelled.
    */
   @Override
-  public void shutdown() {
-    try {
-      managedChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      logger.log(Level.WARNING, "Failed to shutdown the gRPC channel", e);
-    }
+  public CompletableResultCode shutdown() {
+    final CompletableResultCode result = new CompletableResultCode();
+    managedChannel.notifyWhenStateChanged(
+        ConnectivityState.SHUTDOWN,
+        new Runnable() {
+          @Override
+          public void run() {
+            result.succeed();
+          }
+        });
+    managedChannel.shutdown();
+    return result;
   }
 
   /** Builder utility for this exporter. */
   public static class Builder extends ConfigBuilder<Builder> {
-    private static final String KEY_SERVICE_NAME = "otel.jaeger.service.name";
-    private static final String KEY_ENDPOINT = "otel.jaeger.endpoint";
+    private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";
+    private static final String KEY_ENDPOINT = "otel.exporter.jaeger.endpoint";
 
     private String serviceName = DEFAULT_SERVICE_NAME;
     private String endpoint = DEFAULT_ENDPOINT;
@@ -203,7 +213,6 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
      *
      * @param endpoint The Jaeger endpoint URL, ex. "jaegerhost:14250".
      * @return this.
-     * @since 0.7.0
      */
     public Builder setEndpoint(String endpoint) {
       this.endpoint = endpoint;
@@ -226,7 +235,6 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
      *
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
-     * @since 0.7.0
      */
     @Override
     protected Builder fromConfigMap(

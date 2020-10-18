@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.otlp;
@@ -19,12 +8,18 @@ package io.opentelemetry.exporters.otlp;
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 
 import com.google.common.base.Splitter;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
+import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc.MetricsServiceFutureStub;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -47,25 +42,36 @@ import javax.annotation.concurrent.ThreadSafe;
  * will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time allowed to send each metric
- *       batch.
+ *   <li>{@code otel.exporter.otlp.metric.timeout}: to set the max waiting time allowed to send each
+ *       span batch.
+ *   <li>{@code otel.exporter.otlp.metric.endpoint}: to set the endpoint to connect to.
+ *   <li>{@code otel.exporter.otlp.metric.insecure}: whether to enable client transport security for
+ *       the connection.
+ *   <li>{@code otel.exporter.otlp.metric.headers}: the headers associated with the requests.
  * </ul>
  *
  * <p>For environment variables, {@link OtlpGrpcMetricExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_OTLP_METRIC_TIMEOUT}: to set the max waiting time allowed to send each metric
- *       batch.
+ *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_TIMEOUT}: to set the max waiting time allowed to send each
+ *       span batch.
+ *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_ENDPOINT}: to set the endpoint to connect to.
+ *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_INSECURE}: whether to enable client transport security for
+ *       the connection.
+ *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_HEADERS}: the headers associated with the requests.
  * </ul>
+ *
+ * <p>In both cases, if a property is missing, the name without "span" is used to resolve the value.
  */
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
   public static final String DEFAULT_ENDPOINT = "localhost:55680";
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+  private static final boolean DEFAULT_USE_TLS = false;
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
 
-  private final MetricsServiceGrpc.MetricsServiceBlockingStub blockingStub;
+  private final MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
 
@@ -78,8 +84,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    */
   private OtlpGrpcMetricExporter(ManagedChannel channel, long deadlineMs) {
     this.managedChannel = channel;
-    this.blockingStub = MetricsServiceGrpc.newBlockingStub(channel);
     this.deadlineMs = deadlineMs;
+    metricsService = MetricsServiceGrpc.newFutureStub(channel);
   }
 
   /**
@@ -89,26 +95,36 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @return the result of the operation
    */
   @Override
-  public ResultCode export(Collection<MetricData> metrics) {
+  public CompletableResultCode export(Collection<MetricData> metrics) {
     ExportMetricsServiceRequest exportMetricsServiceRequest =
         ExportMetricsServiceRequest.newBuilder()
             .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metrics))
             .build();
 
-    try {
-      MetricsServiceGrpc.MetricsServiceBlockingStub stub = this.blockingStub;
-      if (deadlineMs > 0) {
-        stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
-      }
-
-      // for now, there's nothing to check in the response object
-      // noinspection ResultOfMethodCallIgnored
-      stub.export(exportMetricsServiceRequest);
-      return ResultCode.SUCCESS;
-    } catch (Throwable e) {
-      logger.log(Level.WARNING, "Failed to export metrics", e);
-      return ResultCode.FAILURE;
+    final CompletableResultCode result = new CompletableResultCode();
+    MetricsServiceFutureStub exporter;
+    if (deadlineMs > 0) {
+      exporter = metricsService.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    } else {
+      exporter = metricsService;
     }
+
+    Futures.addCallback(
+        exporter.export(exportMetricsServiceRequest),
+        new FutureCallback<ExportMetricsServiceResponse>() {
+          @Override
+          public void onSuccess(@Nullable ExportMetricsServiceResponse response) {
+            result.succeed();
+          }
+
+          @Override
+          public void onFailure(Throwable t) {
+            logger.log(Level.WARNING, "Failed to export metrics", t);
+            result.fail();
+          }
+        },
+        MoreExecutors.directExecutor());
+    return result;
   }
 
   /**
@@ -117,8 +133,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @return always Success
    */
   @Override
-  public ResultCode flush() {
-    return ResultCode.SUCCESS;
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
   }
 
   /**
@@ -126,7 +142,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 
@@ -136,10 +152,9 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * environment. If a configuration value is missing, it uses the default value.
    *
    * @return a new {@link OtlpGrpcMetricExporter} instance.
-   * @since 0.5.0
    */
   public static OtlpGrpcMetricExporter getDefault() {
-    return newBuilder().readEnvironmentVariables().readSystemProperties().build();
+    return builder().readEnvironmentVariables().readSystemProperties().build();
   }
 
   /**
@@ -157,14 +172,14 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   /** Builder utility for this exporter. */
   public static class Builder extends ConfigBuilder<Builder> {
-    private static final String KEY_METRIC_TIMEOUT = "otel.otlp.metric.timeout";
-    private static final String KEY_ENDPOINT = "otel.otlp.endpoint";
-    private static final String KEY_USE_TLS = "otel.otlp.use.tls";
-    private static final String KEY_METADATA = "otel.otlp.metadata";
+    private static final String KEY_TIMEOUT = "otel.exporter.otlp.metric.timeout";
+    private static final String KEY_ENDPOINT = "otel.exporter.otlp.metric.endpoint";
+    private static final String KEY_INSECURE = "otel.exporter.otlp.metric.insecure";
+    private static final String KEY_HEADERS = "otel.exporter.otlp.metric.headers";
     private ManagedChannel channel;
     private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
     private String endpoint = DEFAULT_ENDPOINT;
-    private boolean useTls;
+    private boolean useTls = DEFAULT_USE_TLS;
     @Nullable private Metadata metadata;
 
     /**
@@ -266,24 +281,43 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     protected Builder fromConfigMap(
         Map<String, String> configMap, NamingConvention namingConvention) {
       configMap = namingConvention.normalize(configMap);
-      Long value = getLongProperty(KEY_METRIC_TIMEOUT, configMap);
+
+      Long value = getLongProperty(KEY_TIMEOUT, configMap);
+      if (value == null) {
+        value = getLongProperty(CommonProperties.KEY_TIMEOUT, configMap);
+      }
       if (value != null) {
         this.setDeadlineMs(value);
       }
+
       String endpointValue = getStringProperty(KEY_ENDPOINT, configMap);
+      if (endpointValue == null) {
+        endpointValue = getStringProperty(CommonProperties.KEY_ENDPOINT, configMap);
+      }
       if (endpointValue != null) {
         this.setEndpoint(endpointValue);
       }
 
-      Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
-      if (useTlsValue != null) {
-        this.setUseTls(useTlsValue);
+      Boolean insecure = getBooleanProperty(KEY_INSECURE, configMap);
+      if (insecure == null) {
+        insecure = getBooleanProperty(CommonProperties.KEY_INSECURE, configMap);
+      }
+      if (insecure != null) {
+        this.setUseTls(!insecure);
       }
 
-      String metadataValue = getStringProperty(KEY_METADATA, configMap);
+      String metadataValue = getStringProperty(KEY_HEADERS, configMap);
+      if (metadataValue == null) {
+        metadataValue = getStringProperty(CommonProperties.KEY_HEADERS, configMap);
+      }
       if (metadataValue != null) {
         for (String keyValueString : Splitter.on(';').split(metadataValue)) {
-          final List<String> keyValue = Splitter.on('=').splitToList(keyValueString);
+          final List<String> keyValue =
+              Splitter.on('=')
+                  .limit(2)
+                  .trimResults()
+                  .omitEmptyStrings()
+                  .splitToList(keyValueString);
           if (keyValue.size() == 2) {
             addHeader(keyValue.get(0), keyValue.get(1));
           }

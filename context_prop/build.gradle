@@ -9,10 +9,10 @@ description = 'OpenTelemetry Context Propagation'
 ext.moduleName = "io.opentelemetry.context.propagation"
 
 dependencies {
-    api libraries.grpc_context
+    api project(':opentelemetry-context')
 
-    signature "org.codehaus.mojo.signature:java17:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 
 javadoc {

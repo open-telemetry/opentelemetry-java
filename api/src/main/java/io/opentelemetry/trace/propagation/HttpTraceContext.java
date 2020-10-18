@@ -1,28 +1,15 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkArgument;
-import static io.opentelemetry.internal.Utils.checkNotNull;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.TemporaryBuffers;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -32,7 +19,10 @@ import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
@@ -42,7 +32,7 @@ import javax.annotation.concurrent.Immutable;
  * href=https://github.com/w3c/distributed-tracing>w3c/distributed-tracing</a>.
  */
 @Immutable
-public class HttpTraceContext implements HttpTextFormat {
+public class HttpTraceContext implements TextMapPropagator {
   private static final Logger logger = Logger.getLogger(HttpTraceContext.class.getName());
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
@@ -55,9 +45,9 @@ public class HttpTraceContext implements HttpTextFormat {
   private static final int VERSION_SIZE = 2;
   private static final char TRACEPARENT_DELIMITER = '-';
   private static final int TRACEPARENT_DELIMITER_SIZE = 1;
-  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
-  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
-  private static final int TRACE_OPTION_HEX_SIZE = 2 * TraceFlags.getSize();
+  private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
+  private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
+  private static final int TRACE_OPTION_HEX_SIZE = TraceFlags.getHexLength();
   private static final int TRACE_ID_OFFSET = VERSION_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int SPAN_ID_OFFSET =
       TRACE_ID_OFFSET + TRACE_ID_HEX_SIZE + TRACEPARENT_DELIMITER_SIZE;
@@ -70,6 +60,29 @@ public class HttpTraceContext implements HttpTextFormat {
   private static final char TRACESTATE_ENTRY_DELIMITER = ',';
   private static final Pattern TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN =
       Pattern.compile("[ \t]*" + TRACESTATE_ENTRY_DELIMITER + "[ \t]*");
+  private static final Set<String> VALID_VERSIONS;
+  private static final String VERSION_00 = "00";
+  private static final HttpTraceContext INSTANCE = new HttpTraceContext();
+
+  static {
+    // A valid version is 1 byte representing an 8-bit unsigned integer, version ff is invalid.
+    VALID_VERSIONS = new HashSet<>();
+    for (int i = 0; i < 255; i++) {
+      String version = Long.toHexString(i);
+      if (version.length() < 2) {
+        version = '0' + version;
+      }
+      VALID_VERSIONS.add(version);
+    }
+  }
+
+  private HttpTraceContext() {
+    // singleton
+  }
+
+  public static HttpTraceContext getInstance() {
+    return INSTANCE;
+  }
 
   @Override
   public List<String> fields() {
@@ -78,27 +91,33 @@ public class HttpTraceContext implements HttpTextFormat {
 
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
-    checkNotNull(context, "context");
-    checkNotNull(setter, "setter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(setter, "setter");
 
-    Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null || !span.getContext().isValid()) {
+    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    if (!spanContext.isValid()) {
       return;
     }
 
-    injectImpl(span.getContext(), carrier, setter);
-  }
-
-  private static <C> void injectImpl(SpanContext spanContext, C carrier, Setter<C> setter) {
     char[] chars = TemporaryBuffers.chars(TRACEPARENT_HEADER_SIZE);
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
-    spanContext.getTraceId().copyLowerBase16To(chars, TRACE_ID_OFFSET);
+
+    String traceId = spanContext.getTraceIdAsHexString();
+    for (int i = 0; i < traceId.length(); i++) {
+      chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
+    }
+
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
-    spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
+
+    String spanId = spanContext.getSpanIdAsHexString();
+    for (int i = 0; i < spanId.length(); i++) {
+      chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
+    }
+
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
-    spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
+    spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
     List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
     if (entries.isEmpty()) {
@@ -121,16 +140,16 @@ public class HttpTraceContext implements HttpTextFormat {
   @Override
   public <C /*>>> extends @NonNull Object*/> Context extract(
       Context context, C carrier, Getter<C> getter) {
-    checkNotNull(context, "context");
-    checkNotNull(carrier, "carrier");
-    checkNotNull(getter, "getter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(carrier, "carrier");
+    Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext = extractImpl(carrier, getter);
     if (!spanContext.isValid()) {
       return context;
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
   }
 
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {
@@ -152,8 +171,8 @@ public class HttpTraceContext implements HttpTextFormat {
     try {
       TraceState traceState = extractTraceState(traceStateHeader);
       return SpanContext.createFromRemoteParent(
-          contextFromParentHeader.getTraceId(),
-          contextFromParentHeader.getSpanId(),
+          contextFromParentHeader.getTraceIdAsHexString(),
+          contextFromParentHeader.getSpanIdAsHexString(),
           contextFromParentHeader.getTraceFlags(),
           traceState);
     } catch (IllegalArgumentException e) {
@@ -178,10 +197,22 @@ public class HttpTraceContext implements HttpTextFormat {
     }
 
     try {
-      TraceId traceId = TraceId.fromLowerBase16(traceparent, TRACE_ID_OFFSET);
-      SpanId spanId = SpanId.fromLowerBase16(traceparent, SPAN_ID_OFFSET);
-      TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
-      return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+      String version = traceparent.substring(0, 2);
+      if (!VALID_VERSIONS.contains(version)) {
+        return SpanContext.getInvalid();
+      }
+      if (version.equals(VERSION_00) && traceparent.length() > TRACEPARENT_HEADER_SIZE) {
+        return SpanContext.getInvalid();
+      }
+
+      String traceId =
+          traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getHexLength());
+      String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getHexLength());
+      if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
+        byte isSampled = TraceFlags.byteFromHex(traceparent, TRACE_OPTION_OFFSET);
+        return SpanContext.createFromRemoteParent(traceId, spanId, isSampled, TRACE_STATE_DEFAULT);
+      }
+      return SpanContext.getInvalid();
     } catch (IllegalArgumentException e) {
       logger.info("Unparseable traceparent header. Returning INVALID span context.");
       return SpanContext.getInvalid();

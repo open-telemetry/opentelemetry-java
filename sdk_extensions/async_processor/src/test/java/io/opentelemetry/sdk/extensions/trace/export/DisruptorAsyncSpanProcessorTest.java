@@ -1,48 +1,38 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /** Unit tests for {@link DisruptorAsyncSpanProcessor}. */
+@ExtendWith(MockitoExtension.class)
 class DisruptorAsyncSpanProcessorTest {
   private static final boolean REQUIRED = true;
   private static final boolean NOT_REQUIRED = false;
 
   @Mock private ReadableSpan readableSpan;
-
-  @BeforeEach
-  void setUp() {
-    MockitoAnnotations.initMocks(this);
-  }
+  @Mock private ReadWriteSpan readWriteSpan;
 
   // EventQueueEntry for incrementing a Counter.
   private static class IncrementSpanProcessor implements SpanProcessor {
@@ -62,7 +52,7 @@ class DisruptorAsyncSpanProcessorTest {
     }
 
     @Override
-    public void onStart(ReadableSpan span) {
+    public void onStart(ReadWriteSpan span, Context parentContext) {
       counterOnStart.incrementAndGet();
     }
 
@@ -83,15 +73,17 @@ class DisruptorAsyncSpanProcessorTest {
     }
 
     @Override
-    public void shutdown() {
+    public CompletableResultCode shutdown() {
       counterOnShutdown.incrementAndGet();
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
-    public void forceFlush() {
+    public CompletableResultCode forceFlush() {
       counterOnForceFlush.incrementAndGet();
       deltaExportedForceFlushSpans.set(counterEndSpans.getAndSet(0));
       counterOnExportedForceFlushSpans.addAndGet(deltaExportedForceFlushSpans.get());
+      return CompletableResultCode.ofSuccess();
     }
 
     private int getCounterOnStart() {
@@ -123,15 +115,15 @@ class DisruptorAsyncSpanProcessorTest {
   void incrementOnce() {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
+        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
     assertThat(disruptorAsyncSpanProcessor.isStartRequired()).isTrue();
     assertThat(disruptorAsyncSpanProcessor.isEndRequired()).isTrue();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
-    disruptorAsyncSpanProcessor.onStart(readableSpan);
+    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.forceFlush();
-    disruptorAsyncSpanProcessor.shutdown();
+    disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(1);
     assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(1);
@@ -143,15 +135,15 @@ class DisruptorAsyncSpanProcessorTest {
     IncrementSpanProcessor incrementSpanProcessor =
         new IncrementSpanProcessor(NOT_REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
+        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
     assertThat(disruptorAsyncSpanProcessor.isStartRequired()).isFalse();
     assertThat(disruptorAsyncSpanProcessor.isEndRequired()).isTrue();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
-    disruptorAsyncSpanProcessor.onStart(readableSpan);
+    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.forceFlush();
-    disruptorAsyncSpanProcessor.shutdown();
+    disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(1);
     assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(1);
@@ -163,15 +155,15 @@ class DisruptorAsyncSpanProcessorTest {
     IncrementSpanProcessor incrementSpanProcessor =
         new IncrementSpanProcessor(REQUIRED, NOT_REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
+        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
     assertThat(disruptorAsyncSpanProcessor.isStartRequired()).isTrue();
     assertThat(disruptorAsyncSpanProcessor.isEndRequired()).isFalse();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
-    disruptorAsyncSpanProcessor.onStart(readableSpan);
+    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.forceFlush();
-    disruptorAsyncSpanProcessor.shutdown();
+    disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(1);
@@ -182,12 +174,12 @@ class DisruptorAsyncSpanProcessorTest {
   void shutdownIsCalledOnlyOnce() {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
-    disruptorAsyncSpanProcessor.shutdown();
-    disruptorAsyncSpanProcessor.shutdown();
-    disruptorAsyncSpanProcessor.shutdown();
-    disruptorAsyncSpanProcessor.shutdown();
-    disruptorAsyncSpanProcessor.shutdown();
+        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
@@ -195,15 +187,15 @@ class DisruptorAsyncSpanProcessorTest {
   void incrementAfterShutdown() {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
-    disruptorAsyncSpanProcessor.shutdown();
-    disruptorAsyncSpanProcessor.onStart(readableSpan);
+        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
+    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.forceFlush();
+    disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(0);
-    disruptorAsyncSpanProcessor.shutdown();
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
@@ -212,18 +204,18 @@ class DisruptorAsyncSpanProcessorTest {
     final int tenK = 10000;
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
+        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
     for (int i = 1; i <= tenK; i++) {
-      disruptorAsyncSpanProcessor.onStart(readableSpan);
+      disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
       disruptorAsyncSpanProcessor.onEnd(readableSpan);
       if (i % 10 == 0) {
-        disruptorAsyncSpanProcessor.forceFlush();
+        disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
       }
     }
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(tenK / 10);
-    disruptorAsyncSpanProcessor.shutdown();
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
@@ -232,13 +224,13 @@ class DisruptorAsyncSpanProcessorTest {
     IncrementSpanProcessor incrementSpanProcessor1 = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     IncrementSpanProcessor incrementSpanProcessor2 = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(
+        DisruptorAsyncSpanProcessor.builder(
                 MultiSpanProcessor.create(
                     Arrays.asList(incrementSpanProcessor1, incrementSpanProcessor2)))
             .build();
-    disruptorAsyncSpanProcessor.onStart(readableSpan);
+    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.shutdown();
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor1.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor1.getCounterOnEnd()).isEqualTo(1);
     assertThat(incrementSpanProcessor1.getCounterOnShutdown()).isEqualTo(1);
@@ -254,16 +246,16 @@ class DisruptorAsyncSpanProcessorTest {
     final int tenK = 10000;
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
+        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
     for (int i = 1; i <= tenK; i++) {
-      disruptorAsyncSpanProcessor.onStart(readableSpan);
+      disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
       disruptorAsyncSpanProcessor.onEnd(readableSpan);
       if (i % 100 == 0) {
-        disruptorAsyncSpanProcessor.forceFlush();
+        disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
         assertThat(incrementSpanProcessor.getDeltaExportedForceFlushSpans()).isEqualTo(100);
       }
     }
-    disruptorAsyncSpanProcessor.shutdown();
+    disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnExportedForceFlushSpans()).isEqualTo(tenK);
@@ -285,7 +277,7 @@ class DisruptorAsyncSpanProcessorTest {
     options.put("otel.disruptor.sleeping.time", "78");
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor.Builder config =
-        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor);
+        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor);
     DisruptorAsyncSpanProcessor.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
     Mockito.verify(spy).setBlocking(false);

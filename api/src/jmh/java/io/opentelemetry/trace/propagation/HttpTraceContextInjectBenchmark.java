@@ -1,28 +1,15 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace.propagation;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
@@ -53,7 +40,7 @@ public class HttpTraceContextInjectBenchmark {
           createTestSpanContext("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
           createTestSpanContext("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
   private static final int COUNT = 5; // spanContexts.size()
-  private final HttpTraceContext httpTraceContext = new HttpTraceContext();
+  private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
   private final Map<String, String> carrier = new HashMap<>();
   private final Setter<Map<String, String>> setter =
       new Setter<Map<String, String>>() {
@@ -80,20 +67,15 @@ public class HttpTraceContextInjectBenchmark {
   }
 
   private static SpanContext createTestSpanContext(String traceId, String spanId) {
-    byte sampledTraceOptionsBytes = 1;
-    TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
+    byte sampledTraceOptions = TraceFlags.getSampled();
     TraceState traceStateDefault = TraceState.builder().build();
-    return SpanContext.create(
-        TraceId.fromLowerBase16(traceId, 0),
-        SpanId.fromLowerBase16(spanId, 0),
-        sampledTraceOptions,
-        traceStateDefault);
+    return SpanContext.create(traceId, spanId, sampledTraceOptions, traceStateDefault);
   }
 
   private static List<Context> createContexts(List<SpanContext> spanContexts) {
     List<Context> contexts = new ArrayList<>();
     for (SpanContext context : spanContexts) {
-      contexts.add(TracingContextUtils.withSpan(DefaultSpan.create(context), Context.ROOT));
+      contexts.add(TracingContextUtils.withSpan(Span.wrap(context), Context.root()));
     }
     return contexts;
   }

@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
@@ -21,13 +10,18 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class BeanstalkResource extends AwsResource {
+/**
+ * A {@link ResourceProvider} which provides information about the current EC2 instance if running
+ * on AWS Elastic Beanstalk.
+ */
+public class BeanstalkResource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(BeanstalkResource.class.getName());
 
@@ -39,7 +33,11 @@ class BeanstalkResource extends AwsResource {
 
   private final String configPath;
 
-  BeanstalkResource() {
+  /**
+   * Returns a {@link BeanstalkResource} which attempts to compute information about the Beanstalk
+   * environment if available.
+   */
+  public BeanstalkResource() {
     this(BEANSTALK_CONF_PATH);
   }
 
@@ -49,13 +47,13 @@ class BeanstalkResource extends AwsResource {
   }
 
   @Override
-  Attributes createAttributes() {
+  public Attributes getAttributes() {
     File configFile = new File(configPath);
     if (!configFile.exists()) {
       return Attributes.empty();
     }
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.builder();
     try (JsonParser parser = JSON_FACTORY.createParser(configFile)) {
       parser.nextToken();
 
@@ -69,13 +67,13 @@ class BeanstalkResource extends AwsResource {
         String value = parser.getText();
         switch (parser.getCurrentName()) {
           case DEVELOPMENT_ID:
-            attrBuilders.setAttribute(ResourceConstants.SERVICE_INSTANCE, value);
+            attrBuilders.setAttribute(ResourceAttributes.SERVICE_INSTANCE, value);
             break;
           case VERSION_LABEL:
-            attrBuilders.setAttribute(ResourceConstants.SERVICE_VERSION, value);
+            attrBuilders.setAttribute(ResourceAttributes.SERVICE_VERSION, value);
             break;
           case ENVIRONMENT_NAME:
-            attrBuilders.setAttribute(ResourceConstants.SERVICE_NAMESPACE, value);
+            attrBuilders.setAttribute(ResourceAttributes.SERVICE_NAMESPACE, value);
             break;
           default:
             parser.skipChildren();
@@ -85,6 +83,9 @@ class BeanstalkResource extends AwsResource {
       logger.log(Level.WARNING, "Could not parse Beanstalk config.", e);
       return Attributes.empty();
     }
+
+    attrBuilders.setAttribute(
+        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
     return attrBuilders.build();
   }

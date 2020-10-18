@@ -1,24 +1,13 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -41,9 +30,8 @@ public class TracezDataAggregatorBenchmark {
   private static final String runningSpan = "RUNNING_SPAN";
   private static final String latencySpan = "LATENCY_SPAN";
   private static final String errorSpan = "ERROR_SPAN";
-  private final Tracer tracer =
-      OpenTelemetrySdk.getTracerProvider().get("TracezDataAggregatorBenchmark");
-  private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+  private final Tracer tracer = OpenTelemetry.getTracer("TracezDataAggregatorBenchmark");
+  private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
 
   @Param({"1", "10", "1000", "1000000"})
@@ -55,7 +43,7 @@ public class TracezDataAggregatorBenchmark {
       tracer.spanBuilder(runningSpan).startSpan();
       tracer.spanBuilder(latencySpan).startSpan().end();
       Span error = tracer.spanBuilder(errorSpan).startSpan();
-      error.setStatus(Status.UNKNOWN);
+      error.setStatus(StatusCode.ERROR);
       error.end();
     }
   }

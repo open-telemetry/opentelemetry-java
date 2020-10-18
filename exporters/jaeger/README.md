@@ -13,7 +13,7 @@ spans will be sent to a Jaeger gRPC endpoint running on `localhost`:
 
 ```java
 JaegerGrpcSpanExporter exporter =
-        JaegerGrpcSpanExporter.newBuilder()
+        JaegerGrpcSpanExporter.builder()
             .setEndpoint("localhost:14250")
             .setServiceName("my-service")
             .build();
@@ -24,7 +24,7 @@ Service name and Endpoint can be also configured via environment variables or sy
 ```java
 // Using environment variables
 JaegerGrpcSpanExporter exporter = 
-        JaegerGrpcSpanExporter.newBuilder()
+        JaegerGrpcSpanExporter.builder()
             .readEnvironmentVariables()
             .build()
 ```
@@ -32,7 +32,7 @@ JaegerGrpcSpanExporter exporter =
 ```java
 // Using system properties
 JaegerGrpcSpanExporter exporter = 
-        JaegerGrpcSpanExporter.newBuilder()
+        JaegerGrpcSpanExporter.builder()
             .readSystemProperties()
             .build()
 ```
@@ -43,7 +43,7 @@ The Jaeger gRPC span exporter will look for the following environment variables 
 
 ## Compatibility
 
-As with the OpenTelemetry SDK itself, this exporter is compatible with Java 7+ and Android API level 24+.
+As with the OpenTelemetry SDK itself, this exporter is compatible with Java 8+ and Android API level 24+.
 
 ## Proto files
 

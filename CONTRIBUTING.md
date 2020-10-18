@@ -14,28 +14,29 @@ Make sure to review the projects [license](LICENSE) and sign the
 [CNCF CLA](https://identity.linuxfoundation.org/projects/cncf). A signed CLA will be enforced by an
 automatic check once you submit a PR, but you can also sign it after opening your PR.
 
+## Checks
+
+Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
+with the `check` task.
+
+```bash
+$ ./gradlew check
+```
+
 ## Style guideline
 
 We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). 
-Our build will fail if source code is not formatted according to that style.
+Our build will fail if source code is not formatted according to that style. To fix any
+style failures the above [checks](#checks) show, automatically apply the formatting with
+
+```bash
+$ ./gradlew spotlessApply
+```
 
 To verify code style manually run the following command, 
 which uses [google-java-format](https://github.com/google/google-java-format) library:
 
-`./gradlew verifyGoogleJavaFormat`
-
-or on Windows
-
-`gradlew.bat verifyGoogleJavaFormat`
-
-Instead of fixing style inconsistencies by hand, you can run gradle task `googleJavaFormat`
-to automatically fix all found issues:
-
-`./gradlew googleJavaFormat`
-
-or on Windows
-
-`gradlew.bat googleJavaFormat`
+`./gradlew spotless`
 
 ### Pre-commit hook
 To completely delegate code style formatting to the machine, 
@@ -43,11 +44,10 @@ you can add [git pre-commit hook](https://git-scm.com/docs/githooks).
 We provide an example script in `buildscripts/pre-commit` file.
 Just copy or symlink it into `.git/hooks` folder.
 
-
 ### Editorconfig 
 As additional convenience for IntelliJ Idea users, we provide `.editorconfig` file.
 Idea will automatically use it to adjust its code formatting settings.
-It does not support all required rules, so you still have to run `googleJavaFormat` from time to time.
+It does not support all required rules, so you still have to run `spotlessApply` from time to time.
 
 ### Javadoc
 
@@ -66,15 +66,7 @@ It does not support all required rules, so you still have to run `googleJavaForm
   Javadoc, though the style of documentation is up to the author.
 * Try to do the least amount of change when modifying existing documentation.
   Don't change the style unless you have a good reason.
-
-``` sh
-$ git checkout -b docs
-$ ./gradlew javadoc
-$ rm -fr docs/*
-$ cp -R api/build/docs/javadoc/* docs
-$ git add -A .
-$ git commit -m "Update javadoc for API."
-```
+* Our javadoc is available via [javadoc.io}(https://javadoc.io/doc/io.opentelemetry/opentelemetry-api)
 
 ### AutoValue
 

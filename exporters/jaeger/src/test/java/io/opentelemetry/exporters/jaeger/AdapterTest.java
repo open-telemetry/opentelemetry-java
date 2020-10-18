@@ -1,44 +1,38 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.jaeger;
 
+import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -86,7 +80,7 @@ class AdapterTest {
     assertEquals(Timestamps.fromMillis(startMs), jaegerSpan.getStartTime());
     assertEquals(duration, Durations.toMillis(jaegerSpan.getDuration()));
 
-    assertEquals(4, jaegerSpan.getTagsCount());
+    assertEquals(5, jaegerSpan.getTagsCount());
     Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
     assertNotNull(keyValue);
     assertEquals("server", keyValue.getVStr());
@@ -128,7 +122,7 @@ class AdapterTest {
   @Test
   void testJaegerLog() {
     // prepare
-    EventImpl event = getTimedEvent();
+    Event event = getTimedEvent();
 
     // test
     Model.Log log = Adapter.toJaegerLog(event);
@@ -145,40 +139,20 @@ class AdapterTest {
   }
 
   @Test
-  void testKeyValues() {
-    // prepare
-    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-
-    // test
-    Collection<Model.KeyValue> keyValues =
-        Adapter.toKeyValues(Collections.singletonMap("valueB", valueB));
-
-    // verify
-    // the actual content is checked in some other test
-    assertEquals(1, keyValues.size());
-  }
-
-  @Test
   void testKeyValue() {
-    // prepare
-    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-    AttributeValue valueD = AttributeValue.doubleAttributeValue(1.);
-    AttributeValue valueI = AttributeValue.longAttributeValue(2);
-    AttributeValue valueS = AttributeValue.stringAttributeValue("foobar");
-    AttributeValue valueArrayB = AttributeValue.arrayAttributeValue(true, false);
-    AttributeValue valueArrayD = AttributeValue.arrayAttributeValue(1.2345, 6.789);
-    AttributeValue valueArrayI = AttributeValue.arrayAttributeValue(12345L, 67890L);
-    AttributeValue valueArrayS = AttributeValue.arrayAttributeValue("foobar", "barfoo");
-
     // test
-    Model.KeyValue kvB = Adapter.toKeyValue("valueB", valueB);
-    Model.KeyValue kvD = Adapter.toKeyValue("valueD", valueD);
-    Model.KeyValue kvI = Adapter.toKeyValue("valueI", valueI);
-    Model.KeyValue kvS = Adapter.toKeyValue("valueS", valueS);
-    Model.KeyValue kvArrayB = Adapter.toKeyValue("valueArrayB", valueArrayB);
-    Model.KeyValue kvArrayD = Adapter.toKeyValue("valueArrayD", valueArrayD);
-    Model.KeyValue kvArrayI = Adapter.toKeyValue("valueArrayI", valueArrayI);
-    Model.KeyValue kvArrayS = Adapter.toKeyValue("valueArrayS", valueArrayS);
+    Model.KeyValue kvB = Adapter.toKeyValue(booleanKey("valueB"), true);
+    Model.KeyValue kvD = Adapter.toKeyValue(doubleKey("valueD"), 1.);
+    Model.KeyValue kvI = Adapter.toKeyValue(longKey("valueI"), 2L);
+    Model.KeyValue kvS = Adapter.toKeyValue(stringKey("valueS"), "foobar");
+    Model.KeyValue kvArrayB =
+        Adapter.toKeyValue(booleanArrayKey("valueArrayB"), Arrays.asList(true, false));
+    Model.KeyValue kvArrayD =
+        Adapter.toKeyValue(doubleArrayKey("valueArrayD"), Arrays.asList(1.2345, 6.789));
+    Model.KeyValue kvArrayI =
+        Adapter.toKeyValue(longArrayKey("valueArrayI"), Arrays.asList(12345L, 67890L));
+    Model.KeyValue kvArrayS =
+        Adapter.toKeyValue(stringArrayKey("valueArrayS"), Arrays.asList("foobar", "barfoo"));
 
     // verify
     assertTrue(kvB.getVBool());
@@ -226,27 +200,25 @@ class AdapterTest {
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
 
     // verify
-    assertEquals(
-        TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(SPAN_ID, 0)), spanRef.getSpanId());
-    assertEquals(
-        TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)), spanRef.getTraceId());
+    assertEquals(TraceProtoUtils.toProtoSpanId(SPAN_ID), spanRef.getSpanId());
+    assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), spanRef.getTraceId());
     assertEquals(Model.SpanRefType.FOLLOWS_FROM, spanRef.getRefType());
   }
 
   @Test
-  void testStatusNotOk() {
+  void testStatusNotUnset() {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        TestSpanData.newBuilder()
+        TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.CANCELLED)
+            .setStatus(Status.error())
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
             .build();
@@ -258,22 +230,22 @@ class AdapterTest {
   void testSpanError() {
     Attributes attributes =
         Attributes.of(
-            "error.type",
-            AttributeValue.stringAttributeValue(this.getClass().getName()),
-            "error.message",
-            AttributeValue.stringAttributeValue("server error"));
+            stringKey("error.type"),
+            this.getClass().getName(),
+            stringKey("error.message"),
+            "server error");
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        TestSpanData.newBuilder()
+        TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.UNKNOWN)
+            .setStatus(Status.error())
             .setAttributes(attributes)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
@@ -288,44 +260,39 @@ class AdapterTest {
     assertTrue(error.getVBool());
   }
 
-  private static EventImpl getTimedEvent() {
+  private static Event getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-    AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
-    Attributes attributes = Attributes.of("foo", valueS);
-    return EventImpl.create(epochNanos, "the log message", attributes);
+    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
+    return Event.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
-    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-    Attributes attributes = Attributes.of("valueB", valueB);
+    Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setHasEnded(true)
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
+        .setParentSpanId(PARENT_SPAN_ID)
         .setName("GET /api/endpoint")
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-        .setAttributes(Attributes.of("valueB", valueB))
+        .setAttributes(Attributes.of(booleanKey("valueB"), true))
         .setEvents(Collections.singletonList(getTimedEvent()))
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Attributes.empty()))
-        .setStatus(Status.OK)
+        .setStatus(Status.ok())
         .build();
   }
 
   private static SpanContext createSpanContext(String traceId, String spanId) {
     return SpanContext.create(
-        TraceId.fromLowerBase16(traceId, 0),
-        SpanId.fromLowerBase16(spanId, 0),
-        TraceFlags.builder().build(),
-        TraceState.builder().build());
+        traceId, spanId, TraceFlags.getDefault(), TraceState.builder().build());
   }
 
   @Nullable
@@ -342,12 +309,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
-        assertEquals(
-            TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(LINK_TRACE_ID, 0)),
-            spanRef.getTraceId());
-        assertEquals(
-            TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(LINK_SPAN_ID, 0)),
-            spanRef.getSpanId());
+        assertEquals(TraceProtoUtils.toProtoTraceId(LINK_TRACE_ID), spanRef.getTraceId());
+        assertEquals(TraceProtoUtils.toProtoSpanId(LINK_SPAN_ID), spanRef.getSpanId());
         found = true;
       }
     }
@@ -358,12 +321,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
-        assertEquals(
-            TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)),
-            spanRef.getTraceId());
-        assertEquals(
-            TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0)),
-            spanRef.getSpanId());
+        assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), spanRef.getTraceId());
+        assertEquals(TraceProtoUtils.toProtoSpanId(PARENT_SPAN_ID), spanRef.getSpanId());
         found = true;
       }
     }

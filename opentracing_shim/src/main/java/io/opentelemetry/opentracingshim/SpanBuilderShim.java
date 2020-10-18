@@ -1,25 +1,21 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.correlationcontext.CorrelationContext;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
+
+import io.opentelemetry.baggage.Baggage;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCode;
+import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
@@ -38,8 +34,11 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private boolean ignoreActiveSpan;
 
   private final List<io.opentelemetry.trace.SpanContext> parentLinks = new ArrayList<>();
-  private final List<String> spanBuilderAttributeKeys = new ArrayList<>();
-  private final List<AttributeValue> spanBuilderAttributeValues = new ArrayList<>();
+
+  @SuppressWarnings("rawtypes")
+  private final List<AttributeKey> spanBuilderAttributeKeys = new ArrayList<>();
+
+  private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
   private Kind spanKind;
   private boolean error;
 
@@ -118,8 +117,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     } else if (Tags.ERROR.getKey().equals(key)) {
       error = Boolean.parseBoolean(value);
     } else {
-      this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.stringAttributeValue(value));
+      this.spanBuilderAttributeKeys.add(stringKey(key));
+      this.spanBuilderAttributeValues.add(value);
     }
 
     return this;
@@ -130,8 +129,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (Tags.ERROR.getKey().equals(key)) {
       error = value;
     } else {
-      this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.booleanAttributeValue(value));
+      this.spanBuilderAttributeKeys.add(booleanKey(key));
+      this.spanBuilderAttributeValues.add(value);
     }
     return this;
   }
@@ -143,11 +142,11 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
         || value instanceof Long
         || value instanceof Short
         || value instanceof Byte) {
-      this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.longAttributeValue(value.longValue()));
+      this.spanBuilderAttributeKeys.add(longKey(key));
+      this.spanBuilderAttributeValues.add(value.longValue());
     } else if (value instanceof Float || value instanceof Double) {
-      this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.doubleAttributeValue(value.doubleValue()));
+      this.spanBuilderAttributeKeys.add(doubleKey(key));
+      this.spanBuilderAttributeValues.add(value.doubleValue());
     } else {
       throw new IllegalArgumentException("Number type not supported");
     }
@@ -175,20 +174,24 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     throw new UnsupportedOperationException();
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public Span start() {
-    CorrelationContext distContext = null;
+    Baggage baggage = null;
     io.opentelemetry.trace.Span.Builder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      builder.setParent(parentSpan.getSpan());
+      builder.setParent(TracingContextUtils.withSpan(parentSpan.getSpan(), Context.root()));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
-      distContext = contextShim == null ? null : contextShim.getCorrelationContext();
+      baggage = contextShim == null ? null : contextShim.getBaggage();
     } else if (parentSpanContext != null) {
-      builder.setParent(parentSpanContext.getSpanContext());
-      distContext = parentSpanContext.getCorrelationContext();
+      builder.setParent(
+          TracingContextUtils.withSpan(
+              io.opentelemetry.trace.Span.wrap(parentSpanContext.getSpanContext()),
+              Context.root()));
+      baggage = parentSpanContext.getBaggage();
     }
 
     for (io.opentelemetry.trace.SpanContext link : parentLinks) {
@@ -202,18 +205,18 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     io.opentelemetry.trace.Span span = builder.startSpan();
 
     for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {
-      String key = this.spanBuilderAttributeKeys.get(i);
-      AttributeValue value = this.spanBuilderAttributeValues.get(i);
+      AttributeKey key = this.spanBuilderAttributeKeys.get(i);
+      Object value = this.spanBuilderAttributeValues.get(i);
       span.setAttribute(key, value);
     }
     if (error) {
-      span.setStatus(Status.UNKNOWN);
+      span.setStatus(StatusCode.ERROR);
     }
 
     SpanShim spanShim = new SpanShim(telemetryInfo(), span);
 
-    if (distContext != null && distContext != telemetryInfo().emptyCorrelationContext()) {
-      spanContextTable().create(spanShim, distContext);
+    if (baggage != null && baggage != telemetryInfo().emptyBaggage()) {
+      spanContextTable().create(spanShim, baggage);
     }
 
     return spanShim;

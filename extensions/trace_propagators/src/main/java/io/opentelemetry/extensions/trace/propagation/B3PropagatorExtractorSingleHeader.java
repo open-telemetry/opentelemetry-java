@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.extensions.trace.propagation;
@@ -19,12 +8,13 @@ package io.opentelemetry.extensions.trace.propagation;
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.COMBINED_HEADER;
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.COMBINED_HEADER_DELIMITER;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
@@ -34,20 +24,21 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
       Logger.getLogger(B3PropagatorExtractorSingleHeader.class.getName());
 
   @Override
-  public <C> Context extract(Context context, C carrier, HttpTextFormat.Getter<C> getter) {
+  public <C> Optional<Context> extract(
+      Context context, C carrier, TextMapPropagator.Getter<C> getter) {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
     SpanContext spanContext = getSpanContextFromSingleHeader(carrier, getter);
     if (!spanContext.isValid()) {
-      return context;
+      return Optional.empty();
     }
 
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return Optional.of(TracingContextUtils.withSpan(Span.wrap(spanContext), context));
   }
 
   @SuppressWarnings("StringSplitter")
   private static <C> SpanContext getSpanContextFromSingleHeader(
-      C carrier, HttpTextFormat.Getter<C> getter) {
+      C carrier, TextMapPropagator.Getter<C> getter) {
     String value = getter.get(carrier, COMBINED_HEADER);
     if (StringUtils.isNullOrEmpty(value)) {
       return SpanContext.getInvalid();

@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
@@ -22,13 +11,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +32,7 @@ class TestSpanDataTest {
   void defaultValues() {
     SpanData spanData = createBasicSpanBuilder().build();
 
-    assertThat(spanData.getParentSpanId().isValid()).isFalse();
+    assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
     assertThat(spanData.getAttributes()).isEqualTo(Attributes.empty());
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
@@ -65,7 +54,7 @@ class TestSpanDataTest {
 
     assertThrows(
         UnsupportedOperationException.class,
-        () -> spanData.getEvents().add(EventImpl.create(1234, "foo", Attributes.empty())));
+        () -> spanData.getEvents().add(Event.create(1234, "foo", Attributes.empty())));
   }
 
   @Test
@@ -94,20 +83,20 @@ class TestSpanDataTest {
 
   @Test
   void timedEvent_defaultTotalAttributeCountIsZero() {
-    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty());
+    Event event = Event.create(START_EPOCH_NANOS, "foo", Attributes.empty());
     assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   void timedEvent_canSetTotalAttributeCount() {
-    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty(), 123);
+    Event event = Event.create(START_EPOCH_NANOS, "foo", Attributes.empty(), 123);
     assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 
   private static SpanData createSpanDataWithMutableCollections() {
     return createBasicSpanBuilder()
-        .setLinks(new ArrayList<Link>())
-        .setEvents(new ArrayList<SpanData.Event>())
+        .setLinks(new ArrayList<>())
+        .setEvents(new ArrayList<>())
         .build();
   }
 
@@ -116,7 +105,7 @@ class TestSpanDataTest {
   }
 
   private static TestSpanData.Builder createBasicSpanBuilder() {
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setHasEnded(true)
         .setSpanId(SpanId.getInvalid())
         .setTraceId(TraceId.getInvalid())
@@ -124,7 +113,7 @@ class TestSpanDataTest {
         .setStartEpochNanos(START_EPOCH_NANOS)
         .setEndEpochNanos(END_EPOCH_NANOS)
         .setKind(Kind.SERVER)
-        .setStatus(Status.OK)
+        .setStatus(Status.ok())
         .setHasRemoteParent(false)
         .setTotalRecordedEvents(0)
         .setTotalRecordedLinks(0);

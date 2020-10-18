@@ -14,8 +14,7 @@ dependencies {
             project(':opentelemetry-exporters-inmemory'),
             libraries.junit,
             libraries.assertj,
-            libraries.slf4jsimple,
-            libraries.awaitility
+            libraries.slf4jsimple
 }
 test {
     testLogging.showStandardStreams = true

@@ -1,26 +1,16 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.example;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Tracer;
@@ -32,11 +22,11 @@ public class ConfigureSpanProcessorExample {
   static LoggingSpanExporter exporter = new LoggingSpanExporter();
 
   // Get the Tracer Provider
-  static TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+  static TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
   // Acquire a tracer
-  static Tracer tracer = tracerProvider.get("ConfigureSpanProcessorExample");
+  static Tracer tracer = OpenTelemetry.getTracer("ConfigureSpanProcessorExample");
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
 
     // Example how to configure the default SpanProcessors.
     defaultSpanProcessors();

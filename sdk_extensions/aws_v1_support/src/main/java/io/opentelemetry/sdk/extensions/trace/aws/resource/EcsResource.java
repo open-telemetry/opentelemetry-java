@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
@@ -19,14 +8,19 @@ package io.opentelemetry.sdk.extensions.trace.aws.resource;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class EcsResource extends AwsResource {
+/**
+ * A {@link ResourceProvider} which provides information about the current ECS container if running
+ * on AWS ECS.
+ */
+public class EcsResource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(EcsResource.class.getName());
 
@@ -36,7 +30,11 @@ class EcsResource extends AwsResource {
   private final Map<String, String> sysEnv;
   private final DockerHelper dockerHelper;
 
-  EcsResource() {
+  /**
+   * Returns a {@link Ec2Resource} which attempts to compute information about this ECS container if
+   * available.
+   */
+  public EcsResource() {
     this(System.getenv(), new DockerHelper());
   }
 
@@ -47,22 +45,24 @@ class EcsResource extends AwsResource {
   }
 
   @Override
-  Attributes createAttributes() {
+  public Attributes getAttributes() {
     if (!isOnEcs()) {
       return Attributes.empty();
     }
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.builder();
+    attrBuilders.setAttribute(
+        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
     try {
       String hostName = InetAddress.getLocalHost().getHostName();
-      attrBuilders.setAttribute(ResourceConstants.CONTAINER_NAME, hostName);
+      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_NAME, hostName);
     } catch (UnknownHostException e) {
       logger.log(Level.WARNING, "Could not get docker container name from hostname.", e);
     }
 
     String containerId = dockerHelper.getContainerId();
     if (!Strings.isNullOrEmpty(containerId)) {
-      attrBuilders.setAttribute(ResourceConstants.CONTAINER_ID, containerId);
+      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
     return attrBuilders.build();

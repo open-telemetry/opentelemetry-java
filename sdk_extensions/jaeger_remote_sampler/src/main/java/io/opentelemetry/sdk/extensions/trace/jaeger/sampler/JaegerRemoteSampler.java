@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
@@ -27,17 +16,15 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.SamplingManagerGrpc.Sampli
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.trace.Link;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
 public class JaegerRemoteSampler implements Sampler {
@@ -46,7 +33,7 @@ public class JaegerRemoteSampler implements Sampler {
   private static final String WORKER_THREAD_NAME =
       JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
   private static final int DEFAULT_POLLING_INTERVAL_MS = 60000;
-  private static final Sampler INITIAL_SAMPLER = Samplers.probability(0.001);
+  private static final Sampler INITIAL_SAMPLER = Samplers.traceIdRatioBased(0.001);
 
   private final String serviceName;
   private final SamplingManagerBlockingStub stub;
@@ -79,12 +66,12 @@ public class JaegerRemoteSampler implements Sampler {
 
   @Override
   public SamplingResult shouldSample(
-      @Nullable SpanContext parentContext,
-      TraceId traceId,
+      SpanContext parentContext,
+      String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
-      List<Link> parentLinks) {
+      List<SpanData.Link> parentLinks) {
     return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
   }
 
@@ -99,13 +86,13 @@ public class JaegerRemoteSampler implements Sampler {
     PerOperationSamplingStrategies operationSampling = response.getOperationSampling();
     if (operationSampling != null && operationSampling.getPerOperationStrategiesList().size() > 0) {
       Sampler defaultSampler =
-          Samplers.probability(operationSampling.getDefaultSamplingProbability());
+          Samplers.traceIdRatioBased(operationSampling.getDefaultSamplingProbability());
       return new PerOperationSampler(
           defaultSampler, operationSampling.getPerOperationStrategiesList());
     }
     switch (response.getStrategyType()) {
       case PROBABILISTIC:
-        return Samplers.probability(response.getProbabilisticSampling().getSamplingRate());
+        return Samplers.traceIdRatioBased(response.getProbabilisticSampling().getSamplingRate());
       case RATE_LIMITING:
         return new RateLimitingSampler(response.getRateLimitingSampling().getMaxTracesPerSecond());
       case UNRECOGNIZED:
@@ -116,12 +103,12 @@ public class JaegerRemoteSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return this.toString();
+    return String.format("JaegerRemoteSampler{%s}", this.sampler);
   }
 
   @Override
   public String toString() {
-    return String.format("JaegerRemoteSampler{%s}", this.sampler);
+    return getDescription();
   }
 
   @VisibleForTesting
@@ -129,7 +116,7 @@ public class JaegerRemoteSampler implements Sampler {
     return this.sampler;
   }
 
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 

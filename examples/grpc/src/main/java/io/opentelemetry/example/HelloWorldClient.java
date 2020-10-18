@@ -1,18 +1,7 @@
 /*
  * Copyright 2015 The gRPC Authors
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.example;
@@ -30,14 +19,15 @@ import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,19 +40,15 @@ public class HelloWorldClient {
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
   // OTel API
-  Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");;
+  Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text headers
-  HttpTextFormat textFormat = OpenTelemetry.getPropagators().getHttpTextFormat();
+  TextMapPropagator textFormat = OpenTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
-  HttpTextFormat.Setter<Metadata> setter =
-      new HttpTextFormat.Setter<Metadata>() {
-        @Override
-        public void set(Metadata carrier, String key, String value) {
+  TextMapPropagator.Setter<Metadata> setter =
+      (carrier, key, value) ->
           carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
-        }
-      };
 
   /** Construct client connecting to HelloWorld server at {@code host:port}. */
   public HelloWorldClient(String host, int port) {
@@ -83,7 +69,7 @@ public class HelloWorldClient {
 
   private void initTracer() {
     // Use the OpenTelemetry SDK
-    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+    TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
     // Set to process the spans by the log exporter
     tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
@@ -105,17 +91,14 @@ public class HelloWorldClient {
     span.setAttribute("net.peer.port", this.serverPort);
 
     // Set the context with the current span
-    try (Scope scope = tracer.withSpan(span)) {
+    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
       HelloRequest request = HelloRequest.newBuilder().setName(name).build();
       try {
         HelloReply response = blockingStub.sayHello(request);
-        span.setStatus(Status.OK);
         logger.info("Greeting: " + response.getMessage());
       } catch (StatusRuntimeException e) {
         logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-        // TODO create mapping for io.grpc.Status<->io.opentelemetry.trace.Status
-        span.setStatus(Status.UNKNOWN.withDescription("gRPC status: " + e.getStatus()));
-        return;
+        span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + e.getStatus());
       }
     } finally {
       span.end();
@@ -127,7 +110,7 @@ public class HelloWorldClient {
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
         MethodDescriptor<ReqT, RespT> methodDescriptor, CallOptions callOptions, Channel channel) {
-      return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
+      return new ForwardingClientCall.SimpleForwardingClientCall<>(
           channel.newCall(methodDescriptor, callOptions)) {
         @Override
         public void start(Listener<RespT> responseListener, Metadata headers) {

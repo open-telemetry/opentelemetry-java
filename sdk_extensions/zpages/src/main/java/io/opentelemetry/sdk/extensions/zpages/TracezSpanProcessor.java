@@ -1,25 +1,16 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.zpages;
 
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -48,7 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 final class TracezSpanProcessor implements SpanProcessor {
-  private final ConcurrentMap<SpanId, ReadableSpan> runningSpanCache;
+  private final ConcurrentMap<String, ReadableSpan> runningSpanCache;
   private final ConcurrentMap<String, TracezSpanBuckets> completedSpanCache;
   private final boolean sampled;
 
@@ -64,8 +55,8 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadableSpan span) {
-    runningSpanCache.put(span.getSpanContext().getSpanId(), span);
+  public void onStart(ReadWriteSpan span, Context parentContext) {
+    runningSpanCache.put(span.getSpanContext().getSpanIdAsHexString(), span);
   }
 
   @Override
@@ -75,8 +66,8 @@ final class TracezSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    runningSpanCache.remove(span.getSpanContext().getSpanId());
-    if (!sampled || span.getSpanContext().getTraceFlags().isSampled()) {
+    runningSpanCache.remove(span.getSpanContext().getSpanIdAsHexString());
+    if (!sampled || span.getSpanContext().isSampled()) {
       completedSpanCache.putIfAbsent(span.getName(), new TracezSpanBuckets());
       completedSpanCache.get(span.getName()).addToBucket(span);
     }
@@ -88,13 +79,15 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     // Do nothing.
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
-  public void forceFlush() {
+  public CompletableResultCode forceFlush() {
     // Do nothing.
+    return CompletableResultCode.ofSuccess();
   }
 
   /**
@@ -133,7 +126,7 @@ final class TracezSpanProcessor implements SpanProcessor {
    *
    * @return a new {@link TracezSpanProcessor}.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 

@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.metrics;
@@ -30,9 +19,7 @@ class DoubleCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
-
-  private final Meter meter = OpenTelemetry.getMeter("DoubleCounterTest");
+  private static final Meter meter = OpenTelemetry.getMeter("DoubleCounterTest");
 
   @Test
   void preventNull_Name() {
@@ -57,7 +44,7 @@ class DoubleCounterTest {
 
   @Test
   void preventTooLongName() {
-    char[] chars = new char[StringUtils.NAME_MAX_LENGTH + 1];
+    char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     assertThrows(
@@ -83,14 +70,6 @@ class DoubleCounterTest {
   }
 
   @Test
-  void preventNull_ConstantLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleCounterBuilder("metric").setConstantLabels(null).build(),
-        "constantLabels");
-  }
-
-  @Test
   void add_preventNullLabels() {
     assertThrows(
         NullPointerException.class,
@@ -103,6 +82,7 @@ class DoubleCounterTest {
     DoubleCounter doubleCounter =
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     doubleCounter.add(1.0, Labels.empty());
+    doubleCounter.add(1.0);
   }
 
   @Test
@@ -126,12 +106,7 @@ class DoubleCounterTest {
   @Test
   void bound_DoesNotThrow() {
     DoubleCounter doubleCounter =
-        meter
-            .doubleCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     BoundDoubleCounter bound = doubleCounter.bind(Labels.empty());
     bound.add(1.0);
     bound.unbind();
@@ -140,12 +115,7 @@ class DoubleCounterTest {
   @Test
   void bound_PreventNegativeValue() {
     DoubleCounter doubleCounter =
-        meter
-            .doubleCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
+        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     BoundDoubleCounter bound = doubleCounter.bind(Labels.empty());
     try {
       assertThrows(

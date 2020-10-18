@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.zpages;
@@ -21,14 +10,13 @@ import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Status.CanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -308,12 +296,10 @@ final class TracezZPageHandler extends ZPageHandler {
         "<td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\"><b>"
             + "TraceId: <b style=\"color:%s;\">%s</b> "
             + " | SpanId: %s | ParentSpanId: %s</b></pre></td>",
-        span.getTraceFlags().isSampled() ? SAMPLED_TRACE_ID_COLOR : NOT_SAMPLED_TRACE_ID_COLOR,
-        span.getTraceId().toLowerBase16(),
-        span.getSpanId().toLowerBase16(),
-        (span.getParentSpanId() == null
-            ? SpanId.getInvalid().toLowerBase16()
-            : span.getParentSpanId().toLowerBase16()));
+        span.isSampled() ? SAMPLED_TRACE_ID_COLOR : NOT_SAMPLED_TRACE_ID_COLOR,
+        span.getTraceId(),
+        span.getSpanId(),
+        (span.getParentSpanId() == null ? SpanId.getInvalid() : span.getParentSpanId()));
     out.print("</tr>");
     zebraStripe = !zebraStripe;
 
@@ -338,7 +324,7 @@ final class TracezZPageHandler extends ZPageHandler {
         "<tr style=\"background-color: %s;\"><td></td><td class=\"border-left-dark\">"
             + "</td><td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\">",
         zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
-    Status status = span.getStatus();
+    SpanData.Status status = span.getStatus();
     if (status != null) {
       formatter.format("%s | ", htmlEscaper().escape(status.toString()));
     }
@@ -396,11 +382,11 @@ final class TracezZPageHandler extends ZPageHandler {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           private boolean first = true;
 
           @Override
-          public void consume(String key, AttributeValue value) {
+          public <T> void consume(AttributeKey<T> key, T value) {
             if (first) {
               first = false;
             } else {
@@ -408,32 +394,7 @@ final class TracezZPageHandler extends ZPageHandler {
             }
             stringBuilder.append(key);
             stringBuilder.append("=");
-            switch (value.getType()) {
-              case STRING:
-                stringBuilder.append(value.getStringValue());
-                break;
-              case BOOLEAN:
-                stringBuilder.append(value.getBooleanValue());
-                break;
-              case LONG:
-                stringBuilder.append(value.getLongValue());
-                break;
-              case DOUBLE:
-                stringBuilder.append(value.getDoubleValue());
-                break;
-              case STRING_ARRAY:
-                stringBuilder.append(value.getStringArrayValue().toString());
-                break;
-              case BOOLEAN_ARRAY:
-                stringBuilder.append(value.getBooleanArrayValue().toString());
-                break;
-              case LONG_ARRAY:
-                stringBuilder.append(value.getLongArrayValue().toString());
-                break;
-              case DOUBLE_ARRAY:
-                stringBuilder.append(value.getDoubleArrayValue().toString());
-                break;
-            }
+            stringBuilder.append(value.toString());
           }
         });
     stringBuilder.append("}");
@@ -499,7 +460,7 @@ final class TracezZPageHandler extends ZPageHandler {
                       latencyBoundary.getLatencyLowerBound(),
                       latencyBoundary.getLatencyUpperBound());
             } else {
-              if (subtype < 0 || subtype >= CanonicalCode.values().length) {
+              if (subtype < 0 || subtype >= StatusCode.values().length) {
                 // N/A or out-of-bound cueck for error based subtype, valid values: [0, 15]
                 return;
               }

@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.otproto;
@@ -34,10 +23,8 @@ public final class TraceProtoUtils {
    * @param spanId the spanId to convert.
    * @return a ByteString representation.
    */
-  public static ByteString toProtoSpanId(SpanId spanId) {
-    byte[] spanIdBytes = new byte[SpanId.getSize()];
-    spanId.copyBytesTo(spanIdBytes, 0);
-    return ByteString.copyFrom(spanIdBytes);
+  public static ByteString toProtoSpanId(String spanId) {
+    return ByteString.copyFrom(SpanId.bytesFromHex(spanId, 0));
   }
 
   /**
@@ -46,10 +33,8 @@ public final class TraceProtoUtils {
    * @param traceId the traceId to convert.
    * @return a ByteString representation.
    */
-  public static ByteString toProtoTraceId(TraceId traceId) {
-    byte[] traceIdBytes = new byte[TraceId.getSize()];
-    traceId.copyBytesTo(traceIdBytes, 0);
-    return ByteString.copyFrom(traceIdBytes);
+  public static ByteString toProtoTraceId(String traceId) {
+    return ByteString.copyFrom(TraceId.bytesFromHex(traceId, 0));
   }
 
   /**
@@ -87,9 +72,8 @@ public final class TraceProtoUtils {
           throw new IllegalArgumentException("unrecognized constant sampling samplingResult");
       }
     }
-    if (traceConfigProto.hasProbabilitySampler()) {
-      return Samplers.probability(
-          traceConfigProto.getProbabilitySampler().getSamplingProbability());
+    if (traceConfigProto.hasTraceIdRatioBased()) {
+      return Samplers.traceIdRatioBased(traceConfigProto.getTraceIdRatioBased().getSamplingRatio());
     }
     if (traceConfigProto.hasRateLimitingSampler()) {
       // TODO: add support for RateLimiting Sampler

@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
@@ -101,7 +90,7 @@ class JaegerRemoteSamplerTest {
         ArgumentCaptor.forClass(Sampling.SamplingStrategyParameters.class);
 
     JaegerRemoteSampler sampler =
-        JaegerRemoteSampler.newBuilder()
+        JaegerRemoteSampler.builder()
             .setChannel(inProcessChannel)
             .setServiceName(SERVICE_NAME)
             .build();
@@ -119,12 +108,12 @@ class JaegerRemoteSamplerTest {
   @Test
   void description() {
     JaegerRemoteSampler sampler =
-        JaegerRemoteSampler.newBuilder()
+        JaegerRemoteSampler.builder()
             .setChannel(inProcessChannel)
             .setServiceName(SERVICE_NAME)
             .build();
     assertThat(sampler.getDescription())
-        .matches("JaegerRemoteSampler\\{Probability\\{probability=0.001, idUpperBound=.*\\}\\}");
+        .isEqualTo("JaegerRemoteSampler{TraceIdRatioBased{0.001000}}");
 
     // wait until the sampling strategy is retrieved before exiting test method
     await().atMost(10, TimeUnit.SECONDS).until(samplerIsType(sampler, RateLimitingSampler.class));

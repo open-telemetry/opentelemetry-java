@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
@@ -26,10 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -48,8 +38,8 @@ class HandlerTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
-  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new BaggageManagerSdk());
   private final Client client = new Client(new RequestHandler(tracer));
 
   @BeforeEach
@@ -73,8 +63,8 @@ class HandlerTest {
     }
 
     assertNotEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
-    assertFalse(finished.get(0).getParentSpanId().isValid());
-    assertFalse(finished.get(1).getParentSpanId().isValid());
+    assertFalse(SpanId.isValid(finished.get(0).getParentSpanId()));
+    assertFalse(SpanId.isValid(finished.get(1).getParentSpanId()));
 
     assertNull(tracer.scopeManager().activeSpan());
   }

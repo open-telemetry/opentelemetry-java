@@ -8,8 +8,9 @@ import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.io.File;
 import javax.swing.filechooser.FileSystemView;
 
@@ -37,12 +38,11 @@ public class LongCounterExample {
   public static void main(String[] args) {
     Span span = tracer.spanBuilder("workflow").setSpanKind(Kind.INTERNAL).startSpan();
     LongCounterExample example = new LongCounterExample();
-    try (Scope scope = tracer.withSpan(span)) {
+    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
       homeDirectoryCounter.add(1); // count root directory
       example.findFile("file_to_find.txt", homeDirectory);
     } catch (Exception e) {
-      Status status = Status.UNKNOWN.withDescription("Error while finding file");
-      span.setStatus(status);
+      span.setStatus(StatusCanonicalCode.ERROR, "Error while finding file");
     } finally {
       span.end();
     }

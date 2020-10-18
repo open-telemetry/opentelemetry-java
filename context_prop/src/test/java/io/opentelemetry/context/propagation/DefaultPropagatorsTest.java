@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.context.propagation;
@@ -19,7 +8,8 @@ package io.opentelemetry.context.propagation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,41 +21,41 @@ import org.junit.jupiter.api.Test;
 class DefaultPropagatorsTest {
 
   @Test
-  void addHttpTextFormatNull() {
+  void addTextMapPropagatorNull() {
     assertThrows(
         NullPointerException.class,
-        () -> DefaultContextPropagators.builder().addHttpTextFormat(null));
+        () -> DefaultContextPropagators.builder().addTextMapPropagator(null));
   }
 
   @Test
   void testInject() {
-    CustomHttpTextFormat propagator1 = new CustomHttpTextFormat("prop1");
-    CustomHttpTextFormat propagator2 = new CustomHttpTextFormat("prop2");
+    CustomTextMapPropagator propagator1 = new CustomTextMapPropagator("prop1");
+    CustomTextMapPropagator propagator2 = new CustomTextMapPropagator("prop2");
     ContextPropagators propagators =
         DefaultContextPropagators.builder()
-            .addHttpTextFormat(propagator1)
-            .addHttpTextFormat(propagator2)
+            .addTextMapPropagator(propagator1)
+            .addTextMapPropagator(propagator2)
             .build();
 
     Context context = Context.current();
-    context = context.withValue(propagator1.getKey(), "value1");
-    context = context.withValue(propagator2.getKey(), "value2");
+    context = context.withValues(propagator1.getKey(), "value1");
+    context = context.withValues(propagator2.getKey(), "value2");
 
     Map<String, String> map = new HashMap<>();
-    propagators.getHttpTextFormat().inject(context, map, MapSetter.INSTANCE);
+    propagators.getTextMapPropagator().inject(context, map, MapSetter.INSTANCE);
     assertThat(map.get(propagator1.getKeyName())).isEqualTo("value1");
     assertThat(map.get(propagator2.getKeyName())).isEqualTo("value2");
   }
 
   @Test
   void testExtract() {
-    CustomHttpTextFormat propagator1 = new CustomHttpTextFormat("prop1");
-    CustomHttpTextFormat propagator2 = new CustomHttpTextFormat("prop2");
-    CustomHttpTextFormat propagator3 = new CustomHttpTextFormat("prop3");
+    CustomTextMapPropagator propagator1 = new CustomTextMapPropagator("prop1");
+    CustomTextMapPropagator propagator2 = new CustomTextMapPropagator("prop2");
+    CustomTextMapPropagator propagator3 = new CustomTextMapPropagator("prop3");
     ContextPropagators propagators =
         DefaultContextPropagators.builder()
-            .addHttpTextFormat(propagator1)
-            .addHttpTextFormat(propagator2)
+            .addTextMapPropagator(propagator1)
+            .addTextMapPropagator(propagator2)
             .build();
 
     // Put values for propagators 1 and 2 only.
@@ -74,10 +64,28 @@ class DefaultPropagatorsTest {
     map.put(propagator2.getKeyName(), "value2");
 
     Context context =
-        propagators.getHttpTextFormat().extract(Context.current(), map, MapGetter.INSTANCE);
-    assertThat(propagator1.getKey().get(context)).isEqualTo("value1");
-    assertThat(propagator2.getKey().get(context)).isEqualTo("value2");
-    assertThat(propagator3.getKey().get(context)).isNull(); // Handle missing value.
+        propagators.getTextMapPropagator().extract(Context.current(), map, MapGetter.INSTANCE);
+    assertThat(context.getValue(propagator1.getKey())).isEqualTo("value1");
+    assertThat(context.getValue(propagator2.getKey())).isEqualTo("value2");
+    assertThat(context.getValue(propagator3.getKey())).isNull(); // Handle missing value.
+  }
+
+  @Test
+  public void testDuplicatedFields() {
+    CustomTextMapPropagator propagator1 = new CustomTextMapPropagator("prop1");
+    CustomTextMapPropagator propagator2 = new CustomTextMapPropagator("prop2");
+    CustomTextMapPropagator propagator3 = new CustomTextMapPropagator("prop1");
+    CustomTextMapPropagator propagator4 = new CustomTextMapPropagator("prop2");
+    ContextPropagators propagators =
+        DefaultContextPropagators.builder()
+            .addTextMapPropagator(propagator1)
+            .addTextMapPropagator(propagator2)
+            .addTextMapPropagator(propagator3)
+            .addTextMapPropagator(propagator4)
+            .build();
+
+    List<String> fields = propagators.getTextMapPropagator().fields();
+    assertThat(fields).containsExactly("prop1", "prop2");
   }
 
   @Test
@@ -86,23 +94,23 @@ class DefaultPropagatorsTest {
 
     Context context = Context.current();
     Map<String, String> map = new HashMap<>();
-    propagators.getHttpTextFormat().inject(context, map, MapSetter.INSTANCE);
+    propagators.getTextMapPropagator().inject(context, map, MapSetter.INSTANCE);
     assertThat(map).isEmpty();
 
-    assertThat(propagators.getHttpTextFormat().extract(context, map, MapGetter.INSTANCE))
+    assertThat(propagators.getTextMapPropagator().extract(context, map, MapGetter.INSTANCE))
         .isSameAs(context);
   }
 
-  private static class CustomHttpTextFormat implements HttpTextFormat {
+  private static class CustomTextMapPropagator implements TextMapPropagator {
     private final String name;
-    private final Context.Key<String> key;
+    private final ContextKey<String> key;
 
-    CustomHttpTextFormat(String name) {
+    CustomTextMapPropagator(String name) {
       this.name = name;
-      this.key = Context.key(name);
+      this.key = ContextKey.named(name);
     }
 
-    Context.Key<String> getKey() {
+    ContextKey<String> getKey() {
       return key;
     }
 
@@ -117,7 +125,7 @@ class DefaultPropagatorsTest {
 
     @Override
     public <C> void inject(Context context, C carrier, Setter<C> setter) {
-      Object payload = key.get(context);
+      Object payload = context.getValue(key);
       if (payload != null) {
         setter.set(carrier, name, payload.toString());
       }
@@ -127,14 +135,14 @@ class DefaultPropagatorsTest {
     public <C> Context extract(Context context, C carrier, Getter<C> getter) {
       String payload = getter.get(carrier, name);
       if (payload != null) {
-        context = context.withValue(key, payload);
+        context = context.withValues(key, payload);
       }
 
       return context;
     }
   }
 
-  private static final class MapSetter implements HttpTextFormat.Setter<Map<String, String>> {
+  private static final class MapSetter implements TextMapPropagator.Setter<Map<String, String>> {
     private static final MapSetter INSTANCE = new MapSetter();
 
     @Override
@@ -145,7 +153,7 @@ class DefaultPropagatorsTest {
     private MapSetter() {}
   }
 
-  private static final class MapGetter implements HttpTextFormat.Getter<Map<String, String>> {
+  private static final class MapGetter implements TextMapPropagator.Getter<Map<String, String>> {
     private static final MapGetter INSTANCE = new MapGetter();
 
     @Override

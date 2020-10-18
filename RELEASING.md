@@ -1,87 +1,22 @@
 # OpenTelemetry Release Process
 
-## Tagging the Release
+## Starting the Release
 
-The first step in the release process is to create a release branch, bump versions, and create a tag
-for the release. Our release branches follow the naming convention of v<major>.<minor>.x, while the
-tags include the patch version v<major>.<minor>.<patch>. For example, the same branch v0.3.x would
-be used to create all v0.3.* tags (e.g. v0.3.0, v0.3.1).
+Open the release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3A%22Release+Build%22).
 
-In this section upstream repository refers to the main opentelemetry-java github repository.
+You will see a button that says "Run workflow". Press the button, enter the version number you want
+to release in the input field that pops up, and then press "Run workflow".
 
-Before any push to the upstream repository you need to create a
-[personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line).
-
-1.  Create the release branch and push it to GitHub:
-
-    ```bash
-    $ MAJOR=0 MINOR=3 PATCH=0 # Set appropriately for new release
-    $ VERSION_FILES=(
-      build.gradle
-      )
-    $ git checkout -b v$MAJOR.$MINOR.x master
-    $ git push upstream v$MAJOR.$MINOR.x
-    ```
-    The branch will be automatically protected by the GitHub branch protection rule for release
-    branches.
-
-2.  For `master` branch:
-
-    -   Change root build files to the next minor snapshot (e.g.
-        `0.4.0-SNAPSHOT`).
-
-    ```bash
-    $ git checkout -b bump-version master
-    # Change version to next minor (and keep -SNAPSHOT)
-    $ sed -i "" 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/'$MAJOR.$((MINOR+1)).0'\1/' \
-      "${VERSION_FILES[@]}"
-    $ ./gradlew build
-    $ git commit -a -m "Start $MAJOR.$((MINOR+1)).0 development cycle"
-    ```
-
-    -   Go through PR review and push the master branch to GitHub.
-       
-3.  For `vMajor.Minor.x` branch:
-
-    -   Change root build files to remove "-SNAPSHOT" for the next release
-        version (e.g. `0.3.0`). Commit the result and make a tag:
-
-    ```bash
-    $ git checkout -b release v$MAJOR.$MINOR.x
-    # Change version to remove -SNAPSHOT
-    $ sed -i "" 's/-SNAPSHOT\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/\1/' "${VERSION_FILES[@]}"
-    $ ./gradlew build
-    $ git commit -a -m "Bump version to $MAJOR.$MINOR.$PATCH"
-    $ git tag -a v$MAJOR.$MINOR.$PATCH -m "Version $MAJOR.$MINOR.$PATCH"
-    ```
-
-    -   Change root build files to the next snapshot version (e.g.
-        `0.3.1-SNAPSHOT`). Commit the result:
-
-    ```bash
-    # Change version to next patch and add -SNAPSHOT
-    $ sed -i "" 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/'$MAJOR.$MINOR.$((PATCH+1))-SNAPSHOT'\1/' \
-     "${VERSION_FILES[@]}"
-    $ ./gradlew build
-    $ git commit -a -m "Bump version to $MAJOR.$MINOR.$((PATCH+1))-SNAPSHOT"
-    ```
-
-    -   Go through PR review and push the release tag and updated release branch
-        to GitHub (note: do not squash the commits when you merge otherwise you
-        will lose the release tag):
-
-    ```bash
-    $ git checkout v$MAJOR.$MINOR.x
-    $ git merge --ff-only release
-    $ git push upstream v$MAJOR.$MINOR.x
-    $ git push upstream v$MAJOR.$MINOR.$PATCH
-    ```
+This triggers the release process, which builds the artifacts, updates the README with the new
+version numbers, commits the change to the README, publishes the artifacts, and creates and pushes
+a git tag with the version number.
 
 ## Announcement
    
-Once deployment is done by Circle CI (controlled by the Bintray plugin) , go to Github [release
+Once the GitHub workflow completes, go to Github [release
 page](https://github.com/open-telemetry/opentelemetry-java/releases), press
-`Draft a new release` to write release notes about the new release.
+`Draft a new release` to write release notes about the new release. If there is already a draft
+release notes, just point it at the created tag.
 
 You can use `git log upstream/v$MAJOR.$((MINOR-1)).x..upstream/v$MAJOR.$MINOR.x --graph --first-parent`
 or the Github [compare tool](https://github.com/open-telemetry/opentelemetry-java/compare/)
@@ -94,7 +29,6 @@ for a list of major changes since last release.
 ## Update release versions in documentations and CHANGELOG files
 
 After releasing is done, you need to update
-[README.md](https://github.com/open-telemetry/opentelemetry-java/blob/master/README.md) and
 [CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/master/CHANGELOG.md).
 
 Create a PR to mark the new release in
@@ -104,21 +38,51 @@ on master branch.
 ## Patch Release
 
 All patch releases should include only bug-fixes, and must avoid
-adding/modifying the public APIs. To cherry-pick one commit use the following
-instructions:
+adding/modifying the public APIs. 
 
-- Create and push a tag:
+Open the patch release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3A%22Patch+Release+Build%22).
 
-```bash
-COMMIT=1224f0a # Set the right commit hash.
-git checkout -b cherrypick v$MAJOR.$MINOR.x
-git cherry-pick -x $COMMIT
-git commit -a -m "Cherry-pick commit $COMMIT"
+You will see a button that says "Run workflow". Press the button, enter the version number you want
+to release in the input field for version that pops up and the commits you want to cherrypick for the
+patch as a comma-separated list. Then, press "Run workflow".
+
+If the commits cannot be cleanly applied to the release branch, for example because it has diverged
+too much from main, then the workflow will fail before building. In this case, you will need to
+prepare the release branch manually.
+
+This example will assume patching into release branch `v1.2.x` from a git repository with remotes
+named `origin` and `upstream`.
+
+```
+$ git remote -v
+origin	git@github.com:username/opentelemetry-java.git (fetch)
+origin	git@github.com:username/opentelemetry-java.git (push)
+upstream	git@github.com:open-telemetry/opentelemetry-java.git (fetch)
+upstream	git@github.com:open-telemetry/opentelemetry-java.git (push)
 ```
 
-- Go through PR review and merge it to GitHub v$MAJOR.$MINOR.x branch.
+First, checkout the release branch
 
-- Tag a new patch release when all commits are merged.
+```
+git fetch upstream v1.2.x
+git checkout upstream/v1.2.x
+```
+
+Apply cherrypicks manually and commit. It is ok to apply multiple cherrypicks in a single commit.
+Use a commit message such as "Manual cherrypick for commits commithash1, commithash2".
+
+After commiting the change, push to your fork's branch.
+
+```
+git push origin v1.2.x
+```
+
+Create a PR to have code review and merge this into upstream's release branch. As this was not
+applied automatically, we need to do code review to make sure the manual cherrypick is correct.
+
+After it is merged, Run the patch release workflow again, but leave the commits input field blank.
+The release will be made with the current state of the release branch, which is what you prepared
+above.
 
 ## Release candidates
 
@@ -144,5 +108,6 @@ export BINTRAY_USER=my_bintray_user
 export BINTRAY_KEY=my_user_api_key
 export SONATYPE_USER=my_maven_user
 export SONATYPE_KEY=my_maven_password
-make publish-release-artifacts
+export RELEASE_VERSION=2.4.5 # Set version you want to release
+./gradlew final -Prelease.version=${RELEASE_VERSION}
 ```

@@ -1,23 +1,12 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace.propagation;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,7 +38,7 @@ public class HttpTraceContextExtractBenchmark {
           "00-2e7d0ad2390617702e7d0ad239061770-d49582a2de984b86-01",
           "00-905734c59b913b4a905734c59b913b4a-776ff807b787538a-00",
           "00-68ec932c33b3f2ee68ec932c33b3f2ee-68ec932c33b3f2ee-00");
-  private final HttpTraceContext httpTraceContext = new HttpTraceContext();
+  private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
   private final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
         @Override
@@ -77,7 +66,7 @@ public class HttpTraceContextExtractBenchmark {
   public Context measureExtract() {
     Context result = null;
     for (int i = 0; i < COUNT; i++) {
-      result = httpTraceContext.extract(Context.ROOT, carriers.get(i), getter);
+      result = httpTraceContext.extract(Context.root(), carriers.get(i), getter);
     }
     return result;
   }

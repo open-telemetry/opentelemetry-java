@@ -1,30 +1,20 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
 import java.io.IOException;
+import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -38,19 +28,20 @@ class BeanstalkResourceTest {
             + "version_label\":\"2\",\"environment_name\":\"HttpSubscriber-env\"}";
     Files.write(content.getBytes(Charsets.UTF_8), file);
     BeanstalkResource populator = new BeanstalkResource(file.getPath());
-    Attributes attributes = populator.createAttributes();
+    Attributes attributes = populator.getAttributes();
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                ResourceConstants.SERVICE_INSTANCE, stringAttributeValue("4"),
-                ResourceConstants.SERVICE_VERSION, stringAttributeValue("2"),
-                ResourceConstants.SERVICE_NAMESPACE, stringAttributeValue("HttpSubscriber-env")));
+                ResourceAttributes.CLOUD_PROVIDER, "aws",
+                ResourceAttributes.SERVICE_INSTANCE, "4",
+                ResourceAttributes.SERVICE_VERSION, "2",
+                ResourceAttributes.SERVICE_NAMESPACE, "HttpSubscriber-env"));
   }
 
   @Test
-  void testConfigFileMissing() throws IOException {
+  void testConfigFileMissing() {
     BeanstalkResource populator = new BeanstalkResource("a_file_never_existing");
-    Attributes attributes = populator.createAttributes();
+    Attributes attributes = populator.getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
   }
 
@@ -62,7 +53,15 @@ class BeanstalkResourceTest {
             + "environment_name\":\"HttpSubscriber-env\"}";
     Files.write(content.getBytes(Charsets.UTF_8), file);
     BeanstalkResource populator = new BeanstalkResource(file.getPath());
-    Attributes attributes = populator.createAttributes();
+    Attributes attributes = populator.getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
+  }
+
+  @Test
+  void inServiceLoader() {
+    // No practical way to test the attributes themselves so at least check the service loader picks
+    // it up.
+    assertThat(ServiceLoader.load(ResourceProvider.class))
+        .anyMatch(BeanstalkResource.class::isInstance);
   }
 }

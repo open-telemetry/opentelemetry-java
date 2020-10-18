@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.zipkin;
@@ -20,18 +9,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import zipkin2.Endpoint;
@@ -58,8 +43,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.of(
-          EventImpl.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
-          EventImpl.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
+          Event.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
+          Event.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
@@ -73,7 +58,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   public void testExportWithDefaultEncoding() {
 
     ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.newBuilder()
+        ZipkinSpanExporter.builder()
             .setEndpoint(zipkin.httpUrl() + ENDPOINT_V2_SPANS)
             .setServiceName(SERVICE_NAME)
             .build();
@@ -115,9 +100,9 @@ public class ZipkinSpanExporterEndToEndHttpTest {
             zipkin.httpUrl() + ENDPOINT_V2_SPANS, Encoding.JSON, SpanBytesEncoder.PROTO3);
 
     SpanData spanData = buildStandardSpan().build();
-    SpanExporter.ResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
+    CompletableResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
 
-    assertThat(resultCode).isEqualTo(SpanExporter.ResultCode.FAILURE);
+    assertThat(resultCode.isSuccess()).isFalse();
     List<Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
     assertThat(zipkinSpans).isNotNull();
     assertThat(zipkinSpans).isEmpty();
@@ -125,7 +110,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
   private static ZipkinSpanExporter buildZipkinExporter(
       String endpoint, Encoding encoding, SpanBytesEncoder encoder) {
-    return ZipkinSpanExporter.newBuilder()
+    return ZipkinSpanExporter.builder()
         .setSender(OkHttpSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
         .setServiceName(SERVICE_NAME)
         .setEncoder(encoder)
@@ -139,9 +124,10 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private void exportAndVerify(ZipkinSpanExporter zipkinSpanExporter) {
 
     SpanData spanData = buildStandardSpan().build();
-    SpanExporter.ResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
+    CompletableResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
+    resultCode.join(10, TimeUnit.SECONDS);
 
-    assertThat(resultCode).isEqualTo(SpanExporter.ResultCode.SUCCESS);
+    assertThat(resultCode.isSuccess()).isTrue();
     List<Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
 
     assertThat(zipkinSpans).isNotNull();
@@ -150,12 +136,12 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   }
 
   private static TestSpanData.Builder buildStandardSpan() {
-    return TestSpanData.newBuilder()
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
-        .setTraceFlags(TraceFlags.builder().setIsSampled(true).build())
-        .setStatus(Status.OK)
+    return TestSpanData.builder()
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
+        .setParentSpanId(PARENT_SPAN_ID)
+        .setSampled(true)
+        .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)
         .setHasRemoteParent(true)
         .setName(SPAN_NAME)

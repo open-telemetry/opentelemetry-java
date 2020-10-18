@@ -1,24 +1,13 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.testbed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
@@ -39,35 +28,16 @@ public final class TestUtils {
   }
 
   /** Returns a {@code List} with the {@code Span} matching the specified attribute. */
-  public static List<SpanData> getByAttr(
-      List<SpanData> spans, final String key, final Object value) {
+  public static <T> List<SpanData> getByAttr(
+      List<SpanData> spans, final AttributeKey<T> key, final T value) {
     return getByCondition(
         spans,
         span -> {
-          AttributeValue attrValue = span.getAttributes().get(key);
+          T attrValue = span.getAttributes().get(key);
           if (attrValue == null) {
             return false;
           }
-
-          switch (attrValue.getType()) {
-            case BOOLEAN:
-              return value.equals(attrValue.getBooleanValue());
-            case STRING:
-              return value.equals(attrValue.getStringValue());
-            case DOUBLE:
-              return value.equals(attrValue.getDoubleValue());
-            case LONG:
-              return value.equals(attrValue.getLongValue());
-            case STRING_ARRAY:
-              return value.equals(attrValue.getStringArrayValue());
-            case LONG_ARRAY:
-              return value.equals(attrValue.getLongArrayValue());
-            case BOOLEAN_ARRAY:
-              return value.equals(attrValue.getBooleanArrayValue());
-            case DOUBLE_ARRAY:
-              return value.equals(attrValue.getDoubleArrayValue());
-          }
-          return false;
+          return value.equals(attrValue);
         });
   }
 
@@ -76,7 +46,7 @@ public final class TestUtils {
    * instance being matched, an {@code IllegalArgumentException} will be thrown.
    */
   @Nullable
-  public static SpanData getOneByAttr(List<SpanData> spans, String key, Object value) {
+  public static <T> SpanData getOneByAttr(List<SpanData> spans, AttributeKey<T> key, T value) {
     List<SpanData> found = getByAttr(spans, key, value);
     if (found.size() > 1) {
       throw new IllegalArgumentException(

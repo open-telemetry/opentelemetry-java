@@ -1,21 +1,11 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.inmemory;
 
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
@@ -35,7 +25,7 @@ import java.util.List;
  *
  *   {@literal @}Before
  *   public void setup() {
- *     tracer.addSpanProcessor(SimpleSampledSpansProcessor.newBuilder(testExporter).build());
+ *     tracer.addSpanProcessor(SimpleSampledSpansProcessor.builder(testExporter).build());
  *   }
  *
  *   {@literal @}Test
@@ -85,14 +75,14 @@ public final class InMemorySpanExporter implements SpanExporter {
   }
 
   @Override
-  public ResultCode export(Collection<SpanData> spans) {
+  public CompletableResultCode export(Collection<SpanData> spans) {
     synchronized (this) {
       if (isStopped) {
-        return ResultCode.FAILURE;
+        return CompletableResultCode.ofFailure();
       }
       finishedSpanItems.addAll(spans);
     }
-    return ResultCode.SUCCESS;
+    return CompletableResultCode.ofSuccess();
   }
 
   /**
@@ -102,16 +92,23 @@ public final class InMemorySpanExporter implements SpanExporter {
    * @return always Success
    */
   @Override
-  public ResultCode flush() {
-    return ResultCode.SUCCESS;
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
   }
 
+  /**
+   * Clears the internal {@code List} of finished {@code SpanData}s.
+   *
+   * <p>Any subsequent call to export() function on this SpanExporter, will return {@code
+   * CompletableResultCode.ofFailure()}
+   */
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     synchronized (this) {
       finishedSpanItems.clear();
       isStopped = true;
     }
+    return CompletableResultCode.ofSuccess();
   }
 
   private InMemorySpanExporter() {}

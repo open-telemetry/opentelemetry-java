@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.jaeger;
@@ -32,18 +21,20 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
+import io.opentelemetry.exporters.jaeger.proto.api_v2.Model.KeyValue;
+import io.opentelemetry.exporters.jaeger.proto.api_v2.Model.Span;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceId;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -88,23 +79,25 @@ class JaegerGrpcSpanExporterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
     SpanData span =
-        TestSpanData.newBuilder()
+        TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.OK)
+            .setStatus(Status.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
+            .setInstrumentationLibraryInfo(
+                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
             .build();
 
     // test
     JaegerGrpcSpanExporter exporter =
-        JaegerGrpcSpanExporter.newBuilder().setServiceName("test").setChannel(channel).build();
+        JaegerGrpcSpanExporter.builder().setServiceName("test").setChannel(channel).build();
     exporter.export(Collections.singletonList(span));
 
     // verify
@@ -113,14 +106,22 @@ class JaegerGrpcSpanExporterTest {
     Model.Batch batch = requestCaptor.getValue().getBatch();
     assertEquals(1, batch.getSpansCount());
     assertEquals("GET /api/endpoint", batch.getSpans(0).getOperationName());
-    assertEquals(
-        TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)),
-        batch.getSpans(0).getTraceId());
-    assertEquals(
-        TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(SPAN_ID, 0)),
-        batch.getSpans(0).getSpanId());
+    assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), batch.getSpans(0).getTraceId());
+    assertEquals(TraceProtoUtils.toProtoSpanId(SPAN_ID), batch.getSpans(0).getSpanId());
     assertEquals("test", batch.getProcess().getServiceName());
     assertEquals(3, batch.getProcess().getTagsCount());
+
+    assertEquals(
+        "io.opentelemetry.auto",
+        getSpanTagValue(batch.getSpans(0), "otel.library.name")
+            .orElseThrow(() -> new AssertionError("otel.library.name not found"))
+            .getVStr());
+
+    assertEquals(
+        "1.0.0",
+        getSpanTagValue(batch.getSpans(0), "otel.library.version")
+            .orElseThrow(() -> new AssertionError("otel.library.version not found"))
+            .getVStr());
 
     boolean foundClientTag = false;
     boolean foundHostname = false;
@@ -146,14 +147,18 @@ class JaegerGrpcSpanExporterTest {
     assertTrue("a hostname tag should have been present", foundHostname);
   }
 
+  private static Optional<KeyValue> getSpanTagValue(Span span, String tagKey) {
+    return span.getTagsList().stream().filter(kv -> kv.getKey().equals(tagKey)).findFirst();
+  }
+
   @Test
   void configTest() {
     Map<String, String> options = new HashMap<>();
     String serviceName = "myGreatService";
     String endpoint = "127.0.0.1:9090";
-    options.put("otel.jaeger.service.name", serviceName);
-    options.put("otel.jaeger.endpoint", endpoint);
-    JaegerGrpcSpanExporter.Builder config = JaegerGrpcSpanExporter.newBuilder();
+    options.put("otel.exporter.jaeger.service.name", serviceName);
+    options.put("otel.exporter.jaeger.endpoint", endpoint);
+    JaegerGrpcSpanExporter.Builder config = JaegerGrpcSpanExporter.builder();
     JaegerGrpcSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
     Mockito.verify(spy).setServiceName(serviceName);

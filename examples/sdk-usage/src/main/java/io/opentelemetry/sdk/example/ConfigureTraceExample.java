@@ -1,42 +1,31 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.example;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 
 class ConfigureTraceExample {
 
   // Configure a tracer for these examples
-  static TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
-  static Tracer tracer = tracerProvider.get("ConfigureTraceExample");
+  static TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
+  static Tracer tracer = OpenTelemetry.getTracer("ConfigureTraceExample");
 
   static {
     tracerProvider.addSpanProcessor(
@@ -79,7 +68,7 @@ class ConfigureTraceExample {
         tracerProvider
             .getActiveTraceConfig()
             .toBuilder()
-            .setSampler(Samplers.probability(0.5))
+            .setSampler(Samplers.traceIdRatioBased(0.5))
             .build();
 
     // We update the configuration to use the alwaysOff sampler.
@@ -112,14 +101,13 @@ class ConfigureTraceExample {
       @Override
       public SamplingResult shouldSample(
           SpanContext parentContext,
-          TraceId traceId,
+          String traceId,
           String name,
           Kind spanKind,
           ReadableAttributes attributes,
           List<Link> parentLinks) {
-        // We sample only if the Span name contains "SAMPLE"
         return Samplers.emptySamplingResult(
-            name.contains("SAMPLE") ? Decision.RECORD_AND_SAMPLED : Decision.NOT_RECORD);
+            name.contains("SAMPLE") ? Decision.RECORD_AND_SAMPLE : Decision.DROP);
       }
 
       @Override
@@ -147,7 +135,7 @@ class ConfigureTraceExample {
     tracer.spanBuilder("#5").startSpan().end();
 
     // Example's over! We can release the resources of OpenTelemetry calling the shutdown method.
-    OpenTelemetrySdk.getTracerProvider().shutdown();
+    OpenTelemetrySdk.getTracerManagement().shutdown();
   }
 
   private static void printTraceConfig() {

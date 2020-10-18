@@ -1,25 +1,13 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.opentracingshim;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.baggage.BaggageUtils;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.propagation.TextMapExtract;
@@ -34,19 +22,16 @@ final class Propagation extends BaseShimObject {
     super(telemetryInfo);
   }
 
-  public void injectTextFormat(SpanContextShim contextShim, TextMapInject carrier) {
+  public void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
     Context context =
-        TracingContextUtils.withSpan(
-            DefaultSpan.create(contextShim.getSpanContext()), Context.current());
-    context =
-        CorrelationsContextUtils.withCorrelationContext(
-            contextShim.getCorrelationContext(), context);
+        TracingContextUtils.withSpan(Span.wrap(contextShim.getSpanContext()), Context.current());
+    context = BaggageUtils.withBaggage(contextShim.getBaggage(), context);
 
-    propagators().getHttpTextFormat().inject(context, carrier, TextMapSetter.INSTANCE);
+    propagators().getTextMapPropagator().inject(context, carrier, TextMapSetter.INSTANCE);
   }
 
   @Nullable
-  public SpanContextShim extractTextFormat(TextMapExtract carrier) {
+  public SpanContextShim extractTextMap(TextMapExtract carrier) {
     Map<String, String> carrierMap = new HashMap<>();
     for (Map.Entry<String, String> entry : carrier) {
       carrierMap.put(entry.getKey(), entry.getValue());
@@ -54,7 +39,7 @@ final class Propagation extends BaseShimObject {
 
     Context context =
         propagators()
-            .getHttpTextFormat()
+            .getTextMapPropagator()
             .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
 
     Span span = TracingContextUtils.getSpan(context);
@@ -62,11 +47,10 @@ final class Propagation extends BaseShimObject {
       return null;
     }
 
-    return new SpanContextShim(
-        telemetryInfo, span.getContext(), CorrelationsContextUtils.getCorrelationContext(context));
+    return new SpanContextShim(telemetryInfo, span.getContext(), BaggageUtils.getBaggage(context));
   }
 
-  static final class TextMapSetter implements HttpTextFormat.Setter<TextMapInject> {
+  static final class TextMapSetter implements TextMapPropagator.Setter<TextMapInject> {
     private TextMapSetter() {}
 
     public static final TextMapSetter INSTANCE = new TextMapSetter();
@@ -79,7 +63,7 @@ final class Propagation extends BaseShimObject {
 
   // We use Map<> instead of TextMap as we need to query a specified key, and iterating over
   // *all* values per key-query *might* be a bad idea.
-  static final class TextMapGetter implements HttpTextFormat.Getter<Map<String, String>> {
+  static final class TextMapGetter implements TextMapPropagator.Getter<Map<String, String>> {
     private TextMapGetter() {}
 
     public static final TextMapGetter INSTANCE = new TextMapGetter();

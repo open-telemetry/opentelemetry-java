@@ -16,6 +16,7 @@
   * [Sampler](#sampler)
   * [Span Processor](#span-processor)
   * [Exporter](#exporter)
+  * [TraceConfig](#traceconfig)
 - [Logging And Error Handling](#logging-and-error-handling)
   * [Examples](#examples)
 <!-- tocstop -->
@@ -50,12 +51,11 @@ To create a basic span, you only need to specify the name of the span.
 The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
 Span span = tracer.spanBuilder("my span").startSpan();
-try (Scope scope = tracer.withSpan(span)) {
+try (Scope scope = TracingContextUtils.currentContextWith(span)) {
 	// your use case
 	...
 } catch (Throwable t) {
-    Status status = Status.UNKNOWN.withDescription("Change it to your error message");
-    span.setStatus(status);
+    span.setStatus(StatusCanonicalCode.ERROR, "Change it to your error message");
 } finally {
     span.end(); // closing the scope does not end the span, this has to be done manually
 }
@@ -87,7 +87,7 @@ The OpenTelemetry API offers also an automated way to propagate the `parentSpan`
 ```java
 void a() {
   Span parentSpan = tracer.spanBuilder("a").startSpan();
-  try(Scope scope = tracer.withSpan(parentSpan)){
+  try(Scope scope = TracingContextUtils.currentContextWith(parentSpan)) {
     b();
   } finally {
     parentSpan.end();
@@ -95,11 +95,14 @@ void a() {
 }
 void b() {
   Span childSpan = tracer.spanBuilder("b")
-     // NOTE: setParent(parentSpan) is not required anymore, 
-     // `tracer.getCurrentSpan()` is automatically added as parent
+    // NOTE: setParent(parentSpan) is not required; 
+    // `TracingContextUtils.getCurrentSpan()` is automatically added as parent
     .startSpan();
-  // do stuff
-  childSpan.end();
+  try(Scope scope = TracingContextUtils.currentContextWith(childSpan)) {
+    // do stuff
+  } finally {
+    childSpan.end();
+  }
 }
 ``` 
 
@@ -123,7 +126,7 @@ span.setAttribute("http.url", url.toString());
 
 Some of these operations represent calls that use well-known protocols like HTTP or database calls. 
 For these, OpenTelemetry requires specific attributes to be set. The full attribute list is
-available in the [Semantic Conventions] in the cross-language specification.
+available in the [Semantic Conventions](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/README.md) in the cross-language specification.
 
 ### Create Spans with events
 
@@ -139,8 +142,8 @@ span.addEvent("End");
 
 ```java
 Attributes eventAttributes = Attributes.of(
-    "key", AttributeValue.stringAttributeValue("value"),
-    "result", AttributeValue.longAttributeValue(0L));
+    AttributeKey.stringKey("key"), "value",
+    AttributeKey.longKey("result"), 0L);
 
 span.addEvent("End Computation", eventAttributes);
 ```
@@ -151,11 +154,9 @@ represent batched operations where a Span was initiated by multiple initiating S
 representing a single incoming item being processed in the batch.
 
 ```java
-Link link1 = SpanData.Link.create(parentSpan1.getContext());
-Link link2 = SpanData.Link.create(parentSpan2.getContext());
 Span child = tracer.spanBuilder("childWithLink")
-        .addLink(link1)
-        .addLink(link2)
+        .addLink(parentSpan1.getContext())
+        .addLink(parentSpan2.getContext())
         .addLink(parentSpan3.getContext())
         .addLink(remoteContext)
     .startSpan();
@@ -166,10 +167,6 @@ For more details how to read context from remote processes, see
 
 ### Context Propagation
 
-In-process propagation leverages [gRPC Context](https://grpc.github.io/grpc-java/javadoc/io/grpc/Context.html),
-a well established context propagation library, contained in a small artifact, which is non-dependent on the
-entire gRPC engine.
-
 OpenTelemetry provides a text-based approach to propagate context to remote services using the
 [W3C Trace Context](https://www.w3.org/TR/trace-context/) HTTP headers.
 
@@ -177,8 +174,8 @@ The following presents an example of an outgoing HTTP request using `HttpURLConn
  
 ```java
 // Tell OpenTelemetry to inject the context in the HTTP headers
-HttpTextFormat.Setter<HttpURLConnection> setter =
-  new HttpTextFormat.Setter<HttpURLConnection>() {
+TextMapPropagator.Setter<HttpURLConnection> setter =
+  new TextMapPropagator.Setter<HttpURLConnection>() {
     @Override
     public void put(HttpURLConnection carrier, String key, String value) {
         // Insert the context as Header
@@ -188,14 +185,14 @@ HttpTextFormat.Setter<HttpURLConnection> setter =
 
 URL url = new URL("http://127.0.0.1:8080/resource");
 Span outGoing = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.CLIENT).startSpan();
-try (Scope scope = tracer.withSpan(outGoing)) {
+try (Scope scope = TracingContextUtils.currentContextWith(outGoing)) {
   // Semantic Convention.
   // (Observe that to set these, Span does not *need* to be the current instance.)
   outGoing.setAttribute("http.method", "GET");
   outGoing.setAttribute("http.url", url.toString());
   HttpURLConnection transportLayer = (HttpURLConnection) url.openConnection();
   // Inject the request with the *current*  Context, which contains our current Span.
-  OpenTelemetry.getPropagators().getHttpTextFormat().inject(Context.current(), transportLayer, setter);
+  OpenTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), transportLayer, setter);
   // Make outgoing call
 } finally {
   outGoing.end();
@@ -208,8 +205,8 @@ The following presents an example of processing an incoming HTTP request using
 [HttpExchange](https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpExchange.html).
 
 ```java
-HttpTextFormat.Getter<HttpExchange> getter =
-  new HttpTextFormat.Getter<HttpExchange>() {
+TextMapPropagator.Getter<HttpExchange> getter =
+  new TextMapPropagator.Getter<HttpExchange>() {
     @Override
     public String get(HttpExchange carrier, String key) {
       if (carrier.getRequestHeaders().containsKey(key)) {
@@ -221,7 +218,7 @@ HttpTextFormat.Getter<HttpExchange> getter =
 ...
 public void handle(HttpExchange httpExchange) {
   // Extract the SpanContext and other elements from the request.
-  Context extractedContext = OpenTelemetry.getPropagators().getHttpTextFormat()
+  Context extractedContext = OpenTelemetry.getPropagators().getTextMapPropagator()
         .extract(Context.current(), httpExchange, getter);
   Span serverSpan = null;
   try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
@@ -315,11 +312,11 @@ traces to a logging stream.
 
 ```java
 // Get the tracer
-TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+TracerSdkManagement tracerSdkManagement = OpenTelemetrySdk.getTracerManagement();
 
 // Set to export the traces to a logging stream
-tracerProvider.addSpanProcessor(
-    SimpleSpanProcessor.newBuilder(
+tracerSdkManagement.addSpanProcessor(
+    SimpleSpanProcessor.builder(
         new LoggingSpanExporter()
     ).build());
 ```
@@ -362,15 +359,15 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 `MultiSpanProcessor`.
 
 ```java
-tracerProvider.addSpanProcessor(
-    SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
+tracerSdkManagement.addSpanProcessor(
+    SimpleSpanProcessor.builder(new LoggingSpanExporter()).build()
 );
-tracerProvider.addSpanProcessor(
-    BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
+tracerSdkManagement.addSpanProcessor(
+    BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
 );
-tracerProvider.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
-            SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build(),
-            BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
+tracerSdkManagement.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
+            SimpleSpanProcessor.builder(new LoggingSpanExporter()).build(),
+            BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
 )));
 ```
 
@@ -387,20 +384,57 @@ a particular backend. OpenTelemetry offers four exporters out of the box:
 Other exporters can be found in the [OpenTelemetry Registry].
 
 ```java
-tracerProvider.addSpanProcessor(
-    SimpleSpanProcessor.newBuilder(InMemorySpanExporter.create()).build());
-tracerProvider.addSpanProcessor(
-    SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build());
+tracerSdkManagement.addSpanProcessor(
+    SimpleSpanProcessor.builder(InMemorySpanExporter.create()).build());
+tracerSdkManagement.addSpanProcessor(
+    SimpleSpanProcessor.builder(new LoggingSpanExporter()).build());
 
 ManagedChannel jaegerChannel =
     ManagedChannelBuilder.forAddress([ip:String], [port:int]).usePlaintext().build();
-JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.newBuilder()
+JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
     .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
     .build();
-tracerProvider.addSpanProcessor(BatchSpanProcessor.newBuilder(
+tracerSdkManagement.addSpanProcessor(BatchSpanProcessor.builder(
     jaegerExporter
 ).build());
 ```
+
+### TraceConfig
+
+The `TraceConfig` associated with a Tracer SDK can be updated via system properties, 
+environment variables and builder `set*` methods.  
+
+```java
+// Get TraceConfig associated with TracerSdk 
+TracerConfig traceConfig = OpenTelemetrySdk.getTracerManagement().getActiveTraceConfig();
+
+// Get TraceConfig Builder
+Builder builder = traceConfig.toBuilder();
+
+// Read configuration options from system properties
+builder.readSystemProperties();
+
+// Read configuration options from environment variables
+builder.readEnvironmentVariables()
+
+// Set options via builder.set* methods, e.g.
+builder.setMaxNumberOfLinks(10);
+
+// Update the resulting TraceConfig instance
+OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(builder.build());
+```
+
+Supported system properties and environment variables:
+
+| System property                  | Environment variable             | Purpose                                                                                             | 
+|----------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------|       
+| otel.config.sampler.probability  | OTEL_CONFIG_SAMPLER_PROBABILITY  | Sampler which is used when constructing a new span (default: 1)                                     |                        
+| otel.config.max.attrs            | OTEL_CONFIG_MAX_ATTRS            | Max number of attributes per span, extra will be dropped (default: 32)                              |                        
+| otel.config.max.events           | OTEL_CONFIG_MAX_EVENTS           | Max number of Events per span, extra will be dropped (default: 128)                                 |                        
+| otel.config.max.links            | OTEL_CONFIG_MAX_LINKS            | Max number of Link entries per span, extra will be dropped (default: 32)                            |
+| otel.config.max.event.attrs      | OTEL_CONFIG_MAX_EVENT_ATTRS      | Max number of attributes per event, extra will be dropped (default: 32)                             |
+| otel.config.max.link.attrs       | OTEL_CONFIG_MAX_LINK_ATTRS       | Max number of attributes per link, extra will be dropped  (default: 32)                             |
+| otel.config.max.attr.length      | OTEL_CONFIG_MAX_ATTR_LENGTH      | Max length of string attribute value in characters, too long will be truncated (default: unlimited) |
 
 [AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L82--L105
 [AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L108--L131

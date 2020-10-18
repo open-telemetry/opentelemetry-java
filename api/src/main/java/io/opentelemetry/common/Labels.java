@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.common;
@@ -23,9 +12,11 @@ import javax.annotation.concurrent.Immutable;
 
 /** An immutable container for labels, which are pairs of {@link String}. */
 @Immutable
-public abstract class Labels extends ImmutableKeyValuePairs<String> {
+public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
 
-  private static final Labels EMPTY = Labels.newBuilder().build();
+  private static final Labels EMPTY = Labels.builder().build();
+
+  public abstract void forEach(LabelConsumer consumer);
 
   @AutoValue
   @Immutable
@@ -34,6 +25,14 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
 
     @Override
     abstract List<Object> data();
+
+    @Override
+    public void forEach(LabelConsumer consumer) {
+      List<Object> data = data();
+      for (int i = 0; i < data.size(); i += 2) {
+        consumer.consume((String) data.get(i), (String) data.get(i + 1));
+      }
+    }
   }
 
   /** Returns a {@link Labels} instance with no attributes. */
@@ -118,7 +117,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
   }
 
   /** Creates a new {@link Builder} instance for creating arbitrary {@link Labels}. */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 

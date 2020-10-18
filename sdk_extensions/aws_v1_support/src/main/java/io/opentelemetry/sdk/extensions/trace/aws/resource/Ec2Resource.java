@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
@@ -22,7 +11,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +25,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class Ec2Resource extends AwsResource {
+/**
+ * A {@link ResourceProvider} which provides information about the current EC2 instance if running
+ * on AWS EC2.
+ */
+public class Ec2Resource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());
 
@@ -49,7 +43,11 @@ class Ec2Resource extends AwsResource {
   private final URL hostnameUrl;
   private final URL tokenUrl;
 
-  Ec2Resource() {
+  /**
+   * Returns a {@link Ec2Resource} which attempts to compute information about this instance if
+   * available.
+   */
+  public Ec2Resource() {
     // This is only for testing e.g., with a mock IMDS server and never in production so we just
     // read from a system property. This is similar to the AWS SDK.
     this(System.getProperty("otel.aws.imds.endpointOverride", DEFAULT_IMDS_ENDPOINT));
@@ -74,14 +72,14 @@ class Ec2Resource extends AwsResource {
     try {
       connection = (HttpURLConnection) url.openConnection();
     } catch (Exception e) {
-      logger.log(Level.WARNING, "Error connecting to IMDS.", e);
+      logger.log(Level.FINE, "Error connecting to IMDS.", e);
       return "";
     }
 
     try {
       connection.setRequestMethod(httpMethod);
     } catch (ProtocolException e) {
-      logger.log(Level.WARNING, "Unknown HTTP method, this is a programming bug.", e);
+      logger.log(Level.FINE, "Unknown HTTP method, this is a programming bug.", e);
       return "";
     }
 
@@ -99,13 +97,13 @@ class Ec2Resource extends AwsResource {
     try {
       responseCode = connection.getResponseCode();
     } catch (Exception e) {
-      logger.log(Level.WARNING, "Error connecting to IMDS: ", e);
+      logger.log(Level.FINE, "Error connecting to IMDS: ", e);
       return "";
     }
 
     if (responseCode != 200) {
       logger.log(
-          Level.WARNING,
+          Level.FINE,
           "Error reponse from IMDS: code ("
               + responseCode
               + ") text "
@@ -137,7 +135,7 @@ class Ec2Resource extends AwsResource {
   }
 
   @Override
-  Attributes createAttributes() {
+  public Attributes getAttributes() {
     String token = fetchToken();
 
     // If token is empty, either IMDSv2 isn't enabled or an unexpected failure happened. We can
@@ -150,7 +148,9 @@ class Ec2Resource extends AwsResource {
 
     String hostname = fetchHostname(token);
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.builder();
+    attrBuilders.setAttribute(
+        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();
@@ -163,22 +163,22 @@ class Ec2Resource extends AwsResource {
         String value = parser.nextTextValue();
         switch (parser.getCurrentName()) {
           case "instanceId":
-            attrBuilders.setAttribute(ResourceConstants.HOST_ID, value);
+            attrBuilders.setAttribute(ResourceAttributes.HOST_ID, value);
             break;
           case "availabilityZone":
-            attrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, value);
+            attrBuilders.setAttribute(ResourceAttributes.CLOUD_ZONE, value);
             break;
           case "instanceType":
-            attrBuilders.setAttribute(ResourceConstants.HOST_TYPE, value);
+            attrBuilders.setAttribute(ResourceAttributes.HOST_TYPE, value);
             break;
           case "imageId":
-            attrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, value);
+            attrBuilders.setAttribute(ResourceAttributes.HOST_IMAGE_ID, value);
             break;
           case "accountId":
-            attrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, value);
+            attrBuilders.setAttribute(ResourceAttributes.CLOUD_ACCOUNT, value);
             break;
           case "region":
-            attrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, value);
+            attrBuilders.setAttribute(ResourceAttributes.CLOUD_REGION, value);
             break;
           default:
             parser.skipChildren();
@@ -189,8 +189,8 @@ class Ec2Resource extends AwsResource {
       return Attributes.empty();
     }
 
-    attrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, hostname);
-    attrBuilders.setAttribute(ResourceConstants.HOST_NAME, hostname);
+    attrBuilders.setAttribute(ResourceAttributes.HOST_HOSTNAME, hostname);
+    attrBuilders.setAttribute(ResourceAttributes.HOST_NAME, hostname);
 
     return attrBuilders.build();
   }

@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.export;
@@ -19,10 +8,14 @@ package io.opentelemetry.sdk.extensions.trace.export;
 import com.google.common.base.Preconditions;
 import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -64,11 +57,11 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   // TODO: Add metrics for dropped spans.
 
   @Override
-  public void onStart(ReadableSpan span) {
+  public void onStart(ReadWriteSpan span, Context parentContext) {
     if (!startRequired) {
       return;
     }
-    disruptorEventQueue.enqueueStartEvent(span);
+    disruptorEventQueue.enqueueStartEvent(span, parentContext);
   }
 
   @Override
@@ -90,13 +83,13 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void shutdown() {
-    disruptorEventQueue.shutdown();
+  public CompletableResultCode shutdown() {
+    return disruptorEventQueue.shutdown();
   }
 
   @Override
-  public void forceFlush() {
-    disruptorEventQueue.forceFlush();
+  public CompletableResultCode forceFlush() {
+    return disruptorEventQueue.forceFlush();
   }
 
   /**
@@ -106,8 +99,8 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
    * @return a new {@link DisruptorAsyncSpanProcessor}.
    * @throws NullPointerException if the {@code spanProcessor} is {@code null}.
    */
-  public static Builder newBuilder(SpanProcessor spanProcessor) {
-    return new Builder(Preconditions.checkNotNull(spanProcessor));
+  public static Builder builder(SpanProcessor spanProcessor) {
+    return new Builder(Objects.requireNonNull(spanProcessor));
   }
 
   /** Builder class for {@link DisruptorAsyncSpanProcessor}. */

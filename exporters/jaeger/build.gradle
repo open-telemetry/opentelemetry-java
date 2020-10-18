@@ -21,15 +21,15 @@ dependencies {
             libraries.protobuf_util
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}",
+            'com.fasterxml.jackson.core:jackson-databind',
             libraries.testcontainers,
-            libraries.awaitility,
-            libraries.rest_assured
+            libraries.okhttp
 
     testImplementation project(':opentelemetry-testing-internal')
 
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
-    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 

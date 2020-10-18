@@ -1,22 +1,11 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -27,7 +16,7 @@ import javax.annotation.Nullable;
 /*
  * SpanContextShimTable stores and manages OpenTracing SpanContext instances,
  * which are expected to a unmodfiable union of SpanContext and Baggage
- * (CorrelationContext/TagMap under OpenTelemetry).
+ * (Baggage/TagMap under OpenTelemetry).
  *
  * This requires that changes on a given Span and its (new) SpanContext
  * are visible in all threads at *any* moment. The current approach uses
@@ -85,10 +74,10 @@ final class SpanContextShimTable {
   }
 
   public SpanContextShim create(SpanShim spanShim) {
-    return create(spanShim, spanShim.telemetryInfo().emptyCorrelationContext());
+    return create(spanShim, spanShim.telemetryInfo().emptyBaggage());
   }
 
-  public SpanContextShim create(SpanShim spanShim, CorrelationContext distContext) {
+  public SpanContextShim create(SpanShim spanShim, Baggage baggage) {
     lock.writeLock().lock();
     try {
       SpanContextShim contextShim = shimsMap.get(spanShim.getSpan());
@@ -97,8 +86,7 @@ final class SpanContextShimTable {
       }
 
       contextShim =
-          new SpanContextShim(
-              spanShim.telemetryInfo(), spanShim.getSpan().getContext(), distContext);
+          new SpanContextShim(spanShim.telemetryInfo(), spanShim.getSpan().getContext(), baggage);
       shimsMap.put(spanShim.getSpan(), contextShim);
       return contextShim;
 

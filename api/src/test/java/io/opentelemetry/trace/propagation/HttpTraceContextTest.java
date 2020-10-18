@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace.propagation;
@@ -21,10 +10,10 @@ import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACE_STATE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
-import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
-import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
+import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -46,12 +35,8 @@ class HttpTraceContextTest {
   private static final TraceState TRACE_STATE_NOT_DEFAULT =
       TraceState.builder().set("foo", "bar").set("bar", "baz").build();
   private static final String TRACE_ID_BASE16 = "ff000000000000000000000000000041";
-  private static final TraceId TRACE_ID = TraceId.fromLowerBase16(TRACE_ID_BASE16, 0);
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
-  private static final SpanId SPAN_ID = SpanId.fromLowerBase16(SPAN_ID_BASE16, 0);
-  private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
-  private static final TraceFlags SAMPLED_TRACE_OPTIONS =
-      TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
+  private static final byte SAMPLED_TRACE_OPTIONS = TraceFlags.getSampled();
   private static final String TRACEPARENT_HEADER_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01";
   private static final String TRACEPARENT_HEADER_NOT_SAMPLED =
@@ -74,14 +59,14 @@ class HttpTraceContextTest {
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING = "bar=baz,foo=bar";
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING_WITH_SPACES =
       "bar=baz   ,    foo=bar";
-  private final HttpTraceContext httpTraceContext = new HttpTraceContext();
+  private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
     return TracingContextUtils.getSpan(context).getContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
   }
 
   @Test
@@ -96,7 +81,8 @@ class HttpTraceContextTest {
     final Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+            SpanContext.create(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
             Context.current());
     httpTraceContext.inject(
         context,
@@ -126,7 +112,8 @@ class HttpTraceContextTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+            SpanContext.create(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
             Context.current());
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier).containsExactly(entry(TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED));
@@ -137,7 +124,8 @@ class HttpTraceContextTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
+            SpanContext.create(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
             Context.current());
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier).containsExactly(entry(TRACE_PARENT, TRACEPARENT_HEADER_NOT_SAMPLED));
@@ -148,7 +136,8 @@ class HttpTraceContextTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT),
+            SpanContext.create(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT),
             Context.current());
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier)
@@ -162,7 +151,8 @@ class HttpTraceContextTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT),
+            SpanContext.create(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT),
             Context.current());
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier)
@@ -187,7 +177,7 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -197,7 +187,7 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -208,7 +198,7 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT));
   }
 
   @Test
@@ -219,7 +209,7 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT));
   }
 
   @Test
@@ -229,7 +219,7 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -240,7 +230,7 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -251,7 +241,7 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT));
   }
 
   @Test
@@ -319,7 +309,7 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -330,7 +320,7 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -341,7 +331,33 @@ class HttpTraceContextTest {
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+  }
+
+  @Test
+  void extract_InvalidVersion_ff() {
+    Map<String, String> invalidHeaders = new HashMap<>();
+    invalidHeaders.put(TRACE_PARENT, "ff-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01");
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  void extract_InvalidTraceparent_extraTrailing() {
+    Map<String, String> invalidHeaders = new HashMap<>();
+    invalidHeaders.put(TRACE_PARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-01");
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  void extract_ValidTraceparent_nextVersion_extraTrailing() {
+    Map<String, String> invalidHeaders = new HashMap<>();
+    invalidHeaders.put(TRACE_PARENT, "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-01");
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test

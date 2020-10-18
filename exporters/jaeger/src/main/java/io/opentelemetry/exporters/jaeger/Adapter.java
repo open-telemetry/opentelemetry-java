@@ -1,48 +1,41 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.jaeger;
+
+import static io.opentelemetry.common.AttributeKey.booleanKey;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeConsumer;
+import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Adapts OpenTelemetry objects to Jaeger objects. */
 @ThreadSafe
 final class Adapter {
-  static final String KEY_ERROR = "error";
+  static final AttributeKey<Boolean> KEY_ERROR = booleanKey("error");
   static final String KEY_LOG_MESSAGE = "message";
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
   static final String KEY_SPAN_STATUS_CODE = "span.status.code";
+  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
+  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
   private Adapter() {}
 
@@ -83,7 +76,7 @@ final class Adapter {
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
     // add the parent span
-    if (span.getParentSpanId().isValid()) {
+    if (SpanId.isValid(span.getParentSpanId())) {
       target.addReferences(
           Model.SpanRef.newBuilder()
               .setTraceId(TraceProtoUtils.toProtoTraceId(span.getTraceId()))
@@ -113,8 +106,22 @@ final class Adapter {
             .setVType(Model.ValueType.INT64)
             .build());
 
+    target.addTags(
+        Model.KeyValue.newBuilder()
+            .setKey(KEY_INSTRUMENTATION_LIBRARY_NAME)
+            .setVStr(span.getInstrumentationLibraryInfo().getName())
+            .build());
+
+    if (span.getInstrumentationLibraryInfo().getVersion() != null) {
+      target.addTags(
+          Model.KeyValue.newBuilder()
+              .setKey(KEY_INSTRUMENTATION_LIBRARY_VERSION)
+              .setVStr(span.getInstrumentationLibraryInfo().getVersion())
+              .build());
+    }
+
     if (!span.getStatus().isOk()) {
-      target.addTags(toKeyValue(KEY_ERROR, AttributeValue.booleanAttributeValue(true)));
+      target.addTags(toKeyValue(KEY_ERROR, true));
     }
 
     return target.build();
@@ -160,31 +167,15 @@ final class Adapter {
    *
    * @param attributes the span attributes
    * @return a collection of Jaeger key values
-   * @see #toKeyValue(String, AttributeValue)
-   */
-  @VisibleForTesting
-  static Collection<Model.KeyValue> toKeyValues(Map<String, AttributeValue> attributes) {
-    List<Model.KeyValue> tags = new ArrayList<>(attributes.size());
-    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      tags.add(toKeyValue(entry.getKey(), entry.getValue()));
-    }
-    return tags;
-  }
-
-  /**
-   * Converts a map of attributes into a collection of Jaeger's {@link Model.KeyValue}.
-   *
-   * @param attributes the span attributes
-   * @return a collection of Jaeger key values
-   * @see #toKeyValue(String, AttributeValue)
+   * @see #toKeyValue
    */
   @VisibleForTesting
   static Collection<Model.KeyValue> toKeyValues(ReadableAttributes attributes) {
     final List<Model.KeyValue> tags = new ArrayList<>(attributes.size());
     attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
+        new AttributeConsumer() {
           @Override
-          public void consume(String key, AttributeValue value) {
+          public <T> void consume(AttributeKey<T> key, T value) {
             tags.add(toKeyValue(key, value));
           }
         });
@@ -192,48 +183,39 @@ final class Adapter {
   }
 
   /**
-   * Converts the given key and {@link AttributeValue} into Jaeger's {@link Model.KeyValue}.
+   * Converts the given {@link AttributeKey} and value into Jaeger's {@link Model.KeyValue}.
    *
    * @param key the entry key as string
    * @param value the entry value
    * @return a Jaeger key value
    */
   @VisibleForTesting
-  static Model.KeyValue toKeyValue(String key, AttributeValue value) {
+  static <T> Model.KeyValue toKeyValue(AttributeKey<T> key, T value) {
     Model.KeyValue.Builder builder = Model.KeyValue.newBuilder();
-    builder.setKey(key);
+    builder.setKey(key.getKey());
 
-    switch (value.getType()) {
+    switch (key.getType()) {
       case STRING:
-        builder.setVStr(value.getStringValue());
+        builder.setVStr((String) value);
         builder.setVType(Model.ValueType.STRING);
         break;
       case LONG:
-        builder.setVInt64(value.getLongValue());
+        builder.setVInt64((long) value);
         builder.setVType(Model.ValueType.INT64);
         break;
       case BOOLEAN:
-        builder.setVBool(value.getBooleanValue());
+        builder.setVBool((boolean) value);
         builder.setVType(Model.ValueType.BOOL);
         break;
       case DOUBLE:
-        builder.setVFloat64(value.getDoubleValue());
+        builder.setVFloat64((double) value);
         builder.setVType(Model.ValueType.FLOAT64);
         break;
       case STRING_ARRAY:
-        builder.setVStr(new Gson().toJson(value.getStringArrayValue()));
-        builder.setVType(Model.ValueType.STRING);
-        break;
       case LONG_ARRAY:
-        builder.setVStr(new Gson().toJson(value.getLongArrayValue()));
-        builder.setVType(Model.ValueType.STRING);
-        break;
       case BOOLEAN_ARRAY:
-        builder.setVStr(new Gson().toJson(value.getBooleanArrayValue()));
-        builder.setVType(Model.ValueType.STRING);
-        break;
       case DOUBLE_ARRAY:
-        builder.setVStr(new Gson().toJson(value.getDoubleArrayValue()));
+        builder.setVStr(new Gson().toJson(value));
         builder.setVType(Model.ValueType.STRING);
         break;
     }
@@ -264,8 +246,8 @@ final class Adapter {
   @VisibleForTesting
   static Model.SpanRef toSpanRef(Link link) {
     Model.SpanRef.Builder builder = Model.SpanRef.newBuilder();
-    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceId()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanId()));
+    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsHexString()));
+    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsHexString()));
 
     // we can assume that all links are *follows from*
     // https://github.com/open-telemetry/opentelemetry-java/issues/475

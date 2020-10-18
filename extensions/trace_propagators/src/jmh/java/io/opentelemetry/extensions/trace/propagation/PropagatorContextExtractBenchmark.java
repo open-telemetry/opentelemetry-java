@@ -1,23 +1,12 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
@@ -105,8 +94,8 @@ public class PropagatorContextExtractBenchmark {
                 JaegerPropagator.PROPAGATION_HEADER,
                 "68ec932c33b3f2ee68ec932c33b3f2ee:68ec932c33b3f2ee:0:0"));
 
-    private final HttpTextFormat.Getter<Map<String, String>> getter =
-        new HttpTextFormat.Getter<Map<String, String>>() {
+    private final TextMapPropagator.Getter<Map<String, String>> getter =
+        new TextMapPropagator.Getter<Map<String, String>>() {
           @Override
           public Collection<String> keys(Map<String, String> carrier) {
             return carrier.keySet();
@@ -118,7 +107,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
+    private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
     @Override
     protected Context doExtract() {
@@ -153,8 +142,8 @@ public class PropagatorContextExtractBenchmark {
                 JaegerPropagator.PROPAGATION_HEADER,
                 "68ec932c33b3f2ee68ec932c33b3f2ee%3A68ec932c33b3f2ee%3A0%3A0"));
 
-    private final HttpTextFormat.Getter<Map<String, String>> getter =
-        new HttpTextFormat.Getter<Map<String, String>>() {
+    private final TextMapPropagator.Getter<Map<String, String>> getter =
+        new TextMapPropagator.Getter<Map<String, String>>() {
           @Override
           public Collection<String> keys(Map<String, String> carrier) {
             return carrier.keySet();
@@ -166,7 +155,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
+    private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
     @Override
     protected Context doExtract() {
@@ -201,8 +190,8 @@ public class PropagatorContextExtractBenchmark {
                 B3Propagator.COMBINED_HEADER,
                 "68ec932c33b3f2ee68ec932c33b3f2ee-68ec932c33b3f2ee-0"));
 
-    private final HttpTextFormat.Getter<Map<String, String>> getter =
-        new HttpTextFormat.Getter<Map<String, String>>() {
+    private final TextMapPropagator.Getter<Map<String, String>> getter =
+        new TextMapPropagator.Getter<Map<String, String>>() {
           @Override
           public Collection<String> keys(Map<String, String> carrier) {
             return carrier.keySet();
@@ -214,7 +203,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final B3Propagator b3Propagator = B3Propagator.getSingleHeaderPropagator();
+    private final B3Propagator b3Propagator = B3Propagator.getInstance();
 
     @Override
     protected Context doExtract() {
@@ -252,8 +241,8 @@ public class PropagatorContextExtractBenchmark {
       return headers;
     }
 
-    private final HttpTextFormat.Getter<Map<String, String>> getter =
-        new HttpTextFormat.Getter<Map<String, String>>() {
+    private final TextMapPropagator.Getter<Map<String, String>> getter =
+        new TextMapPropagator.Getter<Map<String, String>>() {
           @Override
           public Collection<String> keys(Map<String, String> carrier) {
             return carrier.keySet();
@@ -265,7 +254,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final B3Propagator b3Propagator = B3Propagator.getMultipleHeaderPropagator();
+    private final B3Propagator b3Propagator = B3Propagator.getInstance();
 
     @Override
     protected Context doExtract() {

@@ -1,26 +1,17 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.otlp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
+import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -30,13 +21,10 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceId;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,16 +51,18 @@ class OtlpGrpcSpanExporterTest {
   @Test
   void configTest() {
     Map<String, String> options = new HashMap<>();
-    options.put("otel.otlp.span.timeout", "12");
-    options.put("otel.otlp.endpoint", "http://localhost:6553");
-    options.put("otel.otlp.use.tls", "true");
-    options.put("otel.otlp.metadata", "key=value;key2=value2=;key3=val=ue3; key4 = value4 ;key5= ");
-    OtlpGrpcSpanExporter.Builder config = OtlpGrpcSpanExporter.newBuilder();
+    options.put("otel.exporter.otlp.span.timeout", "12");
+    options.put("otel.exporter.otlp.span.endpoint", "http://localhost:6553");
+    options.put("otel.exporter.otlp.span.insecure", "true");
+    options.put(
+        "otel.exporter.otlp.span.headers",
+        "key=value;key2=value2=;key3=val=ue3; key4 = value4 ;key5= ");
+    OtlpGrpcSpanExporter.Builder config = OtlpGrpcSpanExporter.builder();
     OtlpGrpcSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
     Mockito.verify(spy).setDeadlineMs(12);
     Mockito.verify(spy).setEndpoint("http://localhost:6553");
-    Mockito.verify(spy).setUseTls(true);
+    Mockito.verify(spy).setUseTls(false);
     Mockito.verify(spy).addHeader("key", "value");
     Mockito.verify(spy).addHeader("key2", "value2=");
     Mockito.verify(spy).addHeader("key3", "val=ue3");
@@ -101,9 +91,9 @@ class OtlpGrpcSpanExporterTest {
   void testExport() {
     SpanData span = generateFakeSpan();
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(span))).isEqualTo(ResultCode.SUCCESS);
+      assertThat(exporter.export(Collections.singletonList(span)).isSuccess()).isTrue();
       assertThat(fakeCollector.getReceivedSpans())
           .isEqualTo(SpanAdapter.toProtoResourceSpans(Collections.singletonList(span)));
     } finally {
@@ -118,11 +108,29 @@ class OtlpGrpcSpanExporterTest {
       spans.add(generateFakeSpan());
     }
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(spans)).isEqualTo(ResultCode.SUCCESS);
+      assertThat(exporter.export(spans).isSuccess()).isTrue();
       assertThat(fakeCollector.getReceivedSpans())
           .isEqualTo(SpanAdapter.toProtoResourceSpans(spans));
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void testExport_DeadlineSetPerExport() throws InterruptedException {
+    int deadlineMs = 1500;
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder()
+            .setChannel(inProcessChannel)
+            .setDeadlineMs(deadlineMs)
+            .build();
+
+    try {
+      TimeUnit.MILLISECONDS.sleep(2000);
+      CompletableResultCode result = exporter.export(Collections.singletonList(generateFakeSpan()));
+      await().untilAsserted(() -> assertThat(result.isSuccess()).isTrue());
     } finally {
       exporter.shutdown();
     }
@@ -132,20 +140,20 @@ class OtlpGrpcSpanExporterTest {
   void testExport_AfterShutdown() {
     SpanData span = generateFakeSpan();
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     exporter.shutdown();
     // TODO: This probably should not be retryable because we never restart the channel.
-    assertThat(exporter.export(Collections.singletonList(span))).isEqualTo(ResultCode.FAILURE);
+    assertThat(exporter.export(Collections.singletonList(span)).isSuccess()).isFalse();
   }
 
   @Test
   void testExport_Cancelled() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.CANCELLED);
+    fakeCollector.setReturnedStatus(Status.CANCELLED);
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -153,12 +161,12 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_DeadlineExceeded() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.DEADLINE_EXCEEDED);
+    fakeCollector.setReturnedStatus(Status.DEADLINE_EXCEEDED);
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -166,12 +174,12 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_ResourceExhausted() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.RESOURCE_EXHAUSTED);
+    fakeCollector.setReturnedStatus(Status.RESOURCE_EXHAUSTED);
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -179,12 +187,12 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_OutOfRange() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.OUT_OF_RANGE);
+    fakeCollector.setReturnedStatus(Status.OUT_OF_RANGE);
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -192,12 +200,12 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_Unavailable() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.UNAVAILABLE);
+    fakeCollector.setReturnedStatus(Status.UNAVAILABLE);
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -205,12 +213,12 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_DataLoss() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.DATA_LOSS);
+    fakeCollector.setReturnedStatus(Status.DATA_LOSS);
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -218,12 +226,12 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_PermissionDenied() {
-    fakeCollector.setReturnedStatus(io.grpc.Status.PERMISSION_DENIED);
+    fakeCollector.setReturnedStatus(Status.PERMISSION_DENIED);
     OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILURE);
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
     } finally {
       exporter.shutdown();
     }
@@ -233,14 +241,14 @@ class OtlpGrpcSpanExporterTest {
     long duration = TimeUnit.MILLISECONDS.toNanos(900);
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + duration;
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setHasEnded(true)
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
         .setName("GET /api/endpoint")
         .setStartEpochNanos(startNs)
         .setEndEpochNanos(endNs)
-        .setStatus(Status.OK)
+        .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
@@ -250,7 +258,7 @@ class OtlpGrpcSpanExporterTest {
 
   private static final class FakeCollector extends TraceServiceGrpc.TraceServiceImplBase {
     private final List<ResourceSpans> receivedSpans = new ArrayList<>();
-    private io.grpc.Status returnedStatus = io.grpc.Status.OK;
+    private Status returnedStatus = Status.OK;
 
     @Override
     public void export(
@@ -273,7 +281,7 @@ class OtlpGrpcSpanExporterTest {
       return receivedSpans;
     }
 
-    void setReturnedStatus(io.grpc.Status returnedStatus) {
+    void setReturnedStatus(Status returnedStatus) {
       this.returnedStatus = returnedStatus;
     }
   }

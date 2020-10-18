@@ -1,6 +1,5 @@
 plugins {
-    id 'com.github.sherter.google-java-format' apply false
-    id "com.jfrog.artifactory" apply false
+    id "com.diffplug.spotless"
 }
 
 subprojects {
@@ -8,13 +7,13 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'idea'
-    apply plugin: 'com.github.sherter.google-java-format'
+    apply plugin: 'com.diffplug.spotless'
 
     group = "io.opentelemetry"
     version = "0.1.0-SNAPSHOT"
 
     ext {
-        opentelemetryVersion = "0.8.0-SNAPSHOT"
+        opentelemetryVersion = "0.9.1"
         grpcVersion = '1.28.0'
         protobufVersion = '3.11.4'
         protocVersion = protobufVersion
@@ -29,10 +28,11 @@ subprojects {
         }
     }
 
-    googleJavaFormat {
-        toolVersion = '1.7'
+    spotless {
+        java {
+            googleJavaFormat("1.7")
+        }
     }
-    compileJava.dependsOn(verifyGoogleJavaFormat)
 
     //create a single Jar with all dependencies
     task fatJar(type: Jar) {
