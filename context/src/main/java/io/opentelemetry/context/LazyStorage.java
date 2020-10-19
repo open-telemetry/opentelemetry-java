@@ -36,7 +36,7 @@ final class LazyStorage {
     }
   }
 
-  private static ContextStorage createStorage(AtomicReference<Throwable> deferredStorageFailure) {
+  static ContextStorage createStorage(AtomicReference<Throwable> deferredStorageFailure) {
     String providerClassName = System.getProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY, "");
 
     List<ContextStorageProvider> providers = new ArrayList<>();
