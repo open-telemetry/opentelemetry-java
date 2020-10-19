@@ -36,7 +36,7 @@ final class LazyStorage {
     }
   }
 
-  private static ContextStorage createStorage(AtomicReference<Throwable> deferredStorageFailure) {
+  static ContextStorage createStorage(AtomicReference<Throwable> deferredStorageFailure) {
     String providerClassName = System.getProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY, "");
 
     List<ContextStorageProvider> providers = new ArrayList<>();
@@ -48,17 +48,11 @@ final class LazyStorage {
       return DefaultContext.threadLocalStorage();
     }
 
-    if (providers.size() == 1) {
-      ContextStorageProvider provider = providers.get(0);
-      try {
-        return provider.get();
-      } catch (Throwable t) {
-        deferredStorageFailure.set(t);
-        return DefaultContext.threadLocalStorage();
-      }
-    }
-
     if (providerClassName.isEmpty()) {
+      if (providers.size() == 1) {
+        return providers.get(0).get();
+      }
+
       deferredStorageFailure.set(
           new IllegalStateException(
               "Found multiple ContextStorageProvider. Set the "
