@@ -36,7 +36,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @see BaggageManagerFactory
  */
 @ThreadSafe
-class DefaultOpenTelemetry implements OpenTelemetry {
+final class DefaultOpenTelemetry implements OpenTelemetry {
   private static final Object mutex = new Object();
 
   static OpenTelemetry getGlobalOpenTelemetry() {
