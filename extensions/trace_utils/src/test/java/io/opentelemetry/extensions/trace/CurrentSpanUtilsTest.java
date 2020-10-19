@@ -7,6 +7,7 @@ package io.opentelemetry.extensions.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +62,7 @@ class CurrentSpanUtilsTest {
           assertThat(getCurrentSpan()).isSameAs(span);
         };
     CurrentSpanUtils.withSpan(span, false, runnable).run();
+    verify(span, never()).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
@@ -120,6 +122,7 @@ class CurrentSpanUtilsTest {
           return ret;
         };
     assertThat(CurrentSpanUtils.withSpan(span, false, callable).call()).isEqualTo(ret);
+    verify(span, never()).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
