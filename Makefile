@@ -6,7 +6,7 @@ test:
 
 .PHONY: test-with-docker
 test-with-docker:
-	./gradlew -Penable.docker.tests=true clean assemble check --stacktrace --info
+	./gradlew -Penable.docker.tests=true clean assemble check --stacktrace
 
 .PHONY: benchmark
 benchmark:
