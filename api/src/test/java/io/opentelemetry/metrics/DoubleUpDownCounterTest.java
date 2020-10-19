@@ -19,7 +19,7 @@ class DoubleUpDownCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Meter meter = OpenTelemetry.getGlobalMeter("DoubleUpDownCounterTest");
+  private static final Meter meter = OpenTelemetry.getMeter("DoubleUpDownCounterTest");
 
   @Test
   void preventNull_Name() {

@@ -65,7 +65,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
       SpanExporter exporter = new DelayingSpanExporter();
       processor = BatchSpanProcessor.builder(exporter).build();
 
-      tracer = OpenTelemetry.getGlobalTracerProvider().get("benchmarkTracer");
+      tracer = OpenTelemetry.getTracerProvider().get("benchmarkTracer");
     }
 
     @TearDown(Level.Trial)

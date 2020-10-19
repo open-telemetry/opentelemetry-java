@@ -31,7 +31,7 @@ final class Client {
     span.setAttribute("component", "example-client");
 
     try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
-      OpenTelemetry.getGlobalPropagators()
+      OpenTelemetry.getPropagators()
           .getTextMapPropagator()
           .inject(Context.current(), message, Message::put);
       queue.put(message);

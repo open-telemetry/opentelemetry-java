@@ -29,26 +29,25 @@ public final class OpenTelemetrySdk {
    * @return TracerSdkManagement for managing your Tracing SDK.
    */
   public static TracerSdkManagement getTracerManagement() {
-    return (TracerSdkManagement)
-        ((Obfuscated<?>) OpenTelemetry.getGlobalTracerProvider()).unobfuscate();
+    return (TracerSdkManagement) ((Obfuscated<?>) OpenTelemetry.getTracerProvider()).unobfuscate();
   }
 
   /**
    * Returns a {@link MeterSdkProvider}.
    *
-   * @return MeterProvider returned by {@link OpenTelemetry#getGlobalMeterProvider()}.
+   * @return MeterProvider returned by {@link OpenTelemetry#getMeterProvider()}.
    */
   public static MeterSdkProvider getMeterProvider() {
-    return (MeterSdkProvider) OpenTelemetry.getGlobalMeterProvider();
+    return (MeterSdkProvider) OpenTelemetry.getMeterProvider();
   }
 
   /**
    * Returns a {@link BaggageManagerSdk}.
    *
-   * @return context manager returned by {@link OpenTelemetry#getGlobalBaggageManager()}.
+   * @return context manager returned by {@link OpenTelemetry#getBaggageManager()}.
    */
   public static BaggageManagerSdk getBaggageManager() {
-    return (BaggageManagerSdk) OpenTelemetry.getGlobalBaggageManager();
+    return (BaggageManagerSdk) OpenTelemetry.getBaggageManager();
   }
 
   private OpenTelemetrySdk() {}

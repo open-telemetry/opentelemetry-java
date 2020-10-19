@@ -70,7 +70,7 @@ public class BatchLogProcessor implements LogProcessor {
 
   private static class Worker implements Runnable {
     static {
-      Meter meter = OpenTelemetry.getGlobalMeter("io.opentelemetry.sdk.logging");
+      Meter meter = OpenTelemetry.getMeter("io.opentelemetry.sdk.logging");
       LongCounter logRecordsProcessed =
           meter
               .longCounterBuilder("logRecordsProcessed")

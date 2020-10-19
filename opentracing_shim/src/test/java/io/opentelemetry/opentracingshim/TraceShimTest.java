@@ -5,8 +5,8 @@
 
 package io.opentelemetry.opentracingshim;
 
-import static io.opentelemetry.OpenTelemetry.getGlobalBaggageManager;
-import static io.opentelemetry.OpenTelemetry.getGlobalTracerProvider;
+import static io.opentelemetry.OpenTelemetry.getBaggageManager;
+import static io.opentelemetry.OpenTelemetry.getTracerProvider;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -20,15 +20,15 @@ class TraceShimTest {
   @Test
   void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim();
-    assertEquals(OpenTelemetry.getGlobalTracer("opentracingshim"), tracerShim.tracer());
-    assertEquals(OpenTelemetry.getGlobalBaggageManager(), tracerShim.contextManager());
+    assertEquals(OpenTelemetry.getTracer("opentracingshim"), tracerShim.tracer());
+    assertEquals(OpenTelemetry.getBaggageManager(), tracerShim.contextManager());
   }
 
   @Test
   void createTracerShim_nullTracer() {
     assertThrows(
         NullPointerException.class,
-        () -> TraceShim.createTracerShim(null, getGlobalBaggageManager()),
+        () -> TraceShim.createTracerShim(null, getBaggageManager()),
         "tracerProvider");
   }
 
@@ -36,7 +36,7 @@ class TraceShimTest {
   void createTracerShim_nullContextManager() {
     assertThrows(
         NullPointerException.class,
-        () -> TraceShim.createTracerShim(getGlobalTracerProvider(), null),
+        () -> TraceShim.createTracerShim(getTracerProvider(), null),
         "contextManager");
   }
 

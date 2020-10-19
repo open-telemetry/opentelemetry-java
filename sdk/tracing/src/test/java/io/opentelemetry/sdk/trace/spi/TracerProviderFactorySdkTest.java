@@ -18,6 +18,6 @@ class TracerProviderFactorySdkTest {
   @Test
   void testDefault() {
     Tracer tracerSdk = TracerSdkProvider.builder().build().get("");
-    assertThat(OpenTelemetry.getGlobalTracerProvider().get("")).isInstanceOf(tracerSdk.getClass());
+    assertThat(OpenTelemetry.getTracerProvider().get("")).isInstanceOf(tracerSdk.getClass());
   }
 }

@@ -67,22 +67,22 @@ class DefaultOpenTelemetry implements OpenTelemetry {
   private final ContextPropagators propagators;
 
   @Override
-  public TracerProvider getTracerProvider() {
+  public TracerProvider getMyTracerProvider() {
     return tracerProvider;
   }
 
   @Override
-  public MeterProvider getMeterProvider() {
+  public MeterProvider getMyMeterProvider() {
     return meterProvider;
   }
 
   @Override
-  public BaggageManager getBaggageManager() {
+  public BaggageManager getMyBaggageManager() {
     return baggageManager;
   }
 
   @Override
-  public ContextPropagators getPropagators() {
+  public ContextPropagators getMyPropagators() {
     return propagators;
   }
 

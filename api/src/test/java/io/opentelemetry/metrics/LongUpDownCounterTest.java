@@ -19,7 +19,7 @@ class LongUpDownCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Meter meter = OpenTelemetry.getGlobalMeter("LongUpDownCounterTest");
+  private static final Meter meter = OpenTelemetry.getMeter("LongUpDownCounterTest");
 
   @Test
   void preventNull_Name() {
