@@ -387,15 +387,10 @@ configure(opentelemetryProjects) {
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check
         errorprone libraries.errorprone_core
-        if (!JavaVersion.current().isJava9Compatible()) {
-            errorproneJavac libraries.errorprone_javac
-        }
 
-        if (JavaVersion.current().isJava9Compatible()) {
-            // Workaround for @javax.annotation.Generated
-            // see: https://github.com/grpc/grpc-java/issues/3633
-            compileOnly libraries.javax_annotations
-        }
+        // Workaround for @javax.annotation.Generated
+        // see: https://github.com/grpc/grpc-java/issues/3633
+        compileOnly libraries.javax_annotations
     }
 
     tasks.withType(Test) {
