@@ -169,15 +169,32 @@ configure(opentelemetryProjects) {
         mavenLocal()
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-
     java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(11)
+        }
+
         withJavadocJar()
         withSourcesJar()
     }
 
+    tasks {
+        def testJava8 = register('testJava8', Test) {
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(8)
+            }
+
+            jacoco.enabled = false
+        }
+
+        if (rootProject.findProperty('testAdditionalJavaVersions') == 'true') {
+            check.dependsOn(testJava8)
+        }
+    }
+
     tasks.withType(JavaCompile) {
+        it.options.release = 8
+
         it.options.compilerArgs += [
                 "-Xlint:all",
                 // We suppress the "try" warning because it disallows managing an auto-closeable with
@@ -466,7 +483,7 @@ configure(opentelemetryProjects) {
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = '6.6'
+    gradleVersion = '6.7'
 }
 
 tasks.register("updateVersionInDocs") {
