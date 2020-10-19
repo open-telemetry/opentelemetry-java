@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -114,25 +115,10 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
     }
 
-    Map<Resource, List<SpanData>> resourceAndSpanData = Adapter.groupByResource(spans);
     List<Collector.PostSpansRequest> requests = new ArrayList<>();
-    for (Map.Entry<Resource, List<SpanData>> entry : resourceAndSpanData.entrySet()) {
-      Process.Builder builder = this.processBuilder.clone();
-      if (entry.getKey().getAttributes() != null) {
-        builder.addAllTags(Adapter.toKeyValues(entry.getKey().getAttributes()));
-      }
-
-      Collector.PostSpansRequest request =
-          Collector.PostSpansRequest.newBuilder()
-              .setBatch(
-                  Model.Batch.newBuilder()
-                      .addAllSpans(Adapter.toJaeger(entry.getValue()))
-                      .setProcess(builder.build())
-                      .build())
-              .build();
-
-      requests.add(request);
-    }
+    spans.stream()
+        .collect(Collectors.groupingBy(SpanData::getResource))
+        .forEach((resource, spanData) -> requests.add(buildRequest(resource, spanData)));
 
     List<ListenableFuture<PostSpansResponse>> listenableFutures = new ArrayList<>(requests.size());
     for (PostSpansRequest request : requests) {
@@ -156,6 +142,21 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
         },
         MoreExecutors.directExecutor());
     return result;
+  }
+
+  private Collector.PostSpansRequest buildRequest(Resource resource, List<SpanData> spans) {
+    Process.Builder builder = this.processBuilder.clone();
+    if (resource.getAttributes() != null) {
+      builder.addAllTags(Adapter.toKeyValues(resource.getAttributes()));
+    }
+
+    return Collector.PostSpansRequest.newBuilder()
+        .setBatch(
+            Model.Batch.newBuilder()
+                .addAllSpans(Adapter.toJaeger(spans))
+                .setProcess(builder.build())
+                .build())
+        .build();
   }
 
   /**

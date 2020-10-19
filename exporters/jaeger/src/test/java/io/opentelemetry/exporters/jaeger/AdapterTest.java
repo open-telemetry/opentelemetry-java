@@ -37,7 +37,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
@@ -50,20 +49,6 @@ class AdapterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
   private static final String PARENT_SPAN_ID = "0000000000aef789";
-
-  @Test
-  void testGroupByResource() {
-    long duration = 900; // ms
-    long startMs = System.currentTimeMillis();
-    long endMs = startMs + duration;
-
-    SpanData span = getSpanData(startMs, endMs);
-    List<SpanData> spans = Collections.singletonList(span);
-
-    Map<Resource, List<SpanData>> resourceAndSpanData = Adapter.groupByResource(spans);
-    assertEquals(1, resourceAndSpanData.keySet().size());
-    assertEquals(1, resourceAndSpanData.values().size());
-  }
 
   @Test
   void testProtoSpans() {

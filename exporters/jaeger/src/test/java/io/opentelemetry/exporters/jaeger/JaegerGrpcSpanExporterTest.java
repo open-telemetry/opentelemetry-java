@@ -17,6 +17,8 @@ import io.grpc.Server;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
@@ -26,6 +28,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Model.Span;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
@@ -93,6 +96,10 @@ class JaegerGrpcSpanExporterTest {
             .setTotalRecordedEvents(0)
             .setInstrumentationLibraryInfo(
                 InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setResource(
+                Resource.create(
+                    Attributes.of(
+                        AttributeKey.stringKey("resource-attr-key"), "resource-attr-value")))
             .build();
 
     // test
@@ -109,7 +116,7 @@ class JaegerGrpcSpanExporterTest {
     assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), batch.getSpans(0).getTraceId());
     assertEquals(TraceProtoUtils.toProtoSpanId(SPAN_ID), batch.getSpans(0).getSpanId());
     assertEquals("test", batch.getProcess().getServiceName());
-    assertEquals(3, batch.getProcess().getTagsCount());
+    assertEquals(4, batch.getProcess().getTagsCount());
 
     assertEquals(
         "io.opentelemetry.auto",
@@ -121,6 +128,12 @@ class JaegerGrpcSpanExporterTest {
         "1.0.0",
         getSpanTagValue(batch.getSpans(0), "otel.library.version")
             .orElseThrow(() -> new AssertionError("otel.library.version not found"))
+            .getVStr());
+
+    assertEquals(
+        "resource-attr-value",
+        getSpanTagValue(batch.getSpans(0), "resource-attr-key")
+            .orElseThrow(() -> new AssertionError("resource-attr-key not found"))
             .getVStr());
 
     boolean foundClientTag = false;
