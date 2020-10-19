@@ -37,7 +37,7 @@ public interface OpenTelemetry {
   /**
    * Gets or creates a named tracer instance from the globally registered {@link TracerProvider}.
    *
-   * <p>This is a shortcut method for {@code getGlobalTracerProvider().get(instrumentationName)}
+   * <p>This is a shortcut method for {@code getTracerProvider().get(instrumentationName)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
@@ -51,7 +51,7 @@ public interface OpenTelemetry {
    * Gets or creates a named and versioned tracer instance from the globally registered {@link
    * TracerProvider}.
    *
-   * <p>This is a shortcut method for @codegetGlobalTracerProvider().get(instrumentationName,
+   * <p>This is a shortcut method for @codegetTracerProvider().get(instrumentationName,
    * instrumentationVersion)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
