@@ -52,7 +52,7 @@ class HttpTraceContextTest {
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
+    return context.withValues(Span.wrap(spanContext));
   }
 
   @Test

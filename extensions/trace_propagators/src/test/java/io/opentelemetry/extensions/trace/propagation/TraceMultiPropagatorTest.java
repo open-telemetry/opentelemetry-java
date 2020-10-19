@@ -6,7 +6,6 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import static io.opentelemetry.trace.TracingContextUtils.getSpan;
-import static io.opentelemetry.trace.TracingContextUtils.withSpan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -111,7 +110,7 @@ class TraceMultiPropagatorTest {
             .build();
 
     Map<String, String> carrier = new HashMap<>();
-    prop.inject(withSpan(SPAN, Context.current()), carrier, Map::put);
+    prop.inject(Context.current().withValues(SPAN), carrier, Map::put);
 
     assertThat(getSpan(PROPAGATOR1.extract(Context.current(), carrier, Map::get)).getContext())
         .isEqualTo(SPAN.getContext());
@@ -141,7 +140,7 @@ class TraceMultiPropagatorTest {
             .build();
 
     Map<String, String> carrier = new HashMap<>();
-    PROPAGATOR2.inject(withSpan(SPAN, Context.current()), carrier, Map::put);
+    PROPAGATOR2.inject(Context.current().withValues(SPAN), carrier, Map::put);
     assertThat(getSpan(prop.extract(Context.current(), carrier, Map::get)).getContext())
         .isEqualTo(SPAN.getContext());
   }
@@ -151,7 +150,7 @@ class TraceMultiPropagatorTest {
     TextMapPropagator prop = TraceMultiPropagator.builder().addPropagator(PROPAGATOR1).build();
 
     Map<String, String> carrier = new HashMap<>();
-    PROPAGATOR3.inject(withSpan(SPAN, Context.current()), carrier, Map::put);
+    PROPAGATOR3.inject(Context.current().withValues(SPAN), carrier, Map::put);
     assertThat(prop.extract(Context.current(), carrier, Map::get)).isEqualTo(Context.current());
   }
 
@@ -165,7 +164,7 @@ class TraceMultiPropagatorTest {
             .build();
 
     Map<String, String> carrier = new HashMap<>();
-    PROPAGATOR3.inject(withSpan(SPAN, Context.current()), carrier, Map::put);
+    PROPAGATOR3.inject(Context.current().withValues(SPAN), carrier, Map::put);
     assertThat(getSpan(prop.extract(Context.current(), carrier, Map::get)).getContext())
         .isEqualTo(SPAN.getContext());
     verify(mockPropagator).fields();

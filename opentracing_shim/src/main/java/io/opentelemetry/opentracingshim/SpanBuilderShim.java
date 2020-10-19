@@ -15,7 +15,6 @@ import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
@@ -183,14 +182,13 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      builder.setParent(TracingContextUtils.withSpan(parentSpan.getSpan(), Context.root()));
+      builder.setParent(Context.root().withValues(parentSpan.getSpan()));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
       baggage = contextShim == null ? null : contextShim.getBaggage();
     } else if (parentSpanContext != null) {
       builder.setParent(
-          TracingContextUtils.withSpan(
-              io.opentelemetry.trace.Span.wrap(parentSpanContext.getSpanContext()),
-              Context.root()));
+          Context.root()
+              .withValues(io.opentelemetry.trace.Span.wrap(parentSpanContext.getSpanContext())));
       baggage = parentSpanContext.getBaggage();
     }
 

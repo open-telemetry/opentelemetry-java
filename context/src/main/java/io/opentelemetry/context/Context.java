@@ -138,6 +138,11 @@ public interface Context {
     return withValues(k1, v1, k2, v2, k3, v3).withValues(k4, v4);
   }
 
+  /** Returns a new {@link Context} with the given {@link ContextValue} set. */
+  default Context withValues(ContextValue value) {
+    return value.storeInContext(this);
+  }
+
   /**
    * Makes this the {@linkplain Context#current() current context} and returns a {@link Scope} which
    * corresponds to the scope of execution this context is current for. {@link Context#current()}

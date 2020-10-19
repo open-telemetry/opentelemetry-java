@@ -13,7 +13,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -34,7 +33,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       return Optional.empty();
     }
 
-    return Optional.of(TracingContextUtils.withSpan(Span.wrap(spanContext), context));
+    return Optional.of(context.withValues(Span.wrap(spanContext)));
   }
 
   private static <C> SpanContext getSpanContextFromMultipleHeaders(

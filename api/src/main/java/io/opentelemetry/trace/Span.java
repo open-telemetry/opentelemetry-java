@@ -8,6 +8,7 @@ package io.opentelemetry.trace;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextValue;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -19,7 +20,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>{@code Span} <b>must</b> be ended by calling {@link #end()}.
  */
 @ThreadSafe
-public interface Span {
+public interface Span extends ContextValue {
 
   /**
    * Returns an invalid {@link Span}. An invalid {@link Span} is used when tracing is disabled,
@@ -285,6 +286,11 @@ public interface Span {
    * @return {@code true} if this {@code Span} records tracing events.
    */
   boolean isRecording();
+
+  @Override
+  default Context storeInContext(Context context) {
+    return TracingContextUtils.withSpan(this, context);
+  }
 
   /**
    * {@link Builder} is used to construct {@link Span} instances which define arbitrary scopes of

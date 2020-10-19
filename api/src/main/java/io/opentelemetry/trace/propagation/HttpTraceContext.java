@@ -149,7 +149,7 @@ public class HttpTraceContext implements TextMapPropagator {
       return context;
     }
 
-    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
+    return context.withValues(Span.wrap(spanContext));
   }
 
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {
