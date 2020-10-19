@@ -118,8 +118,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
-    Objects.requireNonNull(carrier, "carrier");
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
     Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);

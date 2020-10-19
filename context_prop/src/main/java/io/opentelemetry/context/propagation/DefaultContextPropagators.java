@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  * {@code DefaultContextPropagators} is the default, built-in implementation of {@link
@@ -118,14 +119,14 @@ public final class DefaultContextPropagators implements ContextPropagators {
     }
 
     @Override
-    public <C> void inject(Context context, C carrier, Setter<C> setter) {
+    public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {
       for (int i = 0; i < textPropagators.length; i++) {
         textPropagators[i].inject(context, carrier, setter);
       }
     }
 
     @Override
-    public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+    public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
       for (int i = 0; i < textPropagators.length; i++) {
         context = textPropagators[i].extract(context, carrier, getter);
       }
@@ -142,10 +143,10 @@ public final class DefaultContextPropagators implements ContextPropagators {
     }
 
     @Override
-    public <C> void inject(Context context, C carrier, Setter<C> setter) {}
+    public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {}
 
     @Override
-    public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+    public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
       return context;
     }
   }

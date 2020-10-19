@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -114,12 +115,12 @@ public class B3Propagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, C carrier, Setter<C> setter) {
+  public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {
     b3PropagatorInjector.inject(context, carrier, setter);
   }
 
   @Override
-  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
     return Stream.<Supplier<Optional<Context>>>of(
             () -> singleHeaderExtractor.extract(context, carrier, getter),
             () -> multipleHeadersExtractor.extract(context, carrier, getter),
