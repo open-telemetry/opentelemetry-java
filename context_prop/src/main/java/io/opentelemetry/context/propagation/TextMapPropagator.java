@@ -103,7 +103,7 @@ public interface TextMapPropagator {
    * @param <C> carrier of propagation fields, such as an http request.
    * @return the {@code Context} containing the extracted value.
    */
-  <C> Context extract(Context context, C carrier, Getter<C> getter);
+  <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter);
 
   /**
    * Interface that allows a {@code TextMapPropagator} to read propagated fields from a carrier.
@@ -123,6 +123,6 @@ public interface TextMapPropagator {
      * @return the first value of the given propagation {@code key} or returns {@code null}.
      */
     @Nullable
-    String get(C carrier, String key);
+    String get(@Nullable C carrier, String key);
   }
 }
