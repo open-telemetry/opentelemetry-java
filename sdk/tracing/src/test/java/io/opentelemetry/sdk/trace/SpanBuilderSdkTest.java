@@ -505,12 +505,12 @@ class SpanBuilderSdkTest {
                     new Sampler() {
                       @Override
                       public SamplingResult shouldSample(
-                          @Nullable SpanContext parentContext,
+                          @Nullable Context parentContext,
                           String traceId,
                           String name,
                           Kind spanKind,
                           ReadableAttributes attributes,
-                          List<SpanData.Link> parentLinks) {
+                          List<Link> parentLinks) {
                         return new SamplingResult() {
                           @Override
                           public Decision getDecision() {
@@ -553,7 +553,7 @@ class SpanBuilderSdkTest {
                     new Sampler() {
                       @Override
                       public SamplingResult shouldSample(
-                          SpanContext parentContext,
+                          Context parentContext,
                           String traceId,
                           String name,
                           Kind spanKind,
