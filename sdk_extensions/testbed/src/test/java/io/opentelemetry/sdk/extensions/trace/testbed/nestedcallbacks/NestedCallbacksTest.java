@@ -1,22 +1,11 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.testbed.nestedcallbacks;
 
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -27,9 +16,9 @@ import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,7 +30,7 @@ public final class NestedCallbacksTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(NestedCallbacksTest.class.getName());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -65,24 +54,24 @@ public final class NestedCallbacksTest {
       assertThat(attrs.get(stringKey("key" + i))).isEqualTo(Integer.toString(i));
     }
 
-    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
+    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
   }
 
   private void submitCallbacks(final Span span) {
 
     executor.submit(
         () -> {
-          try (Scope ignored = tracer.withSpan(span)) {
+          try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
             span.setAttribute("key1", "1");
 
             executor.submit(
                 () -> {
-                  try (Scope ignored12 = tracer.withSpan(span)) {
+                  try (Scope ignored12 = TracingContextUtils.currentContextWith(span)) {
                     span.setAttribute("key2", "2");
 
                     executor.submit(
                         () -> {
-                          try (Scope ignored1 = tracer.withSpan(span)) {
+                          try (Scope ignored1 = TracingContextUtils.currentContextWith(span)) {
                             span.setAttribute("key3", "3");
                           } finally {
                             span.end();

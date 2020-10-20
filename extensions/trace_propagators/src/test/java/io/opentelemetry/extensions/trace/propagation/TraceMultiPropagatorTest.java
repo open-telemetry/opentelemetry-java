@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.extensions.trace.propagation;
@@ -23,9 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -43,12 +31,13 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 class TraceMultiPropagatorTest {
-  private static final TextMapPropagator PROPAGATOR1 = B3Propagator.getSingleHeaderPropagator();
-  private static final TextMapPropagator PROPAGATOR2 = B3Propagator.getMultipleHeaderPropagator();
+  private static final TextMapPropagator PROPAGATOR1 = B3Propagator.getInstance();
+  private static final TextMapPropagator PROPAGATOR2 =
+      B3Propagator.builder().injectMultipleHeaders().build();
   private static final TextMapPropagator PROPAGATOR3 = HttpTraceContext.getInstance();
 
   private static final Span SPAN =
-      DefaultSpan.create(
+      Span.wrap(
           SpanContext.createFromRemoteParent(
               TraceId.fromLongs(1245, 67890),
               SpanId.fromLong(12345),

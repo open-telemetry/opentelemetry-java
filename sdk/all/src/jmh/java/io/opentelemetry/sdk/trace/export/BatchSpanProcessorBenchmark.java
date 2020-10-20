@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace.export;
@@ -58,15 +47,7 @@ public class BatchSpanProcessorBenchmark {
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
       final CompletableResultCode result = new CompletableResultCode();
-      executor.schedule(
-          new Runnable() {
-            @Override
-            public void run() {
-              result.succeed();
-            }
-          },
-          delayMs,
-          TimeUnit.MILLISECONDS);
+      executor.schedule((Runnable) result::succeed, delayMs, TimeUnit.MILLISECONDS);
       return result;
     }
 
@@ -94,7 +75,7 @@ public class BatchSpanProcessorBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     SpanExporter exporter = new DelayingSpanExporter(delayMs);
-    processor = BatchSpanProcessor.newBuilder(exporter).build();
+    processor = BatchSpanProcessor.builder(exporter).build();
 
     ImmutableList.Builder<Span> spans = ImmutableList.builderWithExpectedSize(spanCount);
     Tracer tracer = OpenTelemetry.getTracerProvider().get("benchmarkTracer");

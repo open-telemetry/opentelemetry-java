@@ -1,22 +1,11 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
@@ -25,14 +14,13 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
-import io.opentelemetry.trace.Link;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Static class to access a set of pre-defined {@link Sampler Samplers}. */
@@ -185,13 +173,18 @@ public final class Samplers {
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<Link> parentLinks) {
+        List<SpanData.Link> parentLinks) {
       return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
     }
 
     @Override
     public String getDescription() {
       return "AlwaysOnSampler";
+    }
+
+    @Override
+    public String toString() {
+      return getDescription();
     }
   }
 
@@ -207,13 +200,18 @@ public final class Samplers {
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<Link> parentLinks) {
+        List<SpanData.Link> parentLinks) {
       return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
     }
 
     @Override
     public String getDescription() {
       return "AlwaysOffSampler";
+    }
+
+    @Override
+    public String toString() {
+      return getDescription();
     }
   }
 
@@ -249,7 +247,7 @@ public final class Samplers {
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<Link> parentLinks) {
+        List<SpanData.Link> parentLinks) {
       if (!parentContext.isValid()) {
         return this.root.shouldSample(
             parentContext, traceId, name, spanKind, attributes, parentLinks);
@@ -279,6 +277,11 @@ public final class Samplers {
           this.remoteParentNotSampled.getDescription(),
           this.localParentSampled.getDescription(),
           this.localParentNotSampled.getDescription());
+    }
+
+    @Override
+    public String toString() {
+      return getDescription();
     }
 
     static class Builder {
@@ -362,27 +365,19 @@ public final class Samplers {
 
       ParentBased that = (ParentBased) o;
 
-      if (root != null ? !root.equals(that.root) : that.root != null) {
+      if (!Objects.equals(root, that.root)) {
         return false;
       }
-      if (remoteParentSampled != null
-          ? !remoteParentSampled.equals(that.remoteParentSampled)
-          : that.remoteParentSampled != null) {
+      if (!Objects.equals(remoteParentSampled, that.remoteParentSampled)) {
         return false;
       }
-      if (remoteParentNotSampled != null
-          ? !remoteParentNotSampled.equals(that.remoteParentNotSampled)
-          : that.remoteParentNotSampled != null) {
+      if (!Objects.equals(remoteParentNotSampled, that.remoteParentNotSampled)) {
         return false;
       }
-      if (localParentSampled != null
-          ? !localParentSampled.equals(that.localParentSampled)
-          : that.localParentSampled != null) {
+      if (!Objects.equals(localParentSampled, that.localParentSampled)) {
         return false;
       }
-      return localParentNotSampled != null
-          ? localParentNotSampled.equals(that.localParentNotSampled)
-          : that.localParentNotSampled == null;
+      return Objects.equals(localParentNotSampled, that.localParentNotSampled);
     }
 
     @Override
@@ -394,22 +389,6 @@ public final class Samplers {
       result = 31 * result + (localParentSampled != null ? localParentSampled.hashCode() : 0);
       result = 31 * result + (localParentNotSampled != null ? localParentNotSampled.hashCode() : 0);
       return result;
-    }
-
-    @Override
-    public String toString() {
-      return "ParentBased{"
-          + "root="
-          + root
-          + ", remoteParentSampled="
-          + remoteParentSampled
-          + ", remoteParentNotSampled="
-          + remoteParentNotSampled
-          + ", localParentSampled="
-          + localParentSampled
-          + ", localParentNotSampled="
-          + localParentNotSampled
-          + '}';
     }
   }
 
@@ -463,7 +442,7 @@ public final class Samplers {
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        @Nullable List<Link> parentLinks) {
+        List<SpanData.Link> parentLinks) {
       // Always sample if we are within probability range. This is true even for child spans (that
       // may have had a different sampling samplingResult made) to allow for different sampling
       // policies,
@@ -480,6 +459,11 @@ public final class Samplers {
     @Override
     public final String getDescription() {
       return String.format("TraceIdRatioBased{%.6f}", getRatio());
+    }
+
+    @Override
+    public final String toString() {
+      return getDescription();
     }
   }
 

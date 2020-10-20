@@ -1,32 +1,22 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +32,7 @@ class HandlerTest {
 
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerProvider(sdk).build();
+      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
   private final Tracer tracer = sdk.get(HandlerTest.class.getName());
   private final Client client = new Client(new RequestHandler(tracer));
 
@@ -70,14 +60,14 @@ class HandlerTest {
     assertThat(finished.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
     assertThat(finished.get(1).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(tracer.getCurrentSpan()).isSameAs(DefaultSpan.getInvalid());
+    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
   }
 
   /** Active parent is not picked up by child. */
   @Test
   void parent_not_picked_up() throws Exception {
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = tracer.withSpan(parentSpan)) {
+    try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
       String response = client.send("no_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("no_parent:response");
     } finally {
@@ -107,8 +97,11 @@ class HandlerTest {
   void bad_solution_to_set_parent() throws Exception {
     Client client;
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = tracer.withSpan(parentSpan)) {
-      client = new Client(new RequestHandler(tracer, parentSpan.getContext()));
+    try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
+      client =
+          new Client(
+              new RequestHandler(
+                  tracer, TracingContextUtils.withSpan(parentSpan, Context.current())));
       String response = client.send("correct_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("correct_parent:response");
     } finally {

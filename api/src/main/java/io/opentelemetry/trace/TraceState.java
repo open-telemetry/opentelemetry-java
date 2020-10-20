@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.trace;
@@ -21,6 +10,7 @@ import io.opentelemetry.internal.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -36,8 +26,6 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the
  * range 0x20 to 0x7E) except comma , and =.
- *
- * @since 0.1.0
  */
 @Immutable
 @AutoValue
@@ -53,7 +41,6 @@ public abstract class TraceState {
    * Returns the default {@code TraceState} with no entries.
    *
    * @return the default {@code TraceState}.
-   * @since 0.1.0
    */
   public static TraceState getDefault() {
     return DEFAULT;
@@ -66,7 +53,6 @@ public abstract class TraceState {
    * @param key with which the specified value is to be associated
    * @return the value to which the specified key is mapped, or null if this map contains no mapping
    *     for the key.
-   * @since 0.1.0
    */
   @Nullable
   public String get(String key) {
@@ -82,7 +68,6 @@ public abstract class TraceState {
    * Returns a {@link List} view of the mappings contained in this {@code TraceState}.
    *
    * @return a {@link List} view of the mappings contained in this {@code TraceState}.
-   * @since 0.1.0
    */
   public abstract List<Entry> getEntries();
 
@@ -90,7 +75,6 @@ public abstract class TraceState {
    * Returns a {@code Builder} based on an empty {@code TraceState}.
    *
    * @return a {@code Builder} based on an empty {@code TraceState}.
-   * @since 0.1.0
    */
   public static Builder builder() {
     return new Builder(Builder.EMPTY);
@@ -100,27 +84,22 @@ public abstract class TraceState {
    * Returns a {@code Builder} based on this {@code TraceState}.
    *
    * @return a {@code Builder} based on this {@code TraceState}.
-   * @since 0.1.0
    */
   public Builder toBuilder() {
     return new Builder(this);
   }
 
-  /**
-   * Builder class for {@link TraceState}.
-   *
-   * @since 0.1.0
-   */
+  /** Builder class for {@link TraceState}. */
   public static final class Builder {
     private final TraceState parent;
     @Nullable private ArrayList<Entry> entries;
 
     // Needs to be in this class to avoid initialization deadlock because super class depends on
     // subclass (the auto-value generate class).
-    private static final TraceState EMPTY = create(Collections.<Entry>emptyList());
+    private static final TraceState EMPTY = create(Collections.emptyList());
 
     private Builder(TraceState parent) {
-      Utils.checkNotNull(parent, "parent");
+      Objects.requireNonNull(parent, "parent");
       this.parent = parent;
       this.entries = null;
     }
@@ -132,7 +111,6 @@ public abstract class TraceState {
      * @param key the key for the {@code Entry} to be added.
      * @param value the value for the {@code Entry} to be added.
      * @return this.
-     * @since 0.1.0
      */
     public Builder set(String key, String value) {
       // Initially create the Entry to validate input.
@@ -158,10 +136,9 @@ public abstract class TraceState {
      *
      * @param key the key for the {@code Entry} to be removed.
      * @return this.
-     * @since 0.1.0
      */
     public Builder remove(String key) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       if (entries == null) {
         // Copy entries from the parent.
         entries = new ArrayList<>(parent.getEntries());
@@ -181,7 +158,6 @@ public abstract class TraceState {
      * and removing duplicate entries.
      *
      * @return a TraceState with the new entries.
-     * @since 0.1.0
      */
     public TraceState build() {
       if (entries == null) {
@@ -191,11 +167,7 @@ public abstract class TraceState {
     }
   }
 
-  /**
-   * Immutable key-value pair for {@code TraceState}.
-   *
-   * @since 0.1.0
-   */
+  /** Immutable key-value pair for {@code TraceState}. */
   @Immutable
   @AutoValue
   public abstract static class Entry {
@@ -205,11 +177,10 @@ public abstract class TraceState {
      * @param key the Entry's key.
      * @param value the Entry's value.
      * @return the new {@code Entry}.
-     * @since 0.1.0
      */
     public static Entry create(String key, String value) {
-      Utils.checkNotNull(key, "key");
-      Utils.checkNotNull(value, "value");
+      Objects.requireNonNull(key, "key");
+      Objects.requireNonNull(value, "value");
       Utils.checkArgument(validateKey(key), "Invalid key %s", key);
       Utils.checkArgument(validateValue(value), "Invalid value %s", value);
       return new AutoValue_TraceState_Entry(key, value);
@@ -219,7 +190,6 @@ public abstract class TraceState {
      * Returns the key {@code String}.
      *
      * @return the key {@code String}.
-     * @since 0.1.0
      */
     public abstract String getKey();
 
@@ -227,7 +197,6 @@ public abstract class TraceState {
      * Returns the value {@code String}.
      *
      * @return the value {@code String}.
-     * @since 0.1.0
      */
     public abstract String getValue();
 

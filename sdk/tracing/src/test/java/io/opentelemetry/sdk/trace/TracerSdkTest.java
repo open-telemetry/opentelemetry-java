@@ -1,24 +1,13 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -26,7 +15,6 @@ import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collection;
@@ -51,9 +39,10 @@ class TracerSdkTest {
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
   private final TracerSdk tracer =
-      TracerSdkProvider.builder()
-          .build()
-          .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+      (TracerSdk)
+          TracerSdkProvider.builder()
+              .build()
+              .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
   @BeforeEach
   void setUp() {
@@ -61,44 +50,8 @@ class TracerSdkTest {
   }
 
   @Test
-  void defaultGetCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-  }
-
-  @Test
   void defaultSpanBuilder() {
     assertThat(tracer.spanBuilder(SPAN_NAME)).isInstanceOf(SpanBuilderSdk.class);
-  }
-
-  @Test
-  void getCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
-    // Make sure context is detached even if test fails.
-    try {
-      assertThat(tracer.getCurrentSpan()).isSameAs(span);
-    } finally {
-      Context.current().detach(origContext);
-    }
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-  }
-
-  @Test
-  void withSpan_NullSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ignored = tracer.withSpan(null)) {
-      assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    }
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-  }
-
-  @Test
-  void getCurrentSpan_WithSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ignored = tracer.withSpan(span)) {
-      assertThat(tracer.getCurrentSpan()).isSameAs(span);
-    }
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -118,7 +71,8 @@ class TracerSdkTest {
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =
-        tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+        (TracerSdk)
+            tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
@@ -136,11 +90,12 @@ class TracerSdkTest {
   @Test
   void stressTest_withBatchSpanProcessor() {
     CountingSpanExporter countingSpanExporter = new CountingSpanExporter();
-    SpanProcessor spanProcessor = BatchSpanProcessor.newBuilder(countingSpanExporter).build();
+    SpanProcessor spanProcessor = BatchSpanProcessor.builder(countingSpanExporter).build();
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =
-        tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+        (TracerSdk)
+            tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
@@ -164,7 +119,7 @@ class TracerSdkTest {
     private final AtomicLong numberOfSpansFinished = new AtomicLong();
 
     @Override
-    public void onStart(ReadWriteSpan span) {
+    public void onStart(ReadWriteSpan span, Context parentContext) {
       numberOfSpansStarted.incrementAndGet();
     }
 
@@ -206,7 +161,7 @@ class TracerSdkTest {
     @Override
     public void update() {
       Span span = tracer.spanBuilder("testSpan").startSpan();
-      try (Scope ignored = tracer.withSpan(span)) {
+      try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
         span.setAttribute("testAttribute", "testValue");
       } finally {
         span.end();
@@ -216,7 +171,7 @@ class TracerSdkTest {
 
   private static class CountingSpanExporter implements SpanExporter {
 
-    public AtomicLong numberOfSpansExported = new AtomicLong();
+    public final AtomicLong numberOfSpansExported = new AtomicLong();
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {

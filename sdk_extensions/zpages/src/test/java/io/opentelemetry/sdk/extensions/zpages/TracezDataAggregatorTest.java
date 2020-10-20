@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.zpages;
@@ -23,8 +12,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Status.CanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +28,7 @@ public final class TracezDataAggregatorTest {
   private final TracerSdkProvider tracerSdkProvider =
       TracerSdkProvider.builder().setClock(testClock).build();
   private final Tracer tracer = tracerSdkProvider.get("TracezDataAggregatorTest");
-  private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+  private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
 
   @BeforeEach
@@ -240,33 +228,31 @@ public final class TracezDataAggregatorTest {
     /* getErrorSpanCounts should return a an empty map */
     Span span = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     Map<String, Integer> counts = dataAggregator.getErrorSpanCounts();
-    span.setStatus(Status.UNKNOWN);
+    span.setStatus(StatusCode.ERROR);
     span.end();
     assertThat(counts).isEmpty();
   }
 
   @Test
   void getErrorSpanCounts_oneSpanPerErrorCode() {
-    for (CanonicalCode errorCode : CanonicalCode.values()) {
-      if (!errorCode.equals(CanonicalCode.OK)) {
+    for (StatusCode errorCode : StatusCode.values()) {
+      if (errorCode.equals(StatusCode.ERROR)) {
         Span span = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
-        span.setStatus(errorCode.toStatus());
+        span.setStatus(errorCode);
         span.end();
       }
     }
-    /* getErrorSpanCounts should return a map with CanonicalCode.values().length - 1 spans, as every
-    code, expect OK, represents an error */
     Map<String, Integer> errorCounts = dataAggregator.getErrorSpanCounts();
-    assertThat(errorCounts.get(SPAN_NAME_ONE)).isEqualTo(CanonicalCode.values().length - 1);
+    assertThat(errorCounts.get(SPAN_NAME_ONE)).isEqualTo(1);
   }
 
   @Test
   void getErrorSpanCounts_twoSpanNames() {
     Span span1 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
-    span1.setStatus(Status.UNKNOWN);
+    span1.setStatus(StatusCode.ERROR);
     span1.end();
     Span span2 = tracer.spanBuilder(SPAN_NAME_TWO).startSpan();
-    span2.setStatus(Status.UNKNOWN);
+    span2.setStatus(StatusCode.ERROR);
     span2.end();
     /* getErrorSpanCounts should return a map with 2 different span names */
     Map<String, Integer> errorCounts = dataAggregator.getErrorSpanCounts();
@@ -287,9 +273,9 @@ public final class TracezDataAggregatorTest {
     Span span2 = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
     /* getErrorSpans should return an empty List */
     assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE)).isEmpty();
-    span1.setStatus(Status.UNKNOWN);
+    span1.setStatus(StatusCode.ERROR);
     span1.end();
-    span2.setStatus(Status.ABORTED);
+    span2.setStatus(StatusCode.ERROR, "ABORTED");
     span2.end();
     /* getErrorSpans should return a List with both spans */
     List<SpanData> errorSpans = dataAggregator.getErrorSpans(SPAN_NAME_ONE);
@@ -304,9 +290,9 @@ public final class TracezDataAggregatorTest {
     /* getErrorSpans should return an empty List for each span name */
     assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE)).isEmpty();
     assertThat(dataAggregator.getErrorSpans(SPAN_NAME_TWO)).isEmpty();
-    span1.setStatus(Status.UNKNOWN);
+    span1.setStatus(StatusCode.ERROR);
     span1.end();
-    span2.setStatus(Status.UNKNOWN);
+    span2.setStatus(StatusCode.ERROR);
     span2.end();
     /* getErrorSpans should return a List with only the corresponding span */
     assertThat(dataAggregator.getErrorSpans(SPAN_NAME_ONE))

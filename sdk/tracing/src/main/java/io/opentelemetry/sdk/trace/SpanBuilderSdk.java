@@ -1,32 +1,20 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 
-import io.grpc.Context;
 import io.opentelemetry.common.AttributeConsumer;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -34,8 +22,8 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -50,6 +38,7 @@ import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
 final class SpanBuilderSdk implements Span.Builder {
+
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final SpanProcessor spanProcessor;
@@ -58,14 +47,13 @@ final class SpanBuilderSdk implements Span.Builder {
   private final IdsGenerator idsGenerator;
   private final Clock clock;
 
-  @Nullable private Span parent;
-  @Nullable private SpanContext remoteParent;
+  @Nullable private Context parent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private AttributesMap attributes;
-  @Nullable private List<io.opentelemetry.trace.Link> links;
+  @Nullable private List<Link> links;
   private int totalNumberOfLinksAdded = 0;
-  private ParentType parentType = ParentType.CURRENT_CONTEXT;
   private long startEpochNanos = 0;
+  private boolean isRootSpan;
 
   SpanBuilderSdk(
       String spanName,
@@ -85,33 +73,17 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder setParent(Span parent) {
-    this.parent = Objects.requireNonNull(parent, "parent");
-    this.remoteParent = null;
-    this.parentType = ParentType.EXPLICIT_PARENT;
-    return this;
-  }
-
-  @Override
-  public Span.Builder setParent(SpanContext remoteParent) {
-    this.remoteParent = Objects.requireNonNull(remoteParent, "remoteParent");
-    this.parent = null;
-    this.parentType = ParentType.EXPLICIT_REMOTE_PARENT;
-    return this;
-  }
-
-  @Override
   public Span.Builder setParent(Context context) {
     Objects.requireNonNull(context, "context");
-    setParent(TracingContextUtils.getSpan(context));
+    this.isRootSpan = false;
+    this.parent = context;
     return this;
   }
 
   @Override
   public Span.Builder setNoParent() {
-    this.parentType = ParentType.NO_PARENT;
+    this.isRootSpan = true;
     this.parent = null;
-    this.remoteParent = null;
     return this;
   }
 
@@ -139,8 +111,7 @@ final class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
-  @Override
-  public Span.Builder addLink(io.opentelemetry.trace.Link link) {
+  private void addLink(Link link) {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     if (links == null) {
@@ -149,11 +120,10 @@ final class SpanBuilderSdk implements Span.Builder {
 
     // don't bother doing anything with any links beyond the max.
     if (links.size() == traceConfig.getMaxNumberOfLinks()) {
-      return this;
+      return;
     }
 
     links.add(link);
-    return this;
   }
 
   @Override
@@ -180,9 +150,6 @@ final class SpanBuilderSdk implements Span.Builder {
   public <T> Span.Builder setAttribute(AttributeKey<T> key, T value) {
     Objects.requireNonNull(key, "key");
     if (value == null) {
-      if (attributes != null) {
-        attributes.remove(key);
-      }
       return this;
     }
     if (attributes == null) {
@@ -206,22 +173,21 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span startSpan() {
-    SpanContext parentContext = parent(parentType, parent, remoteParent);
+    final Context parentContext =
+        isRootSpan ? Context.root() : parent == null ? Context.current() : parent;
+    final Span parentSpan = TracingContextUtils.getSpan(parentContext);
+    final SpanContext parentSpanContext = parentSpan.getContext();
     String traceId;
     String spanId = idsGenerator.generateSpanId();
-    TraceState traceState = TraceState.getDefault();
-    if (!parentContext.isValid()) {
+    if (!parentSpanContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
     } else {
       // New child span.
-      traceId = parentContext.getTraceIdAsHexString();
-      traceState = parentContext.getTraceState();
+      traceId = parentSpanContext.getTraceIdAsHexString();
     }
-    List<io.opentelemetry.trace.Link> immutableLinks =
-        links == null
-            ? Collections.<io.opentelemetry.trace.Link>emptyList()
-            : Collections.unmodifiableList(links);
+    List<SpanData.Link> immutableLinks =
+        links == null ? Collections.emptyList() : Collections.unmodifiableList(links);
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
@@ -230,14 +196,22 @@ final class SpanBuilderSdk implements Span.Builder {
         traceConfig
             .getSampler()
             .shouldSample(
-                parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
+                parentSpanContext,
+                traceId,
+                spanName,
+                spanKind,
+                immutableAttributes,
+                immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
+    TraceState samplingResultTraceState =
+        samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
-        createSpanContext(traceId, spanId, traceState, Samplers.isSampled(samplingDecision));
+        createSpanContext(
+            traceId, spanId, samplingResultTraceState, Samplers.isSampled(samplingDecision));
 
     if (!Samplers.isRecording(samplingDecision)) {
-      return DefaultSpan.create(spanContext);
+      return Span.wrap(spanContext);
     }
     ReadableAttributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
@@ -263,11 +237,12 @@ final class SpanBuilderSdk implements Span.Builder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentContext.getSpanIdAsHexString(),
-        parentContext.isRemote(),
+        parentSpanContext.getSpanIdAsHexString(),
+        parentSpanContext.isRemote(),
+        parentContext,
         traceConfig,
         spanProcessor,
-        getClock(parentSpan(parentType, parent), clock),
+        getClock(parentSpan, clock),
         resource,
         recordedAttributes,
         immutableLinks,
@@ -288,38 +263,5 @@ final class SpanBuilderSdk implements Span.Builder {
     } else {
       return MonotonicClock.create(clock);
     }
-  }
-
-  private static SpanContext parent(
-      ParentType parentType, Span explicitParent, SpanContext remoteParent) {
-    switch (parentType) {
-      case NO_PARENT:
-        return SpanContext.getInvalid();
-      case CURRENT_CONTEXT:
-        return TracingContextUtils.getCurrentSpan().getContext();
-      case EXPLICIT_PARENT:
-        return explicitParent.getContext();
-      case EXPLICIT_REMOTE_PARENT:
-        return remoteParent;
-    }
-    throw new IllegalStateException("Unknown parent type");
-  }
-
-  private static Span parentSpan(ParentType parentType, Span explicitParent) {
-    switch (parentType) {
-      case CURRENT_CONTEXT:
-        return TracingContextUtils.getCurrentSpan();
-      case EXPLICIT_PARENT:
-        return explicitParent;
-      default:
-        return DefaultSpan.getInvalid();
-    }
-  }
-
-  private enum ParentType {
-    CURRENT_CONTEXT,
-    EXPLICIT_PARENT,
-    EXPLICIT_REMOTE_PARENT,
-    NO_PARENT,
   }
 }

@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.context.propagation;
@@ -19,7 +8,8 @@ package io.opentelemetry.context.propagation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -47,8 +37,8 @@ class DefaultPropagatorsTest {
             .build();
 
     Context context = Context.current();
-    context = context.withValue(propagator1.getKey(), "value1");
-    context = context.withValue(propagator2.getKey(), "value2");
+    context = context.withValues(propagator1.getKey(), "value1");
+    context = context.withValues(propagator2.getKey(), "value2");
 
     Map<String, String> map = new HashMap<>();
     propagators.getTextMapPropagator().inject(context, map, MapSetter.INSTANCE);
@@ -74,9 +64,9 @@ class DefaultPropagatorsTest {
 
     Context context =
         propagators.getTextMapPropagator().extract(Context.current(), map, MapGetter.INSTANCE);
-    assertThat(propagator1.getKey().get(context)).isEqualTo("value1");
-    assertThat(propagator2.getKey().get(context)).isEqualTo("value2");
-    assertThat(propagator3.getKey().get(context)).isNull(); // Handle missing value.
+    assertThat(context.getValue(propagator1.getKey())).isEqualTo("value1");
+    assertThat(context.getValue(propagator2.getKey())).isEqualTo("value2");
+    assertThat(context.getValue(propagator3.getKey())).isNull(); // Handle missing value.
   }
 
   @Test
@@ -112,14 +102,14 @@ class DefaultPropagatorsTest {
 
   private static class CustomTextMapPropagator implements TextMapPropagator {
     private final String name;
-    private final Context.Key<String> key;
+    private final ContextKey<String> key;
 
     CustomTextMapPropagator(String name) {
       this.name = name;
-      this.key = Context.key(name);
+      this.key = ContextKey.named(name);
     }
 
-    Context.Key<String> getKey() {
+    ContextKey<String> getKey() {
       return key;
     }
 
@@ -134,7 +124,7 @@ class DefaultPropagatorsTest {
 
     @Override
     public <C> void inject(Context context, C carrier, Setter<C> setter) {
-      Object payload = key.get(context);
+      Object payload = context.getValue(key);
       if (payload != null) {
         setter.set(carrier, name, payload.toString());
       }
@@ -144,7 +134,7 @@ class DefaultPropagatorsTest {
     public <C> Context extract(Context context, C carrier, Getter<C> getter) {
       String payload = getter.get(carrier, name);
       if (payload != null) {
-        context = context.withValue(key, payload);
+        context = context.withValues(key, payload);
       }
 
       return context;

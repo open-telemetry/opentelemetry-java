@@ -1,7 +1,10 @@
+import nebula.plugin.release.git.opinion.Strategies
+
 plugins {
-    id "com.github.sherter.google-java-format" apply false
+    id "com.diffplug.spotless" version "5.6.1"
     id "com.jfrog.artifactory" apply false
     id "com.jfrog.bintray" version "1.8.4" apply false // Need *specific* version.
+    id "nebula.release"
     id "net.ltgt.errorprone" apply false
     id "ru.vyarus.animalsniffer" apply false
     id "io.morethan.jmhreport" apply false
@@ -11,14 +14,34 @@ ext {
     opentelemetryProjects = subprojects - project(":opentelemetry-bom")
 }
 
+release {
+    defaultVersionStrategy = Strategies.getSNAPSHOT()
+}
+
+nebulaRelease {
+    addReleaseBranchPattern(/v\d+\.\d+\.x/)
+}
+
+def releaseTask = tasks.named("release")
+releaseTask.configure {
+    mustRunAfter("snapshotSetup", "finalSetup")
+}
+
 subprojects {
     group = "io.opentelemetry"
-    version = "0.9.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
 
     plugins.withId("maven-publish") {
         // Always include the artifactory/bintray plugins to do the deployment.
         pluginManager.apply "com.jfrog.artifactory"
         pluginManager.apply "com.jfrog.bintray"
+
+        releaseTask.configure {
+            if (version.toString().endsWith('-SNAPSHOT')) {
+                finalizedBy(tasks.named('artifactoryPublish'))
+            } else {
+                finalizedBy(tasks.named('bintrayUpload'))
+            }
+        }
 
         publishing {
             publications {
@@ -41,7 +64,6 @@ subprojects {
 
                     pom {
                         name = 'OpenTelemetry Java'
-                        packaging = 'jar'
                         url = 'https://github.com/open-telemetry/opentelemetry-java'
 
                         licenses {
@@ -73,6 +95,7 @@ subprojects {
                 }
             }
         }
+
 
         // Snapshot publishing.
         artifactory {
@@ -137,7 +160,7 @@ configure(opentelemetryProjects) {
     apply plugin: 'signing'
     apply plugin: 'jacoco'
 
-    apply plugin: 'com.github.sherter.google-java-format'
+    apply plugin: 'com.diffplug.spotless'
     apply plugin: 'net.ltgt.errorprone'
 
     repositories {
@@ -225,6 +248,7 @@ configure(opentelemetryProjects) {
         findBugsJsr305Version = '3.0.2'
         grpcVersion = '1.30.2'
         guavaVersion = '28.2-android'
+        jacksonVersion = '2.11.3'
         jmhVersion = '1.19'
         junitVersion = '5.6.2'
         mockitoVersion = '3.3.3'
@@ -238,6 +262,7 @@ configure(opentelemetryProjects) {
         boms = [
                 grpc           : "io.grpc:grpc-bom:${grpcVersion}",
                 guava          : "com.google.guava:guava-bom:${guavaVersion}",
+                jackson        : "com.fasterxml.jackson:jackson-bom:2.11.3",
                 junit          : "org.junit:junit-bom:${junitVersion}",
                 protobuf       : "com.google.protobuf:protobuf-bom:${protobufVersion}",
                 zipkin_reporter: "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
@@ -279,10 +304,11 @@ configure(opentelemetryProjects) {
                 junit_vintage_engine    : 'org.junit.vintage:junit-vintage-engine',
                 mockito                 : "org.mockito:mockito-core:${mockitoVersion}",
                 mockito_junit_jupiter   : "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
+                okhttp                  : 'com.squareup.okhttp3:okhttp:3.14.9',
                 system_rules            : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
                 slf4jsimple             : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
                 awaitility              : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
-                testcontainers          : 'org.testcontainers:junit-jupiter:1.13.0',
+                testcontainers          : 'org.testcontainers:junit-jupiter:1.15.0-rc2',
                 rest_assured            : 'io.rest-assured:rest-assured:4.2.0',
                 jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
                 zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
@@ -299,8 +325,11 @@ configure(opentelemetryProjects) {
 
     jacoco { toolVersion = "0.8.5" }
 
-    googleJavaFormat {
-        toolVersion = '1.7'
+    spotless {
+        java {
+            googleJavaFormat("1.7")
+            licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
+        }
     }
 
     configurations {
@@ -317,6 +346,7 @@ configure(opentelemetryProjects) {
             if (it.name.endsWith('Classpath')) {
                 add(it.name, enforcedPlatform(boms.grpc))
                 add(it.name, enforcedPlatform(boms.guava))
+                add(it.name, enforcedPlatform(boms.jackson))
                 add(it.name, enforcedPlatform(boms.junit))
                 add(it.name, enforcedPlatform(boms.protobuf))
                 add(it.name, enforcedPlatform(boms.zipkin_reporter))
@@ -331,6 +361,7 @@ configure(opentelemetryProjects) {
                 libraries.mockito,
                 libraries.mockito_junit_jupiter,
                 libraries.assertj,
+                libraries.awaitility,
                 libraries.guava_testlib
 
         testRuntimeOnly libraries.junit_jupiter_engine,
@@ -350,9 +381,19 @@ configure(opentelemetryProjects) {
         }
     }
 
-    test {
+    tasks.withType(Test) {
         systemProperties project.properties.subMap(["enable.docker.tests"])
         useJUnitPlatform()
+
+        // At a test failure, log the stack trace to the console so that we don't
+        // have to open the HTML in a browser.
+        testLogging {
+            exceptionFormat = 'full'
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+        }
+        maxHeapSize = '1500m'
     }
 
     javadoc.options {
@@ -362,17 +403,7 @@ configure(opentelemetryProjects) {
         addBooleanOption('Xdoclint:all,-missing', true)
     }
 
-    afterEvaluate {  // Allow subproject to add more source sets.
-        tasks.googleJavaFormat {
-            source = sourceSets*.allJava
-            include '**/*.java'
-        }
-
-        tasks.verifyGoogleJavaFormat {
-            source = sourceSets*.allJava
-            include '**/*.java'
-        }
-
+    afterEvaluate {
         jar {
             inputs.property("moduleName", moduleName)
 
@@ -385,18 +416,6 @@ configure(opentelemetryProjects) {
     signing {
         required false
         sign configurations.archives
-    }
-
-    // At a test failure, log the stack trace to the console so that we don't
-    // have to open the HTML in a browser.
-    test {
-        testLogging {
-            exceptionFormat = 'full'
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-        }
-        maxHeapSize = '1500m'
     }
 
     plugins.withId("ru.vyarus.animalsniffer") {
@@ -447,5 +466,22 @@ configure(opentelemetryProjects) {
 
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = '6.5.1'
+    gradleVersion = '6.6'
+}
+
+tasks.register("updateVersionInDocs") {
+    doLast {
+        def versionParts = version.toString().split('\\.')
+        def minorVersionNumber = Integer.parseInt(versionParts[1])
+        def nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
+
+        def readmeText = file("README.md").text
+        def updatedText = readmeText
+                .replaceAll("<version>\\d+\\.\\d+\\.\\d+</version>", "<version>${version}</version>")
+                .replaceAll("<version>\\d+\\.\\d+\\.\\d+-SNAPSHOT</version>", "<version>${nextSnapshot}</version>")
+                .replaceAll("implementation\\('io.opentelemetry:opentelemetry-api:\\d+\\.\\d+\\.\\d+'\\)", "implementation('io.opentelemetry:opentelemetry-api:${version}')")
+                .replaceAll("implementation\\('io.opentelemetry:opentelemetry-api:\\d+\\.\\d+\\.\\d+-SNAPSHOT'\\)", "implementation('io.opentelemetry:opentelemetry-api:${nextSnapshot}')")
+                .replaceAll("<!--VERSION_STABLE-->.*<!--/VERSION_STABLE-->", "<!--VERSION_STABLE-->${version}<!--/VERSION_STABLE-->")
+        file("README.md").text = updatedText
+    }
 }

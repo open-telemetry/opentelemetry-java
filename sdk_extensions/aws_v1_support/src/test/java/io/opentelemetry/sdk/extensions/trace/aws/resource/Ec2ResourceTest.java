@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
@@ -80,8 +69,9 @@ public class Ec2ResourceTest {
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
     Attributes attributes = populator.getAttributes();
-    Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
+    Attributes.Builder expectedAttrBuilders = Attributes.builder();
 
+    expectedAttrBuilders.setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws");
     expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_ID, "i-1234567890abcdef0");
     expectedAttrBuilders.setAttribute(ResourceAttributes.CLOUD_ZONE, "us-west-2b");
     expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_TYPE, "t2.micro");
@@ -114,7 +104,8 @@ public class Ec2ResourceTest {
     Attributes attributes = populator.getAttributes();
 
     Attributes.Builder expectedAttrBuilders =
-        Attributes.newBuilder()
+        Attributes.builder()
+            .setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws")
             .setAttribute(ResourceAttributes.HOST_ID, "i-1234567890abcdef0")
             .setAttribute(ResourceAttributes.CLOUD_ZONE, "us-west-2b")
             .setAttribute(ResourceAttributes.HOST_TYPE, "t2.micro")

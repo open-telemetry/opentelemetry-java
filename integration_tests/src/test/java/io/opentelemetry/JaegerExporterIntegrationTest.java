@@ -1,27 +1,16 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry;
 
-import static io.restassured.RestAssured.given;
-
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import java.util.Map;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -30,6 +19,7 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 /**
@@ -44,6 +34,9 @@ import org.testcontainers.utility.MountableFile;
  */
 @Testcontainers
 class JaegerExporterIntegrationTest {
+
+  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final OkHttpClient client = new OkHttpClient();
 
   private static final String ARCHIVE_NAME = System.getProperty("archive.name");
   private static final String APP_NAME = "SendTraceToJaeger.jar";
@@ -60,7 +53,8 @@ class JaegerExporterIntegrationTest {
   @SuppressWarnings("rawtypes")
   @Container
   public static GenericContainer jaegerContainer =
-      new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
+      new GenericContainer<>(
+              DockerImageName.parse("jaegertracing/all-in-one:" + JAEGER_VERSION + ":latest"))
           .withNetwork(network)
           .withNetworkAliases(JAEGER_HOSTNAME)
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
@@ -69,7 +63,7 @@ class JaegerExporterIntegrationTest {
   @SuppressWarnings("rawtypes")
   @Container
   public static GenericContainer jaegerExampleAppContainer =
-      new GenericContainer("adoptopenjdk/openjdk8")
+      new GenericContainer(DockerImageName.parse("adoptopenjdk/openjdk8:latest"))
           .withNetwork(network)
           .withCopyFileToContainer(MountableFile.forHostPath(ARCHIVE_NAME), "/app/" + APP_NAME)
           .withCommand(
@@ -96,17 +90,20 @@ class JaegerExporterIntegrationTest {
               "%s/api/traces?service=%s",
               String.format(JAEGER_URL + ":%d", jaegerContainer.getMappedPort(QUERY_PORT)),
               SERVICE_NAME);
-      Response response =
-          given()
-              .headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON)
-              .when()
-              .get(url)
-              .then()
-              .contentType(ContentType.JSON)
-              .extract()
-              .response();
-      Map<String, String> path = response.jsonPath().getMap("data[0]");
-      return path.get("traceID") != null;
+
+      Request request =
+          new Request.Builder()
+              .url(url)
+              .header("Content-Type", "application/json")
+              .header("Accept", "application/json")
+              .build();
+
+      final JsonNode json;
+      try (Response response = client.newCall(request).execute()) {
+        json = objectMapper.readTree(response.body().byteStream());
+      }
+
+      return json.get("data").get(0).get("traceID") != null;
     } catch (Exception e) {
       return false;
     }

@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.metrics;
@@ -50,8 +39,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
- * @since 0.1.0
  */
 @ThreadSafe
 public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDownCounter> {
@@ -63,7 +50,6 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
    *
    * @param increment the value to add.
    * @param labels the set of labels to be associated to this recording.
-   * @since 0.1.0
    */
   void add(long increment, Labels labels);
 
@@ -73,18 +59,13 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
    * <p>The value added is associated with the current {@code Context} and empty labels.
    *
    * @param increment the value to add.
-   * @since 0.8.0
    */
   void add(long increment);
 
   @Override
   BoundLongUpDownCounter bind(Labels labels);
 
-  /**
-   * A {@code Bound Instrument} for a {@link LongUpDownCounter}.
-   *
-   * @since 0.1.0
-   */
+  /** A {@code Bound Instrument} for a {@link LongUpDownCounter}. */
   @ThreadSafe
   interface BoundLongUpDownCounter extends BoundInstrument {
 
@@ -94,7 +75,6 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
      * <p>The value added is associated with the current {@code Context}.
      *
      * @param increment the value to add.
-     * @since 0.1.0
      */
     void add(long increment);
 

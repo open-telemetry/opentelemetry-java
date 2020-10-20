@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.context.propagation;
@@ -23,16 +12,17 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>This container can be used to access a single, composite propagator for each supported format,
  * which will be responsible for injecting and extracting data for each registered concern (traces,
- * correlations, etc). Propagation will happen through {@code io.grpc.Context}, from which values
- * will be read upon injection, and which will store values from the extraction step. The resulting
- * {@code Context} can then be used implicitly or explicitly by the OpenTelemetry API.
+ * correlations, etc). Propagation will happen through {@link io.opentelemetry.context.Context},
+ * from which values will be read upon injection, and which will store values from the extraction
+ * step. The resulting {@code Context} can then be used implicitly or explicitly by the
+ * OpenTelemetry API.
  *
  * <p>Example of usage on the client:
  *
  * <pre>{@code
  * private static final Tracer tracer = OpenTelemetry.getTracer();
  * void onSendRequest() {
- *   try (Scope scope = tracer.withSpan(span)) {
+ *   try (Scope scope = TracingContextUtils.currentContextWith(span)) {
  *     ContextPropagators propagators = OpenTelemetry.getPropagators();
  *     TextMapPropagator textMapPropagator = propagators.getTextMapPropagator();
  *
@@ -69,15 +59,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *   Span span = tracer.spanBuilder("MyRequest")
  *       .setParent(context)
  *       .setSpanKind(Span.Kind.SERVER).startSpan();
- *   try (Scope ss = tracer.withSpan(span)) {
+ *   try (Scope ss = TracingContextUtils.currentContextWith(span)) {
  *     // Handle request and send response back.
  *   } finally {
  *     span.end();
  *   }
  * }
  * }</pre>
- *
- * @since 0.3.0
  */
 @ThreadSafe
 public interface ContextPropagators {
@@ -90,7 +78,6 @@ public interface ContextPropagators {
    * instance.
    *
    * @return the {@link TextMapPropagator} propagator to inject and extract data.
-   * @since 0.3.0
    */
   TextMapPropagator getTextMapPropagator();
 }

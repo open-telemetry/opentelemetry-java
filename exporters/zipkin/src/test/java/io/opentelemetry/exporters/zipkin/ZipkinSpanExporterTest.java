@@ -1,29 +1,18 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.zipkin;
 
-import static io.opentelemetry.common.AttributesKeys.booleanArrayKey;
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleArrayKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longArrayKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringArrayKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -38,11 +27,10 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Arrays;
@@ -77,8 +65,8 @@ class ZipkinSpanExporterTest {
   private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.of(
-          EventImpl.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
-          EventImpl.create(1505855799_459486280L, "SENT", Attributes.empty()));
+          Event.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
+          Event.create(1505855799_459486280L, "SENT", Attributes.empty()));
 
   @Test
   void generateSpan_remoteParent() {
@@ -155,7 +143,7 @@ class ZipkinSpanExporterTest {
   @Test
   void generateSpan_WithAttributes() {
     Attributes attributes =
-        Attributes.newBuilder()
+        Attributes.builder()
             .setAttribute(stringKey("string"), "string value")
             .setAttribute(booleanKey("boolean"), false)
             .setAttribute(longKey("long"), 9999L)
@@ -195,8 +183,8 @@ class ZipkinSpanExporterTest {
         .isEqualTo(
             buildZipkinSpan(Span.Kind.CLIENT)
                 .toBuilder()
-                .putTag("otel.instrumentation_library.name", "io.opentelemetry.auto")
-                .putTag("otel.instrumentation_library.version", "1.0.0")
+                .putTag("otel.library.name", "io.opentelemetry.auto")
+                .putTag("otel.library.version", "1.0.0")
                 .build());
   }
 
@@ -209,7 +197,7 @@ class ZipkinSpanExporterTest {
         buildStandardSpan()
             .setAttributes(attributeMap)
             .setKind(Kind.CLIENT)
-            .setStatus(Status.NOT_FOUND)
+            .setStatus(SpanData.Status.error())
             .build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
@@ -230,7 +218,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(Status.DEADLINE_EXCEEDED.withDescription(errorMessage))
+            .setStatus(SpanData.Status.create(StatusCode.ERROR, errorMessage))
             .setAttributes(attributeMap)
             .build();
 
@@ -240,8 +228,8 @@ class ZipkinSpanExporterTest {
                 .toBuilder()
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_DESCRIPTION, errorMessage)
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
-                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "DEADLINE_EXCEEDED")
-                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "DEADLINE_EXCEEDED")
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "ERROR")
+                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "ERROR")
                 .build());
   }
 
@@ -294,10 +282,7 @@ class ZipkinSpanExporterTest {
   @Test
   void testCreate() {
     ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.newBuilder()
-            .setSender(mockSender)
-            .setServiceName("myGreatService")
-            .build();
+        ZipkinSpanExporter.builder().setSender(mockSender).setServiceName("myGreatService").build();
 
     assertThat(exporter).isNotNull();
   }
@@ -305,22 +290,19 @@ class ZipkinSpanExporterTest {
   @Test
   void testShutdown() throws IOException {
     ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.newBuilder()
-            .setServiceName("myGreatService")
-            .setSender(mockSender)
-            .build();
+        ZipkinSpanExporter.builder().setServiceName("myGreatService").setSender(mockSender).build();
 
     exporter.shutdown();
     verify(mockSender).close();
   }
 
   private static TestSpanData.Builder buildStandardSpan() {
-    return TestSpanData.newBuilder()
+    return TestSpanData.builder()
         .setTraceId(TRACE_ID)
         .setSpanId(SPAN_ID)
         .setParentSpanId(PARENT_SPAN_ID)
         .setSampled(true)
-        .setStatus(Status.OK)
+        .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)
         .setHasRemoteParent(true)
         .setName("Recv.helloworld.Greeter.SayHello")
@@ -364,7 +346,7 @@ class ZipkinSpanExporterTest {
     String endpoint = "http://127.0.0.1:9090";
     options.put("otel.exporter.zipkin.service.name", serviceName);
     options.put("otel.exporter.zipkin.endpoint", endpoint);
-    ZipkinSpanExporter.Builder config = ZipkinSpanExporter.newBuilder();
+    ZipkinSpanExporter.Builder config = ZipkinSpanExporter.builder();
     ZipkinSpanExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
     Mockito.verify(spy).setServiceName(serviceName);

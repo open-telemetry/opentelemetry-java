@@ -1,28 +1,16 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry;
 
+import io.opentelemetry.baggage.BaggageManager;
+import io.opentelemetry.baggage.DefaultBaggageManager;
+import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory;
 import io.opentelemetry.internal.Obfuscated;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
@@ -32,19 +20,20 @@ import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.spi.TracerProviderFactory;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link Meter}
- * and {@link CorrelationContextManager}.
+ * and {@link BaggageManager}.
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
  * @see TracerProvider
  * @see MeterProviderFactory
- * @see CorrelationContextManagerFactory
+ * @see BaggageManagerFactory
  */
 @ThreadSafe
 public final class OpenTelemetry {
@@ -54,12 +43,9 @@ public final class OpenTelemetry {
 
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
-  private final CorrelationContextManager contextManager;
+  private final BaggageManager contextManager;
 
-  private volatile ContextPropagators propagators =
-      DefaultContextPropagators.builder()
-          .addTextMapPropagator(HttpTraceContext.getInstance())
-          .build();
+  private volatile ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
   /**
    * Returns a singleton {@link TracerProvider}.
@@ -67,7 +53,6 @@ public final class OpenTelemetry {
    * @return registered TracerProvider or default via {@link DefaultTracerProvider#getInstance()}.
    * @throws IllegalStateException if a specified TracerProvider (via system properties) could not
    *     be found.
-   * @since 0.1.0
    */
   public static TracerProvider getTracerProvider() {
     return getInstance().tracerProvider;
@@ -81,7 +66,6 @@ public final class OpenTelemetry {
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
    * @return a tracer instance.
-   * @since 0.5.0
    */
   public static Tracer getTracer(String instrumentationName) {
     return getTracerProvider().get(instrumentationName);
@@ -98,7 +82,6 @@ public final class OpenTelemetry {
    * @param instrumentationVersion The version of the instrumentation library (e.g.,
    *     "semver:1.0.0").
    * @return a tracer instance.
-   * @since 0.5.0
    */
   public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
     return getTracerProvider().get(instrumentationName, instrumentationVersion);
@@ -110,7 +93,6 @@ public final class OpenTelemetry {
    * @return registered MeterProvider or default via {@link DefaultMeterProvider#getInstance()}.
    * @throws IllegalStateException if a specified MeterProvider (via system properties) could not be
    *     found.
-   * @since 0.1.0
    */
   public static MeterProvider getMeterProvider() {
     return getInstance().meterProvider;
@@ -124,7 +106,6 @@ public final class OpenTelemetry {
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
    * @return a tracer instance.
-   * @since 0.5.0
    */
   public static Meter getMeter(String instrumentationName) {
     return getMeterProvider().get(instrumentationName);
@@ -140,22 +121,19 @@ public final class OpenTelemetry {
    *     instrument*ed* library.
    * @param instrumentationVersion The version of the instrumentation library.
    * @return a tracer instance.
-   * @since 0.5.0
    */
   public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
     return getMeterProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /**
-   * Returns a singleton {@link CorrelationContextManager}.
+   * Returns a singleton {@link BaggageManager}.
    *
-   * @return registered manager or default via {@link
-   *     DefaultCorrelationContextManager#getInstance()}.
+   * @return registered manager or default via {@link DefaultBaggageManager#getInstance()}.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
-   * @since 0.1.0
    */
-  public static CorrelationContextManager getCorrelationContextManager() {
+  public static BaggageManager getBaggageManager() {
     return getInstance().contextManager;
   }
 
@@ -167,7 +145,6 @@ public final class OpenTelemetry {
    *     with {@link HttpTraceContext} registered.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
-   * @since 0.3.0
    */
   public static ContextPropagators getPropagators() {
     return getInstance().propagators;
@@ -181,10 +158,9 @@ public final class OpenTelemetry {
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
    * @throws NullPointerException if {@code propagators} is {@code null}.
-   * @since 0.3.0
    */
   public static void setPropagators(ContextPropagators propagators) {
-    Utils.checkNotNull(propagators, "propagators");
+    Objects.requireNonNull(propagators, "propagators");
     getInstance().propagators = propagators;
   }
 
@@ -212,12 +188,11 @@ public final class OpenTelemetry {
         meterProviderFactory != null
             ? meterProviderFactory.create()
             : DefaultMeterProvider.getInstance();
-    CorrelationContextManagerFactory contextManagerProvider =
-        loadSpi(CorrelationContextManagerFactory.class);
+    BaggageManagerFactory contextManagerProvider = loadSpi(BaggageManagerFactory.class);
     contextManager =
         contextManagerProvider != null
             ? contextManagerProvider.create()
-            : DefaultCorrelationContextManager.getInstance();
+            : DefaultBaggageManager.getInstance();
   }
 
   /**

@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.metrics.export;
@@ -24,7 +13,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
@@ -46,18 +34,17 @@ import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link IntervalMetricReader}. */
 class IntervalMetricReaderTest {
-  private static final MetricData.Descriptor METRIC_DESCRIPTOR =
-      MetricData.Descriptor.create(
-          "my metric", "my metric description", "us", Descriptor.Type.MONOTONIC_LONG);
-
   private static final List<Point> LONG_POINT_LIST =
       Collections.singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
       MetricData.create(
-          METRIC_DESCRIPTOR,
           Resource.getEmpty(),
           InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
+          "my metric",
+          "my metric description",
+          "us",
+          MetricData.Type.MONOTONIC_LONG,
           LONG_POINT_LIST);
 
   @Mock private MetricProducer metricProducer;

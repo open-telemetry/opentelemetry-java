@@ -1,18 +1,7 @@
 /*
  * Copyright 2015 The gRPC Authors
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.example;
@@ -34,11 +23,12 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +72,7 @@ public class HelloWorldClientStream {
 
   private void initTracer() {
     // Use the OpenTelemetry SDK
-    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+    TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
     // Set to process the spans by the log exporter
     tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
   }
@@ -106,7 +96,7 @@ public class HelloWorldClientStream {
     StreamObserver<HelloRequest> requestObserver;
 
     // Set the context with the current span
-    try (Scope scope = tracer.withSpan(span)) {
+    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
       HelloReplyStreamObserver replyObserver = new HelloReplyStreamObserver();
       requestObserver = asyncStub.sayHelloStream(replyObserver);
       for (String name : names) {
@@ -121,11 +111,9 @@ public class HelloWorldClientStream {
       }
       requestObserver.onCompleted();
       span.addEvent("Done sending");
-      span.setStatus(Status.OK);
     } catch (StatusRuntimeException e) {
       logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-      // TODO create mapping for io.grpc.Status<->io.opentelemetry.trace.Status
-      span.setStatus(Status.UNKNOWN.withDescription("gRPC status: " + e.getStatus()));
+      span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + e.getStatus());
     } finally {
       span.end();
     }
@@ -139,17 +127,16 @@ public class HelloWorldClientStream {
 
     @Override
     public void onNext(HelloReply value) {
-      Span span = tracer.getCurrentSpan();
+      Span span = TracingContextUtils.getCurrentSpan();
       span.addEvent("Data received: " + value.getMessage());
       logger.info(value.getMessage());
     }
 
     @Override
     public void onError(Throwable t) {
-      Span span = tracer.getCurrentSpan();
+      Span span = TracingContextUtils.getCurrentSpan();
       logger.log(Level.WARNING, "RPC failed: {0}", t.getMessage());
-      // TODO create mapping for io.grpc.Status<->io.opentelemetry.trace.Status
-      span.setStatus(Status.UNKNOWN.withDescription("gRPC status: " + t.getMessage()));
+      span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + t.getMessage());
     }
 
     @Override
@@ -164,7 +151,7 @@ public class HelloWorldClientStream {
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
         MethodDescriptor<ReqT, RespT> methodDescriptor, CallOptions callOptions, Channel channel) {
-      return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
+      return new ForwardingClientCall.SimpleForwardingClientCall<>(
           channel.newCall(methodDescriptor, callOptions)) {
         @Override
         public void start(Listener<RespT> responseListener, Metadata headers) {

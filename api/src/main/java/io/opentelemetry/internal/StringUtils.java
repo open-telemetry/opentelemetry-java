@@ -1,26 +1,10 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.internal;
 
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.AttributeType;
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Internal utility methods for working with attribute keys, attribute values, and metric names. */
@@ -60,52 +44,6 @@ public final class StringUtils {
     }
     String pattern = "[aA-zZ][aA-zZ0-9_\\-.]*";
     return metricName.matches(pattern);
-  }
-
-  /**
-   * If given attribute is of type STRING and has more characters than given {@code limit} then
-   * return new value with string truncated to {@code limit} characters.
-   *
-   * <p>If given attribute is of type STRING_ARRAY and non-empty then return new value with every
-   * element truncated to {@code limit} characters.
-   *
-   * <p>Otherwise return given {@code value}
-   *
-   * @throws IllegalArgumentException if limit is zero or negative
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> T truncateToSize(AttributeKey<T> key, T value, int limit) {
-    Utils.checkArgument(limit > 0, "attribute value limit must be positive, got %d", limit);
-
-    if (value == null
-        || ((key.getType() != AttributeType.STRING)
-            && (key.getType() != AttributeType.STRING_ARRAY))) {
-      return value;
-    }
-
-    if (key.getType() == AttributeType.STRING_ARRAY) {
-      List<String> strings = (List<String>) value;
-      if (strings.isEmpty()) {
-        return value;
-      }
-
-      List<String> newStrings = new ArrayList<>(strings.size());
-      for (String string : strings) {
-        newStrings.add(truncateToSize(string, limit));
-      }
-
-      return (T) newStrings;
-    }
-
-    return (T) truncateToSize((String) value, limit);
-  }
-
-  @Nullable
-  private static String truncateToSize(@Nullable String s, int limit) {
-    if (s == null || s.length() <= limit) {
-      return s;
-    }
-    return s.substring(0, limit);
   }
 
   private StringUtils() {}

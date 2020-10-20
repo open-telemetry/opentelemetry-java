@@ -1,22 +1,11 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.context.propagation;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -47,8 +36,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
- *
- * @since 0.1.0
  */
 @ThreadSafe
 public interface TextMapPropagator {
@@ -61,7 +48,6 @@ public interface TextMapPropagator {
    * successive calls should clear these fields first.
    *
    * @return list of fields that will be used by this formatter.
-   * @since 0.1.0
    */
   // The use cases of this are:
   // * allow pre-allocation of fields, especially in systems like gRPC Metadata
@@ -77,7 +63,6 @@ public interface TextMapPropagator {
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param setter invoked for each propagation key to add or remove.
    * @param <C> carrier of propagation fields, such as an http request
-   * @since 0.1.0
    */
   <C> void inject(Context context, @Nullable C carrier, Setter<C> setter);
 
@@ -88,7 +73,6 @@ public interface TextMapPropagator {
    * allocations.
    *
    * @param <C> carrier of propagation fields, such as an http request
-   * @since 0.1.0
    */
   interface Setter<C> {
 
@@ -102,7 +86,6 @@ public interface TextMapPropagator {
      *     facilitate implementations as java lambdas, this parameter may be null.
      * @param key the key of the field.
      * @param value the value of the field.
-     * @since 0.1.0
      */
     void set(@Nullable C carrier, String key, String value);
   }
@@ -119,9 +102,8 @@ public interface TextMapPropagator {
    * @param getter invoked for each propagation key to get.
    * @param <C> carrier of propagation fields, such as an http request.
    * @return the {@code Context} containing the extracted value.
-   * @since 0.1.0
    */
-  <C> Context extract(Context context, C carrier, Getter<C> getter);
+  <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter);
 
   /**
    * Interface that allows a {@code TextMapPropagator} to read propagated fields from a carrier.
@@ -130,7 +112,6 @@ public interface TextMapPropagator {
    * allocations.
    *
    * @param <C> carrier of propagation fields, such as an http request.
-   * @since 0.1.0
    */
   interface Getter<C> {
 
@@ -140,9 +121,8 @@ public interface TextMapPropagator {
      * @param carrier carrier of propagation fields, such as an http request.
      * @param key the key of the field.
      * @return the first value of the given propagation {@code key} or returns {@code null}.
-     * @since 0.1.0
      */
     @Nullable
-    String get(C carrier, String key);
+    String get(@Nullable C carrier, String key);
   }
 }

@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace.config;
@@ -23,8 +12,6 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.trace.Event;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
 import java.util.Properties;
@@ -34,10 +21,10 @@ import javax.annotation.concurrent.Immutable;
  * Class that holds global trace parameters.
  *
  * <p>Note: To update the TraceConfig associated with a {@link
- * io.opentelemetry.sdk.trace.TracerSdkProvider}, you should use the {@link #toBuilder()} method on
- * the TraceConfig currently assigned to the provider, make the changes desired to the {@link
+ * io.opentelemetry.sdk.trace.TracerSdkManagement}, you should use the {@link #toBuilder()} method
+ * on the TraceConfig currently assigned to the provider, make the changes desired to the {@link
  * Builder} instance, then use the {@link
- * io.opentelemetry.sdk.trace.TracerSdkProvider#updateActiveTraceConfig(TraceConfig)} with the
+ * io.opentelemetry.sdk.trace.TracerSdkManagement#updateActiveTraceConfig(TraceConfig)} with the
  * resulting TraceConfig instance.
  *
  * <p>Configuration options for {@link TraceConfig} can be read from system properties, environment
@@ -49,16 +36,16 @@ import javax.annotation.concurrent.Immutable;
  * <ul>
  *   <li>{@code otel.config.sampler.probability}: to set the global default sampler which is used
  *       when constructing a new {@code Span}.
- *   <li>{@code otel.config.max.attrs}: to set the global default max number of attributes per
- *       {@link Span}.
- *   <li>{@code otel.config.max.events}: to set the global default max number of {@link Event}s per
- *       {@link Span}.
- *   <li>{@code otel.config.max.links}: to set the global default max number of {@link Link} entries
+ *   <li>{@code otel.span.attribute.count.limit}: to set the global default max number of attributes
  *       per {@link Span}.
+ *   <li>{@code otel.span.event.count.limit}: to set the global default max number of events per
+ *       {@link Span}.
+ *   <li>{@code otel.span.link.count.limit}: to set the global default max number of links per
+ *       {@link Span}.
  *   <li>{@code otel.config.max.event.attrs}: to set the global default max number of attributes per
- *       {@link Event}.
+ *       event.
  *   <li>{@code otel.config.max.link.attrs}: to set the global default max number of attributes per
- *       {@link Link}.
+ *       link.
  *   <li>{@code otel.config.max.attr.length}: to set the global default max length of string
  *       attribute value in characters.
  * </ul>
@@ -68,16 +55,16 @@ import javax.annotation.concurrent.Immutable;
  * <ul>
  *   <li>{@code OTEL_CONFIG_SAMPLER_PROBABILITY}: to set the global default sampler which is used
  *       when constructing a new {@code Span}.
- *   <li>{@code OTEL_CONFIG_MAX_ATTRS}: to set the global default max number of attributes per
- *       {@link Span}.
- *   <li>{@code OTEL_CONFIG_MAX_EVENTS}: to set the global default max number of {@link Event}s per
- *       {@link Span}.
- *   <li>{@code OTEL_CONFIG_MAX_LINKS}: to set the global default max number of {@link Link} entries
+ *   <li>{@code OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT}: to set the global default max number of attributes
  *       per {@link Span}.
+ *   <li>{@code OTEL_SPAN_EVENT_COUNT_LIMIT}: to set the global default max number of events per
+ *       {@link Span}.
+ *   <li>{@code OTEL_SPAN_LINK_COUNT_LIMIT}: to set the global default max number of links per
+ *       {@link Span}.
  *   <li>{@code OTEL_CONFIG_MAX_EVENT_ATTRS}: to set the global default max number of attributes per
- *       {@link Event}.
+ *       event.
  *   <li>{@code OTEL_CONFIG_MAX_LINK_ATTRS}: to set the global default max number of attributes per
- *       {@link Link}.
+ *       link.
  *   <li>{@code OTEL_CONFIG_MAX_ATTR_LENGTH}: to set the global default max length of string
  *       attribute value in characters.
  * </ul>
@@ -88,9 +75,9 @@ public abstract class TraceConfig {
   // These values are the default values for all the global parameters.
   // TODO: decide which default sampler to use
   private static final Sampler DEFAULT_SAMPLER = Samplers.parentBased(Samplers.alwaysOn());
-  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
-  private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
-  private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
+  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 1000;
+  private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 1000;
+  private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 1000;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
 
@@ -106,7 +93,7 @@ public abstract class TraceConfig {
     return DEFAULT;
   }
 
-  private static final TraceConfig DEFAULT = TraceConfig.newBuilder().build();
+  private static final TraceConfig DEFAULT = TraceConfig.builder().build();
 
   /**
    * Returns the global default {@code Sampler} which is used when constructing a new {@code Span}.
@@ -123,30 +110,30 @@ public abstract class TraceConfig {
   public abstract int getMaxNumberOfAttributes();
 
   /**
-   * Returns the global default max number of {@link Event}s per {@link Span}.
+   * Returns the global default max number of events per {@link Span}.
    *
-   * @return the global default max number of {@code Event}s per {@code Span}.
+   * @return the global default max number of events per {@code Span}.
    */
   public abstract int getMaxNumberOfEvents();
 
   /**
-   * Returns the global default max number of {@link Link} entries per {@link Span}.
+   * Returns the global default max number of links per {@link Span}.
    *
-   * @return the global default max number of {@code Link} entries per {@code Span}.
+   * @return the global default max number of links per {@code Span}.
    */
   public abstract int getMaxNumberOfLinks();
 
   /**
-   * Returns the global default max number of attributes per {@link Event}.
+   * Returns the global default max number of attributes per event.
    *
-   * @return the global default max number of attributes per {@link Event}.
+   * @return the global default max number of attributes per event.
    */
   public abstract int getMaxNumberOfAttributesPerEvent();
 
   /**
-   * Returns the global default max number of attributes per {@link Link}.
+   * Returns the global default max number of attributes per link.
    *
-   * @return the global default max number of attributes per {@link Link}.
+   * @return the global default max number of attributes per link.
    */
   public abstract int getMaxNumberOfAttributesPerLink();
 
@@ -167,7 +154,7 @@ public abstract class TraceConfig {
    *
    * @return a new {@link Builder}.
    */
-  private static Builder newBuilder() {
+  private static Builder builder() {
     return new AutoValue_TraceConfig.Builder()
         .setSampler(DEFAULT_SAMPLER)
         .setMaxNumberOfAttributes(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES)
@@ -189,9 +176,9 @@ public abstract class TraceConfig {
   @AutoValue.Builder
   public abstract static class Builder extends ConfigBuilder<Builder> {
     private static final String KEY_SAMPLER_PROBABILITY = "otel.config.sampler.probability";
-    private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES = "otel.config.max.attrs";
-    private static final String KEY_SPAN_MAX_NUM_EVENTS = "otel.config.max.events";
-    private static final String KEY_SPAN_MAX_NUM_LINKS = "otel.config.max.links";
+    private static final String KEY_SPAN_ATTRIBUTE_COUNT_LIMIT = "otel.span.attribute.count.limit";
+    private static final String KEY_SPAN_EVENT_COUNT_LIMIT = "otel.span.event.count.limit";
+    private static final String KEY_SPAN_LINK_COUNT_LIMIT = "otel.span.link.count.limit";
     private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT =
         "otel.config.max.event.attrs";
     private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = "otel.config.max.link.attrs";
@@ -214,15 +201,15 @@ public abstract class TraceConfig {
       if (doubleValue != null) {
         this.setTraceIdRatioBased(doubleValue);
       }
-      Integer intValue = getIntProperty(KEY_SPAN_MAX_NUM_ATTRIBUTES, configMap);
+      Integer intValue = getIntProperty(KEY_SPAN_ATTRIBUTE_COUNT_LIMIT, configMap);
       if (intValue != null) {
         this.setMaxNumberOfAttributes(intValue);
       }
-      intValue = getIntProperty(KEY_SPAN_MAX_NUM_EVENTS, configMap);
+      intValue = getIntProperty(KEY_SPAN_EVENT_COUNT_LIMIT, configMap);
       if (intValue != null) {
         this.setMaxNumberOfEvents(intValue);
       }
-      intValue = getIntProperty(KEY_SPAN_MAX_NUM_LINKS, configMap);
+      intValue = getIntProperty(KEY_SPAN_LINK_COUNT_LIMIT, configMap);
       if (intValue != null) {
         this.setMaxNumberOfLinks(intValue);
       }
@@ -311,37 +298,37 @@ public abstract class TraceConfig {
     public abstract Builder setMaxNumberOfAttributes(int maxNumberOfAttributes);
 
     /**
-     * Sets the global default max number of {@link Event}s per {@link Span}.
+     * Sets the global default max number of events per {@link Span}.
      *
-     * @param maxNumberOfEvents the global default max number of {@link Event}s per {@link Span}. It
-     *     must be positive otherwise {@link #build()} will throw an exception.
+     * @param maxNumberOfEvents the global default max number of events per {@link Span}. It must be
+     *     positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
     public abstract Builder setMaxNumberOfEvents(int maxNumberOfEvents);
 
     /**
-     * Sets the global default max number of {@link Link} entries per {@link Span}.
+     * Sets the global default max number of links per {@link Span}.
      *
-     * @param maxNumberOfLinks the global default max number of {@link Link} entries per {@link
-     *     Span}. It must be positive otherwise {@link #build()} will throw an exception.
+     * @param maxNumberOfLinks the global default max number of links per {@link Span}. It must be
+     *     positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
     public abstract Builder setMaxNumberOfLinks(int maxNumberOfLinks);
 
     /**
-     * Sets the global default max number of attributes per {@link Event}.
+     * Sets the global default max number of attributes per event.
      *
-     * @param maxNumberOfAttributesPerEvent the global default max number of attributes per {@link
-     *     Event}. It must be positive otherwise {@link #build()} will throw an exception.
+     * @param maxNumberOfAttributesPerEvent the global default max number of attributes per event.
+     *     It must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
     public abstract Builder setMaxNumberOfAttributesPerEvent(int maxNumberOfAttributesPerEvent);
 
     /**
-     * Sets the global default max number of attributes per {@link Link}.
+     * Sets the global default max number of attributes per link.
      *
-     * @param maxNumberOfAttributesPerLink the global default max number of attributes per {@link
-     *     Link}. It must be positive otherwise {@link #build()} will throw an exception.
+     * @param maxNumberOfAttributesPerLink the global default max number of attributes per link. It
+     *     must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
     public abstract Builder setMaxNumberOfAttributesPerLink(int maxNumberOfAttributesPerLink);

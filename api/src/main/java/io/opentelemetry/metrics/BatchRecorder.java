@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.metrics;
@@ -33,7 +22,6 @@ public interface BatchRecorder {
    * @param valueRecorder the {@link LongValueRecorder}.
    * @param value the value to be associated with {@code valueRecorder}.
    * @return this.
-   * @since 0.1.0
    */
   BatchRecorder put(LongValueRecorder valueRecorder, long value);
 
@@ -44,7 +32,6 @@ public interface BatchRecorder {
    * @param valueRecorder the {@link DoubleValueRecorder}.
    * @param value the value to be associated with {@code valueRecorder}.
    * @return this.
-   * @since 0.1.0
    */
   BatchRecorder put(DoubleValueRecorder valueRecorder, double value);
 
@@ -55,7 +42,6 @@ public interface BatchRecorder {
    * @param counter the {@link LongCounter}.
    * @param value the value to be associated with {@code counter}.
    * @return this.
-   * @since 0.3.0
    */
   BatchRecorder put(LongCounter counter, long value);
 
@@ -66,7 +52,6 @@ public interface BatchRecorder {
    * @param counter the {@link DoubleCounter}.
    * @param value the value to be associated with {@code counter}.
    * @return this.
-   * @since 0.3.0
    */
   BatchRecorder put(DoubleCounter counter, double value);
 
@@ -77,7 +62,6 @@ public interface BatchRecorder {
    * @param upDownCounter the {@link LongCounter}.
    * @param value the value to be associated with {@code counter}.
    * @return this.
-   * @since 0.5.0
    */
   BatchRecorder put(LongUpDownCounter upDownCounter, long value);
 
@@ -88,7 +72,6 @@ public interface BatchRecorder {
    * @param upDownCounter the {@link DoubleCounter}.
    * @param value the value to be associated with {@code counter}.
    * @return this.
-   * @since 0.5.0
    */
   BatchRecorder put(DoubleUpDownCounter upDownCounter, double value);
 
@@ -97,8 +80,6 @@ public interface BatchRecorder {
    *
    * <p>This method records all measurements every time it is called, so make sure it is not called
    * twice if not needed.
-   *
-   * @since 0.1.0
    */
   void record();
 }

@@ -2,8 +2,56 @@
 
 ## Unreleased
 
-- Extensions:
-    - BREAKING CHANGE: Made Propagators to expose only a singleton instance
+## 0.9.1 - 2020-10-07
+
+- API
+    - BREAKING CHANGE: SpanId, TraceId and TraceFlags are no longer used as instances, but only contain helper methods for managing conversion between Strings, bytes and other formats. SpanId and TraceId are now natively String-typed, and the TraceFlags is a single byte.
+    - BREAKING CHANGE: Propagators now only expose a singleton instance.
+    - BREAKING CHANGE: The LabelConsumer and AttributeConsumer are now first-class interfaces, and the underlying consumer interface has had the key made additionally generic. Please prefer using the specific interfaces, rather than the underlying `ReadableKeyValuePairs.KeyValueConsumer`.
+    - BREAKING CHANGE: Minimum JDK version has been updated to 8, with Android API level 24.
+    - BREAKING CHANGE: Metric Instrument names are now case-insensitive.
+    - BREAKING CHANGE: The type-safety on Attributes has been moved to a new AttributeKey, and the AttributeValue wrappers have been removed. This impacts all the semantic attribute definitions, and the various APIs that use Attributes.
+    - BREAKING CHANGE: The obsolete HTTP_STATUS_TEXT semantic attribute has been removed.
+    - BREAKING CHANGE: The type of the REDIS_DATABASE_INDEX semantic attribute has been changed to be numeric.
+    - BREAKING CHANGE: Constant Labels have been removed from metric Instrument definitions.
+    - BREAKING CHANGE: The number of available Span Status options has been greatly reduced (from 16 to 3).
+    - BREAKING CHANGE: Constant labels have been removed from metric Instrument definitions.
+    - BREAKING CHANGE: The only way to specify span parenting is via a parent Context
+    - BREAKING CHANGE: The default TextMapPropagator is now a no-op in the API
+    - BREAKING CHANGE: CorrelationContext has been renamed to Baggage
+    - BREAKING CHANGE: Null-valued span attribute behavior has been changed to being "unspecified".
+    - BREAKING CHANGE: Link and Event interfaces have been removed from the API
+    - BREAKING CHANGE: The Status object has been removed from the API, in favor of StatusCanonicalCode
+    - BUGFIX: the `noParent` option on a Span was being ignored if it was set after setting an explicit parent.
+    - BUGFIX: Attributes and Labels now preserve the latest added entry when an existing key has been used.
+    - BUGFIX: Updated some of the W3C traceparent validation logic to better match the spec.
+    - FaaS semantic attributes have been added
+    - Semantic attribute for "exception.escaped" added
+
+- SDK
+    - BREAKING CHANGE: The names of the Sampler.Decision enum values, returned by the Sampler interface, have changed.
+    - `OpenTelemetrySdk.forceFlush()` now returns a CompletableResultCode
+    - BREAKING CHANGE: The `ProbabilitySampler` has been renamed to `TraceIdRatioBased`
+    - BREAKING CHANGE: The environment variables/system properties for specifying exporter and span processor configuration have been updated to match the specification.
+    - BREAKING CHANGE: Exported zipkin attributes have been changed to match the specification.
+    - BREAKING CHANGE: Metric Descriptor attributes have been flattened into the MetricData for export.
+    - BREAKING CHANGE: The OpenTelemetrySdk class now returns a TraceSdkManagement interface, rather than the concrete TracerSdkProvider.
+    - BUGFIX: Zipkin span durations are now rounded up to 1 microsecond, if less than 1.
+    - BUGFIX: The insecure option for OTLP export now does the correct thing. 
+    - Added a configuration option for disabling SPI-provided ResourceProviders
+    - New incubator module with helper classes for working with SpanData
+    - AWS resources now include the `cloud.provider` attribute.
+
+- Extensions
+    - BREAKING CHANGE: Propagators now only expose a singleton instance.
+    - The auto-config extension has been moved to the instrumentation project.
+    - New incubator module with some utilities for mutating SpanData instances.
+    - The AWS Resource extension will now pull in EKS Resource attributes.
+    - New pre-release extension for handling logging natively.
+    
+Many thanks to all who made this release possible:
+   
+@bogdandrutu @Oberon00 @jkwatson @thisthat @anuraaga @jarebudev @malafeev @quijote @JasonXZLiu @zoercai @eunice98k @dengliming @breedx-nr @iNikem @wangzlei @imavroukakis 
 
 ## 0.8.0 - 2020-09-01
 

@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace.export;
@@ -19,6 +8,7 @@ package io.opentelemetry.sdk.trace.export;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
@@ -32,6 +22,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -97,14 +88,14 @@ public final class BatchSpanProcessor implements SpanProcessor {
             scheduleDelayMillis,
             maxExportBatchSize,
             exporterTimeoutMillis,
-            new ArrayBlockingQueue<ReadableSpan>(maxQueueSize));
+            new ArrayBlockingQueue<>(maxQueueSize));
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
     this.sampled = sampled;
   }
 
   @Override
-  public void onStart(ReadWriteSpan span) {}
+  public void onStart(ReadWriteSpan span, Context parentContext) {}
 
   @Override
   public boolean isStartRequired() {
@@ -255,23 +246,17 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
       final CompletableResultCode flushResult = forceFlush();
       flushResult.whenComplete(
-          new Runnable() {
-            @Override
-            public void run() {
-              continueWork = false;
-              final CompletableResultCode shutdownResult = spanExporter.shutdown();
-              shutdownResult.whenComplete(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
-                        result.fail();
-                      } else {
-                        result.succeed();
-                      }
-                    }
-                  });
-            }
+          () -> {
+            continueWork = false;
+            final CompletableResultCode shutdownResult = spanExporter.shutdown();
+            shutdownResult.whenComplete(
+                () -> {
+                  if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
+                    result.fail();
+                  } else {
+                    result.succeed();
+                  }
+                });
           });
 
       return result;
@@ -311,7 +296,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
    * @return a new {@link BatchSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public static Builder newBuilder(SpanExporter spanExporter) {
+  public static Builder builder(SpanExporter spanExporter) {
     return new Builder(spanExporter);
   }
 
@@ -338,7 +323,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
     private Builder(SpanExporter spanExporter) {
-      this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+      this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     }
 
     /**

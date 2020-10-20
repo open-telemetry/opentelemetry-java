@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.metrics;
@@ -45,7 +34,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   DoubleCounter.Builder doubleCounterBuilder(String name);
 
@@ -58,7 +46,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   LongCounter.Builder longCounterBuilder(String name);
 
@@ -71,7 +58,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   DoubleUpDownCounter.Builder doubleUpDownCounterBuilder(String name);
 
@@ -84,7 +70,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   LongUpDownCounter.Builder longUpDownCounterBuilder(String name);
 
@@ -97,7 +82,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   DoubleValueRecorder.Builder doubleValueRecorderBuilder(String name);
 
@@ -110,7 +94,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   LongValueRecorder.Builder longValueRecorderBuilder(String name);
 
@@ -123,7 +106,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   DoubleSumObserver.Builder doubleSumObserverBuilder(String name);
 
@@ -136,7 +118,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   LongSumObserver.Builder longSumObserverBuilder(String name);
 
@@ -149,7 +130,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   DoubleUpDownSumObserver.Builder doubleUpDownSumObserverBuilder(String name);
 
@@ -162,7 +142,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   LongUpDownSumObserver.Builder longUpDownSumObserverBuilder(String name);
 
@@ -175,7 +154,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   DoubleValueObserver.Builder doubleValueObserverBuilder(String name);
 
@@ -188,7 +166,6 @@ public interface Meter {
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
-   * @since 0.1.0
    */
   LongValueObserver.Builder longValueObserverBuilder(String name);
 
@@ -199,7 +176,6 @@ public interface Meter {
    * @param keyValuePairs The set of labels to associate with this recorder and all it's recordings.
    * @return a {@code MeasureBatchRecorder} that can be use to atomically record a set of
    *     measurements associated with different Measures.
-   * @since 0.1.0
    */
   BatchRecorder newBatchRecorder(String... keyValuePairs);
 }

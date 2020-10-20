@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.export;
@@ -23,11 +12,14 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -95,14 +87,14 @@ final class DisruptorEventQueue {
     this.blocking = blocking;
   }
 
-  void enqueueStartEvent(ReadWriteSpan span) {
+  void enqueueStartEvent(ReadWriteSpan span, Context parentContext) {
     if (isShutdown) {
       if (!loggedShutdownMessage.getAndSet(true)) {
         logger.info("Attempted to enqueue start event after Disruptor shutdown.");
       }
       return;
     }
-    enqueue(EventType.ON_START, span, null);
+    enqueue(EventType.ON_START, new AbstractMap.SimpleImmutableEntry<>(span, parentContext), null);
   }
 
   void enqueueEndEvent(ReadableSpan span) {
@@ -157,7 +149,7 @@ final class DisruptorEventQueue {
 
   // An event in the {@link EventQueue}. Just holds a reference to an EventQueue.Entry.
   private static final class DisruptorEvent {
-    @Nullable private Object span = null;
+    @Nullable private Object eventArgs = null;
     @Nullable private EventType eventType = null;
     @Nullable private CompletableResultCode result = null;
 
@@ -165,14 +157,14 @@ final class DisruptorEventQueue {
         @Nullable EventType eventType,
         @Nullable Object span,
         @Nullable CompletableResultCode result) {
-      this.span = span;
+      this.eventArgs = span;
       this.eventType = eventType;
       this.result = result;
     }
 
     @Nullable
-    Object getSpan() {
-      return span;
+    Object getEventArgs() {
+      return eventArgs;
     }
 
     @Nullable
@@ -202,7 +194,7 @@ final class DisruptorEventQueue {
 
     @Override
     public void onEvent(final DisruptorEvent event, long sequence, boolean endOfBatch) {
-      final Object readableSpan = event.getSpan();
+      final Object readableSpan = event.getEventArgs();
       final EventType eventType = event.getEventType();
       if (eventType == null) {
         logger.warning("Disruptor enqueued null element type.");
@@ -211,7 +203,10 @@ final class DisruptorEventQueue {
       try {
         switch (eventType) {
           case ON_START:
-            spanProcessor.onStart((ReadWriteSpan) readableSpan);
+            @SuppressWarnings("unchecked")
+            final SimpleImmutableEntry<ReadWriteSpan, Context> eventArgs =
+                (SimpleImmutableEntry<ReadWriteSpan, Context>) readableSpan;
+            spanProcessor.onStart(eventArgs.getKey(), eventArgs.getValue());
             break;
           case ON_END:
             spanProcessor.onEnd((ReadableSpan) readableSpan);

@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.otlp;
@@ -27,6 +16,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
+import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
@@ -77,14 +69,26 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
+
   public static final String DEFAULT_ENDPOINT = "localhost:55680";
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
+  private static final boolean DEFAULT_USE_TLS = false;
 
   private final TraceServiceFutureStub traceService;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
+
+  private final LongCounter spansSeen =
+      OpenTelemetry.getMeter("io.opentelemetry.exporters.otlp")
+          .longCounterBuilder("spansSeenByExporter")
+          .build();
+
+  private final LongCounter spansExported =
+      OpenTelemetry.getMeter("io.opentelemetry.exporters.otlp")
+          .longCounterBuilder("spansExportedByExporter")
+          .build();
 
   /**
    * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.
@@ -107,6 +111,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
+    spansSeen.add(
+        spans.size(), Labels.of("exporter", OtlpGrpcMetricExporter.class.getSimpleName()));
     ExportTraceServiceRequest exportTraceServiceRequest =
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
@@ -126,12 +132,21 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
         new FutureCallback<ExportTraceServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportTraceServiceResponse response) {
+            spansExported.add(
+                spans.size(),
+                Labels.of(
+                    "exporter", OtlpGrpcMetricExporter.class.getSimpleName(), "success", "true"));
             result.succeed();
           }
 
           @Override
           public void onFailure(Throwable t) {
-            logger.log(Level.WARNING, "Failed to export spans", t);
+            spansExported.add(
+                spans.size(),
+                Labels.of(
+                    "exporter", OtlpGrpcMetricExporter.class.getSimpleName(), "success", "false"));
+            logger.log(Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
+            logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
             result.fail();
           }
         },
@@ -154,7 +169,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 
@@ -164,10 +179,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * environment. If a configuration value is missing, it uses the default value.
    *
    * @return a new {@link OtlpGrpcSpanExporter} instance.
-   * @since 0.5.0
    */
   public static OtlpGrpcSpanExporter getDefault() {
-    return newBuilder().readEnvironmentVariables().readSystemProperties().build();
+    return builder().readEnvironmentVariables().readSystemProperties().build();
   }
 
   /**
@@ -194,12 +208,12 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
     private static final String KEY_TIMEOUT = "otel.exporter.otlp.span.timeout";
     private static final String KEY_ENDPOINT = "otel.exporter.otlp.span.endpoint";
-    private static final String KEY_USE_TLS = "otel.exporter.otlp.span.insecure";
+    private static final String KEY_INSECURE = "otel.exporter.otlp.span.insecure";
     private static final String KEY_HEADERS = "otel.exporter.otlp.span.headers";
     private ManagedChannel channel;
     private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
     private String endpoint = DEFAULT_ENDPOINT;
-    private boolean useTls;
+    private boolean useTls = DEFAULT_USE_TLS;
     @Nullable private Metadata metadata;
 
     /**
@@ -318,12 +332,12 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
         this.setEndpoint(endpointValue);
       }
 
-      Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
-      if (useTlsValue == null) {
-        useTlsValue = getBooleanProperty(CommonProperties.KEY_USE_TLS, configMap);
+      Boolean insecure = getBooleanProperty(KEY_INSECURE, configMap);
+      if (insecure == null) {
+        insecure = getBooleanProperty(CommonProperties.KEY_INSECURE, configMap);
       }
-      if (useTlsValue != null) {
-        this.setUseTls(useTlsValue);
+      if (insecure != null) {
+        this.setUseTls(!insecure);
       }
 
       String metadataValue = getStringProperty(KEY_HEADERS, configMap);

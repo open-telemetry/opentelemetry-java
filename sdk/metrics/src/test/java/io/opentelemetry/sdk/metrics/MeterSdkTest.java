@@ -1,22 +1,11 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -28,7 +17,6 @@ import io.opentelemetry.metrics.LongValueObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -418,21 +406,30 @@ class MeterSdkTest {
     assertThat(testSdk.collectAll())
         .containsExactlyInAnyOrder(
             MetricData.create(
-                Descriptor.create("testLongCounter", "", "1", Descriptor.Type.MONOTONIC_LONG),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testLongCounter",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_LONG,
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
-                Descriptor.create("testDoubleCounter", "", "1", Descriptor.Type.MONOTONIC_DOUBLE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testDoubleCounter",
+                "",
+                "1",
+                MetricData.Type.MONOTONIC_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), Labels.empty(), 10.1))),
             MetricData.create(
-                Descriptor.create("testLongValueRecorder", "", "1", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testLongValueRecorder",
+                "",
+                "1",
+                MetricData.Type.SUMMARY,
                 Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now(),
@@ -443,9 +440,12 @@ class MeterSdkTest {
                         Arrays.asList(
                             ValueAtPercentile.create(0, 10), ValueAtPercentile.create(100, 10))))),
             MetricData.create(
-                Descriptor.create("testDoubleValueRecorder", "", "1", Descriptor.Type.SUMMARY),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
+                "testDoubleValueRecorder",
+                "",
+                "1",
+                MetricData.Type.SUMMARY,
                 Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now(),

@@ -39,7 +39,7 @@ public class ZipkinExample {
             .build();
 
     // Set to process the spans by the Zipkin Exporter
-    OpenTelemetrySdk.getTracerProvider()
+    OpenTelemetrySdk.getTracerManagement()
         .addSpanProcessor(SimpleSpanProcessor.newBuilder(zipkinExporter).build());
   }
 
@@ -65,7 +65,7 @@ public class ZipkinExample {
 
   // graceful shutdown
   public void shutdown() {
-    OpenTelemetrySdk.getTracerProvider().shutdown();
+    OpenTelemetrySdk.getTracerManagement().shutdown();
   }
 
   public static void main(String[] args) {

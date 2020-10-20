@@ -1,24 +1,13 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthandler;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 
 /**
@@ -30,18 +19,18 @@ final class RequestHandler {
 
   private final Tracer tracer;
 
-  private final SpanContext parentContext;
+  private final Context parentContext;
 
   public RequestHandler(Tracer tracer) {
     this(tracer, null);
   }
 
-  public RequestHandler(Tracer tracer, SpanContext parentContext) {
+  public RequestHandler(Tracer tracer, Context parentContext) {
     this.tracer = tracer;
     this.parentContext = parentContext;
   }
 
-  public void beforeRequest(Object request, Context context) {
+  public void beforeRequest(Object request, RequestHandlerContext requestHandlerContext) {
     // we cannot use active span because we don't know in which thread it is executed
     // and we cannot therefore activate span. thread can come from common thread pool.
     Span.Builder spanBuilder =
@@ -51,11 +40,11 @@ final class RequestHandler {
       spanBuilder.setParent(parentContext);
     }
 
-    context.put("span", spanBuilder.startSpan());
+    requestHandlerContext.put("span", spanBuilder.startSpan());
   }
 
-  public void afterResponse(Object response, Context context) {
-    Object spanObject = context.get("span");
+  public void afterResponse(Object response, RequestHandlerContext requestHandlerContext) {
+    Object spanObject = requestHandlerContext.get("span");
     if (spanObject instanceof Span) {
       Span span = (Span) spanObject;
       span.end();

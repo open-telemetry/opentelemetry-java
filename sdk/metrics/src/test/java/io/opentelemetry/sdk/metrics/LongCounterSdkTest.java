@@ -1,22 +1,11 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -29,7 +18,6 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -75,10 +63,10 @@ class LongCounterSdkTest {
     List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
-    assertThat(metricData.getDescriptor())
-        .isEqualTo(
-            Descriptor.create(
-                "testCounter", "My very own counter", "ms", Descriptor.Type.MONOTONIC_LONG));
+    assertThat(metricData.getName()).isEqualTo("testCounter");
+    assertThat(metricData.getDescription()).isEqualTo("My very own counter");
+    assertThat(metricData.getUnit()).isEqualTo("ms");
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.MONOTONIC_LONG);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -97,10 +85,10 @@ class LongCounterSdkTest {
     List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
-    assertThat(metricData.getDescriptor())
-        .isEqualTo(
-            Descriptor.create(
-                "testCounter", "My very own counter", "ms", Descriptor.Type.MONOTONIC_LONG));
+    assertThat(metricData.getName()).isEqualTo("testCounter");
+    assertThat(metricData.getDescription()).isEqualTo("My very own counter");
+    assertThat(metricData.getUnit()).isEqualTo("ms");
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.MONOTONIC_LONG);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -131,7 +119,7 @@ class LongCounterSdkTest {
     longCounter1.add(12);
 
     assertThat(longCounter.collectAll().get(0))
-        .isEqualToIgnoringGivenFields(longCounter1.collectAll().get(0), "descriptor");
+        .isEqualToIgnoringGivenFields(longCounter1.collectAll().get(0), "name");
   }
 
   @Test

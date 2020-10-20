@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace;
@@ -40,15 +29,14 @@ final class AttributesMap implements ReadableAttributes {
   }
 
   public <T> void put(AttributeKey<T> key, T value) {
+    if (key == null || key.getKey() == null || value == null) {
+      return;
+    }
     totalAddedValues++;
     if (data.size() >= capacity && !data.containsKey(key)) {
       return;
     }
     data.put(key, value);
-  }
-
-  void remove(AttributeKey key) {
-    data.remove(key);
   }
 
   int getTotalAddedValues() {
@@ -95,7 +83,7 @@ final class AttributesMap implements ReadableAttributes {
 
   @SuppressWarnings("rawtypes")
   ReadableAttributes immutableCopy() {
-    Attributes.Builder builder = Attributes.newBuilder();
+    Attributes.Builder builder = Attributes.builder();
     for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }

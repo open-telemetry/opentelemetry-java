@@ -1,23 +1,12 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.jaeger;
 
-import static io.restassured.RestAssured.given;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.OpenTelemetry;
@@ -26,21 +15,22 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Testcontainers
-@EnabledIfSystemProperty(named = "enable.docker.tests", matches = "true")
+@Testcontainers(disabledWithoutDocker = true)
 class JaegerIntegrationTest {
+
+  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final OkHttpClient client = new OkHttpClient();
 
   private static final int QUERY_PORT = 16686;
   private static final int COLLECTOR_PORT = 14250;
@@ -70,13 +60,13 @@ class JaegerIntegrationTest {
             .usePlaintext()
             .build();
     SpanExporter jaegerExporter =
-        JaegerGrpcSpanExporter.newBuilder()
+        JaegerGrpcSpanExporter.builder()
             .setServiceName(SERVICE_NAME)
             .setChannel(jaegerChannel)
             .setDeadlineMs(30000)
             .build();
-    OpenTelemetrySdk.getTracerProvider()
-        .addSpanProcessor(SimpleSpanProcessor.newBuilder(jaegerExporter).build());
+    OpenTelemetrySdk.getTracerManagement()
+        .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
   }
 
   private void imitateWork() {
@@ -97,17 +87,20 @@ class JaegerIntegrationTest {
               "%s/api/traces?service=%s",
               String.format(JAEGER_URL + ":%d", jaegerContainer.getMappedPort(QUERY_PORT)),
               SERVICE_NAME);
-      Response response =
-          given()
-              .headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON)
-              .when()
-              .get(url)
-              .then()
-              .contentType(ContentType.JSON)
-              .extract()
-              .response();
-      Map<String, String> path = response.jsonPath().getMap("data[0]");
-      return path.get("traceID") != null;
+
+      Request request =
+          new Request.Builder()
+              .url(url)
+              .header("Content-Type", "application/json")
+              .header("Accept", "application/json")
+              .build();
+
+      final JsonNode json;
+      try (Response response = client.newCall(request).execute()) {
+        json = objectMapper.readTree(response.body().byteStream());
+      }
+
+      return json.get("data").get(0).get("traceID") != null;
     } catch (Exception e) {
       return false;
     }

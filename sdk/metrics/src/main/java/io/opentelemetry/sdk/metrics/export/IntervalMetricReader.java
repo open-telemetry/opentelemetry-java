@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.metrics.export;
@@ -93,7 +82,6 @@ public final class IntervalMetricReader {
    * the environment. If a configuration value is missing, it uses the default value.
    *
    * @return a new {@link Builder} for {@link IntervalMetricReader}.
-   * @since 0.4.0
    */
   public static Builder builderFromDefaultSources() {
     return builder().readEnvironmentVariables().readSystemProperties();
@@ -206,14 +194,11 @@ public final class IntervalMetricReader {
           final CompletableResultCode result =
               internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
           result.whenComplete(
-              new Runnable() {
-                @Override
-                public void run() {
-                  if (!result.isSuccess()) {
-                    logger.log(Level.FINE, "Exporter failed");
-                  }
-                  exportAvailable.set(true);
+              () -> {
+                if (!result.isSuccess()) {
+                  logger.log(Level.FINE, "Exporter failed");
                 }
+                exportAvailable.set(true);
               });
         } catch (Exception e) {
           logger.log(Level.WARNING, "Exporter threw an Exception", e);

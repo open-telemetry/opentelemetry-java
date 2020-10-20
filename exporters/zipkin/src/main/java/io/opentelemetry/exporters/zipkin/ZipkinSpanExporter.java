@@ -1,22 +1,11 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.zipkin;
 
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.common.AttributeConsumer;
@@ -32,7 +21,6 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -85,8 +73,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
   static final String OTEL_STATUS_DESCRIPTION = "otel.status_description";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
-  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.instrumentation_library.name";
-  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.instrumentation_library.version";
+  static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
+  static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
   private final BytesEncoder<Span> encoder;
   private final Sender sender;
@@ -151,7 +139,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
             spanBuilder.putTag(key.getKey(), valueToString(key, value));
           }
         });
-    Status status = spanData.getStatus();
+    SpanData.Status status = spanData.getStatus();
     // for GRPC spans, include status code & description.
     if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE) != null) {
       spanBuilder.putTag(OTEL_STATUS_CODE, status.getCanonicalCode().toString());
@@ -295,7 +283,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
    *
    * @return a new {@link ZipkinSpanExporter}.
    */
-  public static Builder newBuilder() {
+  public static Builder builder() {
     return new Builder();
   }
 
@@ -326,7 +314,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @return this.
      * @see io.opentelemetry.sdk.resources.Resource
      * @see io.opentelemetry.sdk.resources.ResourceAttributes
-     * @since 0.4.0
      */
     public Builder setServiceName(String serviceName) {
       this.serviceName = serviceName;
@@ -341,7 +328,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      *
      * @param sender the Zipkin sender implementation.
      * @return this.
-     * @since 0.4.0
      */
     public Builder setSender(Sender sender) {
       this.sender = sender;
@@ -355,7 +341,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @param encoder the {@code BytesEncoder} to use.
      * @return this.
      * @see SpanBytesEncoder
-     * @since 0.4.0
      */
     public Builder setEncoder(BytesEncoder<Span> encoder) {
       this.encoder = encoder;
@@ -369,7 +354,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
      * @return this.
      * @see OkHttpSender
-     * @since 0.4.0
      */
     public Builder setEndpoint(String endpoint) {
       this.endpoint = endpoint;
@@ -401,7 +385,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * Builds a {@link ZipkinSpanExporter}.
      *
      * @return a {@code ZipkinSpanExporter}.
-     * @since 0.4.0
      */
     public ZipkinSpanExporter build() {
       if (sender == null) {

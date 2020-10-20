@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.metrics.view;
@@ -95,9 +84,9 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      return MetricData.Descriptor.Type.SUMMARY;
+      return MetricData.Type.SUMMARY;
     }
 
     @Override
@@ -124,21 +113,21 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       switch (instrumentType) {
         case COUNTER:
         case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Descriptor.Type.MONOTONIC_LONG
-              : MetricData.Descriptor.Type.MONOTONIC_DOUBLE;
+              ? MetricData.Type.MONOTONIC_LONG
+              : MetricData.Type.MONOTONIC_DOUBLE;
         case UP_DOWN_COUNTER:
         case VALUE_RECORDER:
         case UP_DOWN_SUM_OBSERVER:
         case VALUE_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Descriptor.Type.NON_MONOTONIC_LONG
-              : MetricData.Descriptor.Type.NON_MONOTONIC_DOUBLE;
+              ? MetricData.Type.NON_MONOTONIC_LONG
+              : MetricData.Type.NON_MONOTONIC_DOUBLE;
       }
       throw new IllegalArgumentException("Unsupported instrument/value types");
     }
@@ -166,9 +155,9 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      return MetricData.Descriptor.Type.MONOTONIC_LONG;
+      return MetricData.Type.MONOTONIC_LONG;
     }
 
     @Override
@@ -198,7 +187,7 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       throw new UnsupportedOperationException("Implement this");
     }
@@ -226,20 +215,25 @@ public class Aggregations {
     }
 
     @Override
-    public MetricData.Descriptor.Type getDescriptorType(
+    public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       switch (instrumentType) {
         case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Descriptor.Type.MONOTONIC_LONG
-              : MetricData.Descriptor.Type.MONOTONIC_DOUBLE;
+              ? MetricData.Type.MONOTONIC_LONG
+              : MetricData.Type.MONOTONIC_DOUBLE;
         case UP_DOWN_SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Descriptor.Type.NON_MONOTONIC_LONG
-              : MetricData.Descriptor.Type.NON_MONOTONIC_DOUBLE;
+              ? MetricData.Type.NON_MONOTONIC_LONG
+              : MetricData.Type.NON_MONOTONIC_DOUBLE;
+        case VALUE_OBSERVER:
+          return instrumentValueType == InstrumentValueType.LONG
+              ? MetricData.Type.GAUGE_LONG
+              : MetricData.Type.GAUGE_DOUBLE;
         default:
           // Do not change this unless the limitations of the current LastValueAggregator are fixed.
-          throw new IllegalArgumentException("Unsupported instrument/value types");
+          throw new IllegalArgumentException(
+              "Unsupported instrument/value types: " + instrumentType + "/" + instrumentValueType);
       }
     }
 

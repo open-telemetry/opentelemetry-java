@@ -19,12 +19,13 @@ init-git-submodules:
 
 .PHONY: verify-format
 verify-format:
-	./gradlew verGJF
+	./gradlew spotlessCheck
 
 .PHONY: publish-snapshots
 publish-snapshots:
 ifeq ($(CIRCLE_BRANCH),master)
-	./gradlew artifactoryPublish
+	# TODO(anuraaga): Remove version specificer after next release creates a tag on master.
+	./gradlew artifactoryPublish -Prelease.version=0.10.0-SNAPSHOT
 endif
 
 .PHONY: publish-release-artifacts

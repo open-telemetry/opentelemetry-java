@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.trace.export;
@@ -22,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -74,7 +64,7 @@ class SimpleSpanProcessorTest {
 
   @BeforeEach
   void setUp() {
-    simpleSampledSpansProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    simpleSampledSpansProcessor = SimpleSpanProcessor.builder(spanExporter).build();
   }
 
   @Test
@@ -82,7 +72,7 @@ class SimpleSpanProcessorTest {
     Map<String, String> options = new HashMap<>();
     options.put("otel.ssp.export.sampled", "false");
     SimpleSpanProcessor.Builder config =
-        SimpleSpanProcessor.newBuilder(spanExporter)
+        SimpleSpanProcessor.builder(spanExporter)
             .fromConfigMap(options, ConfigTester.getNamingDot());
     assertThat(config.getExportOnlySampled()).isEqualTo(false);
   }
@@ -90,7 +80,7 @@ class SimpleSpanProcessorTest {
   @Test
   void configTest_EmptyOptions() {
     SimpleSpanProcessor.Builder config =
-        SimpleSpanProcessor.newBuilder(spanExporter)
+        SimpleSpanProcessor.builder(spanExporter)
             .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
     assertThat(config.getExportOnlySampled())
         .isEqualTo(SimpleSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
@@ -98,7 +88,7 @@ class SimpleSpanProcessorTest {
 
   @Test
   void onStartSync() {
-    simpleSampledSpansProcessor.onStart(readWriteSpan);
+    simpleSampledSpansProcessor.onStart(readWriteSpan, Context.root());
     verifyNoInteractions(spanExporter);
   }
 
@@ -124,7 +114,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verifyNoInteractions(spanExporter);
   }
@@ -135,7 +125,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(TestUtils.makeBasicSpan()));
   }
@@ -146,7 +136,7 @@ class SimpleSpanProcessorTest {
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
 
     tracerSdkFactory.addSpanProcessor(
-        BatchSpanProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.builder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
@@ -175,7 +165,7 @@ class SimpleSpanProcessorTest {
     // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
     /*
     tracer.addSpanProcessor(
-        BatchSpanProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.builder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .reportOnlySampled(false)
             .build());
@@ -213,7 +203,7 @@ class SimpleSpanProcessorTest {
   void buildFromProperties_defaultSampledFlag() {
     Properties properties = new Properties();
     SimpleSpanProcessor spanProcessor =
-        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+        SimpleSpanProcessor.builder(spanExporter).readProperties(properties).build();
 
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onEnd(readableSpan);
@@ -225,7 +215,7 @@ class SimpleSpanProcessorTest {
     Properties properties = new Properties();
     properties.setProperty("otel.ssp.export.sampled", "true");
     SimpleSpanProcessor spanProcessor =
-        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+        SimpleSpanProcessor.builder(spanExporter).readProperties(properties).build();
 
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onEnd(readableSpan);
@@ -237,7 +227,7 @@ class SimpleSpanProcessorTest {
     Properties properties = new Properties();
     properties.setProperty("otel.ssp.export.sampled", "false");
     SimpleSpanProcessor spanProcessor =
-        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+        SimpleSpanProcessor.builder(spanExporter).readProperties(properties).build();
     SpanData spanData = TestUtils.makeBasicSpan();
 
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);

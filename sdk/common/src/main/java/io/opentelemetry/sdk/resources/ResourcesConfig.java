@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.resources;
@@ -58,13 +47,12 @@ public abstract class ResourcesConfig {
    * Returns the default {@code ResourcesConfig}.
    *
    * @return the default {@code ResourcesConfig}.
-   * @since 0.9.0
    */
   public static ResourcesConfig getDefault() {
     return DEFAULT;
   }
 
-  private static final ResourcesConfig DEFAULT = ResourcesConfig.newBuilder().build();
+  private static final ResourcesConfig DEFAULT = ResourcesConfig.builder().build();
 
   /**
    * Returns the fully qualified class names of {@link ResourceProvider} implementations that are
@@ -80,9 +68,8 @@ public abstract class ResourcesConfig {
    *
    * @return a new {@link Builder}.
    */
-  public static Builder newBuilder() {
-    return new AutoValue_ResourcesConfig.Builder()
-        .setDisabledResourceProviders(ImmutableSet.<String>of());
+  public static Builder builder() {
+    return new AutoValue_ResourcesConfig.Builder().setDisabledResourceProviders(ImmutableSet.of());
   }
 
   /**

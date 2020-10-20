@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
@@ -83,14 +72,14 @@ public class Ec2Resource extends ResourceProvider {
     try {
       connection = (HttpURLConnection) url.openConnection();
     } catch (Exception e) {
-      logger.log(Level.WARNING, "Error connecting to IMDS.", e);
+      logger.log(Level.FINE, "Error connecting to IMDS.", e);
       return "";
     }
 
     try {
       connection.setRequestMethod(httpMethod);
     } catch (ProtocolException e) {
-      logger.log(Level.WARNING, "Unknown HTTP method, this is a programming bug.", e);
+      logger.log(Level.FINE, "Unknown HTTP method, this is a programming bug.", e);
       return "";
     }
 
@@ -108,13 +97,13 @@ public class Ec2Resource extends ResourceProvider {
     try {
       responseCode = connection.getResponseCode();
     } catch (Exception e) {
-      logger.log(Level.WARNING, "Error connecting to IMDS: ", e);
+      logger.log(Level.FINE, "Error connecting to IMDS: ", e);
       return "";
     }
 
     if (responseCode != 200) {
       logger.log(
-          Level.WARNING,
+          Level.FINE,
           "Error reponse from IMDS: code ("
               + responseCode
               + ") text "
@@ -159,7 +148,9 @@ public class Ec2Resource extends ResourceProvider {
 
     String hostname = fetchHostname(token);
 
-    Attributes.Builder attrBuilders = Attributes.newBuilder();
+    Attributes.Builder attrBuilders = Attributes.builder();
+    attrBuilders.setAttribute(
+        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();

@@ -1,0 +1,29 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.logging;
+
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+
+public interface LogProcessor {
+
+  void addLogRecord(LogRecord record);
+
+  /**
+   * Called when {@link TracerSdkProvider#shutdown()} is called.
+   *
+   * @return result
+   */
+  CompletableResultCode shutdown();
+
+  /**
+   * Processes all span events that have not yet been processed.
+   *
+   * @return result
+   */
+  CompletableResultCode forceFlush();
+}

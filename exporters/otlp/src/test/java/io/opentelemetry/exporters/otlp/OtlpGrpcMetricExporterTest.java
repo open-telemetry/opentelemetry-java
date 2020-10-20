@@ -1,22 +1,13 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.exporters.otlp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.mockito.Mockito.verify;
 
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
@@ -31,10 +22,10 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
@@ -85,17 +76,19 @@ class OtlpGrpcMetricExporterTest {
   void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.exporter.otlp.metric.timeout", "12");
-    OtlpGrpcMetricExporter.Builder config = OtlpGrpcMetricExporter.newBuilder();
+    options.put("otel.exporter.otlp.insecure", "true");
+    OtlpGrpcMetricExporter.Builder config = OtlpGrpcMetricExporter.builder();
     OtlpGrpcMetricExporter.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
-    Mockito.verify(spy).setDeadlineMs(12);
+    verify(spy).setDeadlineMs(12);
+    verify(spy).setUseTls(false);
   }
 
   @Test
   void testExport() {
     MetricData span = generateFakeMetric();
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(span)).isSuccess()).isTrue();
       assertThat(fakeCollector.getReceivedMetrics())
@@ -112,7 +105,7 @@ class OtlpGrpcMetricExporterTest {
       spans.add(generateFakeMetric());
     }
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(spans).isSuccess()).isTrue();
       assertThat(fakeCollector.getReceivedMetrics())
@@ -123,22 +116,19 @@ class OtlpGrpcMetricExporterTest {
   }
 
   @Test
-  void testExport_DeadlineSetPerExport() {
-    int deadlineMs = 1000;
+  void testExport_DeadlineSetPerExport() throws Exception {
+    int deadlineMs = 1500;
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder()
+        OtlpGrpcMetricExporter.builder()
             .setChannel(inProcessChannel)
             .setDeadlineMs(deadlineMs)
             .build();
 
     try {
-      fakeCollector.setCollectorDelay(2000);
-      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
-          .isFalse();
-
-      fakeCollector.setCollectorDelay(0);
-      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
-          .isTrue();
+      TimeUnit.MILLISECONDS.sleep(2000);
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeMetric()));
+      await().untilAsserted(() -> assertThat(result.isSuccess()).isTrue());
     } finally {
       exporter.shutdown();
     }
@@ -148,7 +138,7 @@ class OtlpGrpcMetricExporterTest {
   void testExport_AfterShutdown() {
     MetricData span = generateFakeMetric();
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     exporter.shutdown();
     assertThat(exporter.export(Collections.singletonList(span)).isSuccess()).isFalse();
   }
@@ -157,7 +147,7 @@ class OtlpGrpcMetricExporterTest {
   void testExport_Cancelled() {
     fakeCollector.setReturnedStatus(Status.CANCELLED);
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
           .isFalse();
@@ -170,7 +160,7 @@ class OtlpGrpcMetricExporterTest {
   void testExport_DeadlineExceeded() {
     fakeCollector.setReturnedStatus(Status.DEADLINE_EXCEEDED);
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
           .isFalse();
@@ -183,7 +173,7 @@ class OtlpGrpcMetricExporterTest {
   void testExport_ResourceExhausted() {
     fakeCollector.setReturnedStatus(Status.RESOURCE_EXHAUSTED);
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
           .isFalse();
@@ -196,7 +186,7 @@ class OtlpGrpcMetricExporterTest {
   void testExport_OutOfRange() {
     fakeCollector.setReturnedStatus(Status.OUT_OF_RANGE);
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
           .isFalse();
@@ -209,7 +199,7 @@ class OtlpGrpcMetricExporterTest {
   void testExport_Unavailable() {
     fakeCollector.setReturnedStatus(Status.UNAVAILABLE);
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
           .isFalse();
@@ -222,7 +212,7 @@ class OtlpGrpcMetricExporterTest {
   void testExport_DataLoss() {
     fakeCollector.setReturnedStatus(Status.DATA_LOSS);
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
           .isFalse();
@@ -235,7 +225,7 @@ class OtlpGrpcMetricExporterTest {
   void testExport_PermissionDenied() {
     fakeCollector.setReturnedStatus(Status.PERMISSION_DENIED);
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
           .isFalse();
@@ -247,7 +237,7 @@ class OtlpGrpcMetricExporterTest {
   @Test
   void testExport_flush() {
     OtlpGrpcMetricExporter exporter =
-        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.flush().isSuccess()).isTrue();
     } finally {
@@ -259,9 +249,12 @@ class OtlpGrpcMetricExporterTest {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.create(
-        Descriptor.create("name", "description", "1", Descriptor.Type.MONOTONIC_LONG),
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
+        "name",
+        "description",
+        "1",
+        MetricData.Type.MONOTONIC_LONG,
         Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
   }
 

@@ -1,30 +1,21 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.opentracingshim;
 
-import static io.opentelemetry.common.AttributesKeys.booleanKey;
-import static io.opentelemetry.common.AttributesKeys.doubleKey;
-import static io.opentelemetry.common.AttributesKeys.longKey;
-import static io.opentelemetry.common.AttributesKeys.stringKey;
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
 
+import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.StatusCode;
+import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
@@ -186,18 +177,21 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public Span start() {
-    CorrelationContext distContext = null;
+    Baggage baggage = null;
     io.opentelemetry.trace.Span.Builder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      builder.setParent(parentSpan.getSpan());
+      builder.setParent(TracingContextUtils.withSpan(parentSpan.getSpan(), Context.root()));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
-      distContext = contextShim == null ? null : contextShim.getCorrelationContext();
+      baggage = contextShim == null ? null : contextShim.getBaggage();
     } else if (parentSpanContext != null) {
-      builder.setParent(parentSpanContext.getSpanContext());
-      distContext = parentSpanContext.getCorrelationContext();
+      builder.setParent(
+          TracingContextUtils.withSpan(
+              io.opentelemetry.trace.Span.wrap(parentSpanContext.getSpanContext()),
+              Context.root()));
+      baggage = parentSpanContext.getBaggage();
     }
 
     for (io.opentelemetry.trace.SpanContext link : parentLinks) {
@@ -216,13 +210,13 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       span.setAttribute(key, value);
     }
     if (error) {
-      span.setStatus(Status.UNKNOWN);
+      span.setStatus(StatusCode.ERROR);
     }
 
     SpanShim spanShim = new SpanShim(telemetryInfo(), span);
 
-    if (distContext != null && distContext != telemetryInfo().emptyCorrelationContext()) {
-      spanContextTable().create(spanShim, distContext);
+    if (baggage != null && baggage != telemetryInfo().emptyBaggage()) {
+      spanContextTable().create(spanShim, baggage);
     }
 
     return spanShim;

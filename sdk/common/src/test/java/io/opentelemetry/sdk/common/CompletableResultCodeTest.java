@@ -1,17 +1,6 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.common;
@@ -43,22 +32,9 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(1);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.succeed();
-              }
-            })
-        .start();
+    new Thread(resultCode::succeed).start();
 
-    resultCode.whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            completions.countDown();
-          }
-        });
+    resultCode.whenComplete(completions::countDown);
 
     completions.await(3, TimeUnit.SECONDS);
 
@@ -71,22 +47,9 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(1);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.fail();
-              }
-            })
-        .start();
+    new Thread(resultCode::fail).start();
 
-    resultCode.whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            completions.countDown();
-          }
-        });
+    resultCode.whenComplete(completions::countDown);
 
     completions.await(3, TimeUnit.SECONDS);
 
@@ -99,30 +62,9 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(2);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.succeed();
-              }
-            })
-        .start();
+    new Thread(resultCode::succeed).start();
 
-    resultCode
-        .whenComplete(
-            new Runnable() {
-              @Override
-              public void run() {
-                completions.countDown();
-              }
-            })
-        .whenComplete(
-            new Runnable() {
-              @Override
-              public void run() {
-                completions.countDown();
-              }
-            });
+    resultCode.whenComplete(completions::countDown).whenComplete(completions::countDown);
 
     completions.await(3, TimeUnit.SECONDS);
 
@@ -135,29 +77,13 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(2);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.succeed();
-              }
-            })
-        .start();
+    new Thread(resultCode::succeed).start();
 
     resultCode.whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            completions.countDown();
+        () -> {
+          completions.countDown();
 
-            resultCode.whenComplete(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    completions.countDown();
-                  }
-                });
-          }
+          resultCode.whenComplete(completions::countDown);
         });
 
     completions.await(3, TimeUnit.SECONDS);
@@ -171,22 +97,9 @@ class CompletableResultCodeTest {
 
     CountDownLatch completions = new CountDownLatch(1);
 
-    new Thread(
-            new Runnable() {
-              @Override
-              public void run() {
-                resultCode.succeed().fail();
-              }
-            })
-        .start();
+    new Thread(() -> resultCode.succeed().fail()).start();
 
-    resultCode.whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            completions.countDown();
-          }
-        });
+    resultCode.whenComplete(completions::countDown);
 
     completions.await(3, TimeUnit.SECONDS);
 
@@ -240,7 +153,7 @@ class CompletableResultCodeTest {
               result.succeed();
             })
         .start();
-    assertThat(result.join(500, TimeUnit.MILLISECONDS).isSuccess()).isTrue();
+    assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     // Already completed, synchronous call.
     assertThat(result.join(0, TimeUnit.NANOSECONDS).isSuccess()).isTrue();
   }
@@ -255,14 +168,9 @@ class CompletableResultCodeTest {
   @Test
   void joinInterrupted() {
     CompletableResultCode result = new CompletableResultCode();
-    Thread thread =
-        new Thread(
-            () -> {
-              result.join(10, TimeUnit.SECONDS);
-            });
+    Thread thread = new Thread(() -> result.join(10, TimeUnit.SECONDS));
     thread.start();
     thread.interrupt();
-    assertThat(thread.isInterrupted()).isTrue();
     // Different thread so wait a bit for result to be propagated.
     await().untilAsserted(() -> assertThat(result.isDone()).isTrue());
     assertThat(result.isSuccess()).isFalse();

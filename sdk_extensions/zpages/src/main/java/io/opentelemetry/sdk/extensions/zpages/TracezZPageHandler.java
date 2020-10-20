@@ -1,17 +1,6 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.opentelemetry.sdk.extensions.zpages;
@@ -27,8 +16,7 @@ import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Status.CanonicalCode;
+import io.opentelemetry.trace.StatusCode;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -336,7 +324,7 @@ final class TracezZPageHandler extends ZPageHandler {
         "<tr style=\"background-color: %s;\"><td></td><td class=\"border-left-dark\">"
             + "</td><td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\">",
         zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
-    Status status = span.getStatus();
+    SpanData.Status status = span.getStatus();
     if (status != null) {
       formatter.format("%s | ", htmlEscaper().escape(status.toString()));
     }
@@ -472,7 +460,7 @@ final class TracezZPageHandler extends ZPageHandler {
                       latencyBoundary.getLatencyLowerBound(),
                       latencyBoundary.getLatencyUpperBound());
             } else {
-              if (subtype < 0 || subtype >= CanonicalCode.values().length) {
+              if (subtype < 0 || subtype >= StatusCode.values().length) {
                 // N/A or out-of-bound cueck for error based subtype, valid values: [0, 15]
                 return;
               }
