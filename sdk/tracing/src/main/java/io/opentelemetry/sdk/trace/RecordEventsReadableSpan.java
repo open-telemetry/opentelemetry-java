@@ -44,7 +44,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class RecordEventsReadableSpan implements ReadWriteSpan {
 
-  private static final Logger logger = Logger.getLogger(Tracer.class.getName());
+  private static final Logger logger = Logger.getLogger(RecordEventsReadableSpan.class.getName());
 
   // The config used when constructing this Span.
   private final TraceConfig traceConfig;
