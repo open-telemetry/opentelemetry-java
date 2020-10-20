@@ -137,7 +137,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
      *
      * @return this Builder
      */
-    public Builder setLabel(String key, String value) {
+    public Builder set(String key, String value) {
       data.add(key);
       data.add(value);
       return this;

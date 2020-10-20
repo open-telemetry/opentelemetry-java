@@ -51,18 +51,17 @@ public class EcsResource extends ResourceProvider {
     }
 
     Attributes.Builder attrBuilders = Attributes.builder();
-    attrBuilders.setAttribute(
-        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
+    attrBuilders.set(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
     try {
       String hostName = InetAddress.getLocalHost().getHostName();
-      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_NAME, hostName);
+      attrBuilders.set(ResourceAttributes.CONTAINER_NAME, hostName);
     } catch (UnknownHostException e) {
       logger.log(Level.WARNING, "Could not get docker container name from hostname.", e);
     }
 
     String containerId = dockerHelper.getContainerId();
     if (!Strings.isNullOrEmpty(containerId)) {
-      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_ID, containerId);
+      attrBuilders.set(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
     return attrBuilders.build();

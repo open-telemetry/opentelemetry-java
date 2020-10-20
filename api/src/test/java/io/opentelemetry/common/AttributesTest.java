@@ -50,7 +50,7 @@ class AttributesTest {
 
   @Test
   void builder_nullKey() {
-    Attributes attributes = Attributes.builder().setAttribute(stringKey(null), "value").build();
+    Attributes attributes = Attributes.builder().set(stringKey(null), "value").build();
     assertThat(attributes).isEqualTo(Attributes.empty());
   }
 
@@ -126,12 +126,12 @@ class AttributesTest {
   void builder() {
     Attributes attributes =
         Attributes.builder()
-            .setAttribute("string", "value1")
-            .setAttribute("long", 100)
-            .setAttribute(longKey("long2"), 10)
-            .setAttribute("double", 33.44)
-            .setAttribute("boolean", "duplicateShouldBeRemoved")
-            .setAttribute("boolean", false)
+            .set("string", "value1")
+            .set("long", 100)
+            .set(longKey("long2"), 10)
+            .set("double", 33.44)
+            .set("boolean", "duplicateShouldBeRemoved")
+            .set("boolean", false)
             .build();
 
     Attributes wantAttributes =
@@ -149,7 +149,7 @@ class AttributesTest {
     assertThat(attributes).isEqualTo(wantAttributes);
 
     Attributes.Builder newAttributes = Attributes.builder(attributes);
-    newAttributes.setAttribute("newKey", "newValue");
+    newAttributes.set("newKey", "newValue");
     assertThat(newAttributes.build())
         .isEqualTo(
             Attributes.of(
@@ -173,12 +173,12 @@ class AttributesTest {
   void builder_arrayTypes() {
     Attributes attributes =
         Attributes.builder()
-            .setAttribute("string", "value1", "value2")
-            .setAttribute("long", 100L, 200L)
-            .setAttribute("double", 33.44, -44.33)
-            .setAttribute("boolean", "duplicateShouldBeRemoved")
-            .setAttribute(stringKey("boolean"), "true")
-            .setAttribute("boolean", false, true)
+            .set("string", "value1", "value2")
+            .set("long", 100L, 200L)
+            .set("double", 33.44, -44.33)
+            .set("boolean", "duplicateShouldBeRemoved")
+            .set(stringKey("boolean"), "true")
+            .set("boolean", false, true)
             .build();
 
     assertThat(attributes)
@@ -229,48 +229,43 @@ class AttributesTest {
 
   @Test
   void toBuilder() {
-    Attributes filled =
-        Attributes.builder().setAttribute("cat", "meow").setAttribute("dog", "bark").build();
+    Attributes filled = Attributes.builder().set("cat", "meow").set("dog", "bark").build();
 
     Attributes fromEmpty =
-        Attributes.empty()
-            .toBuilder()
-            .setAttribute("cat", "meow")
-            .setAttribute("dog", "bark")
-            .build();
+        Attributes.empty().toBuilder().set("cat", "meow").set("dog", "bark").build();
     assertThat(fromEmpty).isEqualTo(filled);
     // Original not mutated.
     assertThat(Attributes.empty().isEmpty()).isTrue();
 
-    Attributes partial = Attributes.builder().setAttribute("cat", "meow").build();
-    Attributes fromPartial = partial.toBuilder().setAttribute("dog", "bark").build();
+    Attributes partial = Attributes.builder().set("cat", "meow").build();
+    Attributes fromPartial = partial.toBuilder().set("dog", "bark").build();
     assertThat(fromPartial).isEqualTo(filled);
     // Original not mutated.
-    assertThat(partial).isEqualTo(Attributes.builder().setAttribute("cat", "meow").build());
+    assertThat(partial).isEqualTo(Attributes.builder().set("cat", "meow").build());
   }
 
   @Test
   void nullsAreNoOps() {
     Attributes.Builder builder = Attributes.builder();
-    builder.setAttribute(stringKey("attrValue"), "attrValue");
-    builder.setAttribute("string", "string");
-    builder.setAttribute("long", 10);
-    builder.setAttribute("double", 1.0);
-    builder.setAttribute("bool", true);
-    builder.setAttribute("arrayString", new String[] {"string"});
-    builder.setAttribute("arrayLong", new Long[] {10L});
-    builder.setAttribute("arrayDouble", new Double[] {1.0});
-    builder.setAttribute("arrayBool", new Boolean[] {true});
+    builder.set(stringKey("attrValue"), "attrValue");
+    builder.set("string", "string");
+    builder.set("long", 10);
+    builder.set("double", 1.0);
+    builder.set("bool", true);
+    builder.set("arrayString", new String[] {"string"});
+    builder.set("arrayLong", new Long[] {10L});
+    builder.set("arrayDouble", new Double[] {1.0});
+    builder.set("arrayBool", new Boolean[] {true});
     assertThat(builder.build().size()).isEqualTo(9);
 
     // note: currently these are no-op calls; that behavior is not required, so if it needs to
     // change, that is fine.
-    builder.setAttribute(stringKey("attrValue"), null);
-    builder.setAttribute("string", (String) null);
-    builder.setAttribute("arrayString", (String[]) null);
-    builder.setAttribute("arrayLong", (Long[]) null);
-    builder.setAttribute("arrayDouble", (Double[]) null);
-    builder.setAttribute("arrayBool", (Boolean[]) null);
+    builder.set(stringKey("attrValue"), null);
+    builder.set("string", (String) null);
+    builder.set("arrayString", (String[]) null);
+    builder.set("arrayLong", (Long[]) null);
+    builder.set("arrayDouble", (Double[]) null);
+    builder.set("arrayBool", (Boolean[]) null);
 
     Attributes attributes = builder.build();
     assertThat(attributes.size()).isEqualTo(9);

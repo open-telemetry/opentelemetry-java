@@ -142,7 +142,7 @@ public abstract class LogRecord {
     }
 
     public Builder setAttributes(Attributes attributes) {
-      this.attributeBuilder.addAll(attributes);
+      this.attributeBuilder.setAll(attributes);
       return this;
     }
 

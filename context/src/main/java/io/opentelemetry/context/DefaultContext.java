@@ -49,7 +49,7 @@ final class DefaultContext implements Context {
 
   @Override
   @Nullable
-  public <V> V getValue(ContextKey<V> key) {
+  public <V> V get(ContextKey<V> key) {
     // Because withValue enforces the value for a key is its type, this is always safe.
     @SuppressWarnings("unchecked")
     V value = (V) PersistentHashArrayMappedTrie.get(entries, key);
@@ -57,14 +57,14 @@ final class DefaultContext implements Context {
   }
 
   @Override
-  public <V> Context withValues(ContextKey<V> k1, V v1) {
+  public <V> Context with(ContextKey<V> k1, V v1) {
     PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
         PersistentHashArrayMappedTrie.put(entries, k1, v1);
     return new DefaultContext(newEntries);
   }
 
   @Override
-  public <V1, V2> Context withValues(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
+  public <V1, V2> Context with(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
     PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
         PersistentHashArrayMappedTrie.put(entries, k1, v1);
     newEntries = PersistentHashArrayMappedTrie.put(newEntries, k2, v2);
@@ -72,7 +72,7 @@ final class DefaultContext implements Context {
   }
 
   @Override
-  public <V1, V2, V3> Context withValues(
+  public <V1, V2, V3> Context with(
       ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3) {
     PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
         PersistentHashArrayMappedTrie.put(entries, k1, v1);
@@ -82,7 +82,7 @@ final class DefaultContext implements Context {
   }
 
   @Override
-  public <V1, V2, V3, V4> Context withValues(
+  public <V1, V2, V3, V4> Context with(
       ContextKey<V1> k1,
       V1 v1,
       ContextKey<V2> k2,

@@ -44,9 +44,9 @@ class OtelAsBraveTest {
     try (CurrentTraceContext.Scope ignored =
         TRACING.currentTraceContext().newScope(TRACE_CONTEXT)) {
       assertThat(Tracing.current().currentTraceContext().get().extra()).contains("japan");
-      try (Scope ignored2 = Context.current().withValues(ANIMAL, "cat").makeCurrent()) {
+      try (Scope ignored2 = Context.current().with(ANIMAL, "cat").makeCurrent()) {
         assertThat(Tracing.current().currentTraceContext().get().extra()).contains("japan");
-        assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+        assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
 
         TraceContext context2 =
             Tracing.current().currentTraceContext().get().toBuilder().addExtra("cheese").build();
@@ -54,7 +54,7 @@ class OtelAsBraveTest {
             TRACING.currentTraceContext().newScope(context2)) {
           assertThat(Tracing.current().currentTraceContext().get().extra()).contains("japan");
           assertThat(Tracing.current().currentTraceContext().get().extra()).contains("cheese");
-          assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+          assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
         }
       }
     }
@@ -64,9 +64,9 @@ class OtelAsBraveTest {
   void braveWrap() throws Exception {
     try (CurrentTraceContext.Scope ignored =
         TRACING.currentTraceContext().newScope(TRACE_CONTEXT)) {
-      try (Scope ignored2 = Context.current().withValues(ANIMAL, "cat").makeCurrent()) {
+      try (Scope ignored2 = Context.current().with(ANIMAL, "cat").makeCurrent()) {
         assertThat(Tracing.current().currentTraceContext().get().extra()).contains("japan");
-        assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+        assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
         AtomicReference<Boolean> braveContainsJapan = new AtomicReference<>();
         AtomicReference<String> otelValue = new AtomicReference<>();
         Runnable runnable =
@@ -77,7 +77,7 @@ class OtelAsBraveTest {
               } else {
                 braveContainsJapan.set(false);
               }
-              otelValue.set(Context.current().getValue(ANIMAL));
+              otelValue.set(Context.current().get(ANIMAL));
             };
         otherThread.submit(runnable).get();
         assertThat(braveContainsJapan).hasValue(false);
@@ -94,9 +94,9 @@ class OtelAsBraveTest {
   void otelWrap() throws Exception {
     try (CurrentTraceContext.Scope ignored =
         TRACING.currentTraceContext().newScope(TRACE_CONTEXT)) {
-      try (Scope ignored2 = Context.current().withValues(ANIMAL, "cat").makeCurrent()) {
+      try (Scope ignored2 = Context.current().with(ANIMAL, "cat").makeCurrent()) {
         assertThat(Tracing.current().currentTraceContext().get().extra()).contains("japan");
-        assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+        assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
         AtomicReference<Boolean> braveContainsJapan = new AtomicReference<>(false);
         AtomicReference<String> otelValue = new AtomicReference<>();
         Runnable runnable =
@@ -107,7 +107,7 @@ class OtelAsBraveTest {
               } else {
                 braveContainsJapan.set(false);
               }
-              otelValue.set(Context.current().getValue(ANIMAL));
+              otelValue.set(Context.current().get(ANIMAL));
             };
         otherThread.submit(runnable).get();
         assertThat(braveContainsJapan).hasValue(false);

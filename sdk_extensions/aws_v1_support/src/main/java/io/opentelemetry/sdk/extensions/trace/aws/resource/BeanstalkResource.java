@@ -67,13 +67,13 @@ public class BeanstalkResource extends ResourceProvider {
         String value = parser.getText();
         switch (parser.getCurrentName()) {
           case DEVELOPMENT_ID:
-            attrBuilders.setAttribute(ResourceAttributes.SERVICE_INSTANCE, value);
+            attrBuilders.set(ResourceAttributes.SERVICE_INSTANCE, value);
             break;
           case VERSION_LABEL:
-            attrBuilders.setAttribute(ResourceAttributes.SERVICE_VERSION, value);
+            attrBuilders.set(ResourceAttributes.SERVICE_VERSION, value);
             break;
           case ENVIRONMENT_NAME:
-            attrBuilders.setAttribute(ResourceAttributes.SERVICE_NAMESPACE, value);
+            attrBuilders.set(ResourceAttributes.SERVICE_NAMESPACE, value);
             break;
           default:
             parser.skipChildren();
@@ -84,8 +84,7 @@ public class BeanstalkResource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    attrBuilders.setAttribute(
-        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
+    attrBuilders.set(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
     return attrBuilders.build();
   }

@@ -35,7 +35,7 @@ public class ProcessResource extends ResourceProvider {
     }
 
     if (pid >= 0) {
-      attributes.setAttribute(ResourceAttributes.PROCESS_PID, pid);
+      attributes.set(ResourceAttributes.PROCESS_PID, pid);
     }
 
     String javaHome = null;
@@ -57,14 +57,13 @@ public class ProcessResource extends ResourceProvider {
         executablePath.append(".exe");
       }
 
-      attributes.setAttribute(
-          ResourceAttributes.PROCESS_EXECUTABLE_PATH, executablePath.toString());
+      attributes.set(ResourceAttributes.PROCESS_EXECUTABLE_PATH, executablePath.toString());
 
       StringBuilder commandLine = new StringBuilder(executablePath);
       for (String arg : runtime.getInputArguments()) {
         commandLine.append(' ').append(arg);
       }
-      attributes.setAttribute(ResourceAttributes.PROCESS_COMMAND_LINE, commandLine.toString());
+      attributes.set(ResourceAttributes.PROCESS_COMMAND_LINE, commandLine.toString());
     }
 
     return attributes.build();

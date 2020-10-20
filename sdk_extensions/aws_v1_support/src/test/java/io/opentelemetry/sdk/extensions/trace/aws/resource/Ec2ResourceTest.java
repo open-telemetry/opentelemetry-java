@@ -71,15 +71,15 @@ public class Ec2ResourceTest {
     Attributes attributes = populator.getAttributes();
     Attributes.Builder expectedAttrBuilders = Attributes.builder();
 
-    expectedAttrBuilders.setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws");
-    expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_ID, "i-1234567890abcdef0");
-    expectedAttrBuilders.setAttribute(ResourceAttributes.CLOUD_ZONE, "us-west-2b");
-    expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_TYPE, "t2.micro");
-    expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835");
-    expectedAttrBuilders.setAttribute(ResourceAttributes.CLOUD_ACCOUNT, "123456789012");
-    expectedAttrBuilders.setAttribute(ResourceAttributes.CLOUD_REGION, "us-west-2");
-    expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_HOSTNAME, "ec2-1-2-3-4");
-    expectedAttrBuilders.setAttribute(ResourceAttributes.HOST_NAME, "ec2-1-2-3-4");
+    expectedAttrBuilders.set(ResourceAttributes.CLOUD_PROVIDER, "aws");
+    expectedAttrBuilders.set(ResourceAttributes.HOST_ID, "i-1234567890abcdef0");
+    expectedAttrBuilders.set(ResourceAttributes.CLOUD_ZONE, "us-west-2b");
+    expectedAttrBuilders.set(ResourceAttributes.HOST_TYPE, "t2.micro");
+    expectedAttrBuilders.set(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835");
+    expectedAttrBuilders.set(ResourceAttributes.CLOUD_ACCOUNT, "123456789012");
+    expectedAttrBuilders.set(ResourceAttributes.CLOUD_REGION, "us-west-2");
+    expectedAttrBuilders.set(ResourceAttributes.HOST_HOSTNAME, "ec2-1-2-3-4");
+    expectedAttrBuilders.set(ResourceAttributes.HOST_NAME, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
     verify(
@@ -105,15 +105,15 @@ public class Ec2ResourceTest {
 
     Attributes.Builder expectedAttrBuilders =
         Attributes.builder()
-            .setAttribute(ResourceAttributes.CLOUD_PROVIDER, "aws")
-            .setAttribute(ResourceAttributes.HOST_ID, "i-1234567890abcdef0")
-            .setAttribute(ResourceAttributes.CLOUD_ZONE, "us-west-2b")
-            .setAttribute(ResourceAttributes.HOST_TYPE, "t2.micro")
-            .setAttribute(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835")
-            .setAttribute(ResourceAttributes.CLOUD_ACCOUNT, "123456789012")
-            .setAttribute(ResourceAttributes.CLOUD_REGION, "us-west-2")
-            .setAttribute(ResourceAttributes.HOST_HOSTNAME, "ec2-1-2-3-4")
-            .setAttribute(ResourceAttributes.HOST_NAME, "ec2-1-2-3-4");
+            .set(ResourceAttributes.CLOUD_PROVIDER, "aws")
+            .set(ResourceAttributes.HOST_ID, "i-1234567890abcdef0")
+            .set(ResourceAttributes.CLOUD_ZONE, "us-west-2b")
+            .set(ResourceAttributes.HOST_TYPE, "t2.micro")
+            .set(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835")
+            .set(ResourceAttributes.CLOUD_ACCOUNT, "123456789012")
+            .set(ResourceAttributes.CLOUD_REGION, "us-west-2")
+            .set(ResourceAttributes.HOST_HOSTNAME, "ec2-1-2-3-4")
+            .set(ResourceAttributes.HOST_NAME, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
     verify(

@@ -48,9 +48,9 @@ public abstract class Resource {
     TELEMETRY_SDK =
         create(
             Attributes.builder()
-                .setAttribute(SDK_NAME, "opentelemetry")
-                .setAttribute(SDK_LANGUAGE, "java")
-                .setAttribute(SDK_VERSION, readVersion())
+                .set(SDK_NAME, "opentelemetry")
+                .set(SDK_LANGUAGE, "java")
+                .set(SDK_VERSION, readVersion())
                 .build());
   }
 
@@ -173,7 +173,7 @@ public abstract class Resource {
 
     @Override
     public <T> void consume(AttributeKey<T> key, T value) {
-      attrBuilder.setAttribute(key, value);
+      attrBuilder.set(key, value);
     }
   }
 
