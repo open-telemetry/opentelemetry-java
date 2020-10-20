@@ -48,6 +48,9 @@ public final class DefaultContextPropagators implements ContextPropagators {
    * {@link Builder} is used to construct a new {@code ContextPropagators} object with the specified
    * propagators.
    *
+   * <p>Invocation order of {@code TextMapPropagator#inject()} and {@code
+   * TextMapPropagator#extract()} for registered trace propagators is undefined.
+   *
    * <p>This is a example of a {@code ContextPropagators} object being created:
    *
    * <pre>{@code
