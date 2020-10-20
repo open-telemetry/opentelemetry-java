@@ -110,7 +110,7 @@ class TraceMultiPropagatorTest {
             .build();
 
     Map<String, String> carrier = new HashMap<>();
-    prop.inject(Context.current().withValues(SPAN), carrier, Map::put);
+    prop.inject(Context.current().with(SPAN), carrier, Map::put);
 
     assertThat(getSpan(PROPAGATOR1.extract(Context.current(), carrier, Map::get)).getContext())
         .isEqualTo(SPAN.getContext());
@@ -140,7 +140,7 @@ class TraceMultiPropagatorTest {
             .build();
 
     Map<String, String> carrier = new HashMap<>();
-    PROPAGATOR2.inject(Context.current().withValues(SPAN), carrier, Map::put);
+    PROPAGATOR2.inject(Context.current().with(SPAN), carrier, Map::put);
     assertThat(getSpan(prop.extract(Context.current(), carrier, Map::get)).getContext())
         .isEqualTo(SPAN.getContext());
   }
@@ -150,7 +150,7 @@ class TraceMultiPropagatorTest {
     TextMapPropagator prop = TraceMultiPropagator.builder().addPropagator(PROPAGATOR1).build();
 
     Map<String, String> carrier = new HashMap<>();
-    PROPAGATOR3.inject(Context.current().withValues(SPAN), carrier, Map::put);
+    PROPAGATOR3.inject(Context.current().with(SPAN), carrier, Map::put);
     assertThat(prop.extract(Context.current(), carrier, Map::get)).isEqualTo(Context.current());
   }
 
@@ -164,7 +164,7 @@ class TraceMultiPropagatorTest {
             .build();
 
     Map<String, String> carrier = new HashMap<>();
-    PROPAGATOR3.inject(Context.current().withValues(SPAN), carrier, Map::put);
+    PROPAGATOR3.inject(Context.current().with(SPAN), carrier, Map::put);
     assertThat(getSpan(prop.extract(Context.current(), carrier, Map::get)).getContext())
         .isEqualTo(SPAN.getContext());
     verify(mockPropagator).fields();

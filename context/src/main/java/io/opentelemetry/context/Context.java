@@ -138,8 +138,8 @@ public interface Context {
     return withValues(k1, v1, k2, v2, k3, v3).withValues(k4, v4);
   }
 
-  /** Returns a new {@link Context} with the given {@link ContextValue} set. */
-  default Context withValues(ContextValue value) {
+  /** Returns a new {@link Context} with the given {@link ImplicitContextKeyed} set. */
+  default Context with(ImplicitContextKeyed value) {
     return value.storeInContext(this);
   }
 

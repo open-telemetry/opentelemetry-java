@@ -43,7 +43,7 @@ class DefaultTracerTest {
     Span span =
         defaultTracer
             .spanBuilder(SPAN_NAME)
-            .setParent(Context.root().withValues(Span.wrap(spanContext)))
+            .setParent(Context.root().with(Span.wrap(spanContext)))
             .startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
   }
@@ -53,10 +53,7 @@ class DefaultTracerTest {
     Span parent = Span.wrap(spanContext);
 
     Span span =
-        defaultTracer
-            .spanBuilder(SPAN_NAME)
-            .setParent(Context.root().withValues(parent))
-            .startSpan();
+        defaultTracer.spanBuilder(SPAN_NAME).setParent(Context.root().with(parent)).startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
   }
 
@@ -74,7 +71,7 @@ class DefaultTracerTest {
 
   @Test
   void testSpanContextPropagation_fromContext() {
-    Context context = Context.current().withValues(Span.wrap(spanContext));
+    Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
@@ -82,7 +79,7 @@ class DefaultTracerTest {
 
   @Test
   void testSpanContextPropagation_fromContextAfterNoParent() {
-    Context context = Context.current().withValues(Span.wrap(spanContext));
+    Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
@@ -90,7 +87,7 @@ class DefaultTracerTest {
 
   @Test
   void testSpanContextPropagation_fromContextThenNoParent() {
-    Context context = Context.current().withValues(Span.wrap(spanContext));
+    Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
     assertThat(span.getContext()).isEqualTo(SpanContext.getInvalid());

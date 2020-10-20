@@ -87,7 +87,7 @@ public final class TracingContextUtils {
    */
   @MustBeClosed
   public static Scope currentContextWith(Span span) {
-    return Context.current().withValues(span).makeCurrent();
+    return Context.current().with(span).makeCurrent();
   }
 
   private TracingContextUtils() {}

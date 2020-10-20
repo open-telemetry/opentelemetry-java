@@ -9,15 +9,15 @@ package io.opentelemetry.context;
  * A value that can be stored inside {@link Context}. Types will generally use this interface to
  * allow storing themselves in {@link Context} without exposing a {@link ContextKey}.
  */
-public interface ContextValue {
+public interface ImplicitContextKeyed {
 
   /**
    * Returns a new {@link Context} created by setting {@code this} into the provided {@link
-   * Context}. It is generally recommended to call {@link Context#withValues(ContextValue)} instead
-   * of this method. The following are equivalent.
+   * Context}. It is generally recommended to call {@link Context#with(ImplicitContextKeyed)}
+   * instead of this method. The following are equivalent.
    *
    * <ul>
-   *   <li>{@code context.withValues(myContextValue)}
+   *   <li>{@code context.with(myContextValue)}
    *   <li>{@code myContextValue.storeInContext(context)}
    * </ul>
    */

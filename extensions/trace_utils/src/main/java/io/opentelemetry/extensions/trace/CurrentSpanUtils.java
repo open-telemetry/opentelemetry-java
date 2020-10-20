@@ -54,7 +54,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public void run() {
-      try (Scope ignored = Context.current().withValues(span).makeCurrent()) {
+      try (Scope ignored = Context.current().with(span).makeCurrent()) {
         runnable.run();
       } catch (Throwable t) {
         setErrorStatus(span, t);
@@ -85,7 +85,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public V call() throws Exception {
-      try (Scope ignored = Context.current().withValues(span).makeCurrent()) {
+      try (Scope ignored = Context.current().with(span).makeCurrent()) {
         return callable.call();
       } catch (Exception e) {
         setErrorStatus(span, e);

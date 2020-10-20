@@ -22,7 +22,7 @@ final class Propagation extends BaseShimObject {
   }
 
   public void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
-    Context context = Context.current().withValues(Span.wrap(contextShim.getSpanContext()));
+    Context context = Context.current().with(Span.wrap(contextShim.getSpanContext()));
     context = BaggageUtils.withBaggage(contextShim.getBaggage(), context);
 
     propagators().getTextMapPropagator().inject(context, carrier, TextMapSetter.INSTANCE);

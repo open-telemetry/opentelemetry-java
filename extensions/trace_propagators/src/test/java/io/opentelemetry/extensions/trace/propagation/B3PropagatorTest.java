@@ -54,7 +54,7 @@ class B3PropagatorTest {
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return context.withValues(Span.wrap(spanContext));
+    return context.with(Span.wrap(spanContext));
   }
 
   @Test

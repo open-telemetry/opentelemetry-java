@@ -91,7 +91,7 @@ public class Application {
                       .setParent(context)
                       .startSpan();
 
-              Context withSpanContext = context.withValues(span);
+              Context withSpanContext = context.with(span);
 
               // Make a new request using the builder
               okhttp3.Request.Builder reqBuilder = new okhttp3.Request.Builder();
