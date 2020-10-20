@@ -159,7 +159,7 @@ final class Adapter {
     builder.addFields(
         Model.KeyValue.newBuilder().setKey(KEY_LOG_EVENT).setVStr(event.getName()).build());
 
-    int droppedAttributesCount = event.getTotalAttributeCount() - event.getAttributes().size();
+    int droppedAttributesCount = event.getDroppedAttributesCount();
     if (droppedAttributesCount > 0) {
       builder.addFields(
           Model.KeyValue.newBuilder()
