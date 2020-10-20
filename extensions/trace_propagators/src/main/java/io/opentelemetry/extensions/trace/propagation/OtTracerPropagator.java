@@ -16,6 +16,7 @@ import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -64,8 +65,9 @@ public class OtTracerPropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
     if (context == null || getter == null) {
+      // TODO Other propagators throw exceptions here
       return context;
     }
     String incomingTraceId = getter.get(carrier, TRACE_ID_HEADER);

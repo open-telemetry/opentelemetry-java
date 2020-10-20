@@ -17,6 +17,7 @@ import io.opentelemetry.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * {@link TextMapPropagator} that implements the W3C specification for baggage header propagation.
@@ -70,7 +71,7 @@ public class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
     String baggageHeader = getter.get(carrier, FIELD);
     if (baggageHeader == null) {
       return context;

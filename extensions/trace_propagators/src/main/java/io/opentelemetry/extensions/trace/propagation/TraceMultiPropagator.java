@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -113,7 +114,7 @@ public class TraceMultiPropagator implements TextMapPropagator {
    * @return the {@code Context} containing the extracted value.
    */
   @Override
-  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
     for (int i = propagators.length - 1; i >= 0; i--) {
       context = propagators[i].extract(context, carrier, getter);
       if (isSpanContextExtracted(context)) {
