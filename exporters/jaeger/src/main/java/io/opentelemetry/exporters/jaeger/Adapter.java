@@ -75,10 +75,6 @@ final class Adapter {
     target.addAllLogs(toJaegerLogs(span.getEvents()));
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
-    if (span.getResource() != null && span.getResource().getAttributes() != null) {
-      target.addAllTags(toKeyValues(span.getResource().getAttributes()));
-    }
-
     // add the parent span
     if (SpanId.isValid(span.getParentSpanId())) {
       target.addReferences(

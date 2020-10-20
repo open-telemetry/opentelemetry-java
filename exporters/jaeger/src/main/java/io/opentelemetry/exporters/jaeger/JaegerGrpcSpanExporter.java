@@ -146,9 +146,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
 
   private Collector.PostSpansRequest buildRequest(Resource resource, List<SpanData> spans) {
     Process.Builder builder = this.processBuilder.clone();
-    if (resource.getAttributes() != null) {
-      builder.addAllTags(Adapter.toKeyValues(resource.getAttributes()));
-    }
+    builder.addAllTags(Adapter.toKeyValues(resource.getAttributes()));
 
     return Collector.PostSpansRequest.newBuilder()
         .setBatch(
