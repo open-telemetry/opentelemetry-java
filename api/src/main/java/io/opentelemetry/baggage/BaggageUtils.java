@@ -47,7 +47,7 @@ public final class BaggageUtils {
    */
   public static Baggage getBaggage(Context context) {
     Baggage baggage = context.getValue(CORR_CONTEXT_KEY);
-    return baggage == null ? EmptyBaggage.getInstance() : baggage;
+    return baggage == null ? Baggage.empty() : baggage;
   }
 
   /**
