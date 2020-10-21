@@ -47,12 +47,12 @@ class OpenTelemetryTest {
 
   @BeforeAll
   static void beforeClass() {
-    OpenTelemetry.reset();
+    DefaultOpenTelemetry.reset();
   }
 
   @AfterEach
   void after() {
-    OpenTelemetry.reset();
+    DefaultOpenTelemetry.reset();
     System.clearProperty(TracerProviderFactory.class.getName());
     System.clearProperty(MeterProviderFactory.class.getName());
   }
