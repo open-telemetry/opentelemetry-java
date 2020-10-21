@@ -8,7 +8,6 @@ package io.opentelemetry;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.baggage.BaggageManager;
-import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
@@ -101,11 +100,6 @@ public interface OpenTelemetry {
         .getMyMeter(instrumentationName, instrumentationVersion);
   }
 
-  /** Returns the globally registered {@link BaggageManager}. */
-  static BaggageManager getBaggageManager() {
-    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMyBaggageManager();
-  }
-
   /**
    * Returns the globally registered {@link ContextPropagators} for remote propagation of a context.
    */
@@ -181,9 +175,6 @@ public interface OpenTelemetry {
   default Meter getMyMeter(String instrumentationName, String instrumentationVersion) {
     return getMeterProvider().get(instrumentationName, instrumentationVersion);
   }
-
-  /** Returns the {@link BaggageManager} for this {@link OpenTelemetry}. */
-  BaggageManager getMyBaggageManager();
 
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
   ContextPropagators getMyPropagators();

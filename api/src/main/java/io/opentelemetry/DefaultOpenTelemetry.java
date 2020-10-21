@@ -8,7 +8,6 @@ package io.opentelemetry;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.baggage.BaggageManager;
-import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
@@ -62,7 +61,6 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
 
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
-  private final BaggageManager baggageManager;
 
   private final ContextPropagators propagators;
 
@@ -77,11 +75,6 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   @Override
-  public BaggageManager getMyBaggageManager() {
-    return baggageManager;
-  }
-
-  @Override
   public ContextPropagators getMyPropagators() {
     return propagators;
   }
@@ -93,7 +86,6 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
       ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;
     this.meterProvider = meterProvider;
-    this.baggageManager = baggageManager;
     this.propagators = propagators;
   }
 
@@ -131,7 +123,6 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
     return new Builder()
         .setTracerProvider(tracerProvider)
         .setMeterProvider(meterProvider)
-        .setBaggageManager(baggageManager)
         .setPropagators(propagators);
   }
 
@@ -167,16 +158,6 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
     }
 
     DefaultOpenTelemetry build() {
-      BaggageManager baggageManager = this.baggageManager;
-      if (baggageManager == null) {
-        BaggageManagerFactory baggageManagerFactory = loadSpi(BaggageManagerFactory.class);
-        if (baggageManagerFactory != null) {
-          baggageManager = baggageManagerFactory.create();
-        } else {
-          baggageManager = DefaultBaggageManager.getInstance();
-        }
-      }
-
       MeterProvider meterProvider = this.meterProvider;
       if (meterProvider == null) {
         MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
