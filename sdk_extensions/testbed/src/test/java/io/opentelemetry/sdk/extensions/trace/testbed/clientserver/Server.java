@@ -46,7 +46,7 @@ final class Server extends Thread {
 
     try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
       // Simulate work.
-      TracingContextUtils.getCurrentSpan().addEvent("DoWork");
+      Span.current().addEvent("DoWork");
     } finally {
       span.end();
     }

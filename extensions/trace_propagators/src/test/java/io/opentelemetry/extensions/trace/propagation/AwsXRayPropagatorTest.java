@@ -14,7 +14,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -248,6 +247,6 @@ class AwsXRayPropagatorTest {
   }
 
   private static SpanContext getSpanContext(Context context) {
-    return TracingContextUtils.getSpan(context).getContext();
+    return Span.fromContext(context).getContext();
   }
 }

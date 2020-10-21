@@ -12,7 +12,6 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -55,7 +54,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (context == null || setter == null) {
       return;
     }
-    final SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    final SpanContext spanContext = Span.fromContext(context).getContext();
     if (!spanContext.isValid()) {
       return;
     }

@@ -7,7 +7,7 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.TracingContextUtils;
+import io.opentelemetry.trace.Span;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -126,7 +126,7 @@ public class TraceMultiPropagator implements TextMapPropagator {
   }
 
   private static boolean isSpanContextExtracted(Context context) {
-    return TracingContextUtils.getSpanWithoutDefault(context) != null;
+    return Span.fromContextOrNull(context) != null;
   }
 
   /**

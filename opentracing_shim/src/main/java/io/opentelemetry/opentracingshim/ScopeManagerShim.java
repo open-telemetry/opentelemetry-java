@@ -21,7 +21,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
   public Span activeSpan() {
     // As OpenTracing simply returns null when no active instance is available,
     // we need to do map an invalid OpenTelemetry span to null here.
-    io.opentelemetry.trace.Span span = TracingContextUtils.getCurrentSpan();
+    io.opentelemetry.trace.Span span = io.opentelemetry.trace.Span.current();
     if (!span.getContext().isValid()) {
       return null;
     }

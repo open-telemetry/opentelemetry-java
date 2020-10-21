@@ -73,7 +73,7 @@ class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+      assertThat(Span.current()).isSameAs(Span.getInvalid());
     }
   }
 
@@ -114,7 +114,7 @@ class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+      assertThat(Span.current()).isSameAs(Span.getInvalid());
     }
   }
 }
