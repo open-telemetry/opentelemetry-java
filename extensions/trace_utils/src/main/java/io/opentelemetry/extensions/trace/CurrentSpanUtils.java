@@ -9,7 +9,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 
 /** Util methods/functionality to interact with the {@link Span} in the {@link Context}. */
@@ -55,7 +54,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public void run() {
-      try (Scope ignored = TracingContextUtils.withSpan(span, Context.current()).makeCurrent()) {
+      try (Scope ignored = Context.current().with(span).makeCurrent()) {
         runnable.run();
       } catch (Throwable t) {
         setErrorStatus(span, t);
@@ -86,7 +85,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public V call() throws Exception {
-      try (Scope ignored = TracingContextUtils.withSpan(span, Context.current()).makeCurrent()) {
+      try (Scope ignored = Context.current().with(span).makeCurrent()) {
         return callable.call();
       } catch (Exception e) {
         setErrorStatus(span, e);

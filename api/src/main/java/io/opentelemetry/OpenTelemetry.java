@@ -8,6 +8,7 @@ package io.opentelemetry;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.baggage.BaggageManager;
+import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;

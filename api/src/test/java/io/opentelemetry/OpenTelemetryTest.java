@@ -9,11 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.baggage.BaggageManager;
-import io.opentelemetry.baggage.DefaultBaggageManager;
-import io.opentelemetry.baggage.spi.BaggageManagerFactory;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.metrics.BatchRecorder;
@@ -60,7 +55,6 @@ class OpenTelemetryTest {
     DefaultOpenTelemetry.reset();
     System.clearProperty(TracerProviderFactory.class.getName());
     System.clearProperty(MeterProviderFactory.class.getName());
-    System.clearProperty(BaggageManagerFactory.class.getName());
   }
 
   @Test
@@ -69,8 +63,6 @@ class OpenTelemetryTest {
     assertThat(OpenTelemetry.getTracerProvider()).isSameAs(OpenTelemetry.getTracerProvider());
     assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
     assertThat(OpenTelemetry.getMeterProvider()).isSameAs(OpenTelemetry.getMeterProvider());
-    assertThat(OpenTelemetry.getBaggageManager()).isInstanceOf(DefaultBaggageManager.class);
-    assertThat(OpenTelemetry.getBaggageManager()).isSameAs(OpenTelemetry.getBaggageManager());
     assertThat(OpenTelemetry.getPropagators()).isInstanceOf(DefaultContextPropagators.class);
     assertThat(OpenTelemetry.getPropagators()).isSameAs(OpenTelemetry.getPropagators());
   }
@@ -156,41 +148,6 @@ class OpenTelemetryTest {
   }
 
   @Test
-  void testBaggageManagerLoadArbitrary() throws IOException {
-    File serviceFile =
-        createService(
-            BaggageManagerFactory.class, FirstBaggageManager.class, SecondBaggageManager.class);
-    try {
-      assertTrue(
-          (OpenTelemetry.getBaggageManager() instanceof FirstBaggageManager)
-              || (OpenTelemetry.getBaggageManager() instanceof SecondBaggageManager));
-      assertThat(OpenTelemetry.getBaggageManager()).isEqualTo(OpenTelemetry.getBaggageManager());
-    } finally {
-      serviceFile.delete();
-    }
-  }
-
-  @Test
-  void testBaggageManagerSystemProperty() throws IOException {
-    File serviceFile =
-        createService(
-            BaggageManagerFactory.class, FirstBaggageManager.class, SecondBaggageManager.class);
-    System.setProperty(BaggageManagerFactory.class.getName(), SecondBaggageManager.class.getName());
-    try {
-      assertThat(OpenTelemetry.getBaggageManager()).isInstanceOf(SecondBaggageManager.class);
-      assertThat(OpenTelemetry.getBaggageManager()).isEqualTo(OpenTelemetry.getBaggageManager());
-    } finally {
-      serviceFile.delete();
-    }
-  }
-
-  @Test
-  void testBaggageManagerNotFound() {
-    System.setProperty(BaggageManagerFactory.class.getName(), "io.does.not.exists");
-    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getBaggageManager());
-  }
-
-  @Test
   void testPropagatorsSet() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
     OpenTelemetry.setPropagators(propagators);
@@ -218,6 +175,7 @@ class OpenTelemetryTest {
   }
 
   public static class SecondTracerProviderFactory extends FirstTracerProviderFactory {
+
     @Override
     public Tracer get(String instrumentationName) {
       return new SecondTracerProviderFactory();
@@ -236,6 +194,7 @@ class OpenTelemetryTest {
 
   public static class FirstTracerProviderFactory
       implements Tracer, TracerProvider, TracerProviderFactory {
+
     @Override
     public Tracer get(String instrumentationName) {
       return new FirstTracerProviderFactory();
@@ -259,6 +218,7 @@ class OpenTelemetryTest {
   }
 
   public static class SecondMeterProviderFactory extends FirstMeterProviderFactory {
+
     @Override
     public Meter get(String instrumentationName) {
       return new SecondMeterProviderFactory();
@@ -277,6 +237,7 @@ class OpenTelemetryTest {
 
   public static class FirstMeterProviderFactory
       implements Meter, MeterProviderFactory, MeterProvider {
+
     @Override
     public MeterProvider create() {
       return new FirstMeterProviderFactory();
@@ -368,38 +329,6 @@ class OpenTelemetryTest {
     @Override
     public Meter get(String instrumentationName, String instrumentationVersion) {
       return get(instrumentationName);
-    }
-  }
-
-  public static class SecondBaggageManager extends FirstBaggageManager {
-    @Override
-    public BaggageManager create() {
-      return new SecondBaggageManager();
-    }
-  }
-
-  public static class FirstBaggageManager implements BaggageManager, BaggageManagerFactory {
-    @Override
-    public BaggageManager create() {
-      return new FirstBaggageManager();
-    }
-
-    @Nullable
-    @Override
-    public Baggage getCurrentBaggage() {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public Baggage.Builder baggageBuilder() {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public Scope withBaggage(Baggage baggage) {
-      return null;
     }
   }
 }

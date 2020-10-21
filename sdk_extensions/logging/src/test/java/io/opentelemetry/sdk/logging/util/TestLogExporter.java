@@ -19,7 +19,7 @@ public class TestLogExporter implements LogExporter {
   private int callCount = 0;
 
   @Override
-  public CompletableResultCode export(Collection<LogRecord> records) {
+  public synchronized CompletableResultCode export(Collection<LogRecord> records) {
     this.records.addAll(records);
     callCount++;
     if (onCall != null) {
@@ -33,15 +33,15 @@ public class TestLogExporter implements LogExporter {
     return new CompletableResultCode().succeed();
   }
 
-  public ArrayList<LogRecord> getRecords() {
+  public synchronized ArrayList<LogRecord> getRecords() {
     return records;
   }
 
-  public void setOnCall(@Nullable Runnable onCall) {
+  public synchronized void setOnCall(@Nullable Runnable onCall) {
     this.onCall = onCall;
   }
 
-  public int getCallCount() {
+  public synchronized int getCallCount() {
     return callCount;
   }
 }

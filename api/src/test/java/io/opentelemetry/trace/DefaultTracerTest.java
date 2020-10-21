@@ -43,7 +43,7 @@ class DefaultTracerTest {
     Span span =
         defaultTracer
             .spanBuilder(SPAN_NAME)
-            .setParent(TracingContextUtils.withSpan(Span.wrap(spanContext), Context.root()))
+            .setParent(Context.root().with(Span.wrap(spanContext)))
             .startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
   }
@@ -53,10 +53,7 @@ class DefaultTracerTest {
     Span parent = Span.wrap(spanContext);
 
     Span span =
-        defaultTracer
-            .spanBuilder(SPAN_NAME)
-            .setParent(TracingContextUtils.withSpan(parent, Context.root()))
-            .startSpan();
+        defaultTracer.spanBuilder(SPAN_NAME).setParent(Context.root().with(parent)).startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
   }
 
@@ -74,7 +71,7 @@ class DefaultTracerTest {
 
   @Test
   void testSpanContextPropagation_fromContext() {
-    Context context = TracingContextUtils.withSpan(Span.wrap(spanContext), Context.current());
+    Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
@@ -82,7 +79,7 @@ class DefaultTracerTest {
 
   @Test
   void testSpanContextPropagation_fromContextAfterNoParent() {
-    Context context = TracingContextUtils.withSpan(Span.wrap(spanContext), Context.current());
+    Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
     assertThat(span.getContext()).isSameAs(spanContext);
@@ -90,7 +87,7 @@ class DefaultTracerTest {
 
   @Test
   void testSpanContextPropagation_fromContextThenNoParent() {
-    Context context = TracingContextUtils.withSpan(Span.wrap(spanContext), Context.current());
+    Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
     assertThat(span.getContext()).isEqualTo(SpanContext.getInvalid());

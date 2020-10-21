@@ -64,7 +64,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "My own DoubleValueObserver",
                 "ms",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.GAUGE_DOUBLE,
                 Collections.emptyList()));
   }
 
@@ -82,7 +82,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.GAUGE_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -98,7 +98,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.GAUGE_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,

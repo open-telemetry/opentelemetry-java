@@ -9,16 +9,17 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
 
-import io.opentelemetry.common.LabelConsumer;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
+import io.opentelemetry.proto.metrics.v1.DoubleGauge;
 import io.opentelemetry.proto.metrics.v1.DoubleHistogram;
 import io.opentelemetry.proto.metrics.v1.DoubleHistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.DoubleSum;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.IntDataPoint;
+import io.opentelemetry.proto.metrics.v1.IntGauge;
 import io.opentelemetry.proto.metrics.v1.IntSum;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 final class MetricAdapter {
+
   static List<ResourceMetrics> toProtoResourceMetrics(Collection<MetricData> metricData) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Metric>>> resourceAndLibraryMap =
         groupByResourceAndLibrary(metricData);
@@ -74,11 +76,9 @@ final class MetricAdapter {
         libraryInfoListMap = new HashMap<>();
         result.put(resource, libraryInfoListMap);
       }
-      List<Metric> metricList = libraryInfoListMap.get(metricData.getInstrumentationLibraryInfo());
-      if (metricList == null) {
-        metricList = new ArrayList<>();
-        libraryInfoListMap.put(metricData.getInstrumentationLibraryInfo(), metricList);
-      }
+      List<Metric> metricList =
+          libraryInfoListMap.computeIfAbsent(
+              metricData.getInstrumentationLibraryInfo(), k -> new ArrayList<>());
       metricList.add(toProtoMetric(metricData));
     }
     return result;
@@ -129,6 +129,18 @@ final class MetricAdapter {
                 .addAllDataPoints(toSummaryDataPoints(metricData.getPoints()))
                 .build());
         break;
+      case GAUGE_LONG:
+        builder.setIntGauge(
+            IntGauge.newBuilder()
+                .addAllDataPoints(toIntDataPoints(metricData.getPoints()))
+                .build());
+        break;
+      case GAUGE_DOUBLE:
+        builder.setDoubleGauge(
+            DoubleGauge.newBuilder()
+                .addAllDataPoints(toDoubleDataPoints(metricData.getPoints()))
+                .build());
+        break;
     }
     return builder.build();
   }
@@ -142,8 +154,9 @@ final class MetricAdapter {
         return AGGREGATION_TEMPORALITY_CUMULATIVE;
       case SUMMARY:
         return AGGREGATION_TEMPORALITY_DELTA;
+      default:
+        return AGGREGATION_TEMPORALITY_UNSPECIFIED;
     }
-    return AGGREGATION_TEMPORALITY_UNSPECIFIED;
   }
 
   static List<IntDataPoint> toIntDataPoints(Collection<Point> points) {
@@ -229,12 +242,8 @@ final class MetricAdapter {
     }
     final List<StringKeyValue> result = new ArrayList<>(labels.size());
     labels.forEach(
-        new LabelConsumer() {
-          @Override
-          public void consume(String key, String value) {
-            result.add(StringKeyValue.newBuilder().setKey(key).setValue(value).build());
-          }
-        });
+        (key, value) ->
+            result.add(StringKeyValue.newBuilder().setKey(key).setValue(value).build()));
     return result;
   }
 

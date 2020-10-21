@@ -12,11 +12,11 @@ dependencies {
     api project(':opentelemetry-api'),
             project(':opentelemetry-sdk')
 
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.11.0',
+    implementation 'com.fasterxml.jackson.core:jackson-core',
             libraries.guava,
             platform(boms.guava)
 
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.0',
+    implementation 'com.fasterxml.jackson.core:jackson-databind',
             libraries.guava,
             platform(boms.guava)
 

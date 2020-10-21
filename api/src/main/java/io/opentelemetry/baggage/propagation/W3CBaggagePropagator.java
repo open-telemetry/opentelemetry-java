@@ -11,12 +11,12 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.baggage.BaggageUtils;
-import io.opentelemetry.baggage.EmptyBaggage;
 import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * {@link TextMapPropagator} that implements the W3C specification for baggage header propagation.
@@ -25,15 +25,7 @@ public class W3CBaggagePropagator implements TextMapPropagator {
 
   private static final String FIELD = "baggage";
   private static final List<String> FIELDS = singletonList(FIELD);
-  private static final W3CBaggagePropagator INSTANCE =
-      new W3CBaggagePropagator(OpenTelemetry.getBaggageManager());
-
-  private final BaggageManager baggageManager;
-
-  // visible for testing
-  W3CBaggagePropagator(BaggageManager baggageManager) {
-    this.baggageManager = baggageManager;
-  }
+  private static final W3CBaggagePropagator INSTANCE = new W3CBaggagePropagator();
 
   /**
    * Singleton instance of the W3C Baggage Propagator. Uses the {@link BaggageManager} from the
@@ -70,20 +62,20 @@ public class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
     String baggageHeader = getter.get(carrier, FIELD);
     if (baggageHeader == null) {
       return context;
     }
     if (baggageHeader.isEmpty()) {
-      return BaggageUtils.withBaggage(EmptyBaggage.getInstance(), context);
+      return BaggageUtils.withBaggage(Baggage.empty(), context);
     }
 
-    Baggage.Builder baggageBuilder = baggageManager.baggageBuilder();
+    Baggage.Builder baggageBuilder = Baggage.builder();
     try {
       extractEntries(baggageHeader, baggageBuilder);
     } catch (Exception e) {
-      return BaggageUtils.withBaggage(EmptyBaggage.getInstance(), context);
+      return BaggageUtils.withBaggage(Baggage.empty(), context);
     }
     return BaggageUtils.withBaggage(baggageBuilder.build(), context);
   }

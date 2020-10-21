@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -139,9 +140,8 @@ public class HttpTraceContext implements TextMapPropagator {
 
   @Override
   public <C /*>>> extends @NonNull Object*/> Context extract(
-      Context context, C carrier, Getter<C> getter) {
+      Context context, @Nullable C carrier, Getter<C> getter) {
     Objects.requireNonNull(context, "context");
-    Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext = extractImpl(carrier, getter);
@@ -149,7 +149,7 @@ public class HttpTraceContext implements TextMapPropagator {
       return context;
     }
 
-    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
+    return context.with(Span.wrap(spanContext));
   }
 
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {

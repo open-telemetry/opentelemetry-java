@@ -30,7 +30,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class Adapter {
   static final AttributeKey<Boolean> KEY_ERROR = booleanKey("error");
-  static final String KEY_LOG_MESSAGE = "message";
+  static final String KEY_LOG_EVENT = "event";
+  static final String KEY_EVENT_DROPPED_ATTRIBUTES_COUNT = "otel.event.dropped_attributes_count";
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
   static final String KEY_SPAN_STATUS_CODE = "span.status.code";
@@ -156,7 +157,16 @@ final class Adapter {
 
     // name is a top-level property in OpenTelemetry
     builder.addFields(
-        Model.KeyValue.newBuilder().setKey(KEY_LOG_MESSAGE).setVStr(event.getName()).build());
+        Model.KeyValue.newBuilder().setKey(KEY_LOG_EVENT).setVStr(event.getName()).build());
+
+    int droppedAttributesCount = event.getDroppedAttributesCount();
+    if (droppedAttributesCount > 0) {
+      builder.addFields(
+          Model.KeyValue.newBuilder()
+              .setKey(KEY_EVENT_DROPPED_ATTRIBUTES_COUNT)
+              .setVInt64(droppedAttributesCount)
+              .build());
+    }
     builder.addAllFields(toKeyValues(event.getAttributes()));
 
     return builder.build();

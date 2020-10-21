@@ -35,6 +35,10 @@ class MetricAdapterTest {
         .isEqualTo(Collector.Type.COUNTER);
     assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.SUMMARY))
         .isEqualTo(Collector.Type.SUMMARY);
+    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.GAUGE_DOUBLE))
+        .isEqualTo(Collector.Type.GAUGE);
+    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.GAUGE_LONG))
+        .isEqualTo(Collector.Type.GAUGE);
   }
 
   @Test
@@ -72,6 +76,17 @@ class MetricAdapterTest {
         .containsExactly(
             new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
+
+    assertThat(
+            MetricAdapter.toSamples(
+                "full_name",
+                MetricData.Type.GAUGE_LONG,
+                ImmutableList.of(
+                    MetricData.LongPoint.create(123, 456, Labels.empty(), 5),
+                    MetricData.LongPoint.create(321, 654, Labels.of("kp", "vp"), 7))))
+        .containsExactly(
+            new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
+            new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
   }
 
   @Test
@@ -94,6 +109,17 @@ class MetricAdapterTest {
             MetricAdapter.toSamples(
                 "full_name",
                 MetricData.Type.NON_MONOTONIC_DOUBLE,
+                ImmutableList.of(
+                    MetricData.DoublePoint.create(123, 456, Labels.empty(), 5),
+                    MetricData.DoublePoint.create(321, 654, Labels.of("kp", "vp"), 7))))
+        .containsExactly(
+            new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
+            new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
+
+    assertThat(
+            MetricAdapter.toSamples(
+                "full_name",
+                MetricData.Type.GAUGE_DOUBLE,
                 ImmutableList.of(
                     MetricData.DoublePoint.create(123, 456, Labels.empty(), 5),
                     MetricData.DoublePoint.create(321, 654, Labels.of("kp", "vp"), 7))))

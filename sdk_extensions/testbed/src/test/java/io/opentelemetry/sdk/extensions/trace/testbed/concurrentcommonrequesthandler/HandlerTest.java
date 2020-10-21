@@ -98,10 +98,7 @@ class HandlerTest {
     Client client;
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
     try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
-      client =
-          new Client(
-              new RequestHandler(
-                  tracer, TracingContextUtils.withSpan(parentSpan, Context.current())));
+      client = new Client(new RequestHandler(tracer, Context.current().with(parentSpan)));
       String response = client.send("correct_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("correct_parent:response");
     } finally {

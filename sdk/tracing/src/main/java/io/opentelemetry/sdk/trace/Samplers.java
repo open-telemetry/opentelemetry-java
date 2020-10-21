@@ -12,15 +12,18 @@ import com.google.common.base.Preconditions;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Static class to access a set of pre-defined {@link Sampler Samplers}. */
@@ -168,12 +171,12 @@ public final class Samplers {
     // Returns a "yes" {@link SamplingResult} for {@link Span} sampling.
     @Override
     public SamplingResult shouldSample(
-        SpanContext parentContext,
+        Context parentContext,
         String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<SpanData.Link> parentLinks) {
+        List<Link> parentLinks) {
       return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
     }
 
@@ -195,12 +198,12 @@ public final class Samplers {
     // Returns a "no" {@link SamplingResult}T on {@link Span} sampling.
     @Override
     public SamplingResult shouldSample(
-        SpanContext parentContext,
+        Context parentContext,
         String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<SpanData.Link> parentLinks) {
+        List<Link> parentLinks) {
       return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
     }
 
@@ -217,6 +220,7 @@ public final class Samplers {
 
   @Immutable
   static class ParentBased implements Sampler {
+
     private final Sampler root;
     private final Sampler remoteParentSampled;
     private final Sampler remoteParentNotSampled;
@@ -225,10 +229,10 @@ public final class Samplers {
 
     private ParentBased(
         Sampler root,
-        Sampler remoteParentSampled,
-        Sampler remoteParentNotSampled,
-        Sampler localParentSampled,
-        Sampler localParentNotSampled) {
+        @Nullable Sampler remoteParentSampled,
+        @Nullable Sampler remoteParentNotSampled,
+        @Nullable Sampler localParentSampled,
+        @Nullable Sampler localParentNotSampled) {
       this.root = root;
       this.remoteParentSampled = remoteParentSampled == null ? alwaysOn() : remoteParentSampled;
       this.remoteParentNotSampled =
@@ -242,25 +246,26 @@ public final class Samplers {
     // Otherwise, uses the delegateSampler provided at initialization to make a decision.
     @Override
     public SamplingResult shouldSample(
-        SpanContext parentContext,
+        Context parentContext,
         String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<SpanData.Link> parentLinks) {
-      if (!parentContext.isValid()) {
+        List<Link> parentLinks) {
+      SpanContext parentSpanContext = TracingContextUtils.getSpan(parentContext).getContext();
+      if (!parentSpanContext.isValid()) {
         return this.root.shouldSample(
             parentContext, traceId, name, spanKind, attributes, parentLinks);
       }
 
-      if (parentContext.isRemote()) {
-        return parentContext.isSampled()
+      if (parentSpanContext.isRemote()) {
+        return parentSpanContext.isSampled()
             ? this.remoteParentSampled.shouldSample(
                 parentContext, traceId, name, spanKind, attributes, parentLinks)
             : this.remoteParentNotSampled.shouldSample(
                 parentContext, traceId, name, spanKind, attributes, parentLinks);
       }
-      return parentContext.isSampled()
+      return parentSpanContext.isSampled()
           ? this.localParentSampled.shouldSample(
               parentContext, traceId, name, spanKind, attributes, parentLinks)
           : this.localParentNotSampled.shouldSample(
@@ -285,6 +290,7 @@ public final class Samplers {
     }
 
     static class Builder {
+
       private final Sampler root;
       private Sampler remoteParentSampled;
       private Sampler remoteParentNotSampled;
@@ -437,12 +443,12 @@ public final class Samplers {
 
     @Override
     public final SamplingResult shouldSample(
-        SpanContext parentContext,
+        Context parentContext,
         String traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
-        List<SpanData.Link> parentLinks) {
+        List<Link> parentLinks) {
       // Always sample if we are within probability range. This is true even for child spans (that
       // may have had a different sampling samplingResult made) to allow for different sampling
       // policies,
@@ -470,6 +476,7 @@ public final class Samplers {
   @Immutable
   @AutoValue
   abstract static class SamplingResultImpl implements SamplingResult {
+
     /**
      * Creates sampling result with probability attribute.
      *
@@ -493,8 +500,8 @@ public final class Samplers {
     /**
      * Creates sampling result with the given attributes.
      *
-     * @param decision sampling decisionq
-     * @param attributes attributes. Will not be copied, so do not modify afterwards.
+     * @param decision sampling decision
+     * @param attributes attributes related to the decision being made.
      */
     static SamplingResult create(Decision decision, Attributes attributes) {
       return new AutoValue_Samplers_SamplingResultImpl(decision, attributes);
