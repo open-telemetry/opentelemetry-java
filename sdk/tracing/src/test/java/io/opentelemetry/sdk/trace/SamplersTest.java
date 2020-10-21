@@ -20,7 +20,6 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -36,27 +35,26 @@ class SamplersTest {
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState);
-  private final Context sampledParentContext =
-      TracingContextUtils.withSpan(Span.wrap(sampledSpanContext), Context.root());
+  private final Context sampledParentContext = Context.root().with(Span.wrap(sampledSpanContext));
   private final Context notSampledParentContext =
-      TracingContextUtils.withSpan(
-          Span.wrap(SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState)),
-          Context.root());
-  private final Context invalidParentContext =
-      TracingContextUtils.withSpan(Span.getInvalid(), Context.current());
+      Context.root()
+          .with(
+              Span.wrap(
+                  SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState)));
+  private final Context invalidParentContext = Context.root().with(Span.getInvalid());
   private final Link sampledParentLink = Link.create(sampledSpanContext);
   private final Context sampledRemoteParentContext =
-      TracingContextUtils.withSpan(
-          Span.wrap(
-              SpanContext.createFromRemoteParent(
-                  traceId, parentSpanId, TraceFlags.getSampled(), traceState)),
-          Context.root());
+      Context.root()
+          .with(
+              Span.wrap(
+                  SpanContext.createFromRemoteParent(
+                      traceId, parentSpanId, TraceFlags.getSampled(), traceState)));
   private final Context notSampledRemoteParentContext =
-      TracingContextUtils.withSpan(
-          Span.wrap(
-              SpanContext.createFromRemoteParent(
-                  traceId, parentSpanId, TraceFlags.getDefault(), traceState)),
-          Context.root());
+      Context.root()
+          .with(
+              Span.wrap(
+                  SpanContext.createFromRemoteParent(
+                      traceId, parentSpanId, TraceFlags.getDefault(), traceState)));
 
   @Test
   void emptySamplingDecision() {
