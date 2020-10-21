@@ -296,6 +296,15 @@ public interface SpanData {
      * @return The total number of attributes on this event.
      */
     int getTotalAttributeCount();
+
+    /**
+     * Returns the dropped attributes count of this event.
+     *
+     * @return the dropped attributes count of this event.
+     */
+    default int getDroppedAttributesCount() {
+      return getTotalAttributeCount() - getAttributes().size();
+    }
   }
 
   /**

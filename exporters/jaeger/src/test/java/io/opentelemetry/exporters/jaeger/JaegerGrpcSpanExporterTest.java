@@ -6,17 +6,22 @@
 package io.opentelemetry.exporters.jaeger;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
@@ -26,6 +31,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Model.Span;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
@@ -33,10 +39,12 @@ import io.opentelemetry.trace.Span.Kind;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -45,8 +53,28 @@ import org.mockito.Mockito;
 class JaegerGrpcSpanExporterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
+  private static final String SPAN_ID_2 = "0000000000aef789";
 
   private final Closer closer = Closer.create();
+  private ArgumentCaptor<PostSpansRequest> requestCaptor;
+  private JaegerGrpcSpanExporter exporter;
+
+  @BeforeEach
+  public void beforeEach() throws Exception {
+    String serverName = InProcessServerBuilder.generateName();
+    requestCaptor = ArgumentCaptor.forClass(Collector.PostSpansRequest.class);
+
+    Server server =
+        InProcessServerBuilder.forName(serverName)
+            .directExecutor()
+            .addService(service)
+            .build()
+            .start();
+    closer.register(server::shutdownNow);
+
+    ManagedChannel channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
+    exporter = JaegerGrpcSpanExporter.builder().setServiceName("test").setChannel(channel).build();
+  }
 
   @AfterEach
   void tearDown() throws Exception {
@@ -60,21 +88,6 @@ class JaegerGrpcSpanExporterTest {
 
   @Test
   void testExport() throws Exception {
-    String serverName = InProcessServerBuilder.generateName();
-    ArgumentCaptor<PostSpansRequest> requestCaptor =
-        ArgumentCaptor.forClass(Collector.PostSpansRequest.class);
-
-    Server server =
-        InProcessServerBuilder.forName(serverName)
-            .directExecutor()
-            .addService(service)
-            .build()
-            .start();
-    closer.register(server::shutdownNow);
-
-    ManagedChannel channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
-    closer.register(channel::shutdownNow);
-
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
@@ -93,23 +106,115 @@ class JaegerGrpcSpanExporterTest {
             .setTotalRecordedEvents(0)
             .setInstrumentationLibraryInfo(
                 InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setResource(
+                Resource.create(
+                    Attributes.of(
+                        AttributeKey.stringKey("resource-attr-key"), "resource-attr-value")))
             .build();
 
     // test
-    JaegerGrpcSpanExporter exporter =
-        JaegerGrpcSpanExporter.builder().setServiceName("test").setChannel(channel).build();
     exporter.export(Collections.singletonList(span));
 
     // verify
     verify(service).postSpans(requestCaptor.capture(), ArgumentMatchers.any());
 
     Model.Batch batch = requestCaptor.getValue().getBatch();
-    assertEquals(1, batch.getSpansCount());
     assertEquals("GET /api/endpoint", batch.getSpans(0).getOperationName());
-    assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), batch.getSpans(0).getTraceId());
     assertEquals(TraceProtoUtils.toProtoSpanId(SPAN_ID), batch.getSpans(0).getSpanId());
+
+    assertEquals(
+        "resource-attr-value",
+        getTagValue(batch.getProcess().getTagsList(), "resource-attr-key")
+            .orElseThrow(() -> new AssertionError("resource-attr-key not found"))
+            .getVStr());
+
+    verifyBatch(batch);
+  }
+
+  @Test
+  void testExportMultipleResources() throws Exception {
+    long duration = 900; // ms
+    long startMs = System.currentTimeMillis();
+    long endMs = startMs + duration;
+    SpanData span =
+        TestSpanData.builder()
+            .setHasEnded(true)
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
+            .setName("GET /api/endpoint/1")
+            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
+            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
+            .setStatus(Status.ok())
+            .setKind(Kind.CONSUMER)
+            .setLinks(Collections.emptyList())
+            .setTotalRecordedLinks(0)
+            .setTotalRecordedEvents(0)
+            .setInstrumentationLibraryInfo(
+                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setResource(
+                Resource.create(
+                    Attributes.of(
+                        AttributeKey.stringKey("resource-attr-key-1"), "resource-attr-value-1")))
+            .build();
+
+    SpanData span2 =
+        TestSpanData.builder()
+            .setHasEnded(true)
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID_2)
+            .setName("GET /api/endpoint/2")
+            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
+            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
+            .setStatus(Status.ok())
+            .setKind(Kind.CONSUMER)
+            .setLinks(Collections.emptyList())
+            .setTotalRecordedLinks(0)
+            .setTotalRecordedEvents(0)
+            .setInstrumentationLibraryInfo(
+                InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
+            .setResource(
+                Resource.create(
+                    Attributes.of(
+                        AttributeKey.stringKey("resource-attr-key-2"), "resource-attr-value-2")))
+            .build();
+
+    // test
+    exporter.export(Lists.newArrayList(span, span2));
+
+    // verify
+    verify(service, times(2)).postSpans(requestCaptor.capture(), ArgumentMatchers.any());
+
+    List<PostSpansRequest> requests = requestCaptor.getAllValues();
+    assertEquals(2, requests.size());
+    for (PostSpansRequest request : requests) {
+      Model.Batch batch = request.getBatch();
+
+      verifyBatch(batch);
+
+      Optional<KeyValue> processTag =
+          getTagValue(batch.getProcess().getTagsList(), "resource-attr-key-1");
+      Optional<KeyValue> processTag2 =
+          getTagValue(batch.getProcess().getTagsList(), "resource-attr-key-2");
+      if (processTag.isPresent()) {
+        assertFalse(processTag2.isPresent());
+        assertEquals("GET /api/endpoint/1", batch.getSpans(0).getOperationName());
+        assertEquals(TraceProtoUtils.toProtoSpanId(SPAN_ID), batch.getSpans(0).getSpanId());
+        assertEquals("resource-attr-value-1", processTag.get().getVStr());
+      } else if (processTag2.isPresent()) {
+        assertEquals("GET /api/endpoint/2", batch.getSpans(0).getOperationName());
+        assertEquals(TraceProtoUtils.toProtoSpanId(SPAN_ID_2), batch.getSpans(0).getSpanId());
+        assertEquals("resource-attr-value-2", processTag2.get().getVStr());
+      } else {
+        fail("No process tag resource-attr-key-1 or resource-attr-key-2");
+      }
+    }
+  }
+
+  private static void verifyBatch(Model.Batch batch) throws Exception {
+    assertEquals(1, batch.getSpansCount());
+    assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), batch.getSpans(0).getTraceId());
     assertEquals("test", batch.getProcess().getServiceName());
-    assertEquals(3, batch.getProcess().getTagsCount());
+    assertEquals(4, batch.getProcess().getTagsCount());
 
     assertEquals(
         "io.opentelemetry.auto",
@@ -123,32 +228,31 @@ class JaegerGrpcSpanExporterTest {
             .orElseThrow(() -> new AssertionError("otel.library.version not found"))
             .getVStr());
 
-    boolean foundClientTag = false;
-    boolean foundHostname = false;
-    boolean foundIp = false;
-    for (Model.KeyValue kv : batch.getProcess().getTagsList()) {
-      if (kv.getKey().equals("jaeger.version")) {
-        foundClientTag = true;
-        assertEquals("opentelemetry-java", kv.getVStr());
-      }
+    assertEquals(
+        InetAddress.getLocalHost().getHostAddress(),
+        getTagValue(batch.getProcess().getTagsList(), "ip")
+            .orElseThrow(() -> new AssertionError("ip not found"))
+            .getVStr());
 
-      if (kv.getKey().equals("ip")) {
-        foundIp = true;
-        assertEquals(InetAddress.getLocalHost().getHostAddress(), kv.getVStr());
-      }
+    assertEquals(
+        InetAddress.getLocalHost().getHostName(),
+        getTagValue(batch.getProcess().getTagsList(), "hostname")
+            .orElseThrow(() -> new AssertionError("hostname not found"))
+            .getVStr());
 
-      if (kv.getKey().equals("hostname")) {
-        foundHostname = true;
-        assertEquals(InetAddress.getLocalHost().getHostName(), kv.getVStr());
-      }
-    }
-    assertTrue("a client tag should have been present", foundClientTag);
-    assertTrue("an ip tag should have been present", foundIp);
-    assertTrue("a hostname tag should have been present", foundHostname);
+    assertEquals(
+        "opentelemetry-java",
+        getTagValue(batch.getProcess().getTagsList(), "jaeger.version")
+            .orElseThrow(() -> new AssertionError("jaeger.version not found"))
+            .getVStr());
   }
 
   private static Optional<KeyValue> getSpanTagValue(Span span, String tagKey) {
-    return span.getTagsList().stream().filter(kv -> kv.getKey().equals(tagKey)).findFirst();
+    return getTagValue(span.getTagsList(), tagKey);
+  }
+
+  private static Optional<KeyValue> getTagValue(List<KeyValue> tags, String tagKey) {
+    return tags.stream().filter(kv -> kv.getKey().equals(tagKey)).findFirst();
   }
 
   @Test

@@ -126,7 +126,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
       return context;
     }
 
-    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
+    return context.with(Span.wrap(spanContext));
   }
 
   private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {

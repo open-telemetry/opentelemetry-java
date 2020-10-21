@@ -53,7 +53,7 @@ final class LazyStorage {
   private static final String CONTEXT_STORAGE_PROVIDER_PROPERTY =
       "io.opentelemetry.context.contextStorageProvider";
 
-  private static final Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
+  private static final Logger logger = Logger.getLogger(LazyStorage.class.getName());
 
   static final ContextStorage storage;
 
