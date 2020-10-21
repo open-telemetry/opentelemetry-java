@@ -9,7 +9,6 @@ import com.google.gson.Gson;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.TracingContextUtils;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -83,7 +82,7 @@ public class Application {
                     .setParent(context)
                     .startSpan();
 
-            Context withSpanContext = TracingContextUtils.withSpan(span, context);
+            Context withSpanContext = context.with(span);
 
             // Make a new request using the builder
             okhttp3.Request.Builder reqBuilder = new okhttp3.Request.Builder();

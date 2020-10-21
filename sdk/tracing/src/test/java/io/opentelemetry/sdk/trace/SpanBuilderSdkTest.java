@@ -647,7 +647,7 @@ class SpanBuilderSdkTest {
   void noParent_override() {
     final Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
-      final Context parentContext = TracingContextUtils.withSpan(parent, Context.current());
+      final Context parentContext = Context.current().with(parent);
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
               tracerSdk.spanBuilder(SPAN_NAME).setNoParent().setParent(parentContext).startSpan();
@@ -659,7 +659,7 @@ class SpanBuilderSdkTest {
         assertThat(span.toSpanData().getParentSpanId())
             .isEqualTo(parent.getContext().getSpanIdAsHexString());
 
-        final Context parentContext2 = TracingContextUtils.withSpan(parent, Context.current());
+        final Context parentContext2 = Context.current().with(parent);
         RecordEventsReadableSpan span2 =
             (RecordEventsReadableSpan)
                 tracerSdk
@@ -688,7 +688,7 @@ class SpanBuilderSdkTest {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
 
-      final Context parentContext = TracingContextUtils.withSpan(parent, Context.current());
+      final Context parentContext = Context.current().with(parent);
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
               tracerSdk.spanBuilder(SPAN_NAME).setNoParent().setParent(parentContext).startSpan();
@@ -710,7 +710,7 @@ class SpanBuilderSdkTest {
   @Test
   void parent_fromContext() {
     final Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    final Context context = TracingContextUtils.withSpan(parent, Context.current());
+    final Context context = Context.current().with(parent);
     try {
       final RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
@@ -783,7 +783,7 @@ class SpanBuilderSdkTest {
   void parent_invalidContext() {
     Span parent = Span.getInvalid();
 
-    final Context parentContext = TracingContextUtils.withSpan(parent, Context.current());
+    final Context parentContext = Context.current().with(parent);
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
             tracerSdk.spanBuilder(SPAN_NAME).setParent(parentContext).startSpan();
