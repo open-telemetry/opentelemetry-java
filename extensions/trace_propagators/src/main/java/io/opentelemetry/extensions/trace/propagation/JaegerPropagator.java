@@ -5,6 +5,9 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
+import io.opentelemetry.baggage.Baggage;
+import io.opentelemetry.baggage.BaggageUtils;
+import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.trace.Span;
@@ -34,6 +37,7 @@ public class JaegerPropagator implements TextMapPropagator {
   private static final Logger logger = Logger.getLogger(JaegerPropagator.class.getName());
 
   static final String PROPAGATION_HEADER = "uber-trace-id";
+  static final String BAGGAGE_PREFIX = "uberctx-";
   // Parent span has been deprecated but Jaeger propagation protocol requires it
   static final char DEPRECATED_PARENT_SPAN = '0';
   static final char PROPAGATION_HEADER_DELIMITER = ':';
@@ -84,9 +88,14 @@ public class JaegerPropagator implements TextMapPropagator {
     Objects.requireNonNull(setter, "setter");
 
     SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
-    if (!spanContext.isValid()) {
-      return;
+    if (spanContext.isValid()) {
+      injectSpan(spanContext, carrier, setter);
     }
+
+    injectBaggage(BaggageUtils.getBaggage(context), carrier, setter);
+  }
+
+  private static <C> void injectSpan(SpanContext spanContext, C carrier, Setter<C> setter) {
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
 
@@ -108,17 +117,29 @@ public class JaegerPropagator implements TextMapPropagator {
     setter.set(carrier, PROPAGATION_HEADER, new String(chars));
   }
 
+  // TODO - Encoded?
+  private static <C> void injectBaggage(Baggage baggage, C carrier, Setter<C> setter) {
+    for (Entry entry : baggage.getEntries()) {
+      setter.set(carrier, BAGGAGE_PREFIX + entry.getKey(), entry.getValue());
+    }
+  }
+
   @Override
   public <C> Context extract(Context context, C carrier, Getter<C> getter) {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
-    if (!spanContext.isValid()) {
-      return context;
+    if (spanContext.isValid()) {
+      context = TracingContextUtils.withSpan(Span.wrap(spanContext), context);
     }
 
-    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
+    Baggage baggage = getBaggageFromHeader(carrier, getter);
+    if (baggage != null) {
+      context = BaggageUtils.withBaggage(baggage, context);
+    }
+
+    return context;
   }
 
   @SuppressWarnings("StringSplitter")
@@ -186,6 +207,29 @@ public class JaegerPropagator implements TextMapPropagator {
     }
 
     return buildSpanContext(traceId, spanId, flags);
+  }
+
+  private static <C> Baggage getBaggageFromHeader(C carrier, Getter<C> getter) {
+    Baggage baggage = null;
+
+    // Only create Baggage if at least one item was propagated.
+    // TODO: Verify with the Jaeger propagator.
+    for (String key : getter.keys(carrier)) {
+      String value = getter.get(carrier, key);
+      if (value == null) {
+        continue;
+      }
+
+      if (baggage == null) {
+        // TODO: Replace with Baggage.empty()
+        baggage = null;
+      }
+
+      // TODO: Add value to the builder
+    }
+
+    // TODO: call build() on the builder.
+    return baggage;
   }
 
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
