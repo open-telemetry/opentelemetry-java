@@ -429,9 +429,9 @@ Supported system properties and environment variables:
 | System property                  | Environment variable             | Purpose                                                                                             | 
 |----------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------|       
 | otel.config.sampler.probability  | OTEL_CONFIG_SAMPLER_PROBABILITY  | Sampler which is used when constructing a new span (default: 1)                                     |                        
-| otel.config.max.attrs            | OTEL_CONFIG_MAX_ATTRS            | Max number of attributes per span, extra will be dropped (default: 32)                              |                        
-| otel.config.max.events           | OTEL_CONFIG_MAX_EVENTS           | Max number of Events per span, extra will be dropped (default: 128)                                 |                        
-| otel.config.max.links            | OTEL_CONFIG_MAX_LINKS            | Max number of Link entries per span, extra will be dropped (default: 32)                            |
+| otel.span.attribute.count.limit  | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT  | Max number of attributes per span, extra will be dropped (default: 1000)                              |                        
+| otel.span.event.count.limit      | OTEL_SPAN_EVENT_COUNT_LIMIT      | Max number of Events per span, extra will be dropped (default: 1000)                                 |                        
+| otel.span.link.count.limit       | OTEL_SPAN_LINK_COUNT_LIMIT       | Max number of Link entries per span, extra will be dropped (default: 1000)                            |
 | otel.config.max.event.attrs      | OTEL_CONFIG_MAX_EVENT_ATTRS      | Max number of attributes per event, extra will be dropped (default: 32)                             |
 | otel.config.max.link.attrs       | OTEL_CONFIG_MAX_LINK_ATTRS       | Max number of attributes per link, extra will be dropped  (default: 32)                             |
 | otel.config.max.attr.length      | OTEL_CONFIG_MAX_ATTR_LENGTH      | Max length of string attribute value in characters, too long will be truncated (default: unlimited) |

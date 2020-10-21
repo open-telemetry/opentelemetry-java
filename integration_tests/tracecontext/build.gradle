@@ -22,7 +22,8 @@ dependencies {
     implementation project(':opentelemetry-sdk'),
             project(':opentelemetry-extension-trace-propagators'),
             libraries.okhttp,
-        "com.sparkjava:spark-core:2.9.2",
-        "com.google.code.gson:gson:2.8.6"
+            libraries.slf4jsimple,
+            "com.sparkjava:spark-core:2.9.2",
+            "com.google.code.gson:gson:2.8.6"
 }
 

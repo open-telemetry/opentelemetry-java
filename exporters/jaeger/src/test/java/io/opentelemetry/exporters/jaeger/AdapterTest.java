@@ -15,6 +15,7 @@ import static io.opentelemetry.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.common.AttributeKey.stringKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.util.Durations;
@@ -94,7 +95,7 @@ class AdapterTest {
 
     assertEquals(1, jaegerSpan.getLogsCount());
     Model.Log log = jaegerSpan.getLogs(0);
-    keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_MESSAGE);
+    keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_EVENT);
     assertNotNull(keyValue);
     assertEquals("the log message", keyValue.getVStr());
     keyValue = getValue(log.getFieldsList(), "foo");
@@ -130,12 +131,21 @@ class AdapterTest {
     // verify
     assertEquals(2, log.getFieldsCount());
 
-    Model.KeyValue keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_MESSAGE);
+    Model.KeyValue keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_EVENT);
     assertNotNull(keyValue);
     assertEquals("the log message", keyValue.getVStr());
     keyValue = getValue(log.getFieldsList(), "foo");
     assertNotNull(keyValue);
     assertEquals("bar", keyValue.getVStr());
+    keyValue = getValue(log.getFieldsList(), Adapter.KEY_EVENT_DROPPED_ATTRIBUTES_COUNT);
+    assertNull(keyValue);
+
+    // verify dropped_attributes_count
+    event = getTimedEvent(3);
+    log = Adapter.toJaegerLog(event);
+    keyValue = getValue(log.getFieldsList(), Adapter.KEY_EVENT_DROPPED_ATTRIBUTES_COUNT);
+    assertNotNull(keyValue);
+    assertEquals(2, keyValue.getVInt64());
   }
 
   @Test
@@ -261,9 +271,16 @@ class AdapterTest {
   }
 
   private static Event getTimedEvent() {
+    return getTimedEvent(-1);
+  }
+
+  private static Event getTimedEvent(int totalAttributeCount) {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     Attributes attributes = Attributes.of(stringKey("foo"), "bar");
-    return Event.create(epochNanos, "the log message", attributes);
+    if (totalAttributeCount <= 0) {
+      totalAttributeCount = attributes.size();
+    }
+    return Event.create(epochNanos, "the log message", attributes, totalAttributeCount);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {

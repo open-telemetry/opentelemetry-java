@@ -6,6 +6,8 @@ init_task: &init_task
 build_task: &build_task
   name: Build
   command: make test-with-docker
+  # For slow build if cache is cleared
+  no_output_timeout: 60m
 compile_benchmark_task: &compile_benchmark_task
   name: Compile JMH
   command: make benchmark
@@ -28,8 +30,9 @@ jobs:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx1g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+      ORG_GRADLE_PROJECT_testAdditionalJavaVersions: true
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/openjdk:11.0.6-jdk-buster
     steps:
       - checkout
       - restore_cache:
@@ -46,42 +49,10 @@ jobs:
       - run:
           name: Cover
           command: ./gradlew check :opentelemetry-all:jacocoTestReport
-      - run:
-          name: Publish coverage
-          command:  bash <(curl -s https://codecov.io/bash)
-# Publish the snapshots using Java 8 (and only from master).
-      - run:
-          <<: *publish_snapshots_task
       - save_cache:
           paths:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}
-  java11:
-    environment:
-      # Configure the JVM and Gradle to avoid OOM errors
-      _JAVA_OPTIONS: "-Xmx3g"
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:11.0.6-jdk-buster
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - java11-gradle-{{ checksum "build.gradle" }}
-#     make in missing in openjdk:9-jdk image
-      - run: sudo apt-get update && sudo apt-get install -y make
-      - run:
-          <<: *init_task
-      - run:
-          <<: *verify_task
-      - run:
-          <<: *build_task
-      - run:
-          <<: *compile_benchmark_task
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: java11-gradle-{{ checksum "build.gradle" }}
 # Publish the released artifacts using the `build` job env.
   release_job:
     environment:
@@ -113,4 +84,3 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - java11

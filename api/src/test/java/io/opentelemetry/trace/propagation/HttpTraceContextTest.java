@@ -28,7 +28,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link io.opentelemetry.trace.propagation.HttpTraceContext}. */
+/** Unit tests for {@link HttpTraceContext}. */
 class HttpTraceContextTest {
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
@@ -66,7 +66,7 @@ class HttpTraceContextTest {
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
+    return context.with(Span.wrap(spanContext));
   }
 
   @Test
@@ -172,6 +172,16 @@ class HttpTraceContextTest {
 
   @Test
   void extract_SampledContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED);
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+  }
+
+  @Test
+  void extract_NullCarrier() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED);
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))

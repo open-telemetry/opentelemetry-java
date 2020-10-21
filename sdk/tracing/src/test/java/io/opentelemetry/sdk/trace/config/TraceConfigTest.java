@@ -18,9 +18,9 @@ class TraceConfigTest {
   void defaultTraceConfig() {
     assertThat(TraceConfig.getDefault().getSampler().getDescription())
         .isEqualTo(Samplers.parentBased(Samplers.alwaysOn()).getDescription());
-    assertThat(TraceConfig.getDefault().getMaxNumberOfAttributes()).isEqualTo(32);
-    assertThat(TraceConfig.getDefault().getMaxNumberOfEvents()).isEqualTo(128);
-    assertThat(TraceConfig.getDefault().getMaxNumberOfLinks()).isEqualTo(32);
+    assertThat(TraceConfig.getDefault().getMaxNumberOfAttributes()).isEqualTo(1000);
+    assertThat(TraceConfig.getDefault().getMaxNumberOfEvents()).isEqualTo(1000);
+    assertThat(TraceConfig.getDefault().getMaxNumberOfLinks()).isEqualTo(1000);
     assertThat(TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent()).isEqualTo(32);
     assertThat(TraceConfig.getDefault().getMaxNumberOfAttributesPerLink()).isEqualTo(32);
   }

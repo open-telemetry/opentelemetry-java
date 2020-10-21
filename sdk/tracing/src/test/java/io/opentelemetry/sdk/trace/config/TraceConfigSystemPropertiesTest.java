@@ -17,9 +17,9 @@ public class TraceConfigSystemPropertiesTest {
   @AfterEach
   void tearDown() {
     System.clearProperty("otel.config.sampler.probability");
-    System.clearProperty("otel.config.max.attrs");
-    System.clearProperty("otel.config.max.events");
-    System.clearProperty("otel.config.max.links");
+    System.clearProperty("otel.span.attribute.count.limit");
+    System.clearProperty("otel.span.event.count.limit");
+    System.clearProperty("otel.span.link.count.limit");
     System.clearProperty("otel.config.max.event.attrs");
     System.clearProperty("otel.config.max.link.attrs");
   }
@@ -27,9 +27,9 @@ public class TraceConfigSystemPropertiesTest {
   @Test
   void updateTraceConfig_SystemProperties() {
     System.setProperty("otel.config.sampler.probability", "0.3");
-    System.setProperty("otel.config.max.attrs", "5");
-    System.setProperty("otel.config.max.events", "6");
-    System.setProperty("otel.config.max.links", "9");
+    System.setProperty("otel.span.attribute.count.limit", "5");
+    System.setProperty("otel.span.event.count.limit", "6");
+    System.setProperty("otel.span.link.count.limit", "9");
     System.setProperty("otel.config.max.event.attrs", "7");
     System.setProperty("otel.config.max.link.attrs", "11");
     TraceConfig traceConfig =
@@ -58,7 +58,7 @@ public class TraceConfigSystemPropertiesTest {
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributes() {
-    System.setProperty("otel.config.max.attrs", "-5");
+    System.setProperty("otel.span.attribute.count.limit", "-5");
     assertThrows(
         IllegalArgumentException.class,
         () -> TraceConfig.getDefault().toBuilder().readSystemProperties().build());
@@ -66,7 +66,7 @@ public class TraceConfigSystemPropertiesTest {
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfEvents() {
-    System.setProperty("otel.config.max.events", "-6");
+    System.setProperty("otel.span.event.count.limit", "-6");
     assertThrows(
         IllegalArgumentException.class,
         () -> TraceConfig.getDefault().toBuilder().readSystemProperties().build());
@@ -74,7 +74,7 @@ public class TraceConfigSystemPropertiesTest {
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfLinks() {
-    System.setProperty("otel.config.max.links", "-9");
+    System.setProperty("otel.span.link.count.limit", "-9");
     assertThrows(
         IllegalArgumentException.class,
         () -> TraceConfig.getDefault().toBuilder().readSystemProperties().build());

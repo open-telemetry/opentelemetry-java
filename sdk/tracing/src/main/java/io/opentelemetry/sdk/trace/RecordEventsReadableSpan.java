@@ -26,7 +26,6 @@ import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -44,7 +43,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class RecordEventsReadableSpan implements ReadWriteSpan {
 
-  private static final Logger logger = Logger.getLogger(Tracer.class.getName());
+  private static final Logger logger = Logger.getLogger(RecordEventsReadableSpan.class.getName());
 
   // The config used when constructing this Span.
   private final TraceConfig traceConfig;

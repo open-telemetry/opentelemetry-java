@@ -336,7 +336,7 @@ class ContextTest {
             return "bar";
           };
       List<Future<String>> futures =
-          wrapped.invokeAll(Arrays.asList(callable1, callable2), 1, TimeUnit.SECONDS);
+          wrapped.invokeAll(Arrays.asList(callable1, callable2), 10, TimeUnit.SECONDS);
       assertThat(futures.get(0).get()).isEqualTo("foo");
       assertThat(futures.get(1).get()).isEqualTo("bar");
       assertThat(value1).hasValue("cat");
@@ -376,7 +376,7 @@ class ContextTest {
             value2.set(Context.current().getValue(ANIMAL));
             return "bar";
           };
-      assertThat(wrapped.invokeAny(Arrays.asList(callable1, callable2), 1, TimeUnit.SECONDS))
+      assertThat(wrapped.invokeAny(Arrays.asList(callable1, callable2), 10, TimeUnit.SECONDS))
           .isEqualTo("bar");
       assertThat(value1).hasValue("cat");
       assertThat(value2).hasValue("cat");

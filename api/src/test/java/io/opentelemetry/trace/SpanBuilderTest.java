@@ -22,7 +22,7 @@ class SpanBuilderTest {
   void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(TracingContextUtils.withSpan(Span.wrap(null), Context.root()));
+    spanBuilder.setParent(Context.root().with(Span.wrap(null)));
     spanBuilder.setParent(Context.root());
     spanBuilder.setNoParent();
     spanBuilder.addLink(Span.getInvalid().getContext());

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -125,17 +126,17 @@ public class JaegerPropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
-    Objects.requireNonNull(carrier, "carrier");
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
     Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
     if (spanContext.isValid()) {
-      context = TracingContextUtils.withSpan(Span.wrap(spanContext), context);
+      context = context.with(Span.wrap(spanContext));
     }
 
     Baggage baggage = getBaggageFromHeader(carrier, getter);
     if (baggage != null) {
+      // TODO: Fix with the related one? DONT add if it hasn't been added yet.
       context = BaggageUtils.withBaggage(baggage, context);
     }
 
