@@ -17,7 +17,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 // TODO: Migrate to AutoValue
 // @AutoValue
-public class ImmutableBaggage implements Baggage {
+class ImmutableBaggage implements Baggage {
   static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
 
   // The types of the EntryKey and Entry must match for each entry.

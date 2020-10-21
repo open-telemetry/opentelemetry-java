@@ -11,13 +11,12 @@ import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
-import io.opentelemetry.baggage.ImmutableBaggage;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for the methods in {@link BaggageUtils} and {@link ImmutableBaggage} that interact
- * with the current {@link Baggage}.
+ * Unit tests for the methods in {@link BaggageUtils} and {@link Baggage} that interact with the
+ * current {@link Baggage}.
  */
 class ScopedBaggageTest {
 
@@ -38,7 +37,6 @@ class ScopedBaggageTest {
   void emptyBaggage() {
     Baggage defaultBaggage = BaggageUtils.getCurrentBaggage();
     assertThat(defaultBaggage.getEntries()).isEmpty();
-    assertThat(defaultBaggage).isInstanceOf(ImmutableBaggage.class);
   }
 
   @Test
