@@ -68,16 +68,16 @@ public class W3CBaggagePropagator implements TextMapPropagator {
       return context;
     }
     if (baggageHeader.isEmpty()) {
-      return BaggageUtils.withBaggage(Baggage.empty(), context);
+      return context.with(Baggage.empty());
     }
 
     Baggage.Builder baggageBuilder = Baggage.builder();
     try {
       extractEntries(baggageHeader, baggageBuilder);
     } catch (Exception e) {
-      return BaggageUtils.withBaggage(Baggage.empty(), context);
+      return context.with(Baggage.empty());
     }
-    return BaggageUtils.withBaggage(baggageBuilder.build(), context);
+    return context.with(baggageBuilder.build());
   }
 
   @SuppressWarnings("StringSplitter")

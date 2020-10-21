@@ -6,6 +6,7 @@
 package io.opentelemetry.baggage;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ImplicitContextKeyed;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -18,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
  * information.
  */
 @Immutable
-public interface Baggage {
+public interface Baggage extends ImplicitContextKeyed {
 
   /** Baggage with no entries. */
   static Baggage empty() {
@@ -28,6 +29,11 @@ public interface Baggage {
   /** Creates a new {@link Builder} for creating Baggage. */
   static Builder builder() {
     return ImmutableBaggage.builder();
+  }
+
+  @Override
+  default Context storeInContext(Context context) {
+    return BaggageUtils.withBaggage(this, context);
   }
 
   /**
