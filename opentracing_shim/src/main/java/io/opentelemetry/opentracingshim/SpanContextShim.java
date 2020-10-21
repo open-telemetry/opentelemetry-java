@@ -40,7 +40,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   SpanContextShim newWithKeyValue(String key, String value) {
     Context parentContext = BaggageUtils.withBaggage(baggage, Context.current());
 
-    Baggage.Builder builder = contextManager().baggageBuilder().setParent(parentContext);
+    Baggage.Builder builder = Baggage.builder().setParent(parentContext);
     builder.put(key, value, EntryMetadata.EMPTY);
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());

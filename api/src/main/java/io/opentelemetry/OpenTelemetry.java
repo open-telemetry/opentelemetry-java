@@ -6,7 +6,6 @@
 package io.opentelemetry;
 
 import io.opentelemetry.baggage.BaggageManager;
-import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
@@ -37,13 +36,13 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OpenTelemetry {
+
   private static final Object mutex = new Object();
 
   @Nullable private static volatile OpenTelemetry instance;
 
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
-  private final BaggageManager contextManager;
 
   private volatile ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
@@ -127,17 +126,6 @@ public final class OpenTelemetry {
   }
 
   /**
-   * Returns a singleton {@link BaggageManager}.
-   *
-   * @return registered manager or default via {@link DefaultBaggageManager#getInstance()}.
-   * @throws IllegalStateException if a specified manager (via system properties) could not be
-   *     found.
-   */
-  public static BaggageManager getBaggageManager() {
-    return getInstance().contextManager;
-  }
-
-  /**
    * Returns a {@link ContextPropagators} object, which can be used to access the set of registered
    * propagators for each supported format.
    *
@@ -188,11 +176,6 @@ public final class OpenTelemetry {
         meterProviderFactory != null
             ? meterProviderFactory.create()
             : DefaultMeterProvider.getInstance();
-    BaggageManagerFactory contextManagerProvider = loadSpi(BaggageManagerFactory.class);
-    contextManager =
-        contextManagerProvider != null
-            ? contextManagerProvider.create()
-            : DefaultBaggageManager.getInstance();
   }
 
   /**

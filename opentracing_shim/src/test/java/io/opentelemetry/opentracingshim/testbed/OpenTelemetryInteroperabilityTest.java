@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -29,9 +28,7 @@ class OpenTelemetryInteroperabilityTest {
       InMemoryTracing.builder()
           .setTracerSdkManagement(OpenTelemetrySdk.getTracerManagement())
           .build();
-  private final Tracer otTracer =
-      TraceShim.createTracerShim(
-          OpenTelemetry.getTracerProvider(), DefaultBaggageManager.getInstance());
+  private final Tracer otTracer = TraceShim.createTracerShim(OpenTelemetry.getTracerProvider());
 
   @BeforeEach
   void before() {

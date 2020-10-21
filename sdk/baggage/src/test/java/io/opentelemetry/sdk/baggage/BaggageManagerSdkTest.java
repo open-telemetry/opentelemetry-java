@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.baggage.Baggage;
 import io.opentelemetry.baggage.BaggageUtils;
-import io.opentelemetry.baggage.EmptyBaggage;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,13 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link BaggageManagerSdk}. */
-// Need to suppress warnings for MustBeClosed because Android 14 does not support
-// try-with-resources.
-@SuppressWarnings("MustBeClosedChecker")
+/** Unit tests for {@link Baggage} and {@link BaggageUtils}. TODO: move these where appropriate */
 class BaggageManagerSdkTest {
+
   @Mock private Baggage baggage;
-  private final BaggageManagerSdk contextManager = new BaggageManagerSdk();
 
   @BeforeEach
   void setUp() {
@@ -32,13 +28,13 @@ class BaggageManagerSdkTest {
 
   @Test
   void testGetCurrentContext_DefaultContext() {
-    assertThat(contextManager.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
+    assertThat(BaggageUtils.getCurrentBaggage()).isSameAs(Baggage.empty());
   }
 
   @Test
   void testGetCurrentContext_ContextSetToNull() {
     try (Scope ignored = BaggageUtils.withBaggage(null, Context.current()).makeCurrent()) {
-      Baggage baggage = contextManager.getCurrentBaggage();
+      Baggage baggage = BaggageUtils.getCurrentBaggage();
       assertThat(baggage).isNotNull();
       assertThat(baggage.getEntries()).isEmpty();
     }
@@ -46,26 +42,26 @@ class BaggageManagerSdkTest {
 
   @Test
   void testWithBaggage() {
-    assertThat(contextManager.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
-    try (Scope wtm = contextManager.withBaggage(baggage)) {
-      assertThat(contextManager.getCurrentBaggage()).isSameAs(baggage);
+    assertThat(BaggageUtils.getCurrentBaggage()).isSameAs(Baggage.empty());
+    try (Scope wtm = BaggageUtils.currentContextWith(baggage)) {
+      assertThat(BaggageUtils.getCurrentBaggage()).isSameAs(baggage);
     }
-    assertThat(contextManager.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
+    assertThat(BaggageUtils.getCurrentBaggage()).isSameAs(Baggage.empty());
   }
 
   @Test
   void testWithBaggageUsingWrap() {
     Runnable runnable;
-    try (Scope wtm = contextManager.withBaggage(baggage)) {
-      assertThat(contextManager.getCurrentBaggage()).isSameAs(baggage);
+    try (Scope wtm = BaggageUtils.currentContextWith(baggage)) {
+      assertThat(BaggageUtils.getCurrentBaggage()).isSameAs(baggage);
       runnable =
           Context.current()
               .wrap(
                   () -> {
-                    assertThat(contextManager.getCurrentBaggage()).isSameAs(baggage);
+                    assertThat(BaggageUtils.getCurrentBaggage()).isSameAs(baggage);
                   });
     }
-    assertThat(contextManager.getCurrentBaggage()).isSameAs(EmptyBaggage.getInstance());
+    assertThat(BaggageUtils.getCurrentBaggage()).isSameAs(Baggage.empty());
     // When we run the runnable we will have the Baggage in the current Context.
     runnable.run();
   }
