@@ -186,7 +186,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   /** Returns a new {@link Builder} instance from ReadableAttributes. */
   public static Builder builder(ReadableAttributes attributes) {
     final Builder builder = new Builder();
-    attributes.forEach(builder::set);
+    attributes.forEach(builder::put);
     return builder;
   }
 
@@ -213,13 +213,13 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
       return sortAndFilterToAttributes(data.toArray());
     }
 
-    /** Sets a {@link AttributeKey} with associated value into this. */
-    public <T> Builder set(AttributeKey<Long> key, int value) {
-      return set(key, (long) value);
+    /** Puts a {@link AttributeKey} with associated value into this. */
+    public <T> Builder put(AttributeKey<Long> key, int value) {
+      return put(key, (long) value);
     }
 
-    /** Sets a {@link AttributeKey} with associated value into this. */
-    public <T> Builder set(AttributeKey<T> key, T value) {
+    /** Puts a {@link AttributeKey} with associated value into this. */
+    public <T> Builder put(AttributeKey<T> key, T value) {
       if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
         return this;
       }
@@ -229,107 +229,107 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     }
 
     /**
-     * Sets a String attribute into this.
+     * Puts a String attribute into this.
      *
-     * <p>Note: It is strongly recommended to use {@link #set(AttributeKey, Object)}, and
+     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
      * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
-    public Builder set(String key, String value) {
-      return set(stringKey(key), value);
+    public Builder put(String key, String value) {
+      return put(stringKey(key), value);
     }
 
     /**
-     * Sets a long attribute into this.
+     * Puts a long attribute into this.
      *
-     * <p>Note: It is strongly recommended to use {@link #set(AttributeKey, Object)}, and
+     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
      * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
-    public Builder set(String key, long value) {
-      return set(longKey(key), value);
+    public Builder put(String key, long value) {
+      return put(longKey(key), value);
     }
 
     /**
-     * Sets a double attribute into this.
+     * Puts a double attribute into this.
      *
-     * <p>Note: It is strongly recommended to use {@link #set(AttributeKey, Object)}, and
+     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
      * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
-    public Builder set(String key, double value) {
-      return set(doubleKey(key), value);
+    public Builder put(String key, double value) {
+      return put(doubleKey(key), value);
     }
 
     /**
-     * Sets a boolean attribute into this.
+     * Puts a boolean attribute into this.
      *
-     * <p>Note: It is strongly recommended to use {@link #set(AttributeKey, Object)}, and
+     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
      * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
-    public Builder set(String key, boolean value) {
-      return set(booleanKey(key), value);
+    public Builder put(String key, boolean value) {
+      return put(booleanKey(key), value);
     }
 
     /**
-     * Sets a String array attribute into this.
+     * Puts a String array attribute into this.
      *
-     * <p>Note: It is strongly recommended to use {@link #set(AttributeKey, Object)}, and
+     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
      * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
-    public Builder set(String key, String... value) {
-      return set(stringArrayKey(key), value == null ? null : Arrays.asList(value));
+    public Builder put(String key, String... value) {
+      return put(stringArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
-     * Sets a Long array attribute into this.
+     * Puts a Long array attribute into this.
      *
-     * <p>Note: It is strongly recommended to use {@link #set(AttributeKey, Object)}, and
+     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
      * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
-    public Builder set(String key, Long... value) {
-      return set(longArrayKey(key), value == null ? null : Arrays.asList(value));
+    public Builder put(String key, Long... value) {
+      return put(longArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
-     * Sets a Double array attribute into this.
+     * Puts a Double array attribute into this.
      *
-     * <p>Note: It is strongly recommended to use {@link #set(AttributeKey, Object)}, and
+     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
      * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
-    public Builder set(String key, Double... value) {
-      return set(doubleArrayKey(key), value == null ? null : Arrays.asList(value));
+    public Builder put(String key, Double... value) {
+      return put(doubleArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
-     * Sets a Boolean array attribute into this.
+     * Puts a Boolean array attribute into this.
      *
-     * <p>Note: It is strongly recommended to use {@link #set(AttributeKey, Object)}, and
+     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
      * pre-allocate your keys, if possible.
      *
      * @return this Builder
      */
-    public Builder set(String key, Boolean... value) {
-      return set(booleanArrayKey(key), value == null ? null : Arrays.asList(value));
+    public Builder put(String key, Boolean... value) {
+      return put(booleanArrayKey(key), value == null ? null : Arrays.asList(value));
     }
 
     /**
-     * Sets all the provided attributes into this Builder.
+     * Puts all the provided attributes into this Builder.
      *
      * @return this Builder
      */
-    public Builder setAll(Attributes attributes) {
+    public Builder putAll(Attributes attributes) {
       data.addAll(attributes.data());
       return this;
     }

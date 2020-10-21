@@ -149,7 +149,7 @@ public class Ec2Resource extends ResourceProvider {
     String hostname = fetchHostname(token);
 
     Attributes.Builder attrBuilders = Attributes.builder();
-    attrBuilders.set(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
+    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();
@@ -162,22 +162,22 @@ public class Ec2Resource extends ResourceProvider {
         String value = parser.nextTextValue();
         switch (parser.getCurrentName()) {
           case "instanceId":
-            attrBuilders.set(ResourceAttributes.HOST_ID, value);
+            attrBuilders.put(ResourceAttributes.HOST_ID, value);
             break;
           case "availabilityZone":
-            attrBuilders.set(ResourceAttributes.CLOUD_ZONE, value);
+            attrBuilders.put(ResourceAttributes.CLOUD_ZONE, value);
             break;
           case "instanceType":
-            attrBuilders.set(ResourceAttributes.HOST_TYPE, value);
+            attrBuilders.put(ResourceAttributes.HOST_TYPE, value);
             break;
           case "imageId":
-            attrBuilders.set(ResourceAttributes.HOST_IMAGE_ID, value);
+            attrBuilders.put(ResourceAttributes.HOST_IMAGE_ID, value);
             break;
           case "accountId":
-            attrBuilders.set(ResourceAttributes.CLOUD_ACCOUNT, value);
+            attrBuilders.put(ResourceAttributes.CLOUD_ACCOUNT, value);
             break;
           case "region":
-            attrBuilders.set(ResourceAttributes.CLOUD_REGION, value);
+            attrBuilders.put(ResourceAttributes.CLOUD_REGION, value);
             break;
           default:
             parser.skipChildren();
@@ -188,8 +188,8 @@ public class Ec2Resource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    attrBuilders.set(ResourceAttributes.HOST_HOSTNAME, hostname);
-    attrBuilders.set(ResourceAttributes.HOST_NAME, hostname);
+    attrBuilders.put(ResourceAttributes.HOST_HOSTNAME, hostname);
+    attrBuilders.put(ResourceAttributes.HOST_NAME, hostname);
 
     return attrBuilders.build();
   }

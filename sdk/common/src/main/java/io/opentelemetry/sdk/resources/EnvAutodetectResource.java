@@ -44,7 +44,7 @@ final class EnvAutodetectResource {
         if (keyValuePair.length != 2) {
           continue;
         }
-        attrBuilders.set(keyValuePair[0].trim(), keyValuePair[1].trim().replaceAll("^\"|\"$", ""));
+        attrBuilders.put(keyValuePair[0].trim(), keyValuePair[1].trim().replaceAll("^\"|\"$", ""));
       }
       return attrBuilders.build();
     }

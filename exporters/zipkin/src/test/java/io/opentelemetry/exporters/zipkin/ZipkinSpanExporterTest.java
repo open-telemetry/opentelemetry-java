@@ -144,14 +144,14 @@ class ZipkinSpanExporterTest {
   void generateSpan_WithAttributes() {
     Attributes attributes =
         Attributes.builder()
-            .set(stringKey("string"), "string value")
-            .set(booleanKey("boolean"), false)
-            .set(longKey("long"), 9999L)
-            .set(doubleKey("double"), 222.333d)
-            .set(booleanArrayKey("booleanArray"), Arrays.asList(true, false))
-            .set(stringArrayKey("stringArray"), Collections.singletonList("Hello"))
-            .set(doubleArrayKey("doubleArray"), Arrays.asList(32.33d, -98.3d))
-            .set(longArrayKey("longArray"), Arrays.asList(33L, 999L))
+            .put(stringKey("string"), "string value")
+            .put(booleanKey("boolean"), false)
+            .put(longKey("long"), 9999L)
+            .put(doubleKey("double"), 222.333d)
+            .put(booleanArrayKey("booleanArray"), Arrays.asList(true, false))
+            .put(stringArrayKey("stringArray"), Collections.singletonList("Hello"))
+            .put(doubleArrayKey("doubleArray"), Arrays.asList(32.33d, -98.3d))
+            .put(longArrayKey("longArray"), Arrays.asList(33L, 999L))
             .build();
     SpanData data = buildStandardSpan().setAttributes(attributes).setKind(Kind.CLIENT).build();
 

@@ -31,7 +31,7 @@ public class OsResource extends ResourceProvider {
 
     String osName = getOs(os);
     if (osName != null) {
-      attributes.set(ResourceAttributes.OS_NAME, osName);
+      attributes.put(ResourceAttributes.OS_NAME, osName);
     }
 
     String version = null;
@@ -41,7 +41,7 @@ public class OsResource extends ResourceProvider {
       // Ignore
     }
     String osDescription = version != null ? os + ' ' + version : os;
-    attributes.set(ResourceAttributes.OS_DESCRIPTION, osDescription);
+    attributes.put(ResourceAttributes.OS_DESCRIPTION, osDescription);
 
     return attributes.build();
   }

@@ -56,38 +56,38 @@ class ResourceTest {
   void create_ignoreNull() {
     Attributes.Builder attributes = Attributes.builder();
 
-    attributes.set(stringKey("string"), null);
+    attributes.put(stringKey("string"), null);
     Resource resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isZero();
-    attributes.set(stringArrayKey("stringArray"), Arrays.asList(null, "a"));
+    attributes.put(stringArrayKey("stringArray"), Arrays.asList(null, "a"));
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(1);
 
-    attributes.set(booleanKey("bool"), true);
+    attributes.put(booleanKey("bool"), true);
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(2);
-    attributes.set(booleanArrayKey("boolArray"), Arrays.asList(null, true));
+    attributes.put(booleanArrayKey("boolArray"), Arrays.asList(null, true));
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(3);
 
-    attributes.set(longKey("long"), 0L);
+    attributes.put(longKey("long"), 0L);
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(4);
-    attributes.set(longArrayKey("longArray"), Arrays.asList(1L, null));
+    attributes.put(longArrayKey("longArray"), Arrays.asList(1L, null));
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(5);
 
-    attributes.set(doubleKey("double"), 1.1);
+    attributes.put(doubleKey("double"), 1.1);
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(6);
-    attributes.set(doubleArrayKey("doubleArray"), Arrays.asList(1.1, null));
+    attributes.put(doubleArrayKey("doubleArray"), Arrays.asList(1.1, null));
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(7);
@@ -98,39 +98,39 @@ class ResourceTest {
     Attributes.Builder attributes = Attributes.builder();
 
     // Empty arrays should be maintained
-    attributes.set(stringArrayKey("stringArrayAttribute"), Collections.emptyList());
-    attributes.set(booleanArrayKey("boolArrayAttribute"), Collections.emptyList());
-    attributes.set(longArrayKey("longArrayAttribute"), Collections.emptyList());
-    attributes.set(doubleArrayKey("doubleArrayAttribute"), Collections.emptyList());
+    attributes.put(stringArrayKey("stringArrayAttribute"), Collections.emptyList());
+    attributes.put(booleanArrayKey("boolArrayAttribute"), Collections.emptyList());
+    attributes.put(longArrayKey("longArrayAttribute"), Collections.emptyList());
+    attributes.put(doubleArrayKey("doubleArrayAttribute"), Collections.emptyList());
 
     Resource resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(4);
 
     // Arrays with null values should be maintained
-    attributes.set(stringArrayKey("ArrayWithNullStringKey"), singletonList(null));
-    attributes.set(longArrayKey("ArrayWithNullLongKey"), singletonList(null));
-    attributes.set(doubleArrayKey("ArrayWithNullDoubleKey"), singletonList(null));
-    attributes.set(booleanArrayKey("ArrayWithNullBooleanKey"), singletonList(null));
+    attributes.put(stringArrayKey("ArrayWithNullStringKey"), singletonList(null));
+    attributes.put(longArrayKey("ArrayWithNullLongKey"), singletonList(null));
+    attributes.put(doubleArrayKey("ArrayWithNullDoubleKey"), singletonList(null));
+    attributes.put(booleanArrayKey("ArrayWithNullBooleanKey"), singletonList(null));
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(8);
 
     // Null arrays should be dropped
-    attributes.set(stringArrayKey("NullArrayStringKey"), null);
-    attributes.set(longArrayKey("NullArrayLongKey"), null);
-    attributes.set(doubleArrayKey("NullArrayDoubleKey"), null);
-    attributes.set(booleanArrayKey("NullArrayBooleanKey"), null);
+    attributes.put(stringArrayKey("NullArrayStringKey"), null);
+    attributes.put(longArrayKey("NullArrayLongKey"), null);
+    attributes.put(doubleArrayKey("NullArrayDoubleKey"), null);
+    attributes.put(booleanArrayKey("NullArrayBooleanKey"), null);
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(8);
 
-    attributes.set(stringKey("dropNullString"), null);
-    attributes.set(longKey("dropNullLong"), null);
-    attributes.set(doubleKey("dropNullDouble"), null);
-    attributes.set(booleanKey("dropNullBool"), null);
+    attributes.put(stringKey("dropNullString"), null);
+    attributes.put(longKey("dropNullLong"), null);
+    attributes.put(doubleKey("dropNullDouble"), null);
+    attributes.put(booleanKey("dropNullBool"), null);
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();

@@ -87,9 +87,9 @@ class RecordEventsReadableSpanTest {
     attributes.put(longKey("MyLongAttributeKey"), 123L);
     attributes.put(booleanKey("MyBooleanAttributeKey"), false);
     Attributes.Builder builder =
-        Attributes.builder().set("MySingleStringAttributeKey", "MySingleStringAttributeValue");
+        Attributes.builder().put("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     for (Map.Entry<AttributeKey, Object> entry : attributes.entrySet()) {
-      builder.set(entry.getKey(), entry.getValue());
+      builder.put(entry.getKey(), entry.getValue());
     }
     expectedAttributes = builder.build();
     testClock = TestClock.create(START_EPOCH_NANOS);
@@ -612,9 +612,9 @@ class RecordEventsReadableSpanTest {
     assertThat(event.getAttributes())
         .isEqualTo(
             Attributes.builder()
-                .set(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalStateException")
-                .set(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
-                .set(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
+                .put(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalStateException")
+                .put(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
+                .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
                 .build());
   }
 
@@ -675,10 +675,10 @@ class RecordEventsReadableSpanTest {
     assertThat(event.getAttributes())
         .isEqualTo(
             Attributes.builder()
-                .set("key1", "this is an additional attribute")
-                .set("exception.type", "java.lang.IllegalStateException")
-                .set("exception.message", "this is a precedence attribute")
-                .set("exception.stacktrace", stacktrace)
+                .put("key1", "this is an additional attribute")
+                .put("exception.type", "java.lang.IllegalStateException")
+                .put("exception.message", "this is a precedence attribute")
+                .put("exception.stacktrace", stacktrace)
                 .build());
   }
 

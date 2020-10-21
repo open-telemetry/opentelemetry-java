@@ -31,7 +31,7 @@ class SpanDataBuilderTest {
           .setEndEpochNanos(100)
           .setKind(Span.Kind.SERVER)
           .setStatus(Status.error())
-          .setAttributes(Attributes.builder().set("cat", "meow").set("dog", "bark").build())
+          .setAttributes(Attributes.builder().put("cat", "meow").put("dog", "bark").build())
           .setTotalRecordedEvents(1000)
           .setTotalRecordedLinks(2300)
           .build();
