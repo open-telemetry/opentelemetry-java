@@ -28,7 +28,7 @@ public interface Span extends ImplicitContextKeyed {
    * {@link Span} if there is no span in the current context.
    */
   static Span current() {
-    return current();
+    return TracingContextUtils.getCurrentSpan();
   }
 
   /**
@@ -36,7 +36,7 @@ public interface Span extends ImplicitContextKeyed {
    * {@link Span} if there is no span in the context.
    */
   static Span fromContext(Context context) {
-    return fromContext(context);
+    return TracingContextUtils.getSpan(context);
   }
 
   /**
@@ -45,7 +45,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   @Nullable
   static Span fromContextOrNull(Context context) {
-    return fromContextOrNull(context);
+    return TracingContextUtils.getSpanWithoutDefault(context);
   }
 
   /**
