@@ -51,7 +51,7 @@ public interface OpenTelemetry {
    * Gets or creates a named and versioned tracer instance from the globally registered {@link
    * TracerProvider}.
    *
-   * <p>This is a shortcut method for @codegetTracerProvider().get(instrumentationName,
+   * <p>This is a shortcut method for {@code getTracerProvider().get(instrumentationName,
    * instrumentationVersion)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
