@@ -6,8 +6,10 @@
 package io.opentelemetry.extensions.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.StatusCode;
@@ -18,13 +20,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link CurrentSpanUtils}. */
 class CurrentSpanUtilsTest {
   @Mock private Span span;
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.initMocks(this);
+    when(span.storeInContext(any())).thenCallRealMethod();
   }
 
   // TODO(bdrutu): When update to junit 4.13 use assertThrows instead of this.
@@ -60,7 +62,7 @@ class CurrentSpanUtilsTest {
           assertThat(getCurrentSpan()).isSameAs(span);
         };
     CurrentSpanUtils.withSpan(span, false, runnable).run();
-    verifyNoInteractions(span);
+    verify(span, never()).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 
@@ -120,7 +122,7 @@ class CurrentSpanUtilsTest {
           return ret;
         };
     assertThat(CurrentSpanUtils.withSpan(span, false, callable).call()).isEqualTo(ret);
-    verifyNoInteractions(span);
+    verify(span, never()).end();
     assertThat(getCurrentSpan().getContext().isValid()).isFalse();
   }
 

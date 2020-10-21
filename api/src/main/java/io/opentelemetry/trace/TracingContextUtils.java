@@ -25,7 +25,7 @@ public final class TracingContextUtils {
    * @param context the parent {@code Context}.
    * @return a new context with the given value set.
    */
-  public static Context withSpan(Span span, Context context) {
+  static Context withSpan(Span span, Context context) {
     return context.with(CONTEXT_SPAN_KEY, span);
   }
 
@@ -87,7 +87,7 @@ public final class TracingContextUtils {
    */
   @MustBeClosed
   public static Scope currentContextWith(Span span) {
-    return withSpan(span, io.opentelemetry.context.Context.current()).makeCurrent();
+    return Context.current().with(span).makeCurrent();
   }
 
   private TracingContextUtils() {}
