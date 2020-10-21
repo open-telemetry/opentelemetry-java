@@ -18,7 +18,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -30,13 +29,15 @@ class RateLimitingSamplerTest {
   private final String parentSpanId = SpanId.fromLong(250);
   private final TraceState traceState = TraceState.builder().build();
   private final Context sampledSpanContext =
-      TracingContextUtils.withSpan(
-          Span.wrap(SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState)),
-          Context.root());
+      Context.root()
+          .with(
+              Span.wrap(
+                  SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState)));
   private final Context notSampledSpanContext =
-      TracingContextUtils.withSpan(
-          Span.wrap(SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState)),
-          Context.root());
+      Context.root()
+          .with(
+              Span.wrap(
+                  SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState)));
 
   @Test
   void alwaysSampleSampledContext() {
