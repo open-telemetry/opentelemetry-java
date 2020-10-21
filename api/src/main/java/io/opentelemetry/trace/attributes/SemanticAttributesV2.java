@@ -608,6 +608,37 @@ public final class SemanticAttributesV2 {
    */
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
 
+  /**
+   * Message keys in Kafka are used for grouping alike messages to ensure they&#39;re processed on
+   * the same partition. They differ from `messaging.message_id` in that they&#39;re not unique. If
+   * the key is `null`, the attribute MUST NOT be set.
+   *
+   * <p>Note: If the key type is not string, it&#39;s string representation has to be supplied for
+   * the attribute. If the key has no unambiguous, canonical string form, don&#39;t include its
+   * value.
+   */
+  public static final AttributeKey<String> MESSAGING_KAFKA_MESSAGE_KEY =
+      stringKey("messaging.kafka.message_key");
+
+  /**
+   * Name of the Kafka Consumer Group that is handling the message. Only applies to consumers, not
+   * producers.
+   */
+  public static final AttributeKey<String> MESSAGING_KAFKA_CONSUMER_GROUP =
+      stringKey("messaging.kafka.consumer_group");
+
+  /** Client Id for the Consumer or Producer that is handling the message. */
+  public static final AttributeKey<String> MESSAGING_KAFKA_CLIENT_ID =
+      stringKey("messaging.kafka.client_id");
+
+  /** Partition the message is sent to. */
+  public static final AttributeKey<Long> MESSAGING_KAFKA_PARTITION =
+      longKey("messaging.kafka.partition");
+
+  /** A boolean that is true if the message is a tombstone. */
+  public static final AttributeKey<Boolean> MESSAGING_KAFKA_TOMBSTONE =
+      booleanKey("messaging.kafka.tombstone");
+
   /** A string identifying the remoting system. */
   public static final AttributeKey<String> RPC_SYSTEM = stringKey("rpc.system");
 
@@ -619,11 +650,11 @@ public final class SemanticAttributesV2 {
 
   // Enum definitions
   public enum CloudProviderValues {
-    /** Amazon Web Services */
+    /** Amazon Web Services. */
     AWS("aws"),
-    /** Microsoft Azure */
+    /** Microsoft Azure. */
     AZURE("azure"),
-    /** Google Cloud Platform */
+    /** Google Cloud Platform. */
     GCP("gcp"),
     ;
 
@@ -640,27 +671,27 @@ public final class SemanticAttributesV2 {
   }
 
   public enum OsTypeValues {
-    /** Microsoft Windows */
+    /** Microsoft Windows. */
     WINDOWS("WINDOWS"),
-    /** Linux */
+    /** Linux. */
     LINUX("LINUX"),
-    /** Apple Darwin */
+    /** Apple Darwin. */
     DARWIN("DARWIN"),
-    /** FreeBSD */
+    /** FreeBSD. */
     FREEBSD("FREEBSD"),
-    /** NetBSD */
+    /** NetBSD. */
     NETBSD("NETBSD"),
-    /** OpenBSD */
+    /** OpenBSD. */
     OPENBSD("OPENBSD"),
-    /** DragonFly BSD */
+    /** DragonFly BSD. */
     DRAGONFLYBSD("DRAGONFLYBSD"),
-    /** HP-UX (Hewlett Packard Unix) */
+    /** HP-UX (Hewlett Packard Unix). */
     HPUX("HPUX"),
-    /** AIX (Advanced Interactive eXecutive) */
+    /** AIX (Advanced Interactive eXecutive). */
     AIX("AIX"),
-    /** Oracle Solaris */
+    /** Oracle Solaris. */
     SOLARIS("SOLARIS"),
-    /** IBM z/OS */
+    /** IBM z/OS. */
     ZOS("ZOS"),
     ;
 
@@ -677,25 +708,25 @@ public final class SemanticAttributesV2 {
   }
 
   public enum TelemetrySdkLanguageValues {
-    /** cpp */
+    /** cpp. */
     CPP("cpp"),
-    /** dotnet */
+    /** dotnet. */
     DOTNET("dotnet"),
-    /** erlang */
+    /** erlang. */
     ERLANG("erlang"),
-    /** go */
+    /** go. */
     GO("go"),
-    /** java */
+    /** java. */
     JAVA("java"),
-    /** nodejs */
+    /** nodejs. */
     NODEJS("nodejs"),
-    /** php */
+    /** php. */
     PHP("php"),
-    /** python */
+    /** python. */
     PYTHON("python"),
-    /** ruby */
+    /** ruby. */
     RUBY("ruby"),
-    /** webjs */
+    /** webjs. */
     WEBJS("webjs"),
     ;
 
@@ -714,89 +745,89 @@ public final class SemanticAttributesV2 {
   public enum DbSystemValues {
     /** Some other SQL database. Fallback only. See notes. */
     OTHER_SQL("other_sql"),
-    /** Microsoft SQL Server */
+    /** Microsoft SQL Server. */
     MSSQL("mssql"),
-    /** MySQL */
+    /** MySQL. */
     MYSQL("mysql"),
-    /** Oracle Database */
+    /** Oracle Database. */
     ORACLE("oracle"),
-    /** IBM Db2 */
+    /** IBM Db2. */
     DB2("db2"),
-    /** PostgreSQL */
+    /** PostgreSQL. */
     POSTGRESQL("postgresql"),
-    /** Amazon Redshift */
+    /** Amazon Redshift. */
     REDSHIFT("redshift"),
-    /** Apache Hive */
+    /** Apache Hive. */
     HIVE("hive"),
-    /** Cloudscape */
+    /** Cloudscape. */
     CLOUDSCAPE("cloudscape"),
-    /** HyperSQL DataBase */
+    /** HyperSQL DataBase. */
     HSQLSB("hsqlsb"),
-    /** Progress Database */
+    /** Progress Database. */
     PROGRESS("progress"),
-    /** SAP MaxDB */
+    /** SAP MaxDB. */
     MAXDB("maxdb"),
-    /** SAP HANA */
+    /** SAP HANA. */
     HANADB("hanadb"),
-    /** Ingres */
+    /** Ingres. */
     INGRES("ingres"),
-    /** FirstSQL */
+    /** FirstSQL. */
     FIRSTSQL("firstsql"),
-    /** EnterpriseDB */
+    /** EnterpriseDB. */
     EDB("edb"),
-    /** InterSystems Caché */
+    /** InterSystems Caché. */
     CACHE("cache"),
-    /** Adabas (Adaptable Database System) */
+    /** Adabas (Adaptable Database System). */
     ADABAS("adabas"),
-    /** Firebird */
+    /** Firebird. */
     FIREBIRD("firebird"),
-    /** Apache Derby */
+    /** Apache Derby. */
     DERBY("derby"),
-    /** FileMaker */
+    /** FileMaker. */
     FILEMAKER("filemaker"),
-    /** Informix */
+    /** Informix. */
     INFORMIX("informix"),
-    /** InstantDB */
+    /** InstantDB. */
     INSTANTDB("instantdb"),
-    /** InterBase */
+    /** InterBase. */
     INTERBASE("interbase"),
-    /** MariaDB */
+    /** MariaDB. */
     MARIADB("mariadb"),
-    /** Netezza */
+    /** Netezza. */
     NETEZZA("netezza"),
-    /** Pervasive PSQL */
+    /** Pervasive PSQL. */
     PERVASIVE("pervasive"),
-    /** PointBase */
+    /** PointBase. */
     POINTBASE("pointbase"),
-    /** SQLite */
+    /** SQLite. */
     SQLITE("sqlite"),
-    /** Sybase */
+    /** Sybase. */
     SYBASE("sybase"),
-    /** Teradata */
+    /** Teradata. */
     TERADATA("teradata"),
-    /** Vertica */
+    /** Vertica. */
     VERTICA("vertica"),
-    /** H2 */
+    /** H2. */
     H2("h2"),
-    /** ColdFusion IMQ */
+    /** ColdFusion IMQ. */
     COLDFUSION("coldfusion"),
-    /** Apache Cassandra */
+    /** Apache Cassandra. */
     CASSANDRA("cassandra"),
-    /** Apache HBase */
+    /** Apache HBase. */
     HBASE("hbase"),
-    /** MongoDB */
+    /** MongoDB. */
     MONGODB("mongodb"),
-    /** Redis */
+    /** Redis. */
     REDIS("redis"),
-    /** Couchbase */
+    /** Couchbase. */
     COUCHBASE("couchbase"),
-    /** CouchDB */
+    /** CouchDB. */
     COUCHDB("couchdb"),
-    /** Microsoft Azure Cosmos DB */
+    /** Microsoft Azure Cosmos DB. */
     COSMOSDB("cosmosdb"),
-    /** Amazon DynamoDB */
+    /** Amazon DynamoDB. */
     DYNAMODB("dynamodb"),
-    /** Neo4j */
+    /** Neo4j. */
     NEO4J("neo4j"),
     ;
 
@@ -813,11 +844,11 @@ public final class SemanticAttributesV2 {
   }
 
   public enum NetTransportValues {
-    /** IP.TCP */
+    /** IP.TCP. */
     IP_TCP("IP.TCP"),
-    /** IP.UDP */
+    /** IP.UDP. */
     IP_UDP("IP.UDP"),
-    /** Another IP-based protocol */
+    /** Another IP-based protocol. */
     IP("IP"),
     /** Unix Domain socket. See below. */
     UNIX("Unix"),
@@ -844,13 +875,13 @@ public final class SemanticAttributesV2 {
   public enum FaasTriggerValues {
     /** A response to some data source operation such as a database or filesystem read/write. */
     DATASOURCE("datasource"),
-    /** To provide an answer to an inbound HTTP request */
+    /** To provide an answer to an inbound HTTP request. */
     HTTP("http"),
     /** A function is set to be executed when messages are sent to a messaging system. */
     PUBSUB("pubsub"),
     /** A function is scheduled to be executed regularly. */
     TIMER("timer"),
-    /** If none of the others apply */
+    /** If none of the others apply. */
     OTHER("other"),
     ;
 
@@ -888,11 +919,11 @@ public final class SemanticAttributesV2 {
   }
 
   public enum HttpFlavorValues {
-    /** HTTP 1.0 */
+    /** HTTP 1.0. */
     HTTP_1_0("1.0"),
-    /** HTTP 1.1 */
+    /** HTTP 1.1. */
     HTTP_1_1("1.1"),
-    /** HTTP 2 */
+    /** HTTP 2. */
     HTTP_2_0("2.0"),
     /** SPDY protocol. */
     SPDY("SPDY"),
@@ -913,9 +944,9 @@ public final class SemanticAttributesV2 {
   }
 
   public enum MessagingDestinationKindValues {
-    /** A message sent to a queue */
+    /** A message sent to a queue. */
     QUEUE("queue"),
-    /** A message broadcasted to the subscribers of the topic */
+    /** A message sent to a topic. */
     TOPIC("topic"),
     ;
 
@@ -932,11 +963,11 @@ public final class SemanticAttributesV2 {
   }
 
   public enum FaasInvokedProviderValues {
-    /** Amazon Web Services */
+    /** Amazon Web Services. */
     AWS("aws"),
-    /** Amazon Web Services */
+    /** Amazon Web Services. */
     AZURE("azure"),
-    /** Google Cloud Platform */
+    /** Google Cloud Platform. */
     GCP("gcp"),
     ;
 
@@ -953,9 +984,9 @@ public final class SemanticAttributesV2 {
   }
 
   public enum MessagingOperationValues {
-    /** receive */
+    /** receive. */
     RECEIVE("receive"),
-    /** process */
+    /** process. */
     PROCESS("process"),
     ;
 
