@@ -67,4 +67,4 @@ jobs:
           arguments: artifactoryPublish -Prelease.version=0.10.0-SNAPSHOT
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-          BINTRAY_KEY: ${{secrets.BINTRAY_KEY }}
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
