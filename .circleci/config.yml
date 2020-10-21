@@ -6,6 +6,8 @@ init_task: &init_task
 build_task: &build_task
   name: Build
   command: make test-with-docker
+  # For slow build if cache is cleared
+  no_output_timeout: 60m
 compile_benchmark_task: &compile_benchmark_task
   name: Compile JMH
   command: make benchmark
