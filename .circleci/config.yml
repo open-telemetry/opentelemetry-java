@@ -49,12 +49,6 @@ jobs:
       - run:
           name: Cover
           command: ./gradlew check :opentelemetry-all:jacocoTestReport
-      - run:
-          name: Publish coverage
-          command:  bash <(curl -s https://codecov.io/bash)
-# Publish the snapshots using Java 8 (and only from master).
-      - run:
-          <<: *publish_snapshots_task
       - save_cache:
           paths:
             - ~/.gradle
