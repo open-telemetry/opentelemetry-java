@@ -3,14 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.baggage;
+package io.opentelemetry.baggage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.baggage.BaggageUtils;
-import io.opentelemetry.baggage.Entry;
-import io.opentelemetry.baggage.EntryMetadata;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
