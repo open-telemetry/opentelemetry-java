@@ -7,6 +7,7 @@ package io.opentelemetry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -58,7 +59,8 @@ class JaegerExporterIntegrationTest {
           .withNetwork(network)
           .withNetworkAliases(JAEGER_HOSTNAME)
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
-          .waitingFor(new HttpWaitStrategy().forPath("/"));
+          .waitingFor(
+              new HttpWaitStrategy().forPath("/").withStartupTimeout(Duration.ofMinutes(2)));
 
   @SuppressWarnings("rawtypes")
   @Container
@@ -73,7 +75,7 @@ class JaegerExporterIntegrationTest {
               "io.opentelemetry.SendTraceToJaeger",
               JAEGER_HOSTNAME,
               Integer.toString(COLLECTOR_PORT))
-          .waitingFor(Wait.forLogMessage(".*Bye.*", 1))
+          .waitingFor(Wait.forLogMessage(".*Bye.*", 1).withStartupTimeout(Duration.ofMinutes(2)))
           .dependsOn(jaegerContainer);
 
   @Test
