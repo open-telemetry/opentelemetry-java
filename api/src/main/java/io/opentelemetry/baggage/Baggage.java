@@ -55,8 +55,8 @@ public interface Baggage extends ImplicitContextKeyed {
   String getEntryValue(String entryKey);
 
   /**
-   * Create a Builder pre-initialized with the contents of this Baggage. The returned Builder
-   * will be set to not use an implicit parent, so any parent assignment must be done manually.
+   * Create a Builder pre-initialized with the contents of this Baggage. The returned Builder will
+   * be set to not use an implicit parent, so any parent assignment must be done manually.
    */
   Builder toBuilder();
 
