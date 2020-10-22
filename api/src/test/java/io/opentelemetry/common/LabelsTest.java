@@ -99,9 +99,9 @@ class LabelsTest {
   void builder() {
     Labels labels =
         Labels.builder()
-            .setLabel("key1", "duplicateShouldBeIgnored")
-            .setLabel("key1", "value1")
-            .setLabel("key2", "value2")
+            .put("key1", "duplicateShouldBeIgnored")
+            .put("key1", "value1")
+            .put("key2", "value2")
             .build();
 
     assertThat(labels)
@@ -114,7 +114,7 @@ class LabelsTest {
   @Test
   void toBuilder() {
     Labels initial = Labels.of("one", "a");
-    Labels second = initial.toBuilder().setLabel("two", "b").build();
+    Labels second = initial.toBuilder().put("two", "b").build();
     assertThat(initial.size()).isEqualTo(1);
     assertThat(second.size()).isEqualTo(2);
     assertThat(initial).isEqualTo(Labels.of("one", "a"));

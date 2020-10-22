@@ -87,10 +87,9 @@ class RecordEventsReadableSpanTest {
     attributes.put(longKey("MyLongAttributeKey"), 123L);
     attributes.put(booleanKey("MyBooleanAttributeKey"), false);
     Attributes.Builder builder =
-        Attributes.builder()
-            .setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
+        Attributes.builder().put("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     for (Map.Entry<AttributeKey, Object> entry : attributes.entrySet()) {
-      builder.setAttribute(entry.getKey(), entry.getValue());
+      builder.put(entry.getKey(), entry.getValue());
     }
     expectedAttributes = builder.build();
     testClock = TestClock.create(START_EPOCH_NANOS);
@@ -613,9 +612,9 @@ class RecordEventsReadableSpanTest {
     assertThat(event.getAttributes())
         .isEqualTo(
             Attributes.builder()
-                .setAttribute(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalStateException")
-                .setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
-                .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
+                .put(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalStateException")
+                .put(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
+                .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
                 .build());
   }
 
@@ -676,10 +675,10 @@ class RecordEventsReadableSpanTest {
     assertThat(event.getAttributes())
         .isEqualTo(
             Attributes.builder()
-                .setAttribute("key1", "this is an additional attribute")
-                .setAttribute("exception.type", "java.lang.IllegalStateException")
-                .setAttribute("exception.message", "this is a precedence attribute")
-                .setAttribute("exception.stacktrace", stacktrace)
+                .put("key1", "this is an additional attribute")
+                .put("exception.type", "java.lang.IllegalStateException")
+                .put("exception.message", "this is a precedence attribute")
+                .put("exception.stacktrace", stacktrace)
                 .build());
   }
 

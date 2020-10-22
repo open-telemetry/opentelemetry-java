@@ -400,17 +400,16 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     long timestamp = clock.now();
 
     Attributes.Builder attributes = Attributes.builder();
-    attributes.setAttribute(
-        SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
+    attributes.put(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
-      attributes.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
+      attributes.put(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
     }
     StringWriter writer = new StringWriter();
     exception.printStackTrace(new PrintWriter(writer));
-    attributes.setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
+    attributes.put(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
 
     if (additionalAttributes != null) {
-      attributes.addAll(additionalAttributes);
+      attributes.putAll(additionalAttributes);
     }
 
     addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
@@ -572,7 +571,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     @Override
     public void consume(AttributeKey key, Object value) {
       if (added < limit) {
-        builder.setAttribute(key, value);
+        builder.put(key, value);
         added++;
       }
     }

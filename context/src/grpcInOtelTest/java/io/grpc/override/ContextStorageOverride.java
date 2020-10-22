@@ -22,7 +22,7 @@ public class ContextStorageOverride extends Context.Storage {
   @Override
   public Context doAttach(Context toAttach) {
     io.opentelemetry.context.Context otelContext = io.opentelemetry.context.Context.current();
-    Context current = otelContext.getValue(GRPC_CONTEXT);
+    Context current = otelContext.get(GRPC_CONTEXT);
 
     if (current == toAttach) {
       return toAttach;
@@ -32,8 +32,7 @@ public class ContextStorageOverride extends Context.Storage {
       current = Context.ROOT;
     }
 
-    io.opentelemetry.context.Context newOtelContext =
-        otelContext.withValues(GRPC_CONTEXT, toAttach);
+    io.opentelemetry.context.Context newOtelContext = otelContext.with(GRPC_CONTEXT, toAttach);
     Scope scope = newOtelContext.makeCurrent();
     return current.withValue(OTEL_SCOPE, scope);
   }
@@ -56,6 +55,6 @@ public class ContextStorageOverride extends Context.Storage {
 
   @Override
   public Context current() {
-    return io.opentelemetry.context.Context.current().getValue(GRPC_CONTEXT);
+    return io.opentelemetry.context.Context.current().get(GRPC_CONTEXT);
   }
 }

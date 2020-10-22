@@ -52,11 +52,10 @@ public final class MessageEvent {
   public static void record(
       Span span, Type type, long messageId, long uncompressedSize, long compressedSize) {
     Attributes.Builder attributeBuilder = Attributes.builder();
-    attributeBuilder.setAttribute(
-        TYPE, type == Type.SENT ? Type.SENT.name() : Type.RECEIVED.name());
-    attributeBuilder.setAttribute(ID, messageId);
-    attributeBuilder.setAttribute(UNCOMPRESSED_SIZE, uncompressedSize);
-    attributeBuilder.setAttribute(COMPRESSED_SIZE, compressedSize);
+    attributeBuilder.put(TYPE, type == Type.SENT ? Type.SENT.name() : Type.RECEIVED.name());
+    attributeBuilder.put(ID, messageId);
+    attributeBuilder.put(UNCOMPRESSED_SIZE, uncompressedSize);
+    attributeBuilder.put(COMPRESSED_SIZE, compressedSize);
     span.addEvent(EVENT_NAME, attributeBuilder.build());
   }
 
