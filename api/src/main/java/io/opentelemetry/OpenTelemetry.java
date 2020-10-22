@@ -114,9 +114,7 @@ public interface OpenTelemetry {
     requireNonNull(propagators, "propagators");
     DefaultOpenTelemetry.setGlobalOpenTelemetry(
         ((DefaultOpenTelemetry) DefaultOpenTelemetry.getGlobalOpenTelemetry())
-            .toBuilder()
-            .setPropagators(propagators)
-            .build());
+            .toBuilder().setPropagators(propagators).build());
   }
 
   /** Returns the {@link TracerProvider} for this {@link OpenTelemetry}. */
