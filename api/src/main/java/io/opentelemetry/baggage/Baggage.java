@@ -6,6 +6,7 @@
 package io.opentelemetry.baggage;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ImplicitContextKeyed;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -18,7 +19,23 @@ import javax.annotation.concurrent.Immutable;
  * information.
  */
 @Immutable
-public interface Baggage {
+public interface Baggage extends ImplicitContextKeyed {
+
+  /** Baggage with no entries. */
+  static Baggage empty() {
+    return ImmutableBaggage.EMPTY;
+  }
+
+  /** Creates a new {@link Builder} for creating Baggage. */
+  static Builder builder() {
+    return ImmutableBaggage.builder();
+  }
+
+  @Override
+  default Context storeInContext(Context context) {
+    return BaggageUtils.withBaggage(this, context);
+  }
+
   /**
    * Returns an immutable collection of the entries in this {@code Baggage}. Order of entries is not
    * guaranteed.
@@ -39,10 +56,11 @@ public interface Baggage {
 
   /** Builder for the {@link Baggage} class. */
   interface Builder {
+
     /**
      * Sets the parent {@link Baggage} to use from the specified {@code Context}. If no parent
-     * {@link Baggage} is provided, the value of {@link BaggageManager#getCurrentBaggage()} at
-     * {@link #build()} time will be used as parent, unless {@link #setNoParent()} was called.
+     * {@link Baggage} is provided, the value of {@link BaggageUtils#getCurrentBaggage()} at {@link
+     * #build()} time will be used as parent, unless {@link #setNoParent()} was called.
      *
      * <p>If no parent {@link Baggage} is available in the specified {@code Context}, the resulting
      * {@link Baggage} will become a root instance, as if {@link #setNoParent()} had been called.
@@ -62,7 +80,7 @@ public interface Baggage {
     /**
      * Sets the option to become a root {@link Baggage} with no parent. If <b>not</b> called, the
      * value provided using {@link #setParent(Context)} or otherwise {@link
-     * BaggageManager#getCurrentBaggage()} at {@link #build()} time will be used as parent.
+     * BaggageUtils#getCurrentBaggage()} at {@link #build()} time will be used as parent.
      *
      * @return this.
      */
@@ -77,6 +95,15 @@ public interface Baggage {
      * @return this
      */
     Builder put(String key, String value, EntryMetadata entryMetadata);
+
+    /**
+     * Adds the key/value pair with empty metadata regardless of whether the key is present.
+     *
+     * @param key the {@code String} key which will be set.
+     * @param value the {@code String} value to set for the given key.
+     * @return this
+     */
+    Builder put(String key, String value);
 
     /**
      * Removes the key if it exists.

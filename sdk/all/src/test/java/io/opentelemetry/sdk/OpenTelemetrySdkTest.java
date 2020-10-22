@@ -16,20 +16,20 @@ class OpenTelemetrySdkTest {
   @Test
   void testDefault() {
     assertThat(((TracerSdkProvider) OpenTelemetrySdk.getTracerManagement()).get(""))
-        .isSameAs(OpenTelemetry.getTracerProvider().get(""));
-    assertThat(OpenTelemetrySdk.getBaggageManager()).isSameAs(OpenTelemetry.getBaggageManager());
-    assertThat(OpenTelemetrySdk.getMeterProvider()).isSameAs(OpenTelemetry.getMeterProvider());
+        .isSameAs(OpenTelemetry.getGlobalTracerProvider().get(""));
+    assertThat(OpenTelemetrySdk.getMeterProvider())
+        .isSameAs(OpenTelemetry.getGlobalMeterProvider());
   }
 
   @Test
   void testShortcutVersions() {
-    assertThat(OpenTelemetry.getTracer("testTracer1"))
-        .isEqualTo(OpenTelemetry.getTracerProvider().get("testTracer1"));
-    assertThat(OpenTelemetry.getTracer("testTracer2", "testVersion"))
-        .isEqualTo(OpenTelemetry.getTracerProvider().get("testTracer2", "testVersion"));
-    assertThat(OpenTelemetry.getMeter("testMeter1"))
-        .isEqualTo(OpenTelemetry.getMeterProvider().get("testMeter1"));
-    assertThat(OpenTelemetry.getMeter("testMeter2", "testVersion"))
-        .isEqualTo(OpenTelemetry.getMeterProvider().get("testMeter2", "testVersion"));
+    assertThat(OpenTelemetry.getGlobalTracer("testTracer1"))
+        .isEqualTo(OpenTelemetry.getGlobalTracerProvider().get("testTracer1"));
+    assertThat(OpenTelemetry.getGlobalTracer("testTracer2", "testVersion"))
+        .isEqualTo(OpenTelemetry.getGlobalTracerProvider().get("testTracer2", "testVersion"));
+    assertThat(OpenTelemetry.getGlobalMeter("testMeter1"))
+        .isEqualTo(OpenTelemetry.getGlobalMeterProvider().get("testMeter1"));
+    assertThat(OpenTelemetry.getGlobalMeter("testMeter2", "testVersion"))
+        .isEqualTo(OpenTelemetry.getGlobalMeterProvider().get("testMeter2", "testVersion"));
   }
 }

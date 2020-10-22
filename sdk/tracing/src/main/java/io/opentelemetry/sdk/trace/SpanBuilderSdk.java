@@ -195,12 +195,7 @@ final class SpanBuilderSdk implements Span.Builder {
         traceConfig
             .getSampler()
             .shouldSample(
-                parentSpanContext,
-                traceId,
-                spanName,
-                spanKind,
-                immutableAttributes,
-                immutableLinks);
+                parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
     Sampler.Decision samplingDecision = samplingResult.getDecision();
 
     TraceState samplingResultTraceState =

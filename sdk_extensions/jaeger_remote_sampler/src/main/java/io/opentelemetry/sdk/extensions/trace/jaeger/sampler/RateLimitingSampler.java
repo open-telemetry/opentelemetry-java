@@ -12,12 +12,14 @@ import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 
 /**
@@ -51,13 +53,14 @@ class RateLimitingSampler implements Sampler {
 
   @Override
   public SamplingResult shouldSample(
-      SpanContext parentContext,
+      Context parentContext,
       String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
-      List<SpanData.Link> parentLinks) {
-    if (parentContext.isSampled()) {
+      List<Link> parentLinks) {
+
+    if (TracingContextUtils.getSpan(parentContext).getContext().isSampled()) {
       return Samplers.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }

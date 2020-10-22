@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.baggage.BaggageUtils;
 import io.opentelemetry.baggage.Entry;
 import io.opentelemetry.baggage.EntryMetadata;
@@ -20,13 +19,11 @@ import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for {@link BaggageSdk} and {@link BaggageSdk.Builder}.
+ * Tests for {@link Baggage} and {@link Baggage.Builder}.
  *
- * <p>Tests for scope management with {@link BaggageManagerSdk} are in {@link ScopedBaggageTest}.
+ * <p>Tests for scope management with {@link Baggage} are in {@link ScopedBaggageTest}.
  */
-class BaggageSdkTest {
-
-  private final BaggageManager contextManager = new BaggageManagerSdk();
+class ImmutableBaggageTest {
 
   private static final EntryMetadata TMD = EntryMetadata.create("tmd");
 
@@ -41,13 +38,13 @@ class BaggageSdkTest {
 
   @Test
   void getEntries_empty() {
-    BaggageSdk baggage = new BaggageSdk.Builder().build();
+    Baggage baggage = Baggage.empty();
     assertThat(baggage.getEntries()).isEmpty();
   }
 
   @Test
   void getEntries_nonEmpty() {
-    BaggageSdk baggage = listToBaggage(T1, T2);
+    Baggage baggage = listToBaggage(T1, T2);
     assertThat(baggage.getEntries()).containsExactly(T1, T2);
   }
 
@@ -55,10 +52,9 @@ class BaggageSdkTest {
   void getEntries_chain() {
     Entry t1alt = Entry.create(K1, V2, TMD);
     Baggage parent = listToBaggage(T1, T2);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
+    Context parentContext = Context.root().with(parent);
     Baggage baggage =
-        contextManager
-            .baggageBuilder()
+        Baggage.builder()
             .setParent(parentContext)
             .put(t1alt.getKey(), t1alt.getValue(), t1alt.getEntryMetadata())
             .build();
@@ -68,83 +64,68 @@ class BaggageSdkTest {
   @Test
   void put_newKey() {
     Baggage parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
-    assertThat(
-            contextManager
-                .baggageBuilder()
-                .setParent(parentContext)
-                .put(K2, V2, TMD)
-                .build()
-                .getEntries())
+    Context parentContext = Context.root().with(parent);
+    assertThat(Baggage.builder().setParent(parentContext).put(K2, V2, TMD).build().getEntries())
         .containsExactly(T1, T2);
   }
 
   @Test
   void put_existingKey() {
-    BaggageSdk parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
-    assertThat(
-            contextManager
-                .baggageBuilder()
-                .setParent(parentContext)
-                .put(K1, V2, TMD)
-                .build()
-                .getEntries())
+    Baggage parent = listToBaggage(T1);
+    Context parentContext = Context.root().with(parent);
+    assertThat(Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build().getEntries())
         .containsExactly(Entry.create(K1, V2, TMD));
   }
 
   @Test
   void put_nullKey() {
     Baggage parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
-    Baggage.Builder builder = contextManager.baggageBuilder().setParent(parentContext);
+    Context parentContext = Context.root().with(parent);
+    Baggage.Builder builder = Baggage.builder().setParent(parentContext);
     assertThrows(NullPointerException.class, () -> builder.put(null, V2, TMD), "key");
   }
 
   @Test
   void put_nullValue() {
-    BaggageSdk parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
-    Baggage.Builder builder = contextManager.baggageBuilder().setParent(parentContext);
+    Baggage parent = listToBaggage(T1);
+    Context parentContext = Context.root().with(parent);
+    Baggage.Builder builder = Baggage.builder().setParent(parentContext);
     assertThrows(NullPointerException.class, () -> builder.put(K2, null, TMD), "value");
   }
 
   @Test
   void setParent_nullContext() {
-    assertThrows(
-        NullPointerException.class,
-        () -> contextManager.baggageBuilder().setParent((Context) null));
+    assertThrows(NullPointerException.class, () -> Baggage.builder().setParent((Context) null));
   }
 
   @Test
   void setParent_fromContext() {
-    Context context = BaggageUtils.withBaggage(listToBaggage(T2), Context.current());
-    Baggage baggage = contextManager.baggageBuilder().setParent(context).build();
+    Context context = Context.current().with(listToBaggage(T2));
+    Baggage baggage = Baggage.builder().setParent(context).build();
     assertThat(baggage.getEntries()).containsExactly(T2);
   }
 
   @Test
   void setParent_fromEmptyContext() {
     Context emptyContext = Context.current();
-    BaggageSdk parent = listToBaggage(T1);
+    Baggage parent = listToBaggage(T1);
     try (Scope scope = BaggageUtils.currentContextWith(parent)) {
-      Baggage baggage = contextManager.baggageBuilder().setParent(emptyContext).build();
+      Baggage baggage = Baggage.builder().setParent(emptyContext).build();
       assertThat(baggage.getEntries()).isEmpty();
     }
   }
 
   @Test
   void setParent_setNoParent() {
-    BaggageSdk parent = listToBaggage(T1);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
-    Baggage baggage =
-        contextManager.baggageBuilder().setParent(parentContext).setNoParent().build();
+    Baggage parent = listToBaggage(T1);
+    Context parentContext = Context.root().with(parent);
+    Baggage baggage = Baggage.builder().setParent(parentContext).setNoParent().build();
     assertThat(baggage.getEntries()).isEmpty();
   }
 
   @Test
   void remove_existingKey() {
-    BaggageSdk.Builder builder = new BaggageSdk.Builder();
+    Baggage.Builder builder = Baggage.builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
@@ -153,7 +134,7 @@ class BaggageSdkTest {
 
   @Test
   void remove_differentKey() {
-    BaggageSdk.Builder builder = new BaggageSdk.Builder();
+    Baggage.Builder builder = Baggage.builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
@@ -162,21 +143,15 @@ class BaggageSdkTest {
 
   @Test
   void remove_keyFromParent() {
-    BaggageSdk parent = listToBaggage(T1, T2);
-    Context parentContext = BaggageUtils.withBaggage(parent, Context.root());
-    assertThat(
-            contextManager
-                .baggageBuilder()
-                .setParent(parentContext)
-                .remove(K1)
-                .build()
-                .getEntries())
+    Baggage parent = listToBaggage(T1, T2);
+    Context parentContext = Context.root().with(parent);
+    assertThat(Baggage.builder().setParent(parentContext).remove(K1).build().getEntries())
         .containsExactly(T2);
   }
 
   @Test
   void remove_nullKey() {
-    Baggage.Builder builder = contextManager.baggageBuilder();
+    Baggage.Builder builder = Baggage.builder();
     assertThrows(NullPointerException.class, () -> builder.remove(null), "key");
   }
 
@@ -184,11 +159,11 @@ class BaggageSdkTest {
   void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            contextManager.baggageBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
-            contextManager.baggageBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
-            contextManager.baggageBuilder().put(K2, V2, TMD).put(K1, V1, TMD).build())
-        .addEqualityGroup(contextManager.baggageBuilder().put(K1, V1, TMD).put(K2, V1, TMD).build())
-        .addEqualityGroup(contextManager.baggageBuilder().put(K1, V2, TMD).put(K2, V1, TMD).build())
+            Baggage.builder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
+            Baggage.builder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
+            Baggage.builder().put(K2, V2, TMD).put(K1, V1, TMD).build())
+        .addEqualityGroup(Baggage.builder().put(K1, V1, TMD).put(K2, V1, TMD).build())
+        .addEqualityGroup(Baggage.builder().put(K1, V2, TMD).put(K2, V1, TMD).build())
         .testEquals();
   }
 }
