@@ -59,13 +59,13 @@ class PromisePropagationTest {
 
         successPromise.onSuccess(
             s -> {
-              TracingContextUtils.getCurrentSpan().addEvent("Promised 1 " + s);
+              Span.current().addEvent("Promised 1 " + s);
               successResult1.set(s);
               phaser.arriveAndAwaitAdvance(); // result set
             });
         successPromise.onSuccess(
             s -> {
-              TracingContextUtils.getCurrentSpan().addEvent("Promised 2 " + s);
+              Span.current().addEvent("Promised 2 " + s);
               successResult2.set(s);
               phaser.arriveAndAwaitAdvance(); // result set
             });

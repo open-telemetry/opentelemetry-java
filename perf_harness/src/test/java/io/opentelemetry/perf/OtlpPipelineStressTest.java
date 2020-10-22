@@ -199,7 +199,7 @@ public class OtlpPipelineStressTest {
 
   private static void runOnce(Integer numberOfSpans, int numberOfMillisToRunFor)
       throws InterruptedException {
-    Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.perf");
+    Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.perf");
     long start = System.currentTimeMillis();
     int i = 0;
     while (numberOfSpans == null

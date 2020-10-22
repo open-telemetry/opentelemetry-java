@@ -29,7 +29,7 @@ final class Server extends Thread {
 
   private void process(Message message) {
     Context context =
-        OpenTelemetry.getPropagators()
+        OpenTelemetry.getGlobalPropagators()
             .getTextMapPropagator()
             .extract(
                 Context.current(),
@@ -52,7 +52,7 @@ final class Server extends Thread {
 
     try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
       // Simulate work.
-      TracingContextUtils.getCurrentSpan().addEvent("DoWork");
+      Span.current().addEvent("DoWork");
     } finally {
       span.end();
     }

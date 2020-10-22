@@ -16,7 +16,7 @@ public interface ReadableSpan {
   /**
    * Returns the {@link SpanContext} of the {@code Span}.
    *
-   * <p>Equivalent with {@link Span#getContext()}.
+   * <p>Equivalent with {@link Span#getSpanContext()}.
    *
    * @return the {@link SpanContext} of the {@code Span}.
    */

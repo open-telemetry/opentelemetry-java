@@ -61,7 +61,7 @@ class ActiveSpanReplacementTest {
     assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
     assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
 
   private void submitAnotherTask(final Span initialSpan) {

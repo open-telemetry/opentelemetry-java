@@ -40,8 +40,8 @@ class OtelInGrpcTest {
     io.grpc.Context root = grpcContext.attach();
     try {
       assertThat(COUNTRY.get()).isEqualTo("japan");
-      try (Scope ignored = Context.current().withValues(ANIMAL, "cat").makeCurrent()) {
-        assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+      try (Scope ignored = Context.current().with(ANIMAL, "cat").makeCurrent()) {
+        assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
         assertThat(COUNTRY.get()).isEqualTo("japan");
 
         io.grpc.Context context2 = io.grpc.Context.current().withValue(FOOD, "cheese");
@@ -50,7 +50,7 @@ class OtelInGrpcTest {
         try {
           assertThat(FOOD.get()).isEqualTo("cheese");
           assertThat(COUNTRY.get()).isEqualTo("japan");
-          assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+          assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
         } finally {
           context2.detach(toRestore);
         }
@@ -65,16 +65,16 @@ class OtelInGrpcTest {
     io.grpc.Context grpcContext = io.grpc.Context.current().withValue(COUNTRY, "japan");
     io.grpc.Context root = grpcContext.attach();
     try {
-      try (Scope ignored = Context.current().withValues(ANIMAL, "cat").makeCurrent()) {
+      try (Scope ignored = Context.current().with(ANIMAL, "cat").makeCurrent()) {
         assertThat(COUNTRY.get()).isEqualTo("japan");
-        assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+        assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
 
         AtomicReference<String> grpcValue = new AtomicReference<>();
         AtomicReference<String> otelValue = new AtomicReference<>();
         Runnable runnable =
             () -> {
               grpcValue.set(COUNTRY.get());
-              otelValue.set(Context.current().getValue(ANIMAL));
+              otelValue.set(Context.current().get(ANIMAL));
             };
         otherThread.submit(runnable).get();
         assertThat(grpcValue).hasValue(null);
@@ -94,16 +94,16 @@ class OtelInGrpcTest {
     io.grpc.Context grpcContext = io.grpc.Context.current().withValue(COUNTRY, "japan");
     io.grpc.Context root = grpcContext.attach();
     try {
-      try (Scope ignored = Context.current().withValues(ANIMAL, "cat").makeCurrent()) {
+      try (Scope ignored = Context.current().with(ANIMAL, "cat").makeCurrent()) {
         assertThat(COUNTRY.get()).isEqualTo("japan");
-        assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+        assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
 
         AtomicReference<String> grpcValue = new AtomicReference<>();
         AtomicReference<String> otelValue = new AtomicReference<>();
         Runnable runnable =
             () -> {
               grpcValue.set(COUNTRY.get());
-              otelValue.set(Context.current().getValue(ANIMAL));
+              otelValue.set(Context.current().get(ANIMAL));
             };
         otherThread.submit(runnable).get();
         assertThat(grpcValue).hasValue(null);

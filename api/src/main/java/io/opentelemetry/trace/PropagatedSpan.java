@@ -73,7 +73,7 @@ final class PropagatedSpan implements Span {
   public void end(EndSpanOptions endOptions) {}
 
   @Override
-  public SpanContext getContext() {
+  public SpanContext getSpanContext() {
     return spanContext;
   }
 

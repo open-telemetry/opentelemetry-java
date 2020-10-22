@@ -64,12 +64,12 @@ public class EksResource extends ResourceProvider {
 
     String clusterName = getClusterName();
     if (!Strings.isNullOrEmpty(clusterName)) {
-      attrBuilders.setAttribute(ResourceAttributes.K8S_CLUSTER, clusterName);
+      attrBuilders.put(ResourceAttributes.K8S_CLUSTER, clusterName);
     }
 
     String containerId = dockerHelper.getContainerId();
     if (!Strings.isNullOrEmpty(containerId)) {
-      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_ID, containerId);
+      attrBuilders.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
     return attrBuilders.build();

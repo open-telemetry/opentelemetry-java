@@ -54,7 +54,7 @@ public final class NestedCallbacksTest {
       assertThat(attrs.get(stringKey("key" + i))).isEqualTo(Integer.toString(i));
     }
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
 
   private void submitCallbacks(final Span span) {

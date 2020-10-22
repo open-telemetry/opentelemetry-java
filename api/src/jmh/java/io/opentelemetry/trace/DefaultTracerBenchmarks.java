@@ -71,7 +71,7 @@ public class DefaultTracerBenchmarks {
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
   public void measureGetCurrentSpan() {
-    TracingContextUtils.getCurrentSpan();
+    Span.current();
   }
 
   @TearDown(Level.Iteration)

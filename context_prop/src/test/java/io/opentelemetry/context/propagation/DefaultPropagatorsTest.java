@@ -38,8 +38,8 @@ class DefaultPropagatorsTest {
             .build();
 
     Context context = Context.current();
-    context = context.withValues(propagator1.getKey(), "value1");
-    context = context.withValues(propagator2.getKey(), "value2");
+    context = context.with(propagator1.getKey(), "value1");
+    context = context.with(propagator2.getKey(), "value2");
 
     Map<String, String> map = new HashMap<>();
     propagators.getTextMapPropagator().inject(context, map, MapSetter.INSTANCE);
@@ -65,9 +65,9 @@ class DefaultPropagatorsTest {
 
     Context context =
         propagators.getTextMapPropagator().extract(Context.current(), map, MapGetter.INSTANCE);
-    assertThat(context.getValue(propagator1.getKey())).isEqualTo("value1");
-    assertThat(context.getValue(propagator2.getKey())).isEqualTo("value2");
-    assertThat(context.getValue(propagator3.getKey())).isNull(); // Handle missing value.
+    assertThat(context.get(propagator1.getKey())).isEqualTo("value1");
+    assertThat(context.get(propagator2.getKey())).isEqualTo("value2");
+    assertThat(context.get(propagator3.getKey())).isNull(); // Handle missing value.
   }
 
   @Test
@@ -125,7 +125,7 @@ class DefaultPropagatorsTest {
 
     @Override
     public <C> void inject(Context context, C carrier, Setter<C> setter) {
-      Object payload = context.getValue(key);
+      Object payload = context.get(key);
       if (payload != null) {
         setter.set(carrier, name, payload.toString());
       }
@@ -135,7 +135,7 @@ class DefaultPropagatorsTest {
     public <C> Context extract(Context context, C carrier, Getter<C> getter) {
       String payload = getter.get(carrier, name);
       if (payload != null) {
-        context = context.withValues(key, payload);
+        context = context.with(key, payload);
       }
 
       return context;

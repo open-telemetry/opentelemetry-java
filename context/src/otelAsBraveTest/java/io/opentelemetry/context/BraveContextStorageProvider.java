@@ -93,7 +93,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
     }
 
     @Override
-    public <V> V getValue(ContextKey<V> key) {
+    public <V> V get(ContextKey<V> key) {
       BraveContextValues values = braveContext.findExtra(BraveContextValues.class);
       if (values == null) {
         return null;
@@ -104,7 +104,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
     }
 
     @Override
-    public <V> Context withValues(ContextKey<V> k1, V v1) {
+    public <V> Context with(ContextKey<V> k1, V v1) {
       List<Object> extras = braveContext.extra();
       BraveContextValues values = null;
       int existingValuesIndex = -1;

@@ -13,17 +13,17 @@ import org.junit.jupiter.api.Test;
 class DefaultMeterTest {
   @Test
   void expectDefaultMeter() {
-    assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
-    assertThat(OpenTelemetry.getMeter("test")).isInstanceOf(DefaultMeter.class);
-    assertThat(OpenTelemetry.getMeter("test")).isSameAs(DefaultMeter.getInstance());
-    assertThat(OpenTelemetry.getMeter("test", "0.1.0")).isSameAs(DefaultMeter.getInstance());
+    assertThat(OpenTelemetry.getGlobalMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
+    assertThat(OpenTelemetry.getGlobalMeter("test")).isInstanceOf(DefaultMeter.class);
+    assertThat(OpenTelemetry.getGlobalMeter("test")).isSameAs(DefaultMeter.getInstance());
+    assertThat(OpenTelemetry.getGlobalMeter("test", "0.1.0")).isSameAs(DefaultMeter.getInstance());
   }
 
   @Test
   void expectDefaultMeterProvider() {
-    assertThat(OpenTelemetry.getMeterProvider()).isSameAs(DefaultMeterProvider.getInstance());
-    assertThat(OpenTelemetry.getMeterProvider().get("test")).isInstanceOf(DefaultMeter.class);
-    assertThat(OpenTelemetry.getMeterProvider().get("test", "0.1.0"))
+    assertThat(OpenTelemetry.getGlobalMeterProvider()).isSameAs(DefaultMeterProvider.getInstance());
+    assertThat(OpenTelemetry.getGlobalMeterProvider().get("test")).isInstanceOf(DefaultMeter.class);
+    assertThat(OpenTelemetry.getGlobalMeterProvider().get("test", "0.1.0"))
         .isInstanceOf(DefaultMeter.class);
   }
 }

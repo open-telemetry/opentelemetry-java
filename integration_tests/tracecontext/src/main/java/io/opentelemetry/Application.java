@@ -31,7 +31,7 @@ public class Application {
 
   /** Entry point. */
   public static void main(String[] args) {
-    OpenTelemetry.setPropagators(
+    OpenTelemetry.setGlobalPropagators(
         DefaultContextPropagators.builder()
             .addTextMapPropagator(HttpTraceContext.getInstance())
             .build());
@@ -46,7 +46,7 @@ public class Application {
               gson.fromJson(request.body(), io.opentelemetry.Request[].class);
 
           Context context =
-              OpenTelemetry.getPropagators()
+              OpenTelemetry.getGlobalPropagators()
                   .getTextMapPropagator()
                   .extract(
                       Context.current(),
@@ -87,7 +87,7 @@ public class Application {
 
           for (io.opentelemetry.Request req : requests) {
             Span span =
-                OpenTelemetry.getTracer("validation-server")
+                OpenTelemetry.getGlobalTracer("validation-server")
                     .spanBuilder("Entering Validation Server")
                     .setParent(context)
                     .startSpan();
@@ -98,7 +98,7 @@ public class Application {
             okhttp3.Request.Builder reqBuilder = new okhttp3.Request.Builder();
 
             // Inject the current context into the new request.
-            OpenTelemetry.getPropagators()
+            OpenTelemetry.getGlobalPropagators()
                 .getTextMapPropagator()
                 .inject(withSpanContext, reqBuilder, okhttp3.Request.Builder::addHeader);
 

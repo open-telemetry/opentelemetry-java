@@ -26,7 +26,7 @@ public final class TracingContextUtils {
    * @return a new context with the given value set.
    */
   static Context withSpan(Span span, Context context) {
-    return context.withValues(CONTEXT_SPAN_KEY, span);
+    return context.with(CONTEXT_SPAN_KEY, span);
   }
 
   /**
@@ -35,8 +35,8 @@ public final class TracingContextUtils {
    *
    * @return the {@link Span} from the current {@code Context}.
    */
-  public static Span getCurrentSpan() {
-    return getSpan(io.opentelemetry.context.Context.current());
+  static Span getCurrentSpan() {
+    return Span.fromContext(Context.current());
   }
 
   /**
@@ -46,8 +46,8 @@ public final class TracingContextUtils {
    * @param context the specified {@code Context}.
    * @return the {@link Span} from the specified {@code Context}.
    */
-  public static Span getSpan(Context context) {
-    Span span = context.getValue(CONTEXT_SPAN_KEY);
+  static Span getSpan(Context context) {
+    Span span = context.get(CONTEXT_SPAN_KEY);
     return span == null ? Span.getInvalid() : span;
   }
 
@@ -59,8 +59,8 @@ public final class TracingContextUtils {
    * @return the {@link Span} from the specified {@code Context}.
    */
   @Nullable
-  public static Span getSpanWithoutDefault(Context context) {
-    return context.getValue(CONTEXT_SPAN_KEY);
+  static Span getSpanWithoutDefault(Context context) {
+    return context.get(CONTEXT_SPAN_KEY);
   }
 
   /**

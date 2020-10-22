@@ -19,7 +19,7 @@ public class SendTraceToJaeger {
   private final int port; // = 14250;
 
   // OTel API
-  private final Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.SendTraceToJaeger");
+  private final Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.SendTraceToJaeger");
 
   public SendTraceToJaeger(String ip, int port) {
     this.ip = ip;

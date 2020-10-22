@@ -16,7 +16,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Collections;
@@ -89,7 +88,7 @@ public class JaegerPropagator implements TextMapPropagator {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (spanContext.isValid()) {
       injectSpan(spanContext, carrier, setter);
     }
@@ -136,7 +135,7 @@ public class JaegerPropagator implements TextMapPropagator {
 
     Baggage baggage = getBaggageFromHeader(carrier, getter);
     if (baggage != null) {
-      context = BaggageUtils.withBaggage(baggage, context);
+      context = context.with(baggage);
     }
 
     return context;

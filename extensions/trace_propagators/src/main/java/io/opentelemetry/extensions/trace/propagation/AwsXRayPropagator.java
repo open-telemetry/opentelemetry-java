@@ -13,7 +13,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -84,12 +83,12 @@ public class AwsXRayPropagator implements TextMapPropagator {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    Span span = TracingContextUtils.getSpan(context);
-    if (!span.getContext().isValid()) {
+    Span span = Span.fromContext(context);
+    if (!span.getSpanContext().isValid()) {
       return;
     }
 
-    SpanContext spanContext = span.getContext();
+    SpanContext spanContext = span.getSpanContext();
 
     String otTraceId = spanContext.getTraceIdAsHexString();
     String xrayTraceId =

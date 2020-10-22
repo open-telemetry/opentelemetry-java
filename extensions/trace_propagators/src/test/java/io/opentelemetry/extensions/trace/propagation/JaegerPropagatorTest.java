@@ -21,7 +21,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collection;
@@ -66,7 +65,7 @@ class JaegerPropagatorTest {
   private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
-    return TracingContextUtils.getSpan(context).getContext();
+    return Span.fromContext(context).getSpanContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {

@@ -33,7 +33,7 @@ class BaggageManagerSdkTest {
 
   @Test
   void testGetCurrentContext_ContextSetToNull() {
-    try (Scope ignored = BaggageUtils.withBaggage(null, Context.current()).makeCurrent()) {
+    try (Scope ignored = Context.root().makeCurrent()) {
       Baggage baggage = BaggageUtils.getCurrentBaggage();
       assertThat(baggage).isNotNull();
       assertThat(baggage.getEntries()).isEmpty();
