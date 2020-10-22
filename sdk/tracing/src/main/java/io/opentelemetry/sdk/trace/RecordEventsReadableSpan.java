@@ -212,7 +212,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public SpanContext getSpanContext() {
-    return getContext();
+    return context;
   }
 
   /**
@@ -454,11 +454,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       hasEnded = true;
     }
     spanProcessor.onEnd(this);
-  }
-
-  @Override
-  public SpanContext getContext() {
-    return context;
   }
 
   @Override

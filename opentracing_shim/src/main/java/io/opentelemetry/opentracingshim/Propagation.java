@@ -44,7 +44,8 @@ final class Propagation extends BaseShimObject {
       return null;
     }
 
-    return new SpanContextShim(telemetryInfo, span.getContext(), BaggageUtils.getBaggage(context));
+    return new SpanContextShim(
+        telemetryInfo, span.getSpanContext(), BaggageUtils.getBaggage(context));
   }
 
   static final class TextMapSetter implements TextMapPropagator.Setter<TextMapInject> {

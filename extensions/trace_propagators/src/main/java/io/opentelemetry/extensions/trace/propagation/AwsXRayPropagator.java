@@ -88,7 +88,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
       return;
     }
 
-    SpanContext spanContext = span.getContext();
+    SpanContext spanContext = span.getSpanContext();
 
     String otTraceId = spanContext.getTraceIdAsHexString();
     String xrayTraceId =
