@@ -1,7 +1,5 @@
 plugins {
     id 'java'
-
-    id "ru.vyarus.animalsniffer"
 }
 
 description = 'OpenTelemetry SDK Extension JFR'
@@ -10,8 +8,6 @@ ext.moduleName = 'io.opentelemetry.sdk.extension.jfr'
 dependencies {
     implementation project(':opentelemetry-api'),
             project(':opentelemetry-sdk')
-
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
 }
 
 tasks.withType(JavaCompile) {
