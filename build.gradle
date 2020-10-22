@@ -293,7 +293,7 @@ configure(opentelemetryProjects) {
                 zipkin_okhttp           : "io.zipkin.reporter2:zipkin-sender-okhttp3",
 
                 // Compatibility layer
-                opencensus              : "io.opencensus:opencensus-all:${opencensusVersion}",
+                opencensus_api          : "io.opencensus:opencensus-api:${opencensusVersion}",
                 opencensus_impl_core    : "io.opencensus:opencensus-impl-core:${opencensusVersion}",
                 opentracing             : "io.opentracing:opentracing-api:${opentracingVersion}",
 

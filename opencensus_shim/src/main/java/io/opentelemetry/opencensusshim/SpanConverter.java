@@ -21,7 +21,6 @@ import io.opencensus.trace.export.SpanData.TimedEvent;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.Attributes.Builder;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -91,7 +90,7 @@ public class SpanConverter {
     }
     if (spanData.getLinks() != null) {
       for (Link link : spanData.getLinks().getLinks()) {
-        Builder attributesBuilder = Attributes.builder();
+        Attributes.Builder attributesBuilder = Attributes.builder();
         link.getAttributes()
             .forEach(
                 (s, attributeValue) ->
@@ -114,17 +113,13 @@ public class SpanConverter {
   }
 
   private static Kind mapKind(Span.Kind kind) {
-    if (kind == null) {
-      return null;
-    }
     switch (kind) {
       case CLIENT:
         return Kind.CLIENT;
       case SERVER:
         return Kind.SERVER;
-      default:
-        return null;
     }
+    return null;
   }
 
   static Span fromOtelSpan(io.opentelemetry.trace.Span otSpan) {

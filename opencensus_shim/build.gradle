@@ -8,11 +8,10 @@ ext.moduleName = "io.opentelemetry.opencensusshim"
 
 dependencies {
     api project(':opentelemetry-api'),
-            libraries.opencensus,
+            libraries.opencensus_api,
             libraries.opencensus_impl_core
 
     testImplementation project(':opentelemetry-sdk'),
-            project(':opentelemetry-exporters-inmemory'),
             libraries.junit,
             libraries.assertj,
             libraries.slf4jsimple
