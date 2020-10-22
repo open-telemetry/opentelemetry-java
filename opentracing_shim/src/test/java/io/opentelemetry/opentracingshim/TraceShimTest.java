@@ -17,7 +17,7 @@ class TraceShimTest {
   @Test
   void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim();
-    assertEquals(OpenTelemetry.getTracer("opentracingshim"), tracerShim.tracer());
+    assertEquals(OpenTelemetry.getGlobalTracer("opentracingshim"), tracerShim.tracer());
   }
 
   @Test

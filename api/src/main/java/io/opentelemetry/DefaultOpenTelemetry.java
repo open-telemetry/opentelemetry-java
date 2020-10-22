@@ -65,17 +65,17 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
   private final ContextPropagators propagators;
 
   @Override
-  public TracerProvider getMyTracerProvider() {
+  public TracerProvider getTracerProvider() {
     return tracerProvider;
   }
 
   @Override
-  public MeterProvider getMyMeterProvider() {
+  public MeterProvider getMeterProvider() {
     return meterProvider;
   }
 
   @Override
-  public ContextPropagators getMyPropagators() {
+  public ContextPropagators getPropagators() {
     return propagators;
   }
 

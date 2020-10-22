@@ -17,7 +17,7 @@ class LongSumObserverTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Meter meter = OpenTelemetry.getMeter("LongSumObserverTest");
+  private static final Meter meter = OpenTelemetry.getGlobalMeter("LongSumObserverTest");
 
   @Test
   void preventNull_Name() {

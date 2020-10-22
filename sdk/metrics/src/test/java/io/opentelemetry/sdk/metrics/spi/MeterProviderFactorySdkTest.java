@@ -15,6 +15,6 @@ import org.junit.jupiter.api.Test;
 class MeterProviderFactorySdkTest {
   @Test
   void testDefault() {
-    assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
+    assertThat(OpenTelemetry.getGlobalMeterProvider()).isInstanceOf(MeterSdkProvider.class);
   }
 }
