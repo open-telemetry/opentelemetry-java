@@ -11,7 +11,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.ArrayBlockingQueue;
 
 final class Client {
@@ -30,7 +29,7 @@ final class Client {
     Span span = tracer.spanBuilder("send").setSpanKind(Kind.CLIENT).startSpan();
     span.setAttribute("component", "example-client");
 
-    try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+    try (Scope ignored = span.makeCurrent()) {
       OpenTelemetry.getGlobalPropagators()
           .getTextMapPropagator()
           .inject(Context.current(), message, Message::put);

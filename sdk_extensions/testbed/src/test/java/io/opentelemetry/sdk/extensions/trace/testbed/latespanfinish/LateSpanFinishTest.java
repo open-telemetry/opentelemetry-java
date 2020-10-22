@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,9 +63,9 @@ public final class LateSpanFinishTest {
         () -> {
           /* Alternative to calling activate() is to pass it manually to asChildOf() for each
            * created Span. */
-          try (Scope scope = TracingContextUtils.currentContextWith(parentSpan)) {
+          try (Scope scope = parentSpan.makeCurrent()) {
             Span childSpan = tracer.spanBuilder("task1").startSpan();
-            try (Scope childScope = TracingContextUtils.currentContextWith(childSpan)) {
+            try (Scope childScope = childSpan.makeCurrent()) {
               TestUtils.sleep(55);
             } finally {
               childSpan.end();
@@ -76,9 +75,9 @@ public final class LateSpanFinishTest {
 
     executor.submit(
         () -> {
-          try (Scope scope = TracingContextUtils.currentContextWith(parentSpan)) {
+          try (Scope scope = parentSpan.makeCurrent()) {
             Span childSpan = tracer.spanBuilder("task2").startSpan();
-            try (Scope childScope = TracingContextUtils.currentContextWith(childSpan)) {
+            try (Scope childScope = childSpan.makeCurrent()) {
               TestUtils.sleep(85);
             } finally {
               childSpan.end();

@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicReference;
@@ -54,7 +53,7 @@ class PromisePropagationTest {
       Span parentSpan = tracer.spanBuilder("promises").startSpan();
       parentSpan.setAttribute("component", "example-promises");
 
-      try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
+      try (Scope ignored = parentSpan.makeCurrent()) {
         Promise<String> successPromise = new Promise<>(context, tracer);
 
         successPromise.onSuccess(
