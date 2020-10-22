@@ -175,7 +175,7 @@ final class SpanBuilderSdk implements Span.Builder {
     final Context parentContext =
         isRootSpan ? Context.root() : parent == null ? Context.current() : parent;
     final Span parentSpan = Span.fromContext(parentContext);
-    final SpanContext parentSpanContext = parentSpan.getContext();
+    final SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;
     String spanId = idsGenerator.generateSpanId();
     if (!parentSpanContext.isValid()) {

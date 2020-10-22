@@ -19,7 +19,7 @@ final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector 
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    SpanContext spanContext = Span.fromContext(context).getContext();
+    SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (!spanContext.isValid()) {
       return;
     }

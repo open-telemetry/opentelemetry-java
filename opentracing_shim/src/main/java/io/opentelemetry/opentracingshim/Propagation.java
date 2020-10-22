@@ -40,7 +40,7 @@ final class Propagation extends BaseShimObject {
             .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
 
     Span span = Span.fromContext(context);
-    if (!span.getContext().isValid()) {
+    if (!span.getSpanContext().isValid()) {
       return null;
     }
 

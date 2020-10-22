@@ -84,7 +84,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
     Objects.requireNonNull(setter, "setter");
 
     Span span = Span.fromContext(context);
-    if (!span.getContext().isValid()) {
+    if (!span.getSpanContext().isValid()) {
       return;
     }
 

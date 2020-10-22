@@ -247,6 +247,6 @@ class AwsXRayPropagatorTest {
   }
 
   private static SpanContext getSpanContext(Context context) {
-    return Span.fromContext(context).getContext();
+    return Span.fromContext(context).getSpanContext();
   }
 }

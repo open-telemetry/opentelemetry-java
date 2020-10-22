@@ -59,7 +59,7 @@ class JaegerPropagatorTest {
   private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
-    return Span.fromContext(context).getContext();
+    return Span.fromContext(context).getSpanContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {

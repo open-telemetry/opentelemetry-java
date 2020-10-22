@@ -47,7 +47,7 @@ class HttpTraceContextTest {
   private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
-    return Span.fromContext(context).getContext();
+    return Span.fromContext(context).getSpanContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {

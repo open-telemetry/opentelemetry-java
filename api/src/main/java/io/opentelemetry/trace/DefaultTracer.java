@@ -45,7 +45,7 @@ public final class DefaultTracer implements Tracer {
     @Override
     public Span startSpan() {
       if (spanContext == null) {
-        spanContext = Span.current().getContext();
+        spanContext = Span.current().getSpanContext();
       }
 
       return Span.wrap(spanContext);
@@ -54,7 +54,7 @@ public final class DefaultTracer implements Tracer {
     @Override
     public NoopSpanBuilder setParent(Context context) {
       Objects.requireNonNull(context, "context");
-      spanContext = Span.fromContext(context).getContext();
+      spanContext = Span.fromContext(context).getSpanContext();
       return this;
     }
 

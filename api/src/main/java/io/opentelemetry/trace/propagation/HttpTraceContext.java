@@ -94,7 +94,7 @@ public class HttpTraceContext implements TextMapPropagator {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    SpanContext spanContext = Span.fromContext(context).getContext();
+    SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (!spanContext.isValid()) {
       return;
     }

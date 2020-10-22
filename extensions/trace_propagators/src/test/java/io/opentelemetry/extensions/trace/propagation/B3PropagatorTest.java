@@ -49,7 +49,7 @@ class B3PropagatorTest {
   private final B3Propagator b3PropagatorSingleHeader = B3Propagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
-    return Span.fromContext(context).getContext();
+    return Span.fromContext(context).getSpanContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
