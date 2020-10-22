@@ -181,7 +181,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             startEpochNanos == 0 ? clock.now() : startEpochNanos);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
-    spanProcessor.onStart(span, parentContext);
+    spanProcessor.onStart(parentContext, span);
     return span;
   }
 
