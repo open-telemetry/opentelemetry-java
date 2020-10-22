@@ -178,6 +178,17 @@ class HttpTraceContextTest {
   }
 
   @Test
+  void extractAndInject_MoreFlags() {
+    String traceParent = "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-03";
+    Map<String, String> extractCarrier = new LinkedHashMap<>();
+    extractCarrier.put(TRACE_PARENT, traceParent);
+    Context context = httpTraceContext.extract(Context.current(), extractCarrier, getter);
+    Map<String, String> injestCarrier = new LinkedHashMap<>();
+    httpTraceContext.inject(context, injestCarrier, setter);
+    assertThat(extractCarrier).isEqualTo(injestCarrier);
+  }
+
+  @Test
   void extract_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACE_PARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
