@@ -1,6 +1,6 @@
 # OpenTelemetry
 [![Gitter chat][gitter-image]][gitter-url]
-[![Build Status][circleci-image]][circleci-url]
+![Continuous Build](https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg)
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
