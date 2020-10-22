@@ -7,7 +7,6 @@ package io.opentelemetry;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
@@ -18,14 +17,12 @@ import io.opentelemetry.trace.TracerProvider;
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
  *
  * <p>The default for the OpenTelemetry API will include any {@link
- * io.opentelemetry.trace.spi.TracerProviderFactory}, {@link
- * io.opentelemetry.metrics.spi.MeterProviderFactory}, or {@link
- * io.opentelemetry.baggage.spi.BaggageManagerFactory} found on the classpath, or otherwise will be
+ * io.opentelemetry.trace.spi.TracerProviderFactory} or {@link
+ * io.opentelemetry.metrics.spi.MeterProviderFactory} found on the classpath, or otherwise will be
  * default, with no-op behavior.
  *
  * @see TracerProvider
  * @see MeterProvider
- * @see BaggageManager
  */
 public interface OpenTelemetry {
 

@@ -8,7 +8,6 @@ package io.opentelemetry;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.baggage.BaggageManager;
-import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.internal.Obfuscated;
@@ -32,7 +31,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * @see TracerProvider
  * @see MeterProviderFactory
- * @see BaggageManagerFactory
  */
 @ThreadSafe
 final class DefaultOpenTelemetry implements OpenTelemetry {
