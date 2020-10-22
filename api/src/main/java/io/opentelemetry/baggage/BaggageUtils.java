@@ -25,7 +25,7 @@ public final class BaggageUtils {
    * @return a new context with the given value set.
    */
   static Context withBaggage(Baggage baggage, Context context) {
-    return context.withValues(CORR_CONTEXT_KEY, baggage);
+    return context.with(CORR_CONTEXT_KEY, baggage);
   }
 
   /**
@@ -46,7 +46,7 @@ public final class BaggageUtils {
    * @return the {@link Baggage} from the specified {@code Context}.
    */
   public static Baggage getBaggage(Context context) {
-    Baggage baggage = context.getValue(CORR_CONTEXT_KEY);
+    Baggage baggage = context.get(CORR_CONTEXT_KEY);
     return baggage == null ? Baggage.empty() : baggage;
   }
 
@@ -59,7 +59,7 @@ public final class BaggageUtils {
    */
   @Nullable
   public static Baggage getBaggageWithoutDefault(Context context) {
-    return context.getValue(CORR_CONTEXT_KEY);
+    return context.get(CORR_CONTEXT_KEY);
   }
 
   /**
