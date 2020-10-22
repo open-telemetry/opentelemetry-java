@@ -43,7 +43,7 @@ class OpenTelemetryInteroperabilityTest {
     } finally {
       otSpan.finish();
     }
-    assertThat(TracingContextUtils.getCurrentSpan().getContext().isValid()).isFalse();
+    assertThat(TracingContextUtils.getCurrentSpan().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
@@ -60,7 +60,7 @@ class OpenTelemetryInteroperabilityTest {
       otelSpan.end();
     }
 
-    assertThat(TracingContextUtils.getCurrentSpan().getContext().isValid()).isFalse();
+    assertThat(TracingContextUtils.getCurrentSpan().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();

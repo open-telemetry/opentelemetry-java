@@ -55,7 +55,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (context == null || setter == null) {
       return;
     }
-    final SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    final SpanContext spanContext = TracingContextUtils.getSpan(context).getSpanContext();
     if (!spanContext.isValid()) {
       return;
     }

@@ -25,15 +25,15 @@ class SpanBuilderTest {
     spanBuilder.setParent(Context.root().with(Span.wrap(null)));
     spanBuilder.setParent(Context.root());
     spanBuilder.setNoParent();
-    spanBuilder.addLink(Span.getInvalid().getContext());
-    spanBuilder.addLink(Span.getInvalid().getContext(), Attributes.empty());
+    spanBuilder.addLink(Span.getInvalid().getSpanContext());
+    spanBuilder.addLink(Span.getInvalid().getSpanContext(), Attributes.empty());
     spanBuilder.setAttribute("key", "value");
     spanBuilder.setAttribute("key", 12345L);
     spanBuilder.setAttribute("key", .12345);
     spanBuilder.setAttribute("key", true);
     spanBuilder.setAttribute(stringKey("key"), "value");
     spanBuilder.setStartTimestamp(12345L);
-    assertThat(spanBuilder.startSpan().getContext().isValid()).isFalse();
+    assertThat(spanBuilder.startSpan().getSpanContext().isValid()).isFalse();
   }
 
   @Test

@@ -58,7 +58,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (parentSpan == null && parentSpanContext == null) {
       parentSpan = spanShim;
     } else {
-      parentLinks.add(spanShim.getSpan().getContext());
+      parentLinks.add(spanShim.getSpan().getSpanContext());
     }
 
     return this;

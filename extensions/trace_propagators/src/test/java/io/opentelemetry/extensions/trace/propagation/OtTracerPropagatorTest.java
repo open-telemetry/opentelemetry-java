@@ -36,7 +36,7 @@ class OtTracerPropagatorTest {
   private final OtTracerPropagator propagator = OtTracerPropagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
-    return TracingContextUtils.getSpan(context).getContext();
+    return TracingContextUtils.getSpan(context).getSpanContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {

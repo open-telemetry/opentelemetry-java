@@ -85,11 +85,11 @@ public class AwsXRayPropagator implements TextMapPropagator {
     Objects.requireNonNull(setter, "setter");
 
     Span span = TracingContextUtils.getSpan(context);
-    if (!span.getContext().isValid()) {
+    if (!span.getSpanContext().isValid()) {
       return;
     }
 
-    SpanContext spanContext = span.getContext();
+    SpanContext spanContext = span.getSpanContext();
 
     String otTraceId = spanContext.getTraceIdAsHexString();
     String xrayTraceId =
