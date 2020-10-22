@@ -38,6 +38,7 @@ public class JaegerPropagator implements TextMapPropagator {
   private static final Logger logger = Logger.getLogger(JaegerPropagator.class.getName());
 
   static final String PROPAGATION_HEADER = "uber-trace-id";
+  static final String BAGGAGE_HEADER = "jaeger-baggage";
   static final String BAGGAGE_PREFIX = "uberctx-";
   // Parent span has been deprecated but Jaeger propagation protocol requires it
   static final char DEPRECATED_PARENT_SPAN = '0';
@@ -118,7 +119,6 @@ public class JaegerPropagator implements TextMapPropagator {
     setter.set(carrier, PROPAGATION_HEADER, new String(chars));
   }
 
-  // TODO - Encoded?
   private static <C> void injectBaggage(Baggage baggage, C carrier, Setter<C> setter) {
     for (Entry entry : baggage.getEntries()) {
       setter.set(carrier, BAGGAGE_PREFIX + entry.getKey(), entry.getValue());
@@ -136,7 +136,6 @@ public class JaegerPropagator implements TextMapPropagator {
 
     Baggage baggage = getBaggageFromHeader(carrier, getter);
     if (baggage != null) {
-      // TODO: Fix with the related one? DONT add if it hasn't been added yet.
       context = BaggageUtils.withBaggage(baggage, context);
     }
 
@@ -211,26 +210,41 @@ public class JaegerPropagator implements TextMapPropagator {
   }
 
   private static <C> Baggage getBaggageFromHeader(C carrier, Getter<C> getter) {
-    Baggage baggage = null;
+    Baggage.Builder builder = null;
 
-    // Only create Baggage if at least one item was propagated.
-    // TODO: Verify with the Jaeger propagator.
     for (String key : getter.keys(carrier)) {
-      String value = getter.get(carrier, key);
-      if (value == null) {
-        continue;
-      }
+      if (key.startsWith(BAGGAGE_PREFIX)) {
+        key = key.substring(BAGGAGE_HEADER.length());
+        if (key.isEmpty()) {
+          continue;
+        }
 
-      if (baggage == null) {
-        // TODO: Replace with Baggage.empty()
-        baggage = null;
+        if (builder == null) {
+          builder = Baggage.builder();
+        }
+        // UH: it seems null is a printable string...
+        builder.put(key, getter.get(carrier, key));
+      } else if (key.equals(BAGGAGE_HEADER)) {
+        builder = parseBaggageHeader(getter.get(carrier, key), builder);
       }
-
-      // TODO: Add value to the builder
     }
+    return builder == null ? null : builder.build();
+  }
 
-    // TODO: call build() on the builder.
-    return baggage;
+  @SuppressWarnings("StringSplitter")
+  private static Baggage.Builder parseBaggageHeader(String header, Baggage.Builder builder) {
+    for (String part : header.split("\\s*,\\s*")) {
+      String[] kv = part.split("\\s*=\\s*");
+      if (kv.length == 2) {
+        if (builder == null) {
+          builder = Baggage.builder();
+        }
+        builder.put(kv[0], kv[1]);
+      } else {
+        logger.fine("malformed token in " + BAGGAGE_HEADER + " header: " + part);
+      }
+    }
+    return builder;
   }
 
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
