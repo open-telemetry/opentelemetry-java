@@ -23,12 +23,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class OpenTelemetryInteroperabilityTest {
-  private final io.opentelemetry.trace.Tracer tracer = OpenTelemetry.getTracer("opentracingshim");
+  private final io.opentelemetry.trace.Tracer tracer =
+      OpenTelemetry.getGlobalTracer("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder()
           .setTracerSdkManagement(OpenTelemetrySdk.getTracerManagement())
           .build();
-  private final Tracer otTracer = TraceShim.createTracerShim(OpenTelemetry.getTracerProvider());
+  private final Tracer otTracer =
+      TraceShim.createTracerShim(OpenTelemetry.getGlobalTracerProvider());
 
   @BeforeEach
   void before() {
