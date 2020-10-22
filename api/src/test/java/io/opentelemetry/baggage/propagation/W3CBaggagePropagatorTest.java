@@ -154,7 +154,7 @@ class W3CBaggagePropagatorTest {
     Baggage baggage = Baggage.empty();
     W3CBaggagePropagator propagator = new W3CBaggagePropagator();
     Map<String, String> carrier = new HashMap<>();
-    propagator.inject(BaggageUtils.withBaggage(baggage, Context.root()), carrier, Map::put);
+    propagator.inject(Context.root().with(baggage), carrier, Map::put);
     assertThat(carrier).isEmpty();
   }
 
@@ -167,7 +167,7 @@ class W3CBaggagePropagatorTest {
             .build();
     W3CBaggagePropagator propagator = new W3CBaggagePropagator();
     Map<String, String> carrier = new HashMap<>();
-    propagator.inject(BaggageUtils.withBaggage(baggage, Context.root()), carrier, Map::put);
+    propagator.inject(Context.root().with(baggage), carrier, Map::put);
     assertThat(carrier)
         .containsExactlyInAnyOrderEntriesOf(
             singletonMap(

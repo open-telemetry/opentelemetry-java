@@ -31,7 +31,7 @@ public class JaegerExample {
     // Export traces to Jaeger
     JaegerGrpcSpanExporter jaegerExporter =
         JaegerGrpcSpanExporter.newBuilder()
-            .setServiceName("example")
+            .setServiceName("otel-jaeger-example")
             .setChannel(jaegerChannel)
             .setDeadlineMs(30000)
             .build();
@@ -76,7 +76,10 @@ public class JaegerExample {
     // Start the example
     JaegerExample example = new JaegerExample(ip, port);
     example.setupJaegerExporter();
-    example.myWonderfulUseCase();
+    //generate a few sample spans
+    for (int i = 0; i < 10; i++) {
+      example.myWonderfulUseCase();
+    }
 
     // Shutdown example
     example.shutdown();

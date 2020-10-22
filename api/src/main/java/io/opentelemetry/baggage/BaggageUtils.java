@@ -24,7 +24,7 @@ public final class BaggageUtils {
    * @param context the parent {@code Context}.
    * @return a new context with the given value set.
    */
-  public static Context withBaggage(Baggage baggage, Context context) {
+  static Context withBaggage(Baggage baggage, Context context) {
     return context.with(CORR_CONTEXT_KEY, baggage);
   }
 

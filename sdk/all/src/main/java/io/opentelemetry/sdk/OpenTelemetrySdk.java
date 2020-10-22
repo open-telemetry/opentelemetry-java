@@ -29,16 +29,17 @@ public final class OpenTelemetrySdk {
    * @return TracerSdkManagement for managing your Tracing SDK.
    */
   public static TracerSdkManagement getTracerManagement() {
-    return (TracerSdkManagement) ((Obfuscated<?>) OpenTelemetry.getTracerProvider()).unobfuscate();
+    return (TracerSdkManagement)
+        ((Obfuscated<?>) OpenTelemetry.getGlobalTracerProvider()).unobfuscate();
   }
 
   /**
    * Returns a {@link MeterSdkProvider}.
    *
-   * @return MeterProvider returned by {@link OpenTelemetry#getMeterProvider()}.
+   * @return MeterProvider returned by {@link OpenTelemetry#getGlobalMeterProvider()}.
    */
   public static MeterSdkProvider getMeterProvider() {
-    return (MeterSdkProvider) OpenTelemetry.getMeterProvider();
+    return (MeterSdkProvider) OpenTelemetry.getGlobalMeterProvider();
   }
 
   private OpenTelemetrySdk() {}
