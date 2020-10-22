@@ -3,9 +3,15 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 rm -rf opentelemetry-specification || true
-git clone https://github.com/open-telemetry/opentelemetry-specification.git --depth 1
+mkdir opentelemetry-specification
+cd opentelemetry-specification
+
+git init
+git remote add origin https://github.com/open-telemetry/opentelemetry-specification.git
 # https://github.com/open-telemetry/opentelemetry-specification/pull/1027
-git checkout 662baae949f01a8ecc950426bf09283be1b657de
+git fetch origin 662baae949f01a8ecc950426bf09283be1b657de
+git reset --hard FETCH_HEAD
+cd ${DIR}
 
 docker run --rm \
   -v $(pwd)/opentelemetry-specification/semantic_conventions:/source \
