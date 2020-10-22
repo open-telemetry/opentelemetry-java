@@ -60,7 +60,7 @@ class RateLimitingSampler implements Sampler {
       ReadableAttributes attributes,
       List<Link> parentLinks) {
 
-    if (TracingContextUtils.getSpan(parentContext).getContext().isSampled()) {
+    if (TracingContextUtils.getSpan(parentContext).getSpanContext().isSampled()) {
       return Samplers.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }

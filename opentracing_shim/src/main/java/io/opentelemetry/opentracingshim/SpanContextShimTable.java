@@ -86,7 +86,8 @@ final class SpanContextShimTable {
       }
 
       contextShim =
-          new SpanContextShim(spanShim.telemetryInfo(), spanShim.getSpan().getContext(), baggage);
+          new SpanContextShim(
+              spanShim.telemetryInfo(), spanShim.getSpan().getSpanContext(), baggage);
       shimsMap.put(spanShim.getSpan(), contextShim);
       return contextShim;
 

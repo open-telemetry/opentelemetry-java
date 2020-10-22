@@ -277,7 +277,7 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @return the {@code SpanContext} associated with this {@code Span}.
    */
-  SpanContext getContext();
+  SpanContext getSpanContext();
 
   /**
    * Returns {@code true} if this {@code Span} records tracing events (e.g. {@link

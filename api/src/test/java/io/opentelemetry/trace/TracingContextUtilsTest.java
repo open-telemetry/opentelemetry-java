@@ -64,6 +64,6 @@ class TracingContextUtilsTest {
         assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(span);
       }
     }
-    assertThat(TracingContextUtils.getCurrentSpan().getContext().isValid()).isFalse();
+    assertThat(TracingContextUtils.getCurrentSpan().getSpanContext().isValid()).isFalse();
   }
 }

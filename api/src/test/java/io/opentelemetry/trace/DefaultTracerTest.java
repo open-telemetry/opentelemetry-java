@@ -35,7 +35,8 @@ class DefaultTracerTest {
 
   @Test
   void defaultSpanBuilderWithName() {
-    assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan().getContext().isValid()).isFalse();
+    assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan().getSpanContext().isValid())
+        .isFalse();
   }
 
   @Test
@@ -45,7 +46,7 @@ class DefaultTracerTest {
             .spanBuilder(SPAN_NAME)
             .setParent(Context.root().with(Span.wrap(spanContext)))
             .startSpan();
-    assertThat(span.getContext()).isSameAs(spanContext);
+    assertThat(span.getSpanContext()).isSameAs(spanContext);
   }
 
   @Test
@@ -54,13 +55,13 @@ class DefaultTracerTest {
 
     Span span =
         defaultTracer.spanBuilder(SPAN_NAME).setParent(Context.root().with(parent)).startSpan();
-    assertThat(span.getContext()).isSameAs(spanContext);
+    assertThat(span.getSpanContext()).isSameAs(spanContext);
   }
 
   @Test
   void noSpanContextMakesInvalidSpans() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-    assertThat(span.getContext()).isSameAs(SpanContext.getInvalid());
+    assertThat(span.getSpanContext()).isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -74,7 +75,7 @@ class DefaultTracerTest {
     Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
-    assertThat(span.getContext()).isSameAs(spanContext);
+    assertThat(span.getSpanContext()).isSameAs(spanContext);
   }
 
   @Test
@@ -82,7 +83,7 @@ class DefaultTracerTest {
     Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
-    assertThat(span.getContext()).isSameAs(spanContext);
+    assertThat(span.getSpanContext()).isSameAs(spanContext);
   }
 
   @Test
@@ -90,6 +91,6 @@ class DefaultTracerTest {
     Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
-    assertThat(span.getContext()).isEqualTo(SpanContext.getInvalid());
+    assertThat(span.getSpanContext()).isEqualTo(SpanContext.getInvalid());
   }
 }

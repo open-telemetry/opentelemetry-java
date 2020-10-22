@@ -252,7 +252,7 @@ public final class Samplers {
         Kind spanKind,
         ReadableAttributes attributes,
         List<Link> parentLinks) {
-      SpanContext parentSpanContext = TracingContextUtils.getSpan(parentContext).getContext();
+      SpanContext parentSpanContext = TracingContextUtils.getSpan(parentContext).getSpanContext();
       if (!parentSpanContext.isValid()) {
         return this.root.shouldSample(
             parentContext, traceId, name, spanKind, attributes, parentLinks);
