@@ -65,7 +65,7 @@ public interface Span extends ImplicitContextKeyed {
     if (spanContext == null || !spanContext.isValid()) {
       return getInvalid();
     }
-    return new PropagatedSpan(spanContext);
+    return PropagatedSpan.create(spanContext);
   }
 
   /**

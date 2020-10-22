@@ -10,17 +10,23 @@ import io.opentelemetry.common.Attributes;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * The {@code DefaultSpan} is the default {@link Span} that is used when no {@code Span}
- * implementation is available. All operations are no-op except context propagation.
+ * The default {@link Span} that is used when no {@code Span} implementation is available. All
+ * operations are no-op except context propagation.
  */
 @Immutable
 final class PropagatedSpan implements Span {
 
   static final PropagatedSpan INVALID = new PropagatedSpan(SpanContext.getInvalid());
 
+  // We expose a method to construct PropagatedSpan because currently auto-instrumentation needs to
+  // be able to intercept it.
+  static Span create(SpanContext spanContext) {
+    return new PropagatedSpan(spanContext);
+  }
+
   private final SpanContext spanContext;
 
-  PropagatedSpan(SpanContext spanContext) {
+  private PropagatedSpan(SpanContext spanContext) {
     this.spanContext = spanContext;
   }
 
