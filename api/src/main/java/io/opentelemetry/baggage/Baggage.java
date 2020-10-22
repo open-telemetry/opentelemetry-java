@@ -54,6 +54,12 @@ public interface Baggage extends ImplicitContextKeyed {
   @Nullable
   String getEntryValue(String entryKey);
 
+  /**
+   * Create a Builder pre-initialized with the contents of this Baggage. The returned Builder
+   * will be set to not use an implicit parent, so any parent assignment must be done manually.
+   */
+  Builder toBuilder();
+
   /** Builder for the {@link Baggage} class. */
   interface Builder {
 

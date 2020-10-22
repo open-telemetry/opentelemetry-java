@@ -5,6 +5,7 @@
 
 package io.opentelemetry.baggage;
 
+import io.opentelemetry.baggage.Baggage.Builder;
 import io.opentelemetry.context.Context;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,6 +66,15 @@ class ImmutableBaggage implements Baggage {
     } else {
       return parent == null ? null : parent.getEntryValue(entryKey);
     }
+  }
+
+  @Override
+  public Baggage.Builder toBuilder() {
+    Builder builder = new Builder();
+    builder.entries.putAll(entries);
+    builder.parent = parent;
+    builder.noImplicitParent = true;
+    return builder;
   }
 
   @Override
