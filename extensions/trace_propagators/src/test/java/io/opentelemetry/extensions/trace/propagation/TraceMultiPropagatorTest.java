@@ -5,7 +5,6 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
-import static io.opentelemetry.trace.TracingContextUtils.getSpan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -112,11 +111,17 @@ class TraceMultiPropagatorTest {
     Map<String, String> carrier = new HashMap<>();
     prop.inject(Context.current().with(SPAN), carrier, Map::put);
 
-    assertThat(getSpan(PROPAGATOR1.extract(Context.current(), carrier, Map::get)).getSpanContext())
+    assertThat(
+            Span.fromContext(PROPAGATOR1.extract(Context.current(), carrier, Map::get))
+                .getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
-    assertThat(getSpan(PROPAGATOR2.extract(Context.current(), carrier, Map::get)).getSpanContext())
+    assertThat(
+            Span.fromContext(PROPAGATOR2.extract(Context.current(), carrier, Map::get))
+                .getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
-    assertThat(getSpan(PROPAGATOR3.extract(Context.current(), carrier, Map::get)).getSpanContext())
+    assertThat(
+            Span.fromContext(PROPAGATOR3.extract(Context.current(), carrier, Map::get))
+                .getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
   }
 
@@ -141,7 +146,8 @@ class TraceMultiPropagatorTest {
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR2.inject(Context.current().with(SPAN), carrier, Map::put);
-    assertThat(getSpan(prop.extract(Context.current(), carrier, Map::get)).getSpanContext())
+    assertThat(
+            Span.fromContext(prop.extract(Context.current(), carrier, Map::get)).getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
   }
 
@@ -165,7 +171,8 @@ class TraceMultiPropagatorTest {
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR3.inject(Context.current().with(SPAN), carrier, Map::put);
-    assertThat(getSpan(prop.extract(Context.current(), carrier, Map::get)).getSpanContext())
+    assertThat(
+            Span.fromContext(prop.extract(Context.current(), carrier, Map::get)).getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
     verify(mockPropagator).fields();
     verifyNoMoreInteractions(mockPropagator);

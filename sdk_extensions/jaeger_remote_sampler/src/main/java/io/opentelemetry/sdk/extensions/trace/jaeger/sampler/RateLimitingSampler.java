@@ -18,8 +18,8 @@ import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 
 /**
@@ -60,7 +60,7 @@ class RateLimitingSampler implements Sampler {
       ReadableAttributes attributes,
       List<Link> parentLinks) {
 
-    if (TracingContextUtils.getSpan(parentContext).getSpanContext().isSampled()) {
+    if (Span.fromContext(parentContext).getSpanContext().isSampled()) {
       return Samplers.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }

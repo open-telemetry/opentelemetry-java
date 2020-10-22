@@ -20,7 +20,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -252,7 +251,7 @@ public final class Samplers {
         Kind spanKind,
         ReadableAttributes attributes,
         List<Link> parentLinks) {
-      SpanContext parentSpanContext = TracingContextUtils.getSpan(parentContext).getSpanContext();
+      SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
       if (!parentSpanContext.isValid()) {
         return this.root.shouldSample(
             parentContext, traceId, name, spanKind, attributes, parentLinks);

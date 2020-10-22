@@ -47,7 +47,7 @@ public final class ErrorReportingTest {
       span.end();
     }
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
@@ -98,7 +98,7 @@ public final class ErrorReportingTest {
     span.setStatus(StatusCode.ERROR); // Could not fetch anything.
     span.end();
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
@@ -122,9 +122,9 @@ public final class ErrorReportingTest {
                 try {
                   throw new RuntimeException("Invalid state");
                 } catch (Exception exc) {
-                  TracingContextUtils.getCurrentSpan().setStatus(StatusCode.ERROR);
+                  Span.current().setStatus(StatusCode.ERROR);
                 } finally {
-                  TracingContextUtils.getCurrentSpan().end();
+                  Span.current().end();
                 }
               },
               tracer));
@@ -147,7 +147,7 @@ public final class ErrorReportingTest {
     private ScopedRunnable(Runnable runnable, Tracer tracer) {
       this.runnable = runnable;
       this.tracer = tracer;
-      this.span = TracingContextUtils.getCurrentSpan();
+      this.span = Span.current();
     }
 
     @Override

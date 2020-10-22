@@ -60,7 +60,7 @@ class HandlerTest {
     assertThat(finished.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
     assertThat(finished.get(1).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
 
   /** Active parent is not picked up by child. */

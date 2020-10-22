@@ -29,7 +29,6 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -175,7 +174,7 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span startSpan() {
     final Context parentContext =
         isRootSpan ? Context.root() : parent == null ? Context.current() : parent;
-    final Span parentSpan = TracingContextUtils.getSpan(parentContext);
+    final Span parentSpan = Span.fromContext(parentContext);
     final SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;
     String spanId = idsGenerator.generateSpanId();

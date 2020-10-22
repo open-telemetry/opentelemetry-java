@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -206,6 +205,6 @@ class CurrentSpanUtilsTest {
   }
 
   private static Span getCurrentSpan() {
-    return TracingContextUtils.getCurrentSpan();
+    return Span.current();
   }
 }

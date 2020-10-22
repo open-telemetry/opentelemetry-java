@@ -64,6 +64,6 @@ class MultipleCallbacksTest {
       assertThat(spans.get(i).getParentSpanId()).isEqualTo(parentSpan.getSpanId());
     }
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
 }
