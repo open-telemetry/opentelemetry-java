@@ -928,5 +928,14 @@ public final class SemanticAttributes {
     }
   }
 
+  // Manually defined and not YET in the YAML
+  /**
+   * The name of an event describing an exception.
+   *
+   * <p>Typically an event with that name should not be manually created. Instead {@link
+   * io.opentelemetry.trace.Span#recordException(Throwable)} should be used.
+   */
+  public static final String EXCEPTION_EVENT_NAME = "exception";
+
   private SemanticAttributes() {}
 }

@@ -26,7 +26,6 @@ import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.attributes.EventSemanticAttributes;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -414,7 +413,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       attributes.addAll(additionalAttributes);
     }
 
-    addEvent(EventSemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
+    addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
   }
 
   @Override
