@@ -206,7 +206,7 @@ final class DisruptorEventQueue {
             @SuppressWarnings("unchecked")
             final SimpleImmutableEntry<ReadWriteSpan, Context> eventArgs =
                 (SimpleImmutableEntry<ReadWriteSpan, Context>) readableSpan;
-            spanProcessor.onStart(eventArgs.getKey(), eventArgs.getValue());
+            spanProcessor.onStart(eventArgs.getValue(), eventArgs.getKey());
             break;
           case ON_END:
             spanProcessor.onEnd((ReadableSpan) readableSpan);

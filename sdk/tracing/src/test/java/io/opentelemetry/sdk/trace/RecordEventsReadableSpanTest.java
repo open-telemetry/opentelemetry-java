@@ -761,7 +761,7 @@ class RecordEventsReadableSpanTest {
             links,
             1,
             0);
-    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span, Context.root());
+    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(Context.root(), span);
     return span;
   }
 

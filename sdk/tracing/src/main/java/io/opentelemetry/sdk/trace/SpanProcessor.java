@@ -21,10 +21,10 @@ public interface SpanProcessor {
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.
    *
-   * @param span the {@code ReadableSpan} that just started.
    * @param parentContext the parent {@code Context} of the span that just started.
+   * @param span the {@code ReadableSpan} that just started.
    */
-  void onStart(ReadWriteSpan span, Context parentContext);
+  void onStart(Context parentContext, ReadWriteSpan span);
 
   /**
    * Returns {@code true} if this {@link SpanProcessor} requires start events.
