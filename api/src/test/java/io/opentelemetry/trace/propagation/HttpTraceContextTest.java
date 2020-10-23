@@ -183,9 +183,9 @@ class HttpTraceContextTest {
     Map<String, String> extractCarrier = new LinkedHashMap<>();
     extractCarrier.put(TRACE_PARENT, traceParent);
     Context context = httpTraceContext.extract(Context.current(), extractCarrier, getter);
-    Map<String, String> injestCarrier = new LinkedHashMap<>();
-    httpTraceContext.inject(context, injestCarrier, setter);
-    assertThat(extractCarrier).isEqualTo(injestCarrier);
+    Map<String, String> injectCarrier = new LinkedHashMap<>();
+    httpTraceContext.inject(context, injectCarrier, setter);
+    assertThat(extractCarrier).isEqualTo(injectCarrier);
   }
 
   @Test
