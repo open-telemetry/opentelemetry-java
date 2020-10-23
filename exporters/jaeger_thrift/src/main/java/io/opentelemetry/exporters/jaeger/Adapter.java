@@ -29,12 +29,8 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.concurrent.ThreadSafe;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 
-/**
- * Adapts OpenTelemetry objects to Jaeger objects.
- */
+/** Adapts OpenTelemetry objects to Jaeger objects. */
 @ThreadSafe
 final class Adapter {
 
@@ -48,8 +44,7 @@ final class Adapter {
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
   public static final Gson GSON = new Gson();
 
-  private Adapter() {
-  }
+  private Adapter() {}
 
   /**
    * Converts a list of {@link SpanData} into a collection of Jaeger's {@link Span}.
@@ -59,9 +54,7 @@ final class Adapter {
    * @see #toJaeger(SpanData)
    */
   static List<Span> toJaeger(Collection<SpanData> spans) {
-    return spans.stream()
-        .map(Adapter::toJaeger)
-        .collect(Collectors.toList());
+    return spans.stream().map(Adapter::toJaeger).collect(Collectors.toList());
   }
 
   /**
@@ -73,8 +66,8 @@ final class Adapter {
   static Span toJaeger(SpanData span) {
     Span target = new Span();
 
-    long traceIdHigh = TraceId.getTraceIdHighBytesAsLong(span.getTraceId());
-    long traceIdLow = TraceId.getTraceIdLowBytesAsLong(span.getTraceId());
+    long traceIdHigh = TraceId.traceIdHighBytesAsLong(span.getTraceId());
+    long traceIdLow = TraceId.traceIdLowBytesAsLong(span.getTraceId());
     long spanIdAsLong = SpanId.asLong(span.getSpanId());
 
     target.setTraceIdHigh(traceIdHigh);
@@ -82,7 +75,8 @@ final class Adapter {
     target.setSpanId(spanIdAsLong);
     target.setOperationName(span.getName());
     target.setStartTime(TimeUnit.NANOSECONDS.toMicros(span.getStartEpochNanos()));
-    target.setDuration(TimeUnit.NANOSECONDS.toMicros(span.getEndEpochNanos() - span.getStartEpochNanos()));
+    target.setDuration(
+        TimeUnit.NANOSECONDS.toMicros(span.getEndEpochNanos() - span.getStartEpochNanos()));
 
     List<Tag> tags = toTags(span.getAttributes());
 
@@ -91,10 +85,12 @@ final class Adapter {
 
     // add the parent span
     if (SpanId.isValid(span.getParentSpanId())) {
-      references.add(new SpanRef(SpanRefType.CHILD_OF,
-          traceIdLow,
-          traceIdHigh,
-          SpanId.asLong(span.getParentSpanId())));
+      references.add(
+          new SpanRef(
+              SpanRefType.CHILD_OF,
+              traceIdLow,
+              traceIdHigh,
+              SpanId.asLong(span.getParentSpanId())));
     }
     target.setReferences(references);
 
@@ -107,15 +103,17 @@ final class Adapter {
     tags.add(
         new Tag(KEY_SPAN_STATUS_MESSAGE, TagType.STRING)
             .setVStr(
-                span.getStatus().getDescription() == null ? ""
+                span.getStatus().getDescription() == null
+                    ? ""
                     : span.getStatus().getDescription()));
 
     tags.add(
         new Tag(KEY_SPAN_STATUS_CODE, TagType.LONG)
             .setVLong(span.getStatus().getCanonicalCode().value()));
 
-    tags.add(new Tag(KEY_INSTRUMENTATION_LIBRARY_NAME, TagType.STRING)
-        .setVStr(span.getInstrumentationLibraryInfo().getName()));
+    tags.add(
+        new Tag(KEY_INSTRUMENTATION_LIBRARY_NAME, TagType.STRING)
+            .setVStr(span.getInstrumentationLibraryInfo().getName()));
 
     if (span.getInstrumentationLibraryInfo().getVersion() != null) {
       tags.add(
@@ -138,11 +136,9 @@ final class Adapter {
    * @return a collection of Jaeger logs
    * @see #toJaegerLog(Event)
    */
-  //VisibleForTesting
+  // VisibleForTesting
   static List<Log> toJaegerLogs(List<Event> timedEvents) {
-    return timedEvents.stream()
-        .map(Adapter::toJaegerLog)
-        .collect(Collectors.toList());
+    return timedEvents.stream().map(Adapter::toJaegerLog).collect(Collectors.toList());
   }
 
   /**
@@ -151,16 +147,18 @@ final class Adapter {
    * @param event the timed event to be converted
    * @return a Jaeger log
    */
-  //VisibleForTesting
+  // VisibleForTesting
   static Log toJaegerLog(Event event) {
     Log result = new Log();
-    //millis? nanos?
+    // millis? nanos?
     result.setTimestamp(TimeUnit.NANOSECONDS.toMicros(event.getEpochNanos()));
     result.addToFields(new Tag(KEY_LOG_EVENT, TagType.STRING).setVStr(event.getName()));
 
     int droppedAttributesCount = event.getDroppedAttributesCount();
     if (droppedAttributesCount > 0) {
-      result.addToFields(new Tag(KEY_EVENT_DROPPED_ATTRIBUTES_COUNT, TagType.LONG).setVLong(droppedAttributesCount));
+      result.addToFields(
+          new Tag(KEY_EVENT_DROPPED_ATTRIBUTES_COUNT, TagType.LONG)
+              .setVLong(droppedAttributesCount));
     }
     List<Tag> attributeTags = toTags(event.getAttributes());
     for (Tag attributeTag : attributeTags) {
@@ -178,23 +176,24 @@ final class Adapter {
    */
   static List<Tag> toTags(ReadableAttributes attributes) {
     List<Tag> results = new ArrayList<>();
-    attributes.forEach(new AttributeConsumer() {
-      @Override
-      public <T> void consume(AttributeKey<T> key, T value) {
-        results.add(toTag(key, value));
-      }
-    });
+    attributes.forEach(
+        new AttributeConsumer() {
+          @Override
+          public <T> void consume(AttributeKey<T> key, T value) {
+            results.add(toTag(key, value));
+          }
+        });
     return results;
   }
 
   /**
    * Converts the given {@link AttributeKey} and value into Jaeger's {@link Tag}.
    *
-   * @param key   the entry key as string
+   * @param key the entry key as string
    * @param value the entry value
    * @return a Jaeger key value
    */
-  //VisibleForTesting
+  // VisibleForTesting
   static <T> Tag toTag(AttributeKey<T> key, T value) {
     switch (key.getType()) {
       case STRING:
@@ -216,7 +215,7 @@ final class Adapter {
    * @param links the span's links property to be converted
    * @return a collection of Jaeger span references
    */
-  //VisibleForTesting
+  // VisibleForTesting
   static List<SpanRef> toSpanRefs(List<Link> links) {
     List<SpanRef> spanRefs = new ArrayList<>(links.size());
     for (Link link : links) {
@@ -231,14 +230,15 @@ final class Adapter {
    * @param link the OpenTelemetry link to be converted
    * @return the Jaeger span reference
    */
-  //VisibleForTesting
+  // VisibleForTesting
   static SpanRef toSpanRef(Link link) {
     // we can assume that all links are *follows from*
     // https://github.com/open-telemetry/opentelemetry-java/issues/475
     // https://github.com/open-telemetry/opentelemetry-java/pull/481/files#r312577862
-    return new SpanRef(SpanRefType.FOLLOWS_FROM,
-        TraceId.getTraceIdLowBytesAsLong(link.getContext().getTraceIdAsHexString()),
-        TraceId.getTraceIdHighBytesAsLong(link.getContext().getTraceIdAsHexString()),
+    return new SpanRef(
+        SpanRefType.FOLLOWS_FROM,
+        TraceId.traceIdLowBytesAsLong(link.getContext().getTraceIdAsHexString()),
+        TraceId.traceIdHighBytesAsLong(link.getContext().getTraceIdAsHexString()),
         SpanId.asLong(link.getContext().getSpanIdAsHexString()));
   }
 }

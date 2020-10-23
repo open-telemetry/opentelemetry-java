@@ -29,9 +29,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * Exports spans to Jaeger via Thrift, using Jaeger's thrift model.
- */
+/** Exports spans to Jaeger via Thrift, using Jaeger's thrift model. */
 @ThreadSafe
 public final class JaegerThriftSpanExporter implements SpanExporter {
 
@@ -46,7 +44,6 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
   private static final String HOSTNAME_KEY = "hostname";
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
-  private final long deadlineMs;
   private final ThriftSender thriftSender;
   private final Process process;
 
@@ -54,11 +51,9 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
    *
    * @param thriftSender The sender used for sending the data.
-   * @param serviceName  this service's name.
-   * @param deadlineMs   max waiting time for the collector to process each span batch. When set to
-   *                     0
+   * @param serviceName this service's name.
    */
-  private JaegerThriftSpanExporter(ThriftSender thriftSender, String serviceName, long deadlineMs) {
+  private JaegerThriftSpanExporter(ThriftSender thriftSender, String serviceName) {
     this.thriftSender = thriftSender;
     String hostname;
     String ipv4;
@@ -83,8 +78,6 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
     this.process.addToTags(clientTag);
     this.process.addToTags(ipv4Tag);
     this.process.addToTags(hostnameTag);
-
-    this.deadlineMs = deadlineMs;
   }
 
   /**
@@ -95,30 +88,31 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    Map<Process, List<Span>> batches = spans.stream()
-        .collect(Collectors.groupingBy(SpanData::getResource))
-        .entrySet().stream()
-        .collect(Collectors
-            .toMap(entry -> createProcess(entry.getKey()), entry -> adaptSpans(entry.getValue())));
+    Map<Process, List<Span>> batches =
+        spans.stream()
+            .collect(Collectors.groupingBy(SpanData::getResource))
+            .entrySet()
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    entry -> createProcess(entry.getKey()),
+                    entry -> Adapter.toJaeger(entry.getValue())));
 
     List<CompletableResultCode> batchResults = new ArrayList<>(batches.size());
-    batches.forEach((process, jaegerSpans) -> {
-      CompletableResultCode batchResult = new CompletableResultCode();
-      try {
-        //todo: consider making truly async
-        thriftSender.send(process, jaegerSpans);
-        batchResult.succeed();
-      } catch (SenderException e) {
-        logger.log(Level.WARNING, "Failed to export spans", e);
-        batchResult.fail();
-        e.printStackTrace();
-      }
-    });
+    batches.forEach(
+        (process, jaegerSpans) -> {
+          CompletableResultCode batchResult = new CompletableResultCode();
+          try {
+            // todo: consider making truly async
+            thriftSender.send(process, jaegerSpans);
+            batchResult.succeed();
+          } catch (SenderException e) {
+            logger.log(Level.WARNING, "Failed to export spans", e);
+            batchResult.fail();
+            e.printStackTrace();
+          }
+        });
     return CompletableResultCode.ofAll(batchResults);
-  }
-
-  private List<Span> adaptSpans(List<SpanData> otelSpans) {
-    return Adapter.toJaeger(otelSpans);
   }
 
   private Process createProcess(Resource resource) {
@@ -154,13 +148,11 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = new CompletableResultCode();
-    //todo
+    // todo
     return result.succeed();
   }
 
-  /**
-   * Builder utility for this exporter.
-   */
+  /** Builder utility for this exporter. */
   public static class Builder extends ConfigBuilder<Builder> {
 
     private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";
@@ -168,7 +160,6 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
 
     private String serviceName = DEFAULT_SERVICE_NAME;
     private String endpoint = DEFAULT_ENDPOINT;
-    private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
     private ThriftSender thriftSender;
 
     /**
@@ -206,17 +197,6 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the max waiting time for the collector to process each span batch. Optional.
-     *
-     * @param deadlineMs the max waiting time in millis.
-     * @return this.
-     */
-    public Builder setDeadlineMs(long deadlineMs) {
-      this.deadlineMs = deadlineMs;
-      return this;
-    }
-
-    /**
      * Sets the configuration values from the given configuration map for only the available keys.
      *
      * @param configMap {@link Map} holding the configuration values.
@@ -246,10 +226,9 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
       if (thriftSender == null) {
         thriftSender = new HttpSender.Builder(endpoint).build();
       }
-      return new JaegerThriftSpanExporter(thriftSender, serviceName, deadlineMs);
+      return new JaegerThriftSpanExporter(thriftSender, serviceName);
     }
 
-    private Builder() {
-    }
+    private Builder() {}
   }
 }

@@ -94,6 +94,7 @@ public final class SpanId {
     return BigendianEncoding.toLowerBase16(spanId);
   }
 
+  /** Convert the the given hex spanId into a long representation. */
   public static long asLong(String src) {
     return BigendianEncoding.longFromBase16String(src, 0);
   }

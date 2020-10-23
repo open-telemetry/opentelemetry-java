@@ -42,9 +42,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for {@link Adapter}.
- */
+/** Unit tests for {@link Adapter}. */
 class AdapterTest {
 
   private static final String LINK_TRACE_ID = "00000000000000000000000000cba123";
@@ -79,8 +77,8 @@ class AdapterTest {
     // test
     io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
 
-    String rebuildTraceId = TraceId
-        .fromLongs(jaegerSpan.getTraceIdHigh(), jaegerSpan.getTraceIdLow());
+    String rebuildTraceId =
+        TraceId.fromLongs(jaegerSpan.getTraceIdHigh(), jaegerSpan.getTraceIdLow());
     assertThat(rebuildTraceId).isEqualTo(span.getTraceId());
     assertThat(SpanId.fromLong(jaegerSpan.getSpanId())).isEqualTo(span.getSpanId());
     assertThat(jaegerSpan.getOperationName()).isEqualTo("GET /api/endpoint");
@@ -154,14 +152,10 @@ class AdapterTest {
     Tag kvD = Adapter.toTag(doubleKey("valueD"), 1.);
     Tag kvI = Adapter.toTag(longKey("valueI"), 2L);
     Tag kvS = Adapter.toTag(stringKey("valueS"), "foobar");
-    Tag kvArrayB =
-        Adapter.toTag(booleanArrayKey("valueArrayB"), Arrays.asList(true, false));
-    Tag kvArrayD =
-        Adapter.toTag(doubleArrayKey("valueArrayD"), Arrays.asList(1.2345, 6.789));
-    Tag kvArrayI =
-        Adapter.toTag(longArrayKey("valueArrayI"), Arrays.asList(12345L, 67890L));
-    Tag kvArrayS =
-        Adapter.toTag(stringArrayKey("valueArrayS"), Arrays.asList("foobar", "barfoo"));
+    Tag kvArrayB = Adapter.toTag(booleanArrayKey("valueArrayB"), Arrays.asList(true, false));
+    Tag kvArrayD = Adapter.toTag(doubleArrayKey("valueArrayD"), Arrays.asList(1.2345, 6.789));
+    Tag kvArrayI = Adapter.toTag(longArrayKey("valueArrayI"), Arrays.asList(12345L, 67890L));
+    Tag kvArrayS = Adapter.toTag(stringArrayKey("valueArrayS"), Arrays.asList("foobar", "barfoo"));
 
     // verify
     assertThat(kvB.isVBool()).isTrue();
@@ -333,5 +327,4 @@ class AdapterTest {
     }
     assertThat(found).isTrue();
   }
-
 }

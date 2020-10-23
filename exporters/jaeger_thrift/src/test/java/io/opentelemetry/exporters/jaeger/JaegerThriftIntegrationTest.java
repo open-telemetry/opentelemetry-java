@@ -60,8 +60,7 @@ class JaegerThriftIntegrationTest {
     SpanExporter jaegerExporter =
         JaegerThriftSpanExporter.builder()
             .setServiceName(SERVICE_NAME)
-            .setEndpoint(JAEGER_URL + ":" + mappedPort +"/api/traces")
-            .setDeadlineMs(30000)
+            .setEndpoint(JAEGER_URL + ":" + mappedPort + "/api/traces")
             .build();
     OpenTelemetrySdk.getTracerManagement()
         .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
@@ -84,8 +83,7 @@ class JaegerThriftIntegrationTest {
       String url =
           String.format(
               "%s/api/traces?service=%s",
-              String.format(JAEGER_URL + ":%d", mappedPort),
-              SERVICE_NAME);
+              String.format(JAEGER_URL + ":%d", mappedPort), SERVICE_NAME);
 
       Request request =
           new Request.Builder()

@@ -140,14 +140,16 @@ public final class TraceId {
    * @return the rightmost 8 bytes of the trace-id as a long value.
    */
   public static long getTraceIdRandomPart(CharSequence traceId) {
-    return getTraceIdLowBytesAsLong(traceId);
+    return traceIdLowBytesAsLong(traceId);
   }
 
-  public static long getTraceIdHighBytesAsLong(CharSequence traceId) {
+  /** Convert the "high bytes" of the given hex traceId into a long representation. */
+  public static long traceIdHighBytesAsLong(CharSequence traceId) {
     return BigendianEncoding.longFromBase16String(traceId, 0);
   }
 
-  public static long getTraceIdLowBytesAsLong(CharSequence traceId) {
+  /** Convert the "low bytes" of the given hex traceId into a long representation. */
+  public static long traceIdLowBytesAsLong(CharSequence traceId) {
     return BigendianEncoding.longFromBase16String(traceId, BigendianEncoding.LONG_BASE16);
   }
 }

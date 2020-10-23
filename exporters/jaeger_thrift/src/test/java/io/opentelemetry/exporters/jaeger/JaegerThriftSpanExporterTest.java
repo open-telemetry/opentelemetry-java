@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 import io.jaegertracing.internal.exceptions.SenderException;
 import io.jaegertracing.thrift.internal.senders.ThriftSender;
 import io.jaegertracing.thriftjava.Process;
+import io.jaegertracing.thriftjava.Span;
 import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.common.AttributeKey;
@@ -39,21 +40,21 @@ import org.mockito.MockitoAnnotations;
 
 class JaegerThriftSpanExporterTest {
 
-  private static final String TRACE_ID = "00000000000000000000000000abc123";
-  private static final String SPAN_ID = "0000000000def456";
-  private static final String SPAN_ID_2 = "0000000000aef789";
+  private static final String TRACE_ID = "a0000000000000000000000000abc123";
+  private static final String SPAN_ID = "00000f0000def456";
+  private static final String SPAN_ID_2 = "00a0000000aef789";
 
   private JaegerThriftSpanExporter exporter;
-  @Mock
-  private ThriftSender thriftSender;
+  @Mock private ThriftSender thriftSender;
 
   @BeforeEach
   void beforeEach() {
     MockitoAnnotations.initMocks(this);
-    exporter = JaegerThriftSpanExporter.builder()
-        .setThriftSender(thriftSender)
-        .setServiceName("myservice.name")
-        .build();
+    exporter =
+        JaegerThriftSpanExporter.builder()
+            .setThriftSender(thriftSender)
+            .setServiceName("myservice.name")
+            .build();
   }
 
   @Test
@@ -87,32 +88,33 @@ class JaegerThriftSpanExporterTest {
 
     // verify
     Process expectedProcess = new Process("myservice.name");
-    expectedProcess
-        .addToTags(new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
+    expectedProcess.addToTags(
+        new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
     expectedProcess.addToTags(
         new Tag("ip", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostAddress()));
     expectedProcess.addToTags(
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
-    expectedProcess
-        .addToTags(new Tag("resource-attr-key", TagType.STRING).setVStr("resource-attr-value"));
+    expectedProcess.addToTags(
+        new Tag("resource-attr-key", TagType.STRING).setVStr("resource-attr-value"));
 
-    io.jaegertracing.thriftjava.Span expectedSpan = new io.jaegertracing.thriftjava.Span()
-        .setTraceIdHigh(TraceId.getTraceIdHighBytesAsLong(TRACE_ID))
-        .setTraceIdLow(TraceId.getTraceIdLowBytesAsLong(TRACE_ID))
-        .setSpanId(SpanId.asLong(SPAN_ID))
-        .setOperationName("GET /api/endpoint")
-        .setReferences(Collections.emptyList())
-        .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
-        .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
-        .setLogs(Collections.emptyList());
+    Span expectedSpan =
+        new Span()
+            .setTraceIdHigh(TraceId.traceIdHighBytesAsLong(TRACE_ID))
+            .setTraceIdLow(TraceId.traceIdLowBytesAsLong(TRACE_ID))
+            .setSpanId(SpanId.asLong(SPAN_ID))
+            .setOperationName("GET /api/endpoint")
+            .setReferences(Collections.emptyList())
+            .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
+            .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
+            .setLogs(Collections.emptyList());
     expectedSpan.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
     expectedSpan.addToTags(new Tag("span.status.message", TagType.STRING).setVStr(""));
     expectedSpan.addToTags(new Tag("span.status.code", TagType.LONG).setVLong(0));
-    expectedSpan
-        .addToTags(new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
+    expectedSpan.addToTags(
+        new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
     expectedSpan.addToTags(new Tag("otel.library.version", TagType.STRING).setVStr("1.0.0"));
 
-    List<io.jaegertracing.thriftjava.Span> expectedSpans = Collections.singletonList(expectedSpan);
+    List<Span> expectedSpans = Collections.singletonList(expectedSpan);
     verify(thriftSender).send(expectedProcess, expectedSpans);
   }
 
@@ -168,60 +170,61 @@ class JaegerThriftSpanExporterTest {
 
     // verify
     Process expectedProcess1 = new Process("myservice.name");
-    expectedProcess1
-        .addToTags(new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
+    expectedProcess1.addToTags(
+        new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
     expectedProcess1.addToTags(
         new Tag("ip", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostAddress()));
     expectedProcess1.addToTags(
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
-    expectedProcess1
-        .addToTags(new Tag("resource-attr-key-1", TagType.STRING).setVStr("resource-attr-value-1"));
+    expectedProcess1.addToTags(
+        new Tag("resource-attr-key-1", TagType.STRING).setVStr("resource-attr-value-1"));
 
     Process expectedProcess2 = new Process("myservice.name");
-    expectedProcess2
-        .addToTags(new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
+    expectedProcess2.addToTags(
+        new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
     expectedProcess2.addToTags(
         new Tag("ip", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostAddress()));
     expectedProcess2.addToTags(
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
-    expectedProcess2
-        .addToTags(new Tag("resource-attr-key-2", TagType.STRING).setVStr("resource-attr-value-2"));
+    expectedProcess2.addToTags(
+        new Tag("resource-attr-key-2", TagType.STRING).setVStr("resource-attr-value-2"));
 
-    io.jaegertracing.thriftjava.Span expectedSpan1 = new io.jaegertracing.thriftjava.Span()
-        .setTraceIdHigh(TraceId.getTraceIdHighBytesAsLong(TRACE_ID))
-        .setTraceIdLow(TraceId.getTraceIdLowBytesAsLong(TRACE_ID))
-        .setSpanId(SpanId.asLong(SPAN_ID))
-        .setOperationName("GET /api/endpoint/1")
-        .setReferences(Collections.emptyList())
-        .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
-        .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
-        .setLogs(Collections.emptyList());
+    Span expectedSpan1 =
+        new Span()
+            .setTraceIdHigh(TraceId.traceIdHighBytesAsLong(TRACE_ID))
+            .setTraceIdLow(TraceId.traceIdLowBytesAsLong(TRACE_ID))
+            .setSpanId(SpanId.asLong(SPAN_ID))
+            .setOperationName("GET /api/endpoint/1")
+            .setReferences(Collections.emptyList())
+            .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
+            .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
+            .setLogs(Collections.emptyList());
     expectedSpan1.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
     expectedSpan1.addToTags(new Tag("span.status.message", TagType.STRING).setVStr(""));
     expectedSpan1.addToTags(new Tag("span.status.code", TagType.LONG).setVLong(0));
-    expectedSpan1
-        .addToTags(new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
+    expectedSpan1.addToTags(
+        new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
     expectedSpan1.addToTags(new Tag("otel.library.version", TagType.STRING).setVStr("1.0.0"));
 
-    io.jaegertracing.thriftjava.Span expectedSpan2 = new io.jaegertracing.thriftjava.Span()
-        .setTraceIdHigh(TraceId.getTraceIdHighBytesAsLong(TRACE_ID))
-        .setTraceIdLow(TraceId.getTraceIdLowBytesAsLong(TRACE_ID))
-        .setSpanId(SpanId.asLong(SPAN_ID_2))
-        .setOperationName("GET /api/endpoint/2")
-        .setReferences(Collections.emptyList())
-        .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
-        .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
-        .setLogs(Collections.emptyList());
+    Span expectedSpan2 =
+        new Span()
+            .setTraceIdHigh(TraceId.traceIdHighBytesAsLong(TRACE_ID))
+            .setTraceIdLow(TraceId.traceIdLowBytesAsLong(TRACE_ID))
+            .setSpanId(SpanId.asLong(SPAN_ID_2))
+            .setOperationName("GET /api/endpoint/2")
+            .setReferences(Collections.emptyList())
+            .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
+            .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
+            .setLogs(Collections.emptyList());
     expectedSpan2.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
     expectedSpan2.addToTags(new Tag("span.status.message", TagType.STRING).setVStr(""));
     expectedSpan2.addToTags(new Tag("span.status.code", TagType.LONG).setVLong(0));
-    expectedSpan2
-        .addToTags(new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
+    expectedSpan2.addToTags(
+        new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
     expectedSpan2.addToTags(new Tag("otel.library.version", TagType.STRING).setVStr("1.0.0"));
 
     verify(thriftSender).send(expectedProcess2, Collections.singletonList(expectedSpan2));
     verify(thriftSender).send(expectedProcess1, Collections.singletonList(expectedSpan1));
-
   }
 
   @Test
@@ -244,5 +247,4 @@ class JaegerThriftSpanExporterTest {
       return NamingConvention.DOT;
     }
   }
-
 }
