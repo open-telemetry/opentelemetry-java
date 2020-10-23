@@ -36,7 +36,7 @@ public final class TracingContextUtils {
    * @return the {@link Span} from the current {@code Context}.
    */
   static Span getCurrentSpan() {
-    return Span.fromContext(Context.current());
+    return getSpan(Context.current());
   }
 
   /**
