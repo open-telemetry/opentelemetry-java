@@ -14,6 +14,11 @@ Make sure to review the projects [license](LICENSE) and sign the
 [CNCF CLA](https://identity.linuxfoundation.org/projects/cncf). A signed CLA will be enforced by an
 automatic check once you submit a PR, but you can also sign it after opening your PR.
 
+## Requirements
+
+Java 11 or higher is required to build the projects in this repository. The built artifacts can be
+used on Java 8 or higher.
+
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
