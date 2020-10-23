@@ -93,4 +93,8 @@ public final class SpanId {
   public static String bytesToHex(byte[] spanId) {
     return BigendianEncoding.toLowerBase16(spanId);
   }
+
+  public static long asLong(String src) {
+    return BigendianEncoding.longFromBase16String(src, 0);
+  }
 }
