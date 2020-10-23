@@ -98,8 +98,7 @@ class TraceConfigTest {
   @Test
   void updateTraceConfig_All() {
     TraceConfig traceConfig =
-        TraceConfig.getDefault()
-            .toBuilder()
+        TraceConfig.getDefault().toBuilder()
             .setSampler(Samplers.alwaysOff())
             .setMaxNumberOfAttributes(8)
             .setMaxNumberOfEvents(10)

@@ -157,8 +157,7 @@ class ZipkinSpanExporterTest {
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.CLIENT)
-                .toBuilder()
+            buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .putTag("string", "string value")
                 .putTag("boolean", "false")
                 .putTag("long", "9999")
@@ -181,8 +180,7 @@ class ZipkinSpanExporterTest {
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.CLIENT)
-                .toBuilder()
+            buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .putTag("otel.library.name", "io.opentelemetry.auto")
                 .putTag("otel.library.version", "1.0.0")
                 .build());
@@ -202,8 +200,7 @@ class ZipkinSpanExporterTest {
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.CLIENT)
-                .toBuilder()
+            buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .clearTags()
                 .putTag(SemanticAttributes.HTTP_STATUS_CODE.getKey(), "404")
                 .putTag("error", "A user provided error")
@@ -224,8 +221,7 @@ class ZipkinSpanExporterTest {
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.SERVER)
-                .toBuilder()
+            buildZipkinSpan(Span.Kind.SERVER).toBuilder()
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_DESCRIPTION, errorMessage)
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "ERROR")

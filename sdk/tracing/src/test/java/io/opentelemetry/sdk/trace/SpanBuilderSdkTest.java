@@ -95,9 +95,7 @@ class SpanBuilderSdkTest {
   void truncateLink() {
     final int maxNumberOfLinks = 8;
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxNumberOfLinks(maxNumberOfLinks)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -124,9 +122,7 @@ class SpanBuilderSdkTest {
   @Test
   void truncateLinkAttributes() {
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxNumberOfAttributesPerLink(1)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -353,9 +349,7 @@ class SpanBuilderSdkTest {
   void droppingAttributes() {
     final int maxNumberOfAttrs = 8;
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxNumberOfAttributes(maxNumberOfAttrs)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -379,9 +373,7 @@ class SpanBuilderSdkTest {
   @Test
   public void tooLargeAttributeValuesAreTruncated() {
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxLengthOfAttributeValues(10)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -430,9 +422,7 @@ class SpanBuilderSdkTest {
   @Test
   void addAttributes_OnlyViaSampler() {
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setSampler(Samplers.traceIdRatioBased(1))
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
