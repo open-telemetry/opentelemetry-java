@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -34,9 +33,8 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class JaegerThriftSpanExporter implements SpanExporter {
 
   public static final String DEFAULT_HOST_NAME = "unknown";
-  public static final String DEFAULT_ENDPOINT = "localhost:14268/api/traces";
+  public static final String DEFAULT_ENDPOINT = "http://localhost:14268/api/traces";
   public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
 
   private static final Logger logger = Logger.getLogger(JaegerThriftSpanExporter.class.getName());
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
@@ -183,9 +181,11 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the Jaeger endpoint to connect to. Optional, defaults to "localhost:14250".
+     * Sets the Jaeger endpoint to connect to. Needs to include the full API path for trace ingest.
      *
-     * @param endpoint The Jaeger endpoint URL, ex. "jaegerhost:14250".
+     * <p>Optional, defaults to "http://localhost:14268/api/traces".
+     *
+     * @param endpoint The Jaeger endpoint URL, ex. "https://jaegerhost:14268/api/traces".
      * @return this.
      */
     public Builder setEndpoint(String endpoint) {
