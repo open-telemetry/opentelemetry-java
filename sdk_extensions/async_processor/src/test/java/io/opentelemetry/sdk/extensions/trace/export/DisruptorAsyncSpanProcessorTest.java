@@ -52,7 +52,7 @@ class DisruptorAsyncSpanProcessorTest {
     }
 
     @Override
-    public void onStart(ReadWriteSpan span, Context parentContext) {
+    public void onStart(Context parentContext, ReadWriteSpan span) {
       counterOnStart.incrementAndGet();
     }
 
@@ -120,7 +120,7 @@ class DisruptorAsyncSpanProcessorTest {
     assertThat(disruptorAsyncSpanProcessor.isEndRequired()).isTrue();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
-    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
+    disruptorAsyncSpanProcessor.onStart(Context.root(), readWriteSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
     disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
@@ -140,7 +140,7 @@ class DisruptorAsyncSpanProcessorTest {
     assertThat(disruptorAsyncSpanProcessor.isEndRequired()).isTrue();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
-    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
+    disruptorAsyncSpanProcessor.onStart(Context.root(), readWriteSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
     disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
@@ -160,7 +160,7 @@ class DisruptorAsyncSpanProcessorTest {
     assertThat(disruptorAsyncSpanProcessor.isEndRequired()).isFalse();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
-    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
+    disruptorAsyncSpanProcessor.onStart(Context.root(), readWriteSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
     disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
@@ -189,7 +189,7 @@ class DisruptorAsyncSpanProcessorTest {
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
     disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
-    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
+    disruptorAsyncSpanProcessor.onStart(Context.root(), readWriteSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
     disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
@@ -206,7 +206,7 @@ class DisruptorAsyncSpanProcessorTest {
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
     for (int i = 1; i <= tenK; i++) {
-      disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
+      disruptorAsyncSpanProcessor.onStart(Context.root(), readWriteSpan);
       disruptorAsyncSpanProcessor.onEnd(readableSpan);
       if (i % 10 == 0) {
         disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
@@ -228,7 +228,7 @@ class DisruptorAsyncSpanProcessorTest {
                 MultiSpanProcessor.create(
                     Arrays.asList(incrementSpanProcessor1, incrementSpanProcessor2)))
             .build();
-    disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
+    disruptorAsyncSpanProcessor.onStart(Context.root(), readWriteSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
     disruptorAsyncSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
     assertThat(incrementSpanProcessor1.getCounterOnStart()).isEqualTo(1);
@@ -248,7 +248,7 @@ class DisruptorAsyncSpanProcessorTest {
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).build();
     for (int i = 1; i <= tenK; i++) {
-      disruptorAsyncSpanProcessor.onStart(readWriteSpan, Context.root());
+      disruptorAsyncSpanProcessor.onStart(Context.root(), readWriteSpan);
       disruptorAsyncSpanProcessor.onEnd(readableSpan);
       if (i % 100 == 0) {
         disruptorAsyncSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);

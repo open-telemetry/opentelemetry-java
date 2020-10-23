@@ -26,7 +26,7 @@ class NoopSpanProcessorTest {
   @Test
   void noCrash() {
     SpanProcessor noopSpanProcessor = NoopSpanProcessor.getInstance();
-    noopSpanProcessor.onStart(readWriteSpan, Context.root());
+    noopSpanProcessor.onStart(Context.root(), readWriteSpan);
     assertThat(noopSpanProcessor.isStartRequired()).isFalse();
     noopSpanProcessor.onEnd(readableSpan);
     assertThat(noopSpanProcessor.isEndRequired()).isFalse();

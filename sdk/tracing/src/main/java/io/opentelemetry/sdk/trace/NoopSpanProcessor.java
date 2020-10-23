@@ -16,7 +16,7 @@ final class NoopSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadWriteSpan span, Context parentContext) {}
+  public void onStart(Context parentContext, ReadWriteSpan span) {}
 
   @Override
   public boolean isStartRequired() {

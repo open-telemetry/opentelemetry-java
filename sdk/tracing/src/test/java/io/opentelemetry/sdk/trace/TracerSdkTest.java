@@ -118,7 +118,7 @@ class TracerSdkTest {
     private final AtomicLong numberOfSpansFinished = new AtomicLong();
 
     @Override
-    public void onStart(ReadWriteSpan span, Context parentContext) {
+    public void onStart(Context parentContext, ReadWriteSpan span) {
       numberOfSpansStarted.incrementAndGet();
     }
 
