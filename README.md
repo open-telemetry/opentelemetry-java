@@ -145,7 +145,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
 - [Armin Ruech](https://github.com/arminru), Dynatrace
-- [Pavol Loffay](https://github.com/pavolloffay), RedHat
+- [Pavol Loffay](https://github.com/pavolloffay), Traceable.ai
 - [Tyler Benson](https://github.com/tylerbenson), DataDog
 - [Giovanni Liva](https://github.com/thisthat), Dynatrace
 
