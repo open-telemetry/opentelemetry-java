@@ -152,6 +152,43 @@ class ImmutableBaggageTest {
   }
 
   @Test
+  void toBuilder_keepsOriginalState() {
+    assertThat(Baggage.empty().toBuilder().build()).isEqualTo(Baggage.empty());
+
+    Baggage originalBaggage = Baggage.builder().put("key", "value").build();
+    assertThat(originalBaggage.toBuilder().build()).isEqualTo(originalBaggage);
+
+    Baggage parentedBaggage =
+        Baggage.builder().setParent(Context.root().with(originalBaggage)).build();
+    assertThat(parentedBaggage.toBuilder().build()).isEqualTo(parentedBaggage);
+  }
+
+  @Test
+  void toBuilder_allowChanges() {
+    Baggage singleItemNoParent = Baggage.builder().put("key1", "value1").setNoParent().build();
+    Baggage singleItemWithParent =
+        Baggage.builder()
+            .setParent(Context.root().with(Baggage.empty()))
+            .put("key1", "value1")
+            .build();
+
+    assertThat(Baggage.empty().toBuilder().put("key1", "value1").build())
+        .isEqualTo(singleItemNoParent);
+    assertThat(singleItemNoParent.toBuilder().put("key2", "value2").build())
+        .isEqualTo(
+            Baggage.builder().put("key1", "value1").put("key2", "value2").setNoParent().build());
+    assertThat(singleItemNoParent.toBuilder().put("key1", "value2").build())
+        .isEqualTo(Baggage.builder().put("key1", "value2").setNoParent().build());
+
+    assertThat(singleItemWithParent.toBuilder().put("key1", "value2").build())
+        .isEqualTo(
+            Baggage.builder()
+                .put("key1", "value2")
+                .setParent(Context.root().with(Baggage.empty()))
+                .build());
+  }
+
+  @Test
   void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
