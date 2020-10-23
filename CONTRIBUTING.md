@@ -97,17 +97,16 @@ you can enable the docker tests by setting a gradle property of
 ``"enable.docker.tests"`` to true. See the gradle.properties file in the root of the project
 for more details.
 
-2. From the root project directory, initialize repository dependencies
+2. Clone the repository recursively
 
-   `make init-git-submodules`
+    `git clone git@github.com:<username>/opentelemetry-java.git --recursive`
+
+or alternatively initialize submodules for an existing clone.
+
+   `git submodule init`
+   `git submodule update`   
 
 3. Run the following commands to build, run tests and most static analysis, and
 check formatting:
 
-    ##### OS X or Linux
-
-    `make test verify-format`
-
-    ##### Windows
-
-    `gradlew.bat clean assemble check verGJF`
+    `./gradlew check`
