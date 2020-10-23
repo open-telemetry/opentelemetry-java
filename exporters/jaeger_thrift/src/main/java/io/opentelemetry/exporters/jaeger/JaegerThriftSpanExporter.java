@@ -89,10 +89,7 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     Map<Process, List<Span>> batches =
-        spans.stream()
-            .collect(Collectors.groupingBy(SpanData::getResource))
-            .entrySet()
-            .stream()
+        spans.stream().collect(Collectors.groupingBy(SpanData::getResource)).entrySet().stream()
             .collect(
                 Collectors.toMap(
                     entry -> createProcess(entry.getKey()),
