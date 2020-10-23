@@ -444,19 +444,17 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public ReadWriteSpan end() {
+  public void end() {
     endInternal(clock.now());
-    return this;
   }
 
   @Override
-  public ReadWriteSpan end(EndSpanOptions endOptions) {
+  public void end(EndSpanOptions endOptions) {
     if (endOptions == null) {
       end();
-      return this;
+      return;
     }
     endInternal(endOptions.getEndTimestamp() == 0 ? clock.now() : endOptions.getEndTimestamp());
-    return this;
   }
 
   private void endInternal(long endEpochNanos) {

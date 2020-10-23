@@ -298,10 +298,8 @@ public interface Span extends ImplicitContextKeyed {
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
    * implementations are free to ignore all further calls.
-   *
-   * @return this.
    */
-  Span end();
+  void end();
 
   /**
    * Marks the end of {@code Span} execution with the specified {@link EndSpanOptions}.
@@ -313,9 +311,8 @@ public interface Span extends ImplicitContextKeyed {
    * explicit values are required, use {@link #end()}.
    *
    * @param endOptions the explicit {@link EndSpanOptions} for this {@code Span}.
-   * @return this.
    */
-  Span end(EndSpanOptions endOptions);
+  void end(EndSpanOptions endOptions);
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.
