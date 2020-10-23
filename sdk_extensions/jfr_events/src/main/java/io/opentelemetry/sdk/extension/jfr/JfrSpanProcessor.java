@@ -27,7 +27,7 @@ public class JfrSpanProcessor implements SpanProcessor {
   private final Map<SpanContext, SpanEvent> spanEvents = new ConcurrentHashMap<>();
 
   @Override
-  public void onStart(ReadWriteSpan span, Context parentContext) {
+  public void onStart(Context parentContext, ReadWriteSpan span) {
     if (span.getSpanContext().isValid()) {
       SpanEvent event = new SpanEvent(span.toSpanData());
       event.begin();
