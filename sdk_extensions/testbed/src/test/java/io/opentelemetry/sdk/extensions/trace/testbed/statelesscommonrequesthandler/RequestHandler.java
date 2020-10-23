@@ -37,7 +37,7 @@ final class RequestHandler {
   /** afterResponse handler....... */
   public void afterResponse(Object response) {
     // Finish the Span
-    TracingContextUtils.getCurrentSpan().end();
+    Span.current().end();
 
     // Deactivate the Span
     tlsScope.get().close();

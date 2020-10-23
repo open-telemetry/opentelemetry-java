@@ -10,6 +10,7 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -21,6 +22,31 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface Span extends ImplicitContextKeyed {
+
+  /**
+   * Returns the {@link Span} from the current {@link Context}, falling back to a default, no-op
+   * {@link Span} if there is no span in the current context.
+   */
+  static Span current() {
+    return TracingContextUtils.getCurrentSpan();
+  }
+
+  /**
+   * Returns the {@link Span} from the specified {@link Context}, falling back to a default, no-op
+   * {@link Span} if there is no span in the context.
+   */
+  static Span fromContext(Context context) {
+    return TracingContextUtils.getSpan(context);
+  }
+
+  /**
+   * Returns the {@link Span} from the specified {@link Context}, or {@code null} if there is no
+   * span in the context.
+   */
+  @Nullable
+  static Span fromContextOrNull(Context context) {
+    return TracingContextUtils.getSpanWithoutDefault(context);
+  }
 
   /**
    * Returns an invalid {@link Span}. An invalid {@link Span} is used when tracing is disabled,
@@ -39,7 +65,7 @@ public interface Span extends ImplicitContextKeyed {
     if (spanContext == null || !spanContext.isValid()) {
       return getInvalid();
     }
-    return new PropagatedSpan(spanContext);
+    return PropagatedSpan.create(spanContext);
   }
 
   /**
@@ -277,7 +303,7 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @return the {@code SpanContext} associated with this {@code Span}.
    */
-  SpanContext getContext();
+  SpanContext getSpanContext();
 
   /**
    * Returns {@code true} if this {@code Span} records tracing events (e.g. {@link

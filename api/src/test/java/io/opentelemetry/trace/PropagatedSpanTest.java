@@ -21,7 +21,7 @@ class PropagatedSpanTest {
 
   @Test
   void hasInvalidContextAndDefaultSpanOptions() {
-    SpanContext context = Span.getInvalid().getContext();
+    SpanContext context = Span.getInvalid().getSpanContext();
     assertThat(context.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
     assertThat(context.getTraceState()).isEqualTo(TraceState.getDefault());
   }

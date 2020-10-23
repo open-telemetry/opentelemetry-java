@@ -95,7 +95,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadWriteSpan span, Context parentContext) {}
+  public void onStart(Context parentContext, ReadWriteSpan span) {}
 
   @Override
   public boolean isStartRequired() {
@@ -133,7 +133,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   private static final class Worker implements Runnable {
 
     static {
-      Meter meter = OpenTelemetry.getMeter("io.opentelemetry.sdk.trace");
+      Meter meter = OpenTelemetry.getGlobalMeter("io.opentelemetry.sdk.trace");
       LongCounter processedSpansCounter =
           meter
               .longCounterBuilder("processedSpans")

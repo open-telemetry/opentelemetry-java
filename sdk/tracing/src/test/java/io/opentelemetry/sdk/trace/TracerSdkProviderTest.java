@@ -130,7 +130,7 @@ class TracerSdkProviderTest {
   void returnNoopSpanAfterShutdown() {
     tracerFactory.shutdown();
     Span span = tracerFactory.get("noop").spanBuilder("span").startSpan();
-    assertThat(span.getContext().isValid()).isFalse();
+    assertThat(span.getSpanContext().isValid()).isFalse();
     span.end();
   }
 }

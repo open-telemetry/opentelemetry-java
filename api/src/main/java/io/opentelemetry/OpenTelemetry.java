@@ -7,7 +7,6 @@ package io.opentelemetry;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.baggage.BaggageManager;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
@@ -18,40 +17,38 @@ import io.opentelemetry.trace.TracerProvider;
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
  *
  * <p>The default for the OpenTelemetry API will include any {@link
- * io.opentelemetry.trace.spi.TracerProviderFactory}, {@link
- * io.opentelemetry.metrics.spi.MeterProviderFactory}, or {@link
- * io.opentelemetry.baggage.spi.BaggageManagerFactory} found on the classpath, or otherwise will be
+ * io.opentelemetry.trace.spi.TracerProviderFactory} or {@link
+ * io.opentelemetry.metrics.spi.MeterProviderFactory} found on the classpath, or otherwise will be
  * default, with no-op behavior.
  *
  * @see TracerProvider
  * @see MeterProvider
- * @see BaggageManager
  */
 public interface OpenTelemetry {
 
   /** Returns the globally registered {@link TracerProvider}. */
-  static TracerProvider getTracerProvider() {
-    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMyTracerProvider();
+  static TracerProvider getGlobalTracerProvider() {
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getTracerProvider();
   }
 
   /**
    * Gets or creates a named tracer instance from the globally registered {@link TracerProvider}.
    *
-   * <p>This is a shortcut method for {@code getTracerProvider().get(instrumentationName)}
+   * <p>This is a shortcut method for {@code getGlobalTracerProvider().get(instrumentationName)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
    * @return a tracer instance.
    */
-  static Tracer getTracer(String instrumentationName) {
-    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMyTracer(instrumentationName);
+  static Tracer getGlobalTracer(String instrumentationName) {
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getTracer(instrumentationName);
   }
 
   /**
    * Gets or creates a named and versioned tracer instance from the globally registered {@link
    * TracerProvider}.
    *
-   * <p>This is a shortcut method for {@code getTracerProvider().get(instrumentationName,
+   * <p>This is a shortcut method for {@code getGlobalTracerProvider().get(instrumentationName,
    * instrumentationVersion)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
@@ -60,34 +57,34 @@ public interface OpenTelemetry {
    *     "semver:1.0.0").
    * @return a tracer instance.
    */
-  static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
+  static Tracer getGlobalTracer(String instrumentationName, String instrumentationVersion) {
     return DefaultOpenTelemetry.getGlobalOpenTelemetry()
-        .getMyTracer(instrumentationName, instrumentationVersion);
+        .getTracer(instrumentationName, instrumentationVersion);
   }
 
   /** Returns the globally registered {@link MeterProvider}. */
-  static MeterProvider getMeterProvider() {
-    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMyMeterProvider();
+  static MeterProvider getGlobalMeterProvider() {
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMeterProvider();
   }
 
   /**
    * Gets or creates a named meter instance from the globally registered {@link MeterProvider}.
    *
-   * <p>This is a shortcut method for {@code getMeterProvider().get(instrumentationName)}
+   * <p>This is a shortcut method for {@code getGlobalMeterProvider().get(instrumentationName)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
    * @return a tracer instance.
    */
-  static Meter getMeter(String instrumentationName) {
-    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMyMeter(instrumentationName);
+  static Meter getGlobalMeter(String instrumentationName) {
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMeter(instrumentationName);
   }
 
   /**
    * Gets or creates a named and versioned meter instance from the globally registered {@link
    * MeterProvider}.
    *
-   * <p>This is a shortcut method for {@code getMeterProvider().get(instrumentationName,
+   * <p>This is a shortcut method for {@code getGlobalMeterProvider().get(instrumentationName,
    * instrumentationVersion)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
@@ -95,22 +92,22 @@ public interface OpenTelemetry {
    * @param instrumentationVersion The version of the instrumentation library.
    * @return a tracer instance.
    */
-  static Meter getMeter(String instrumentationName, String instrumentationVersion) {
+  static Meter getGlobalMeter(String instrumentationName, String instrumentationVersion) {
     return DefaultOpenTelemetry.getGlobalOpenTelemetry()
-        .getMyMeter(instrumentationName, instrumentationVersion);
+        .getMeter(instrumentationName, instrumentationVersion);
   }
 
   /**
    * Returns the globally registered {@link ContextPropagators} for remote propagation of a context.
    */
-  static ContextPropagators getPropagators() {
-    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getMyPropagators();
+  static ContextPropagators getGlobalPropagators() {
+    return DefaultOpenTelemetry.getGlobalOpenTelemetry().getPropagators();
   }
 
   /**
    * Sets the globally registered {@link ContextPropagators} for remote propagation of a context.
    */
-  static void setPropagators(ContextPropagators propagators) {
+  static void setGlobalPropagators(ContextPropagators propagators) {
     requireNonNull(propagators, "propagators");
     DefaultOpenTelemetry.setGlobalOpenTelemetry(
         ((DefaultOpenTelemetry) DefaultOpenTelemetry.getGlobalOpenTelemetry())
@@ -118,7 +115,7 @@ public interface OpenTelemetry {
   }
 
   /** Returns the {@link TracerProvider} for this {@link OpenTelemetry}. */
-  TracerProvider getMyTracerProvider();
+  TracerProvider getTracerProvider();
 
   /**
    * Gets or creates a named tracer instance from the {@link TracerProvider} for this {@link
@@ -128,8 +125,8 @@ public interface OpenTelemetry {
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
    * @return a tracer instance.
    */
-  default Tracer getMyTracer(String instrumentationName) {
-    return getTracerProvider().get(instrumentationName);
+  default Tracer getTracer(String instrumentationName) {
+    return getGlobalTracerProvider().get(instrumentationName);
   }
 
   /**
@@ -142,12 +139,12 @@ public interface OpenTelemetry {
    *     "semver:1.0.0").
    * @return a tracer instance.
    */
-  default Tracer getMyTracer(String instrumentationName, String instrumentationVersion) {
-    return getTracerProvider().get(instrumentationName, instrumentationVersion);
+  default Tracer getTracer(String instrumentationName, String instrumentationVersion) {
+    return getGlobalTracerProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /** Returns the {@link MeterProvider} for this {@link OpenTelemetry}. */
-  MeterProvider getMyMeterProvider();
+  MeterProvider getMeterProvider();
 
   /**
    * Gets or creates a named meter instance from the {@link MeterProvider} in this {@link
@@ -157,8 +154,8 @@ public interface OpenTelemetry {
    *     instrument*ed* library.
    * @return a tracer instance.
    */
-  default Meter getMyMeter(String instrumentationName) {
-    return getMeterProvider().get(instrumentationName);
+  default Meter getMeter(String instrumentationName) {
+    return getGlobalMeterProvider().get(instrumentationName);
   }
 
   /**
@@ -170,10 +167,10 @@ public interface OpenTelemetry {
    * @param instrumentationVersion The version of the instrumentation library.
    * @return a tracer instance.
    */
-  default Meter getMyMeter(String instrumentationName, String instrumentationVersion) {
-    return getMeterProvider().get(instrumentationName, instrumentationVersion);
+  default Meter getMeter(String instrumentationName, String instrumentationVersion) {
+    return getGlobalMeterProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
-  ContextPropagators getMyPropagators();
+  ContextPropagators getPropagators();
 }

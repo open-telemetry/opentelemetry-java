@@ -57,7 +57,7 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   // TODO: Add metrics for dropped spans.
 
   @Override
-  public void onStart(ReadWriteSpan span, Context parentContext) {
+  public void onStart(Context parentContext, ReadWriteSpan span) {
     if (!startRequired) {
       return;
     }

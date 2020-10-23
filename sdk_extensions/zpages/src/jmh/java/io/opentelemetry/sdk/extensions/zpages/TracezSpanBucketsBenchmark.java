@@ -32,7 +32,7 @@ public class TracezSpanBucketsBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     bucket = new TracezSpanBuckets();
-    Tracer tracer = OpenTelemetry.getTracer("TracezZPageBenchmark");
+    Tracer tracer = OpenTelemetry.getGlobalTracer("TracezZPageBenchmark");
     Span span = tracer.spanBuilder(spanName).startSpan();
     span.end();
     readableSpan = (ReadableSpan) span;

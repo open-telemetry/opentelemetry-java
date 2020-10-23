@@ -62,29 +62,29 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
     }
 
     @Override
-    public <V> V getValue(ContextKey<V> key) {
+    public <V> V get(ContextKey<V> key) {
       return grpcKey(key).get(grpcContext);
     }
 
     @Override
-    public <V> Context withValues(ContextKey<V> k1, V v1) {
+    public <V> Context with(ContextKey<V> k1, V v1) {
       return new GrpcContextWrapper(grpcContext.withValue(grpcKey(k1), v1));
     }
 
     @Override
-    public <V1, V2> Context withValues(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
+    public <V1, V2> Context with(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
       return new GrpcContextWrapper(grpcContext.withValues(grpcKey(k1), v1, grpcKey(k2), v2));
     }
 
     @Override
-    public <V1, V2, V3> Context withValues(
+    public <V1, V2, V3> Context with(
         ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3) {
       return new GrpcContextWrapper(
           grpcContext.withValues(grpcKey(k1), v1, grpcKey(k2), v2, grpcKey(k3), v3));
     }
 
     @Override
-    public <V1, V2, V3, V4> Context withValues(
+    public <V1, V2, V3, V4> Context with(
         ContextKey<V1> k1,
         V1 v1,
         ContextKey<V2> k2,

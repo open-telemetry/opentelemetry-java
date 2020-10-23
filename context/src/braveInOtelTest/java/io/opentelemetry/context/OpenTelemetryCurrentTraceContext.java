@@ -15,19 +15,19 @@ public class OpenTelemetryCurrentTraceContext extends CurrentTraceContext {
 
   @Override
   public TraceContext get() {
-    return Context.current().getValue(TRACE_CONTEXT_KEY);
+    return Context.current().get(TRACE_CONTEXT_KEY);
   }
 
   @SuppressWarnings("ReferenceEquality")
   @Override
   public Scope newScope(TraceContext context) {
     Context currentOtel = Context.current();
-    TraceContext currentBrave = currentOtel.getValue(TRACE_CONTEXT_KEY);
+    TraceContext currentBrave = currentOtel.get(TRACE_CONTEXT_KEY);
     if (currentBrave == context) {
       return Scope.NOOP;
     }
 
-    Context newOtel = currentOtel.withValues(TRACE_CONTEXT_KEY, context);
+    Context newOtel = currentOtel.with(TRACE_CONTEXT_KEY, context);
     io.opentelemetry.context.Scope otelScope = newOtel.makeCurrent();
     return otelScope::close;
   }

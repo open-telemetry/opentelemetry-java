@@ -51,7 +51,7 @@ public final class LateSpanFinishTest {
 
     TestUtils.assertSameTrace(spans);
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
 
   /*

@@ -23,12 +23,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class OpenTelemetryInteroperabilityTest {
-  private final io.opentelemetry.trace.Tracer tracer = OpenTelemetry.getTracer("opentracingshim");
+  private final io.opentelemetry.trace.Tracer tracer =
+      OpenTelemetry.getGlobalTracer("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder()
           .setTracerSdkManagement(OpenTelemetrySdk.getTracerManagement())
           .build();
-  private final Tracer otTracer = TraceShim.createTracerShim(OpenTelemetry.getTracerProvider());
+  private final Tracer otTracer =
+      TraceShim.createTracerShim(OpenTelemetry.getGlobalTracerProvider());
 
   @BeforeEach
   void before() {
@@ -43,7 +45,7 @@ class OpenTelemetryInteroperabilityTest {
     } finally {
       otSpan.finish();
     }
-    assertThat(TracingContextUtils.getCurrentSpan().getContext().isValid()).isFalse();
+    assertThat(io.opentelemetry.trace.Span.current().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
@@ -60,7 +62,7 @@ class OpenTelemetryInteroperabilityTest {
       otelSpan.end();
     }
 
-    assertThat(TracingContextUtils.getCurrentSpan().getContext().isValid()).isFalse();
+    assertThat(io.opentelemetry.trace.Span.current().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();

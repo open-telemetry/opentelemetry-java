@@ -26,7 +26,7 @@ class SpanShimTest {
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, OpenTelemetry.getPropagators());
+      new TelemetryInfo(tracer, OpenTelemetry.getGlobalPropagators());
   private Span span;
 
   private static final String SPAN_NAME = "Span";
@@ -47,9 +47,9 @@ class SpanShimTest {
 
     SpanContextShim contextShim = (SpanContextShim) spanShim.context();
     assertNotNull(contextShim);
-    assertEquals(contextShim.getSpanContext(), span.getContext());
-    assertEquals(contextShim.toTraceId(), span.getContext().getTraceIdAsHexString().toString());
-    assertEquals(contextShim.toSpanId(), span.getContext().getSpanIdAsHexString().toString());
+    assertEquals(contextShim.getSpanContext(), span.getSpanContext());
+    assertEquals(contextShim.toTraceId(), span.getSpanContext().getTraceIdAsHexString().toString());
+    assertEquals(contextShim.toSpanId(), span.getSpanContext().getSpanIdAsHexString().toString());
     assertFalse(contextShim.baggageItems().iterator().hasNext());
   }
 
