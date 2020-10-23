@@ -111,8 +111,9 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
+   * @return this.
    */
-  void setAttribute(String key, @Nonnull String value);
+  Span setAttribute(String key, @Nonnull String value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -123,8 +124,9 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
+   * @return this.
    */
-  void setAttribute(String key, long value);
+  Span setAttribute(String key, long value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -135,8 +137,9 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
+   * @return this.
    */
-  void setAttribute(String key, double value);
+  Span setAttribute(String key, double value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -147,8 +150,9 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
+   * @return this.
    */
-  void setAttribute(String key, boolean value);
+  Span setAttribute(String key, boolean value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -158,8 +162,9 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
+   * @return this.
    */
-  <T> void setAttribute(AttributeKey<T> key, @Nonnull T value);
+  <T> Span setAttribute(AttributeKey<T> key, @Nonnull T value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -167,17 +172,20 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
+   * @return this.
    */
-  default void setAttribute(AttributeKey<Long> key, int value) {
+  default Span setAttribute(AttributeKey<Long> key, int value) {
     setAttribute(key, (long) value);
+    return this;
   }
 
   /**
    * Adds an event to the {@link Span}. The timestamp of the event will be the current time.
    *
    * @param name the name of the event.
+   * @return this.
    */
-  void addEvent(String name);
+  Span addEvent(String name);
 
   /**
    * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
@@ -190,8 +198,9 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param name the name of the event.
    * @param timestamp the explicit event timestamp in nanos since epoch.
+   * @return this.
    */
-  void addEvent(String name, long timestamp);
+  Span addEvent(String name, long timestamp);
 
   /**
    * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the event
@@ -200,8 +209,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
    *     the {@code Span} as for {@code setAttribute()}.
+   * @return this.
    */
-  void addEvent(String name, Attributes attributes);
+  Span addEvent(String name, Attributes attributes);
 
   /**
    * Adds an event to the {@link Span} with the given {@link Attributes} and {@code timestamp}.
@@ -216,8 +226,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param attributes the attributes that will be added; these are associated with this event, not
    *     the {@code Span} as for {@code setAttribute()}.
    * @param timestamp the explicit event timestamp in nanos since epoch.
+   * @return this.
    */
-  void addEvent(String name, Attributes attributes, long timestamp);
+  Span addEvent(String name, Attributes attributes, long timestamp);
 
   /**
    * Sets the status to the {@code Span}.
@@ -229,8 +240,9 @@ public interface Span extends ImplicitContextKeyed {
    * previous calls.
    *
    * @param canonicalCode the {@link StatusCode} to set.
+   * @return this.
    */
-  void setStatus(StatusCode canonicalCode);
+  Span setStatus(StatusCode canonicalCode);
 
   /**
    * Sets the status to the {@code Span}.
@@ -243,8 +255,9 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param canonicalCode the {@link StatusCode} to set.
    * @param description the description of the {@code Status}.
+   * @return this.
    */
-  void setStatus(StatusCode canonicalCode, String description);
+  Span setStatus(StatusCode canonicalCode, String description);
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
@@ -254,16 +267,18 @@ public interface Span extends ImplicitContextKeyed {
    * #recordException(Throwable, Attributes)} if you know that an exception is escaping.
    *
    * @param exception the {@link Throwable} to record.
+   * @return this.
    */
-  void recordException(Throwable exception);
+  Span recordException(Throwable exception);
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
    *
    * @param exception the {@link Throwable} to record.
    * @param additionalAttributes the additional {@link Attributes} to record.
+   * @return this.
    */
-  void recordException(Throwable exception, Attributes additionalAttributes);
+  Span recordException(Throwable exception, Attributes additionalAttributes);
 
   /**
    * Updates the {@code Span} name.
@@ -274,16 +289,18 @@ public interface Span extends ImplicitContextKeyed {
    * implementation.
    *
    * @param name the {@code Span} name.
+   * @return this.
    */
-  void updateName(String name);
+  Span updateName(String name);
 
   /**
    * Marks the end of {@code Span} execution.
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
    * implementations are free to ignore all further calls.
+   * @return this.
    */
-  void end();
+  Span end();
 
   /**
    * Marks the end of {@code Span} execution with the specified {@link EndSpanOptions}.
@@ -295,8 +312,9 @@ public interface Span extends ImplicitContextKeyed {
    * explicit values are required, use {@link #end()}.
    *
    * @param endOptions the explicit {@link EndSpanOptions} for this {@code Span}.
+   * @return this.
    */
-  void end(EndSpanOptions endOptions);
+  Span end(EndSpanOptions endOptions);
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.

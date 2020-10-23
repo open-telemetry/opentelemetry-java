@@ -31,52 +31,84 @@ final class PropagatedSpan implements Span {
   }
 
   @Override
-  public void setAttribute(String key, String value) {}
+  public Span setAttribute(String key, String value) {
+    return this;
+  }
 
   @Override
-  public void setAttribute(String key, long value) {}
+  public Span setAttribute(String key, long value) {
+    return this;
+  }
 
   @Override
-  public void setAttribute(String key, double value) {}
+  public Span setAttribute(String key, double value) {
+    return this;
+  }
 
   @Override
-  public void setAttribute(String key, boolean value) {}
+  public Span setAttribute(String key, boolean value) {
+    return this;
+  }
 
   @Override
-  public <T> void setAttribute(AttributeKey<T> key, T value) {}
+  public <T> Span setAttribute(AttributeKey<T> key, T value) {
+    return this;
+  }
 
   @Override
-  public void addEvent(String name) {}
+  public Span addEvent(String name) {
+    return this;
+  }
 
   @Override
-  public void addEvent(String name, long timestamp) {}
+  public Span addEvent(String name, long timestamp) {
+    return this;
+  }
 
   @Override
-  public void addEvent(String name, Attributes attributes) {}
+  public Span addEvent(String name, Attributes attributes) {
+    return this;
+  }
 
   @Override
-  public void addEvent(String name, Attributes attributes, long timestamp) {}
+  public Span addEvent(String name, Attributes attributes, long timestamp) {
+    return this;
+  }
 
   @Override
-  public void setStatus(StatusCode canonicalCode) {}
+  public Span setStatus(StatusCode canonicalCode) {
+    return this;
+  }
 
   @Override
-  public void setStatus(StatusCode canonicalCode, String description) {}
+  public Span setStatus(StatusCode canonicalCode, String description) {
+    return this;
+  }
 
   @Override
-  public void recordException(Throwable exception) {}
+  public Span recordException(Throwable exception) {
+    return this;
+  }
 
   @Override
-  public void recordException(Throwable exception, Attributes additionalAttributes) {}
+  public Span recordException(Throwable exception, Attributes additionalAttributes) {
+    return this;
+  }
 
   @Override
-  public void updateName(String name) {}
+  public Span updateName(String name) {
+    return this;
+  }
 
   @Override
-  public void end() {}
+  public Span end() {
+    return this;
+  }
 
   @Override
-  public void end(EndSpanOptions endOptions) {}
+  public Span end(EndSpanOptions endOptions) {
+    return this;
+  }
 
   @Override
   public SpanContext getSpanContext() {
