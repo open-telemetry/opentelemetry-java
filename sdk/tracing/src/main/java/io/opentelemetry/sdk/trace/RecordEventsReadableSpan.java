@@ -262,34 +262,38 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void setAttribute(String key, String value) {
+  public ReadWriteSpan setAttribute(String key, String value) {
     setAttribute(stringKey(key), value);
+    return this;
   }
 
   @Override
-  public void setAttribute(String key, long value) {
+  public ReadWriteSpan setAttribute(String key, long value) {
     setAttribute(longKey(key), value);
+    return this;
   }
 
   @Override
-  public void setAttribute(String key, double value) {
+  public ReadWriteSpan setAttribute(String key, double value) {
     setAttribute(doubleKey(key), value);
+    return this;
   }
 
   @Override
-  public void setAttribute(String key, boolean value) {
+  public ReadWriteSpan setAttribute(String key, boolean value) {
     setAttribute(booleanKey(key), value);
+    return this;
   }
 
   @Override
-  public <T> void setAttribute(AttributeKey<T> key, T value) {
+  public <T> ReadWriteSpan setAttribute(AttributeKey<T> key, T value) {
     if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
-      return;
+      return this;
     }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
-        return;
+        return this;
       }
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
@@ -301,28 +305,31 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
       attributes.put(key, value);
     }
+    return this;
   }
 
   @Override
-  public void addEvent(String name) {
+  public ReadWriteSpan addEvent(String name) {
     if (name == null) {
-      return;
+      return this;
     }
     addTimedEvent(Event.create(clock.now(), name, Attributes.empty(), 0));
+    return this;
   }
 
   @Override
-  public void addEvent(String name, long timestamp) {
+  public ReadWriteSpan addEvent(String name, long timestamp) {
     if (name == null) {
-      return;
+      return this;
     }
     addTimedEvent(Event.create(timestamp, name, Attributes.empty(), 0));
+    return this;
   }
 
   @Override
-  public void addEvent(String name, Attributes attributes) {
+  public ReadWriteSpan addEvent(String name, Attributes attributes) {
     if (name == null) {
-      return;
+      return this;
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
@@ -331,12 +338,13 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
+    return this;
   }
 
   @Override
-  public void addEvent(String name, Attributes attributes, long timestamp) {
+  public ReadWriteSpan addEvent(String name, Attributes attributes, long timestamp) {
     if (name == null) {
-      return;
+      return this;
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
@@ -345,6 +353,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
+    return this;
   }
 
   static Attributes copyAndLimitAttributes(final Attributes attributes, final int limit) {
@@ -369,33 +378,36 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void setStatus(StatusCode canonicalCode) {
+  public ReadWriteSpan setStatus(StatusCode canonicalCode) {
     setStatus(canonicalCode, null);
+    return this;
   }
 
   @Override
-  public void setStatus(StatusCode canonicalCode, @Nullable String description) {
+  public ReadWriteSpan setStatus(StatusCode canonicalCode, @Nullable String description) {
     if (canonicalCode == null) {
-      return;
+      return this;
     }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
-        return;
+        return this;
       }
       this.status = SpanData.Status.create(canonicalCode, description);
     }
+    return this;
   }
 
   @Override
-  public void recordException(Throwable exception) {
+  public ReadWriteSpan recordException(Throwable exception) {
     recordException(exception, null);
+    return this;
   }
 
   @Override
-  public void recordException(Throwable exception, Attributes additionalAttributes) {
+  public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
-      return;
+      return this;
     }
     long timestamp = clock.now();
 
@@ -413,20 +425,22 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
 
     addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
+    return this;
   }
 
   @Override
-  public void updateName(String name) {
+  public ReadWriteSpan updateName(String name) {
     if (name == null) {
-      return;
+      return this;
     }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
-        return;
+        return this;
       }
       this.name = name;
     }
+    return this;
   }
 
   @Override
