@@ -27,7 +27,7 @@ class OpenTelemetryInteroperabilityTest {
       OpenTelemetry.getGlobalTracer("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder()
-          .setTracerSdkManagement(OpenTelemetrySdk.getTracerManagement())
+          .setTracerSdkManagement(OpenTelemetrySdk.getGlobalTracerManagement())
           .build();
   private final Tracer otTracer =
       TraceShim.createTracerShim(OpenTelemetry.getGlobalTracerProvider());

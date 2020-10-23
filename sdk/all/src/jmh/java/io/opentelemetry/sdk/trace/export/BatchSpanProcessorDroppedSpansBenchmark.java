@@ -55,7 +55,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
   @State(Scope.Benchmark)
   public static class BenchmarkState {
     private final MetricProducer metricProducer =
-        OpenTelemetrySdk.getMeterProvider().getMetricProducer();
+        OpenTelemetrySdk.getGlobalMeterProvider().getMetricProducer();
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private Collection<MetricData> allMetrics;

@@ -500,4 +500,3 @@ public class IgnoreExportErrorsFilter implements Filter {
 ## Registering the custom filter on the BatchSpanProcessor
 io.opentelemetry.sdk.trace.export.BatchSpanProcessor = io.opentelemetry.extensions.logging.IgnoreExportErrorsFilter
 ```
-
