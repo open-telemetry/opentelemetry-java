@@ -298,6 +298,7 @@ public interface Span extends ImplicitContextKeyed {
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
    * implementations are free to ignore all further calls.
+   *
    * @return this.
    */
   Span end();
