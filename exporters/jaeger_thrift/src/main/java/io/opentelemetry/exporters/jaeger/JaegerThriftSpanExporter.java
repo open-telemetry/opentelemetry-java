@@ -104,7 +104,6 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
           } catch (SenderException e) {
             logger.log(Level.WARNING, "Failed to export spans", e);
             batchResult.fail();
-            e.printStackTrace();
           }
         });
     return CompletableResultCode.ofAll(batchResults);
