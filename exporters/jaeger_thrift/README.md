@@ -37,7 +37,7 @@ JaegerThriftSpanExporter exporter =
             .build()
 ```
 
-The Jaeger gRPC span exporter will look for the following environment variables / system properties:
+The Jaeger Thrift span exporter will look for the following environment variables / system properties:
 * `OTEL_JAEGER_SERVICE_NAME` / `otel.jaeger.service.name`
 * `OTEL_JAEGER_ENDPOINT` / `otel.jaeger.endpoint`
 
