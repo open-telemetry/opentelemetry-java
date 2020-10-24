@@ -8,8 +8,8 @@ This is the OpenTelemetry exporter, sending span data to Jaeger via Thrift over 
 
 The Jaeger Thrift span exporter can be configured programmatically.
 
-An example of simple Jaeger gRPC exporter initialization. In this case
-spans will be sent to a Jaeger gRPC endpoint running on `localhost`:
+An example of simple Jaeger Thrift exporter initialization. In this case
+spans will be sent to a Jaeger Thrift endpoint running on `localhost`:
 
 ```java
 JaegerThriftSpanExporter exporter =
