@@ -99,7 +99,7 @@ for more details.
 
 2. Clone the repository recursively
 
-    `git clone git@github.com:<username>/opentelemetry-java.git --recursive`
+    `git clone https://github.com/open-telemetry/opentelemetry-java.git --recursive`
 
 or alternatively initialize submodules for an existing clone.
 
