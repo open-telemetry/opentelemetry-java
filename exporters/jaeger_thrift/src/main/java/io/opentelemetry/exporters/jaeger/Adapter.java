@@ -150,7 +150,6 @@ final class Adapter {
   // VisibleForTesting
   static Log toJaegerLog(Event event) {
     Log result = new Log();
-    // millis? nanos?
     result.setTimestamp(TimeUnit.NANOSECONDS.toMicros(event.getEpochNanos()));
     result.addToFields(new Tag(KEY_LOG_EVENT, TagType.STRING).setVStr(event.getName()));
 
