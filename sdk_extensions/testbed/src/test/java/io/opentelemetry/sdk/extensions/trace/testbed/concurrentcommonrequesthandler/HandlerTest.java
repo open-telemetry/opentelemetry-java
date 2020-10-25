@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +66,7 @@ class HandlerTest {
   @Test
   void parent_not_picked_up() throws Exception {
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
+    try (Scope ignored = parentSpan.makeCurrent()) {
       String response = client.send("no_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("no_parent:response");
     } finally {
@@ -97,7 +96,7 @@ class HandlerTest {
   void bad_solution_to_set_parent() throws Exception {
     Client client;
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
+    try (Scope ignored = parentSpan.makeCurrent()) {
       client = new Client(new RequestHandler(tracer, Context.current().with(parentSpan)));
       String response = client.send("correct_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("correct_parent:response");

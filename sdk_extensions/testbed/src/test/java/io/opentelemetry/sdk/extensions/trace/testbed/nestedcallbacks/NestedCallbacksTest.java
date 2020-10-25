@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,17 +60,17 @@ public final class NestedCallbacksTest {
 
     executor.submit(
         () -> {
-          try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+          try (Scope ignored = span.makeCurrent()) {
             span.setAttribute("key1", "1");
 
             executor.submit(
                 () -> {
-                  try (Scope ignored12 = TracingContextUtils.currentContextWith(span)) {
+                  try (Scope ignored12 = span.makeCurrent()) {
                     span.setAttribute("key2", "2");
 
                     executor.submit(
                         () -> {
-                          try (Scope ignored1 = TracingContextUtils.currentContextWith(span)) {
+                          try (Scope ignored1 = span.makeCurrent()) {
                             span.setAttribute("key3", "3");
                           } finally {
                             span.end();

@@ -55,10 +55,10 @@ class TracingContextUtilsTest {
   @Test
   void testInProcessContext() {
     Span span = Span.wrap(SpanContext.getInvalid());
-    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+    try (Scope scope = span.makeCurrent()) {
       assertThat(Span.current()).isSameAs(span);
       Span secondSpan = Span.wrap(SpanContext.getInvalid());
-      try (Scope secondScope = TracingContextUtils.currentContextWith(secondSpan)) {
+      try (Scope secondScope = secondSpan.makeCurrent()) {
         assertThat(Span.current()).isSameAs(secondSpan);
       } finally {
         assertThat(Span.current()).isSameAs(span);

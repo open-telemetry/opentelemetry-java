@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +40,7 @@ class MultipleCallbacksTest {
     Client client = new Client(tracer, parentDoneLatch);
 
     Span span = tracer.spanBuilder("parent").startSpan();
-    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+    try (Scope scope = span.makeCurrent()) {
       client.send("task1");
       client.send("task2");
       client.send("task3");

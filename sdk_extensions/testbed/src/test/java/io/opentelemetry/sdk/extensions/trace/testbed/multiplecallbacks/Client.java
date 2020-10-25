@@ -9,7 +9,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,7 +30,7 @@ class Client {
     return executor.submit(
         () -> {
           Span span = tracer.spanBuilder("subtask").setParent(parent).startSpan();
-          try (Scope subtaskScope = TracingContextUtils.currentContextWith(span)) {
+          try (Scope subtaskScope = span.makeCurrent()) {
             // Simulate work - make sure we finish *after* the parent Span.
             parentDoneLatch.await();
           } finally {

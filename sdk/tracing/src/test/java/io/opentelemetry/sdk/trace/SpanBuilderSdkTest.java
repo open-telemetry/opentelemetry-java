@@ -33,7 +33,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -603,7 +602,7 @@ class SpanBuilderSdkTest {
   @Test
   void noParent() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
+    try (Scope ignored = parent.makeCurrent()) {
       Span span = tracerSdk.spanBuilder(SPAN_NAME).setNoParent().startSpan();
       try {
         assertThat(span.getSpanContext().getTraceIdAsHexString())
@@ -726,7 +725,7 @@ class SpanBuilderSdkTest {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       RecordEventsReadableSpan span;
-      try (Scope scope = TracingContextUtils.currentContextWith(parent)) {
+      try (Scope scope = parent.makeCurrent()) {
         span =
             (RecordEventsReadableSpan)
                 tracerSdk.spanBuilder(SPAN_NAME).setParent(emptyContext).startSpan();
@@ -750,7 +749,7 @@ class SpanBuilderSdkTest {
   @Test
   void parentCurrentSpan() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
+    try (Scope ignored = parent.makeCurrent()) {
       final Context implicitParent = Context.current();
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
@@ -799,7 +798,7 @@ class SpanBuilderSdkTest {
   @Test
   void parent_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope scope = TracingContextUtils.currentContextWith(parent)) {
+    try (Scope scope = parent.makeCurrent()) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 
@@ -812,7 +811,7 @@ class SpanBuilderSdkTest {
   @Test
   void parentCurrentSpan_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
+    try (Scope ignored = parent.makeCurrent()) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 
