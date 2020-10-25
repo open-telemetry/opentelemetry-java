@@ -121,7 +121,7 @@ public class OtlpPipelineStressTest {
   @AfterEach
   void tearDown() throws IOException {
     intervalMetricReader.shutdown();
-    OpenTelemetrySdk.getTracerManagement().shutdown();
+    OpenTelemetrySdk.getGlobalTracerManagement().shutdown();
 
     toxiproxyClient.reset();
     collectorProxy.delete();
@@ -239,7 +239,8 @@ public class OtlpPipelineStressTest {
         IntervalMetricReader.builder()
             .setMetricExporter(metricExporter)
             .setMetricProducers(
-                Collections.singleton(OpenTelemetrySdk.getMeterProvider().getMetricProducer()))
+                Collections.singleton(
+                    OpenTelemetrySdk.getGlobalMeterProvider().getMetricProducer()))
             .setExportIntervalMillis(1000)
             .build();
     return intervalMetricReader;
@@ -261,6 +262,6 @@ public class OtlpPipelineStressTest {
             //            .setMaxExportBatchSize(1024)
             //            .setScheduleDelayMillis(1000)
             .build();
-    OpenTelemetrySdk.getTracerManagement().addSpanProcessor(spanProcessor);
+    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
   }
 }

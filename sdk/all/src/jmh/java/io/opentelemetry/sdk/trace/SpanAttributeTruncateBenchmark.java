@@ -39,10 +39,10 @@ public class SpanAttributeTruncateBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     TraceConfig config =
-        OpenTelemetrySdk.getTracerManagement().getActiveTraceConfig().toBuilder()
+        OpenTelemetrySdk.getGlobalTracerManagement().getActiveTraceConfig().toBuilder()
             .setMaxLengthOfAttributeValues(maxLength)
             .build();
-    OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(config);
+    OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(config);
     spanBuilderSdk =
         (SpanBuilderSdk)
             tracerSdk
