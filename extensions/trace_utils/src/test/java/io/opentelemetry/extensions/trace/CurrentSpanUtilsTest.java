@@ -6,27 +6,20 @@
 package io.opentelemetry.extensions.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.StatusCode;
 import java.util.concurrent.Callable;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class CurrentSpanUtilsTest {
-  @Mock private Span span;
-
-  @BeforeEach
-  void setUp() {
-    MockitoAnnotations.initMocks(this);
-    when(span.storeInContext(any())).thenCallRealMethod();
-  }
+  @Spy private Span span;
 
   // TODO(bdrutu): When update to junit 4.13 use assertThrows instead of this.
   private void executeRunnableAndExpectError(Runnable runnable, Throwable error) {
