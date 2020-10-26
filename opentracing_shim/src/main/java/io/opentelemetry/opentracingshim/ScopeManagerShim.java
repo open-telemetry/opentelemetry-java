@@ -5,7 +5,6 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
@@ -34,7 +33,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(Span span) {
     io.opentelemetry.trace.Span actualSpan = getActualSpan(span);
-    return new ScopeShim(TracingContextUtils.currentContextWith(actualSpan));
+    return new ScopeShim(actualSpan.makeCurrent());
   }
 
   static io.opentelemetry.trace.Span getActualSpan(Span span) {

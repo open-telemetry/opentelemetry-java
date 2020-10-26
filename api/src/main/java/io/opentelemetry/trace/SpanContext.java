@@ -120,8 +120,7 @@ public abstract class SpanContext {
   public abstract byte getTraceFlags();
 
   public void copyTraceFlagsHexTo(char[] dest, int destOffset) {
-    dest[destOffset] = '0';
-    dest[destOffset + 1] = isSampled() ? '1' : '0';
+    BigendianEncoding.byteToBase16String(getTraceFlags(), dest, destOffset);
   }
 
   /**

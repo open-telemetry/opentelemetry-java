@@ -14,7 +14,6 @@ import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -27,7 +26,7 @@ class OpenTelemetryInteroperabilityTest {
       OpenTelemetry.getGlobalTracer("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder()
-          .setTracerSdkManagement(OpenTelemetrySdk.getTracerManagement())
+          .setTracerSdkManagement(OpenTelemetrySdk.getGlobalTracerManagement())
           .build();
   private final Tracer otTracer =
       TraceShim.createTracerShim(OpenTelemetry.getGlobalTracerProvider());
@@ -56,7 +55,7 @@ class OpenTelemetryInteroperabilityTest {
   @Test
   void openTracingContinuesSdkTrace() {
     io.opentelemetry.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
-    try (io.opentelemetry.context.Scope scope = TracingContextUtils.currentContextWith(otelSpan)) {
+    try (io.opentelemetry.context.Scope scope = otelSpan.makeCurrent()) {
       otTracer.buildSpan("ot_span").start().finish();
     } finally {
       otelSpan.end();

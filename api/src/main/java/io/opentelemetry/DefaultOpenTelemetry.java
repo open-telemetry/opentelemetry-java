@@ -7,17 +7,13 @@ package io.opentelemetry;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.baggage.BaggageManager;
-import io.opentelemetry.baggage.spi.BaggageManagerFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.metrics.DefaultMeterProvider;
-import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MeterProviderFactory;
+import io.opentelemetry.spi.OpenTelemetryFactory;
 import io.opentelemetry.trace.DefaultTracerProvider;
-import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.spi.TracerProviderFactory;
 import java.util.ServiceLoader;
@@ -25,14 +21,8 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link Meter}
- * and {@link BaggageManager}.
- *
- * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
- *
- * @see TracerProvider
- * @see MeterProviderFactory
- * @see BaggageManagerFactory
+ * The default OpenTelemetry API, which tries to find API implementations via SPI or otherwise falls
+ * back to no-op default implementations.
  */
 @ThreadSafe
 final class DefaultOpenTelemetry implements OpenTelemetry {
@@ -42,7 +32,12 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
     if (globalOpenTelemetry == null) {
       synchronized (mutex) {
         if (globalOpenTelemetry == null) {
-          globalOpenTelemetry = DefaultOpenTelemetry.builder().build();
+          OpenTelemetryFactory openTelemetryFactory = loadSpi(OpenTelemetryFactory.class);
+          if (openTelemetryFactory != null) {
+            globalOpenTelemetry = openTelemetryFactory.create();
+          } else {
+            globalOpenTelemetry = builder().build();
+          }
         }
       }
     }
@@ -80,10 +75,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   DefaultOpenTelemetry(
-      TracerProvider tracerProvider,
-      MeterProvider meterProvider,
-      BaggageManager baggageManager,
-      ContextPropagators propagators) {
+      TracerProvider tracerProvider, MeterProvider meterProvider, ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;
     this.meterProvider = meterProvider;
     this.propagators = propagators;
@@ -119,45 +111,43 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
     globalOpenTelemetry = null;
   }
 
-  Builder toBuilder() {
+  @Override
+  public Builder toBuilder() {
     return new Builder()
         .setTracerProvider(tracerProvider)
         .setMeterProvider(meterProvider)
         .setPropagators(propagators);
   }
 
-  static class Builder {
+  static class Builder implements OpenTelemetry.Builder<Builder> {
     private ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
     private TracerProvider tracerProvider;
     private MeterProvider meterProvider;
-    private BaggageManager baggageManager;
 
-    Builder setTracerProvider(TracerProvider tracerProvider) {
+    @Override
+    public Builder setTracerProvider(TracerProvider tracerProvider) {
       requireNonNull(tracerProvider, "tracerProvider");
       this.tracerProvider = tracerProvider;
       return this;
     }
 
-    Builder setMeterProvider(MeterProvider meterProvider) {
+    @Override
+    public Builder setMeterProvider(MeterProvider meterProvider) {
       requireNonNull(meterProvider, "meterProvider");
       this.meterProvider = meterProvider;
       return this;
     }
 
-    Builder setBaggageManager(BaggageManager baggageManager) {
-      requireNonNull(baggageManager, "baggageManager");
-      this.baggageManager = baggageManager;
-      return this;
-    }
-
-    Builder setPropagators(ContextPropagators propagators) {
+    @Override
+    public Builder setPropagators(ContextPropagators propagators) {
       requireNonNull(propagators, "propagators");
       this.propagators = propagators;
       return this;
     }
 
-    DefaultOpenTelemetry build() {
+    @Override
+    public OpenTelemetry build() {
       MeterProvider meterProvider = this.meterProvider;
       if (meterProvider == null) {
         MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
@@ -172,45 +162,13 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
       if (tracerProvider == null) {
         TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
         if (tracerProviderFactory != null) {
-          tracerProvider = new ObfuscatedTracerProvider(tracerProviderFactory.create());
+          tracerProvider = tracerProviderFactory.create();
         } else {
           tracerProvider = DefaultTracerProvider.getInstance();
         }
       }
 
-      return new DefaultOpenTelemetry(tracerProvider, meterProvider, baggageManager, propagators);
-    }
-  }
-
-  /**
-   * A {@link TracerProvider} wrapper that forces users to access the SDK specific implementation
-   * via the SDK, instead of via the API and casting it to the SDK specific implementation.
-   *
-   * @see Obfuscated
-   */
-  @ThreadSafe
-  private static class ObfuscatedTracerProvider
-      implements TracerProvider, Obfuscated<TracerProvider> {
-
-    private final TracerProvider delegate;
-
-    private ObfuscatedTracerProvider(TracerProvider delegate) {
-      this.delegate = delegate;
-    }
-
-    @Override
-    public Tracer get(String instrumentationName) {
-      return delegate.get(instrumentationName);
-    }
-
-    @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return delegate.get(instrumentationName, instrumentationVersion);
-    }
-
-    @Override
-    public TracerProvider unobfuscate() {
-      return delegate;
+      return new DefaultOpenTelemetry(tracerProvider, meterProvider, propagators);
     }
   }
 }

@@ -35,9 +35,9 @@ public final class MultiSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadWriteSpan readableSpan, Context parentContext) {
+  public void onStart(Context parentContext, ReadWriteSpan readableSpan) {
     for (SpanProcessor spanProcessor : spanProcessorsStart) {
-      spanProcessor.onStart(readableSpan, parentContext);
+      spanProcessor.onStart(parentContext, readableSpan);
     }
   }
 

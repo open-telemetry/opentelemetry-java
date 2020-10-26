@@ -10,61 +10,95 @@ import io.opentelemetry.common.Attributes;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * The {@code DefaultSpan} is the default {@link Span} that is used when no {@code Span}
- * implementation is available. All operations are no-op except context propagation.
+ * The default {@link Span} that is used when no {@code Span} implementation is available. All
+ * operations are no-op except context propagation.
  */
 @Immutable
 final class PropagatedSpan implements Span {
 
   static final PropagatedSpan INVALID = new PropagatedSpan(SpanContext.getInvalid());
 
+  // We expose a method to construct PropagatedSpan because currently auto-instrumentation needs to
+  // be able to intercept it.
+  static Span create(SpanContext spanContext) {
+    return new PropagatedSpan(spanContext);
+  }
+
   private final SpanContext spanContext;
 
-  PropagatedSpan(SpanContext spanContext) {
+  private PropagatedSpan(SpanContext spanContext) {
     this.spanContext = spanContext;
   }
 
   @Override
-  public void setAttribute(String key, String value) {}
+  public Span setAttribute(String key, String value) {
+    return this;
+  }
 
   @Override
-  public void setAttribute(String key, long value) {}
+  public Span setAttribute(String key, long value) {
+    return this;
+  }
 
   @Override
-  public void setAttribute(String key, double value) {}
+  public Span setAttribute(String key, double value) {
+    return this;
+  }
 
   @Override
-  public void setAttribute(String key, boolean value) {}
+  public Span setAttribute(String key, boolean value) {
+    return this;
+  }
 
   @Override
-  public <T> void setAttribute(AttributeKey<T> key, T value) {}
+  public <T> Span setAttribute(AttributeKey<T> key, T value) {
+    return this;
+  }
 
   @Override
-  public void addEvent(String name) {}
+  public Span addEvent(String name) {
+    return this;
+  }
 
   @Override
-  public void addEvent(String name, long timestamp) {}
+  public Span addEvent(String name, long timestamp) {
+    return this;
+  }
 
   @Override
-  public void addEvent(String name, Attributes attributes) {}
+  public Span addEvent(String name, Attributes attributes) {
+    return this;
+  }
 
   @Override
-  public void addEvent(String name, Attributes attributes, long timestamp) {}
+  public Span addEvent(String name, Attributes attributes, long timestamp) {
+    return this;
+  }
 
   @Override
-  public void setStatus(StatusCode canonicalCode) {}
+  public Span setStatus(StatusCode canonicalCode) {
+    return this;
+  }
 
   @Override
-  public void setStatus(StatusCode canonicalCode, String description) {}
+  public Span setStatus(StatusCode canonicalCode, String description) {
+    return this;
+  }
 
   @Override
-  public void recordException(Throwable exception) {}
+  public Span recordException(Throwable exception) {
+    return this;
+  }
 
   @Override
-  public void recordException(Throwable exception, Attributes additionalAttributes) {}
+  public Span recordException(Throwable exception, Attributes additionalAttributes) {
+    return this;
+  }
 
   @Override
-  public void updateName(String name) {}
+  public Span updateName(String name) {
+    return this;
+  }
 
   @Override
   public void end() {}

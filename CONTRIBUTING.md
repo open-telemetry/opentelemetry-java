@@ -14,6 +14,11 @@ Make sure to review the projects [license](LICENSE) and sign the
 [CNCF CLA](https://identity.linuxfoundation.org/projects/cncf). A signed CLA will be enforced by an
 automatic check once you submit a PR, but you can also sign it after opening your PR.
 
+## Requirements
+
+Java 11 or higher is required to build the projects in this repository. The built artifacts can be
+used on Java 8 or higher.
+
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
@@ -92,17 +97,16 @@ you can enable the docker tests by setting a gradle property of
 ``"enable.docker.tests"`` to true. See the gradle.properties file in the root of the project
 for more details.
 
-2. From the root project directory, initialize repository dependencies
+2. Clone the repository recursively
 
-   `make init-git-submodules`
+    `git clone https://github.com/open-telemetry/opentelemetry-java.git --recursive`
+
+or alternatively initialize submodules for an existing clone.
+
+   `git submodule init`
+   `git submodule update`   
 
 3. Run the following commands to build, run tests and most static analysis, and
 check formatting:
 
-    ##### OS X or Linux
-
-    `make test verify-format`
-
-    ##### Windows
-
-    `gradlew.bat clean assemble check verGJF`
+    `./gradlew check`

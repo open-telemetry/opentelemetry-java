@@ -5,10 +5,8 @@
 
 package io.opentelemetry.trace;
 
-import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
-import io.opentelemetry.context.Scope;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -36,7 +34,7 @@ public final class TracingContextUtils {
    * @return the {@link Span} from the current {@code Context}.
    */
   static Span getCurrentSpan() {
-    return Span.fromContext(Context.current());
+    return getSpan(Context.current());
   }
 
   /**
@@ -61,33 +59,6 @@ public final class TracingContextUtils {
   @Nullable
   static Span getSpanWithoutDefault(Context context) {
     return context.get(CONTEXT_SPAN_KEY);
-  }
-
-  /**
-   * Returns a new {@link Scope} encapsulating the provided {@link Span} added to the current {@code
-   * Context}.
-   *
-   * <p>Example of usage:
-   *
-   * <pre>{@code
-   * private static Tracer tracer = OpenTelemetry.getTracer();
-   * void doWork() {
-   *   // Create a Span as a child of the current Span.
-   *   Span span = tracer.spanBuilder("my span").startSpan();
-   *   try (Scope ws = TracingContextUtils.currentContextWith(span)) {
-   *     TracingContextUtils.getCurrentSpan().addEvent("my event");
-   *     doSomeOtherWork();  // Here "span" is the current Span.
-   *   }
-   *   span.end();
-   * }
-   * }</pre>
-   *
-   * @param span the {@link Span} to be added to the current {@code Context}.
-   * @return the {@link Scope} for the updated {@code Context}.
-   */
-  @MustBeClosed
-  public static Scope currentContextWith(Span span) {
-    return Context.current().with(span).makeCurrent();
   }
 
   private TracingContextUtils() {}

@@ -3,17 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.baggage;
+package io.opentelemetry.baggage;
 
-import static io.opentelemetry.sdk.baggage.BaggageTestUtil.listToBaggage;
+import static io.opentelemetry.baggage.BaggageTestUtil.listToBaggage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.baggage.BaggageUtils;
-import io.opentelemetry.baggage.Entry;
-import io.opentelemetry.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
@@ -153,6 +149,43 @@ class ImmutableBaggageTest {
   void remove_nullKey() {
     Baggage.Builder builder = Baggage.builder();
     assertThrows(NullPointerException.class, () -> builder.remove(null), "key");
+  }
+
+  @Test
+  void toBuilder_keepsOriginalState() {
+    assertThat(Baggage.empty().toBuilder().build()).isEqualTo(Baggage.empty());
+
+    Baggage originalBaggage = Baggage.builder().put("key", "value").build();
+    assertThat(originalBaggage.toBuilder().build()).isEqualTo(originalBaggage);
+
+    Baggage parentedBaggage =
+        Baggage.builder().setParent(Context.root().with(originalBaggage)).build();
+    assertThat(parentedBaggage.toBuilder().build()).isEqualTo(parentedBaggage);
+  }
+
+  @Test
+  void toBuilder_allowChanges() {
+    Baggage singleItemNoParent = Baggage.builder().put("key1", "value1").setNoParent().build();
+    Baggage singleItemWithParent =
+        Baggage.builder()
+            .setParent(Context.root().with(Baggage.empty()))
+            .put("key1", "value1")
+            .build();
+
+    assertThat(Baggage.empty().toBuilder().put("key1", "value1").build())
+        .isEqualTo(singleItemNoParent);
+    assertThat(singleItemNoParent.toBuilder().put("key2", "value2").build())
+        .isEqualTo(
+            Baggage.builder().put("key1", "value1").put("key2", "value2").setNoParent().build());
+    assertThat(singleItemNoParent.toBuilder().put("key1", "value2").build())
+        .isEqualTo(Baggage.builder().put("key1", "value2").setNoParent().build());
+
+    assertThat(singleItemWithParent.toBuilder().put("key1", "value2").build())
+        .isEqualTo(
+            Baggage.builder()
+                .put("key1", "value2")
+                .setParent(Context.root().with(Baggage.empty()))
+                .build());
   }
 
   @Test

@@ -18,6 +18,7 @@ import javax.annotation.concurrent.Immutable;
 // TODO: Migrate to AutoValue
 // @AutoValue
 class ImmutableBaggage implements Baggage {
+
   static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
 
   // The types of the EntryKey and Entry must match for each entry.
@@ -68,6 +69,15 @@ class ImmutableBaggage implements Baggage {
   }
 
   @Override
+  public Baggage.Builder toBuilder() {
+    Builder builder = new Builder();
+    builder.entries.putAll(entries);
+    builder.parent = parent;
+    builder.noImplicitParent = true;
+    return builder;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -99,6 +109,7 @@ class ImmutableBaggage implements Baggage {
   // TODO: Migrate to AutoValue.Builder
   // @AutoValue.Builder
   static class Builder implements Baggage.Builder {
+
     @Nullable private Baggage parent;
     private boolean noImplicitParent;
     private final Map<String, Entry> entries;

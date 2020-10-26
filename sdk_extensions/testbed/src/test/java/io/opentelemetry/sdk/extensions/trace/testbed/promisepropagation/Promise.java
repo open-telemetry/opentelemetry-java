@@ -9,7 +9,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -44,7 +43,7 @@ final class Promise<T> {
           () -> {
             Span childSpan = tracer.spanBuilder("success").setParent(parent).startSpan();
             childSpan.setAttribute("component", "success");
-            try (Scope ignored = TracingContextUtils.currentContextWith(childSpan)) {
+            try (Scope ignored = childSpan.makeCurrent()) {
               callback.accept(result);
             } finally {
               childSpan.end();
@@ -61,7 +60,7 @@ final class Promise<T> {
           () -> {
             Span childSpan = tracer.spanBuilder("error").setParent(parent).startSpan();
             childSpan.setAttribute("component", "error");
-            try (Scope ignored = TracingContextUtils.currentContextWith(childSpan)) {
+            try (Scope ignored = childSpan.makeCurrent()) {
               callback.accept(error);
             } finally {
               childSpan.end();

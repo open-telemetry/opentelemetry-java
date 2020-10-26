@@ -55,7 +55,7 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadWriteSpan span, Context parentContext) {
+  public void onStart(Context parentContext, ReadWriteSpan span) {
     runningSpanCache.put(span.getSpanContext().getSpanIdAsHexString(), span);
   }
 

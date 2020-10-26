@@ -33,7 +33,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -95,9 +94,7 @@ class SpanBuilderSdkTest {
   void truncateLink() {
     final int maxNumberOfLinks = 8;
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxNumberOfLinks(maxNumberOfLinks)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -124,9 +121,7 @@ class SpanBuilderSdkTest {
   @Test
   void truncateLinkAttributes() {
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxNumberOfAttributesPerLink(1)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -353,9 +348,7 @@ class SpanBuilderSdkTest {
   void droppingAttributes() {
     final int maxNumberOfAttrs = 8;
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxNumberOfAttributes(maxNumberOfAttrs)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -379,9 +372,7 @@ class SpanBuilderSdkTest {
   @Test
   public void tooLargeAttributeValuesAreTruncated() {
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setMaxLengthOfAttributeValues(10)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -430,9 +421,7 @@ class SpanBuilderSdkTest {
   @Test
   void addAttributes_OnlyViaSampler() {
     TraceConfig traceConfig =
-        tracerSdkFactory
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerSdkFactory.getActiveTraceConfig().toBuilder()
             .setSampler(Samplers.traceIdRatioBased(1))
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
@@ -613,13 +602,13 @@ class SpanBuilderSdkTest {
   @Test
   void noParent() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
+    try (Scope ignored = parent.makeCurrent()) {
       Span span = tracerSdk.spanBuilder(SPAN_NAME).setNoParent().startSpan();
       try {
         assertThat(span.getSpanContext().getTraceIdAsHexString())
             .isNotEqualTo(parent.getSpanContext().getTraceIdAsHexString());
         Mockito.verify(mockedSpanProcessor)
-            .onStart(Mockito.same((ReadWriteSpan) span), Mockito.same(Context.root()));
+            .onStart(Mockito.same(Context.root()), Mockito.same((ReadWriteSpan) span));
         Span spanNoParent =
             tracerSdk
                 .spanBuilder(SPAN_NAME)
@@ -631,7 +620,7 @@ class SpanBuilderSdkTest {
           assertThat(span.getSpanContext().getTraceIdAsHexString())
               .isNotEqualTo(parent.getSpanContext().getTraceIdAsHexString());
           Mockito.verify(mockedSpanProcessor)
-              .onStart(Mockito.same((ReadWriteSpan) spanNoParent), Mockito.same(Context.root()));
+              .onStart(Mockito.same(Context.root()), Mockito.same((ReadWriteSpan) spanNoParent));
         } finally {
           spanNoParent.end();
         }
@@ -653,7 +642,7 @@ class SpanBuilderSdkTest {
               tracerSdk.spanBuilder(SPAN_NAME).setNoParent().setParent(parentContext).startSpan();
       try {
         Mockito.verify(mockedSpanProcessor)
-            .onStart(Mockito.same((ReadWriteSpan) span), Mockito.same(parentContext));
+            .onStart(Mockito.same(parentContext), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdAsHexString())
             .isEqualTo(parent.getSpanContext().getTraceIdAsHexString());
         assertThat(span.toSpanData().getParentSpanId())
@@ -669,7 +658,7 @@ class SpanBuilderSdkTest {
                     .startSpan();
         try {
           Mockito.verify(mockedSpanProcessor)
-              .onStart(Mockito.same((ReadWriteSpan) span2), Mockito.same(parentContext2));
+              .onStart(Mockito.same(parentContext2), Mockito.same((ReadWriteSpan) span2));
           assertThat(span2.getSpanContext().getTraceIdAsHexString())
               .isEqualTo(parent.getSpanContext().getTraceIdAsHexString());
         } finally {
@@ -694,7 +683,7 @@ class SpanBuilderSdkTest {
               tracerSdk.spanBuilder(SPAN_NAME).setNoParent().setParent(parentContext).startSpan();
       try {
         Mockito.verify(mockedSpanProcessor)
-            .onStart(Mockito.same((ReadWriteSpan) span), Mockito.same(parentContext));
+            .onStart(Mockito.same(parentContext), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdAsHexString())
             .isEqualTo(parent.getSpanContext().getTraceIdAsHexString());
         assertThat(span.toSpanData().getParentSpanId())
@@ -717,7 +706,7 @@ class SpanBuilderSdkTest {
               tracerSdk.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
       try {
         Mockito.verify(mockedSpanProcessor)
-            .onStart(Mockito.same((ReadWriteSpan) span), Mockito.same(context));
+            .onStart(Mockito.same(context), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdAsHexString())
             .isEqualTo(parent.getSpanContext().getTraceIdAsHexString());
         assertThat(span.toSpanData().getParentSpanId())
@@ -736,7 +725,7 @@ class SpanBuilderSdkTest {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       RecordEventsReadableSpan span;
-      try (Scope scope = TracingContextUtils.currentContextWith(parent)) {
+      try (Scope scope = parent.makeCurrent()) {
         span =
             (RecordEventsReadableSpan)
                 tracerSdk.spanBuilder(SPAN_NAME).setParent(emptyContext).startSpan();
@@ -744,7 +733,7 @@ class SpanBuilderSdkTest {
 
       try {
         Mockito.verify(mockedSpanProcessor)
-            .onStart(Mockito.same((ReadWriteSpan) span), Mockito.same(emptyContext));
+            .onStart(Mockito.same(emptyContext), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdAsHexString())
             .isNotEqualTo(parent.getSpanContext().getTraceIdAsHexString());
         assertThat(span.toSpanData().getParentSpanId())
@@ -760,13 +749,13 @@ class SpanBuilderSdkTest {
   @Test
   void parentCurrentSpan() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
+    try (Scope ignored = parent.makeCurrent()) {
       final Context implicitParent = Context.current();
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
       try {
         Mockito.verify(mockedSpanProcessor)
-            .onStart(Mockito.same((ReadWriteSpan) span), Mockito.same(implicitParent));
+            .onStart(Mockito.same(implicitParent), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdAsHexString())
             .isEqualTo(parent.getSpanContext().getTraceIdAsHexString());
         assertThat(span.toSpanData().getParentSpanId())
@@ -789,7 +778,7 @@ class SpanBuilderSdkTest {
             tracerSdk.spanBuilder(SPAN_NAME).setParent(parentContext).startSpan();
     try {
       Mockito.verify(mockedSpanProcessor)
-          .onStart(Mockito.same((ReadWriteSpan) span), Mockito.same(parentContext));
+          .onStart(Mockito.same(parentContext), Mockito.same((ReadWriteSpan) span));
       assertThat(span.getSpanContext().getTraceIdAsHexString())
           .isNotEqualTo(parent.getSpanContext().getTraceIdAsHexString());
       assertFalse(SpanId.isValid(span.toSpanData().getParentSpanId()));
@@ -809,7 +798,7 @@ class SpanBuilderSdkTest {
   @Test
   void parent_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope scope = TracingContextUtils.currentContextWith(parent)) {
+    try (Scope scope = parent.makeCurrent()) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 
@@ -822,7 +811,7 @@ class SpanBuilderSdkTest {
   @Test
   void parentCurrentSpan_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parent)) {
+    try (Scope ignored = parent.makeCurrent()) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 
