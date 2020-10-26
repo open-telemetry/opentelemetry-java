@@ -31,6 +31,8 @@ public class OpenTelemetryCtx implements ContextHandle {
   @Override
   public void detach(ContextHandle ctx) {
     OpenTelemetryCtx impl = (OpenTelemetryCtx) ctx;
-    impl.scope.close();
+    if (impl.scope != null) {
+      impl.scope.close();
+    }
   }
 }

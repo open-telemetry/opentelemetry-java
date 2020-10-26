@@ -7,7 +7,6 @@ package io.opentelemetry.opencensusshim;
 
 import static io.opencensus.trace.Link.Type.PARENT_LINKED_SPAN;
 import static io.opencensus.trace.Span.Kind.CLIENT;
-import static io.opentelemetry.opencensusshim.SpanConverter.NANOS_PER_SECOND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
@@ -36,6 +35,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -108,7 +108,7 @@ class SpanConverterTest {
                 .setAttribute("Attribute1", false)
                 .setAttribute("Attribute2", 123)
                 .build(),
-            annotations.get(0).getTimestamp().getSeconds() * NANOS_PER_SECOND
+            TimeUnit.SECONDS.toNanos(annotations.get(0).getTimestamp().getSeconds())
                 + annotations.get(0).getTimestamp().getNanos());
     verify(spanSpy, times(1))
         .addEvent(
@@ -117,7 +117,7 @@ class SpanConverterTest {
                 .setAttribute("Attribute1", 2.34)
                 .setAttribute("Attribute2", "attributeValue")
                 .build(),
-            annotations.get(1).getTimestamp().getSeconds() * NANOS_PER_SECOND
+            TimeUnit.SECONDS.toNanos(annotations.get(1).getTimestamp().getSeconds())
                 + annotations.get(1).getTimestamp().getNanos());
   }
 
@@ -148,7 +148,7 @@ class SpanConverterTest {
                 .setAttribute("message.event.size.uncompressed", 80)
                 .setAttribute("message.event.size.compressed", 34)
                 .build(),
-            messageEvents.get(0).getTimestamp().getSeconds() * NANOS_PER_SECOND
+            TimeUnit.SECONDS.toNanos(messageEvents.get(0).getTimestamp().getSeconds())
                 + messageEvents.get(0).getTimestamp().getNanos());
     verify(spanSpy, times(1))
         .addEvent(
@@ -158,7 +158,7 @@ class SpanConverterTest {
                 .setAttribute("message.event.size.uncompressed", 280)
                 .setAttribute("message.event.size.compressed", 180)
                 .build(),
-            messageEvents.get(1).getTimestamp().getSeconds() * NANOS_PER_SECOND
+            TimeUnit.SECONDS.toNanos(messageEvents.get(1).getTimestamp().getSeconds())
                 + messageEvents.get(1).getTimestamp().getNanos());
   }
 

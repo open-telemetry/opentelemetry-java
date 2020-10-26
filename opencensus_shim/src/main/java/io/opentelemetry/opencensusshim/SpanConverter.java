@@ -30,6 +30,7 @@ import io.opentelemetry.trace.Tracer;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class SpanConverter {
 
@@ -55,7 +56,6 @@ public class SpanConverter {
     public void end(EndSpanOptions options) {}
   }
 
-  static final long NANOS_PER_SECOND = (long) 1e9;
   private static final Tracer TRACER =
       OpenTelemetry.getTracer("io.opencensus.opentelemetry.migration");
 
@@ -70,7 +70,7 @@ public class SpanConverter {
         TRACER
             .spanBuilder(spanData.getName())
             .setStartTimestamp(
-                spanData.getStartTimestamp().getSeconds() * NANOS_PER_SECOND
+                TimeUnit.SECONDS.toNanos(spanData.getStartTimestamp().getSeconds())
                     + spanData.getStartTimestamp().getNanos());
     if (spanData.getKind() != null) {
       builder.setSpanKind(mapKind(spanData.getKind()));
@@ -156,7 +156,8 @@ public class SpanConverter {
               event.getEvent().getUncompressedMessageSize(),
               AttributeKey.longKey("message.event.size.compressed"),
               event.getEvent().getCompressedMessageSize()),
-          event.getTimestamp().getSeconds() * NANOS_PER_SECOND + event.getTimestamp().getNanos());
+          TimeUnit.SECONDS.toNanos(event.getTimestamp().getSeconds())
+              + event.getTimestamp().getNanos());
     }
   }
 
@@ -178,7 +179,7 @@ public class SpanConverter {
       span.addEvent(
           annotation.getEvent().getDescription(),
           attributesBuilder.build(),
-          annotation.getTimestamp().getSeconds() * NANOS_PER_SECOND
+          TimeUnit.SECONDS.toNanos(annotation.getTimestamp().getSeconds())
               + annotation.getTimestamp().getNanos());
     }
   }
