@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.StatusCode;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
@@ -90,7 +91,7 @@ class AdapterTest {
     assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_SPAN_STATUS_CODE).getVLong())
         .isEqualTo(0);
     assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_SPAN_STATUS_MESSAGE).getVStr())
-        .isEqualTo("");
+        .isEqualTo("ok!");
 
     assertThat(jaegerSpan.getLogsSize()).isEqualTo(1);
     Log log = jaegerSpan.getLogs().get(0);
@@ -282,7 +283,7 @@ class AdapterTest {
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Attributes.empty()))
-        .setStatus(Status.ok())
+        .setStatus(Status.create(StatusCode.OK, "ok!"))
         .build();
   }
 

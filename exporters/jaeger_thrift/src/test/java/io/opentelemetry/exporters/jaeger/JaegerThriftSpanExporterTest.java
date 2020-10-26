@@ -108,7 +108,6 @@ class JaegerThriftSpanExporterTest {
             .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
             .setLogs(Collections.emptyList());
     expectedSpan.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
-    expectedSpan.addToTags(new Tag("span.status.message", TagType.STRING).setVStr(""));
     expectedSpan.addToTags(new Tag("span.status.code", TagType.LONG).setVLong(0));
     expectedSpan.addToTags(
         new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
@@ -200,7 +199,6 @@ class JaegerThriftSpanExporterTest {
             .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
             .setLogs(Collections.emptyList());
     expectedSpan1.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
-    expectedSpan1.addToTags(new Tag("span.status.message", TagType.STRING).setVStr(""));
     expectedSpan1.addToTags(new Tag("span.status.code", TagType.LONG).setVLong(0));
     expectedSpan1.addToTags(
         new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));
@@ -217,7 +215,6 @@ class JaegerThriftSpanExporterTest {
             .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
             .setLogs(Collections.emptyList());
     expectedSpan2.addToTags(new Tag("span.kind", TagType.STRING).setVStr("consumer"));
-    expectedSpan2.addToTags(new Tag("span.status.message", TagType.STRING).setVStr(""));
     expectedSpan2.addToTags(new Tag("span.status.code", TagType.LONG).setVLong(0));
     expectedSpan2.addToTags(
         new Tag("otel.library.name", TagType.STRING).setVStr("io.opentelemetry.auto"));

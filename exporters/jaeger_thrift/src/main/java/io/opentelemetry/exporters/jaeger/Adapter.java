@@ -94,18 +94,15 @@ final class Adapter {
     }
     target.setReferences(references);
 
-    if (span.getKind() != null) {
-      tags.add(
-          new Tag(KEY_SPAN_KIND, TagType.STRING)
-              .setVStr(span.getKind().name().toLowerCase(Locale.ROOT)));
-    }
-
     tags.add(
-        new Tag(KEY_SPAN_STATUS_MESSAGE, TagType.STRING)
-            .setVStr(
-                span.getStatus().getDescription() == null
-                    ? ""
-                    : span.getStatus().getDescription()));
+        new Tag(KEY_SPAN_KIND, TagType.STRING)
+            .setVStr(span.getKind().name().toLowerCase(Locale.ROOT)));
+
+    if (span.getStatus().getDescription() != null) {
+      tags.add(
+          new Tag(KEY_SPAN_STATUS_MESSAGE, TagType.STRING)
+              .setVStr(span.getStatus().getDescription()));
+    }
 
     tags.add(
         new Tag(KEY_SPAN_STATUS_CODE, TagType.LONG)
