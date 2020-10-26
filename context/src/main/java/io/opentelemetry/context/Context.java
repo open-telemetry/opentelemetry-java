@@ -229,7 +229,7 @@ public interface Context {
    * <pre>{@code
    * public class ContextUser {
    *
-   *   private static final ContextKey<MyState> KEY = ContextKey.named("MyState");
+   *   private static final Context.Key<MyState> KEY = Context.Key.named("MyState");
    *
    *   public Context startWork() {
    *     return Context.withValues(KEY, new MyState());
@@ -238,7 +238,7 @@ public interface Context {
    *   public void continueWork(Context context) {
    *     MyState state = context.getValue(KEY);
    *     // Keys are compared by reference only.
-   *     assert state != Context.current().getValue(ContextKey.named("MyState"));
+   *     assert state != Context.current().getValue(Context.Key.named("MyState"));
    *     ...
    *   }
    * }
