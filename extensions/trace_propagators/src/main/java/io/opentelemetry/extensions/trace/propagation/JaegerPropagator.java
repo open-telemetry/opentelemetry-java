@@ -213,16 +213,14 @@ public class JaegerPropagator implements TextMapPropagator {
 
     for (String key : getter.keys(carrier)) {
       if (key.startsWith(BAGGAGE_PREFIX)) {
-        key = key.substring(BAGGAGE_HEADER.length());
-        if (key.isEmpty()) {
+        if (key.length() <= BAGGAGE_PREFIX.length()) {
           continue;
         }
 
         if (builder == null) {
           builder = Baggage.builder();
         }
-        // UH: it seems null is a printable string...
-        builder.put(key, getter.get(carrier, key));
+        builder.put(key.substring(BAGGAGE_PREFIX.length()), getter.get(carrier, key));
       } else if (key.equals(BAGGAGE_HEADER)) {
         builder = parseBaggageHeader(getter.get(carrier, key), builder);
       }
