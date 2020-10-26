@@ -217,7 +217,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+     * Sets the managed channel to use when communicating with the backend. Takes precedence over
      * {@link #setEndpoint(String)} if both are called.
      *
      * @param channel the channel to use.
