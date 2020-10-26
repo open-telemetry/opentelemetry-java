@@ -49,7 +49,7 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
     }
 
     @Override
-    public <T> ContextKey<T> contextKey(String name) {
+    public <T> Context.Key<T> contextKey(String name) {
       return new GrpcContextKeyWrapper<>(io.grpc.Context.key(name));
     }
   }
@@ -62,36 +62,36 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
     }
 
     @Override
-    public <V> V get(ContextKey<V> key) {
+    public <V> V get(Context.Key<V> key) {
       return grpcKey(key).get(grpcContext);
     }
 
     @Override
-    public <V> Context with(ContextKey<V> k1, V v1) {
+    public <V> Context with(Context.Key<V> k1, V v1) {
       return new GrpcContextWrapper(grpcContext.withValue(grpcKey(k1), v1));
     }
 
     @Override
-    public <V1, V2> Context with(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
+    public <V1, V2> Context with(Context.Key<V1> k1, V1 v1, Context.Key<V2> k2, V2 v2) {
       return new GrpcContextWrapper(grpcContext.withValues(grpcKey(k1), v1, grpcKey(k2), v2));
     }
 
     @Override
     public <V1, V2, V3> Context with(
-        ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3) {
+        Context.Key<V1> k1, V1 v1, Context.Key<V2> k2, V2 v2, Context.Key<V3> k3, V3 v3) {
       return new GrpcContextWrapper(
           grpcContext.withValues(grpcKey(k1), v1, grpcKey(k2), v2, grpcKey(k3), v3));
     }
 
     @Override
     public <V1, V2, V3, V4> Context with(
-        ContextKey<V1> k1,
+        Context.Key<V1> k1,
         V1 v1,
-        ContextKey<V2> k2,
+        Context.Key<V2> k2,
         V2 v2,
-        ContextKey<V3> k3,
+        Context.Key<V3> k3,
         V3 v3,
-        ContextKey<V4> k4,
+        Context.Key<V4> k4,
         V4 v4) {
       return new GrpcContextWrapper(
           grpcContext.withValues(
@@ -99,7 +99,7 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
     }
   }
 
-  static class GrpcContextKeyWrapper<T> implements ContextKey<T> {
+  static class GrpcContextKeyWrapper<T> implements Context.Key<T> {
 
     private final io.grpc.Context.Key<T> grpcContextKey;
 
@@ -108,7 +108,7 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
     }
   }
 
-  static <T> io.grpc.Context.Key<T> grpcKey(ContextKey<T> key) {
+  static <T> io.grpc.Context.Key<T> grpcKey(Context.Key<T> key) {
     if (key instanceof GrpcContextKeyWrapper) {
       return ((GrpcContextKeyWrapper<T>) key).grpcContextKey;
     }

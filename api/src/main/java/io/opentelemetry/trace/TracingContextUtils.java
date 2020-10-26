@@ -6,15 +6,14 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextKey;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Util methods/functionality to interact with the {@link Context}. */
 @Immutable
 public final class TracingContextUtils {
-  private static final ContextKey<Span> CONTEXT_SPAN_KEY =
-      ContextKey.named("opentelemetry-trace-span-key");
+  private static final Context.Key<Span> CONTEXT_SPAN_KEY =
+      Context.Key.named("opentelemetry-trace-span-key");
 
   /**
    * Creates a new {@code Context} with the given {@link Span} set.

@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextKey;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -102,14 +101,14 @@ class DefaultPropagatorsTest {
 
   private static class CustomTextMapPropagator implements TextMapPropagator {
     private final String name;
-    private final ContextKey<String> key;
+    private final Context.Key<String> key;
 
     CustomTextMapPropagator(String name) {
       this.name = name;
-      this.key = ContextKey.named(name);
+      this.key = Context.Key.named(name);
     }
 
-    ContextKey<String> getKey() {
+    Context.Key<String> getKey() {
       return key;
     }
 

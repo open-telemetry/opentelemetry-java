@@ -6,7 +6,6 @@
 package io.grpc.override;
 
 import io.grpc.Context;
-import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,7 +15,8 @@ public class ContextStorageOverride extends Context.Storage {
 
   private static final Logger log = Logger.getLogger(ContextStorageOverride.class.getName());
 
-  private static final ContextKey<Context> GRPC_CONTEXT = ContextKey.named("grpc-context");
+  private static final io.opentelemetry.context.Context.Key<Context> GRPC_CONTEXT =
+      io.opentelemetry.context.Context.Key.named("grpc-context");
   private static final Context.Key<Scope> OTEL_SCOPE = Context.key("otel-scope");
 
   @Override

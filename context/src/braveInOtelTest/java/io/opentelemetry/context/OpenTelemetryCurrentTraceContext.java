@@ -10,8 +10,8 @@ import brave.propagation.TraceContext;
 
 public class OpenTelemetryCurrentTraceContext extends CurrentTraceContext {
 
-  private static final ContextKey<TraceContext> TRACE_CONTEXT_KEY =
-      ContextKey.named("brave-tracecontext");
+  private static final Context.Key<TraceContext> TRACE_CONTEXT_KEY =
+      Context.Key.named("brave-tracecontext");
 
   @Override
   public TraceContext get() {

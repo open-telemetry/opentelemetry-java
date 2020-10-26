@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 class GrpcInOtelTest {
 
-  private static final ContextKey<String> ANIMAL = ContextKey.named("animal");
+  private static final Context.Key<String> ANIMAL = Context.Key.named("animal");
 
   private static final io.grpc.Context.Key<String> FOOD = io.grpc.Context.key("food");
   private static final io.grpc.Context.Key<String> COUNTRY = io.grpc.Context.key("country");

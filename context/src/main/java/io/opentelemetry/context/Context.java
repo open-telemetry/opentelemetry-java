@@ -84,11 +84,11 @@ public interface Context {
   }
 
   /**
-   * Returns the value stored in this {@link Context} for the given {@link ContextKey}, or {@code
-   * null} if there is no value for the key in this context.
+   * Returns the value stored in this {@link Context} for the given {@link Key}, or {@code null} if
+   * there is no value for the key in this context.
    */
   @Nullable
-  <V> V get(ContextKey<V> key);
+  <V> V get(Key<V> key);
 
   /**
    * Returns a new context with the given key value set.
@@ -114,16 +114,15 @@ public interface Context {
    * number of keys and values — combine multiple related items together into a single key instead
    * of separating them. But if the items are unrelated, have separate keys for them.
    */
-  <V> Context with(ContextKey<V> k1, V v1);
+  <V> Context with(Key<V> k1, V v1);
 
   /** Returns a new context with the given key value set. */
-  default <V1, V2> Context with(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
+  default <V1, V2> Context with(Key<V1> k1, V1 v1, Key<V2> k2, V2 v2) {
     return with(k1, v1).with(k2, v2);
   }
 
   /** Returns a new context with the given key value set. */
-  default <V1, V2, V3> Context with(
-      ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3) {
+  default <V1, V2, V3> Context with(Key<V1> k1, V1 v1, Key<V2> k2, V2 v2, Key<V3> k3, V3 v3) {
     return with(k1, v1, k2, v2).with(k3, v3);
   }
 
@@ -144,14 +143,7 @@ public interface Context {
    * of separating them. But if the items are unrelated, have separate keys for them.
    */
   default <V1, V2, V3, V4> Context with(
-      ContextKey<V1> k1,
-      V1 v1,
-      ContextKey<V2> k2,
-      V2 v2,
-      ContextKey<V3> k3,
-      V3 v3,
-      ContextKey<V4> k4,
-      V4 v4) {
+      Key<V1> k1, V1 v1, Key<V2> k2, V2 v2, Key<V3> k3, V3 v3, Key<V4> k4, V4 v4) {
     return with(k1, v1, k2, v2, k3, v3).with(k4, v4);
   }
 
@@ -227,5 +219,43 @@ public interface Context {
    */
   default ScheduledExecutorService wrap(ScheduledExecutorService executor) {
     return new ContextScheduledExecutorService(this, executor);
+  }
+
+  /**
+   * Key for indexing values of type {@link T} stored in a {@link Context}. {@link Key} are compared
+   * by reference, so it is expected that only one {@link Key} is created for a particular type of
+   * context value.
+   *
+   * <pre>{@code
+   * public class ContextUser {
+   *
+   *   private static final ContextKey<MyState> KEY = ContextKey.named("MyState");
+   *
+   *   public Context startWork() {
+   *     return Context.withValues(KEY, new MyState());
+   *   }
+   *
+   *   public void continueWork(Context context) {
+   *     MyState state = context.getValue(KEY);
+   *     // Keys are compared by reference only.
+   *     assert state != Context.current().getValue(ContextKey.named("MyState"));
+   *     ...
+   *   }
+   * }
+   *
+   * }</pre>
+   */
+  // ErrorProne false positive, this is used for its type constraint, not only as a bag of statics.
+  @SuppressWarnings("InterfaceWithOnlyStatics")
+  interface Key<T> {
+
+    /**
+     * Returns a new {@link Key} with the given debug name. The name does not impact behavior and is
+     * only for debugging purposes. Multiple different keys with the same name will be separate
+     * keys.
+     */
+    static <T> Key<T> named(String name) {
+      return ContextStorage.get().contextKey(name);
+    }
   }
 }

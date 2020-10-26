@@ -6,7 +6,6 @@
 package io.opentelemetry.baggage;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -14,8 +13,8 @@ import javax.annotation.concurrent.Immutable;
 /** Utility methods for accessing the {@link Baggage} contained in the {@link Context}. */
 @Immutable
 public final class BaggageUtils {
-  private static final ContextKey<Baggage> CORR_CONTEXT_KEY =
-      ContextKey.named("opentelemetry-corr-context-key");
+  private static final Context.Key<Baggage> CORR_CONTEXT_KEY =
+      Context.Key.named("opentelemetry-corr-context-key");
 
   /**
    * Creates a new {@code Context} with the given value set.

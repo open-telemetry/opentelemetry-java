@@ -6,10 +6,11 @@
 package io.opentelemetry.context;
 
 import com.google.errorprone.annotations.MustBeClosed;
+import io.opentelemetry.context.Context.Key;
 
 /**
  * A value that can be stored inside {@link Context}. Types will generally use this interface to
- * allow storing themselves in {@link Context} without exposing a {@link ContextKey}.
+ * allow storing themselves in {@link Context} without exposing a {@link Key}.
  */
 public interface ImplicitContextKeyed {
 
