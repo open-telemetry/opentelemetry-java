@@ -120,7 +120,7 @@ public interface TextMapPropagator {
      * Returns all the keys in the given carrier.
      *
      * @param carrier carrier of propagation fields, such as an http request.
-     * @since 0.8.0
+     * @since 0.10.0
      */
     Collection<String> keys(C carrier);
 
