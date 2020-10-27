@@ -80,7 +80,7 @@ public interface Context {
    * is only a workaround hiding an underlying context propagation issue.
    */
   static Context root() {
-    return DefaultContext.ROOT;
+    return DefaultContext.root();
   }
 
   /**

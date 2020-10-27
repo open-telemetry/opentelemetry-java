@@ -217,8 +217,13 @@ public final class Samplers {
     }
   }
 
+  /**
+   * A Sampler that uses the sampled flag of the parent Span, if present. If the span has no parent,
+   * this Sampler will use the "root" sampler that it is built with. See documentation on the {@link
+   * Builder} methods for the details on the various configurable options.
+   */
   @Immutable
-  static class ParentBased implements Sampler {
+  public static class ParentBased implements Sampler {
 
     private final Sampler root;
     private final Sampler remoteParentSampled;
@@ -288,7 +293,8 @@ public final class Samplers {
       return getDescription();
     }
 
-    static class Builder {
+    /** A builder for creating ParentBased sampler instances. */
+    public static class Builder {
 
       private final Sampler root;
       private Sampler remoteParentSampled;
@@ -345,7 +351,7 @@ public final class Samplers {
        *
        * @return the ParentBased sampler.
        */
-      public ParentBased build() {
+      public Sampler build() {
         return new ParentBased(
             this.root,
             this.remoteParentSampled,
