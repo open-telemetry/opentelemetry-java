@@ -9,6 +9,7 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -75,8 +76,13 @@ public class OpenTelemetryExtension
   }
 
   /** Returns the {@link OpenTelemetrySdk} created by this extension. */
-  public OpenTelemetrySdk getOpenTelemetry() {
+  public OpenTelemetry getOpenTelemetry() {
     return openTelemetry;
+  }
+
+  /** Returns the {@link TracerSdkManagement} created by this extension. */
+  public TracerSdkManagement getTracerManagement() {
+    return openTelemetry.getTracerManagement();
   }
 
   /** Returns all the exported {@link SpanData} so far. */
