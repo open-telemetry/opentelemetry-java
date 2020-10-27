@@ -82,6 +82,7 @@ public class InteroperabilityTest {
     assertEquals("OpenTelemetry: Event 1", spanData3.getEvents().get(0).getName());
     assertEquals("OpenTelemetry: Event 2", spanData3.getEvents().get(1).getName());
 
+    assertEquals(spanData2.getSpanId(), spanData1.getParentSpanId());
     assertEquals(spanData3.getSpanId(), spanData2.getParentSpanId());
     assertEquals(NULL_SPAN_ID, spanData3.getParentSpanId());
   }
