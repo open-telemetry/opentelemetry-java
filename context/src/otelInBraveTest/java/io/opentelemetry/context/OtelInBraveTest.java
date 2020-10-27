@@ -20,8 +20,7 @@ import org.junit.jupiter.api.Test;
 class OtelInBraveTest {
 
   private static final ContextKey<String> ANIMAL = ContextKey.named("animal");
-  private static final Context CONTEXT_WITH_ANIMAL =
-      new BraveContextStorageProvider.ContextWrapper(Context.root().with(ANIMAL, "japan"));
+  private static final Context CONTEXT_WITH_ANIMAL = Context.root().with(ANIMAL, "japan");
 
   private static final Tracing TRACING =
       Tracing.newBuilder().currentTraceContext(CurrentTraceContext.Default.create()).build();
@@ -66,14 +65,31 @@ class OtelInBraveTest {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("japan");
       try (Scope ignored2 = Context.current().with(ANIMAL, "cat").makeCurrent()) {
         assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
-        AtomicReference<String> otelValue = new AtomicReference<>();
-        Runnable runnable = () -> otelValue.set(Context.current().get(ANIMAL));
+        TraceContext context2 =
+            Tracing.current().currentTraceContext().get().toBuilder().addExtra("cheese").build();
+        try (CurrentTraceContext.Scope ignored3 =
+            TRACING.currentTraceContext().newScope(context2)) {
+          AtomicReference<Boolean> braveContainsCheese = new AtomicReference<>();
+          AtomicReference<String> otelValue = new AtomicReference<>();
+          Runnable runnable =
+              () -> {
+                TraceContext traceContext = Tracing.current().currentTraceContext().get();
+                if (traceContext != null && traceContext.extra().contains("cheese")) {
+                  braveContainsCheese.set(true);
+                } else {
+                  braveContainsCheese.set(false);
+                }
+                otelValue.set(Context.current().get(ANIMAL));
+              };
 
-        otherThread.submit(runnable).get();
-        assertThat(otelValue).hasValue(null);
+          otherThread.submit(runnable).get();
+          assertThat(braveContainsCheese).hasValue(false);
+          assertThat(otelValue).hasValue(null);
 
-        otherThread.submit(TRACING.currentTraceContext().wrap(runnable)).get();
-        assertThat(otelValue).hasValue("cat");
+          otherThread.submit(TRACING.currentTraceContext().wrap(runnable)).get();
+          assertThat(braveContainsCheese).hasValue(true);
+          assertThat(otelValue).hasValue("cat");
+        }
       }
     }
   }
@@ -85,14 +101,31 @@ class OtelInBraveTest {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("japan");
       try (Scope ignored2 = Context.current().with(ANIMAL, "cat").makeCurrent()) {
         assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
-        AtomicReference<String> otelValue = new AtomicReference<>();
-        Runnable runnable = () -> otelValue.set(Context.current().get(ANIMAL));
+        TraceContext context2 =
+            Tracing.current().currentTraceContext().get().toBuilder().addExtra("cheese").build();
+        try (CurrentTraceContext.Scope ignored3 =
+            TRACING.currentTraceContext().newScope(context2)) {
+          AtomicReference<Boolean> braveContainsCheese = new AtomicReference<>();
+          AtomicReference<String> otelValue = new AtomicReference<>();
+          Runnable runnable =
+              () -> {
+                TraceContext traceContext = Tracing.current().currentTraceContext().get();
+                if (traceContext != null && traceContext.extra().contains("cheese")) {
+                  braveContainsCheese.set(true);
+                } else {
+                  braveContainsCheese.set(false);
+                }
+                otelValue.set(Context.current().get(ANIMAL));
+              };
 
-        otherThread.submit(runnable).get();
-        assertThat(otelValue).hasValue(null);
+          otherThread.submit(runnable).get();
+          assertThat(braveContainsCheese).hasValue(false);
+          assertThat(otelValue).hasValue(null);
 
-        otherThread.submit(Context.current().wrap(runnable)).get();
-        assertThat(otelValue).hasValue("cat");
+          otherThread.submit(Context.current().wrap(runnable)).get();
+          assertThat(braveContainsCheese).hasValue(true);
+          assertThat(otelValue).hasValue("cat");
+        }
       }
     }
   }
