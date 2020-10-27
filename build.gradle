@@ -294,6 +294,7 @@ configure(opentelemetryProjects) {
 
                 // Compatibility layer
                 opencensus_api          : "io.opencensus:opencensus-api:${opencensusVersion}",
+                opencensus_impl         : "io.opencensus:opencensus-impl:${opencensusVersion}",
                 opencensus_impl_core    : "io.opencensus:opencensus-impl-core:${opencensusVersion}",
                 opentracing             : "io.opentracing:opentracing-api:${opentracingVersion}",
 

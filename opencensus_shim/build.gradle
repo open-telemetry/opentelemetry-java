@@ -14,7 +14,8 @@ dependencies {
     testImplementation project(':opentelemetry-sdk'),
             libraries.junit,
             libraries.assertj,
-            libraries.slf4jsimple
+            libraries.slf4jsimple,
+            libraries.opencensus_impl
 }
 test {
     testLogging.showStandardStreams = true
