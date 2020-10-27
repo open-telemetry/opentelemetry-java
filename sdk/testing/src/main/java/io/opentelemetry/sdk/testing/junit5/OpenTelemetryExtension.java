@@ -33,7 +33,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * >
  * >   {@literal @}Test
  * >   void test() {
- * >     tracer.spanBuilder("name").startSpan();
+ * >     tracer.spanBuilder("name").startSpan().end();
  * >     assertThat(otelTesting.getSpans()).containsExactly(expected);
  * >   }
  * >  }
