@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_LANGUAGE;
+import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_NAME;
+import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_VERSION;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
@@ -36,11 +38,6 @@ public abstract class Resource {
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
-
-  // todo: move to ResourceAttributes
-  private static final AttributeKey<String> SDK_NAME = stringKey("telemetry.sdk.name");
-  private static final AttributeKey<String> SDK_LANGUAGE = stringKey("telemetry.sdk.language");
-  private static final AttributeKey<String> SDK_VERSION = stringKey("telemetry.sdk.version");
 
   private static final Resource TELEMETRY_SDK;
 

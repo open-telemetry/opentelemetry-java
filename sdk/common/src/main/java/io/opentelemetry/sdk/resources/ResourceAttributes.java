@@ -125,5 +125,12 @@ public final class ResourceAttributes {
   /** The execution environment ID as a string. */
   public static final AttributeKey<String> FAAS_INSTANCE = stringKey("faas.instance");
 
+  /** The name of the telemetry SDK as defined above. */
+  public static final AttributeKey<String> SDK_NAME = stringKey("telemetry.sdk.name");
+  /** The language of the telemetry SDK. */
+  public static final AttributeKey<String> SDK_LANGUAGE = stringKey("telemetry.sdk.language");
+  /** The version string of the telemetry SDK. */
+  public static final AttributeKey<String> SDK_VERSION = stringKey("telemetry.sdk.version");
+
   private ResourceAttributes() {}
 }
