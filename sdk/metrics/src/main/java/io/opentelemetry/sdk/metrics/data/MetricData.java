@@ -243,25 +243,6 @@ public abstract class MetricData {
     }
   }
 
-  /**
-   * SketchPoint is a distribution representation of numeric values.
-   */
-  @Immutable
-  @AutoValue
-  public abstract static class SketchPoint extends Point {
-
-    SketchPoint() {}
-
-    public static SketchPoint create(
-        long startEpochNanos,
-        long epochNanos,
-        Labels labels,
-        DDSketch current) {
-      // TODO: pull relevant data out of DDSketch.
-      return new AutoValue_MetricData_SketchPoint(startEpochNanos, epochNanos, labels);
-    }
-  }
-
   @Immutable
   @AutoValue
   public abstract static class ValueAtPercentile {
