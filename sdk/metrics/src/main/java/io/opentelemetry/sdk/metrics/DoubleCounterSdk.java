@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;

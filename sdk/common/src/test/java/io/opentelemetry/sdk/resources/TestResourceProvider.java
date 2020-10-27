@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 
 public class TestResourceProvider extends ResourceProvider {
 

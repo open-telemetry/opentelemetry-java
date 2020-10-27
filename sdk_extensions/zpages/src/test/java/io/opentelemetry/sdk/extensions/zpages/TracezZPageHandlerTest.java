@@ -9,12 +9,12 @@ import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.trace.EndSpanOptions;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.trace.EndSpanOptions;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.Tracer;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;

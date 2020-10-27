@@ -5,13 +5,13 @@
 
 package io.opentelemetry.opentracingshim;
 
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.trace.StatusCode;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.log.Fields;
@@ -33,14 +33,14 @@ import javax.annotation.Nullable;
 final class SpanShim extends BaseShimObject implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
 
-  private final io.opentelemetry.trace.Span span;
+  private final io.opentelemetry.api.trace.Span span;
 
-  public SpanShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.Span span) {
+  public SpanShim(TelemetryInfo telemetryInfo, io.opentelemetry.api.trace.Span span) {
     super(telemetryInfo);
     this.span = span;
   }
 
-  io.opentelemetry.trace.Span getSpan() {
+  io.opentelemetry.api.trace.Span getSpan() {
     return span;
   }
 

@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.internal.Utils;
+import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;

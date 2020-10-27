@@ -1,9 +1,9 @@
 import nebula.plugin.release.git.opinion.Strategies
 
 plugins {
-    id "com.diffplug.spotless" version "5.6.1"
+    id "com.diffplug.spotless"
     id "com.jfrog.artifactory" apply false
-    id "com.jfrog.bintray" version "1.8.4" apply false // Need *specific* version.
+    id "com.jfrog.bintray" apply false
     id "nebula.release"
     id "net.ltgt.errorprone" apply false
     id "ru.vyarus.animalsniffer" apply false

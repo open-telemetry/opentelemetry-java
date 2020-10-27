@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.resources;
 
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 
 /**
  * ResourceProvider is a service provider for additional {@link Resource}s. Users of OpenTelemetry

@@ -5,13 +5,13 @@
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.OperationSamplingStrategy;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.Span.Kind;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

@@ -5,8 +5,8 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.trace.Tracer;
 
 abstract class BaseShimObject {
 

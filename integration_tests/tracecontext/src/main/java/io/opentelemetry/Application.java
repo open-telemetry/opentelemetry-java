@@ -6,10 +6,11 @@
 package io.opentelemetry;
 
 import com.google.gson.Gson;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;

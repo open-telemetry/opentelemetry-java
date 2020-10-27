@@ -8,10 +8,10 @@ package io.opentelemetry.opentracingshim.testbed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span.Kind;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

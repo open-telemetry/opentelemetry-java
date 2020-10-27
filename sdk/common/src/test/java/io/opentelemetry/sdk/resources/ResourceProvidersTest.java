@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;

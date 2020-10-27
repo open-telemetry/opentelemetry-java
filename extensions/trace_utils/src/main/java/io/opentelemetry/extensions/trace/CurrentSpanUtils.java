@@ -5,10 +5,10 @@
 
 package io.opentelemetry.extensions.trace;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.StatusCode;
 import java.util.concurrent.Callable;
 
 /** Util methods/functionality to interact with the {@link Span} in the {@link Context}. */

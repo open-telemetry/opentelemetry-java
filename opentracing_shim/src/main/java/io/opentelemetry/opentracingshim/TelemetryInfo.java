@@ -5,9 +5,9 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.baggage.Baggage;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.trace.Tracer;
 
 /**
  * Utility class that holds a Tracer, a BaggageManager, and related objects that are core part of

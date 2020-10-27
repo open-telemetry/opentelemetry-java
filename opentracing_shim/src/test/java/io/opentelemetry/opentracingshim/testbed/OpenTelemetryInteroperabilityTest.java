@@ -24,8 +24,9 @@ class OpenTelemetryInteroperabilityTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
-  private final io.opentelemetry.trace.Tracer tracer =
+  private final io.opentelemetry.api.trace.Tracer tracer =
       otelTesting.getOpenTelemetry().getTracer("opentracingshim");
+
   private final Tracer otTracer =
       TraceShim.createTracerShim(otelTesting.getOpenTelemetry().getTracerProvider());
 
@@ -37,7 +38,7 @@ class OpenTelemetryInteroperabilityTest {
     } finally {
       otSpan.finish();
     }
-    assertThat(io.opentelemetry.trace.Span.current().getSpanContext().isValid()).isFalse();
+    assertThat(io.opentelemetry.api.trace.Span.current().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = otelTesting.getSpans();
@@ -47,14 +48,14 @@ class OpenTelemetryInteroperabilityTest {
 
   @Test
   void openTracingContinuesSdkTrace() {
-    io.opentelemetry.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
+    io.opentelemetry.api.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
     try (io.opentelemetry.context.Scope scope = otelSpan.makeCurrent()) {
       otTracer.buildSpan("ot_span").start().finish();
     } finally {
       otelSpan.end();
     }
 
-    assertThat(io.opentelemetry.trace.Span.current().getSpanContext().isValid()).isFalse();
+    assertThat(io.opentelemetry.api.trace.Span.current().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = otelTesting.getSpans();

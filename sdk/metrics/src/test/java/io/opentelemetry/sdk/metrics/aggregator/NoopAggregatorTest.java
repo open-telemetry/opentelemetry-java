@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link NoopAggregator}. */
