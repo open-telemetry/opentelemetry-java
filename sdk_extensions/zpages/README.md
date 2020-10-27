@@ -3,13 +3,14 @@
 [![Javadocs][javadoc-image]][javadoc-url]
 
 This module contains code for the OpenTelemetry Java zPages, which are a collection of dynamic HTML
-web pages that display stats and trace data.
+web pages embedded in your app that display stats and trace data. Learn more in [this blog post][zPages blog];
 
 * Java 8 compatible.
 
 <!--- TODO: Update javadoc -->
 [javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-contrib-auto-config.svg
 [javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-contrib-auto-config
+[zPages blog]: https://medium.com/opentelemetry/zpages-in-opentelemetry-2b080a81eb47
 
 ## Quickstart
 
@@ -19,28 +20,15 @@ For Maven, add the following to your `pom.xml`:
 ```xml
 <dependencies>
   <dependency>
-        <groupId>io.opentelemetry</groupId>
-        <artifactId>opentelemetry-api</artifactId>
-        <version>0.8.0</version>
-      </dependency>
-      <dependency>
-        <groupId>io.opentelemetry</groupId>
-        <artifactId>opentelemetry-sdk</artifactId>
-        <version>0.8.0</version>
-      </dependency>
-      <dependency>
-        <groupId>io.opentelemetry</groupId>
-        <artifactId>opentelemetry-sdk-extension-zpages</artifactId>
-        <version>0.8.0</version>
-      </dependency>
+    <groupId>io.opentelemetry</groupId>
+    <artifactId>opentelemetry-sdk-extension-zpages</artifactId>
+    <version>0.8.0</version>
+  </dependency>
 </dependencies>
 ```
 
-<!--- TODO: Verify gradle configuration -->
 For Gradle, add the following to your dependencies:
 ```groovy
-implementation 'io.opentelemetry:opentelemetry-api:0.8.0'
-implementation 'io.opentelemetry:opentelemetry-sdk:0.8.0'
 implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.8.0'
 ```
 
