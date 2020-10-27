@@ -9,7 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * A class of boundaries for the latency buckets. The completed spans with a status of {@link
- * io.opentelemetry.trace.Status#OK} are categorized into one of these buckets om the traceZ zPage.
+ * io.opentelemetry.api.trace.Status#OK} are categorized into one of these buckets om the traceZ
+ * zPage.
  */
 enum LatencyBoundary {
   /** Stores finished successful requests of duration within the interval [0, 10us). */

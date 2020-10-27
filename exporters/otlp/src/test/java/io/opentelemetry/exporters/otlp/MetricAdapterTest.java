@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
 import static java.util.Collections.emptyList;
@@ -13,8 +13,8 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;

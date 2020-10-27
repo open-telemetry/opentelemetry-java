@@ -8,16 +8,16 @@ package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 

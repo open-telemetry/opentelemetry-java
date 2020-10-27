@@ -7,8 +7,8 @@ package io.opentelemetry.exporters.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
-import io.opentelemetry.common.LabelConsumer;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.LabelConsumer;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;

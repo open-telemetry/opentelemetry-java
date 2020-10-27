@@ -8,11 +8,11 @@ package io.opentelemetry.exporters.inmemory;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

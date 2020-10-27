@@ -7,12 +7,12 @@ package io.opentelemetry.sdk.extensions.incubator.trace.data;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.TraceState;
 import java.util.List;
 
 /**

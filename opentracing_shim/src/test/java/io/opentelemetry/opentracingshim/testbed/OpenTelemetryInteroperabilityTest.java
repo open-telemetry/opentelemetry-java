@@ -9,7 +9,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -22,7 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class OpenTelemetryInteroperabilityTest {
-  private final io.opentelemetry.trace.Tracer tracer =
+  private final io.opentelemetry.api.trace.Tracer tracer =
       OpenTelemetry.getGlobalTracer("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder()
@@ -44,7 +44,7 @@ class OpenTelemetryInteroperabilityTest {
     } finally {
       otSpan.finish();
     }
-    assertThat(io.opentelemetry.trace.Span.current().getSpanContext().isValid()).isFalse();
+    assertThat(io.opentelemetry.api.trace.Span.current().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
@@ -54,14 +54,14 @@ class OpenTelemetryInteroperabilityTest {
 
   @Test
   void openTracingContinuesSdkTrace() {
-    io.opentelemetry.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
+    io.opentelemetry.api.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
     try (io.opentelemetry.context.Scope scope = otelSpan.makeCurrent()) {
       otTracer.buildSpan("ot_span").start().finish();
     } finally {
       otelSpan.end();
     }
 
-    assertThat(io.opentelemetry.trace.Span.current().getSpanContext().isValid()).isFalse();
+    assertThat(io.opentelemetry.api.trace.Span.current().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();

@@ -5,14 +5,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleUpDownCounter;
-import io.opentelemetry.metrics.DoubleValueRecorder;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongUpDownCounter;
-import io.opentelemetry.metrics.LongValueRecorder;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BatchRecorder;
+import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.DoubleUpDownCounter;
+import io.opentelemetry.api.metrics.DoubleValueRecorder;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.LongValueRecorder;
 
 /**
  * Minimal implementation of the {@link BatchRecorder} that simply redirects the calls to the

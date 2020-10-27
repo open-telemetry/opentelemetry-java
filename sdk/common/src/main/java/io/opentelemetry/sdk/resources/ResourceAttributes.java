@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeKey;
 
 /**
  * Provides constants for resource semantic conventions defined by the OpenTelemetry specification.

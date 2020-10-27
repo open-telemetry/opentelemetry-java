@@ -6,14 +6,14 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.errorprone.annotations.Immutable;
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleValueRecorder;
-import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongValueRecorder;
-import io.opentelemetry.metrics.LongValueRecorder.BoundLongValueRecorder;
-import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.DoubleValueRecorder;
+import io.opentelemetry.api.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongValueRecorder;
+import io.opentelemetry.api.metrics.LongValueRecorder.BoundLongValueRecorder;
+import io.opentelemetry.api.metrics.Meter;
 
 /**
  * This enum allows for iteration over all of the operations that we want to benchmark. To ensure

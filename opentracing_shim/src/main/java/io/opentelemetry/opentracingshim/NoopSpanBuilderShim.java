@@ -5,7 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.trace.DefaultTracer;
+import io.opentelemetry.api.trace.DefaultTracer;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;

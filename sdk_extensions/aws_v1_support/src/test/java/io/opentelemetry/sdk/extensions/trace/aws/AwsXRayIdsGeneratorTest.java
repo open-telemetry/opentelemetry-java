@@ -7,9 +7,9 @@ package io.opentelemetry.sdk.extensions.trace.aws;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.trace.IdsGenerator;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CopyOnWriteArraySet;

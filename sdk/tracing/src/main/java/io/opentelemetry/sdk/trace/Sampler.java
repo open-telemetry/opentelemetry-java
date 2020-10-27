@@ -5,15 +5,15 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
