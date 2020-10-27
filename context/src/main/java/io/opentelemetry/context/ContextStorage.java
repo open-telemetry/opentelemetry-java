@@ -66,7 +66,7 @@ public interface ContextStorage {
    * Scope#close()}.
    */
   static ContextStorage get() {
-    return LazyStorage.storage;
+    return LazyStorage.get();
   }
 
   /**
