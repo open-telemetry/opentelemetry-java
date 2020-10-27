@@ -24,9 +24,9 @@ class OtelInBraveTest {
 
   private static final Tracing TRACING =
       Tracing.newBuilder().currentTraceContext(CurrentTraceContext.Default.create()).build();
-
   private static final TraceContext TRACE_CONTEXT =
-      TraceContext.newBuilder().traceId(1).spanId(1).addExtra(CONTEXT_WITH_ANIMAL).build();
+      BraveContextStorageProvider.toBraveContext(
+          TraceContext.newBuilder().traceId(1).spanId(1).build(), CONTEXT_WITH_ANIMAL);
 
   private static ExecutorService otherThread;
 
@@ -122,7 +122,8 @@ class OtelInBraveTest {
           assertThat(braveContainsCheese).hasValue(false);
           assertThat(otelValue).hasValue(null);
 
-          otherThread.submit(Context.current().wrap(runnable)).get();
+          Runnable task = Context.current().wrap(runnable);
+          otherThread.submit(task).get();
           assertThat(braveContainsCheese).hasValue(true);
           assertThat(otelValue).hasValue("cat");
         }

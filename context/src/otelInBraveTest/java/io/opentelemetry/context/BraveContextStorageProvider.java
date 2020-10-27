@@ -26,16 +26,17 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
     public Scope attach(Context toAttach) {
       CurrentTraceContext currentTraceContext = Tracing.current().currentTraceContext();
       TraceContext currentBraveContext = currentTraceContext.get();
-      Context currentContext = ContextWrapper.fromBraveContext(currentBraveContext);
+
+      Context currentContext = fromBraveContext(currentBraveContext);
       if (currentContext == toAttach) {
         return Scope.noop();
       }
 
       TraceContext newBraveContext;
-      if (toAttach instanceof ContextWrapper) {
-        newBraveContext = ((ContextWrapper) toAttach).toBraveContext();
+      if (toAttach instanceof BraveContextWrapper) {
+        newBraveContext = ((BraveContextWrapper) toAttach).toBraveContext();
       } else {
-        newBraveContext = currentBraveContext.toBuilder().addExtra(toAttach).build();
+        newBraveContext = toBraveContext(currentBraveContext, toAttach);
       }
 
       if (currentBraveContext == newBraveContext) {
@@ -47,52 +48,68 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
 
     @Override
     public Context current() {
-      TraceContext currentBraveContext = Tracing.current().currentTraceContext().get();
-      if (currentBraveContext == null) {
-        return new ContextWrapper(null, DefaultContext.root());
-      }
-      return new ContextWrapper(
-          currentBraveContext, ContextWrapper.fromBraveContext(currentBraveContext));
+      return new BraveContextWrapper(Tracing.current().currentTraceContext().get());
     }
   }
 
   // Need to wrap the Context because brave findExtra searches for perfect match of the class.
-  static final class ContextWrapper implements Context {
-    private final TraceContext baseBraveContext;
-    private final DefaultContext context;
+  static final class BraveContextWrapper implements Context {
+    @Nullable private final TraceContext baseBraveContext;
+    private final Context delegate;
 
-    ContextWrapper(TraceContext baseBraveContext, DefaultContext context) {
+    BraveContextWrapper(@Nullable TraceContext baseBraveContext) {
+      this(baseBraveContext, fromBraveContext(baseBraveContext));
+    }
+
+    BraveContextWrapper(@Nullable TraceContext baseBraveContext, Context delegate) {
       this.baseBraveContext = baseBraveContext;
-      this.context = context;
+      this.delegate = delegate;
     }
 
     TraceContext toBraveContext() {
-      if (fromBraveContext(baseBraveContext) == context) {
+      if (fromBraveContext(baseBraveContext) == delegate) {
         return baseBraveContext;
       }
-      return baseBraveContext.toBuilder().addExtra(context).build();
+      return BraveContextStorageProvider.toBraveContext(baseBraveContext, delegate);
     }
 
     @Nullable
     @Override
     public <V> V get(ContextKey<V> key) {
-      return context.get(key);
+      return delegate.get(key);
     }
 
     @Override
     public <V> Context with(ContextKey<V> k1, V v1) {
-      return new ContextWrapper(baseBraveContext, context.with(k1, v1));
+      return new BraveContextWrapper(baseBraveContext, delegate.with(k1, v1));
     }
+  }
 
-    private static DefaultContext fromBraveContext(TraceContext braveContext) {
-      List<Object> extra = braveContext.extra();
-      for (int i = extra.size() - 1; i >= 0; i--) {
-        Object nextExtra = extra.get(i);
-        if (nextExtra.getClass() == DefaultContext.class) {
-          return (DefaultContext) nextExtra;
-        }
+  static TraceContext toBraveContext(@Nullable TraceContext braveContext, Context context) {
+    TraceContext.Builder builder =
+        braveContext == null ? TraceContext.newBuilder() : braveContext.toBuilder();
+    return builder.addExtra(new ContextWrapper(context)).build();
+  }
+
+  private static Context fromBraveContext(@Nullable TraceContext braveContext) {
+    if (braveContext == null) {
+      return Context.root();
+    }
+    List<Object> extra = braveContext.extra();
+    for (int i = extra.size() - 1; i >= 0; i--) {
+      Object nextExtra = extra.get(i);
+      if (nextExtra.getClass() == ContextWrapper.class) {
+        return ((ContextWrapper) nextExtra).context;
       }
-      return DefaultContext.root();
+    }
+    return DefaultContext.root();
+  }
+
+  private static final class ContextWrapper {
+    private final Context context;
+
+    private ContextWrapper(Context context) {
+      this.context = context;
     }
   }
 }
