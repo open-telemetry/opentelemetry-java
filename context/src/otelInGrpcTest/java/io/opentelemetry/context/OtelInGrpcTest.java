@@ -76,6 +76,7 @@ class OtelInGrpcTest {
               grpcValue.set(COUNTRY.get());
               otelValue.set(Context.current().get(ANIMAL));
             };
+
         otherThread.submit(runnable).get();
         assertThat(grpcValue).hasValue(null);
         assertThat(otelValue).hasValue(null);
@@ -105,15 +106,14 @@ class OtelInGrpcTest {
               grpcValue.set(COUNTRY.get());
               otelValue.set(Context.current().get(ANIMAL));
             };
+
         otherThread.submit(runnable).get();
         assertThat(grpcValue).hasValue(null);
         assertThat(otelValue).hasValue(null);
 
         otherThread.submit(Context.current().wrap(runnable)).get();
 
-        // Since OTel context is inside the gRPC context, propagating OTel context does not
-        // propagate the gRPC context.
-        assertThat(grpcValue).hasValue(null);
+        assertThat(grpcValue).hasValue("japan");
         assertThat(otelValue).hasValue("cat");
       }
     } finally {
