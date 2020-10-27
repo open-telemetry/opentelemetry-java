@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import com.datadoghq.sketch.ddsketch.DDSketch;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -239,6 +240,25 @@ public abstract class MetricData {
         List<ValueAtPercentile> percentileValues) {
       return new AutoValue_MetricData_SummaryPoint(
           startEpochNanos, epochNanos, labels, count, sum, percentileValues);
+    }
+  }
+
+  /**
+   * SketchPoint is a distribution representation of numeric values.
+   */
+  @Immutable
+  @AutoValue
+  public abstract static class SketchPoint extends Point {
+
+    SketchPoint() {}
+
+    public static SketchPoint create(
+        long startEpochNanos,
+        long epochNanos,
+        Labels labels,
+        DDSketch current) {
+      // TODO: pull relevant data out of DDSketch.
+      return new AutoValue_MetricData_SketchPoint(startEpochNanos, epochNanos, labels);
     }
   }
 

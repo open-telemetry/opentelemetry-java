@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.DDSketchAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -38,6 +39,16 @@ public class Aggregations {
    */
   public static Aggregation count() {
     return Count.INSTANCE;
+  }
+
+  /**
+   * Returns an {@code Aggregation} that supports distribution metrics and percentile calculations.
+   *
+   * @return an {@code Aggregation} that calculates count of recorded measurements (the number of
+   *     recorded * measurements).
+   */
+  public static Aggregation ddSketch() {
+    return DDSketch.INSTANCE;
   }
 
   /**
@@ -200,6 +211,33 @@ public class Aggregations {
     @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
       throw new UnsupportedOperationException("Implement this");
+    }
+  }
+
+  @Immutable
+  private enum DDSketch implements Aggregation {
+    INSTANCE;
+
+    @Override
+    public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
+      return DDSketchAggregator.getBalancedFactory();
+    }
+
+    @Override
+    public MetricData.Type getDescriptorType(
+        InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
+      return MetricData.Type.SUMMARY;
+    }
+
+    @Override
+    public String getUnit(String initialUnit) {
+      return initialUnit;
+    }
+
+    @Override
+    public boolean availableForInstrument(InstrumentType instrumentType) {
+      return instrumentType == InstrumentType.VALUE_OBSERVER
+          || instrumentType == InstrumentType.VALUE_RECORDER;
     }
   }
 
