@@ -5,9 +5,9 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;

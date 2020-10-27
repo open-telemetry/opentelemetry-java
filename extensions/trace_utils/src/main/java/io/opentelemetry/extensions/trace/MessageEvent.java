@@ -5,12 +5,12 @@
 
 package io.opentelemetry.extensions.trace;
 
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import javax.annotation.concurrent.Immutable;
 
 /**

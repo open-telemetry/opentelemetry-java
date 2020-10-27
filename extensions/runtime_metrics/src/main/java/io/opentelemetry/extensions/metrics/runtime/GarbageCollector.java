@@ -5,12 +5,12 @@
 
 package io.opentelemetry.extensions.metrics.runtime;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.AsynchronousInstrument;
-import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
-import io.opentelemetry.metrics.LongSumObserver;
-import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.AsynchronousInstrument;
+import io.opentelemetry.api.metrics.AsynchronousInstrument.LongResult;
+import io.opentelemetry.api.metrics.LongSumObserver;
+import io.opentelemetry.api.metrics.Meter;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;

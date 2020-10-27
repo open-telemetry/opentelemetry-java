@@ -6,11 +6,11 @@
 package io.opentelemetry.exporters.inmemory;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 import javax.annotation.concurrent.Immutable;
 
 /**

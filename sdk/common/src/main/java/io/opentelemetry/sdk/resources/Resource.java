@@ -11,12 +11,12 @@ import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_VERSION;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.internal.StringUtils;
-import io.opentelemetry.internal.Utils;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.api.internal.Utils;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;

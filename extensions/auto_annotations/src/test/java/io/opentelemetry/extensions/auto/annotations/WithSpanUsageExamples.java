@@ -5,8 +5,8 @@
 
 package io.opentelemetry.extensions.auto.annotations;
 
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
 
 /**
  * This class is not a classical test. It's just a demonstration of possible usages of {@link

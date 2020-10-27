@@ -5,14 +5,14 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longArrayKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -20,7 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
@@ -29,10 +33,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceState;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.extensions.auto.annotations;
 
-import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.api.trace.Span.Kind;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation marks that an execution of this method or constructor should result in a new
- * {@link io.opentelemetry.trace.Span}.
+ * {@link io.opentelemetry.api.trace.Span}.
  *
  * <p>Application developers can use this annotation to signal OpenTelemetry auto-instrumentation
  * that a new span should be created whenever marked method is executed.

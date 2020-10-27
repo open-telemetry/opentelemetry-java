@@ -10,13 +10,13 @@ import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.StatusCode;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;

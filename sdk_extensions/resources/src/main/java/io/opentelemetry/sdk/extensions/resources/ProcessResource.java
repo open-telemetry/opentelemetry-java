@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extensions.resources;
 
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;

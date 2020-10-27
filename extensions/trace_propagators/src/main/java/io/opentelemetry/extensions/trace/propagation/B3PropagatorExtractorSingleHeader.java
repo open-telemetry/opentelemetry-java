@@ -8,10 +8,10 @@ package io.opentelemetry.extensions.trace.propagation;
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.COMBINED_HEADER;
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.COMBINED_HEADER_DELIMITER;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;

@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logging.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 

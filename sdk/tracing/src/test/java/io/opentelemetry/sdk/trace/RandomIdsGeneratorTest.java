@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import org.junit.jupiter.api.Test;
 
 class RandomIdsGeneratorTest {
