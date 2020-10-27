@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 
 final class DefaultContext implements Context {
 
-  static final Context ROOT = new DefaultContext();
+  private static final Context ROOT = new DefaultContext();
 
   /**
    * Returns the default {@link ContextStorage} used to attach {@link Context}s to scopes of
@@ -35,6 +35,10 @@ final class DefaultContext implements Context {
    */
   static ContextStorage threadLocalStorage() {
     return ThreadLocalContextStorage.INSTANCE;
+  }
+
+  static Context root() {
+    return ROOT;
   }
 
   @Nullable private final PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries;
