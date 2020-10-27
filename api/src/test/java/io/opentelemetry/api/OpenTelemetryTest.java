@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import javax.annotation.Nullable;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -60,13 +59,11 @@ class OpenTelemetryTest {
 
   @Test
   void testDefault() {
-    Assertions.assertThat(OpenTelemetry.getGlobalTracerProvider())
-        .isInstanceOf(DefaultTracerProvider.class);
-    Assertions.assertThat(OpenTelemetry.getGlobalTracerProvider())
+    assertThat(OpenTelemetry.getGlobalTracerProvider()).isInstanceOf(DefaultTracerProvider.class);
+    assertThat(OpenTelemetry.getGlobalTracerProvider())
         .isSameAs(OpenTelemetry.getGlobalTracerProvider());
-    Assertions.assertThat(OpenTelemetry.getGlobalMeterProvider())
-        .isInstanceOf(DefaultMeterProvider.class);
-    Assertions.assertThat(OpenTelemetry.getGlobalMeterProvider())
+    assertThat(OpenTelemetry.getGlobalMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
+    assertThat(OpenTelemetry.getGlobalMeterProvider())
         .isSameAs(OpenTelemetry.getGlobalMeterProvider());
     assertThat(OpenTelemetry.getGlobalPropagators()).isInstanceOf(DefaultContextPropagators.class);
     assertThat(OpenTelemetry.getGlobalPropagators()).isSameAs(OpenTelemetry.getGlobalPropagators());
@@ -99,7 +96,7 @@ class OpenTelemetryTest {
     System.setProperty(
         TracerProviderFactory.class.getName(), SecondTracerProviderFactory.class.getName());
     try {
-      Assertions.assertThat(OpenTelemetry.getGlobalTracerProvider().get(""))
+      assertThat(OpenTelemetry.getGlobalTracerProvider().get(""))
           .isInstanceOf(SecondTracerProviderFactory.class);
     } finally {
       serviceFile.delete();
@@ -123,7 +120,7 @@ class OpenTelemetryTest {
       assertTrue(
           (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
               || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory));
-      Assertions.assertThat(OpenTelemetry.getGlobalMeterProvider())
+      assertThat(OpenTelemetry.getGlobalMeterProvider())
           .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
     } finally {
       serviceFile.delete();
@@ -140,9 +137,9 @@ class OpenTelemetryTest {
     System.setProperty(
         MeterProviderFactory.class.getName(), SecondMeterProviderFactory.class.getName());
     try {
-      Assertions.assertThat(OpenTelemetry.getGlobalMeterProvider())
+      assertThat(OpenTelemetry.getGlobalMeterProvider())
           .isInstanceOf(SecondMeterProviderFactory.class);
-      Assertions.assertThat(OpenTelemetry.getGlobalMeterProvider())
+      assertThat(OpenTelemetry.getGlobalMeterProvider())
           .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
     } finally {
       serviceFile.delete();
