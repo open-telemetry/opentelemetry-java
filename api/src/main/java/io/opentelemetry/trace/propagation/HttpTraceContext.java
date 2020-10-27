@@ -36,8 +36,8 @@ public class HttpTraceContext implements TextMapPropagator {
   private static final Logger logger = Logger.getLogger(HttpTraceContext.class.getName());
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
-  static final String TRACE_PARENT = "traceparent";
-  static final String TRACE_STATE = "tracestate";
+  public static final String TRACE_PARENT = "traceparent";
+  public static final String TRACE_STATE = "tracestate";
   private static final List<String> FIELDS =
       Collections.unmodifiableList(Arrays.asList(TRACE_PARENT, TRACE_STATE));
 
