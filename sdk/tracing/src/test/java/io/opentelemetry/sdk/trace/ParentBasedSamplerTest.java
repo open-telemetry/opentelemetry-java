@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-class ParentBasedTest {
+class ParentBasedSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private final IdsGenerator idsGenerator = IdsGenerator.random();

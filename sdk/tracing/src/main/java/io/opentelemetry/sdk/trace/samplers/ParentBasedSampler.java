@@ -21,7 +21,7 @@ import javax.annotation.concurrent.Immutable;
  * Builder} methods for the details on the various configurable options.
  */
 @Immutable
-public class ParentBased implements Sampler {
+public class ParentBasedSampler implements Sampler {
 
   private final Sampler root;
   private final Sampler remoteParentSampled;
@@ -29,7 +29,7 @@ public class ParentBased implements Sampler {
   private final Sampler localParentSampled;
   private final Sampler localParentNotSampled;
 
-  private ParentBased(
+  private ParentBasedSampler(
       Sampler root,
       @Nullable Sampler remoteParentSampled,
       @Nullable Sampler remoteParentNotSampled,
@@ -146,12 +146,12 @@ public class ParentBased implements Sampler {
     }
 
     /**
-     * Builds the {@link ParentBased}.
+     * Builds the {@link ParentBasedSampler}.
      *
      * @return the ParentBased sampler.
      */
     public Sampler build() {
-      return new ParentBased(
+      return new ParentBasedSampler(
           this.root,
           this.remoteParentSampled,
           this.remoteParentNotSampled,
@@ -169,11 +169,11 @@ public class ParentBased implements Sampler {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ParentBased)) {
+    if (!(o instanceof ParentBasedSampler)) {
       return false;
     }
 
-    ParentBased that = (ParentBased) o;
+    ParentBasedSampler that = (ParentBasedSampler) o;
 
     if (!Objects.equals(root, that.root)) {
       return false;
