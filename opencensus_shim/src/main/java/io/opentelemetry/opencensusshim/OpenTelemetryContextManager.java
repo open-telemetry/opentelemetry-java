@@ -8,8 +8,8 @@ package io.opentelemetry.opencensusshim;
 import io.opencensus.trace.ContextHandle;
 import io.opencensus.trace.ContextManager;
 import io.opencensus.trace.Span;
+import io.opentelemetry.api.trace.TracingContextUtils;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.trace.TracingContextUtils;
 
 public class OpenTelemetryContextManager implements ContextManager {
 

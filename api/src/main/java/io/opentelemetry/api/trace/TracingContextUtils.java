@@ -23,7 +23,7 @@ public final class TracingContextUtils {
    * @param context the parent {@code Context}.
    * @return a new context with the given value set.
    */
-  static Context withSpan(Span span, Context context) {
+  public static Context withSpan(Span span, Context context) {
     return context.with(CONTEXT_SPAN_KEY, span);
   }
 
@@ -33,7 +33,7 @@ public final class TracingContextUtils {
    *
    * @return the {@link Span} from the current {@code Context}.
    */
-  static Span getCurrentSpan() {
+  public static Span getCurrentSpan() {
     return getSpan(Context.current());
   }
 
@@ -44,7 +44,7 @@ public final class TracingContextUtils {
    * @param context the specified {@code Context}.
    * @return the {@link Span} from the specified {@code Context}.
    */
-  static Span getSpan(Context context) {
+  public static Span getSpan(Context context) {
     Span span = context.get(CONTEXT_SPAN_KEY);
     return span == null ? Span.getInvalid() : span;
   }
@@ -57,7 +57,7 @@ public final class TracingContextUtils {
    * @return the {@link Span} from the specified {@code Context}.
    */
   @Nullable
-  static Span getSpanWithoutDefault(Context context) {
+  public static Span getSpanWithoutDefault(Context context) {
     return context.get(CONTEXT_SPAN_KEY);
   }
 

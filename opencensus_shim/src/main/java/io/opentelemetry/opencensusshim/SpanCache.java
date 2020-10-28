@@ -19,13 +19,13 @@ public class SpanCache {
   private static final int CACHE_EXPIRE_TIME_MINUTES = 10;
   private static final TimeUnit CACHE_EXPIRE_UNIT = TimeUnit.MINUTES;
 
-  private static final Cache<io.opentelemetry.trace.Span, Span> OT_TO_OC =
+  private static final Cache<io.opentelemetry.api.trace.Span, Span> OT_TO_OC =
       CacheBuilder.newBuilder()
           .maximumSize(MAXIMUM_CACHE_SIZE)
           .expireAfterAccess(CACHE_EXPIRE_TIME_MINUTES, CACHE_EXPIRE_UNIT)
           .build();
 
-  private static final Cache<Span, io.opentelemetry.trace.Span> OC_TO_OT =
+  private static final Cache<Span, io.opentelemetry.api.trace.Span> OC_TO_OT =
       CacheBuilder.newBuilder()
           .maximumSize(MAXIMUM_CACHE_SIZE)
           .expireAfterAccess(CACHE_EXPIRE_TIME_MINUTES, CACHE_EXPIRE_UNIT)
@@ -37,8 +37,8 @@ public class SpanCache {
 
   private SpanCache() {}
 
-  io.opentelemetry.trace.Span toOtelSpan(Span ocSpan) {
-    io.opentelemetry.trace.Span otSpan = OC_TO_OT.getIfPresent(ocSpan);
+  io.opentelemetry.api.trace.Span toOtelSpan(Span ocSpan) {
+    io.opentelemetry.api.trace.Span otSpan = OC_TO_OT.getIfPresent(ocSpan);
     if (otSpan == null) {
       otSpan = SpanConverter.toOtelSpan(ocSpan);
       OC_TO_OT.put(ocSpan, otSpan);
@@ -47,7 +47,7 @@ public class SpanCache {
     return otSpan;
   }
 
-  Span fromOtelSpan(io.opentelemetry.trace.Span otSpan) {
+  Span fromOtelSpan(io.opentelemetry.api.trace.Span otSpan) {
     Span span = OT_TO_OC.getIfPresent(otSpan);
     if (span == null) {
       span = SpanConverter.fromOtelSpan(otSpan);
@@ -58,7 +58,7 @@ public class SpanCache {
   }
 
   void removeFromCache(RecordEventsSpanImpl ocSpan) {
-    io.opentelemetry.trace.Span otSpan = OC_TO_OT.getIfPresent(ocSpan);
+    io.opentelemetry.api.trace.Span otSpan = OC_TO_OT.getIfPresent(ocSpan);
     if (otSpan != null) {
       OC_TO_OT.invalidate(ocSpan);
       OT_TO_OC.invalidate(otSpan);

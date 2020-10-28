@@ -13,7 +13,10 @@ import static org.mockito.Mockito.when;
 
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -21,9 +24,6 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,14 +45,14 @@ public class InteroperabilityTest {
     MockitoAnnotations.initMocks(this);
     when(spanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
     SpanProcessor spanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
-    OpenTelemetrySdk.getTracerManagement().addSpanProcessor(spanProcessor);
+    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
   }
 
   @Test
   public void testParentChildRelationshipsAreExportedCorrectly() {
-    Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.test.scoped.span.1");
+    Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.test.scoped.span.1");
     Span span = tracer.spanBuilder("OpenTelemetrySpan").startSpan();
-    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+    try (Scope scope = Context.current().with(span).makeCurrent()) {
       span.addEvent("OpenTelemetry: Event 1");
       createOpenCensusScopedSpanWithChildSpan(
           /* withInnerOpenTelemetrySpan= */ true, /* withInnerOpenCensusSpan= */ false);
@@ -178,9 +178,9 @@ public class InteroperabilityTest {
   }
 
   private static void createOpenTelemetryScopedSpan() {
-    Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.test.scoped.span.2");
+    Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.test.scoped.span.2");
     Span span = tracer.spanBuilder("OpenTelemetrySpan2").startSpan();
-    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+    try (Scope scope = Context.current().with(span).makeCurrent()) {
       span.addEvent("OpenTelemetry2: Event 1");
       span.addEvent("OpenTelemetry2: Event 2");
     } finally {

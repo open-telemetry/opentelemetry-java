@@ -8,7 +8,7 @@ package io.opentelemetry.opencensusshim;
 import io.opencensus.implcore.trace.RecordEventsSpanImpl;
 import io.opencensus.implcore.trace.RecordEventsSpanImpl.StartEndHandler;
 import io.opencensus.trace.export.SpanData;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.api.trace.Span;
 
 public class OpenTelemetryStartEndHandler implements StartEndHandler {
 

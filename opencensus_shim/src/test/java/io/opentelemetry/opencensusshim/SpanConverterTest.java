@@ -29,18 +29,18 @@ import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opencensus.trace.config.TraceParams;
 import io.opencensus.trace.export.SpanData.TimedEvent;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.trace.RandomIdsGenerator;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.sdk.trace.IdsGenerator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class SpanConverterTest {
-  private static final RandomIdsGenerator RANDOM_IDS_GENERATOR = new RandomIdsGenerator();
+  private static final IdsGenerator RANDOM_IDS_GENERATOR = IdsGenerator.random();
 
   @Test
   void testToOtelSpan() {
@@ -48,7 +48,7 @@ class SpanConverterTest {
 
     Span otelSpan = SpanConverter.toOtelSpan(span);
 
-    assertEquals(0x1, otelSpan.getContext().getTraceFlags());
+    assertEquals(0x1, otelSpan.getSpanContext().getTraceFlags());
     assertTrue(otelSpan.isRecording());
   }
 
@@ -60,9 +60,9 @@ class SpanConverterTest {
     String traceStateValue = "value123";
 
     Span otelSpan = Mockito.mock(Span.class);
-    when(otelSpan.getContext())
+    when(otelSpan.getSpanContext())
         .thenReturn(
-            io.opentelemetry.trace.SpanContext.create(
+            io.opentelemetry.api.trace.SpanContext.create(
                 traceIdHex,
                 spanIdHex,
                 TraceFlags.getSampled(),
@@ -104,18 +104,15 @@ class SpanConverterTest {
     verify(spanSpy, times(1))
         .addEvent(
             "First annotation!",
-            Attributes.builder()
-                .setAttribute("Attribute1", false)
-                .setAttribute("Attribute2", 123)
-                .build(),
+            Attributes.builder().put("Attribute1", false).put("Attribute2", 123).build(),
             TimeUnit.SECONDS.toNanos(annotations.get(0).getTimestamp().getSeconds())
                 + annotations.get(0).getTimestamp().getNanos());
     verify(spanSpy, times(1))
         .addEvent(
             "Second annotation!",
             Attributes.builder()
-                .setAttribute("Attribute1", 2.34)
-                .setAttribute("Attribute2", "attributeValue")
+                .put("Attribute1", 2.34)
+                .put("Attribute2", "attributeValue")
                 .build(),
             TimeUnit.SECONDS.toNanos(annotations.get(1).getTimestamp().getSeconds())
                 + annotations.get(1).getTimestamp().getNanos());
@@ -144,9 +141,9 @@ class SpanConverterTest {
         .addEvent(
             "1",
             Attributes.builder()
-                .setAttribute("message.event.type", "RECEIVED")
-                .setAttribute("message.event.size.uncompressed", 80)
-                .setAttribute("message.event.size.compressed", 34)
+                .put("message.event.type", "RECEIVED")
+                .put("message.event.size.uncompressed", 80)
+                .put("message.event.size.compressed", 34)
                 .build(),
             TimeUnit.SECONDS.toNanos(messageEvents.get(0).getTimestamp().getSeconds())
                 + messageEvents.get(0).getTimestamp().getNanos());
@@ -154,9 +151,9 @@ class SpanConverterTest {
         .addEvent(
             "8",
             Attributes.builder()
-                .setAttribute("message.event.type", "SENT")
-                .setAttribute("message.event.size.uncompressed", 280)
-                .setAttribute("message.event.size.compressed", 180)
+                .put("message.event.type", "SENT")
+                .put("message.event.size.uncompressed", 280)
+                .put("message.event.size.compressed", 180)
                 .build(),
             TimeUnit.SECONDS.toNanos(messageEvents.get(1).getTimestamp().getSeconds())
                 + messageEvents.get(1).getTimestamp().getNanos());
