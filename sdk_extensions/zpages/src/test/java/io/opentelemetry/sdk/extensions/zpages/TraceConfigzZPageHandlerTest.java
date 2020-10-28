@@ -9,9 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Map;
@@ -179,8 +179,7 @@ public final class TraceConfigzZPageHandlerTest {
 
     assertThat(TRACER_SDK_MANAGEMENT.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(
-            Samplers.traceIdRatioBased(Double.parseDouble(newSamplingProbability))
-                .getDescription());
+            Sampler.traceIdRatioBased(Double.parseDouble(newSamplingProbability)).getDescription());
     assertThat(TRACER_SDK_MANAGEMENT.getActiveTraceConfig().getMaxNumberOfAttributes())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributes));
     assertThat(TRACER_SDK_MANAGEMENT.getActiveTraceConfig().getMaxNumberOfEvents())
@@ -382,8 +381,7 @@ public final class TraceConfigzZPageHandlerTest {
 
     assertThat(TRACER_SDK_MANAGEMENT.getActiveTraceConfig().getSampler().getDescription())
         .isEqualTo(
-            Samplers.traceIdRatioBased(Double.parseDouble(newSamplingProbability))
-                .getDescription());
+            Sampler.traceIdRatioBased(Double.parseDouble(newSamplingProbability)).getDescription());
     assertThat(TRACER_SDK_MANAGEMENT.getActiveTraceConfig().getMaxNumberOfAttributes())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributes));
     assertThat(TRACER_SDK_MANAGEMENT.getActiveTraceConfig().getMaxNumberOfEvents())

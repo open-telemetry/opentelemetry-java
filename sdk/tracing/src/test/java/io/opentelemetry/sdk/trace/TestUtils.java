@@ -16,6 +16,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;

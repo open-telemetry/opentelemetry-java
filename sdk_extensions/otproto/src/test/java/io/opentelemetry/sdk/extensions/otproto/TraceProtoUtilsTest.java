@@ -13,8 +13,8 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
 import io.opentelemetry.proto.trace.v1.ConstantSampler.ConstantDecision;
 import io.opentelemetry.proto.trace.v1.TraceIdRatioBased;
-import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceProtoUtils}. */
@@ -50,7 +50,7 @@ class TraceProtoUtilsTest {
   @Test
   void traceConfigFromProto() {
     TraceConfig traceConfig = TraceProtoUtils.traceConfigFromProto(TRACE_CONFIG_PROTO);
-    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.alwaysOn());
+    assertThat(traceConfig.getSampler()).isEqualTo(Sampler.alwaysOn());
     assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(10);
     assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(9);
     assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(8);
@@ -71,7 +71,7 @@ class TraceProtoUtilsTest {
                 .setMaxNumberOfAttributesPerTimedEvent(2)
                 .setMaxNumberOfAttributesPerLink(1)
                 .build());
-    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.alwaysOff());
+    assertThat(traceConfig.getSampler()).isEqualTo(Sampler.alwaysOff());
   }
 
   @Test
@@ -86,6 +86,6 @@ class TraceProtoUtilsTest {
                 .setMaxNumberOfAttributesPerTimedEvent(2)
                 .setMaxNumberOfAttributesPerLink(1)
                 .build());
-    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.traceIdRatioBased(0.1));
+    assertThat(traceConfig.getSampler()).isEqualTo(Sampler.traceIdRatioBased(0.1));
   }
 }
