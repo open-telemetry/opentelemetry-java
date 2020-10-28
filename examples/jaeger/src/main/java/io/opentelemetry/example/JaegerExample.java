@@ -6,8 +6,8 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.exporters.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Tracer;
 
 public class JaegerExample {
 
@@ -76,7 +76,7 @@ public class JaegerExample {
     // Start the example
     JaegerExample example = new JaegerExample(ip, port);
     example.setupJaegerExporter();
-    //generate a few sample spans
+    // generate a few sample spans
     for (int i = 0; i < 10; i++) {
       example.myWonderfulUseCase();
     }

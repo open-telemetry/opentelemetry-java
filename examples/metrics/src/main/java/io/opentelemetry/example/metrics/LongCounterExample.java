@@ -1,16 +1,16 @@
 package io.opentelemetry.example.metrics;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.StatusCanonicalCode;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.TracingContextUtils;
+import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
+import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.StatusCanonicalCode;
+import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.io.File;
 import javax.swing.filechooser.FileSystemView;
 
