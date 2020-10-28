@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
 
+    id "me.champeau.gradle.jmh"
     id "org.unbroken-dome.test-sets"
     id "ru.vyarus.animalsniffer"
 }
