@@ -42,7 +42,7 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
     } else {
       idUpperBound = (long) (ratio * Long.MAX_VALUE);
     }
-    return new AutoValue_TraceIdRatioBased(
+    return new AutoValue_TraceIdRatioBasedSampler(
         ratio,
         idUpperBound,
         ImmutableSamplingResult.createWithProbability(
