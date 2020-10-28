@@ -16,7 +16,7 @@ public enum TestSdk {
       new SdkBuilder() {
         @Override
         Meter build() {
-          return Meter.noop();
+          return Meter.getDefault();
         }
       }),
   SDK(

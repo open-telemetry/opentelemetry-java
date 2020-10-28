@@ -152,7 +152,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
         if (meterProviderFactory != null) {
           meterProvider = meterProviderFactory.create();
         } else {
-          meterProvider = MeterProvider.noop();
+          meterProvider = MeterProvider.getDefault();
         }
       }
 
@@ -162,7 +162,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
         if (tracerProviderFactory != null) {
           tracerProvider = tracerProviderFactory.create();
         } else {
-          tracerProvider = TracerProvider.noop();
+          tracerProvider = TracerProvider.getDefault();
         }
       }
 

@@ -16,7 +16,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class DefaultMeter implements Meter {
 
-  private static final DefaultMeter instance = new DefaultMeter();
+  private static final DefaultMeter INSTANCE = new DefaultMeter();
   private static final String COUNTERS_CAN_ONLY_INCREASE = "Counters can only increase";
 
   /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
@@ -25,7 +25,7 @@ final class DefaultMeter implements Meter {
           + " characters.";
 
   static Meter getInstance() {
-    return instance;
+    return INSTANCE;
   }
 
   @Override

@@ -215,7 +215,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
         } else if (HAS_METRICS_SDK) {
           meterProvider = MeterSdkProvider.builder().setClock(clock).setResource(resource).build();
         } else {
-          meterProvider = MeterProvider.noop();
+          meterProvider = MeterProvider.getDefault();
         }
       }
 
@@ -229,7 +229,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
               new ObfuscatedTracerProvider(
                   TracerSdkProvider.builder().setClock(clock).setResource(resource).build());
         } else {
-          tracerProvider = TracerProvider.noop();
+          tracerProvider = TracerProvider.getDefault();
         }
       }
 

@@ -29,7 +29,7 @@ public interface Meter {
    * Returns a {@link Meter} that only creates no-op {@link Instrument}s that neither record nor are
    * emitted.
    */
-  static Meter noop() {
+  static Meter getDefault() {
     return DefaultMeter.getInstance();
   }
 

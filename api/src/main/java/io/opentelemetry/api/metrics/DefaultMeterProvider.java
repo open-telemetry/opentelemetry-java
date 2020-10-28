@@ -10,10 +10,10 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class DefaultMeterProvider implements MeterProvider {
 
-  private static final MeterProvider instance = new DefaultMeterProvider();
+  private static final MeterProvider INSTANCE = new DefaultMeterProvider();
 
   static MeterProvider getInstance() {
-    return instance;
+    return INSTANCE;
   }
 
   @Override
@@ -23,7 +23,7 @@ final class DefaultMeterProvider implements MeterProvider {
 
   @Override
   public Meter get(String instrumentationName, String instrumentationVersion) {
-    return Meter.noop();
+    return Meter.getDefault();
   }
 
   private DefaultMeterProvider() {}

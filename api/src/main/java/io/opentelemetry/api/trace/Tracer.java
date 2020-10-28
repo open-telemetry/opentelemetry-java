@@ -62,7 +62,7 @@ public interface Tracer {
    * Returns a no-op {@link Tracer} that only creates no-op {@link Span}s which do not record nor
    * are emitted.
    */
-  static Tracer noop() {
+  static Tracer getDefault() {
     return DefaultTracer.getInstance();
   }
 

@@ -17,10 +17,10 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class DefaultTracer implements Tracer {
 
-  private static final DefaultTracer instance = new DefaultTracer();
+  private static final DefaultTracer INSTANCE = new DefaultTracer();
 
   static DefaultTracer getInstance() {
-    return instance;
+    return INSTANCE;
   }
 
   @Override

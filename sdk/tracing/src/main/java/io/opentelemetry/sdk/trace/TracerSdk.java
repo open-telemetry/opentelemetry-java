@@ -22,7 +22,7 @@ final class TracerSdk implements Tracer {
   @Override
   public Span.Builder spanBuilder(String spanName) {
     if (sharedState.isStopped()) {
-      return Tracer.noop().spanBuilder(spanName);
+      return Tracer.getDefault().spanBuilder(spanName);
     }
     return new SpanBuilderSdk(
         spanName,

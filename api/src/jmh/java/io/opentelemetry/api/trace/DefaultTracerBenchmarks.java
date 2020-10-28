@@ -22,7 +22,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class DefaultTracerBenchmarks {
 
-  private final Tracer tracer = Tracer.noop();
+  private final Tracer tracer = Tracer.getDefault();
   @Nullable private Span span = null;
 
   /** Benchmark the full span lifecycle. */
