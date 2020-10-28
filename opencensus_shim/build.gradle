@@ -1,9 +1,9 @@
 plugins {
-    id 'java'
+    id "java"
     id "maven-publish"
 }
 
-version 'OpenTelemetry OpenCensus Bridge'
+description 'OpenTelemetry OpenCensus Bridge'
 ext.moduleName = "io.opentelemetry.opencensusshim"
 
 dependencies {
@@ -16,7 +16,4 @@ dependencies {
             libraries.assertj,
             libraries.slf4jsimple,
             libraries.opencensus_impl
-}
-test {
-    testLogging.showStandardStreams = true
 }
