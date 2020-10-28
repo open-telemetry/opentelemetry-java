@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 
 /** The extend Span interface used by the SDK. */
 public interface ReadableSpan {

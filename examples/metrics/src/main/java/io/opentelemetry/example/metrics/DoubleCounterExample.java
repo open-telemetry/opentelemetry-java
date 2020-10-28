@@ -1,15 +1,15 @@
 package io.opentelemetry.example.metrics;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.StatusCanonicalCode;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
+import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.StatusCanonicalCode;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracingContextUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

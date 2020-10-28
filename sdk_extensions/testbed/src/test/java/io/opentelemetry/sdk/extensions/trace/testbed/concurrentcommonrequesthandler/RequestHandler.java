@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthandler;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Tracer;
 
 /**
  * One instance per Client. Executed concurrently for all requests of one client. 'beforeRequest'

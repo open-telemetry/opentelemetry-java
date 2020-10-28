@@ -9,14 +9,14 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracingContextUtils;
 import java.util.Collections;
 
 /**

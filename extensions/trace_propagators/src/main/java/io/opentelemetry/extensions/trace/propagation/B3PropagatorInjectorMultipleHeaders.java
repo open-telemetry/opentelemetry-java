@@ -5,10 +5,10 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 

@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.AttributeType;
-import io.opentelemetry.internal.Utils;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
+import io.opentelemetry.api.internal.Utils;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;

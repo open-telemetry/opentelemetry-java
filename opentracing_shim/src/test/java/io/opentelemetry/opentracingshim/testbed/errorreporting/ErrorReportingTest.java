@@ -11,12 +11,12 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.trace.StatusCode;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;

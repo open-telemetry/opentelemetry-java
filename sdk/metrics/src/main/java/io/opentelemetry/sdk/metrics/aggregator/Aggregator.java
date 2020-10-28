@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;

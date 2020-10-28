@@ -7,11 +7,11 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import static io.opentelemetry.extensions.trace.propagation.Common.MAX_TRACE_ID_LENGTH;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

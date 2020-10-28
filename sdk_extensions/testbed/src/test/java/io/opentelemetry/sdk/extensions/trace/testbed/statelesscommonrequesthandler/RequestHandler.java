@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.statelesscommonrequesthandler;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Tracer;
 
 /**
  * One instance per Client. 'beforeRequest' and 'afterResponse' are executed in the same thread for

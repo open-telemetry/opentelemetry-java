@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.ByteArrayOutputStream;

@@ -11,7 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;

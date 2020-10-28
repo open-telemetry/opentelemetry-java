@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.internal.StringUtils;
-import io.opentelemetry.internal.Utils;
-import io.opentelemetry.metrics.Instrument;
+import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.api.internal.Utils;
+import io.opentelemetry.api.metrics.Instrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;

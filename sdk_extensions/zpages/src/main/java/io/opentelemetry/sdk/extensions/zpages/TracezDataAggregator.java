@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.StatusCode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

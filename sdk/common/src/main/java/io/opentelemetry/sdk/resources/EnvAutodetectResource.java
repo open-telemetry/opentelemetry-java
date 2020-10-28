@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.resources;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 import javax.annotation.Nullable;

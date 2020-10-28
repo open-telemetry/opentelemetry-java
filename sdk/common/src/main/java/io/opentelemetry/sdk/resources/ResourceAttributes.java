@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeKey;
 
 /**
  * Provides constants for resource semantic conventions defined by the OpenTelemetry specification.
@@ -124,6 +124,13 @@ public final class ResourceAttributes {
   public static final AttributeKey<String> FAAS_VERSION = stringKey("faas.version");
   /** The execution environment ID as a string. */
   public static final AttributeKey<String> FAAS_INSTANCE = stringKey("faas.instance");
+
+  /** The name of the telemetry SDK as defined above. */
+  public static final AttributeKey<String> SDK_NAME = stringKey("telemetry.sdk.name");
+  /** The language of the telemetry SDK. */
+  public static final AttributeKey<String> SDK_LANGUAGE = stringKey("telemetry.sdk.language");
+  /** The version string of the telemetry SDK. */
+  public static final AttributeKey<String> SDK_VERSION = stringKey("telemetry.sdk.version");
 
   private ResourceAttributes() {}
 }

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;

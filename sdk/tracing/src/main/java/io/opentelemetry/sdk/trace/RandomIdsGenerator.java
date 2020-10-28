@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**

@@ -5,10 +5,10 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.baggage.BaggageUtils;
+import io.opentelemetry.api.baggage.BaggageUtils;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.Span;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.util.HashMap;
