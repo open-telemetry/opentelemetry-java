@@ -32,6 +32,8 @@ public class ContextBenchmark {
   @Param({"2", "3", "4", "5", "10", "20", "40"})
   private int size;
 
+  private int middle;
+
   private List<ContextKey<String>> keys;
   private Context context = Context.root();
 
@@ -43,6 +45,7 @@ public class ContextBenchmark {
       context = context.with(key, "value");
       keys.add(key);
     }
+    middle = size / 2;
   }
 
   /** Read value for first key. */
@@ -55,6 +58,12 @@ public class ContextBenchmark {
   @Benchmark
   public String readLast() {
     return context.get(keys.get(size - 1));
+  }
+
+  /** Read value for middle key. */
+  @Benchmark
+  public String readMiddle() {
+    return context.get(keys.get(middle));
   }
 
   /** Read all keys. */
