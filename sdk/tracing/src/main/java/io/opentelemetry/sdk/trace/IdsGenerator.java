@@ -14,6 +14,9 @@ public interface IdsGenerator {
   /**
    * Returns a {@link IdsGenerator} that generates purely random IDs, which is the default for
    * OpenTelemetry.
+   *
+   * <p>The underlying implementation uses {@link java.util.concurrent.ThreadLocalRandom} for
+   * randomness but may change in the future.
    */
   static IdsGenerator random() {
     return RandomIdsGenerator.INSTANCE;
