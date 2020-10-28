@@ -5,19 +5,21 @@
 
 package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import java.util.List;
 
 /**
@@ -51,13 +53,14 @@ class RateLimitingSampler implements Sampler {
 
   @Override
   public SamplingResult shouldSample(
-      SpanContext parentContext,
+      Context parentContext,
       String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
-      List<SpanData.Link> parentLinks) {
-    if (parentContext.isSampled()) {
+      List<Link> parentLinks) {
+
+    if (Span.fromContext(parentContext).getSpanContext().isSampled()) {
       return Samplers.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }

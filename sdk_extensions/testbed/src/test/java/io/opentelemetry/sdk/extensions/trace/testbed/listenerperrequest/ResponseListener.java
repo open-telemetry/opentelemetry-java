@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.listenerperrequest;
 
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.api.trace.Span;
 
 /** Response listener per request. Executed in a thread different from 'send' thread */
 final class ResponseListener {

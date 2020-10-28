@@ -5,21 +5,21 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,7 +30,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class Adapter {
   static final AttributeKey<Boolean> KEY_ERROR = booleanKey("error");
-  static final String KEY_LOG_MESSAGE = "message";
+  static final String KEY_LOG_EVENT = "event";
+  static final String KEY_EVENT_DROPPED_ATTRIBUTES_COUNT = "otel.event.dropped_attributes_count";
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
   static final String KEY_SPAN_STATUS_CODE = "span.status.code";
@@ -156,7 +157,16 @@ final class Adapter {
 
     // name is a top-level property in OpenTelemetry
     builder.addFields(
-        Model.KeyValue.newBuilder().setKey(KEY_LOG_MESSAGE).setVStr(event.getName()).build());
+        Model.KeyValue.newBuilder().setKey(KEY_LOG_EVENT).setVStr(event.getName()).build());
+
+    int droppedAttributesCount = event.getDroppedAttributesCount();
+    if (droppedAttributesCount > 0) {
+      builder.addFields(
+          Model.KeyValue.newBuilder()
+              .setKey(KEY_EVENT_DROPPED_ATTRIBUTES_COUNT)
+              .setVInt64(droppedAttributesCount)
+              .build());
+    }
     builder.addAllFields(toKeyValues(event.getAttributes()));
 
     return builder.build();

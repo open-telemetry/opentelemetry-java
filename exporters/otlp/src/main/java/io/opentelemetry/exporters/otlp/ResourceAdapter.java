@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.proto.resource.v1.Resource;
 
 final class ResourceAdapter {

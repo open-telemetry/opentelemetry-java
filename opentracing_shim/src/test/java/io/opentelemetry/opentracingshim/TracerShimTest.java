@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TracerShimTest {
+
   TracerShim tracerShim;
 
   @BeforeEach
@@ -30,9 +31,8 @@ class TracerShimTest {
     tracerShim =
         new TracerShim(
             new TelemetryInfo(
-                OpenTelemetry.getTracer("opentracingshim"),
-                OpenTelemetry.getBaggageManager(),
-                OpenTelemetry.getPropagators()));
+                OpenTelemetry.getGlobalTracer("opentracingshim"),
+                OpenTelemetry.getGlobalPropagators()));
   }
 
   @Test
@@ -46,7 +46,7 @@ class TracerShimTest {
   @Test
   void activateSpan() {
     Span otSpan = tracerShim.buildSpan("one").start();
-    io.opentelemetry.trace.Span span = ((SpanShim) otSpan).getSpan();
+    io.opentelemetry.api.trace.Span span = ((SpanShim) otSpan).getSpan();
 
     assertNull(tracerShim.activeSpan());
     assertNull(tracerShim.scopeManager().activeSpan());
@@ -80,7 +80,7 @@ class TracerShimTest {
   void close() {
     tracerShim.close();
     Span otSpan = tracerShim.buildSpan(null).start();
-    io.opentelemetry.trace.Span span = ((SpanShim) otSpan).getSpan();
-    assertThat(span.getContext().isValid()).isFalse();
+    io.opentelemetry.api.trace.Span span = ((SpanShim) otSpan).getSpan();
+    assertThat(span.getSpanContext().isValid()).isFalse();
   }
 }

@@ -3,6 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// Includes work from:
+/*
+ * Copyright 2020 LINE Corporation
+ *
+ * LINE Corporation licenses this file to you under the Apache License,
+ * version 2.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.opentelemetry.context;
 
 /**
@@ -49,7 +66,7 @@ public interface ContextStorage {
    * Scope#close()}.
    */
   static ContextStorage get() {
-    return LazyStorage.storage;
+    return LazyStorage.get();
   }
 
   /**
@@ -64,12 +81,4 @@ public interface ContextStorage {
    * this will be the {@linkplain Context#root()} root context}.
    */
   Context current();
-
-  /**
-   * Returns a {@link ContextKey} for the given name. This is only useful when integrating with a
-   * separate context propagation mechanism, where
-   */
-  default <T> ContextKey<T> contextKey(String name) {
-    return new DefaultContextKey<>(name);
-  }
 }

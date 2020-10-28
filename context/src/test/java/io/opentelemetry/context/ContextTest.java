@@ -42,7 +42,7 @@ class ContextTest {
   private static final ContextKey<String> FOOD = ContextKey.named("food");
   private static final ContextKey<Integer> COOKIES = ContextKey.named("cookies");
 
-  private static final Context CAT = Context.current().withValues(ANIMAL, "cat");
+  private static final Context CAT = Context.current().with(ANIMAL, "cat");
 
   // Make sure all tests clean up
   @AfterEach
@@ -57,41 +57,41 @@ class ContextTest {
 
   @Test
   void canBeAttached() {
-    Context context = Context.current().withValues(ANIMAL, "cat");
-    assertThat(Context.current().getValue(ANIMAL)).isNull();
+    Context context = Context.current().with(ANIMAL, "cat");
+    assertThat(Context.current().get(ANIMAL)).isNull();
     try (Scope ignored = context.makeCurrent()) {
-      assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+      assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
 
       try (Scope ignored2 = Context.root().makeCurrent()) {
-        assertThat(Context.current().getValue(ANIMAL)).isNull();
+        assertThat(Context.current().get(ANIMAL)).isNull();
       }
 
-      assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+      assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
     }
-    assertThat(Context.current().getValue(ANIMAL)).isNull();
+    assertThat(Context.current().get(ANIMAL)).isNull();
   }
 
   @Test
   void attachSameTwice() {
-    Context context = Context.current().withValues(ANIMAL, "cat");
-    assertThat(Context.current().getValue(ANIMAL)).isNull();
+    Context context = Context.current().with(ANIMAL, "cat");
+    assertThat(Context.current().get(ANIMAL)).isNull();
     try (Scope ignored = context.makeCurrent()) {
-      assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+      assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
 
       try (Scope ignored2 = context.makeCurrent()) {
-        assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+        assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
       }
 
-      assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+      assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
     }
-    assertThat(Context.current().getValue(ANIMAL)).isNull();
+    assertThat(Context.current().get(ANIMAL)).isNull();
   }
 
   @Test
   void newThreadStartsWithRoot() throws Exception {
-    Context context = Context.current().withValues(ANIMAL, "cat");
+    Context context = Context.current().with(ANIMAL, "cat");
     try (Scope ignored = context.makeCurrent()) {
-      assertThat(Context.current().getValue(ANIMAL)).isEqualTo("cat");
+      assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
       AtomicReference<Context> current = new AtomicReference<>();
       Thread thread = new Thread(() -> current.set(Context.current()));
       thread.start();
@@ -122,11 +122,11 @@ class ContextTest {
     try {
       logger.addHandler(handler);
       Context initial = Context.current();
-      Context context = initial.withValues(ANIMAL, "cat");
+      Context context = initial.with(ANIMAL, "cat");
       try (Scope scope = context.makeCurrent()) {
-        Context context2 = context.withValues(ANIMAL, "dog");
+        Context context2 = context.with(ANIMAL, "dog");
         try (Scope ignored = context2.makeCurrent()) {
-          assertThat(Context.current().getValue(ANIMAL)).isEqualTo("dog");
+          assertThat(Context.current().get(ANIMAL)).isEqualTo("dog");
           scope.close();
         }
       }
@@ -141,63 +141,63 @@ class ContextTest {
 
   @Test
   void withValues() {
-    Context context1 = Context.current().withValues(ANIMAL, "cat");
-    assertThat(context1.getValue(ANIMAL)).isEqualTo("cat");
+    Context context1 = Context.current().with(ANIMAL, "cat");
+    assertThat(context1.get(ANIMAL)).isEqualTo("cat");
 
-    Context context2 = context1.withValues(BAG, 100);
+    Context context2 = context1.with(BAG, 100);
     // Old unaffected
-    assertThat(context1.getValue(ANIMAL)).isEqualTo("cat");
-    assertThat(context1.getValue(BAG)).isNull();
+    assertThat(context1.get(ANIMAL)).isEqualTo("cat");
+    assertThat(context1.get(BAG)).isNull();
 
-    assertThat(context2.getValue(ANIMAL)).isEqualTo("cat");
-    assertThat(context2.getValue(BAG)).isEqualTo(100);
+    assertThat(context2.get(ANIMAL)).isEqualTo("cat");
+    assertThat(context2.get(BAG)).isEqualTo(100);
 
-    Context context3 = context2.withValues(ANIMAL, "dog");
+    Context context3 = context2.with(ANIMAL, "dog");
     // Old unaffected
-    assertThat(context2.getValue(ANIMAL)).isEqualTo("cat");
-    assertThat(context2.getValue(BAG)).isEqualTo(100);
+    assertThat(context2.get(ANIMAL)).isEqualTo("cat");
+    assertThat(context2.get(BAG)).isEqualTo(100);
 
-    assertThat(context3.getValue(ANIMAL)).isEqualTo("dog");
-    assertThat(context3.getValue(BAG)).isEqualTo(100);
+    assertThat(context3.get(ANIMAL)).isEqualTo("dog");
+    assertThat(context3.get(BAG)).isEqualTo(100);
 
-    Context context4 = context3.withValues(BAG, null);
+    Context context4 = context3.with(BAG, null);
     // Old unaffected
-    assertThat(context3.getValue(ANIMAL)).isEqualTo("dog");
-    assertThat(context3.getValue(BAG)).isEqualTo(100);
+    assertThat(context3.get(ANIMAL)).isEqualTo("dog");
+    assertThat(context3.get(BAG)).isEqualTo(100);
 
-    assertThat(context4.getValue(ANIMAL)).isEqualTo("dog");
-    assertThat(context4.getValue(BAG)).isNull();
+    assertThat(context4.get(ANIMAL)).isEqualTo("dog");
+    assertThat(context4.get(BAG)).isNull();
   }
 
   @Test
   void withTwoValues() {
-    Context context = Context.current().withValues(ANIMAL, "cat", FOOD, "hot dog");
-    assertThat(context.getValue(ANIMAL)).isEqualTo("cat");
-    assertThat(context.getValue(FOOD)).isEqualTo("hot dog");
+    Context context = Context.current().with(ANIMAL, "cat", FOOD, "hot dog");
+    assertThat(context.get(ANIMAL)).isEqualTo("cat");
+    assertThat(context.get(FOOD)).isEqualTo("hot dog");
   }
 
   @Test
   void withThreeValues() {
-    Context context = Context.current().withValues(ANIMAL, "cat", FOOD, "hot dog", COOKIES, 100);
-    assertThat(context.getValue(ANIMAL)).isEqualTo("cat");
-    assertThat(context.getValue(FOOD)).isEqualTo("hot dog");
-    assertThat(context.getValue(COOKIES)).isEqualTo(100);
+    Context context = Context.current().with(ANIMAL, "cat", FOOD, "hot dog", COOKIES, 100);
+    assertThat(context.get(ANIMAL)).isEqualTo("cat");
+    assertThat(context.get(FOOD)).isEqualTo("hot dog");
+    assertThat(context.get(COOKIES)).isEqualTo(100);
   }
 
   @Test
   void withFourValues() {
     Context context =
-        Context.current().withValues(ANIMAL, "cat", FOOD, "hot dog", COOKIES, 100, BAG, "prada");
-    assertThat(context.getValue(ANIMAL)).isEqualTo("cat");
-    assertThat(context.getValue(FOOD)).isEqualTo("hot dog");
-    assertThat(context.getValue(COOKIES)).isEqualTo(100);
-    assertThat(context.getValue(BAG)).isEqualTo("prada");
+        Context.current().with(ANIMAL, "cat", FOOD, "hot dog", COOKIES, 100, BAG, "prada");
+    assertThat(context.get(ANIMAL)).isEqualTo("cat");
+    assertThat(context.get(FOOD)).isEqualTo("hot dog");
+    assertThat(context.get(COOKIES)).isEqualTo(100);
+    assertThat(context.get(BAG)).isEqualTo("prada");
   }
 
   @Test
   void wrapRunnable() {
     AtomicReference<String> value = new AtomicReference<>();
-    Runnable callback = () -> value.set(Context.current().getValue(ANIMAL));
+    Runnable callback = () -> value.set(Context.current().get(ANIMAL));
 
     callback.run();
     assertThat(value).hasValue(null);
@@ -214,7 +214,7 @@ class ContextTest {
     AtomicReference<String> value = new AtomicReference<>();
     Callable<String> callback =
         () -> {
-          value.set(Context.current().getValue(ANIMAL));
+          value.set(Context.current().get(ANIMAL));
           return "foo";
         };
 
@@ -232,7 +232,7 @@ class ContextTest {
   void wrapExecutor() {
     AtomicReference<String> value = new AtomicReference<>();
     Executor executor = MoreExecutors.directExecutor();
-    Runnable callback = () -> value.set(Context.current().getValue(ANIMAL));
+    Runnable callback = () -> value.set(Context.current().get(ANIMAL));
 
     executor.execute(callback);
     assertThat(value).hasValue(null);
@@ -270,21 +270,21 @@ class ContextTest {
 
     @Test
     void execute() {
-      Runnable runnable = () -> value.set(Context.current().getValue(ANIMAL));
+      Runnable runnable = () -> value.set(Context.current().get(ANIMAL));
       wrapped.execute(runnable);
       await().untilAsserted(() -> assertThat(value).hasValue("cat"));
     }
 
     @Test
     void submitRunnable() {
-      Runnable runnable = () -> value.set(Context.current().getValue(ANIMAL));
+      Runnable runnable = () -> value.set(Context.current().get(ANIMAL));
       Futures.getUnchecked(wrapped.submit(runnable));
       assertThat(value).hasValue("cat");
     }
 
     @Test
     void submitRunnableResult() {
-      Runnable runnable = () -> value.set(Context.current().getValue(ANIMAL));
+      Runnable runnable = () -> value.set(Context.current().get(ANIMAL));
       assertThat(Futures.getUnchecked(wrapped.submit(runnable, "foo"))).isEqualTo("foo");
       assertThat(value).hasValue("cat");
     }
@@ -293,7 +293,7 @@ class ContextTest {
     void submitCallable() {
       Callable<String> callable =
           () -> {
-            value.set(Context.current().getValue(ANIMAL));
+            value.set(Context.current().get(ANIMAL));
             return "foo";
           };
       assertThat(Futures.getUnchecked(wrapped.submit(callable))).isEqualTo("foo");
@@ -306,12 +306,12 @@ class ContextTest {
       AtomicReference<String> value2 = new AtomicReference<>();
       Callable<String> callable1 =
           () -> {
-            value1.set(Context.current().getValue(ANIMAL));
+            value1.set(Context.current().get(ANIMAL));
             return "foo";
           };
       Callable<String> callable2 =
           () -> {
-            value2.set(Context.current().getValue(ANIMAL));
+            value2.set(Context.current().get(ANIMAL));
             return "bar";
           };
       List<Future<String>> futures = wrapped.invokeAll(Arrays.asList(callable1, callable2));
@@ -327,16 +327,16 @@ class ContextTest {
       AtomicReference<String> value2 = new AtomicReference<>();
       Callable<String> callable1 =
           () -> {
-            value1.set(Context.current().getValue(ANIMAL));
+            value1.set(Context.current().get(ANIMAL));
             return "foo";
           };
       Callable<String> callable2 =
           () -> {
-            value2.set(Context.current().getValue(ANIMAL));
+            value2.set(Context.current().get(ANIMAL));
             return "bar";
           };
       List<Future<String>> futures =
-          wrapped.invokeAll(Arrays.asList(callable1, callable2), 1, TimeUnit.SECONDS);
+          wrapped.invokeAll(Arrays.asList(callable1, callable2), 10, TimeUnit.SECONDS);
       assertThat(futures.get(0).get()).isEqualTo("foo");
       assertThat(futures.get(1).get()).isEqualTo("bar");
       assertThat(value1).hasValue("cat");
@@ -349,12 +349,12 @@ class ContextTest {
       AtomicReference<String> value2 = new AtomicReference<>();
       Callable<String> callable1 =
           () -> {
-            value1.set(Context.current().getValue(ANIMAL));
+            value1.set(Context.current().get(ANIMAL));
             throw new IllegalStateException("callable2 wins");
           };
       Callable<String> callable2 =
           () -> {
-            value2.set(Context.current().getValue(ANIMAL));
+            value2.set(Context.current().get(ANIMAL));
             return "bar";
           };
       assertThat(wrapped.invokeAny(Arrays.asList(callable1, callable2))).isEqualTo("bar");
@@ -368,15 +368,15 @@ class ContextTest {
       AtomicReference<String> value2 = new AtomicReference<>();
       Callable<String> callable1 =
           () -> {
-            value1.set(Context.current().getValue(ANIMAL));
+            value1.set(Context.current().get(ANIMAL));
             throw new IllegalStateException("callable2 wins");
           };
       Callable<String> callable2 =
           () -> {
-            value2.set(Context.current().getValue(ANIMAL));
+            value2.set(Context.current().get(ANIMAL));
             return "bar";
           };
-      assertThat(wrapped.invokeAny(Arrays.asList(callable1, callable2), 1, TimeUnit.SECONDS))
+      assertThat(wrapped.invokeAny(Arrays.asList(callable1, callable2), 10, TimeUnit.SECONDS))
           .isEqualTo("bar");
       assertThat(value1).hasValue("cat");
       assertThat(value2).hasValue("cat");
@@ -396,7 +396,7 @@ class ContextTest {
 
     @Test
     void scheduleRunnable() throws Exception {
-      Runnable runnable = () -> value.set(Context.current().getValue(ANIMAL));
+      Runnable runnable = () -> value.set(Context.current().get(ANIMAL));
       wrapScheduled.schedule(runnable, 0, TimeUnit.SECONDS).get();
       assertThat(value).hasValue("cat");
     }
@@ -405,7 +405,7 @@ class ContextTest {
     void scheduleCallable() throws Exception {
       Callable<String> callable =
           () -> {
-            value.set(Context.current().getValue(ANIMAL));
+            value.set(Context.current().get(ANIMAL));
             return "foo";
           };
       assertThat(wrapScheduled.schedule(callable, 0, TimeUnit.SECONDS).get()).isEqualTo("foo");
@@ -414,7 +414,7 @@ class ContextTest {
 
     @Test
     void scheduleAtFixedRate() {
-      Runnable runnable = () -> value.set(Context.current().getValue(ANIMAL));
+      Runnable runnable = () -> value.set(Context.current().get(ANIMAL));
       ScheduledFuture<?> future =
           wrapScheduled.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);
       await().untilAsserted(() -> assertThat(value).hasValue("cat"));
@@ -423,7 +423,7 @@ class ContextTest {
 
     @Test
     void scheduleWithFixedDelay() {
-      Runnable runnable = () -> value.set(Context.current().getValue(ANIMAL));
+      Runnable runnable = () -> value.set(Context.current().get(ANIMAL));
       ScheduledFuture<?> future =
           wrapScheduled.scheduleWithFixedDelay(runnable, 0, 10, TimeUnit.SECONDS);
       await().untilAsserted(() -> assertThat(value).hasValue("cat"));

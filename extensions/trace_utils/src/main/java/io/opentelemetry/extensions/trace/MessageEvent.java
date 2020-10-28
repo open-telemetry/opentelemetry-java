@@ -5,12 +5,12 @@
 
 package io.opentelemetry.extensions.trace;
 
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -52,11 +52,10 @@ public final class MessageEvent {
   public static void record(
       Span span, Type type, long messageId, long uncompressedSize, long compressedSize) {
     Attributes.Builder attributeBuilder = Attributes.builder();
-    attributeBuilder.setAttribute(
-        TYPE, type == Type.SENT ? Type.SENT.name() : Type.RECEIVED.name());
-    attributeBuilder.setAttribute(ID, messageId);
-    attributeBuilder.setAttribute(UNCOMPRESSED_SIZE, uncompressedSize);
-    attributeBuilder.setAttribute(COMPRESSED_SIZE, compressedSize);
+    attributeBuilder.put(TYPE, type == Type.SENT ? Type.SENT.name() : Type.RECEIVED.name());
+    attributeBuilder.put(ID, messageId);
+    attributeBuilder.put(UNCOMPRESSED_SIZE, uncompressedSize);
+    attributeBuilder.put(COMPRESSED_SIZE, compressedSize);
     span.addEvent(EVENT_NAME, attributeBuilder.build());
   }
 

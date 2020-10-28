@@ -5,21 +5,28 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longArrayKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -29,13 +36,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -64,7 +64,7 @@ class RecordEventsReadableSpanTest {
   private static final boolean EXPECTED_HAS_REMOTE_PARENT = true;
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
-  private final IdsGenerator idsGenerator = new RandomIdsGenerator();
+  private final IdsGenerator idsGenerator = IdsGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String spanId = idsGenerator.generateSpanId();
   private final String parentSpanId = idsGenerator.generateSpanId();
@@ -87,10 +87,9 @@ class RecordEventsReadableSpanTest {
     attributes.put(longKey("MyLongAttributeKey"), 123L);
     attributes.put(booleanKey("MyBooleanAttributeKey"), false);
     Attributes.Builder builder =
-        Attributes.builder()
-            .setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
+        Attributes.builder().put("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     for (Map.Entry<AttributeKey, Object> entry : attributes.entrySet()) {
-      builder.setAttribute(entry.getKey(), entry.getValue());
+      builder.put(entry.getKey(), entry.getValue());
     }
     expectedAttributes = builder.build();
     testClock = TestClock.create(START_EPOCH_NANOS);
@@ -493,8 +492,7 @@ class RecordEventsReadableSpanTest {
   void droppingAttributes() {
     final int maxNumberOfAttributes = 8;
     TraceConfig traceConfig =
-        TraceConfig.getDefault()
-            .toBuilder()
+        TraceConfig.getDefault().toBuilder()
             .setMaxNumberOfAttributes(maxNumberOfAttributes)
             .build();
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
@@ -517,8 +515,7 @@ class RecordEventsReadableSpanTest {
   void droppingAndAddingAttributes() {
     final int maxNumberOfAttributes = 8;
     TraceConfig traceConfig =
-        TraceConfig.getDefault()
-            .toBuilder()
+        TraceConfig.getDefault().toBuilder()
             .setMaxNumberOfAttributes(maxNumberOfAttributes)
             .build();
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
@@ -613,9 +610,9 @@ class RecordEventsReadableSpanTest {
     assertThat(event.getAttributes())
         .isEqualTo(
             Attributes.builder()
-                .setAttribute(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalStateException")
-                .setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
-                .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
+                .put(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalStateException")
+                .put(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
+                .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
                 .build());
   }
 
@@ -676,10 +673,10 @@ class RecordEventsReadableSpanTest {
     assertThat(event.getAttributes())
         .isEqualTo(
             Attributes.builder()
-                .setAttribute("key1", "this is an additional attribute")
-                .setAttribute("exception.type", "java.lang.IllegalStateException")
-                .setAttribute("exception.message", "this is a precedence attribute")
-                .setAttribute("exception.stacktrace", stacktrace)
+                .put("key1", "this is an additional attribute")
+                .put("exception.type", "java.lang.IllegalStateException")
+                .put("exception.message", "this is a precedence attribute")
+                .put("exception.stacktrace", stacktrace)
                 .build());
   }
 
@@ -762,7 +759,7 @@ class RecordEventsReadableSpanTest {
             links,
             1,
             0);
-    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span, Context.root());
+    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(Context.root(), span);
     return span;
   }
 

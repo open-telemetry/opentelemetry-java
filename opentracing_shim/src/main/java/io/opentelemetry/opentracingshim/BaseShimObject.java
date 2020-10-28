@@ -5,11 +5,11 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.baggage.BaggageManager;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.trace.Tracer;
 
 abstract class BaseShimObject {
+
   final TelemetryInfo telemetryInfo;
 
   BaseShimObject(TelemetryInfo telemetryInfo) {
@@ -22,10 +22,6 @@ abstract class BaseShimObject {
 
   Tracer tracer() {
     return telemetryInfo.tracer();
-  }
-
-  BaggageManager contextManager() {
-    return telemetryInfo.contextManager();
   }
 
   SpanContextShimTable spanContextTable() {

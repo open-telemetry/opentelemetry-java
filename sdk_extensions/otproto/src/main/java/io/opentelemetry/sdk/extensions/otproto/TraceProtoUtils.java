@@ -6,12 +6,12 @@
 package io.opentelemetry.sdk.extensions.otproto;
 
 import com.google.protobuf.ByteString;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
 
 /** Utilities for converting various objects to protobuf representations. */
 public final class TraceProtoUtils {
@@ -45,8 +45,7 @@ public final class TraceProtoUtils {
    */
   public static TraceConfig traceConfigFromProto(
       io.opentelemetry.proto.trace.v1.TraceConfig traceConfigProto) {
-    return TraceConfig.getDefault()
-        .toBuilder()
+    return TraceConfig.getDefault().toBuilder()
         .setSampler(fromProtoSampler(traceConfigProto))
         .setMaxNumberOfAttributes((int) traceConfigProto.getMaxNumberOfAttributes())
         .setMaxNumberOfEvents((int) traceConfigProto.getMaxNumberOfTimedEvents())

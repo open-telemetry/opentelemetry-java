@@ -5,14 +5,13 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.clientserver;
 
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.annotation.Nullable;
 
@@ -28,7 +27,7 @@ final class Server extends Thread {
 
   private void process(Message message) {
     Context context =
-        OpenTelemetry.getPropagators()
+        OpenTelemetry.getGlobalPropagators()
             .getTextMapPropagator()
             .extract(
                 Context.current(),
@@ -44,9 +43,9 @@ final class Server extends Thread {
         tracer.spanBuilder("receive").setSpanKind(Kind.SERVER).setParent(context).startSpan();
     span.setAttribute("component", "example-server");
 
-    try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+    try (Scope ignored = span.makeCurrent()) {
       // Simulate work.
-      TracingContextUtils.getCurrentSpan().addEvent("DoWork");
+      Span.current().addEvent("DoWork");
     } finally {
       span.end();
     }

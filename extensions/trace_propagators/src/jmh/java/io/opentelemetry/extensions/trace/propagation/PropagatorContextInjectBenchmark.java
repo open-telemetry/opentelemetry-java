@@ -5,13 +5,12 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +61,7 @@ public class PropagatorContextInjectBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Map<String, String> measureInject() {
-      Context context = TracingContextUtils.withSpan(Span.wrap(contextToTest), Context.current());
+      Context context = Context.current().with(Span.wrap(contextToTest));
       doInject(context, carrier);
       return carrier;
     }

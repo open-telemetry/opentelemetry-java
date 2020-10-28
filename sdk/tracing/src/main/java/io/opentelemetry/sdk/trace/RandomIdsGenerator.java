@@ -5,15 +5,12 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * The default {@link IdsGenerator} which generates IDs as random numbers using {@link
- * ThreadLocalRandom}.
- */
-public final class RandomIdsGenerator implements IdsGenerator {
+enum RandomIdsGenerator implements IdsGenerator {
+  INSTANCE;
 
   private static final long INVALID_ID = 0;
 

@@ -5,16 +5,21 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import com.google.common.collect.EvictingQueue;
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.EndSpanOptions;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -22,12 +27,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.trace.EndSpanOptions;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class RecordEventsReadableSpan implements ReadWriteSpan {
 
-  private static final Logger logger = Logger.getLogger(Tracer.class.getName());
+  private static final Logger logger = Logger.getLogger(RecordEventsReadableSpan.class.getName());
 
   // The config used when constructing this Span.
   private final TraceConfig traceConfig;
@@ -182,7 +181,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             startEpochNanos == 0 ? clock.now() : startEpochNanos);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
-    spanProcessor.onStart(span, parentContext);
+    spanProcessor.onStart(parentContext, span);
     return span;
   }
 
@@ -213,7 +212,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public SpanContext getSpanContext() {
-    return getContext();
+    return context;
   }
 
   /**
@@ -263,34 +262,38 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void setAttribute(String key, String value) {
+  public ReadWriteSpan setAttribute(String key, String value) {
     setAttribute(stringKey(key), value);
+    return this;
   }
 
   @Override
-  public void setAttribute(String key, long value) {
+  public ReadWriteSpan setAttribute(String key, long value) {
     setAttribute(longKey(key), value);
+    return this;
   }
 
   @Override
-  public void setAttribute(String key, double value) {
+  public ReadWriteSpan setAttribute(String key, double value) {
     setAttribute(doubleKey(key), value);
+    return this;
   }
 
   @Override
-  public void setAttribute(String key, boolean value) {
+  public ReadWriteSpan setAttribute(String key, boolean value) {
     setAttribute(booleanKey(key), value);
+    return this;
   }
 
   @Override
-  public <T> void setAttribute(AttributeKey<T> key, T value) {
+  public <T> ReadWriteSpan setAttribute(AttributeKey<T> key, T value) {
     if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
-      return;
+      return this;
     }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
-        return;
+        return this;
       }
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
@@ -302,28 +305,31 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
       attributes.put(key, value);
     }
+    return this;
   }
 
   @Override
-  public void addEvent(String name) {
+  public ReadWriteSpan addEvent(String name) {
     if (name == null) {
-      return;
+      return this;
     }
     addTimedEvent(Event.create(clock.now(), name, Attributes.empty(), 0));
+    return this;
   }
 
   @Override
-  public void addEvent(String name, long timestamp) {
+  public ReadWriteSpan addEvent(String name, long timestamp) {
     if (name == null) {
-      return;
+      return this;
     }
     addTimedEvent(Event.create(timestamp, name, Attributes.empty(), 0));
+    return this;
   }
 
   @Override
-  public void addEvent(String name, Attributes attributes) {
+  public ReadWriteSpan addEvent(String name, Attributes attributes) {
     if (name == null) {
-      return;
+      return this;
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
@@ -332,12 +338,13 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
+    return this;
   }
 
   @Override
-  public void addEvent(String name, Attributes attributes, long timestamp) {
+  public ReadWriteSpan addEvent(String name, Attributes attributes, long timestamp) {
     if (name == null) {
-      return;
+      return this;
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
@@ -346,6 +353,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
+    return this;
   }
 
   static Attributes copyAndLimitAttributes(final Attributes attributes, final int limit) {
@@ -370,65 +378,69 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void setStatus(StatusCode canonicalCode) {
+  public ReadWriteSpan setStatus(StatusCode canonicalCode) {
     setStatus(canonicalCode, null);
+    return this;
   }
 
   @Override
-  public void setStatus(StatusCode canonicalCode, @Nullable String description) {
+  public ReadWriteSpan setStatus(StatusCode canonicalCode, @Nullable String description) {
     if (canonicalCode == null) {
-      return;
+      return this;
     }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
-        return;
+        return this;
       }
       this.status = SpanData.Status.create(canonicalCode, description);
     }
+    return this;
   }
 
   @Override
-  public void recordException(Throwable exception) {
+  public ReadWriteSpan recordException(Throwable exception) {
     recordException(exception, null);
+    return this;
   }
 
   @Override
-  public void recordException(Throwable exception, Attributes additionalAttributes) {
+  public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
-      return;
+      return this;
     }
     long timestamp = clock.now();
 
     Attributes.Builder attributes = Attributes.builder();
-    attributes.setAttribute(
-        SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
+    attributes.put(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
-      attributes.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
+      attributes.put(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
     }
     StringWriter writer = new StringWriter();
     exception.printStackTrace(new PrintWriter(writer));
-    attributes.setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
+    attributes.put(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
 
     if (additionalAttributes != null) {
-      attributes.addAll(additionalAttributes);
+      attributes.putAll(additionalAttributes);
     }
 
     addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
+    return this;
   }
 
   @Override
-  public void updateName(String name) {
+  public ReadWriteSpan updateName(String name) {
     if (name == null) {
-      return;
+      return this;
     }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
-        return;
+        return this;
       }
       this.name = name;
     }
+    return this;
   }
 
   @Override
@@ -455,11 +467,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       hasEnded = true;
     }
     spanProcessor.onEnd(this);
-  }
-
-  @Override
-  public SpanContext getContext() {
-    return context;
   }
 
   @Override
@@ -578,7 +585,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     @Override
     public void consume(AttributeKey key, Object value) {
       if (added < limit) {
-        builder.setAttribute(key, value);
+        builder.put(key, value);
         added++;
       }
     }

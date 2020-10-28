@@ -11,7 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
@@ -64,12 +64,12 @@ public class EksResource extends ResourceProvider {
 
     String clusterName = getClusterName();
     if (!Strings.isNullOrEmpty(clusterName)) {
-      attrBuilders.setAttribute(ResourceAttributes.K8S_CLUSTER, clusterName);
+      attrBuilders.put(ResourceAttributes.K8S_CLUSTER, clusterName);
     }
 
     String containerId = dockerHelper.getContainerId();
     if (!Strings.isNullOrEmpty(containerId)) {
-      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_ID, containerId);
+      attrBuilders.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
     return attrBuilders.build();

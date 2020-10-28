@@ -7,16 +7,15 @@ package io.opentelemetry.sdk.extensions.trace.testbed.concurrentcommonrequesthan
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -60,14 +59,14 @@ class HandlerTest {
     assertThat(finished.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
     assertThat(finished.get(1).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
 
   /** Active parent is not picked up by child. */
   @Test
   void parent_not_picked_up() throws Exception {
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
+    try (Scope ignored = parentSpan.makeCurrent()) {
       String response = client.send("no_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("no_parent:response");
     } finally {
@@ -97,11 +96,8 @@ class HandlerTest {
   void bad_solution_to_set_parent() throws Exception {
     Client client;
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
-      client =
-          new Client(
-              new RequestHandler(
-                  tracer, TracingContextUtils.withSpan(parentSpan, Context.current())));
+    try (Scope ignored = parentSpan.makeCurrent()) {
+      client = new Client(new RequestHandler(tracer, Context.current().with(parentSpan)));
       String response = client.send("correct_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("correct_parent:response");
     } finally {

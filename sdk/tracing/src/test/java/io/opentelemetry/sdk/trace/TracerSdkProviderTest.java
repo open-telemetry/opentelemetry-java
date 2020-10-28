@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -130,7 +130,7 @@ class TracerSdkProviderTest {
   void returnNoopSpanAfterShutdown() {
     tracerFactory.shutdown();
     Span span = tracerFactory.get("noop").spanBuilder("span").startSpan();
-    assertThat(span.getContext().isValid()).isFalse();
+    assertThat(span.getSpanContext().isValid()).isFalse();
     span.end();
   }
 }

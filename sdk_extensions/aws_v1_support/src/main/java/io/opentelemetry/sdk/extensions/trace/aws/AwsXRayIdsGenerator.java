@@ -5,9 +5,8 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws;
 
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.trace.IdsGenerator;
-import io.opentelemetry.sdk.trace.RandomIdsGenerator;
-import io.opentelemetry.trace.TraceId;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AwsXRayIdsGenerator implements IdsGenerator {
 
-  private static final RandomIdsGenerator RANDOM_IDS_GENERATOR = new RandomIdsGenerator();
+  private static final IdsGenerator RANDOM_IDS_GENERATOR = IdsGenerator.random();
 
   @Override
   public String generateSpanId() {

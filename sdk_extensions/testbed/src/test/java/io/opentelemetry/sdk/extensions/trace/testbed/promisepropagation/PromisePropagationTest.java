@@ -5,19 +5,18 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.promisepropagation;
 
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicReference;
@@ -54,18 +53,18 @@ class PromisePropagationTest {
       Span parentSpan = tracer.spanBuilder("promises").startSpan();
       parentSpan.setAttribute("component", "example-promises");
 
-      try (Scope ignored = TracingContextUtils.currentContextWith(parentSpan)) {
+      try (Scope ignored = parentSpan.makeCurrent()) {
         Promise<String> successPromise = new Promise<>(context, tracer);
 
         successPromise.onSuccess(
             s -> {
-              TracingContextUtils.getCurrentSpan().addEvent("Promised 1 " + s);
+              Span.current().addEvent("Promised 1 " + s);
               successResult1.set(s);
               phaser.arriveAndAwaitAdvance(); // result set
             });
         successPromise.onSuccess(
             s -> {
-              TracingContextUtils.getCurrentSpan().addEvent("Promised 2 " + s);
+              Span.current().addEvent("Promised 2 " + s);
               successResult2.set(s);
               phaser.arriveAndAwaitAdvance(); // result set
             });

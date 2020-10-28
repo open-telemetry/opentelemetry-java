@@ -10,8 +10,10 @@ import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import eu.rekawek.toxiproxy.model.ToxicList;
 import eu.rekawek.toxiproxy.model.toxic.Timeout;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryMetricExporter;
 import io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter;
@@ -22,9 +24,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -122,7 +121,7 @@ public class OtlpPipelineStressTest {
   @AfterEach
   void tearDown() throws IOException {
     intervalMetricReader.shutdown();
-    OpenTelemetrySdk.getTracerManagement().shutdown();
+    OpenTelemetrySdk.getGlobalTracerManagement().shutdown();
 
     toxiproxyClient.reset();
     collectorProxy.delete();
@@ -199,7 +198,7 @@ public class OtlpPipelineStressTest {
 
   private static void runOnce(Integer numberOfSpans, int numberOfMillisToRunFor)
       throws InterruptedException {
-    Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.perf");
+    Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.perf");
     long start = System.currentTimeMillis();
     int i = 0;
     while (numberOfSpans == null
@@ -207,7 +206,7 @@ public class OtlpPipelineStressTest {
         : i < numberOfSpans) {
       //    for (int i = 0; i < 10000; i++) {
       Span exampleSpan = tracer.spanBuilder("exampleSpan").startSpan();
-      try (Scope scope = TracingContextUtils.currentContextWith(exampleSpan)) {
+      try (Scope scope = exampleSpan.makeCurrent()) {
         exampleSpan.setAttribute("exampleNumber", i++);
         exampleSpan.setAttribute("attribute0", "attvalue-0");
         exampleSpan.setAttribute("attribute1", "attvalue-1");
@@ -240,7 +239,8 @@ public class OtlpPipelineStressTest {
         IntervalMetricReader.builder()
             .setMetricExporter(metricExporter)
             .setMetricProducers(
-                Collections.singleton(OpenTelemetrySdk.getMeterProvider().getMetricProducer()))
+                Collections.singleton(
+                    OpenTelemetrySdk.getGlobalMeterProvider().getMetricProducer()))
             .setExportIntervalMillis(1000)
             .build();
     return intervalMetricReader;
@@ -262,6 +262,6 @@ public class OtlpPipelineStressTest {
             //            .setMaxExportBatchSize(1024)
             //            .setScheduleDelayMillis(1000)
             .build();
-    OpenTelemetrySdk.getTracerManagement().addSpanProcessor(spanProcessor);
+    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
   }
 }

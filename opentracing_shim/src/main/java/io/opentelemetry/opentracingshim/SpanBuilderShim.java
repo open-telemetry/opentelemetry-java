@@ -5,17 +5,16 @@
 
 package io.opentelemetry.opentracingshim;
 
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
@@ -33,7 +32,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private SpanContextShim parentSpanContext;
   private boolean ignoreActiveSpan;
 
-  private final List<io.opentelemetry.trace.SpanContext> parentLinks = new ArrayList<>();
+  private final List<io.opentelemetry.api.trace.SpanContext> parentLinks = new ArrayList<>();
 
   @SuppressWarnings("rawtypes")
   private final List<AttributeKey> spanBuilderAttributeKeys = new ArrayList<>();
@@ -59,7 +58,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (parentSpan == null && parentSpanContext == null) {
       parentSpan = spanShim;
     } else {
-      parentLinks.add(spanShim.getSpan().getContext());
+      parentLinks.add(spanShim.getSpan().getSpanContext());
     }
 
     return this;
@@ -178,23 +177,22 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @Override
   public Span start() {
     Baggage baggage = null;
-    io.opentelemetry.trace.Span.Builder builder = tracer().spanBuilder(spanName);
+    io.opentelemetry.api.trace.Span.Builder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      builder.setParent(TracingContextUtils.withSpan(parentSpan.getSpan(), Context.root()));
+      builder.setParent(Context.root().with(parentSpan.getSpan()));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
       baggage = contextShim == null ? null : contextShim.getBaggage();
     } else if (parentSpanContext != null) {
       builder.setParent(
-          TracingContextUtils.withSpan(
-              io.opentelemetry.trace.Span.wrap(parentSpanContext.getSpanContext()),
-              Context.root()));
+          Context.root()
+              .with(io.opentelemetry.api.trace.Span.wrap(parentSpanContext.getSpanContext())));
       baggage = parentSpanContext.getBaggage();
     }
 
-    for (io.opentelemetry.trace.SpanContext link : parentLinks) {
+    for (io.opentelemetry.api.trace.SpanContext link : parentLinks) {
       builder.addLink(link);
     }
 
@@ -202,7 +200,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       builder.setSpanKind(spanKind);
     }
 
-    io.opentelemetry.trace.Span span = builder.startSpan();
+    io.opentelemetry.api.trace.Span span = builder.startSpan();
 
     for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {
       AttributeKey key = this.spanBuilderAttributeKeys.get(i);

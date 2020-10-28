@@ -5,20 +5,19 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.nestedcallbacks;
 
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,24 +53,24 @@ public final class NestedCallbacksTest {
       assertThat(attrs.get(stringKey("key" + i))).isEqualTo(Integer.toString(i));
     }
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
 
   private void submitCallbacks(final Span span) {
 
     executor.submit(
         () -> {
-          try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+          try (Scope ignored = span.makeCurrent()) {
             span.setAttribute("key1", "1");
 
             executor.submit(
                 () -> {
-                  try (Scope ignored12 = TracingContextUtils.currentContextWith(span)) {
+                  try (Scope ignored12 = span.makeCurrent()) {
                     span.setAttribute("key2", "2");
 
                     executor.submit(
                         () -> {
-                          try (Scope ignored1 = TracingContextUtils.currentContextWith(span)) {
+                          try (Scope ignored1 = span.makeCurrent()) {
                             span.setAttribute("key3", "3");
                           } finally {
                             span.end();

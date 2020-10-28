@@ -5,11 +5,10 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.baggage.BaggageUtils;
+import io.opentelemetry.api.baggage.BaggageUtils;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.util.HashMap;
@@ -22,9 +21,8 @@ final class Propagation extends BaseShimObject {
   }
 
   public void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
-    Context context =
-        TracingContextUtils.withSpan(Span.wrap(contextShim.getSpanContext()), Context.current());
-    context = BaggageUtils.withBaggage(contextShim.getBaggage(), context);
+    Context context = Context.current().with(Span.wrap(contextShim.getSpanContext()));
+    context = context.with(contextShim.getBaggage());
 
     propagators().getTextMapPropagator().inject(context, carrier, TextMapSetter.INSTANCE);
   }
@@ -41,12 +39,13 @@ final class Propagation extends BaseShimObject {
             .getTextMapPropagator()
             .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
 
-    Span span = TracingContextUtils.getSpan(context);
-    if (!span.getContext().isValid()) {
+    Span span = Span.fromContext(context);
+    if (!span.getSpanContext().isValid()) {
       return null;
     }
 
-    return new SpanContextShim(telemetryInfo, span.getContext(), BaggageUtils.getBaggage(context));
+    return new SpanContextShim(
+        telemetryInfo, span.getSpanContext(), BaggageUtils.getBaggage(context));
   }
 
   static final class TextMapSetter implements TextMapPropagator.Setter<TextMapInject> {

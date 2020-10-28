@@ -5,14 +5,15 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -34,12 +35,12 @@ public interface Sampler {
    * @return sampling samplingResult whether span should be sampled or not.
    */
   SamplingResult shouldSample(
-      SpanContext parentContext,
+      Context parentContext,
       String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
-      List<SpanData.Link> parentLinks);
+      List<Link> parentLinks);
 
   /**
    * Returns the description of this {@code Sampler}. This may be displayed on debug pages or in the
@@ -59,7 +60,7 @@ public interface Sampler {
   }
 
   /**
-   * Sampling result returned by {@link Sampler#shouldSample(SpanContext, String, String, Kind,
+   * Sampling result returned by {@link Sampler#shouldSample(Context, String, String, Kind,
    * ReadableAttributes, List)}.
    */
   interface SamplingResult {
@@ -86,7 +87,7 @@ public interface Sampler {
      *
      * @param parentTraceState The TraceState from the parent span. Might be an empty TraceState, if
      *     there is no parent. This will be the same TraceState that was passed in via the {@link
-     *     SpanContext} parameter on the {@link #shouldSample(SpanContext, String, String, Kind,
+     *     SpanContext} parameter on the {@link #shouldSample(Context, String, String, Kind,
      *     ReadableAttributes, List)} call.
      */
     default TraceState getUpdatedTraceState(TraceState parentTraceState) {

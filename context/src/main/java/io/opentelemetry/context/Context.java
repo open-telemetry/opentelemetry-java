@@ -3,6 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// Includes work from:
+/*
+ * Copyright 2015 The gRPC Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentelemetry.context;
 
 import java.util.concurrent.Callable;
@@ -63,7 +80,7 @@ public interface Context {
    * is only a workaround hiding an underlying context propagation issue.
    */
   static Context root() {
-    return DefaultContext.ROOT;
+    return DefaultContext.root();
   }
 
   /**
@@ -71,7 +88,7 @@ public interface Context {
    * null} if there is no value for the key in this context.
    */
   @Nullable
-  <V> V getValue(ContextKey<V> key);
+  <V> V get(ContextKey<V> key);
 
   /**
    * Returns a new context with the given key value set.
@@ -97,24 +114,24 @@ public interface Context {
    * number of keys and values — combine multiple related items together into a single key instead
    * of separating them. But if the items are unrelated, have separate keys for them.
    */
-  <V> Context withValues(ContextKey<V> k1, V v1);
+  <V> Context with(ContextKey<V> k1, V v1);
 
   /** Returns a new context with the given key value set. */
-  default <V1, V2> Context withValues(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
-    return withValues(k1, v1).withValues(k2, v2);
+  default <V1, V2> Context with(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
+    return with(k1, v1).with(k2, v2);
   }
 
   /** Returns a new context with the given key value set. */
-  default <V1, V2, V3> Context withValues(
+  default <V1, V2, V3> Context with(
       ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3) {
-    return withValues(k1, v1, k2, v2).withValues(k3, v3);
+    return with(k1, v1, k2, v2).with(k3, v3);
   }
 
   /**
    * Create a new context with the given key value set.
    *
-   * <p>For more than 4 key-value pairs, note that multiple calls to {@link #withValues} can be
-   * chained together. That is,
+   * <p>For more than 4 key-value pairs, note that multiple calls to {@link #with} can be chained
+   * together. That is,
    *
    * <pre>
    * context.withValues(K1, V1, K2, V2);
@@ -126,7 +143,7 @@ public interface Context {
    * number of keys and values — combine multiple related items together into a single key instead
    * of separating them. But if the items are unrelated, have separate keys for them.
    */
-  default <V1, V2, V3, V4> Context withValues(
+  default <V1, V2, V3, V4> Context with(
       ContextKey<V1> k1,
       V1 v1,
       ContextKey<V2> k2,
@@ -135,7 +152,12 @@ public interface Context {
       V3 v3,
       ContextKey<V4> k4,
       V4 v4) {
-    return withValues(k1, v1, k2, v2, k3, v3).withValues(k4, v4);
+    return with(k1, v1, k2, v2, k3, v3).with(k4, v4);
+  }
+
+  /** Returns a new {@link Context} with the given {@link ImplicitContextKeyed} set. */
+  default Context with(ImplicitContextKeyed value) {
+    return value.storeInContext(this);
   }
 
   /**

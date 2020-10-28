@@ -5,16 +5,18 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_LANGUAGE;
+import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_NAME;
+import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_VERSION;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
-import io.opentelemetry.internal.StringUtils;
-import io.opentelemetry.internal.Utils;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.api.internal.Utils;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -37,20 +39,15 @@ public abstract class Resource {
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
 
-  // todo: move to ResourceAttributes
-  private static final AttributeKey<String> SDK_NAME = stringKey("telemetry.sdk.name");
-  private static final AttributeKey<String> SDK_LANGUAGE = stringKey("telemetry.sdk.language");
-  private static final AttributeKey<String> SDK_VERSION = stringKey("telemetry.sdk.version");
-
   private static final Resource TELEMETRY_SDK;
 
   static {
     TELEMETRY_SDK =
         create(
             Attributes.builder()
-                .setAttribute(SDK_NAME, "opentelemetry")
-                .setAttribute(SDK_LANGUAGE, "java")
-                .setAttribute(SDK_VERSION, readVersion())
+                .put(SDK_NAME, "opentelemetry")
+                .put(SDK_LANGUAGE, "java")
+                .put(SDK_VERSION, readVersion())
                 .build());
   }
 
@@ -173,7 +170,7 @@ public abstract class Resource {
 
     @Override
     public <T> void consume(AttributeKey<T> key, T value) {
-      attrBuilder.setAttribute(key, value);
+      attrBuilder.put(key, value);
     }
   }
 

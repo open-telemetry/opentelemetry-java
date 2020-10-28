@@ -8,13 +8,13 @@ package io.opentelemetry.sdk.extensions.otproto;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.ByteString;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
 import io.opentelemetry.proto.trace.v1.ConstantSampler.ConstantDecision;
 import io.opentelemetry.proto.trace.v1.TraceIdRatioBased;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceProtoUtils}. */

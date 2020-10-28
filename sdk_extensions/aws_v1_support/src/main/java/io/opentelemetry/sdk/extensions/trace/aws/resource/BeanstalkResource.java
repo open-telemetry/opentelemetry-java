@@ -9,7 +9,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
@@ -67,13 +67,13 @@ public class BeanstalkResource extends ResourceProvider {
         String value = parser.getText();
         switch (parser.getCurrentName()) {
           case DEVELOPMENT_ID:
-            attrBuilders.setAttribute(ResourceAttributes.SERVICE_INSTANCE, value);
+            attrBuilders.put(ResourceAttributes.SERVICE_INSTANCE, value);
             break;
           case VERSION_LABEL:
-            attrBuilders.setAttribute(ResourceAttributes.SERVICE_VERSION, value);
+            attrBuilders.put(ResourceAttributes.SERVICE_VERSION, value);
             break;
           case ENVIRONMENT_NAME:
-            attrBuilders.setAttribute(ResourceAttributes.SERVICE_NAMESPACE, value);
+            attrBuilders.put(ResourceAttributes.SERVICE_NAMESPACE, value);
             break;
           default:
             parser.skipChildren();
@@ -84,8 +84,7 @@ public class BeanstalkResource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    attrBuilders.setAttribute(
-        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
+    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
     return attrBuilders.build();
   }

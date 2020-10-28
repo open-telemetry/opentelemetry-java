@@ -5,15 +5,16 @@
 
 package io.opentelemetry.extensions.trace.propagation;
 
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -113,7 +114,7 @@ public class TraceMultiPropagator implements TextMapPropagator {
    * @return the {@code Context} containing the extracted value.
    */
   @Override
-  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
     for (int i = propagators.length - 1; i >= 0; i--) {
       context = propagators[i].extract(context, carrier, getter);
       if (isSpanContextExtracted(context)) {
@@ -125,7 +126,7 @@ public class TraceMultiPropagator implements TextMapPropagator {
   }
 
   private static boolean isSpanContextExtracted(Context context) {
-    return TracingContextUtils.getSpanWithoutDefault(context) != null;
+    return Span.fromContextOrNull(context) != null;
   }
 
   /**

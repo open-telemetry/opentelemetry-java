@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.internal.Utils;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.internal.Utils;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
-import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -95,7 +95,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(ReadWriteSpan span, Context parentContext) {}
+  public void onStart(Context parentContext, ReadWriteSpan span) {}
 
   @Override
   public boolean isStartRequired() {
@@ -133,7 +133,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   private static final class Worker implements Runnable {
 
     static {
-      Meter meter = OpenTelemetry.getMeter("io.opentelemetry.sdk.trace");
+      Meter meter = OpenTelemetry.getGlobalMeter("io.opentelemetry.sdk.trace");
       LongCounter processedSpansCounter =
           meter
               .longCounterBuilder("processedSpans")

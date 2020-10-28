@@ -5,14 +5,14 @@
 
 package io.opentelemetry.exporters.zipkin;
 
-import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longArrayKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -20,7 +20,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -29,9 +32,6 @@ import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -144,21 +144,20 @@ class ZipkinSpanExporterTest {
   void generateSpan_WithAttributes() {
     Attributes attributes =
         Attributes.builder()
-            .setAttribute(stringKey("string"), "string value")
-            .setAttribute(booleanKey("boolean"), false)
-            .setAttribute(longKey("long"), 9999L)
-            .setAttribute(doubleKey("double"), 222.333d)
-            .setAttribute(booleanArrayKey("booleanArray"), Arrays.asList(true, false))
-            .setAttribute(stringArrayKey("stringArray"), Collections.singletonList("Hello"))
-            .setAttribute(doubleArrayKey("doubleArray"), Arrays.asList(32.33d, -98.3d))
-            .setAttribute(longArrayKey("longArray"), Arrays.asList(33L, 999L))
+            .put(stringKey("string"), "string value")
+            .put(booleanKey("boolean"), false)
+            .put(longKey("long"), 9999L)
+            .put(doubleKey("double"), 222.333d)
+            .put(booleanArrayKey("booleanArray"), Arrays.asList(true, false))
+            .put(stringArrayKey("stringArray"), Collections.singletonList("Hello"))
+            .put(doubleArrayKey("doubleArray"), Arrays.asList(32.33d, -98.3d))
+            .put(longArrayKey("longArray"), Arrays.asList(33L, 999L))
             .build();
     SpanData data = buildStandardSpan().setAttributes(attributes).setKind(Kind.CLIENT).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.CLIENT)
-                .toBuilder()
+            buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .putTag("string", "string value")
                 .putTag("boolean", "false")
                 .putTag("long", "9999")
@@ -181,8 +180,7 @@ class ZipkinSpanExporterTest {
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.CLIENT)
-                .toBuilder()
+            buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .putTag("otel.library.name", "io.opentelemetry.auto")
                 .putTag("otel.library.version", "1.0.0")
                 .build());
@@ -202,8 +200,7 @@ class ZipkinSpanExporterTest {
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.CLIENT)
-                .toBuilder()
+            buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .clearTags()
                 .putTag(SemanticAttributes.HTTP_STATUS_CODE.getKey(), "404")
                 .putTag("error", "A user provided error")
@@ -224,8 +221,7 @@ class ZipkinSpanExporterTest {
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
-            buildZipkinSpan(Span.Kind.SERVER)
-                .toBuilder()
+            buildZipkinSpan(Span.Kind.SERVER).toBuilder()
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_DESCRIPTION, errorMessage)
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "ERROR")

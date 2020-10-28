@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extensions.resources;
 
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import javax.annotation.Nullable;
@@ -31,7 +31,7 @@ public class OsResource extends ResourceProvider {
 
     String osName = getOs(os);
     if (osName != null) {
-      attributes.setAttribute(ResourceAttributes.OS_NAME, osName);
+      attributes.put(ResourceAttributes.OS_NAME, osName);
     }
 
     String version = null;
@@ -41,7 +41,7 @@ public class OsResource extends ResourceProvider {
       // Ignore
     }
     String osDescription = version != null ? os + ' ' + version : os;
-    attributes.setAttribute(ResourceAttributes.OS_DESCRIPTION, osDescription);
+    attributes.put(ResourceAttributes.OS_DESCRIPTION, osDescription);
 
     return attributes.build();
   }

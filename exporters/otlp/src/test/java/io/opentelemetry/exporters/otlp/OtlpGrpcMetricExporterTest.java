@@ -6,6 +6,7 @@
 package io.opentelemetry.exporters.otlp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.verify;
 
 import com.google.common.io.Closer;
@@ -16,11 +17,12 @@ import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -114,8 +116,8 @@ class OtlpGrpcMetricExporterTest {
   }
 
   @Test
-  void testExport_DeadlineSetPerExport() {
-    int deadlineMs = 1000;
+  void testExport_DeadlineSetPerExport() throws Exception {
+    int deadlineMs = 1500;
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
             .setChannel(inProcessChannel)
@@ -123,13 +125,10 @@ class OtlpGrpcMetricExporterTest {
             .build();
 
     try {
-      fakeCollector.setCollectorDelay(2000);
-      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
-          .isFalse();
-
-      fakeCollector.setCollectorDelay(0);
-      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
-          .isTrue();
+      TimeUnit.MILLISECONDS.sleep(2000);
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeMetric()));
+      await().untilAsserted(() -> assertThat(result.isSuccess()).isTrue());
     } finally {
       exporter.shutdown();
     }

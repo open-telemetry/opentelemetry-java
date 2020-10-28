@@ -6,12 +6,12 @@
 package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -78,7 +78,7 @@ public class BatchSpanProcessorFlushBenchmark {
     processor = BatchSpanProcessor.builder(exporter).build();
 
     ImmutableList.Builder<Span> spans = ImmutableList.builderWithExpectedSize(spanCount);
-    Tracer tracer = OpenTelemetry.getTracerProvider().get("benchmarkTracer");
+    Tracer tracer = OpenTelemetry.getGlobalTracerProvider().get("benchmarkTracer");
     for (int i = 0; i < spanCount; i++) {
       spans.add(tracer.spanBuilder("span").startSpan());
     }

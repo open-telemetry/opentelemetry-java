@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.net.InetAddress;
@@ -51,18 +51,17 @@ public class EcsResource extends ResourceProvider {
     }
 
     Attributes.Builder attrBuilders = Attributes.builder();
-    attrBuilders.setAttribute(
-        ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
+    attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
     try {
       String hostName = InetAddress.getLocalHost().getHostName();
-      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_NAME, hostName);
+      attrBuilders.put(ResourceAttributes.CONTAINER_NAME, hostName);
     } catch (UnknownHostException e) {
       logger.log(Level.WARNING, "Could not get docker container name from hostname.", e);
     }
 
     String containerId = dockerHelper.getContainerId();
     if (!Strings.isNullOrEmpty(containerId)) {
-      attrBuilders.setAttribute(ResourceAttributes.CONTAINER_ID, containerId);
+      attrBuilders.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
     return attrBuilders.build();

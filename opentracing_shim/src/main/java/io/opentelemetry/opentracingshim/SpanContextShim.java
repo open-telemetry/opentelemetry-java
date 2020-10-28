@@ -5,10 +5,9 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.baggage.BaggageUtils;
-import io.opentelemetry.baggage.Entry;
-import io.opentelemetry.baggage.EntryMetadata;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.Entry;
+import io.opentelemetry.api.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
@@ -16,37 +15,40 @@ import java.util.Map;
 
 final class SpanContextShim extends BaseShimObject implements SpanContext {
 
-  private final io.opentelemetry.trace.SpanContext context;
+  private final io.opentelemetry.api.trace.SpanContext context;
   private final Baggage baggage;
 
   public SpanContextShim(SpanShim spanShim) {
     this(
         spanShim.telemetryInfo(),
-        spanShim.getSpan().getContext(),
+        spanShim.getSpan().getSpanContext(),
         spanShim.telemetryInfo().emptyBaggage());
   }
 
-  public SpanContextShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.SpanContext context) {
+  public SpanContextShim(
+      TelemetryInfo telemetryInfo, io.opentelemetry.api.trace.SpanContext context) {
     this(telemetryInfo, context, telemetryInfo.emptyBaggage());
   }
 
   public SpanContextShim(
-      TelemetryInfo telemetryInfo, io.opentelemetry.trace.SpanContext context, Baggage baggage) {
+      TelemetryInfo telemetryInfo,
+      io.opentelemetry.api.trace.SpanContext context,
+      Baggage baggage) {
     super(telemetryInfo);
     this.context = context;
     this.baggage = baggage;
   }
 
   SpanContextShim newWithKeyValue(String key, String value) {
-    Context parentContext = BaggageUtils.withBaggage(baggage, Context.current());
+    Context parentContext = Context.current().with(baggage);
 
-    Baggage.Builder builder = contextManager().baggageBuilder().setParent(parentContext);
+    Baggage.Builder builder = Baggage.builder().setParent(parentContext);
     builder.put(key, value, EntryMetadata.EMPTY);
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());
   }
 
-  io.opentelemetry.trace.SpanContext getSpanContext() {
+  io.opentelemetry.api.trace.SpanContext getSpanContext() {
     return context;
   }
 

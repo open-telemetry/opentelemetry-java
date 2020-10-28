@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
 
+    id "me.champeau.gradle.jmh"
     id "org.unbroken-dome.test-sets"
     id "ru.vyarus.animalsniffer"
 }
@@ -12,7 +13,6 @@ ext.moduleName = "io.opentelemetry.context"
 testSets {
     grpcInOtelTest
     otelInGrpcTest
-    otelAsGrpcTest
 
     braveInOtelTest
     otelAsBraveTest
@@ -20,7 +20,6 @@ testSets {
 
 dependencies {
     grpcInOtelTestImplementation libraries.grpc_context
-    otelAsGrpcTestImplementation libraries.grpc_context
     otelInGrpcTestImplementation libraries.grpc_context
 
     braveInOtelTestImplementation "io.zipkin.brave:brave:5.12.6"

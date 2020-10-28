@@ -38,7 +38,7 @@ OpenTelemetry SDK should never be called.
  
 First, a `Tracer` must be acquired, which is responsible for creating spans and interacting with the
 [Context](#context-propagation). A tracer is acquired by using the OpenTelemetry API specifying the
-name and version of the library instrumenting the instrumented library or application to be
+name and version of the [library instrumenting][Instrumentation Library] the [instrumented library] or application to be
 monitored. More information is available in the specification chapter [Obtaining a Tracer].
 
 ```java
@@ -443,8 +443,10 @@ Supported system properties and environment variables:
 [OpenTelemetry Collector]: https://github.com/open-telemetry/opentelemetry-collector
 [OpenTelemetry Registry]: https://opentelemetry.io/registry/?s=exporter
 [OpenTelemetry Website]: https://opentelemetry.io/
-[Obtaining a Tracer]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/api.md#obtaining-a-tracer
+[Obtaining a Tracer]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/api.md#get-a-tracer
 [Semantic Conventions]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions
+[Instrumentation Library]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/glossary.md#instrumentation-library
+[instrumented library]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/glossary.md#instrumented-library
 
 ## Logging and Error Handling 
 
@@ -500,4 +502,3 @@ public class IgnoreExportErrorsFilter implements Filter {
 ## Registering the custom filter on the BatchSpanProcessor
 io.opentelemetry.sdk.trace.export.BatchSpanProcessor = io.opentelemetry.extensions.logging.IgnoreExportErrorsFilter
 ```
-

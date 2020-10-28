@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.extensions.incubator.trace.data;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.StatusCode;
 import org.junit.jupiter.api.Test;
 
 class SpanDataBuilderTest {
@@ -31,8 +31,7 @@ class SpanDataBuilderTest {
           .setEndEpochNanos(100)
           .setKind(Span.Kind.SERVER)
           .setStatus(Status.error())
-          .setAttributes(
-              Attributes.builder().setAttribute("cat", "meow").setAttribute("dog", "bark").build())
+          .setAttributes(Attributes.builder().put("cat", "meow").put("dog", "bark").build())
           .setTotalRecordedEvents(1000)
           .setTotalRecordedLinks(2300)
           .build();

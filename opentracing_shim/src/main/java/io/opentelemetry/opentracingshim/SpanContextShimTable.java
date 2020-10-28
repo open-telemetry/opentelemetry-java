@@ -5,8 +5,8 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.baggage.Baggage;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.trace.Span;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -86,7 +86,8 @@ final class SpanContextShimTable {
       }
 
       contextShim =
-          new SpanContextShim(spanShim.telemetryInfo(), spanShim.getSpan().getContext(), baggage);
+          new SpanContextShim(
+              spanShim.telemetryInfo(), spanShim.getSpan().getSpanContext(), baggage);
       shimsMap.put(spanShim.getSpan(), contextShim);
       return contextShim;
 

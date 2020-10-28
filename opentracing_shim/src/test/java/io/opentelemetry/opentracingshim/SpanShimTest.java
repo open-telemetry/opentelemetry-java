@@ -12,21 +12,21 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.baggage.BaggageManagerSdk;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SpanShimTest {
+
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, new BaggageManagerSdk(), OpenTelemetry.getPropagators());
+      new TelemetryInfo(tracer, OpenTelemetry.getGlobalPropagators());
   private Span span;
 
   private static final String SPAN_NAME = "Span";
@@ -47,9 +47,9 @@ class SpanShimTest {
 
     SpanContextShim contextShim = (SpanContextShim) spanShim.context();
     assertNotNull(contextShim);
-    assertEquals(contextShim.getSpanContext(), span.getContext());
-    assertEquals(contextShim.toTraceId(), span.getContext().getTraceIdAsHexString().toString());
-    assertEquals(contextShim.toSpanId(), span.getContext().getSpanIdAsHexString().toString());
+    assertEquals(contextShim.getSpanContext(), span.getSpanContext());
+    assertEquals(contextShim.toTraceId(), span.getSpanContext().getTraceIdAsHexString().toString());
+    assertEquals(contextShim.toSpanId(), span.getSpanContext().getSpanIdAsHexString().toString());
     assertFalse(contextShim.baggageItems().iterator().hasNext());
   }
 

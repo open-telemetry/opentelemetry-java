@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -14,7 +15,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -55,7 +55,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
   @State(Scope.Benchmark)
   public static class BenchmarkState {
     private final MetricProducer metricProducer =
-        OpenTelemetrySdk.getMeterProvider().getMetricProducer();
+        OpenTelemetrySdk.getGlobalMeterProvider().getMetricProducer();
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private Collection<MetricData> allMetrics;
@@ -65,7 +65,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
       SpanExporter exporter = new DelayingSpanExporter();
       processor = BatchSpanProcessor.builder(exporter).build();
 
-      tracer = OpenTelemetry.getTracerProvider().get("benchmarkTracer");
+      tracer = OpenTelemetry.getGlobalTracerProvider().get("benchmarkTracer");
     }
 
     @TearDown(Level.Trial)

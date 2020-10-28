@@ -5,10 +5,9 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.baggage.BaggageManager;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerProvider;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import java.util.Objects;
 
 public final class TraceShim {
@@ -23,9 +22,8 @@ public final class TraceShim {
   public static io.opentracing.Tracer createTracerShim() {
     return new TracerShim(
         new TelemetryInfo(
-            getTracer(OpenTelemetry.getTracerProvider()),
-            OpenTelemetry.getBaggageManager(),
-            OpenTelemetry.getPropagators()));
+            getTracer(OpenTelemetry.getGlobalTracerProvider()),
+            OpenTelemetry.getGlobalPropagators()));
   }
 
   /**
@@ -33,16 +31,13 @@ public final class TraceShim {
    * BaggageManager}.
    *
    * @param tracerProvider the {@code TracerProvider} used by this shim.
-   * @param contextManager the {@code BaggageManager} used by this shim.
    * @return a {@code io.opentracing.Tracer}.
    */
-  public static io.opentracing.Tracer createTracerShim(
-      TracerProvider tracerProvider, BaggageManager contextManager) {
+  public static io.opentracing.Tracer createTracerShim(TracerProvider tracerProvider) {
     return new TracerShim(
         new TelemetryInfo(
             getTracer(Objects.requireNonNull(tracerProvider, "tracerProvider")),
-            Objects.requireNonNull(contextManager, "contextManager"),
-            OpenTelemetry.getPropagators()));
+            OpenTelemetry.getGlobalPropagators()));
   }
 
   private static Tracer getTracer(TracerProvider tracerProvider) {

@@ -7,15 +7,15 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import static io.opentelemetry.extensions.trace.propagation.Common.MAX_TRACE_ID_LENGTH;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -54,7 +54,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (context == null || setter == null) {
       return;
     }
-    final SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
+    final SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (!spanContext.isValid()) {
       return;
     }
@@ -64,8 +64,9 @@ public class OtTracerPropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
     if (context == null || getter == null) {
+      // TODO Other propagators throw exceptions here
       return context;
     }
     String incomingTraceId = getter.get(carrier, TRACE_ID_HEADER);
@@ -79,7 +80,7 @@ public class OtTracerPropagator implements TextMapPropagator {
     if (!spanContext.isValid()) {
       return context;
     }
-    return TracingContextUtils.withSpan(Span.wrap(spanContext), context);
+    return context.with(Span.wrap(spanContext));
   }
 
   static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {

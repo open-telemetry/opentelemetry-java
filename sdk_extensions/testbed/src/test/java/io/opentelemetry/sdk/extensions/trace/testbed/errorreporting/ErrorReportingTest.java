@@ -10,16 +10,15 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,7 +38,7 @@ public final class ErrorReportingTest {
   @Test
   void testSimpleError() {
     Span span = tracer.spanBuilder("one").startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+    try (Scope ignored = span.makeCurrent()) {
       throw new RuntimeException("Invalid state");
     } catch (Exception e) {
       span.setStatus(StatusCode.ERROR);
@@ -47,7 +46,7 @@ public final class ErrorReportingTest {
       span.end();
     }
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
@@ -60,7 +59,7 @@ public final class ErrorReportingTest {
     final Span span = tracer.spanBuilder("one").startSpan();
     executor.submit(
         () -> {
-          try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+          try (Scope ignored = span.makeCurrent()) {
             throw new RuntimeException("Invalid state");
           } catch (Exception exc) {
             span.setStatus(StatusCode.ERROR);
@@ -85,7 +84,7 @@ public final class ErrorReportingTest {
     final int maxRetries = 1;
     int retries = 0;
     Span span = tracer.spanBuilder("one").startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+    try (Scope ignored = span.makeCurrent()) {
       while (retries++ < maxRetries) {
         try {
           throw new RuntimeException("No url could be fetched");
@@ -98,7 +97,7 @@ public final class ErrorReportingTest {
     span.setStatus(StatusCode.ERROR); // Could not fetch anything.
     span.end();
 
-    assertThat(TracingContextUtils.getCurrentSpan()).isSameAs(Span.getInvalid());
+    assertThat(Span.current()).isSameAs(Span.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
@@ -114,7 +113,7 @@ public final class ErrorReportingTest {
   @Test
   void testInstrumentationLayer() {
     Span span = tracer.spanBuilder("one").startSpan();
-    try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+    try (Scope ignored = span.makeCurrent()) {
       // ScopedRunnable captures the active Span at this time.
       executor.submit(
           new ScopedRunnable(
@@ -122,9 +121,9 @@ public final class ErrorReportingTest {
                 try {
                   throw new RuntimeException("Invalid state");
                 } catch (Exception exc) {
-                  TracingContextUtils.getCurrentSpan().setStatus(StatusCode.ERROR);
+                  Span.current().setStatus(StatusCode.ERROR);
                 } finally {
-                  TracingContextUtils.getCurrentSpan().end();
+                  Span.current().end();
                 }
               },
               tracer));
@@ -147,13 +146,13 @@ public final class ErrorReportingTest {
     private ScopedRunnable(Runnable runnable, Tracer tracer) {
       this.runnable = runnable;
       this.tracer = tracer;
-      this.span = TracingContextUtils.getCurrentSpan();
+      this.span = Span.current();
     }
 
     @Override
     public void run() {
       // No error reporting is done, as we are a simple wrapper.
-      try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+      try (Scope ignored = span.makeCurrent()) {
         runnable.run();
       }
     }

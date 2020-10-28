@@ -16,9 +16,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
@@ -81,12 +81,12 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private final long deadlineMs;
 
   private final LongCounter spansSeen =
-      OpenTelemetry.getMeter("io.opentelemetry.exporters.otlp")
+      OpenTelemetry.getGlobalMeter("io.opentelemetry.exporters.otlp")
           .longCounterBuilder("spansSeenByExporter")
           .build();
 
   private final LongCounter spansExported =
-      OpenTelemetry.getMeter("io.opentelemetry.exporters.otlp")
+      OpenTelemetry.getGlobalMeter("io.opentelemetry.exporters.otlp")
           .longCounterBuilder("spansExportedByExporter")
           .build();
 
