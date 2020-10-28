@@ -14,9 +14,9 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** No-op implementations of {@link Meter}. */
 @ThreadSafe
-public final class DefaultMeter implements Meter {
+final class DefaultMeter implements Meter {
 
-  private static final DefaultMeter INSTANCE = new DefaultMeter();
+  private static final DefaultMeter instance = new DefaultMeter();
   private static final String COUNTERS_CAN_ONLY_INCREASE = "Counters can only increase";
 
   /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
@@ -24,13 +24,8 @@ public final class DefaultMeter implements Meter {
           + StringUtils.METRIC_NAME_MAX_LENGTH
           + " characters.";
 
-  /**
-   * Returns a {@code Meter} singleton that is the default implementations for {@link Meter}.
-   *
-   * @return a {@code Meter} singleton that is the default implementations for {@link Meter}.
-   */
-  public static Meter getInstance() {
-    return INSTANCE;
+  static Meter getInstance() {
+    return instance;
   }
 
   @Override

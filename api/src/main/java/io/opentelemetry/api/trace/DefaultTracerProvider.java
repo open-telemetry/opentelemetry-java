@@ -8,18 +8,11 @@ package io.opentelemetry.api.trace;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-public class DefaultTracerProvider implements TracerProvider {
+class DefaultTracerProvider implements TracerProvider {
 
   private static final TracerProvider instance = new DefaultTracerProvider();
 
-  /**
-   * Returns a {@code TracerProvider} singleton that is the default implementation for {@link
-   * TracerProvider}.
-   *
-   * @return a {@code TracerProvider} singleton that is the default implementation for {@link
-   *     TracerProvider}.
-   */
-  public static TracerProvider getInstance() {
+  static TracerProvider getInstance() {
     return instance;
   }
 
@@ -30,7 +23,7 @@ public class DefaultTracerProvider implements TracerProvider {
 
   @Override
   public Tracer get(String instrumentationName, String instrumentationVersion) {
-    return DefaultTracer.getInstance();
+    return Tracer.noop();
   }
 
   private DefaultTracerProvider() {}

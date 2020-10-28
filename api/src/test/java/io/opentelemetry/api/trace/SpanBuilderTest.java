@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Span.Builder}. */
 class SpanBuilderTest {
-  private final Tracer tracer = DefaultTracer.getInstance();
+  private final Tracer tracer = Tracer.noop();
 
   @Test
   void doNotCrash_NoopImplementation() {
