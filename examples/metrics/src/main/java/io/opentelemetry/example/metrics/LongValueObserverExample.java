@@ -1,10 +1,10 @@
 package io.opentelemetry.example.metrics;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.AsynchronousInstrument.LongResult;
-import io.opentelemetry.api.metrics.LongValueObserver;
-import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.common.Labels;
+import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
+import io.opentelemetry.metrics.LongValueObserver;
+import io.opentelemetry.metrics.Meter;
 
 /**
  * Example of using {@link LongValueObserver} to measure execution time of method. Setting {@link

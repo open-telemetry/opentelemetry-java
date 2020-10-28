@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.trace.Tracer;
 import java.util.Arrays;
 
 /** This example shows how to instantiate different Span Processors. */
