@@ -170,31 +170,6 @@ class ContextTest {
   }
 
   @Test
-  void withTwoValues() {
-    Context context = Context.current().with(ANIMAL, "cat", FOOD, "hot dog");
-    assertThat(context.get(ANIMAL)).isEqualTo("cat");
-    assertThat(context.get(FOOD)).isEqualTo("hot dog");
-  }
-
-  @Test
-  void withThreeValues() {
-    Context context = Context.current().with(ANIMAL, "cat", FOOD, "hot dog", COOKIES, 100);
-    assertThat(context.get(ANIMAL)).isEqualTo("cat");
-    assertThat(context.get(FOOD)).isEqualTo("hot dog");
-    assertThat(context.get(COOKIES)).isEqualTo(100);
-  }
-
-  @Test
-  void withFourValues() {
-    Context context =
-        Context.current().with(ANIMAL, "cat", FOOD, "hot dog", COOKIES, 100, BAG, "prada");
-    assertThat(context.get(ANIMAL)).isEqualTo("cat");
-    assertThat(context.get(FOOD)).isEqualTo("hot dog");
-    assertThat(context.get(COOKIES)).isEqualTo(100);
-    assertThat(context.get(BAG)).isEqualTo("prada");
-  }
-
-  @Test
   void wrapRunnable() {
     AtomicReference<String> value = new AtomicReference<>();
     Runnable callback = () -> value.set(Context.current().get(ANIMAL));
