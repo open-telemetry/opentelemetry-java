@@ -95,7 +95,7 @@ public final class SpanId {
   }
 
   /** Convert the the given hex spanId into a long representation. */
-  public static long asLong(String src) {
+  public static long asLong(CharSequence src) {
     return BigendianEncoding.longFromBase16String(src, 0);
   }
 }
