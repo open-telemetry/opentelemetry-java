@@ -31,6 +31,14 @@ public interface Baggage extends ImplicitContextKeyed {
     return ImmutableBaggage.builder();
   }
 
+  /**
+   * Returns Baggage from the current {@link Context}, falling back to empty Baggage if none is
+   * in the current Context.
+   */
+  static Baggage current() {
+    return BaggageUtils.getCurrentBaggage();
+  }
+
   @Override
   default Context storeInContext(Context context) {
     return BaggageUtils.withBaggage(this, context);
