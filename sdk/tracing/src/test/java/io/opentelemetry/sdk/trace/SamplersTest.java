@@ -29,7 +29,7 @@ class SamplersTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
-  private final IdsGenerator idsGenerator = new RandomIdsGenerator();
+  private final IdsGenerator idsGenerator = IdsGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();
