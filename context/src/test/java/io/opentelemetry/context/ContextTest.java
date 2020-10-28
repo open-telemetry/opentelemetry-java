@@ -39,8 +39,6 @@ class ContextTest {
 
   private static final ContextKey<String> ANIMAL = ContextKey.named("animal");
   private static final ContextKey<Object> BAG = ContextKey.named("bag");
-  private static final ContextKey<String> FOOD = ContextKey.named("food");
-  private static final ContextKey<Integer> COOKIES = ContextKey.named("cookies");
 
   private static final Context CAT = Context.current().with(ANIMAL, "cat");
 

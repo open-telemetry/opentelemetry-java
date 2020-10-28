@@ -141,8 +141,8 @@ public interface Context {
   }
 
   /**
-   * Returns a {@link Runnable} that makes this the {@linkplain Context#current() current context} and
-   * then invokes the input {@link Runnable}.
+   * Returns a {@link Runnable} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link Runnable}.
    */
   default Runnable wrap(Runnable runnable) {
     return () -> {
@@ -153,8 +153,8 @@ public interface Context {
   }
 
   /**
-   * Returns a {@link Runnable} that makes this the {@linkplain Context#current() current context} and
-   * then invokes the input {@link Runnable}.
+   * Returns a {@link Runnable} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link Runnable}.
    */
   default <T> Callable<T> wrap(Callable<T> callable) {
     return () -> {
@@ -182,7 +182,8 @@ public interface Context {
 
   /**
    * Returns an {@link ScheduledExecutorService} that will execute callbacks in the given {@code
-   * executor}, making this the {@linkplain Context#current() current context} before each execution.
+   * executor}, making this the {@linkplain Context#current() current context} before each
+   * execution.
    */
   default ScheduledExecutorService wrap(ScheduledExecutorService executor) {
     return new ContextScheduledExecutorService(this, executor);
