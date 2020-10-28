@@ -76,7 +76,7 @@ public interface Sampler {
    * @throws IllegalArgumentException if {@code ratio} is out of range
    */
   static Sampler traceIdRatioBased(double ratio) {
-    return TraceIdRatioBased.create(ratio);
+    return TraceIdRatioBasedSampler.create(ratio);
   }
 
   /**

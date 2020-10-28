@@ -24,11 +24,11 @@ import javax.annotation.concurrent.Immutable;
  */
 @AutoValue
 @Immutable
-abstract class TraceIdRatioBased implements Sampler {
+abstract class TraceIdRatioBasedSampler implements Sampler {
 
-  TraceIdRatioBased() {}
+  TraceIdRatioBasedSampler() {}
 
-  static TraceIdRatioBased create(double ratio) {
+  static TraceIdRatioBasedSampler create(double ratio) {
     Preconditions.checkArgument(ratio >= 0.0 && ratio <= 1.0, "ratio must be in range [0.0, 1.0]");
     long idUpperBound;
     // Special case the limits, to avoid any possible issues with lack of precision across

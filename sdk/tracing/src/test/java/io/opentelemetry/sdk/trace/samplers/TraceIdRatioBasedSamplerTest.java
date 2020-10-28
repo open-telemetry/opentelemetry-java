@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class TraceIdRatioBasedTest {
+class TraceIdRatioBasedSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
@@ -44,13 +44,13 @@ class TraceIdRatioBasedTest {
 
   @Test
   void alwaysSample() {
-    TraceIdRatioBased sampler = TraceIdRatioBased.create(1);
+    TraceIdRatioBasedSampler sampler = TraceIdRatioBasedSampler.create(1);
     assertThat(sampler.getIdUpperBound()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   void neverSample() {
-    TraceIdRatioBased sampler = TraceIdRatioBased.create(0);
+    TraceIdRatioBasedSampler sampler = TraceIdRatioBasedSampler.create(0);
     assertThat(sampler.getIdUpperBound()).isEqualTo(Long.MIN_VALUE);
   }
 
