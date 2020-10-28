@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extensions.trace.testbed.suspendresumepropagation;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 
 final class SuspendResume {
   private final Span span;

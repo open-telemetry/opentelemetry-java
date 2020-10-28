@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.common;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.api.trace.Tracer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 

@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.ERROR_MESS
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;

@@ -5,21 +5,21 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -217,8 +217,13 @@ public final class Samplers {
     }
   }
 
+  /**
+   * A Sampler that uses the sampled flag of the parent Span, if present. If the span has no parent,
+   * this Sampler will use the "root" sampler that it is built with. See documentation on the {@link
+   * Builder} methods for the details on the various configurable options.
+   */
   @Immutable
-  static class ParentBased implements Sampler {
+  public static class ParentBased implements Sampler {
 
     private final Sampler root;
     private final Sampler remoteParentSampled;
@@ -288,7 +293,8 @@ public final class Samplers {
       return getDescription();
     }
 
-    static class Builder {
+    /** A builder for creating ParentBased sampler instances. */
+    public static class Builder {
 
       private final Sampler root;
       private Sampler remoteParentSampled;
@@ -345,7 +351,7 @@ public final class Samplers {
        *
        * @return the ParentBased sampler.
        */
-      public ParentBased build() {
+      public Sampler build() {
         return new ParentBased(
             this.root,
             this.remoteParentSampled,

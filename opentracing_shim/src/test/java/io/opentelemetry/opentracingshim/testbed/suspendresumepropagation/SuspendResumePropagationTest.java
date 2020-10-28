@@ -7,11 +7,11 @@ package io.opentelemetry.opentracingshim.testbed.suspendresumepropagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.SpanId;
 import io.opentracing.Tracer;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;

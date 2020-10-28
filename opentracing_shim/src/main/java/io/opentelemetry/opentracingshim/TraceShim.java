@@ -5,9 +5,9 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerProvider;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import java.util.Objects;
 
 public final class TraceShim {

@@ -10,7 +10,7 @@ dependencies {
     api project(':opentelemetry-api'),
             libraries.opentracing
 
-    testImplementation project(':opentelemetry-sdk'),
+    testImplementation project(':opentelemetry-sdk-testing'),
             project(':opentelemetry-exporters-inmemory'),
             libraries.junit,
             libraries.assertj,

@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.extensions.incubator.trace.data;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.StatusCode;
 import org.junit.jupiter.api.Test;
 
 class SpanDataBuilderTest {
