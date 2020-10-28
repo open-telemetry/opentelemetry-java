@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporters.jaeger;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.Lists;
@@ -16,6 +17,7 @@ import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -84,7 +86,9 @@ class JaegerThriftSpanExporterTest {
             .build();
 
     // test
-    exporter.export(Collections.singletonList(span));
+    CompletableResultCode result = exporter.export(Collections.singletonList(span));
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
     Process expectedProcess = new Process("myservice.name");
@@ -165,7 +169,9 @@ class JaegerThriftSpanExporterTest {
             .build();
 
     // test
-    exporter.export(Lists.newArrayList(span, span2));
+    CompletableResultCode result = exporter.export(Lists.newArrayList(span, span2));
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
     Process expectedProcess1 = new Process("myservice.name");

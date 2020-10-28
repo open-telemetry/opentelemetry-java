@@ -97,6 +97,7 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
     batches.forEach(
         (process, jaegerSpans) -> {
           CompletableResultCode batchResult = new CompletableResultCode();
+          batchResults.add(batchResult);
           try {
             // todo: consider making truly async
             thriftSender.send(process, jaegerSpans);
