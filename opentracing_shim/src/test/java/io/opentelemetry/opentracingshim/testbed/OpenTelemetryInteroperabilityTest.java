@@ -9,32 +9,26 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class OpenTelemetryInteroperabilityTest {
-  private final io.opentelemetry.api.trace.Tracer tracer =
-      OpenTelemetry.getGlobalTracer("opentracingshim");
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder()
-          .setTracerSdkManagement(OpenTelemetrySdk.getGlobalTracerManagement())
-          .build();
-  private final Tracer otTracer =
-      TraceShim.createTracerShim(OpenTelemetry.getGlobalTracerProvider());
 
-  @BeforeEach
-  void before() {
-    inMemoryTracing.getSpanExporter().reset();
-  }
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
+  private final io.opentelemetry.api.trace.Tracer tracer =
+      otelTesting.getOpenTelemetry().getTracer("opentracingshim");
+
+  private final Tracer otTracer =
+      TraceShim.createTracerShim(otelTesting.getOpenTelemetry().getTracerProvider());
 
   @Test
   void sdkContinuesOpenTracingTrace() {
@@ -47,7 +41,7 @@ class OpenTelemetryInteroperabilityTest {
     assertThat(io.opentelemetry.api.trace.Span.current().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
-    List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finishedSpans = otelTesting.getSpans();
     assertEquals(2, finishedSpans.size());
     TestUtils.assertSameTrace(finishedSpans);
   }
@@ -64,7 +58,7 @@ class OpenTelemetryInteroperabilityTest {
     assertThat(io.opentelemetry.api.trace.Span.current().getSpanContext().isValid()).isFalse();
     assertNull(otTracer.activeSpan());
 
-    List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finishedSpans = otelTesting.getSpans();
     assertEquals(2, finishedSpans.size());
     TestUtils.assertSameTrace(finishedSpans);
   }
