@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanId}. */
@@ -50,5 +51,14 @@ class SpanIdTest {
     assertThat(SpanId.getInvalid()).contains("0000000000000000");
     assertThat(SpanId.bytesToHex(firstBytes)).contains("0000000000000061");
     assertThat(SpanId.bytesToHex(secondBytes)).contains("ff00000000000041");
+  }
+
+  @Test
+  void toAndFromLong() {
+    Random random = new Random();
+    for (int i = 0; i < 1000; i++) {
+      long id = random.nextLong();
+      assertThat(SpanId.asLong(SpanId.fromLong(id))).isEqualTo(id);
+    }
   }
 }
