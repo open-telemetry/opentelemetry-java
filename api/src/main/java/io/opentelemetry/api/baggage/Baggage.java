@@ -32,8 +32,8 @@ public interface Baggage extends ImplicitContextKeyed {
   }
 
   /**
-   * Returns Baggage from the current {@link Context}, falling back to empty Baggage if none is
-   * in the current Context.
+   * Returns Baggage from the current {@link Context}, falling back to empty Baggage if none is in
+   * the current Context.
    */
   static Baggage current() {
     return BaggageUtils.getCurrentBaggage();
