@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.opencensusshim;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
