@@ -9,9 +9,8 @@ import com.google.protobuf.ByteString;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
-import io.opentelemetry.sdk.trace.Sampler;
-import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 /** Utilities for converting various objects to protobuf representations. */
 public final class TraceProtoUtils {
@@ -62,9 +61,9 @@ public final class TraceProtoUtils {
       ConstantSampler constantSampler = traceConfigProto.getConstantSampler();
       switch (constantSampler.getDecision()) {
         case ALWAYS_ON:
-          return Samplers.alwaysOn();
+          return Sampler.alwaysOn();
         case ALWAYS_OFF:
-          return Samplers.alwaysOff();
+          return Sampler.alwaysOff();
         case ALWAYS_PARENT:
           // TODO: add support.
         case UNRECOGNIZED:
@@ -72,7 +71,7 @@ public final class TraceProtoUtils {
       }
     }
     if (traceConfigProto.hasTraceIdRatioBased()) {
-      return Samplers.traceIdRatioBased(traceConfigProto.getTraceIdRatioBased().getSamplingRatio());
+      return Sampler.traceIdRatioBased(traceConfigProto.getTraceIdRatioBased().getSamplingRatio());
     }
     if (traceConfigProto.hasRateLimitingSampler()) {
       // TODO: add support for RateLimiting Sampler

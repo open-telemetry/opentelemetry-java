@@ -16,8 +16,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.Sampler.Decision;
-import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -52,7 +51,7 @@ class RateLimitingSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
     assertThat(
             sampler
                 .shouldSample(
@@ -63,7 +62,7 @@ class RateLimitingSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -77,7 +76,7 @@ class RateLimitingSamplerTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertThat(samplingResult.getDecision()).isEqualTo(Decision.RECORD_AND_SAMPLE);
+    assertThat(samplingResult.getDecision()).isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
     assertThat(
             sampler
                 .shouldSample(
@@ -88,7 +87,7 @@ class RateLimitingSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(Decision.DROP);
+        .isEqualTo(SamplingResult.Decision.DROP);
     assertEquals(2, samplingResult.getAttributes().size());
     assertEquals(1d, samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_PARAM));
     assertEquals(

@@ -16,9 +16,9 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyR
 import io.opentelemetry.exporters.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.SamplingManagerGrpc.SamplingManagerBlockingStub;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
-import io.opentelemetry.sdk.trace.Sampler;
-import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,7 +33,7 @@ public class JaegerRemoteSampler implements Sampler {
   private static final String WORKER_THREAD_NAME =
       JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
   private static final int DEFAULT_POLLING_INTERVAL_MS = 60000;
-  private static final Sampler INITIAL_SAMPLER = Samplers.traceIdRatioBased(0.001);
+  private static final Sampler INITIAL_SAMPLER = Sampler.traceIdRatioBased(0.001);
 
   private final String serviceName;
   private final SamplingManagerBlockingStub stub;
@@ -86,13 +86,13 @@ public class JaegerRemoteSampler implements Sampler {
     PerOperationSamplingStrategies operationSampling = response.getOperationSampling();
     if (operationSampling != null && operationSampling.getPerOperationStrategiesList().size() > 0) {
       Sampler defaultSampler =
-          Samplers.traceIdRatioBased(operationSampling.getDefaultSamplingProbability());
+          Sampler.traceIdRatioBased(operationSampling.getDefaultSamplingProbability());
       return new PerOperationSampler(
           defaultSampler, operationSampling.getPerOperationStrategiesList());
     }
     switch (response.getStrategyType()) {
       case PROBABILISTIC:
-        return Samplers.traceIdRatioBased(response.getProbabilisticSampling().getSamplingRate());
+        return Sampler.traceIdRatioBased(response.getProbabilisticSampling().getSamplingRate());
       case RATE_LIMITING:
         return new RateLimitingSampler(response.getRateLimitingSampling().getMaxTracesPerSecond());
       case UNRECOGNIZED:

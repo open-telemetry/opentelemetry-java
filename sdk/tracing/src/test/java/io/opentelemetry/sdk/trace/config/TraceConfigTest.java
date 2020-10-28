@@ -8,8 +8,7 @@ package io.opentelemetry.sdk.trace.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.sdk.trace.Sampler;
-import io.opentelemetry.sdk.trace.Samplers;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.jupiter.api.Test;
 
 class TraceConfigTest {
@@ -17,7 +16,7 @@ class TraceConfigTest {
   @Test
   void defaultTraceConfig() {
     assertThat(TraceConfig.getDefault().getSampler().getDescription())
-        .isEqualTo(Samplers.parentBased(Samplers.alwaysOn()).getDescription());
+        .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()).getDescription());
     assertThat(TraceConfig.getDefault().getMaxNumberOfAttributes()).isEqualTo(1000);
     assertThat(TraceConfig.getDefault().getMaxNumberOfEvents()).isEqualTo(1000);
     assertThat(TraceConfig.getDefault().getMaxNumberOfLinks()).isEqualTo(1000);
@@ -84,7 +83,7 @@ class TraceConfigTest {
   @Test
   void updateTraceConfig_OffTraceIdRatioBased() {
     TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(0).build();
-    assertThat(traceConfig.getSampler()).isSameAs(Samplers.alwaysOff());
+    assertThat(traceConfig.getSampler()).isSameAs(Sampler.alwaysOff());
   }
 
   @Test
@@ -92,21 +91,21 @@ class TraceConfigTest {
     TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(1).build();
 
     Sampler sampler = traceConfig.getSampler();
-    assertThat(sampler).isEqualTo(Samplers.parentBased(Samplers.alwaysOn()));
+    assertThat(sampler).isEqualTo(Sampler.parentBased(Sampler.alwaysOn()));
   }
 
   @Test
   void updateTraceConfig_All() {
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder()
-            .setSampler(Samplers.alwaysOff())
+            .setSampler(Sampler.alwaysOff())
             .setMaxNumberOfAttributes(8)
             .setMaxNumberOfEvents(10)
             .setMaxNumberOfLinks(11)
             .setMaxNumberOfAttributesPerEvent(1)
             .setMaxNumberOfAttributesPerLink(2)
             .build();
-    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.alwaysOff());
+    assertThat(traceConfig.getSampler()).isEqualTo(Sampler.alwaysOff());
     assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(8);
     assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(10);
     assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(11);
