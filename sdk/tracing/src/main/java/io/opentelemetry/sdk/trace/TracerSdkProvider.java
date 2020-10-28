@@ -91,7 +91,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   public static class Builder {
 
     private Clock clock = MillisClock.getInstance();
-    private IdsGenerator idsGenerator = new RandomIdsGenerator();
+    private IdsGenerator idsGenerator = IdsGenerator.random();
     private Resource resource = Resource.getDefault();
 
     /**
