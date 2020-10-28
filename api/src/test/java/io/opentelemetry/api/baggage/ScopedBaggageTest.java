@@ -7,7 +7,9 @@ package io.opentelemetry.api.baggage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -28,6 +30,11 @@ class ScopedBaggageTest {
   private static final EntryMetadata METADATA_UNLIMITED_PROPAGATION =
       EntryMetadata.create("unlimited");
   private static final EntryMetadata METADATA_NO_PROPAGATION = EntryMetadata.create("noprop");
+
+  @BeforeEach
+  void setUp() {
+    Context.root().makeCurrent();
+  }
 
   @Test
   void emptyBaggage() {
