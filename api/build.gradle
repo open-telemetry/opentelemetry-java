@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
 
+    id "org.unbroken-dome.test-sets"
     id "me.champeau.gradle.jmh"
     id "ru.vyarus.animalsniffer"
 }
@@ -15,6 +16,8 @@ dependencies {
     annotationProcessor libraries.auto_value
 
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+
+    testImplementation libraries.jqf
 }
 
 javadoc {
