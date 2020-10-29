@@ -19,8 +19,6 @@ def subprojects = [
         project(':opentelemetry-exporters-otlp'),
         project(':opentelemetry-exporters-prometheus'),
         project(':opentelemetry-exporters-zipkin'),
-        project(':opentelemetry-integration-tests'),
-        project(':opentelemetry-integration-tests-tracecontext'),
         project(':opentelemetry-opencensus-shim'),
         project(':opentelemetry-opentracing-shim'),
         project(':opentelemetry-sdk-common'),

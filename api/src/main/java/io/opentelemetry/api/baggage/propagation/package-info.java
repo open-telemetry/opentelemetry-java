@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/** The SPI (service provider interface) for initializing the OpenTelemetry baggage API. */
+/** Default OpenTelemetry remote baggage propagators. */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.api.baggage.spi;
+package io.opentelemetry.api.baggage.propagation;
 
 import javax.annotation.ParametersAreNonnullByDefault;

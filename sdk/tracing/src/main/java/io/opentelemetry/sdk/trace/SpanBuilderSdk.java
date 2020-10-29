@@ -10,6 +10,7 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -25,10 +26,10 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -196,15 +197,14 @@ final class SpanBuilderSdk implements Span.Builder {
             .getSampler()
             .shouldSample(
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
-    Sampler.Decision samplingDecision = samplingResult.getDecision();
+    SamplingResult.Decision samplingDecision = samplingResult.getDecision();
 
     TraceState samplingResultTraceState =
         samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
-        createSpanContext(
-            traceId, spanId, samplingResultTraceState, Samplers.isSampled(samplingDecision));
+        createSpanContext(traceId, spanId, samplingResultTraceState, isSampled(samplingDecision));
 
-    if (!Samplers.isRecording(samplingDecision)) {
+    if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);
     }
     ReadableAttributes samplingAttributes = samplingResult.getAttributes();
@@ -257,5 +257,16 @@ final class SpanBuilderSdk implements Span.Builder {
     } else {
       return MonotonicClock.create(clock);
     }
+  }
+
+  @VisibleForTesting
+  static boolean isRecording(SamplingResult.Decision decision) {
+    return SamplingResult.Decision.RECORD_ONLY.equals(decision)
+        || SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
+  }
+
+  @VisibleForTesting
+  static boolean isSampled(SamplingResult.Decision decision) {
+    return SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
   }
 }

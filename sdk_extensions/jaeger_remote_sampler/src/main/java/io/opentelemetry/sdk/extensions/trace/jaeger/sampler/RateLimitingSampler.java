@@ -16,10 +16,10 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.MillisClock;
-import io.opentelemetry.sdk.trace.Sampler;
-import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 
 /**
@@ -47,8 +47,9 @@ class RateLimitingSampler implements Sampler {
     this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance, MillisClock.getInstance());
     Attributes attributes =
         Attributes.of(SAMPLER_TYPE, TYPE, SAMPLER_PARAM, (double) maxTracesPerSecond);
-    this.onSamplingResult = Samplers.samplingResult(Decision.RECORD_AND_SAMPLE, attributes);
-    this.offSamplingResult = Samplers.samplingResult(Decision.DROP, attributes);
+    this.onSamplingResult =
+        SamplingResult.create(SamplingResult.Decision.RECORD_AND_SAMPLE, attributes);
+    this.offSamplingResult = SamplingResult.create(SamplingResult.Decision.DROP, attributes);
   }
 
   @Override
@@ -61,12 +62,12 @@ class RateLimitingSampler implements Sampler {
       List<Link> parentLinks) {
 
     if (Span.fromContext(parentContext).getSpanContext().isSampled()) {
-      return Samplers.alwaysOn()
+      return Sampler.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
     for (SpanData.Link parentLink : parentLinks) {
       if (parentLink.getContext().isSampled()) {
-        return Samplers.alwaysOn()
+        return Sampler.alwaysOn()
             .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
       }
     }

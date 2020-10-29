@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extensions.zpages;
 
-import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Map;
@@ -375,11 +375,11 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         try {
           double samplingProbability = Double.parseDouble(samplingProbabilityStr);
           if (samplingProbability == 0) {
-            newConfigBuilder.setSampler(Samplers.alwaysOff());
+            newConfigBuilder.setSampler(Sampler.alwaysOff());
           } else if (samplingProbability == 1) {
-            newConfigBuilder.setSampler(Samplers.alwaysOn());
+            newConfigBuilder.setSampler(Sampler.alwaysOn());
           } else {
-            newConfigBuilder.setSampler(Samplers.traceIdRatioBased(samplingProbability));
+            newConfigBuilder.setSampler(Sampler.traceIdRatioBased(samplingProbability));
           }
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException("SamplingProbability must be of the type double", e);

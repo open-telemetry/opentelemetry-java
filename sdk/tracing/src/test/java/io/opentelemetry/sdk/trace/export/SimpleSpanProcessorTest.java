@@ -23,11 +23,11 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -140,10 +140,10 @@ class SimpleSpanProcessorTest {
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
-    TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, SPAN_NAME, Samplers.alwaysOff())
+    TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, SPAN_NAME, Sampler.alwaysOff())
         .startSpan()
         .end();
-    TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, SPAN_NAME, Samplers.alwaysOff())
+    TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, SPAN_NAME, Sampler.alwaysOff())
         .startSpan()
         .end();
 

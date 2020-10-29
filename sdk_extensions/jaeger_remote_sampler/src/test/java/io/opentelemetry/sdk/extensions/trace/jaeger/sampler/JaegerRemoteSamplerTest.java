@@ -22,7 +22,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.RateLimitingSampl
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.SamplingManagerGrpc;
-import io.opentelemetry.sdk.trace.Sampler;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;

@@ -484,19 +484,25 @@ wrapper {
     gradleVersion = '6.7'
 }
 
-tasks.register("updateVersionInDocs") {
-    doLast {
-        def versionParts = version.toString().split('\\.')
-        def minorVersionNumber = Integer.parseInt(versionParts[1])
-        def nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
+allprojects {
+    tasks.register("updateVersionInDocs") {
+        group("documentation")
+        doLast {
+            def versionParts = version.toString().split('\\.')
+            def minorVersionNumber = Integer.parseInt(versionParts[1])
+            def nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
 
-        def readmeText = file("README.md").text
-        def updatedText = readmeText
-                .replaceAll("<version>\\d+\\.\\d+\\.\\d+</version>", "<version>${version}</version>")
-                .replaceAll("<version>\\d+\\.\\d+\\.\\d+-SNAPSHOT</version>", "<version>${nextSnapshot}</version>")
-                .replaceAll("implementation\\('io.opentelemetry:opentelemetry-api:\\d+\\.\\d+\\.\\d+'\\)", "implementation('io.opentelemetry:opentelemetry-api:${version}')")
-                .replaceAll("implementation\\('io.opentelemetry:opentelemetry-api:\\d+\\.\\d+\\.\\d+-SNAPSHOT'\\)", "implementation('io.opentelemetry:opentelemetry-api:${nextSnapshot}')")
-                .replaceAll("<!--VERSION_STABLE-->.*<!--/VERSION_STABLE-->", "<!--VERSION_STABLE-->${version}<!--/VERSION_STABLE-->")
-        file("README.md").text = updatedText
+            def readme = file("README.md")
+            if (!readme.exists()) return
+
+            def readmeText = readme.text
+            def updatedText = readmeText
+                    .replaceAll("<version>\\d+\\.\\d+\\.\\d+</version>", "<version>${version}</version>")
+                    .replaceAll("<version>\\d+\\.\\d+\\.\\d+-SNAPSHOT</version>", "<version>${nextSnapshot}</version>")
+                    .replaceAll("(implementation.*io\\.opentelemetry:.*:)(\\d+\\.\\d+\\.\\d+)(?!-SNAPSHOT)(.*)", "\$1${version}\$3")
+                    .replaceAll("(implementation.*io\\.opentelemetry:.*:)(\\d+\\.\\d+\\.\\d+-SNAPSHOT)(.*)", "\$1${nextSnapshot}\$3")
+                    .replaceAll("<!--VERSION_STABLE-->.*<!--/VERSION_STABLE-->", "<!--VERSION_STABLE-->${version}<!--/VERSION_STABLE-->")
+            readme.text = updatedText
+        }
     }
 }
