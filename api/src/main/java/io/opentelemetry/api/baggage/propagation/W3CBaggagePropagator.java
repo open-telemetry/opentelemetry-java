@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 /**
  * {@link TextMapPropagator} that implements the W3C specification for baggage header propagation.
  */
-public class W3CBaggagePropagator implements TextMapPropagator {
+public final class W3CBaggagePropagator implements TextMapPropagator {
 
   private static final String FIELD = "baggage";
   private static final List<String> FIELDS = singletonList(FIELD);
