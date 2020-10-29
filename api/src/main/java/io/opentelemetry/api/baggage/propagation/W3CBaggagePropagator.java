@@ -10,7 +10,6 @@ import static java.util.Collections.singletonList;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageManager;
-import io.opentelemetry.api.baggage.BaggageUtils;
 import io.opentelemetry.api.baggage.Entry;
 import io.opentelemetry.api.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
@@ -42,7 +41,7 @@ public class W3CBaggagePropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
-    Baggage baggage = BaggageUtils.getBaggage(context);
+    Baggage baggage = Baggage.fromContext(context);
     if (baggage == null) {
       return;
     }

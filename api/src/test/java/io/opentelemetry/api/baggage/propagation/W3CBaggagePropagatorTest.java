@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.baggage.BaggageUtils;
 import io.opentelemetry.api.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
 import java.util.HashMap;
@@ -41,7 +40,7 @@ class W3CBaggagePropagatorTest {
     Context result =
         propagator.extract(Context.root(), ImmutableMap.of("baggage", ""), ImmutableMap::get);
 
-    assertThat(BaggageUtils.getBaggage(result)).isEqualTo(Baggage.empty());
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
 
   @Test
@@ -53,7 +52,7 @@ class W3CBaggagePropagatorTest {
             Context.root(), ImmutableMap.of("baggage", "key=value"), ImmutableMap::get);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value").build();
-    assertThat(BaggageUtils.getBaggage(result)).isEqualTo(expectedBaggage);
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   @Test
@@ -67,7 +66,7 @@ class W3CBaggagePropagatorTest {
             ImmutableMap::get);
 
     Baggage expectedBaggage = Baggage.builder().put("key1", "value1").put("key2", "value2").build();
-    assertThat(BaggageUtils.getBaggage(result)).isEqualTo(expectedBaggage);
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   @Test
@@ -79,7 +78,7 @@ class W3CBaggagePropagatorTest {
             Context.root(), ImmutableMap.of("baggage", "key=value1,key=value2"), ImmutableMap::get);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value2").build();
-    assertThat(BaggageUtils.getBaggage(result)).isEqualTo(expectedBaggage);
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   @Test
@@ -96,7 +95,7 @@ class W3CBaggagePropagatorTest {
         Baggage.builder()
             .put("key", "value", EntryMetadata.create("metadata-key=value;othermetadata"))
             .build();
-    assertThat(BaggageUtils.getBaggage(result)).isEqualTo(expectedBaggage);
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   @Test
@@ -118,7 +117,7 @@ class W3CBaggagePropagatorTest {
             .put("key2", "value2", EntryMetadata.EMPTY)
             .put("key3", "value3")
             .build();
-    assertThat(BaggageUtils.getBaggage(result)).isEqualTo(expectedBaggage);
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   /**
@@ -138,7 +137,7 @@ class W3CBaggagePropagatorTest {
                     + "value; othermetadata, key2 =value2 , key3 =\tvalue3 ; "),
             ImmutableMap::get);
 
-    assertThat(BaggageUtils.getBaggage(result)).isEqualTo(Baggage.empty());
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
 
   @Test
