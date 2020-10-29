@@ -7,7 +7,6 @@ package io.opentelemetry.api.baggage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
@@ -32,10 +31,8 @@ class ScopedBaggageTest {
 
   @Test
   void emptyBaggage() {
-    try (Scope s = Context.root().makeCurrent()) {
-      Baggage defaultBaggage = BaggageUtils.getCurrentBaggage();
-      assertThat(defaultBaggage.getEntries()).isEmpty();
-    }
+    Baggage defaultBaggage = BaggageUtils.getCurrentBaggage();
+    assertThat(defaultBaggage.getEntries()).isEmpty();
   }
 
   @Test
