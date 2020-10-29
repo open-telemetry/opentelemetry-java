@@ -8,20 +8,26 @@ package io.opentelemetry.api.baggage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
 class BaggageTest {
   @Test
   void current_empty() {
-    Context.root().makeCurrent();
-    assertThat(Baggage.current()).isEqualTo(Baggage.empty());
+    try (Scope scope = Context.root().makeCurrent()) {
+      assertThat(Baggage.current()).isEqualTo(Baggage.empty());
+    }
   }
 
   @Test
   void current() {
-    Context.root().with(Baggage.builder().put("foo", "bar").setNoParent().build()).makeCurrent();
-    Baggage result = Baggage.current();
-    assertThat(result.getEntryValue("foo")).isEqualTo("bar");
-    assertThat(result).isEqualTo(Baggage.builder().setNoParent().put("foo", "bar").build());
+    try (Scope scope =
+        Context.root()
+            .with(Baggage.builder().put("foo", "bar").setNoParent().build())
+            .makeCurrent()) {
+      Baggage result = Baggage.current();
+      assertThat(result.getEntryValue("foo")).isEqualTo("bar");
+      assertThat(result).isEqualTo(Baggage.builder().setNoParent().put("foo", "bar").build());
+    }
   }
 }

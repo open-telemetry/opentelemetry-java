@@ -9,20 +9,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class BaggageUtilsTest {
 
-  @BeforeEach
-  void setUp() {
-    Context.root().makeCurrent();
-  }
-
   @Test
   void testGetCurrentBaggage_Default() {
-    Baggage baggage = BaggageUtils.getCurrentBaggage();
-    assertThat(baggage).isSameAs(Baggage.empty());
+    try (Scope s = Context.root().makeCurrent()) {
+      Baggage baggage = BaggageUtils.getCurrentBaggage();
+      assertThat(baggage).isSameAs(Baggage.empty());
+    }
   }
 
   @Test
