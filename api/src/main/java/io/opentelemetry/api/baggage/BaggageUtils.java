@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.baggage;
 
+import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
@@ -69,6 +70,7 @@ public final class BaggageUtils {
    * @param baggage the {@link Baggage} to be added to the current {@code Context}.
    * @return the {@link Scope} for the updated {@code Context}.
    */
+  @MustBeClosed
   public static Scope currentContextWith(Baggage baggage) {
     Context context = withBaggage(baggage, Context.current());
     return context.makeCurrent();

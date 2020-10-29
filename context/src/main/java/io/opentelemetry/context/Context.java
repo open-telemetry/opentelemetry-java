@@ -22,6 +22,7 @@
 
 package io.opentelemetry.context;
 
+import com.google.errorprone.annotations.MustBeClosed;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -136,6 +137,7 @@ public interface Context {
    * assert Context.current() == prevCtx;
    * }</pre>
    */
+  @MustBeClosed
   default Scope makeCurrent() {
     return ContextStorage.get().attach(this);
   }
