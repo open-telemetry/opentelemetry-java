@@ -5,7 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.api.baggage.BaggageUtils;
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -44,8 +44,7 @@ final class Propagation extends BaseShimObject {
       return null;
     }
 
-    return new SpanContextShim(
-        telemetryInfo, span.getSpanContext(), BaggageUtils.getBaggage(context));
+    return new SpanContextShim(telemetryInfo, span.getSpanContext(), Baggage.fromContext(context));
   }
 
   static final class TextMapSetter implements TextMapPropagator.Setter<TextMapInject> {

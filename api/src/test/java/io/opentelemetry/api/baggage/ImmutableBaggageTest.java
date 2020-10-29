@@ -105,7 +105,7 @@ class ImmutableBaggageTest {
   void setParent_fromEmptyContext() {
     Context emptyContext = Context.root();
     Baggage parent = listToBaggage(T1);
-    try (Scope scope = BaggageUtils.currentContextWith(parent)) {
+    try (Scope scope = parent.makeCurrent()) {
       Baggage baggage = Baggage.builder().setParent(emptyContext).build();
       assertThat(baggage.getEntries()).isEmpty();
     }

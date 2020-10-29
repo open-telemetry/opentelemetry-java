@@ -39,6 +39,23 @@ public interface Baggage extends ImplicitContextKeyed {
     return BaggageUtils.getCurrentBaggage();
   }
 
+  /**
+   * Returns the {@link Baggage} from the specified {@link Context}, falling back to a empty {@link
+   * Baggage} if there is no baggage in the context.
+   */
+  static Baggage fromContext(Context context) {
+    return BaggageUtils.getBaggage(context);
+  }
+
+  /**
+   * Returns the {@link Baggage} from the specified {@link Context}, or {@code null} if there is no
+   * baggage in the context.
+   */
+  @Nullable
+  static Baggage fromContextOrNull(Context context) {
+    return BaggageUtils.getBaggageWithoutDefault(context);
+  }
+
   @Override
   default Context storeInContext(Context context) {
     return BaggageUtils.withBaggage(this, context);
@@ -73,8 +90,8 @@ public interface Baggage extends ImplicitContextKeyed {
 
     /**
      * Sets the parent {@link Baggage} to use from the specified {@code Context}. If no parent
-     * {@link Baggage} is provided, the value of {@link BaggageUtils#getCurrentBaggage()} at {@link
-     * #build()} time will be used as parent, unless {@link #setNoParent()} was called.
+     * {@link Baggage} is provided, the value of {@link Baggage#current()} at {@link #build()} time
+     * will be used as parent, unless {@link #setNoParent()} was called.
      *
      * <p>If no parent {@link Baggage} is available in the specified {@code Context}, the resulting
      * {@link Baggage} will become a root instance, as if {@link #setNoParent()} had been called.
@@ -93,8 +110,8 @@ public interface Baggage extends ImplicitContextKeyed {
 
     /**
      * Sets the option to become a root {@link Baggage} with no parent. If <b>not</b> called, the
-     * value provided using {@link #setParent(Context)} or otherwise {@link
-     * BaggageUtils#getCurrentBaggage()} at {@link #build()} time will be used as parent.
+     * value provided using {@link #setParent(Context)} or otherwise {@link Baggage#current()} at
+     * {@link #build()} time will be used as parent.
      *
      * @return this.
      */
