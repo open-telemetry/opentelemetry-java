@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.metrics.BatchRecorder;
-import io.opentelemetry.api.metrics.DefaultMeterProvider;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleSumObserver;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
@@ -26,7 +25,6 @@ import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
-import io.opentelemetry.api.trace.DefaultTracerProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -59,10 +57,12 @@ class OpenTelemetryTest {
 
   @Test
   void testDefault() {
-    assertThat(OpenTelemetry.getGlobalTracerProvider()).isInstanceOf(DefaultTracerProvider.class);
+    assertThat(OpenTelemetry.getGlobalTracerProvider().getClass().getSimpleName())
+        .isEqualTo("DefaultTracerProvider");
     assertThat(OpenTelemetry.getGlobalTracerProvider())
         .isSameAs(OpenTelemetry.getGlobalTracerProvider());
-    assertThat(OpenTelemetry.getGlobalMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
+    assertThat(OpenTelemetry.getGlobalMeterProvider().getClass().getSimpleName())
+        .isEqualTo("DefaultMeterProvider");
     assertThat(OpenTelemetry.getGlobalMeterProvider())
         .isSameAs(OpenTelemetry.getGlobalMeterProvider());
     assertThat(OpenTelemetry.getGlobalPropagators()).isInstanceOf(DefaultContextPropagators.class);

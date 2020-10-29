@@ -20,6 +20,14 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface TracerProvider {
 
   /**
+   * Returns a no-op {@link TracerProvider} which only creates no-op {@link Span}s which do not
+   * record nor are emitted.
+   */
+  static TracerProvider getDefault() {
+    return DefaultTracerProvider.getInstance();
+  }
+
+  /**
    * Gets or creates a named tracer instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the

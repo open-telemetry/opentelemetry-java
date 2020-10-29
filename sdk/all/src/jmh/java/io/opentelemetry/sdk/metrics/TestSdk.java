@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.errorprone.annotations.Immutable;
-import io.opentelemetry.api.metrics.DefaultMeter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MillisClock;
@@ -17,7 +16,7 @@ public enum TestSdk {
       new SdkBuilder() {
         @Override
         Meter build() {
-          return DefaultMeter.getInstance();
+          return Meter.getDefault();
         }
       }),
   SDK(

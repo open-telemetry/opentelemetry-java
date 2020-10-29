@@ -7,11 +7,9 @@ package io.opentelemetry.api;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.api.metrics.DefaultMeterProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
 import io.opentelemetry.api.spi.OpenTelemetryFactory;
-import io.opentelemetry.api.trace.DefaultTracerProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.api.trace.spi.TracerProviderFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -154,7 +152,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
         if (meterProviderFactory != null) {
           meterProvider = meterProviderFactory.create();
         } else {
-          meterProvider = DefaultMeterProvider.getInstance();
+          meterProvider = MeterProvider.getDefault();
         }
       }
 
@@ -164,7 +162,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
         if (tracerProviderFactory != null) {
           tracerProvider = tracerProviderFactory.create();
         } else {
-          tracerProvider = DefaultTracerProvider.getInstance();
+          tracerProvider = TracerProvider.getDefault();
         }
       }
 

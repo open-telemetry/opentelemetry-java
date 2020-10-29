@@ -8,19 +8,12 @@ package io.opentelemetry.api.metrics;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-public final class DefaultMeterProvider implements MeterProvider {
+final class DefaultMeterProvider implements MeterProvider {
 
-  private static final MeterProvider instance = new DefaultMeterProvider();
+  private static final MeterProvider INSTANCE = new DefaultMeterProvider();
 
-  /**
-   * Returns a {@code MeterProvider} singleton that is the default implementation for {@link
-   * MeterProvider}.
-   *
-   * @return a {@code MeterProvider} singleton that is the default implementation for {@link
-   *     MeterProvider}.
-   */
-  public static MeterProvider getInstance() {
-    return instance;
+  static MeterProvider getInstance() {
+    return INSTANCE;
   }
 
   @Override
@@ -30,7 +23,7 @@ public final class DefaultMeterProvider implements MeterProvider {
 
   @Override
   public Meter get(String instrumentationName, String instrumentationVersion) {
-    return DefaultMeter.getInstance();
+    return Meter.getDefault();
   }
 
   private DefaultMeterProvider() {}

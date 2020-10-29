@@ -19,6 +19,14 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface MeterProvider {
 
   /**
+   * Returns a {@link MeterProvider} that only creates no-op {@link Instrument}s that neither record
+   * nor are emitted.
+   */
+  static MeterProvider getDefault() {
+    return DefaultMeterProvider.getInstance();
+  }
+
+  /**
    * Gets or creates a named meter instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the

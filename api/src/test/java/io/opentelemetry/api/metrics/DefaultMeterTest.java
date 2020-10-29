@@ -15,13 +15,13 @@ class DefaultMeterTest {
   void expectDefaultMeter() {
     assertThat(OpenTelemetry.getGlobalMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
     assertThat(OpenTelemetry.getGlobalMeter("test")).isInstanceOf(DefaultMeter.class);
-    assertThat(OpenTelemetry.getGlobalMeter("test")).isSameAs(DefaultMeter.getInstance());
-    assertThat(OpenTelemetry.getGlobalMeter("test", "0.1.0")).isSameAs(DefaultMeter.getInstance());
+    assertThat(OpenTelemetry.getGlobalMeter("test")).isSameAs(Meter.getDefault());
+    assertThat(OpenTelemetry.getGlobalMeter("test", "0.1.0")).isSameAs(Meter.getDefault());
   }
 
   @Test
   void expectDefaultMeterProvider() {
-    assertThat(OpenTelemetry.getGlobalMeterProvider()).isSameAs(DefaultMeterProvider.getInstance());
+    assertThat(OpenTelemetry.getGlobalMeterProvider()).isSameAs(MeterProvider.getDefault());
     assertThat(OpenTelemetry.getGlobalMeterProvider().get("test")).isInstanceOf(DefaultMeter.class);
     assertThat(OpenTelemetry.getGlobalMeterProvider().get("test", "0.1.0"))
         .isInstanceOf(DefaultMeter.class);
