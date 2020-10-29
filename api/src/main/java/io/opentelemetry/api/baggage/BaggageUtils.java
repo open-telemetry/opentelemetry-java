@@ -12,7 +12,7 @@ import javax.annotation.concurrent.Immutable;
 
 /** Utility methods for accessing the {@link Baggage} contained in the {@link Context}. */
 @Immutable
-public final class BaggageUtils {
+final class BaggageUtils {
   private static final ContextKey<Baggage> BAGGAGE_KEY =
       ContextKey.named("opentelemetry-baggage-key");
 
