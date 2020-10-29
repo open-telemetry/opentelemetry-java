@@ -16,6 +16,8 @@ jobs:
             target_tag: otel-collector-dev
           - source: shopify/toxiproxy:latest
             target_tag: toxiproxy
+          - source: adoptopenjdk/openjdk8:latest
+            target_tag: openjdk8
     runs-on: ubuntu-latest
     steps:
       - name: Docker login
