@@ -46,7 +46,7 @@ abstract class SpanWrapper implements SpanData {
 
   abstract long endEpochNanos();
 
-  abstract boolean hasEnded();
+  abstract boolean internalHasEnded();
 
   /**
    * Note: the collections that are passed into this creator method are assumed to be immutable to
@@ -152,13 +152,13 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public boolean getHasRemoteParent() {
+  public boolean hasRemoteParent() {
     return delegate().hasRemoteParent();
   }
 
   @Override
-  public boolean getHasEnded() {
-    return hasEnded();
+  public boolean hasEnded() {
+    return internalHasEnded();
   }
 
   @Override
