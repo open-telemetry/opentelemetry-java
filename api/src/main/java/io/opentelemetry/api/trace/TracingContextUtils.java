@@ -12,7 +12,7 @@ import javax.annotation.concurrent.Immutable;
 
 /** Util methods/functionality to interact with the {@link Context}. */
 @Immutable
-public final class TracingContextUtils {
+final class TracingContextUtils {
   private static final ContextKey<Span> CONTEXT_SPAN_KEY =
       ContextKey.named("opentelemetry-trace-span-key");
 
