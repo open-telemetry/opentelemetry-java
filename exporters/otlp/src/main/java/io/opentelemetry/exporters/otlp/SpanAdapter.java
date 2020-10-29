@@ -172,7 +172,7 @@ final class SpanAdapter {
     // todo: Update this when the proto definitions are updated to include UNSET and ERROR
     Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
     if (status.getCanonicalCode() == StatusCode.ERROR) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_UNKNOWN_ERROR;
+      protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
     }
     Status.Builder builder = Status.newBuilder().setCode(protoStatusCode);
     if (status.getDescription() != null) {
