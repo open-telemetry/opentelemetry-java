@@ -48,6 +48,20 @@ public abstract class TestSpanData implements SpanData {
         .setTotalAttributeCount(0);
   }
 
+  abstract boolean getInternalHasEnded();
+
+  abstract boolean getInternalHasRemoteParent();
+
+  @Override
+  public final boolean hasEnded() {
+    return getInternalHasEnded();
+  }
+
+  @Override
+  public final boolean hasRemoteParent() {
+    return getInternalHasRemoteParent();
+  }
+
   /** A {@code Builder} class for {@link TestSpanData}. */
   @AutoValue.Builder
   public abstract static class Builder {
@@ -189,13 +203,19 @@ public abstract class TestSpanData implements SpanData {
      */
     public abstract Builder setLinks(List<SpanData.Link> links);
 
+    abstract Builder setInternalHasRemoteParent(boolean hasRemoteParent);
+
     /**
      * Sets to true if the span has a parent on a different process.
      *
      * @param hasRemoteParent A boolean indicating if the span has a remote parent.
      * @return this
      */
-    public abstract Builder setHasRemoteParent(boolean hasRemoteParent);
+    public final Builder setHasRemoteParent(boolean hasRemoteParent) {
+      return setInternalHasRemoteParent(hasRemoteParent);
+    }
+
+    abstract Builder setInternalHasEnded(boolean hasEnded);
 
     /**
      * Sets to true if the span has been ended.
@@ -203,7 +223,9 @@ public abstract class TestSpanData implements SpanData {
      * @param hasEnded A boolean indicating if the span has been ended.
      * @return this
      */
-    public abstract Builder setHasEnded(boolean hasEnded);
+    public final Builder setHasEnded(boolean hasEnded) {
+      return setInternalHasEnded(hasEnded);
+    }
 
     /**
      * Set the total number of events recorded on this span.

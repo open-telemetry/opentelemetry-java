@@ -274,7 +274,7 @@ final class TracezZPageHandler extends ZPageHandler {
     calendar.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(span.getStartEpochNanos()));
     long microsField = TimeUnit.NANOSECONDS.toMicros(span.getStartEpochNanos());
     String elapsedSecondsStr =
-        span.getHasEnded()
+        span.hasEnded()
             ? String.format("%.6f", (span.getEndEpochNanos() - span.getStartEpochNanos()) * 1.0e-9)
             : "";
     formatter.format(
