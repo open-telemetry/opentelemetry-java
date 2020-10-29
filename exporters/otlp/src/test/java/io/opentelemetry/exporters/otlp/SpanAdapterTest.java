@@ -12,8 +12,8 @@ import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_ERROR;
+import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.ByteString;
@@ -113,11 +113,9 @@ class SpanAdapterTest {
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.unset()))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.ERROR, "ERROR")))
-        .isEqualTo(
-            Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("ERROR").build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("ERROR").build());
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.ERROR, "UNKNOWN")))
-        .isEqualTo(
-            Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("UNKNOWN").build());
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_ERROR).setMessage("UNKNOWN").build());
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.OK, "OK_OVERRIDE")))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
   }
