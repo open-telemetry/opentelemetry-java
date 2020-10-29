@@ -47,7 +47,7 @@ class TracerSdkProviderTest {
             TracerSdkProvider.builder()
                 .setClock(mock(Clock.class))
                 .setResource(mock(Resource.class))
-                .setIdsGenerator(mock(IdsGenerator.class))
+                .setIdsGenerator(mock(IdGenerator.class))
                 .build())
         .isNotNull();
   }

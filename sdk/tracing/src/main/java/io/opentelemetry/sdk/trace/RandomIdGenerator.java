@@ -9,7 +9,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import java.util.concurrent.ThreadLocalRandom;
 
-enum RandomIdsGenerator implements IdsGenerator {
+enum RandomIdGenerator implements IdGenerator {
   INSTANCE;
 
   private static final long INVALID_ID = 0;

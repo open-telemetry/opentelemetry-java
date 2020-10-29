@@ -40,7 +40,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     return new Builder();
   }
 
-  private TracerSdkProvider(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+  private TracerSdkProvider(Clock clock, IdGenerator idsGenerator, Resource resource) {
     this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
@@ -91,7 +91,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   public static class Builder {
 
     private Clock clock = MillisClock.getInstance();
-    private IdsGenerator idsGenerator = IdsGenerator.random();
+    private IdGenerator idsGenerator = IdGenerator.random();
     private Resource resource = Resource.getDefault();
 
     /**
@@ -107,13 +107,13 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     }
 
     /**
-     * Assign an {@link IdsGenerator}.
+     * Assign an {@link IdGenerator}.
      *
      * @param idsGenerator A generator for trace and span ids. Note: this should be thread-safe and
      *     as contention free as possible.
      * @return this
      */
-    public Builder setIdsGenerator(IdsGenerator idsGenerator) {
+    public Builder setIdsGenerator(IdGenerator idsGenerator) {
       Objects.requireNonNull(idsGenerator, "idsGenerator");
       this.idsGenerator = idsGenerator;
       return this;
