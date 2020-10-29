@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.extensions.trace.aws;
 
 import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.sdk.trace.IdsGenerator;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -20,13 +20,13 @@ import java.util.concurrent.TimeUnit;
  *     href="https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html#xray-api-traceids">Generating
  *     Trace IDs</a>
  */
-public class AwsXRayIdsGenerator implements IdsGenerator {
+public class AwsXrayIdGenerator implements IdGenerator {
 
-  private static final IdsGenerator RANDOM_IDS_GENERATOR = IdsGenerator.random();
+  private static final IdGenerator RANDOM_ID_GENERATOR = IdGenerator.random();
 
   @Override
   public String generateSpanId() {
-    return RANDOM_IDS_GENERATOR.generateSpanId();
+    return RANDOM_ID_GENERATOR.generateSpanId();
   }
 
   @Override

@@ -64,7 +64,7 @@ class RecordEventsReadableSpanTest {
   private static final boolean EXPECTED_HAS_REMOTE_PARENT = true;
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
-  private final IdsGenerator idsGenerator = IdsGenerator.random();
+  private final IdGenerator idsGenerator = IdGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String spanId = idsGenerator.generateSpanId();
   private final String parentSpanId = idsGenerator.generateSpanId();

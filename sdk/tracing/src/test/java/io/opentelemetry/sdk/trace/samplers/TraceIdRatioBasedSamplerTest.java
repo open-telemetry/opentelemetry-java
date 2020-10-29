@@ -15,7 +15,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.IdsGenerator;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +26,7 @@ class TraceIdRatioBasedSamplerTest {
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
 
-  private static final IdsGenerator idsGenerator = IdsGenerator.random();
+  private static final IdGenerator idsGenerator = IdGenerator.random();
 
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
