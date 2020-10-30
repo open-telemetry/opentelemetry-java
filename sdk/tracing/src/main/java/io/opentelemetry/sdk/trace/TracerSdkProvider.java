@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +29,7 @@ import java.util.logging.Logger;
  */
 public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   private static final Logger logger = Logger.getLogger(TracerSdkProvider.class.getName());
+  private static final String defaultTracerName = "unknown";
   private final TracerSharedState sharedState;
   private final TracerSdkComponentRegistry tracerSdkComponentRegistry;
 
@@ -47,11 +49,17 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
 
   @Override
   public Tracer get(String instrumentationName) {
-    return tracerSdkComponentRegistry.get(instrumentationName);
+    return get(instrumentationName, null);
   }
 
   @Override
-  public Tracer get(String instrumentationName, String instrumentationVersion) {
+  public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
+    // Per the spec, both null and empty are "invalid" and a "default" should be used. See commit
+    //   message for further details.
+    if (instrumentationName == null || instrumentationName.isEmpty()) {
+      logger.warning("Tracer requested without instrumentation name.");
+      instrumentationName = defaultTracerName;
+    }
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
   }
 

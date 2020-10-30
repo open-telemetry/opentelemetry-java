@@ -101,4 +101,22 @@ class MeterSdkRegistryTest {
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))));
   }
+
+  @Test
+  void suppliesDefaultMeterForNullName() {
+    MeterSdk meter = meterProvider.get(null);
+    assertThat(meter.getInstrumentationLibraryInfo().getName()).isEqualTo("unknown");
+
+    meter = meterProvider.get(null, null);
+    assertThat(meter.getInstrumentationLibraryInfo().getName()).isEqualTo("unknown");
+  }
+
+  @Test
+  void suppliesDefaultMeterForEmptyName() {
+    MeterSdk meter = meterProvider.get("");
+    assertThat(meter.getInstrumentationLibraryInfo().getName()).isEqualTo("unknown");
+
+    meter = meterProvider.get("", "");
+    assertThat(meter.getInstrumentationLibraryInfo().getName()).isEqualTo("unknown");
+  }
 }

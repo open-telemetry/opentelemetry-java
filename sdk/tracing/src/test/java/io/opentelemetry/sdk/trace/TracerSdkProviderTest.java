@@ -134,4 +134,22 @@ class TracerSdkProviderTest {
     assertThat(span.getSpanContext().isValid()).isFalse();
     span.end();
   }
+
+  @Test
+  void suppliesDefaultTracerForNullName() {
+    TracerSdk tracer = (TracerSdk) tracerFactory.get(null);
+    assertThat(tracer.getInstrumentationLibraryInfo().getName()).isEqualTo("unknown");
+
+    tracer = (TracerSdk) tracerFactory.get(null, null);
+    assertThat(tracer.getInstrumentationLibraryInfo().getName()).isEqualTo("unknown");
+  }
+
+  @Test
+  void suppliesDefaultTracerForEmptyName() {
+    TracerSdk tracer = (TracerSdk) tracerFactory.get("");
+    assertThat(tracer.getInstrumentationLibraryInfo().getName()).isEqualTo("unknown");
+
+    tracer = (TracerSdk) tracerFactory.get("", "");
+    assertThat(tracer.getInstrumentationLibraryInfo().getName()).isEqualTo("unknown");
+  }
 }
