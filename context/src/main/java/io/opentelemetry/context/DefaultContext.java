@@ -37,6 +37,8 @@ final class DefaultContext implements Context {
     return ThreadLocalContextStorage.INSTANCE;
   }
 
+  // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
+  // this method.
   static Context root() {
     return ROOT;
   }
