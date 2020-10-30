@@ -178,7 +178,7 @@ final class SpanAdapter {
       deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation") // setDeprecatedCode is deprecated.
     Status.Builder builder =
         Status.newBuilder().setCode(protoStatusCode).setDeprecatedCode(deprecatedStatusCode);
     if (status.getDescription() != null) {
