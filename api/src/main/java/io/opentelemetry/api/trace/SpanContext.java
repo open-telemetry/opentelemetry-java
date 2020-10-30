@@ -71,9 +71,9 @@ public abstract class SpanContext {
     return create(traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true);
   }
 
-  abstract String getTraceIdHex();
+  protected abstract String getTraceIdHex();
 
-  abstract String getSpanIdHex();
+  protected abstract String getSpanIdHex();
 
   /**
    * Returns the trace identifier associated with this {@code SpanContext}.
