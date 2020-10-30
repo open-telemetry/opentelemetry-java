@@ -15,20 +15,19 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class EndSpanOptions {
-  private static final EndSpanOptions DEFAULT = builder().build();
+  private static final EndSpanOptions DEFAULT = createWithEndTimestamp(0L);
+
+  /**
+   * Returns a {@link EndSpanOptions} indicating the span ended at the given {@code endTimestamp},
+   * in nanoseconds.
+   */
+  public static EndSpanOptions createWithEndTimestamp(long endTimestamp) {
+    return new AutoValue_EndSpanOptions(endTimestamp);
+  }
 
   /** The default {@code EndSpanOptions}. */
   static EndSpanOptions getDefault() {
     return DEFAULT;
-  }
-
-  /**
-   * Returns a new {@link Builder} with default options.
-   *
-   * @return a new {@code Builder} with default options.
-   */
-  public static Builder builder() {
-    return new AutoValue_EndSpanOptions.Builder().setEndTimestamp(0);
   }
 
   /**
@@ -39,29 +38,6 @@ public abstract class EndSpanOptions {
    * @return the end timestamp.
    */
   public abstract long getEndTimestamp();
-
-  /** Builder class for {@link EndSpanOptions}. */
-  @AutoValue.Builder
-  public abstract static class Builder {
-    /**
-     * Sets the end timestamp for the {@link Span}.
-     *
-     * <p>Important this is NOT equivalent with System.nanoTime().
-     *
-     * @param endTimestamp the end timestamp in nanos since epoch.
-     * @return this.
-     */
-    public abstract Builder setEndTimestamp(long endTimestamp);
-
-    /**
-     * Builds and returns a {@code EndSpanOptions} with the desired settings.
-     *
-     * @return a {@code EndSpanOptions} with the desired settings.
-     */
-    public abstract EndSpanOptions build();
-
-    Builder() {}
-  }
 
   EndSpanOptions() {}
 }
