@@ -29,6 +29,8 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     return INSTANCE;
   }
 
+  private W3CBaggagePropagator() {}
+
   @Override
   public List<String> fields() {
     return FIELDS;

@@ -9,7 +9,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
@@ -27,8 +27,7 @@ class OpenTelemetryInteroperabilityTest {
   private final io.opentelemetry.api.trace.Tracer tracer =
       otelTesting.getOpenTelemetry().getTracer("opentracingshim");
 
-  private final Tracer otTracer =
-      TraceShim.createTracerShim(otelTesting.getOpenTelemetry().getTracerProvider());
+  private final Tracer otTracer = OpenTracingShim.createTracerShim(otelTesting.getOpenTelemetry());
 
   @Test
   void sdkContinuesOpenTracingTrace() {
