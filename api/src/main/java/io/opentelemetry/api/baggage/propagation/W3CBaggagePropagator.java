@@ -24,9 +24,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   private static final List<String> FIELDS = singletonList(FIELD);
   private static final W3CBaggagePropagator INSTANCE = new W3CBaggagePropagator();
 
-  /**
-   * Singleton instance of the W3C Baggage Propagator.
-   */
+  /** Singleton instance of the W3C Baggage Propagator. */
   public static W3CBaggagePropagator getInstance() {
     return INSTANCE;
   }
