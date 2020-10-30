@@ -36,7 +36,7 @@ public interface Baggage extends ImplicitContextKeyed {
    * the current Context.
    */
   static Baggage current() {
-    return BaggageUtils.getCurrentBaggage();
+    return fromContext(Context.current());
   }
 
   /**
@@ -44,7 +44,8 @@ public interface Baggage extends ImplicitContextKeyed {
    * Baggage} if there is no baggage in the context.
    */
   static Baggage fromContext(Context context) {
-    return BaggageUtils.getBaggage(context);
+    Baggage baggage = fromContextOrNull(context);
+    return baggage != null ? baggage : empty();
   }
 
   /**
@@ -53,12 +54,12 @@ public interface Baggage extends ImplicitContextKeyed {
    */
   @Nullable
   static Baggage fromContextOrNull(Context context) {
-    return BaggageUtils.getBaggageWithoutDefault(context);
+    return context.get(ImmutableBaggage.BAGGAGE_KEY);
   }
 
   @Override
   default Context storeInContext(Context context) {
-    return BaggageUtils.withBaggage(this, context);
+    return context.with(ImmutableBaggage.BAGGAGE_KEY, this);
   }
 
   /**
