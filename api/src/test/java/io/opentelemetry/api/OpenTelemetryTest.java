@@ -208,7 +208,7 @@ class OpenTelemetryTest {
     }
 
     @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
+    public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
       return get(instrumentationName);
     }
 
@@ -232,7 +232,7 @@ class OpenTelemetryTest {
     }
 
     @Override
-    public Meter get(String instrumentationName, String instrumentationVersion) {
+    public Meter get(String instrumentationName, @Nullable String instrumentationVersion) {
       return get(instrumentationName);
     }
 
@@ -334,7 +334,7 @@ class OpenTelemetryTest {
     }
 
     @Override
-    public Meter get(String instrumentationName, String instrumentationVersion) {
+    public Meter get(String instrumentationName, @Nullable String instrumentationVersion) {
       return get(instrumentationName);
     }
   }

@@ -300,7 +300,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     }
 
     @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
+    public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
       return delegate.get(instrumentationName, instrumentationVersion);
     }
 
