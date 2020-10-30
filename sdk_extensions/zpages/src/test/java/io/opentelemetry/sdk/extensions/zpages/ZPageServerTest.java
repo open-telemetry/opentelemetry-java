@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link ZPageServer}. */
@@ -21,7 +20,7 @@ public final class ZPageServerTest {
     assertThat(ZPageServer.getIsTracezSpanProcesserAdded()).isFalse();
     HttpServer server = null;
     try {
-      server = HttpServer.create(new InetSocketAddress(new Random().nextInt(1000) + 2000), 5);
+      server = HttpServer.create(new InetSocketAddress(0), 5);
       ZPageServer.registerAllPagesToHttpServer(server);
       // tracezSpanProcessor is added
       assertThat(ZPageServer.getIsTracezSpanProcesserAdded()).isTrue();
