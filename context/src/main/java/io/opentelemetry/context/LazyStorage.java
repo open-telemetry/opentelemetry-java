@@ -50,6 +50,8 @@ import java.util.logging.Logger;
 // to handle exceptions.
 final class LazyStorage {
 
+  // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
+  // this method.
   static ContextStorage get() {
     return storage;
   }
