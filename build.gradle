@@ -332,7 +332,8 @@ configure(opentelemetryProjects) {
                 rest_assured            : 'io.rest-assured:rest-assured:4.2.0',
                 jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
                 zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
-                archunit                : 'com.tngtech.archunit:archunit-junit4:0.13.1' //Architectural constraints
+                archunit                : 'com.tngtech.archunit:archunit-junit4:0.13.1', //Architectural constraints
+                jqf                     : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6' // fuzz testing
         ]
     }
 
