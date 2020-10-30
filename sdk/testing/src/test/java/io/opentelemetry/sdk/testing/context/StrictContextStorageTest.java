@@ -56,9 +56,9 @@ class StrictContextStorageTest {
 
   @BeforeAll
   static void setUp() {
-    previousStorage = ContextStorage.get();
+    previousStorage = SettableContextStorageProvider.getContextStorage();
     strictStorage = StrictContextStorage.create(previousStorage);
-    ContextStorage.set(strictStorage);
+    SettableContextStorageProvider.setContextStorage(strictStorage);
   }
 
   // In this test we intentionally leak context so need to restore it ourselves, bypassing the
@@ -70,7 +70,7 @@ class StrictContextStorageTest {
 
   @AfterAll
   static void tearDown() {
-    ContextStorage.set(previousStorage);
+    SettableContextStorageProvider.setContextStorage(previousStorage);
   }
 
   // TODO(anuraaga): These rules conflict with error prone so one or the other needs to be

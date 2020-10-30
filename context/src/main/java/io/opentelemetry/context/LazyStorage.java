@@ -56,16 +56,12 @@ final class LazyStorage {
     return storage;
   }
 
-  static void set(ContextStorage storage) {
-    LazyStorage.storage = storage;
-  }
-
   private static final String CONTEXT_STORAGE_PROVIDER_PROPERTY =
       "io.opentelemetry.context.contextStorageProvider";
 
   private static final Logger logger = Logger.getLogger(LazyStorage.class.getName());
 
-  private static ContextStorage storage;
+  private static final ContextStorage storage;
 
   static {
     AtomicReference<Throwable> deferredStorageFailure = new AtomicReference<>();
@@ -83,11 +79,18 @@ final class LazyStorage {
 
     List<ContextStorageProvider> providers = new ArrayList<>();
     for (ContextStorageProvider provider : ServiceLoader.load(ContextStorageProvider.class)) {
+      if (provider
+          .getClass()
+          .getName()
+          .equals("io.opentelemetry.sdk.testing.context.SettableContextStorageProvider")) {
+        // Always use our testing helper context storage provider if it is on the classpath.
+        return provider.get();
+      }
       providers.add(provider);
     }
 
     if (providers.isEmpty()) {
-      return DefaultContext.threadLocalStorage();
+      return ContextStorage.defaultStorage();
     }
 
     if (providerClassName.isEmpty()) {

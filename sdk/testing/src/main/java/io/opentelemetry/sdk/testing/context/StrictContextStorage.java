@@ -103,6 +103,8 @@ public class StrictContextStorage implements ContextStorage {
     while (i < stackTrace.length) {
       String className = stackTrace[i].getClassName();
       if (className.startsWith("io.opentelemetry.api.")
+          || className.startsWith(
+              "io.opentelemetry.sdk.testing.context.SettableContextStorageProvider")
           || className.startsWith("io.opentelemetry.context.")) {
         i++;
       } else {

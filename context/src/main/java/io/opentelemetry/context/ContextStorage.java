@@ -34,7 +34,7 @@ package io.opentelemetry.context;
  * >
  * >   @Override
  * >   public ContextStorage get() {
- * >     ContextStorage threadLocalStorage = Context.threadLocalStorage();
+ * >     ContextStorage threadLocalStorage = ContextStorage.defaultStorage();
  * >     return new RequestContextStorage() {
  * >       @Override
  * >       public Scope T attach(Context toAttach) {
@@ -70,14 +70,10 @@ public interface ContextStorage {
   }
 
   /**
-   * Sets the {@link ContextStorage} being used by this application to the provided {@link
-   * ContextStorage}. This must be called as early as possible in the application or some {@link
-   * Context} may use the wrong storage, for example, as part of a static initialization block in
-   * your main class. To avoid ordering issues, for non-testing situations it is recommended to use
-   * {@link ContextStorageProvider} instead of this method.
+   * Returns the default {@link ContextStorage} which stores {@link Context} using a threadlocal.
    */
-  static void set(ContextStorage storage) {
-    LazyStorage.set(storage);
+  static ContextStorage defaultStorage() {
+    return ThreadLocalContextStorage.INSTANCE;
   }
 
   /**
