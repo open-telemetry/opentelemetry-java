@@ -25,4 +25,9 @@ class EntryMetadataTest {
         .addEqualityGroup(EntryMetadata.create("other value"))
         .testEquals();
   }
+
+  @Test
+  void nullValue() {
+    assertThat(EntryMetadata.create(null)).isEqualTo(EntryMetadata.empty());
+  }
 }

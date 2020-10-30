@@ -148,7 +148,7 @@ class ImmutableBaggage implements Baggage {
     public Baggage.Builder put(String key, String value) {
       entries.put(
           Objects.requireNonNull(key, "key"),
-          Entry.create(key, Objects.requireNonNull(value, "value"), EntryMetadata.EMPTY));
+          Entry.create(key, Objects.requireNonNull(value, "value"), EntryMetadata.empty()));
       return this;
     }
 

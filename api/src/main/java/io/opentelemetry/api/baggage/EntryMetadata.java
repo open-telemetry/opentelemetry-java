@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.baggage;
 
-import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -13,20 +12,26 @@ import javax.annotation.concurrent.Immutable;
  * wrapper for a String metadata value.
  */
 @Immutable
-@AutoValue
-public abstract class EntryMetadata {
-  public static final EntryMetadata EMPTY = create("");
+public final class EntryMetadata {
+  private static final EntryMetadata EMPTY = create("");
 
-  EntryMetadata() {}
+  /** Returns an {@link EntryMetadata} with no value. */
+  public static EntryMetadata empty() {
+    return EMPTY;
+  }
 
-  /**
-   * Creates an {@link EntryMetadata} with the given value.
-   *
-   * @param metadata TTL of an {@code Entry}.
-   * @return an {@code EntryMetadata}.
-   */
+  /** Returns an {@link EntryMetadata} with the given value. */
   public static EntryMetadata create(String metadata) {
-    return new AutoValue_EntryMetadata(metadata);
+    if (metadata == null) {
+      return empty();
+    }
+    return new EntryMetadata(metadata);
+  }
+
+  private final String metadata;
+
+  private EntryMetadata(String metadata) {
+    this.metadata = metadata;
   }
 
   /**
@@ -34,5 +39,29 @@ public abstract class EntryMetadata {
    *
    * @return the raw metadata value.
    */
-  public abstract String getValue();
+  public String getValue() {
+    return metadata;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof EntryMetadata)) {
+      return false;
+    }
+    EntryMetadata that = (EntryMetadata) o;
+    return metadata.equals(that.metadata);
+  }
+
+  @Override
+  public int hashCode() {
+    return metadata.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return "'" + metadata + "'";
+  }
 }

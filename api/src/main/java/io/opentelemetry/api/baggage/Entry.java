@@ -5,17 +5,13 @@
 
 package io.opentelemetry.api.baggage;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 
 /** String-String key-value pair, along with {@link EntryMetadata}. */
 @Immutable
-@AutoValue
-public abstract class Entry {
-
-  Entry() {}
+public final class Entry {
 
   /**
    * Creates an {@code Entry} from the given key, value and metadata.
@@ -28,7 +24,7 @@ public abstract class Entry {
   public static Entry create(String key, String value, EntryMetadata entryMetadata) {
     Utils.checkArgument(keyIsValid(key), "Invalid entry key name: %s", key);
     Utils.checkArgument(isValueValid(value), "Invalid entry value: %s", value);
-    return new AutoValue_Entry(key, value, entryMetadata);
+    return new Entry(key, value, entryMetadata);
   }
 
   /**
@@ -39,7 +35,17 @@ public abstract class Entry {
    * @return a {@code Entry}.
    */
   public static Entry create(String key, String value) {
-    return create(key, value, EntryMetadata.EMPTY);
+    return create(key, value, EntryMetadata.empty());
+  }
+
+  private final String key;
+  private final String value;
+  private final EntryMetadata entryMetadata;
+
+  private Entry(String key, String value, EntryMetadata entryMetadata) {
+    this.key = key;
+    this.value = value;
+    this.entryMetadata = entryMetadata;
   }
 
   /**
@@ -47,21 +53,63 @@ public abstract class Entry {
    *
    * @return the entry's key.
    */
-  public abstract String getKey();
+  public String getKey() {
+    return key;
+  }
 
   /**
    * Returns the entry's value.
    *
    * @return the entry's value.
    */
-  public abstract String getValue();
+  public String getValue() {
+    return value;
+  }
 
   /**
    * Returns the (optional) {@link EntryMetadata} associated with this {@link Entry}.
    *
    * @return the {@code EntryMetadata}.
    */
-  public abstract EntryMetadata getEntryMetadata();
+  public EntryMetadata getEntryMetadata() {
+    return entryMetadata;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Entry)) {
+      return false;
+    }
+    Entry entry = (Entry) o;
+    return key.equals(entry.key)
+        && value.equals(entry.value)
+        && entryMetadata.equals(entry.entryMetadata);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = key.hashCode();
+    result = 31 * result + value.hashCode();
+    result = 31 * result + entryMetadata.hashCode();
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return "Entry{"
+        + "key='"
+        + key
+        + '\''
+        + ", value='"
+        + value
+        + '\''
+        + ", entryMetadata="
+        + entryMetadata
+        + '}';
+  }
 
   /**
    * Determines whether the given {@code String} is a valid entry key.

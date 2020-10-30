@@ -114,7 +114,7 @@ class W3CBaggagePropagatorTest {
     Baggage expectedBaggage =
         Baggage.builder()
             .put("key1", "value1", EntryMetadata.create("metadata-key = value; othermetadata"))
-            .put("key2", "value2", EntryMetadata.EMPTY)
+            .put("key2", "value2", EntryMetadata.empty())
             .put("key3", "value3")
             .build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
