@@ -89,7 +89,7 @@ class TraceIdTest {
   }
 
   @Test
-  public void toLowerBase16() {
+  void toLowerBase16() {
     assertThat(TraceId.getInvalid()).isEqualTo("00000000000000000000000000000000");
     assertThat(TraceId.bytesToHex(firstBytes)).isEqualTo("00000000000000000000000000000061");
     assertThat(TraceId.bytesToHex(secondBytes)).isEqualTo("ff000000000000000000000000000041");
