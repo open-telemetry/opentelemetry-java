@@ -6,6 +6,7 @@
 package io.opentelemetry.api.baggage;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +21,8 @@ import javax.annotation.concurrent.Immutable;
 class ImmutableBaggage implements Baggage {
 
   static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
+
+  static final ContextKey<Baggage> BAGGAGE_KEY = ContextKey.named("opentelemetry-baggage-key");
 
   // The types of the EntryKey and Entry must match for each entry.
   private final Map<String, Entry> entries;
