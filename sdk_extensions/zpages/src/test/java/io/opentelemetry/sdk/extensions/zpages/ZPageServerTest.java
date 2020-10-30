@@ -18,9 +18,16 @@ public final class ZPageServerTest {
   void tracezSpanProcessorOnlyAddedOnce() throws IOException {
     // tracezSpanProcessor is not added yet
     assertThat(ZPageServer.getIsTracezSpanProcesserAdded()).isFalse();
-    HttpServer server = HttpServer.create(new InetSocketAddress(8888), 5);
-    ZPageServer.registerAllPagesToHttpServer(server);
-    // tracezSpanProcessor is added
-    assertThat(ZPageServer.getIsTracezSpanProcesserAdded()).isTrue();
+    HttpServer server = null;
+    try {
+      server = HttpServer.create(new InetSocketAddress(0), 5);
+      ZPageServer.registerAllPagesToHttpServer(server);
+      // tracezSpanProcessor is added
+      assertThat(ZPageServer.getIsTracezSpanProcesserAdded()).isTrue();
+    } finally {
+      if (server != null) {
+        server.stop(0);
+      }
+    }
   }
 }
