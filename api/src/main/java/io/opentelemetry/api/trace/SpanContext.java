@@ -5,8 +5,6 @@
 
 package io.opentelemetry.api.trace;
 
-import com.google.auto.value.AutoValue;
-import com.google.auto.value.extension.memoized.Memoized;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -17,23 +15,15 @@ import javax.annotation.concurrent.Immutable;
  * traceState} and the {@link boolean remote} flag.
  */
 @Immutable
-@AutoValue
-public abstract class SpanContext {
-
-  private static final SpanContext INVALID =
-      create(
-          TraceId.getInvalid(),
-          SpanId.getInvalid(),
-          TraceFlags.getDefault(),
-          TraceState.getDefault());
+public interface SpanContext {
 
   /**
    * Returns the invalid {@code SpanContext} that can be used for no-op operations.
    *
    * @return the invalid {@code SpanContext}.
    */
-  public static SpanContext getInvalid() {
-    return INVALID;
+  static SpanContext getInvalid() {
+    return ImmutableSpanContext.getInvalid();
   }
 
   /**
@@ -45,15 +35,10 @@ public abstract class SpanContext {
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    */
-  public static SpanContext create(
+  static SpanContext create(
       String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
-    return create(traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ false);
-  }
-
-  private static SpanContext create(
-      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState, boolean remote) {
-    return new AutoValue_SpanContext(
-        traceIdHex, spanIdHex, traceFlags, traceState, /* remote$=*/ remote);
+    return ImmutableSpanContext.create(
+        traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ false);
   }
 
   /**
@@ -66,31 +51,25 @@ public abstract class SpanContext {
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    */
-  public static SpanContext createFromRemoteParent(
+  static SpanContext createFromRemoteParent(
       String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
-    return create(traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true);
+    return ImmutableSpanContext.create(
+        traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true);
   }
-
-  abstract String getTraceIdHex();
-
-  abstract String getSpanIdHex();
 
   /**
    * Returns the trace identifier associated with this {@code SpanContext}.
    *
    * @return the trace identifier associated with this {@code SpanContext}.
    */
-  public String getTraceIdAsHexString() {
-    return getTraceIdHex();
-  }
+  String getTraceIdAsHexString();
 
   /**
    * Returns the byte[] representation of the trace identifier associated with this {@link
    * SpanContext}.
    */
-  @Memoized
-  public byte[] getTraceIdBytes() {
-    return TraceId.bytesFromHex(getTraceIdHex(), 0);
+  default byte[] getTraceIdBytes() {
+    return TraceId.bytesFromHex(getTraceIdAsHexString(), 0);
   }
 
   /**
@@ -98,28 +77,25 @@ public abstract class SpanContext {
    *
    * @return the span identifier associated with this {@code SpanContext}.
    */
-  public String getSpanIdAsHexString() {
-    return getSpanIdHex();
-  }
+  String getSpanIdAsHexString();
 
   /**
    * Returns the byte[] representation of the span identifier associated with this {@link
    * SpanContext}.
    */
-  @Memoized
-  public byte[] getSpanIdBytes() {
-    return SpanId.bytesFromHex(getSpanIdHex(), 0);
+  default byte[] getSpanIdBytes() {
+    return SpanId.bytesFromHex(getSpanIdAsHexString(), 0);
   }
 
   /** Whether the span in this context is sampled. */
-  public boolean isSampled() {
+  default boolean isSampled() {
     return (getTraceFlags() & 1) == 1;
   }
 
   /** The byte-representation of {@link TraceFlags}. */
-  public abstract byte getTraceFlags();
+  byte getTraceFlags();
 
-  public void copyTraceFlagsHexTo(char[] dest, int destOffset) {
+  default void copyTraceFlagsHexTo(char[] dest, int destOffset) {
     BigendianEncoding.byteToBase16String(getTraceFlags(), dest, destOffset);
   }
 
@@ -128,16 +104,15 @@ public abstract class SpanContext {
    *
    * @return the {@code TraceState} associated with this {@code SpanContext}.
    */
-  public abstract TraceState getTraceState();
+  TraceState getTraceState();
 
   /**
    * Returns {@code true} if this {@code SpanContext} is valid.
    *
    * @return {@code true} if this {@code SpanContext} is valid.
    */
-  @Memoized
-  public boolean isValid() {
-    return TraceId.isValid(getTraceIdHex()) && SpanId.isValid(getSpanIdHex());
+  default boolean isValid() {
+    return TraceId.isValid(getTraceIdAsHexString()) && SpanId.isValid(getSpanIdAsHexString());
   }
 
   /**
@@ -145,5 +120,5 @@ public abstract class SpanContext {
    *
    * @return {@code true} if the {@code SpanContext} was propagated from a remote parent.
    */
-  public abstract boolean isRemote();
+  boolean isRemote();
 }
