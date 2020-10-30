@@ -23,18 +23,6 @@ public abstract class ComponentRegistry<V> {
   private final ConcurrentMap<InstrumentationLibraryInfo, V> registry = new ConcurrentHashMap<>();
 
   /**
-   * Returns the registered value associated with this name and {@code null} version if any,
-   * otherwise creates a new instance and associates it with the given name and {@code null}
-   * version.
-   *
-   * @param instrumentationName the name of the instrumentation library.
-   * @return the registered value associated with this name and {@code null} version.
-   */
-  public final V get(String instrumentationName) {
-    return get(instrumentationName, null);
-  }
-
-  /**
    * Returns the registered value associated with this name and version if any, otherwise creates a
    * new instance and associates it with the given name and version.
    *

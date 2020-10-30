@@ -38,13 +38,6 @@ class ComponentRegistryTest {
   }
 
   @Test
-  void getSameInstanceForSameName_WithoutVersion() {
-    assertThat(registry.get(INSTRUMENTATION_NAME)).isSameAs(registry.get(INSTRUMENTATION_NAME));
-    assertThat(registry.get(INSTRUMENTATION_NAME))
-        .isSameAs(registry.get(INSTRUMENTATION_NAME, null));
-  }
-
-  @Test
   void getSameInstanceForSameName_WithVersion() {
     assertThat(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION))
         .isSameAs(registry.get(INSTRUMENTATION_NAME, INSTRUMENTATION_VERSION));
