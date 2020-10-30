@@ -70,6 +70,17 @@ public interface ContextStorage {
   }
 
   /**
+   * Sets the {@link ContextStorage} being used by this application to the provided {@link
+   * ContextStorage}. This must be called as early as possible in the application or some {@link
+   * Context} may use the wrong storage, for example, as part of a static initialization block in
+   * your main class. To avoid ordering issues, for non-testing situations it is recommended to use
+   * {@link ContextStorageProvider} instead of this method.
+   */
+  static void set(ContextStorage storage) {
+    LazyStorage.set(storage);
+  }
+
+  /**
    * Sets the specified {@link Context} as the current {@link Context} and returns a {@link Scope}
    * representing the scope of execution. {@link Scope#close()} must be called when the current
    * {@link Context} should be restored to what it was before attaching {@code toAttach}.

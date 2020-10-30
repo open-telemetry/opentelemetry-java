@@ -56,12 +56,16 @@ final class LazyStorage {
     return storage;
   }
 
+  static void set(ContextStorage storage) {
+    LazyStorage.storage = storage;
+  }
+
   private static final String CONTEXT_STORAGE_PROVIDER_PROPERTY =
       "io.opentelemetry.context.contextStorageProvider";
 
   private static final Logger logger = Logger.getLogger(LazyStorage.class.getName());
 
-  private static final ContextStorage storage;
+  private static ContextStorage storage;
 
   static {
     AtomicReference<Throwable> deferredStorageFailure = new AtomicReference<>();
