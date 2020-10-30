@@ -171,9 +171,11 @@ final class SpanAdapter {
   }
 
   static Status toStatusProto(SpanData.Status status) {
-    Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
+    Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
     Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
-    if (status.getCanonicalCode() == StatusCode.ERROR) {
+    if (status.getCanonicalCode() == StatusCode.OK) {
+      protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
+    } else if (status.getCanonicalCode() == StatusCode.ERROR) {
       protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
       deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
     }

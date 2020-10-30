@@ -16,6 +16,7 @@ import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPREC
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_ERROR;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_OK;
+import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNSET;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.ByteString;
@@ -116,7 +117,7 @@ class SpanAdapterTest {
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.unset()))
         .isEqualTo(
             Status.newBuilder()
-                .setCode(STATUS_CODE_OK)
+                .setCode(STATUS_CODE_UNSET)
                 .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
                 .build());
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.ERROR, "ERROR")))
