@@ -38,7 +38,7 @@ class TestSpanDataTest {
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
     assertThat(spanData.getInstrumentationLibraryInfo())
         .isSameAs(InstrumentationLibraryInfo.getEmpty());
-    assertThat(spanData.getHasRemoteParent()).isFalse();
+    assertThat(spanData.hasRemoteParent()).isFalse();
   }
 
   @Test

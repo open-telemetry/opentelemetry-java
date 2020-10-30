@@ -14,8 +14,8 @@ public final class TraceShim {
   private TraceShim() {}
 
   /**
-   * Creates a {@code io.opentracing.Tracer} shim out of {@code OpenTelemetry.getTracer()} and
-   * {@code OpenTelemetry.getBaggageManager()}.
+   * Creates a {@code io.opentracing.Tracer} shim out of {@code
+   * OpenTelemetry.getGlobalTracerProvider()} and {@code OpenTelemetry.getGlobalPropagators()}.
    *
    * @return a {@code io.opentracing.Tracer}.
    */
@@ -27,8 +27,8 @@ public final class TraceShim {
   }
 
   /**
-   * Creates a {@code io.opentracing.Tracer} shim out the specified {@code Tracer} and {@code
-   * BaggageManager}.
+   * Creates a {@code io.opentracing.Tracer} shim out the specified {@code Tracer}. This uses
+   * ContextPropagators from the global {@link OpenTelemetry} instance.
    *
    * @param tracerProvider the {@code TracerProvider} used by this shim.
    * @return a {@code io.opentracing.Tracer}.
@@ -38,6 +38,18 @@ public final class TraceShim {
         new TelemetryInfo(
             getTracer(Objects.requireNonNull(tracerProvider, "tracerProvider")),
             OpenTelemetry.getGlobalPropagators()));
+  }
+
+  /**
+   * Creates a {@code io.opentracing.Tracer} shim using the provided OpenTelemetry instance.
+   *
+   * @param openTelemetry the {@code OpenTelemetry} instance used to create this shim.
+   * @return a {@code io.opentracing.Tracer}.
+   */
+  public static io.opentracing.Tracer createTracerShim(OpenTelemetry openTelemetry) {
+    return new TracerShim(
+        new TelemetryInfo(
+            getTracer(openTelemetry.getTracerProvider()), openTelemetry.getPropagators()));
   }
 
   private static Tracer getTracer(TracerProvider tracerProvider) {

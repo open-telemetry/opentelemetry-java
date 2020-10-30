@@ -59,8 +59,8 @@ public abstract class SpanDataBuilder implements SpanData {
         .setLinks(spanData.getLinks())
         .setStatus(spanData.getStatus())
         .setEndEpochNanos(spanData.getEndEpochNanos())
-        .setHasRemoteParent(spanData.getHasRemoteParent())
-        .setHasEnded(spanData.getHasEnded())
+        .setHasRemoteParent(spanData.hasRemoteParent())
+        .setHasEnded(spanData.hasEnded())
         .setTotalRecordedEvents(spanData.getTotalRecordedEvents())
         .setTotalRecordedLinks(spanData.getTotalRecordedLinks())
         .setTotalAttributeCount(spanData.getTotalAttributeCount());
@@ -71,6 +71,20 @@ public abstract class SpanDataBuilder implements SpanData {
   }
 
   abstract Builder autoToBuilder();
+
+  abstract boolean getInternalHasEnded();
+
+  abstract boolean getInternalHasRemoteParent();
+
+  @Override
+  public final boolean hasEnded() {
+    return getInternalHasEnded();
+  }
+
+  @Override
+  public final boolean hasRemoteParent() {
+    return getInternalHasRemoteParent();
+  }
 
   // AutoValue won't generate equals that compares with SpanData interface but generates hash code
   // fine.
@@ -98,8 +112,8 @@ public abstract class SpanDataBuilder implements SpanData {
           && getLinks().equals(that.getLinks())
           && getStatus().equals(that.getStatus())
           && getEndEpochNanos() == that.getEndEpochNanos()
-          && getHasRemoteParent() == that.getHasRemoteParent()
-          && getHasEnded() == that.getHasEnded()
+          && hasRemoteParent() == that.hasRemoteParent()
+          && hasEnded() == that.hasEnded()
           && getTotalRecordedEvents() == that.getTotalRecordedEvents()
           && getTotalRecordedLinks() == that.getTotalRecordedLinks()
           && getTotalAttributeCount() == that.getTotalAttributeCount();
@@ -148,9 +162,17 @@ public abstract class SpanDataBuilder implements SpanData {
 
     public abstract Builder setLinks(List<Link> links);
 
-    public abstract Builder setHasRemoteParent(boolean hasRemoteParent);
+    abstract Builder setInternalHasRemoteParent(boolean hasRemoteParent);
 
-    public abstract Builder setHasEnded(boolean hasEnded);
+    public final Builder setHasRemoteParent(boolean hasRemoteParent) {
+      return setInternalHasRemoteParent(hasRemoteParent);
+    }
+
+    abstract Builder setInternalHasEnded(boolean hasEnded);
+
+    public final Builder setHasEnded(boolean hasEnded) {
+      return setInternalHasEnded(hasEnded);
+    }
 
     public abstract Builder setTotalRecordedEvents(int totalRecordedEvents);
 

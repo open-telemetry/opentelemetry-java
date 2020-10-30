@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 class ParentBasedSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
-  private final IdsGenerator idsGenerator = IdsGenerator.random();
+  private final IdGenerator idsGenerator = IdGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();

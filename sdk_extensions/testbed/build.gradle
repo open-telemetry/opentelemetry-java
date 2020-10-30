@@ -12,6 +12,4 @@ dependencies {
             project(':opentelemetry-sdk'),
             project(':opentelemetry-exporters-inmemory'),
             libraries.guava
-
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
 }

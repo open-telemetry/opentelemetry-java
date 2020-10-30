@@ -26,6 +26,14 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface Meter {
 
   /**
+   * Returns a {@link Meter} that only creates no-op {@link Instrument}s that neither record nor are
+   * emitted.
+   */
+  static Meter getDefault() {
+    return DefaultMeter.getInstance();
+  }
+
+  /**
    * Returns a builder for a {@link DoubleCounter}.
    *
    * @param name the name of the instrument. Should be a ASCII string with a length no greater than

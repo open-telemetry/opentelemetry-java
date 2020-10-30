@@ -122,7 +122,7 @@ class ImmutableBaggage implements Baggage {
     @Override
     public Baggage.Builder setParent(Context context) {
       Objects.requireNonNull(context, "context");
-      parent = BaggageUtils.getBaggage(context);
+      parent = Baggage.fromContext(context);
       return this;
     }
 
@@ -164,7 +164,7 @@ class ImmutableBaggage implements Baggage {
     @Override
     public ImmutableBaggage build() {
       if (parent == null && !noImplicitParent) {
-        parent = BaggageUtils.getCurrentBaggage();
+        parent = Baggage.current();
       }
       return new ImmutableBaggage(entries, parent);
     }

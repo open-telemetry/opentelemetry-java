@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.IdsGenerator;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +21,7 @@ class AlwaysOnSamplerTest {
 
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
-  private final IdsGenerator idsGenerator = IdsGenerator.random();
+  private final IdGenerator idsGenerator = IdGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();

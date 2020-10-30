@@ -64,7 +64,7 @@ class RecordEventsReadableSpanTest {
   private static final boolean EXPECTED_HAS_REMOTE_PARENT = true;
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
-  private final IdsGenerator idsGenerator = IdsGenerator.random();
+  private final IdGenerator idsGenerator = IdGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String spanId = idsGenerator.generateSpanId();
   private final String parentSpanId = idsGenerator.generateSpanId();
@@ -237,7 +237,7 @@ class RecordEventsReadableSpanTest {
     // toSpanData was called.
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size());
     assertThat(spanData.getAttributes().get(stringKey("anotherKey"))).isNull();
-    assertThat(spanData.getHasEnded()).isFalse();
+    assertThat(spanData.hasEnded()).isFalse();
     assertThat(spanData.getEndEpochNanos()).isEqualTo(0);
     assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
     assertThat(spanData.getEvents()).isEmpty();
@@ -247,7 +247,7 @@ class RecordEventsReadableSpanTest {
     spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size() + 1);
     assertThat(spanData.getAttributes().get(stringKey("anotherKey"))).isEqualTo("anotherValue");
-    assertThat(spanData.getHasEnded()).isTrue();
+    assertThat(spanData.hasEnded()).isTrue();
     assertThat(spanData.getEndEpochNanos()).isGreaterThan(0);
     assertThat(spanData.getName()).isEqualTo("changedName");
     assertThat(spanData.getEvents()).hasSize(1);
@@ -293,7 +293,7 @@ class RecordEventsReadableSpanTest {
   void getSpanHasRemoteParent() {
     RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
     try {
-      assertThat(span.toSpanData().getHasRemoteParent()).isTrue();
+      assertThat(span.toSpanData().hasRemoteParent()).isTrue();
     } finally {
       span.end();
     }
@@ -791,7 +791,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
-    assertThat(spanData.getHasRemoteParent()).isEqualTo(EXPECTED_HAS_REMOTE_PARENT);
+    assertThat(spanData.hasRemoteParent()).isEqualTo(EXPECTED_HAS_REMOTE_PARENT);
     assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
@@ -801,7 +801,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
     assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
     assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
-    assertThat(spanData.getHasEnded()).isEqualTo(hasEnded);
+    assertThat(spanData.hasEnded()).isEqualTo(hasEnded);
 
     // verify equality manually, since the implementations don't all equals with each other.
     ReadableAttributes spanDataAttributes = spanData.getAttributes();

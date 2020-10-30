@@ -11,11 +11,11 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import org.junit.jupiter.api.Test;
 
-class RandomIdsGeneratorTest {
+class RandomIdGeneratorTest {
 
   @Test
   void defaults() {
-    IdsGenerator generator = IdsGenerator.random();
+    IdGenerator generator = IdGenerator.random();
 
     // Can't assert values but can assert they're valid, try a lot as a sort of fuzz check.
     for (int i = 0; i < 1000; i++) {

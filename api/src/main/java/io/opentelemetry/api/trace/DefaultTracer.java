@@ -15,15 +15,11 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** No-op implementations of {@link Tracer}. */
 @ThreadSafe
-public final class DefaultTracer implements Tracer {
+final class DefaultTracer implements Tracer {
+
   private static final DefaultTracer INSTANCE = new DefaultTracer();
 
-  /**
-   * Returns a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
-   *
-   * @return a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
-   */
-  public static Tracer getInstance() {
+  static DefaultTracer getInstance() {
     return INSTANCE;
   }
 

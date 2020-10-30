@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.sdk.trace.IdsGenerator;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -18,12 +18,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link AwsXRayIdsGenerator}. */
-class AwsXRayIdsGeneratorTest {
+/** Unit tests for {@link AwsXrayIdGenerator}. */
+class AwsXRayIdGeneratorTest {
 
   @Test
   void shouldGenerateValidIds() {
-    AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
+    AwsXrayIdGenerator generator = new AwsXrayIdGenerator();
     for (int i = 0; i < 1000; i++) {
       String traceId = generator.generateTraceId();
       assertThat(TraceId.isValid(traceId)).isTrue();
@@ -34,7 +34,7 @@ class AwsXRayIdsGeneratorTest {
 
   @Test
   void shouldGenerateTraceIdsWithTimestampsWithAllowedXrayTimeRange() {
-    AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
+    AwsXrayIdGenerator generator = new AwsXrayIdGenerator();
     for (int i = 0; i < 1000; i++) {
       String traceId = generator.generateTraceId();
       long unixSeconds = Long.valueOf(traceId.subSequence(0, 8).toString(), 16);
@@ -49,7 +49,7 @@ class AwsXRayIdsGeneratorTest {
   @Test
   void shouldGenerateUniqueIdsInMultithreadedEnvironment()
       throws BrokenBarrierException, InterruptedException {
-    AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
+    AwsXrayIdGenerator generator = new AwsXrayIdGenerator();
     Set<String> traceIds = new CopyOnWriteArraySet<>();
     Set<String> spanIds = new CopyOnWriteArraySet<>();
     int threads = 8;
@@ -68,14 +68,14 @@ class AwsXRayIdsGeneratorTest {
   static class GenerateRunner implements Runnable {
 
     private final int generations;
-    private final IdsGenerator idsGenerator;
+    private final IdGenerator idsGenerator;
     private final CyclicBarrier barrier;
     private final Set<String> traceIds;
     private final Set<String> spanIds;
 
     GenerateRunner(
         int generations,
-        IdsGenerator idsGenerator,
+        IdGenerator idsGenerator,
         CyclicBarrier barrier,
         Set<String> traceIds,
         Set<String> spanIds) {

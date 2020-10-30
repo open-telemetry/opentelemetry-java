@@ -127,13 +127,13 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public boolean getHasRemoteParent() {
-    return delegate.getHasRemoteParent();
+  public boolean hasRemoteParent() {
+    return delegate.hasRemoteParent();
   }
 
   @Override
-  public boolean getHasEnded() {
-    return delegate.getHasEnded();
+  public boolean hasEnded() {
+    return delegate.hasEnded();
   }
 
   @Override
@@ -173,8 +173,8 @@ public abstract class DelegatingSpanData implements SpanData {
           && getLinks().equals(that.getLinks())
           && getStatus().equals(that.getStatus())
           && getEndEpochNanos() == that.getEndEpochNanos()
-          && getHasRemoteParent() == that.getHasRemoteParent()
-          && getHasEnded() == that.getHasEnded()
+          && hasRemoteParent() == that.hasRemoteParent()
+          && hasEnded() == that.hasEnded()
           && getTotalRecordedEvents() == that.getTotalRecordedEvents()
           && getTotalRecordedLinks() == that.getTotalRecordedLinks()
           && getTotalAttributeCount() == that.getTotalAttributeCount();
@@ -216,9 +216,9 @@ public abstract class DelegatingSpanData implements SpanData {
     code *= 1000003;
     code ^= (int) ((getEndEpochNanos() >>> 32) ^ getEndEpochNanos());
     code *= 1000003;
-    code ^= getHasRemoteParent() ? 1231 : 1237;
+    code ^= hasRemoteParent() ? 1231 : 1237;
     code *= 1000003;
-    code ^= getHasEnded() ? 1231 : 1237;
+    code ^= hasEnded() ? 1231 : 1237;
     code *= 1000003;
     code ^= getTotalRecordedEvents();
     code *= 1000003;
@@ -277,10 +277,10 @@ public abstract class DelegatingSpanData implements SpanData {
         + getEndEpochNanos()
         + ", "
         + "hasRemoteParent="
-        + getHasRemoteParent()
+        + hasRemoteParent()
         + ", "
         + "hasEnded="
-        + getHasEnded()
+        + hasEnded()
         + ", "
         + "totalRecordedEvents="
         + getTotalRecordedEvents()

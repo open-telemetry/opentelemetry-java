@@ -10,10 +10,8 @@ import static java.util.Objects.requireNonNull;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.internal.Obfuscated;
-import io.opentelemetry.api.metrics.DefaultMeterProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
-import io.opentelemetry.api.trace.DefaultTracerProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.api.trace.spi.TracerProviderFactory;
@@ -217,7 +215,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
         } else if (HAS_METRICS_SDK) {
           meterProvider = MeterSdkProvider.builder().setClock(clock).setResource(resource).build();
         } else {
-          meterProvider = DefaultMeterProvider.getInstance();
+          meterProvider = MeterProvider.getDefault();
         }
       }
 
@@ -231,7 +229,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
               new ObfuscatedTracerProvider(
                   TracerSdkProvider.builder().setClock(clock).setResource(resource).build());
         } else {
-          tracerProvider = DefaultTracerProvider.getInstance();
+          tracerProvider = TracerProvider.getDefault();
         }
       }
 

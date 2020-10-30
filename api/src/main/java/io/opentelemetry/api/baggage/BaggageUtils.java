@@ -7,15 +7,14 @@ package io.opentelemetry.api.baggage;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
-import io.opentelemetry.context.Scope;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Utility methods for accessing the {@link Baggage} contained in the {@link Context}. */
 @Immutable
-public final class BaggageUtils {
-  private static final ContextKey<Baggage> CORR_CONTEXT_KEY =
-      ContextKey.named("opentelemetry-corr-context-key");
+final class BaggageUtils {
+  private static final ContextKey<Baggage> BAGGAGE_KEY =
+      ContextKey.named("opentelemetry-baggage-key");
 
   /**
    * Creates a new {@code Context} with the given value set.
@@ -25,7 +24,7 @@ public final class BaggageUtils {
    * @return a new context with the given value set.
    */
   static Context withBaggage(Baggage baggage, Context context) {
-    return context.with(CORR_CONTEXT_KEY, baggage);
+    return context.with(BAGGAGE_KEY, baggage);
   }
 
   /**
@@ -34,7 +33,7 @@ public final class BaggageUtils {
    *
    * @return the {@link Baggage} from the {@linkplain Context#current current context}.
    */
-  public static Baggage getCurrentBaggage() {
+  static Baggage getCurrentBaggage() {
     return getBaggage(Context.current());
   }
 
@@ -45,8 +44,8 @@ public final class BaggageUtils {
    * @param context the specified {@code Context}.
    * @return the {@link Baggage} from the specified {@code Context}.
    */
-  public static Baggage getBaggage(Context context) {
-    Baggage baggage = context.get(CORR_CONTEXT_KEY);
+  static Baggage getBaggage(Context context) {
+    Baggage baggage = context.get(BAGGAGE_KEY);
     return baggage == null ? Baggage.empty() : baggage;
   }
 
@@ -58,20 +57,8 @@ public final class BaggageUtils {
    * @return the {@link Baggage} from the specified {@code Context}.
    */
   @Nullable
-  public static Baggage getBaggageWithoutDefault(Context context) {
-    return context.get(CORR_CONTEXT_KEY);
-  }
-
-  /**
-   * Returns a new {@link Scope} encapsulating the provided {@link Baggage} added to the current
-   * {@code Context}.
-   *
-   * @param baggage the {@link Baggage} to be added to the current {@code Context}.
-   * @return the {@link Scope} for the updated {@code Context}.
-   */
-  public static Scope currentContextWith(Baggage baggage) {
-    Context context = withBaggage(baggage, Context.current());
-    return context.makeCurrent();
+  static Baggage getBaggageWithoutDefault(Context context) {
+    return context.get(BAGGAGE_KEY);
   }
 
   private BaggageUtils() {}

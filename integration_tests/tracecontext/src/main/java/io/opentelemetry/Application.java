@@ -25,16 +25,24 @@ import spark.Spark;
 public class Application {
 
   private static final Logger logger = Logger.getLogger(Application.class.getName());
+  private static final OpenTelemetry openTelemetry;
+
+  static {
+    openTelemetry =
+        OpenTelemetry.get().toBuilder()
+            .setPropagators(
+                DefaultContextPropagators.builder()
+                    .addTextMapPropagator(HttpTraceContext.getInstance())
+                    .build())
+            .build();
+    // set the updated instance as the global instance, just to make sure.
+    OpenTelemetry.set(openTelemetry);
+  }
 
   private Application() {}
 
   /** Entry point. */
   public static void main(String[] args) {
-    OpenTelemetry.setGlobalPropagators(
-        DefaultContextPropagators.builder()
-            .addTextMapPropagator(HttpTraceContext.getInstance())
-            .build());
-
     Spark.port(5000);
     Spark.post(
         "verify-tracecontext",
@@ -45,7 +53,8 @@ public class Application {
               gson.fromJson(request.body(), io.opentelemetry.Request[].class);
 
           Context context =
-              OpenTelemetry.getGlobalPropagators()
+              openTelemetry
+                  .getPropagators()
                   .getTextMapPropagator()
                   .extract(
                       Context.current(),
@@ -78,7 +87,8 @@ public class Application {
 
           for (io.opentelemetry.Request req : requests) {
             Span span =
-                OpenTelemetry.getGlobalTracer("validation-server")
+                openTelemetry
+                    .getTracer("validation-server")
                     .spanBuilder("Entering Validation Server")
                     .setParent(context)
                     .startSpan();
@@ -89,7 +99,8 @@ public class Application {
             okhttp3.Request.Builder reqBuilder = new okhttp3.Request.Builder();
 
             // Inject the current context into the new request.
-            OpenTelemetry.getGlobalPropagators()
+            openTelemetry
+                .getPropagators()
                 .getTextMapPropagator()
                 .inject(withSpanContext, reqBuilder, okhttp3.Request.Builder::addHeader);
 

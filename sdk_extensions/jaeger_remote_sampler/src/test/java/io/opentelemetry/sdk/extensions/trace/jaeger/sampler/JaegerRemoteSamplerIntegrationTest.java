@@ -23,14 +23,13 @@ class JaegerRemoteSamplerIntegrationTest {
 
   private static final int QUERY_PORT = 16686;
   private static final int COLLECTOR_PORT = 14250;
-  private static final String JAEGER_VERSION = "1.17";
   private static final String SERVICE_NAME = "E2E-test";
   private static final String SERVICE_NAME_RATE_LIMITING = "bar";
   private static final int RATE = 150;
 
   @Container
   public static GenericContainer<?> jaegerContainer =
-      new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
+      new GenericContainer<>("open-telemetry-docker-dev.bintray.io/java-test-containers:jaeger")
           .withCommand("--sampling.strategies-file=/sampling.json")
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
           .waitingFor(new HttpWaitStrategy().forPath("/"))

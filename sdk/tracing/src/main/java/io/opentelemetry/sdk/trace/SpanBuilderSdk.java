@@ -44,7 +44,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
   private final Resource resource;
-  private final IdsGenerator idsGenerator;
+  private final IdGenerator idsGenerator;
   private final Clock clock;
 
   @Nullable private Context parent;
@@ -61,7 +61,7 @@ final class SpanBuilderSdk implements Span.Builder {
       SpanProcessor spanProcessor,
       TraceConfig traceConfig,
       Resource resource,
-      IdsGenerator idsGenerator,
+      IdGenerator idsGenerator,
       Clock clock) {
     this.spanName = spanName;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;

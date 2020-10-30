@@ -16,8 +16,6 @@ dependencies {
     implementation libraries.guava
     
     compileOnly 'com.sun.net.httpserver:http:20070405'
-
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
 }
 
 animalsniffer {

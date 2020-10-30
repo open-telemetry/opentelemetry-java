@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 class BatchRecorderTest {
-  private static final Meter meter = DefaultMeter.getInstance();
+  private static final Meter meter = Meter.getDefault();
 
   @Test
   void testNewBatchRecorder_badLabelSet() {

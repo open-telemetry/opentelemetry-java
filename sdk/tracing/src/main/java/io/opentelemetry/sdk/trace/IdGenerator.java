@@ -9,17 +9,17 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 
 /** Interface used by the {@link TracerSdk} to generate new {@link SpanId}s and {@link TraceId}s. */
-public interface IdsGenerator {
+public interface IdGenerator {
 
   /**
-   * Returns a {@link IdsGenerator} that generates purely random IDs, which is the default for
+   * Returns a {@link IdGenerator} that generates purely random IDs, which is the default for
    * OpenTelemetry.
    *
    * <p>The underlying implementation uses {@link java.util.concurrent.ThreadLocalRandom} for
    * randomness but may change in the future.
    */
-  static IdsGenerator random() {
-    return RandomIdsGenerator.INSTANCE;
+  static IdGenerator random() {
+    return RandomIdGenerator.INSTANCE;
   }
 
   /**

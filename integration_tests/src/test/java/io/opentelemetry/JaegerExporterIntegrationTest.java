@@ -44,7 +44,6 @@ class JaegerExporterIntegrationTest {
 
   private static final int QUERY_PORT = 16686;
   private static final int COLLECTOR_PORT = 14250;
-  private static final String JAEGER_VERSION = "1.17";
   private static final String SERVICE_NAME = "integration test";
   private static final String JAEGER_HOSTNAME = "jaeger";
   private static final String JAEGER_URL = "http://localhost";
@@ -55,7 +54,8 @@ class JaegerExporterIntegrationTest {
   @Container
   public static GenericContainer jaegerContainer =
       new GenericContainer<>(
-              DockerImageName.parse("jaegertracing/all-in-one:" + JAEGER_VERSION + ":latest"))
+              DockerImageName.parse(
+                  "open-telemetry-docker-dev.bintray.io/java-test-containers:jaeger"))
           .withNetwork(network)
           .withNetworkAliases(JAEGER_HOSTNAME)
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
@@ -65,7 +65,9 @@ class JaegerExporterIntegrationTest {
   @SuppressWarnings("rawtypes")
   @Container
   public static GenericContainer jaegerExampleAppContainer =
-      new GenericContainer(DockerImageName.parse("adoptopenjdk/openjdk8:latest"))
+      new GenericContainer(
+              DockerImageName.parse(
+                  "open-telemetry-docker-dev.bintray.io/java-test-containers:openjdk8"))
           .withNetwork(network)
           .withCopyFileToContainer(MountableFile.forHostPath(ARCHIVE_NAME), "/app/" + APP_NAME)
           .withCommand(
