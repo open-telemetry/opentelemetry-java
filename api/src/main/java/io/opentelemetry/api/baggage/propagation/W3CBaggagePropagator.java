@@ -7,9 +7,7 @@ package io.opentelemetry.api.baggage.propagation;
 
 import static java.util.Collections.singletonList;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.baggage.BaggageManager;
 import io.opentelemetry.api.baggage.Entry;
 import io.opentelemetry.api.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
@@ -26,10 +24,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   private static final List<String> FIELDS = singletonList(FIELD);
   private static final W3CBaggagePropagator INSTANCE = new W3CBaggagePropagator();
 
-  /**
-   * Singleton instance of the W3C Baggage Propagator. Uses the {@link BaggageManager} from the
-   * {@link OpenTelemetry} global.
-   */
+  /** Singleton instance of the W3C Baggage Propagator. */
   public static W3CBaggagePropagator getInstance() {
     return INSTANCE;
   }
