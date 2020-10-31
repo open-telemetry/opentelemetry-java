@@ -32,7 +32,7 @@ $ ./gradlew check
 
 We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). 
 Our build will fail if source code is not formatted according to that style. To fix any
-style failures the above [checks](#checks) show, automatically apply the formatting with
+style failures the above [checks](#checks) show, automatically apply the formatting with:
 
 ```bash
 $ ./gradlew spotlessApply
