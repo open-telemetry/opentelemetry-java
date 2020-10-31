@@ -11,8 +11,9 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
-import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
@@ -32,9 +33,11 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 class MultipleCallbacksTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final OpenTelemetry openTelemetry =
+      OpenTelemetry.get().toBuilder().setTracerProvider(sdk).build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = TraceShim.createTracerShim(sdk);
+  private final Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
 
   @Test
   void test() {

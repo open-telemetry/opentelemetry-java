@@ -8,10 +8,13 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
-import java.util.Objects;
 
-public final class TraceShim {
-  private TraceShim() {}
+/**
+ * Factory for creating an OpenTracing {@link io.opentracing.Tracer} that is implemented using the
+ * OpenTelemetry APIs.
+ */
+public final class OpenTracingShim {
+  private OpenTracingShim() {}
 
   /**
    * Creates a {@code io.opentracing.Tracer} shim out of {@code
@@ -23,20 +26,6 @@ public final class TraceShim {
     return new TracerShim(
         new TelemetryInfo(
             getTracer(OpenTelemetry.getGlobalTracerProvider()),
-            OpenTelemetry.getGlobalPropagators()));
-  }
-
-  /**
-   * Creates a {@code io.opentracing.Tracer} shim out the specified {@code Tracer}. This uses
-   * ContextPropagators from the global {@link OpenTelemetry} instance.
-   *
-   * @param tracerProvider the {@code TracerProvider} used by this shim.
-   * @return a {@code io.opentracing.Tracer}.
-   */
-  public static io.opentracing.Tracer createTracerShim(TracerProvider tracerProvider) {
-    return new TracerShim(
-        new TelemetryInfo(
-            getTracer(Objects.requireNonNull(tracerProvider, "tracerProvider")),
             OpenTelemetry.getGlobalPropagators()));
   }
 
