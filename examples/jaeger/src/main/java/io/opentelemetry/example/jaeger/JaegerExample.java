@@ -1,4 +1,4 @@
-package io.opentelemetry.example;
+package io.opentelemetry.example.jaeger;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;

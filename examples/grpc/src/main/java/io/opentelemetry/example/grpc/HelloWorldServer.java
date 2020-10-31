@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.example;
+package io.opentelemetry.example.grpc;
 
 import io.grpc.Context;
 import io.grpc.Contexts;

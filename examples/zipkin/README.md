@@ -23,7 +23,7 @@ docker run --rm -it --name zipkin \
 
 ## 3 - Start the Application
 ```shell script
-java -cp build/libs/opentelemetry-examples-zipkin-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.ZipkinExample localhost 9411
+java -cp build/libs/opentelemetry-examples-zipkin-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.zipkin.ZipkinExample localhost 9411
 ```
 ## 4 - Open the Zipkin UI
 
