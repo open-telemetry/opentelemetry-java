@@ -43,6 +43,15 @@ which uses [google-java-format](https://github.com/google/google-java-format) li
 
 `./gradlew spotless`
 
+### Best practices that we follow
+
+* Avoid exposing publicly any class/method/variable that don't need to be public.
+* By default, all arguments/members are treated as non-null. Every argument/member that can be `null` must be annotated with `@Nullable`.
+* The project aims to provide a consistent experience across all the public APIs. It is important to ensure consistency (same look and feel) across different public packages.
+* Use `final` for public classes everywhere it is possible, this ensures that these classes cannot be extended when the API does not intend to offer that functionality.
+
+If you notice any practice being applied in the project consistently that isn't listed here, please consider a pull request to add it.
+
 ### Pre-commit hook
 To completely delegate code style formatting to the machine, 
 you can add [git pre-commit hook](https://git-scm.com/docs/githooks).
