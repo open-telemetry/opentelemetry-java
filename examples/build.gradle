@@ -30,7 +30,7 @@ subprojects {
 
     spotless {
         java {
-            googleJavaFormat("1.7")
+            googleJavaFormat("1.9")
         }
     }
 
