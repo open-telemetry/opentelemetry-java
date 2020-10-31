@@ -54,12 +54,12 @@ public interface Baggage extends ImplicitContextKeyed {
    */
   @Nullable
   static Baggage fromContextOrNull(Context context) {
-    return context.get(ImmutableBaggage.BAGGAGE_KEY);
+    return context.get(BaggageContextKey.KEY);
   }
 
   @Override
   default Context storeInContext(Context context) {
-    return context.with(ImmutableBaggage.BAGGAGE_KEY, this);
+    return context.with(BaggageContextKey.KEY, this);
   }
 
   /**

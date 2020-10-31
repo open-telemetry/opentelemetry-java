@@ -11,7 +11,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
-class TracingContextUtilsTest {
+class SpanTest {
   @Test
   void testGetCurrentSpan_Default() {
     Span span = Span.current();
