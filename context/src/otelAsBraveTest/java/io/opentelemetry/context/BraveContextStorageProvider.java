@@ -25,7 +25,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
   private enum BraveContextStorage implements ContextStorage {
     INSTANCE;
 
-    private final AtomicReference<Consumer<Context>> onAttachConsumer = new AtomicReference<>();
+    private static final AtomicReference<Consumer<Context>> onAttachConsumer = new AtomicReference<>();
 
     @Override
     public Scope attach(Context toAttach) {
@@ -54,7 +54,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
       return new BraveContextWrapper(TraceContext.newBuilder().traceId(1).spanId(1).build());
     }
 
-    private void onAttach(TraceContext context) {
+    private static void onAttach(TraceContext context) {
       Consumer<Context> contextConsumer = onAttachConsumer.get();
       if (contextConsumer != null) {
         contextConsumer.accept(new BraveContextWrapper(context));

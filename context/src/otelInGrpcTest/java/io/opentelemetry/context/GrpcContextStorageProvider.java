@@ -20,7 +20,7 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
   private enum GrpcContextStorage implements ContextStorage {
     INSTANCE;
 
-    private final AtomicReference<Consumer<Context>> onAttachConsumer = new AtomicReference<>();
+    private static final AtomicReference<Consumer<Context>> onAttachConsumer = new AtomicReference<>();
 
     @Override
     public Scope attach(Context toAttach) {
@@ -59,7 +59,7 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
       onAttachConsumer.updateAndGet(existing -> existing != null ? existing.andThen(contextConsumer) : contextConsumer);
     }
 
-    private void onAttach(io.grpc.Context toAttach) {
+    private static void onAttach(io.grpc.Context toAttach) {
       Consumer<Context> contextConsumer = onAttachConsumer.get();
       if (contextConsumer != null) {
         contextConsumer.accept(GrpcContextWrapper.wrapperFromGrpc(toAttach));
