@@ -46,13 +46,6 @@ enum ThreadLocalContextStorage implements ContextStorage {
     };
   }
 
-  private void onAttach(Context toAttach) {
-    Consumer<Context> consumer = onAttachConsumer.get();
-    if (consumer != null) {
-      consumer.accept(toAttach);
-    }
-  }
-
   @Override
   public Context current() {
     return THREAD_LOCAL_STORAGE.get();
@@ -61,6 +54,13 @@ enum ThreadLocalContextStorage implements ContextStorage {
   @Override
   public void onAttach(Consumer<Context> contextConsumer) {
     onAttachConsumer.updateAndGet(existing -> existing != null ? existing.andThen(contextConsumer) : contextConsumer);
+  }
+
+  private static void onAttach(Context toAttach) {
+    Consumer<Context> consumer = onAttachConsumer.get();
+    if (consumer != null) {
+      consumer.accept(toAttach);
+    }
   }
 
   enum NoopScope implements Scope {

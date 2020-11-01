@@ -5,6 +5,9 @@
 
 package io.opentelemetry.context;
 
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
 public class GrpcContextStorageProvider implements ContextStorageProvider {
   private static final io.grpc.Context.Key<Context> OTEL_CONTEXT =
       io.grpc.Context.keyWithDefault("otel-context", Context.root());
@@ -16,6 +19,8 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
 
   private enum GrpcContextStorage implements ContextStorage {
     INSTANCE;
+
+    private final AtomicReference<Consumer<Context>> onAttachConsumer = new AtomicReference<>();
 
     @Override
     public Scope attach(Context toAttach) {
@@ -34,8 +39,12 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
         newGrpcContext = grpcContext.withValue(OTEL_CONTEXT, toAttach);
       }
 
+      onAttach(newGrpcContext);
       io.grpc.Context toRestore = newGrpcContext.attach();
-      return () -> newGrpcContext.detach(toRestore);
+      return () -> {
+        onAttach(toRestore);
+        newGrpcContext.detach(toRestore);
+      };
     }
 
     @Override
@@ -43,6 +52,18 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
       // We return an object that embeds both the
       io.grpc.Context grpcContext = io.grpc.Context.current();
       return GrpcContextWrapper.wrapperFromGrpc(grpcContext);
+    }
+
+    @Override
+    public void onAttach(Consumer<Context> contextConsumer) {
+      onAttachConsumer.updateAndGet(existing -> existing != null ? existing.andThen(contextConsumer) : contextConsumer);
+    }
+
+    private void onAttach(io.grpc.Context toAttach) {
+      Consumer<Context> contextConsumer = onAttachConsumer.get();
+      if (contextConsumer != null) {
+        contextConsumer.accept(GrpcContextWrapper.wrapperFromGrpc(toAttach));
+      }
     }
   }
 

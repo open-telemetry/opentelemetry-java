@@ -11,6 +11,8 @@ import brave.propagation.TraceContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class BraveContextStorageProvider implements ContextStorageProvider {
 
@@ -23,6 +25,8 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
   private enum BraveContextStorage implements ContextStorage {
     INSTANCE;
 
+    private final AtomicReference<Consumer<Context>> onAttachConsumer = new AtomicReference<>();
+
     @Override
     public Scope attach(Context toAttach) {
       TraceContext braveContextToAttach = ((BraveContextWrapper) toAttach).braveContext;
@@ -33,8 +37,12 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
         return Scope.noop();
       }
 
+      onAttach(braveContextToAttach);
       CurrentTraceContext.Scope braveScope = currentTraceContext.newScope(braveContextToAttach);
-      return braveScope::close;
+      return () -> {
+        onAttach(currentBraveContext);
+        braveScope.close();
+      };
     }
 
     @Override
@@ -44,6 +52,18 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
         return new BraveContextWrapper(current);
       }
       return new BraveContextWrapper(TraceContext.newBuilder().traceId(1).spanId(1).build());
+    }
+
+    private void onAttach(TraceContext context) {
+      Consumer<Context> contextConsumer = onAttachConsumer.get();
+      if (contextConsumer != null) {
+        contextConsumer.accept(new BraveContextWrapper(context));
+      }
+    }
+
+    @Override
+    public void onAttach(Consumer<Context> contextConsumer) {
+      onAttachConsumer.updateAndGet(existing -> existing != null ? existing.andThen(contextConsumer) : contextConsumer);
     }
   }
 

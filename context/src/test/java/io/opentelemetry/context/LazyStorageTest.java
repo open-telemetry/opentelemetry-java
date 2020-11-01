@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -102,6 +103,10 @@ class LazyStorageTest {
         @Override
         public Context current() {
           return null;
+        }
+
+        @Override
+        public void onAttach(Consumer<Context> contextConsumer) {
         }
       };
 
