@@ -15,7 +15,6 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.spi.OpenTelemetryFactory;
 import io.opentelemetry.spi.metrics.MeterProviderFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
-import javax.annotation.Nullable;
 
 /**
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
@@ -169,7 +168,7 @@ public interface OpenTelemetry {
    *     "semver:1.0.0").
    * @return a tracer instance.
    */
-  default Tracer getTracer(String instrumentationName, @Nullable String instrumentationVersion) {
+  default Tracer getTracer(String instrumentationName, String instrumentationVersion) {
     return getGlobalTracerProvider().get(instrumentationName, instrumentationVersion);
   }
 
