@@ -106,8 +106,7 @@ class LazyStorageTest {
         }
 
         @Override
-        public void onAttach(Consumer<Context> contextConsumer) {
-        }
+        public void onAttach(Consumer<Context> contextConsumer) {}
       };
 
   public static final class MockContextStorageProvider implements ContextStorageProvider {

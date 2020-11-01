@@ -25,7 +25,8 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
   private enum BraveContextStorage implements ContextStorage {
     INSTANCE;
 
-    private static final AtomicReference<Consumer<Context>> onAttachConsumer = new AtomicReference<>();
+    private static final AtomicReference<Consumer<Context>> onAttachConsumer =
+        new AtomicReference<>();
 
     @Override
     public Scope attach(Context toAttach) {
@@ -63,7 +64,8 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
 
     @Override
     public void onAttach(Consumer<Context> contextConsumer) {
-      onAttachConsumer.updateAndGet(existing -> existing != null ? existing.andThen(contextConsumer) : contextConsumer);
+      onAttachConsumer.updateAndGet(
+          existing -> existing != null ? existing.andThen(contextConsumer) : contextConsumer);
     }
   }
 
