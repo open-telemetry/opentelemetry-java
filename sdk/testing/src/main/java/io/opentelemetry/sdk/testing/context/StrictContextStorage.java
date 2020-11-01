@@ -87,10 +87,6 @@ public class StrictContextStorage implements ContextStorage {
   @Override
   public Scope attach(Context context) {
     Scope scope = delegate.attach(context);
-    if (scope == Scope.noop()) {
-      // don't track no-op scopes as they cannot leak
-      return scope;
-    }
 
     CallerStackTrace caller = new CallerStackTrace(context);
     StackTraceElement[] stackTrace = caller.getStackTrace();

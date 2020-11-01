@@ -85,12 +85,6 @@ class StrictContextStorageTest {
     strictStorage.ensureAllClosed(); // doesn't error
   }
 
-  @Test
-  public void doesntDecorateNoop() {
-    assertThat(Context.current().makeCurrent()).isSameAs(Scope.noop());
-    strictStorage.ensureAllClosed(); // doesn't error
-  }
-
   static final class BusinessClass {
 
     static Scope businessMethodMakeContextCurrent() {
