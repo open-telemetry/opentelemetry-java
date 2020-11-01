@@ -31,8 +31,8 @@ import javax.annotation.Nullable;
  */
 public final class MeterSdkProvider implements MeterProvider {
 
-  private static final Logger logger = Logger.getLogger(MeterSdkProvider.class.getName());
-  private static final String defaultMeterName = "unknown";
+  private static final Logger LOGGER = Logger.getLogger(MeterSdkProvider.class.getName());
+  static final String DEFAULT_METER_NAME = "unknown";
   private final MeterSdkComponentRegistry registry;
   private final MetricProducer metricProducer;
 
@@ -50,11 +50,10 @@ public final class MeterSdkProvider implements MeterProvider {
 
   @Override
   public MeterSdk get(String instrumentationName, @Nullable String instrumentationVersion) {
-    // Per the spec, both null and empty are "invalid" and a "default" should be used. See commit
-    //   message for further details.
+    // Per the spec, both null and empty are "invalid" and a "default" should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {
-      logger.warning("Meter requested without instrumentation name.");
-      instrumentationName = defaultMeterName;
+      LOGGER.fine("Meter requested without instrumentation name.");
+      instrumentationName = DEFAULT_METER_NAME;
     }
     return registry.get(instrumentationName, instrumentationVersion);
   }

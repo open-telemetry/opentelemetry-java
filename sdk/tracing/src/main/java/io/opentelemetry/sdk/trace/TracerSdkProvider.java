@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   private static final Logger logger = Logger.getLogger(TracerSdkProvider.class.getName());
-  private static final String defaultTracerName = "unknown";
+  static final String DEFAULT_TRACER_NAME = "unknown";
   private final TracerSharedState sharedState;
   private final TracerSdkComponentRegistry tracerSdkComponentRegistry;
 
@@ -54,11 +54,10 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
 
   @Override
   public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
-    // Per the spec, both null and empty are "invalid" and a "default" should be used. See commit
-    //   message for further details.
+    // Per the spec, both null and empty are "invalid" and a "default" should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {
-      logger.warning("Tracer requested without instrumentation name.");
-      instrumentationName = defaultTracerName;
+      logger.fine("Tracer requested without instrumentation name.");
+      instrumentationName = DEFAULT_TRACER_NAME;
     }
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
   }
