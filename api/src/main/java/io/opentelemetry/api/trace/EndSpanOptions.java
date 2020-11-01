@@ -15,13 +15,13 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class EndSpanOptions {
-  private static final EndSpanOptions DEFAULT = createWithEndTimestamp(0L);
+  private static final EndSpanOptions DEFAULT = create(0L);
 
   /**
    * Returns a {@link EndSpanOptions} indicating the span ended at the given {@code endTimestamp},
    * in nanoseconds.
    */
-  public static EndSpanOptions createWithEndTimestamp(long endTimestamp) {
+  public static EndSpanOptions create(long endTimestamp) {
     return new AutoValue_EndSpanOptions(endTimestamp);
   }
 
