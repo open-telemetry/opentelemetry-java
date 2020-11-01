@@ -28,15 +28,6 @@ final class DefaultContext implements Context {
 
   private static final Context ROOT = new DefaultContext();
 
-  /**
-   * Returns the default {@link ContextStorage} used to attach {@link Context}s to scopes of
-   * execution. Should only be used when defining your own {@link ContextStorage} in case you want
-   * to delegate functionality to the default implementation.
-   */
-  static ContextStorage threadLocalStorage() {
-    return ThreadLocalContextStorage.INSTANCE;
-  }
-
   // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
   // this method.
   static Context root() {

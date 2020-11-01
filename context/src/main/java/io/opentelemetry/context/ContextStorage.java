@@ -34,7 +34,7 @@ package io.opentelemetry.context;
  * >
  * >   @Override
  * >   public ContextStorage get() {
- * >     ContextStorage threadLocalStorage = Context.threadLocalStorage();
+ * >     ContextStorage threadLocalStorage = ContextStorage.threadLocalStorage();
  * >     return new RequestContextStorage() {
  * >       @Override
  * >       public Scope T attach(Context toAttach) {
@@ -67,6 +67,15 @@ public interface ContextStorage {
    */
   static ContextStorage get() {
     return LazyStorage.get();
+  }
+
+  /**
+   * Returns the default {@link ContextStorage} used to attach {@link Context}s to scopes of
+   * execution. Should only be used when defining your own {@link ContextStorage} in case you want
+   * to delegate functionality to the default implementation.
+   */
+  static ContextStorage threadLocalStorage() {
+    return ThreadLocalContextStorage.INSTANCE;
   }
 
   /**

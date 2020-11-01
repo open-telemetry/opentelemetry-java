@@ -83,7 +83,7 @@ final class LazyStorage {
     }
 
     if (providers.isEmpty()) {
-      return DefaultContext.threadLocalStorage();
+      return ContextStorage.threadLocalStorage();
     }
 
     if (providerClassName.isEmpty()) {
@@ -98,7 +98,7 @@ final class LazyStorage {
                   + "qualified class name of the provider to use. Falling back to default "
                   + "ContextStorage. Found providers: "
                   + providers));
-      return DefaultContext.threadLocalStorage();
+      return ContextStorage.threadLocalStorage();
     }
 
     for (ContextStorageProvider provider : providers) {
@@ -114,7 +114,7 @@ final class LazyStorage {
                 + providerClassName
                 + " but found providers: "
                 + providers));
-    return DefaultContext.threadLocalStorage();
+    return ContextStorage.threadLocalStorage();
   }
 
   private LazyStorage() {}

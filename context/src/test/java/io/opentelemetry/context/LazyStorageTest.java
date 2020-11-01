@@ -31,7 +31,7 @@ class LazyStorageTest {
   @Test
   public void empty_provides() {
     assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
-        .isEqualTo(DefaultContext.threadLocalStorage());
+        .isEqualTo(ContextStorage.threadLocalStorage());
   }
 
   @Test
@@ -39,7 +39,7 @@ class LazyStorageTest {
     System.setProperty(
         CONTEXT_STORAGE_PROVIDER_PROPERTY, MockContextStorageProvider.class.getName());
     assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
-        .isEqualTo(DefaultContext.threadLocalStorage());
+        .isEqualTo(ContextStorage.threadLocalStorage());
   }
 
   @Test
@@ -58,7 +58,7 @@ class LazyStorageTest {
     File serviceFile = createContextStorageProvider();
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
-          .isEqualTo(DefaultContext.threadLocalStorage());
+          .isEqualTo(ContextStorage.threadLocalStorage());
     } finally {
       serviceFile.delete();
     }
