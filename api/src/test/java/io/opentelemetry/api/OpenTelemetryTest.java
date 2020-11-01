@@ -25,7 +25,7 @@ import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.api.trace.spi.TracerProviderFactory;
@@ -212,7 +212,7 @@ class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public Span.Builder spanBuilder(String spanName) {
+    public SpanBuilder spanBuilder(String spanName) {
       return null;
     }
 

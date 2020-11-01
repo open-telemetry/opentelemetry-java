@@ -6,7 +6,6 @@
 package io.opentelemetry.api.common;
 
 import com.google.auto.value.AutoValue;
-import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -105,42 +104,17 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
     return sortAndFilterToLabels((Object[]) keyValueLabelPairs);
   }
 
-  private static Labels sortAndFilterToLabels(Object... data) {
+  static Labels sortAndFilterToLabels(Object... data) {
     return new AutoValue_Labels_ArrayBackedLabels(sortAndFilter(data));
   }
 
-  /** Create a {@link Builder} pre-populated with the contents of this Labels instance. */
-  public Builder toBuilder() {
-    Builder builder = new Builder();
-    builder.data.addAll(data());
-    return builder;
+  /** Create a {@link LabelsBuilder} pre-populated with the contents of this Labels instance. */
+  public LabelsBuilder toBuilder() {
+    return new LabelsBuilder(data());
   }
 
-  /** Creates a new {@link Builder} instance for creating arbitrary {@link Labels}. */
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /**
-   * Enables the creation of an {@link Labels} instance with an arbitrary number of key-value pairs.
-   */
-  public static class Builder {
-    private final List<Object> data = new ArrayList<>();
-
-    /** Create the {@link Labels} from this. */
-    public Labels build() {
-      return sortAndFilterToLabels(data.toArray());
-    }
-
-    /**
-     * Puts a single label into this Builder.
-     *
-     * @return this Builder
-     */
-    public Builder put(String key, String value) {
-      data.add(key);
-      data.add(value);
-      return this;
-    }
+  /** Creates a new {@link LabelsBuilder} instance for creating arbitrary {@link Labels}. */
+  public static LabelsBuilder builder() {
+    return new LabelsBuilder();
   }
 }

@@ -204,25 +204,9 @@ public interface OpenTelemetry {
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
   ContextPropagators getPropagators();
 
-  /** Returns a new {@link Builder} with the configuration of this {@link OpenTelemetry}. */
-  Builder<?> toBuilder();
-
   /**
-   * A builder of an implementation of the OpenTelemetry API. Generally used to reconfigure SDK
-   * implementations.
+   * Returns a new {@link OpenTelemetryBuilder} with the configuration of this {@link
+   * OpenTelemetry}.
    */
-  interface Builder<T extends Builder<T>> {
-
-    /** Sets the {@link TracerProvider} to use. */
-    T setTracerProvider(TracerProvider tracerProvider);
-
-    /** Sets the {@link MeterProvider} to use. */
-    T setMeterProvider(MeterProvider meterProvider);
-
-    /** Sets the {@link ContextPropagators} to use. */
-    T setPropagators(ContextPropagators propagators);
-
-    /** Returns a new {@link OpenTelemetry} based on the configuration in this {@link Builder}. */
-    OpenTelemetry build();
-  }
+  OpenTelemetryBuilder<?> toBuilder();
 }

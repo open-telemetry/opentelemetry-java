@@ -37,7 +37,7 @@ class ImmutableBaggage implements Baggage {
     this.parent = parent;
   }
 
-  public static Baggage.Builder builder() {
+  public static BaggageBuilder builder() {
     return new Builder();
   }
 
@@ -69,7 +69,7 @@ class ImmutableBaggage implements Baggage {
   }
 
   @Override
-  public Baggage.Builder toBuilder() {
+  public BaggageBuilder toBuilder() {
     Builder builder = new Builder();
     builder.entries.putAll(entries);
     builder.parent = parent;
@@ -108,7 +108,7 @@ class ImmutableBaggage implements Baggage {
 
   // TODO: Migrate to AutoValue.Builder
   // @AutoValue.Builder
-  static class Builder implements Baggage.Builder {
+  static class Builder implements BaggageBuilder {
 
     @Nullable private Baggage parent;
     private boolean noImplicitParent;
@@ -120,21 +120,21 @@ class ImmutableBaggage implements Baggage {
     }
 
     @Override
-    public Baggage.Builder setParent(Context context) {
+    public BaggageBuilder setParent(Context context) {
       Objects.requireNonNull(context, "context");
       parent = Baggage.fromContext(context);
       return this;
     }
 
     @Override
-    public Baggage.Builder setNoParent() {
+    public BaggageBuilder setNoParent() {
       this.parent = null;
       noImplicitParent = true;
       return this;
     }
 
     @Override
-    public Baggage.Builder put(String key, String value, EntryMetadata entryMetadata) {
+    public BaggageBuilder put(String key, String value, EntryMetadata entryMetadata) {
       entries.put(
           Objects.requireNonNull(key, "key"),
           Entry.create(
@@ -145,7 +145,7 @@ class ImmutableBaggage implements Baggage {
     }
 
     @Override
-    public Baggage.Builder put(String key, String value) {
+    public BaggageBuilder put(String key, String value) {
       entries.put(
           Objects.requireNonNull(key, "key"),
           Entry.create(key, Objects.requireNonNull(value, "value"), EntryMetadata.EMPTY));
@@ -153,7 +153,7 @@ class ImmutableBaggage implements Baggage {
     }
 
     @Override
-    public Baggage.Builder remove(String key) {
+    public BaggageBuilder remove(String key) {
       entries.remove(Objects.requireNonNull(key, "key"));
       if (parent != null && parent.getEntryValue(key) != null) {
         entries.put(key, null);

@@ -14,13 +14,13 @@ import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link Span.Builder}. */
+/** Unit tests for {@link SpanBuilder}. */
 class SpanBuilderTest {
   private final Tracer tracer = Tracer.getDefault();
 
   @Test
   void doNotCrash_NoopImplementation() {
-    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
+    SpanBuilder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setSpanKind(Kind.SERVER);
     spanBuilder.setParent(Context.root().with(Span.wrap(null)));
     spanBuilder.setParent(Context.root());
@@ -38,13 +38,13 @@ class SpanBuilderTest {
 
   @Test
   void setParent_NullContext() {
-    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
+    SpanBuilder spanBuilder = tracer.spanBuilder("MySpanName");
     assertThrows(NullPointerException.class, () -> spanBuilder.setParent(null));
   }
 
   @Test
   void setStartTimestamp_Negative() {
-    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
+    SpanBuilder spanBuilder = tracer.spanBuilder("MySpanName");
     assertThrows(
         IllegalArgumentException.class,
         () -> spanBuilder.setStartTimestamp(-1),

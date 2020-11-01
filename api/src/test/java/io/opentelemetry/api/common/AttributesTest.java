@@ -148,7 +148,7 @@ class AttributesTest {
             false);
     assertThat(attributes).isEqualTo(wantAttributes);
 
-    Attributes.Builder newAttributes = Attributes.builder(attributes);
+    AttributesBuilder newAttributes = Attributes.builder(attributes);
     newAttributes.put("newKey", "newValue");
     assertThat(newAttributes.build())
         .isEqualTo(
@@ -246,7 +246,7 @@ class AttributesTest {
 
   @Test
   void nullsAreNoOps() {
-    Attributes.Builder builder = Attributes.builder();
+    AttributesBuilder builder = Attributes.builder();
     builder.put(stringKey("attrValue"), "attrValue");
     builder.put("string", "string");
     builder.put("long", 10);

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logging.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -90,7 +91,7 @@ public abstract class LogRecord {
     private String severityText;
     private String name;
     private AnyValue body = AnyValue.stringAnyValue("");
-    private final Attributes.Builder attributeBuilder = Attributes.builder();
+    private final AttributesBuilder attributeBuilder = Attributes.builder();
 
     public Builder setUnixTimeNano(long timestamp) {
       this.timeUnixNano = timestamp;

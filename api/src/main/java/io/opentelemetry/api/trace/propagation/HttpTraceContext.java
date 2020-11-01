@@ -14,6 +14,8 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.TraceStateBuilder;
+import io.opentelemetry.api.trace.TraceStateEntry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
@@ -119,13 +121,13 @@ public final class HttpTraceContext implements TextMapPropagator {
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
-    List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
+    List<TraceStateEntry> entries = spanContext.getTraceState().getEntries();
     if (entries.isEmpty()) {
       // No need to add an empty "tracestate" header.
       return;
     }
     StringBuilder stringBuilder = new StringBuilder(TRACESTATE_MAX_SIZE);
-    for (TraceState.Entry entry : entries) {
+    for (TraceStateEntry entry : entries) {
       if (stringBuilder.length() != 0) {
         stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
       }
@@ -219,7 +221,7 @@ public final class HttpTraceContext implements TextMapPropagator {
   }
 
   private static TraceState extractTraceState(String traceStateHeader) {
-    TraceState.Builder traceStateBuilder = TraceState.builder();
+    TraceStateBuilder traceStateBuilder = TraceState.builder();
     String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceStateHeader);
     checkArgument(
         listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");

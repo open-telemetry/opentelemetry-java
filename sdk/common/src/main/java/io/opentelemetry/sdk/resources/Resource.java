@@ -14,6 +14,7 @@ import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
@@ -154,7 +155,7 @@ public abstract class Resource {
       return this;
     }
 
-    Attributes.Builder attrBuilder = Attributes.builder();
+    AttributesBuilder attrBuilder = Attributes.builder();
     Merger merger = new Merger(attrBuilder);
     other.getAttributes().forEach(merger);
     this.getAttributes().forEach(merger);
@@ -162,9 +163,9 @@ public abstract class Resource {
   }
 
   private static final class Merger implements AttributeConsumer {
-    private final Attributes.Builder attrBuilder;
+    private final AttributesBuilder attrBuilder;
 
-    private Merger(Attributes.Builder attrBuilder) {
+    private Merger(AttributesBuilder attrBuilder) {
       this.attrBuilder = attrBuilder;
     }
 

@@ -5,18 +5,8 @@
 
 package io.opentelemetry.api.common;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
-import static io.opentelemetry.api.common.AttributeKey.doubleKey;
-import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -45,8 +35,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     abstract List<Object> data();
 
     @Override
-    public Builder toBuilder() {
-      return new Builder(new ArrayList<>(data()));
+    public AttributesBuilder toBuilder() {
+      return new AttributesBuilder(new ArrayList<>(data()));
     }
   }
 
@@ -163,7 +153,25 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
         key6, value6);
   }
 
-  private static Attributes sortAndFilterToAttributes(Object... data) {
+  /** Returns a new {@link AttributesBuilder} instance for creating arbitrary {@link Attributes}. */
+  public static AttributesBuilder builder() {
+    return new AttributesBuilder();
+  }
+
+  /** Returns a new {@link AttributesBuilder} instance from ReadableAttributes. */
+  public static AttributesBuilder builder(ReadableAttributes attributes) {
+    final AttributesBuilder builder = new AttributesBuilder();
+    attributes.forEach(builder::put);
+    return builder;
+  }
+
+  /**
+   * Returns a new {@link AttributesBuilder} instance populated with the data of this {@link
+   * Attributes}.
+   */
+  public abstract AttributesBuilder toBuilder();
+
+  static Attributes sortAndFilterToAttributes(Object... data) {
     // null out any empty keys or keys with null values
     // so they will then be removed by the sortAndFilter method.
     for (int i = 0; i < data.length; i += 2) {
@@ -176,162 +184,5 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
       }
     }
     return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
-  }
-
-  /** Returns a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /** Returns a new {@link Builder} instance from ReadableAttributes. */
-  public static Builder builder(ReadableAttributes attributes) {
-    final Builder builder = new Builder();
-    attributes.forEach(builder::put);
-    return builder;
-  }
-
-  /** Returns a new {@link Builder} instance populated with the data of this {@link Attributes}. */
-  public abstract Builder toBuilder();
-
-  /**
-   * Enables the creation of an {@link Attributes} instance with an arbitrary number of key-value
-   * pairs.
-   */
-  public static class Builder {
-    private final List<Object> data;
-
-    private Builder() {
-      data = new ArrayList<>();
-    }
-
-    private Builder(List<Object> data) {
-      this.data = data;
-    }
-
-    /** Create the {@link Attributes} from this. */
-    public Attributes build() {
-      return sortAndFilterToAttributes(data.toArray());
-    }
-
-    /** Puts a {@link AttributeKey} with associated value into this. */
-    public <T> Builder put(AttributeKey<Long> key, int value) {
-      return put(key, (long) value);
-    }
-
-    /** Puts a {@link AttributeKey} with associated value into this. */
-    public <T> Builder put(AttributeKey<T> key, T value) {
-      if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
-        return this;
-      }
-      data.add(key);
-      data.add(value);
-      return this;
-    }
-
-    /**
-     * Puts a String attribute into this.
-     *
-     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
-     * pre-allocate your keys, if possible.
-     *
-     * @return this Builder
-     */
-    public Builder put(String key, String value) {
-      return put(stringKey(key), value);
-    }
-
-    /**
-     * Puts a long attribute into this.
-     *
-     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
-     * pre-allocate your keys, if possible.
-     *
-     * @return this Builder
-     */
-    public Builder put(String key, long value) {
-      return put(longKey(key), value);
-    }
-
-    /**
-     * Puts a double attribute into this.
-     *
-     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
-     * pre-allocate your keys, if possible.
-     *
-     * @return this Builder
-     */
-    public Builder put(String key, double value) {
-      return put(doubleKey(key), value);
-    }
-
-    /**
-     * Puts a boolean attribute into this.
-     *
-     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
-     * pre-allocate your keys, if possible.
-     *
-     * @return this Builder
-     */
-    public Builder put(String key, boolean value) {
-      return put(booleanKey(key), value);
-    }
-
-    /**
-     * Puts a String array attribute into this.
-     *
-     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
-     * pre-allocate your keys, if possible.
-     *
-     * @return this Builder
-     */
-    public Builder put(String key, String... value) {
-      return put(stringArrayKey(key), value == null ? null : Arrays.asList(value));
-    }
-
-    /**
-     * Puts a Long array attribute into this.
-     *
-     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
-     * pre-allocate your keys, if possible.
-     *
-     * @return this Builder
-     */
-    public Builder put(String key, Long... value) {
-      return put(longArrayKey(key), value == null ? null : Arrays.asList(value));
-    }
-
-    /**
-     * Puts a Double array attribute into this.
-     *
-     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
-     * pre-allocate your keys, if possible.
-     *
-     * @return this Builder
-     */
-    public Builder put(String key, Double... value) {
-      return put(doubleArrayKey(key), value == null ? null : Arrays.asList(value));
-    }
-
-    /**
-     * Puts a Boolean array attribute into this.
-     *
-     * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and
-     * pre-allocate your keys, if possible.
-     *
-     * @return this Builder
-     */
-    public Builder put(String key, Boolean... value) {
-      return put(booleanArrayKey(key), value == null ? null : Arrays.asList(value));
-    }
-
-    /**
-     * Puts all the provided attributes into this Builder.
-     *
-     * @return this Builder
-     */
-    public Builder putAll(Attributes attributes) {
-      data.addAll(attributes.data());
-      return this;
-    }
   }
 }

@@ -37,14 +37,14 @@ class TraceStateTest {
   @Test
   void getEntries() {
     assertThat(firstTraceState.getEntries())
-        .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
+        .containsExactly(TraceStateEntry.create(FIRST_KEY, FIRST_VALUE));
     assertThat(secondTraceState.getEntries())
-        .containsExactly(TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
+        .containsExactly(TraceStateEntry.create(SECOND_KEY, SECOND_VALUE));
     // Reverse order of input.
     assertThat(multiValueTraceState.getEntries())
         .containsExactly(
-            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE),
-            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
+            TraceStateEntry.create(SECOND_KEY, SECOND_VALUE),
+            TraceStateEntry.create(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test
@@ -221,8 +221,8 @@ class TraceStateTest {
                 .build()
                 .getEntries())
         .containsExactly(
-            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE),
-            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE));
+            TraceStateEntry.create(SECOND_KEY, FIRST_VALUE),
+            TraceStateEntry.create(FIRST_KEY, SECOND_VALUE));
   }
 
   @Test
@@ -233,7 +233,7 @@ class TraceStateTest {
                 .set(FIRST_KEY, FIRST_VALUE) // add a new entry
                 .build()
                 .getEntries())
-        .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
+        .containsExactly(TraceStateEntry.create(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test

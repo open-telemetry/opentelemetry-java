@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.resources;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -37,7 +38,7 @@ final class EnvAutodetectResource {
     if (rawEnvAttributes == null) {
       return Attributes.empty();
     } else {
-      Attributes.Builder attrBuilders = Attributes.builder();
+      AttributesBuilder attrBuilders = Attributes.builder();
       String[] rawAttributes = rawEnvAttributes.split(ATTRIBUTE_LIST_SPLITTER, -1);
       for (String rawAttribute : rawAttributes) {
         String[] keyValuePair = rawAttribute.split(ATTRIBUTE_KEY_VALUE_SPLITTER, -1);

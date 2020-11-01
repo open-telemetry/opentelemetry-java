@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
@@ -86,7 +87,7 @@ class RecordEventsReadableSpanTest {
     attributes.put(stringKey("MyStringAttributeKey"), "MyStringAttributeValue");
     attributes.put(longKey("MyLongAttributeKey"), 123L);
     attributes.put(booleanKey("MyBooleanAttributeKey"), false);
-    Attributes.Builder builder =
+    AttributesBuilder builder =
         Attributes.builder().put("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     for (Map.Entry<AttributeKey, Object> entry : attributes.entrySet()) {
       builder.put(entry.getKey(), entry.getValue());

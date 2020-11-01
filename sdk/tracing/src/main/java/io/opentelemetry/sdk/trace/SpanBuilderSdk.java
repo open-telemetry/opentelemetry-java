@@ -18,6 +18,7 @@ import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -36,8 +37,8 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-/** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
-final class SpanBuilderSdk implements Span.Builder {
+/** {@link SpanBuilderSdk} is SDK implementation of {@link SpanBuilder}. */
+final class SpanBuilderSdk implements SpanBuilder {
 
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
@@ -73,7 +74,7 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder setParent(Context context) {
+  public SpanBuilder setParent(Context context) {
     Objects.requireNonNull(context, "context");
     this.isRootSpan = false;
     this.parent = context;
@@ -81,26 +82,26 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder setNoParent() {
+  public SpanBuilder setNoParent() {
     this.isRootSpan = true;
     this.parent = null;
     return this;
   }
 
   @Override
-  public Span.Builder setSpanKind(Kind spanKind) {
+  public SpanBuilder setSpanKind(Kind spanKind) {
     this.spanKind = Objects.requireNonNull(spanKind, "spanKind");
     return this;
   }
 
   @Override
-  public Span.Builder addLink(SpanContext spanContext) {
+  public SpanBuilder addLink(SpanContext spanContext) {
     addLink(Link.create(spanContext));
     return this;
   }
 
   @Override
-  public Span.Builder addLink(SpanContext spanContext, Attributes attributes) {
+  public SpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
     int totalAttributeCount = attributes.size();
     addLink(
         Link.create(
@@ -127,27 +128,27 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder setAttribute(String key, String value) {
+  public SpanBuilder setAttribute(String key, String value) {
     return setAttribute(stringKey(key), value);
   }
 
   @Override
-  public Span.Builder setAttribute(String key, long value) {
+  public SpanBuilder setAttribute(String key, long value) {
     return setAttribute(longKey(key), value);
   }
 
   @Override
-  public Span.Builder setAttribute(String key, double value) {
+  public SpanBuilder setAttribute(String key, double value) {
     return setAttribute(doubleKey(key), value);
   }
 
   @Override
-  public Span.Builder setAttribute(String key, boolean value) {
+  public SpanBuilder setAttribute(String key, boolean value) {
     return setAttribute(booleanKey(key), value);
   }
 
   @Override
-  public <T> Span.Builder setAttribute(AttributeKey<T> key, T value) {
+  public <T> SpanBuilder setAttribute(AttributeKey<T> key, T value) {
     Objects.requireNonNull(key, "key");
     if (value == null) {
       return this;
@@ -165,7 +166,7 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder setStartTimestamp(long startTimestamp) {
+  public SpanBuilder setStartTimestamp(long startTimestamp) {
     Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
     startEpochNanos = startTimestamp;
     return this;

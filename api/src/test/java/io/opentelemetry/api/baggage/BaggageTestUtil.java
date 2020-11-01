@@ -15,7 +15,7 @@ class BaggageTestUtil {
   }
 
   static Baggage listToBaggage(List<Entry> entries) {
-    Baggage.Builder builder = Baggage.builder();
+    BaggageBuilder builder = Baggage.builder();
     for (Entry entry : entries) {
       builder.put(entry.getKey(), entry.getValue(), entry.getEntryMetadata());
     }

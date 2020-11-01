@@ -177,7 +177,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @Override
   public Span start() {
     Baggage baggage = null;
-    io.opentelemetry.api.trace.Span.Builder builder = tracer().spanBuilder(spanName);
+    io.opentelemetry.api.trace.SpanBuilder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();

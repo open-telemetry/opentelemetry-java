@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
 import java.util.HashMap;
 import java.util.Map;
@@ -83,7 +84,7 @@ final class AttributesMap implements ReadableAttributes {
 
   @SuppressWarnings("rawtypes")
   ReadableAttributes immutableCopy() {
-    Attributes.Builder builder = Attributes.builder();
+    AttributesBuilder builder = Attributes.builder();
     for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
       builder.put(entry.getKey(), entry.getValue());
     }

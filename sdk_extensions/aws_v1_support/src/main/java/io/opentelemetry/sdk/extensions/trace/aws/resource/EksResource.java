@@ -12,6 +12,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
@@ -60,7 +61,7 @@ public class EksResource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    Attributes.Builder attrBuilders = Attributes.builder();
+    AttributesBuilder attrBuilders = Attributes.builder();
 
     String clusterName = getClusterName();
     if (!Strings.isNullOrEmpty(clusterName)) {
