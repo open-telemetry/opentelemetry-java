@@ -22,6 +22,8 @@
 
 package io.opentelemetry.context;
 
+import java.util.function.Consumer;
+
 /**
  * The storage for storing and retrieving the current {@link Context}.
  *
@@ -81,4 +83,6 @@ public interface ContextStorage {
    * this will be the {@linkplain Context#root()} root context}.
    */
   Context current();
+
+  void onAttach(Consumer<Context> contextConsumer);
 }

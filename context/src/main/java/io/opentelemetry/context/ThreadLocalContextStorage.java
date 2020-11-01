@@ -5,6 +5,8 @@
 
 package io.opentelemetry.context;
 
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +16,8 @@ enum ThreadLocalContextStorage implements ContextStorage {
   private static final Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
 
   private static final ThreadLocal<Context> THREAD_LOCAL_STORAGE = new ThreadLocal<>();
+
+  private static final AtomicReference<Consumer<Context>> onAttachConsumer = new AtomicReference<>();
 
   static {
     THREAD_LOCAL_STORAGE.set(Context.root());
@@ -31,6 +35,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
       return NoopScope.INSTANCE;
     }
 
+    onAttach(toAttach);
     THREAD_LOCAL_STORAGE.set(toAttach);
 
     return () -> {
@@ -39,13 +44,26 @@ enum ThreadLocalContextStorage implements ContextStorage {
             Level.FINE,
             "Context in storage not the expected context, Scope.close was not called correctly");
       }
+      onAttach(beforeAttach);
       THREAD_LOCAL_STORAGE.set(beforeAttach);
     };
+  }
+
+  private void onAttach(Context toAttach) {
+    Consumer<Context> consumer = onAttachConsumer.get();
+    if (consumer != null) {
+      consumer.accept(toAttach);
+    }
   }
 
   @Override
   public Context current() {
     return THREAD_LOCAL_STORAGE.get();
+  }
+
+  @Override
+  public void onAttach(Consumer<Context> contextConsumer) {
+    onAttachConsumer.updateAndGet(existing -> existing != null ? existing.andThen(contextConsumer) : contextConsumer);
   }
 
   enum NoopScope implements Scope {
