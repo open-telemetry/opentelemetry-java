@@ -15,20 +15,10 @@ enum ThreadLocalContextStorage implements ContextStorage {
 
   private static final Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
 
-  private static final ThreadLocal<Context> THREAD_LOCAL_STORAGE;
+  private static final ThreadLocal<Context> THREAD_LOCAL_STORAGE = new ThreadLocal<>();
 
   private static final AtomicReference<Consumer<Context>> onAttachConsumer =
       new AtomicReference<>();
-
-  static {
-    THREAD_LOCAL_STORAGE =
-        new ThreadLocal<Context>() {
-          @Override
-          protected Context initialValue() {
-            return Context.root();
-          }
-        };
-  }
 
   @Override
   public Scope attach(Context toAttach) {
@@ -58,7 +48,8 @@ enum ThreadLocalContextStorage implements ContextStorage {
 
   @Override
   public Context current() {
-    return THREAD_LOCAL_STORAGE.get();
+    Context current = THREAD_LOCAL_STORAGE.get();
+    return current != null ? current : Context.root();
   }
 
   @Override
