@@ -139,7 +139,7 @@ public interface Context {
    */
   @MustBeClosed
   default Scope makeCurrent() {
-    return storage().attach(this);
+    return ContextStorage.get().attach(this);
   }
 
   /**
@@ -189,9 +189,5 @@ public interface Context {
    */
   default ScheduledExecutorService wrap(ScheduledExecutorService executor) {
     return new ContextScheduledExecutorService(this, executor);
-  }
-
-  default ContextStorage storage() {
-    return ContextStorage.get();
   }
 }
