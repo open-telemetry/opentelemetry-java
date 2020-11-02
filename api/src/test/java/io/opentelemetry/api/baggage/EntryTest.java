@@ -6,7 +6,6 @@
 package io.opentelemetry.api.baggage;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import org.junit.jupiter.api.Test;
@@ -40,22 +39,5 @@ class EntryTest {
         .addEqualityGroup(Entry.create(KEY_2, VALUE, SAMPLE_METADATA))
         .addEqualityGroup(Entry.create(KEY, VALUE, EntryMetadata.create("other")))
         .testEquals();
-  }
-
-  @Test
-  void create_DisallowKeyUnprintableChars() {
-    assertThrows(
-        IllegalArgumentException.class, () -> Entry.create("\2ab\3cd", "value", SAMPLE_METADATA));
-  }
-
-  @Test
-  void createString_DisallowKeyEmpty() {
-    assertThrows(IllegalArgumentException.class, () -> Entry.create("", "value", SAMPLE_METADATA));
-  }
-
-  @Test
-  void disallowEntryValueWithUnprintableChars() {
-    String value = "\2ab\3cd";
-    assertThrows(IllegalArgumentException.class, () -> Entry.create("key", value, SAMPLE_METADATA));
   }
 }

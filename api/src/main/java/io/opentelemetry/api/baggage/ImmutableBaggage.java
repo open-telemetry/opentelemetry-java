@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.baggage;
 
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.context.Context;
 import java.util.Collection;
 import java.util.Collections;
@@ -135,6 +136,9 @@ class ImmutableBaggage implements Baggage {
 
     @Override
     public Baggage.Builder put(String key, String value, EntryMetadata entryMetadata) {
+      if (!isKeyValid(key) || !isValueValid(value)) {
+        return this;
+      }
       entries.put(
           Objects.requireNonNull(key, "key"),
           Entry.create(
@@ -146,14 +150,14 @@ class ImmutableBaggage implements Baggage {
 
     @Override
     public Baggage.Builder put(String key, String value) {
-      entries.put(
-          Objects.requireNonNull(key, "key"),
-          Entry.create(key, Objects.requireNonNull(value, "value"), EntryMetadata.EMPTY));
-      return this;
+      return put(key, value, EntryMetadata.EMPTY);
     }
 
     @Override
     public Baggage.Builder remove(String key) {
+      if (key == null) {
+        return this;
+      }
       entries.remove(Objects.requireNonNull(key, "key"));
       if (parent != null && parent.getEntryValue(key) != null) {
         entries.put(key, null);
@@ -168,5 +172,25 @@ class ImmutableBaggage implements Baggage {
       }
       return new ImmutableBaggage(entries, parent);
     }
+  }
+
+  /**
+   * Determines whether the given {@code String} is a valid entry key.
+   *
+   * @param name the entry key name to be validated.
+   * @return whether the name is valid.
+   */
+  private static boolean isKeyValid(String name) {
+    return name != null && !name.isEmpty() && StringUtils.isPrintableString(name);
+  }
+
+  /**
+   * Determines whether the given {@code String} is a valid entry value.
+   *
+   * @param value the entry value to be validated.
+   * @return whether the value is valid.
+   */
+  private static boolean isValueValid(String value) {
+    return value != null && StringUtils.isPrintableString(value);
   }
 }
