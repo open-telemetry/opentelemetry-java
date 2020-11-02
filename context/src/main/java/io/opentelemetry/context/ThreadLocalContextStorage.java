@@ -8,7 +8,7 @@ package io.opentelemetry.context;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-enum ThreadLocalContextStorage implements ContextStorage {
+public enum ThreadLocalContextStorage implements ContextStorage {
   INSTANCE;
 
   private static final Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
