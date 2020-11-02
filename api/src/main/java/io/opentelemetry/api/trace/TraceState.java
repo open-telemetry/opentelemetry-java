@@ -112,7 +112,7 @@ public abstract class TraceState {
       Objects.requireNonNull(value, "value");
       Utils.checkArgument(validateKey(key), "Invalid key %s", key);
       Utils.checkArgument(validateValue(value), "Invalid value %s", value);
-      return new AutoValue_TraceStateEntry(key, value);
+      return new AutoValue_TraceState_Entry(key, value);
     }
 
     /**

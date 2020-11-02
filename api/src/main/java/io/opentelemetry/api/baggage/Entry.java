@@ -7,15 +7,13 @@ package io.opentelemetry.api.baggage;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.api.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 
 /** String-String key-value pair, along with {@link EntryMetadata}. */
 @Immutable
 @AutoValue
 public abstract class Entry {
-
-  // VisibleForTestig
-  static final Entry INVALID = Entry.create("invalid", "");
 
   Entry() {}
 
@@ -28,9 +26,8 @@ public abstract class Entry {
    * @return a {@code Entry}.
    */
   public static Entry create(String key, String value, EntryMetadata entryMetadata) {
-    if (!isKeyValid(key) || !isValueValid(value)) {
-      return INVALID;
-    }
+    Utils.checkArgument(keyIsValid(key), "Invalid entry key name: %s", key);
+    Utils.checkArgument(isValueValid(value), "Invalid entry value: %s", value);
     return new AutoValue_Entry(key, value, entryMetadata);
   }
 
@@ -72,8 +69,8 @@ public abstract class Entry {
    * @param name the entry key name to be validated.
    * @return whether the name is valid.
    */
-  private static boolean isKeyValid(String name) {
-    return name != null && !name.isEmpty() && StringUtils.isPrintableString(name);
+  private static boolean keyIsValid(String name) {
+    return !name.isEmpty() && StringUtils.isPrintableString(name);
   }
 
   /**
@@ -83,6 +80,6 @@ public abstract class Entry {
    * @return whether the value is valid.
    */
   private static boolean isValueValid(String value) {
-    return value != null && StringUtils.isPrintableString(value);
+    return StringUtils.isPrintableString(value);
   }
 }

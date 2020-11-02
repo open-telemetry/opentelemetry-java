@@ -44,12 +44,13 @@ class EntryTest {
 
   @Test
   void create_DisallowKeyUnprintableChars() {
-    assertThat(Entry.create("\2ab\3cd", "value", SAMPLE_METADATA)).isEqualTo(Entry.INVALID);
+    assertThrows(
+        IllegalArgumentException.class, () -> Entry.create("\2ab\3cd", "value", SAMPLE_METADATA));
   }
 
   @Test
   void createString_DisallowKeyEmpty() {
-    assertThat(Entry.create("", "value", SAMPLE_METADATA)).isEqualTo(Entry.INVALID);
+    assertThrows(IllegalArgumentException.class, () -> Entry.create("", "value", SAMPLE_METADATA));
   }
 
   @Test
