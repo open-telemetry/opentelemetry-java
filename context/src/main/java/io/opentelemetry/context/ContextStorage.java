@@ -22,6 +22,8 @@
 
 package io.opentelemetry.context;
 
+import javax.annotation.Nullable;
+
 /**
  * The storage for storing and retrieving the current {@link Context}.
  *
@@ -77,8 +79,9 @@ public interface ContextStorage {
   Scope attach(Context toAttach);
 
   /**
-   * Returns the current {@link DefaultContext}. If no {@link DefaultContext} has been attached yet,
-   * this will be the {@linkplain Context#root()} root context}.
+   * Returns the current {@link Context}. If no {@link Context} has been attached yet, this will
+   * return {@code null}.
    */
+  @Nullable
   Context current();
 }
