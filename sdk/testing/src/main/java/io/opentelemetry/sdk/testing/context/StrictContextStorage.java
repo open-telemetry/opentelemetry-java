@@ -46,7 +46,7 @@ import java.util.concurrent.LinkedBlockingDeque;
  * >   static void setUp() {
  * >     previousStorage = ContextStorage.get()
  * >     strictStorage = StrictContextStorage.create(previousStorage);
- * >     ContextStorage.set(previousStorage);
+ * >     ContextStorage.set(strictStorage);
  * >   }
  * >
  * >   @AfterEach
