@@ -15,10 +15,6 @@ enum ThreadLocalContextStorage implements ContextStorage {
 
   private static final ThreadLocal<Context> THREAD_LOCAL_STORAGE = new ThreadLocal<>();
 
-  static {
-    THREAD_LOCAL_STORAGE.set(Context.root());
-  }
-
   @Override
   public Scope attach(Context toAttach) {
     if (toAttach == null) {
@@ -45,7 +41,8 @@ enum ThreadLocalContextStorage implements ContextStorage {
 
   @Override
   public Context current() {
-    return THREAD_LOCAL_STORAGE.get();
+    Context threadContext = THREAD_LOCAL_STORAGE.get();
+    return threadContext != null ? threadContext : Context.root();
   }
 
   enum NoopScope implements Scope {
