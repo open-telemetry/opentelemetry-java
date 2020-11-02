@@ -15,7 +15,6 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TraceStateBuilder;
-import io.opentelemetry.api.trace.TraceStateEntry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
@@ -121,13 +120,13 @@ public final class HttpTraceContext implements TextMapPropagator {
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
-    List<TraceStateEntry> entries = spanContext.getTraceState().getEntries();
+    List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
     if (entries.isEmpty()) {
       // No need to add an empty "tracestate" header.
       return;
     }
     StringBuilder stringBuilder = new StringBuilder(TRACESTATE_MAX_SIZE);
-    for (TraceStateEntry entry : entries) {
+    for (TraceState.Entry entry : entries) {
       if (stringBuilder.length() != 0) {
         stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
       }

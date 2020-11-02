@@ -17,7 +17,7 @@ public final class TraceStateBuilder {
   private static final TraceState EMPTY = TraceState.create(Collections.emptyList());
 
   private final TraceState parent;
-  @Nullable private ArrayList<TraceStateEntry> entries;
+  @Nullable private ArrayList<TraceState.Entry> entries;
 
   TraceStateBuilder() {
     parent = EMPTY;
@@ -38,7 +38,7 @@ public final class TraceStateBuilder {
    */
   public TraceStateBuilder set(String key, String value) {
     // Initially create the Entry to validate input.
-    TraceStateEntry entry = TraceStateEntry.create(key, value);
+    TraceState.Entry entry = TraceState.Entry.create(key, value);
     if (entries == null) {
       // Copy entries from the parent.
       entries = new ArrayList<>(parent.getEntries());
