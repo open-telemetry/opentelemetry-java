@@ -18,7 +18,7 @@ import io.opentelemetry.api.trace.spi.TracerProviderFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.internal.InstantClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
@@ -129,7 +129,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
   /** A builder for configuring an {@link OpenTelemetrySdk}. */
   public static class Builder implements OpenTelemetry.Builder<Builder> {
-    private Clock clock = MillisClock.getInstance();
+    private Clock clock = InstantClock.getInstance();
     private Resource resource = Resource.getDefault();
     private ContextPropagators propagators = DefaultContextPropagators.builder().build();
 

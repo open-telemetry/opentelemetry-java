@@ -6,29 +6,31 @@
 package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.sdk.common.Clock;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** A {@link Clock} that uses {@link System#currentTimeMillis()} and {@link System#nanoTime()}. */
 @ThreadSafe
-public final class MillisClock implements Clock {
+public final class InstantClock implements Clock {
 
-  private static final MillisClock INSTANCE = new MillisClock();
+  private static final InstantClock INSTANCE = new InstantClock();
 
-  private MillisClock() {}
+  private InstantClock() {}
 
   /**
    * Returns a {@code MillisClock}.
    *
    * @return a {@code MillisClock}.
    */
-  public static MillisClock getInstance() {
+  public static InstantClock getInstance() {
     return INSTANCE;
   }
 
   @Override
   public long now() {
-    return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+    Instant now = Instant.now();
+    return TimeUnit.SECONDS.toNanos(now.getEpochSecond()) + now.getNano();
   }
 
   @Override

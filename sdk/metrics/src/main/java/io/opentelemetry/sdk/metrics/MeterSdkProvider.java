@@ -10,7 +10,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
-import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.internal.InstantClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
@@ -80,7 +80,7 @@ public final class MeterSdkProvider implements MeterProvider {
    */
   public static final class Builder {
 
-    private Clock clock = MillisClock.getInstance();
+    private Clock clock = InstantClock.getInstance();
     private Resource resource = Resource.getDefault();
 
     private Builder() {}
