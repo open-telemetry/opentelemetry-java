@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.example;
+package io.opentelemetry.example.grpc;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -17,7 +17,6 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
-import io.grpc.stub.StreamObserver;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -29,18 +28,16 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.StatusCanonicalCode;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracingContextUtils;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class HelloWorldClientStream {
-  private static final Logger logger = Logger.getLogger(HelloWorldClientStream.class.getName());
+public class HelloWorldClient {
+  private static final Logger logger = Logger.getLogger(HelloWorldClient.class.getName());
   private final ManagedChannel channel;
   private final String serverHostname;
   private final Integer serverPort;
-  private final GreeterGrpc.GreeterStub asyncStub;
+  private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
   // OTel API
   Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
@@ -54,7 +51,7 @@ public class HelloWorldClientStream {
           carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
 
   /** Construct client connecting to HelloWorld server at {@code host:port}. */
-  public HelloWorldClientStream(String host, int port) {
+  public HelloWorldClient(String host, int port) {
     this.serverHostname = host;
     this.serverPort = port;
     this.channel =
@@ -65,7 +62,7 @@ public class HelloWorldClientStream {
             // Intercept the request to tag the span context
             .intercept(new OpenTelemetryClientInterceptor())
             .build();
-    asyncStub = GreeterGrpc.newStub(channel);
+    blockingStub = GreeterGrpc.newBlockingStub(channel);
     // Initialize the OTel tracer
     initTracer();
   }
@@ -82,8 +79,8 @@ public class HelloWorldClientStream {
   }
 
   /** Say hello to server. */
-  public void greet(List<String> names) {
-    logger.info("Will try to greet " + Arrays.toString(names.toArray()) + " ...");
+  public void greet(String name) {
+    logger.info("Will try to greet " + name + " ...");
 
     // Start a span
     Span span =
@@ -93,56 +90,18 @@ public class HelloWorldClientStream {
     span.setAttribute("net.peer.ip", this.serverHostname);
     span.setAttribute("net.peer.port", this.serverPort);
 
-    StreamObserver<HelloRequest> requestObserver;
-
     // Set the context with the current span
     try (Scope scope = TracingContextUtils.currentContextWith(span)) {
-      HelloReplyStreamObserver replyObserver = new HelloReplyStreamObserver();
-      requestObserver = asyncStub.sayHelloStream(replyObserver);
-      for (String name : names) {
-        try {
-          requestObserver.onNext(HelloRequest.newBuilder().setName(name).build());
-          // Sleep for a bit before sending the next one.
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
-          requestObserver.onError(e);
-        }
+      HelloRequest request = HelloRequest.newBuilder().setName(name).build();
+      try {
+        HelloReply response = blockingStub.sayHello(request);
+        logger.info("Greeting: " + response.getMessage());
+      } catch (StatusRuntimeException e) {
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
+        span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + e.getStatus());
       }
-      requestObserver.onCompleted();
-      span.addEvent("Done sending");
-    } catch (StatusRuntimeException e) {
-      logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-      span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + e.getStatus());
     } finally {
       span.end();
-    }
-  }
-
-  private class HelloReplyStreamObserver implements StreamObserver<HelloReply> {
-
-    public HelloReplyStreamObserver() {
-      logger.info("Greeting: ");
-    }
-
-    @Override
-    public void onNext(HelloReply value) {
-      Span span = TracingContextUtils.getCurrentSpan();
-      span.addEvent("Data received: " + value.getMessage());
-      logger.info(value.getMessage());
-    }
-
-    @Override
-    public void onError(Throwable t) {
-      Span span = TracingContextUtils.getCurrentSpan();
-      logger.log(Level.WARNING, "RPC failed: {0}", t.getMessage());
-      span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + t.getMessage());
-    }
-
-    @Override
-    public void onCompleted() {
-      // Since onCompleted is async and the span.end() is called in the main thread,
-      // it is recommended to set the span Status in the main thread.
     }
   }
 
@@ -170,14 +129,14 @@ public class HelloWorldClientStream {
    */
   public static void main(String[] args) throws Exception {
     // Access a service running on the local machine on port 50051
-    HelloWorldClientStream client = new HelloWorldClientStream("localhost", 50051);
+    HelloWorldClient client = new HelloWorldClient("localhost", 50051);
     try {
-      List<String> users = Arrays.asList("world", "this", "is", "a", "list", "of", "names");
+      String user = "world";
       // Use the arg as the name to greet if provided
       if (args.length > 0) {
-        users = Arrays.asList(args);
+        user = args[0];
       }
-      client.greet(users);
+      client.greet(user);
     } finally {
       client.shutdown();
     }

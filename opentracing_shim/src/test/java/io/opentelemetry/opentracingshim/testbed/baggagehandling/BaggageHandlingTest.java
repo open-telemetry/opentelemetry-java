@@ -7,8 +7,9 @@ package io.opentelemetry.opentracingshim.testbed.baggagehandling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
-import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -20,9 +21,11 @@ import org.junit.jupiter.api.Test;
 
 public final class BaggageHandlingTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final OpenTelemetry openTelemetry =
+      OpenTelemetry.get().toBuilder().setTracerProvider(sdk).build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = TraceShim.createTracerShim(sdk);
+  private final Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test

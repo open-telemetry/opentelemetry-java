@@ -1,4 +1,4 @@
-package io.opentelemetry.example;
+package io.opentelemetry.example.prometheus;
 
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.exporters.prometheus.PrometheusCollector;

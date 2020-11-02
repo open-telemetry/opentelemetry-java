@@ -1,4 +1,4 @@
-package io.opentelemetry.example;
+package io.opentelemetry.example.zipkin;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.exporters.zipkin.ZipkinSpanExporter;

@@ -12,9 +12,11 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
-import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Tracer;
@@ -26,11 +28,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TestClientServerTest {
-
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final OpenTelemetry openTelemetry =
+      OpenTelemetry.get().toBuilder()
+          .setTracerProvider(sdk)
+          .setPropagators(HttpTraceContext::getInstance)
+          .build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = TraceShim.createTracerShim(sdk);
+  private final Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
   private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(10);
   private Server server;
 

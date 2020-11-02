@@ -32,7 +32,7 @@ $ ./gradlew check
 
 We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). 
 Our build will fail if source code is not formatted according to that style. To fix any
-style failures the above [checks](#checks) show, automatically apply the formatting with
+style failures the above [checks](#checks) show, automatically apply the formatting with:
 
 ```bash
 $ ./gradlew spotlessApply
@@ -42,6 +42,15 @@ To verify code style manually run the following command,
 which uses [google-java-format](https://github.com/google/google-java-format) library:
 
 `./gradlew spotless`
+
+### Best practices that we follow
+
+* Avoid exposing publicly any class/method/variable that don't need to be public.
+* By default, all arguments/members are treated as non-null. Every argument/member that can be `null` must be annotated with `@Nullable`.
+* The project aims to provide a consistent experience across all the public APIs. It is important to ensure consistency (same look and feel) across different public packages.
+* Use `final` for public classes everywhere it is possible, this ensures that these classes cannot be extended when the API does not intend to offer that functionality.
+
+If you notice any practice being applied in the project consistently that isn't listed here, please consider a pull request to add it.
 
 ### Pre-commit hook
 To completely delegate code style formatting to the machine, 

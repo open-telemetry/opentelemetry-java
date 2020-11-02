@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.example;
+package io.opentelemetry.example.otlp;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;

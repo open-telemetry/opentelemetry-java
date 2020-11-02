@@ -10,6 +10,8 @@ import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
+import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
+import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
@@ -169,12 +171,18 @@ final class SpanAdapter {
   }
 
   static Status toStatusProto(SpanData.Status status) {
-    // todo: Update this when the proto definitions are updated to include UNSET and ERROR
-    Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
-    if (status.getCanonicalCode() == StatusCode.ERROR) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_UNKNOWN_ERROR;
+    Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
+    Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
+    if (status.getCanonicalCode() == StatusCode.OK) {
+      protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
+    } else if (status.getCanonicalCode() == StatusCode.ERROR) {
+      protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
+      deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
     }
-    Status.Builder builder = Status.newBuilder().setCode(protoStatusCode);
+
+    @SuppressWarnings("deprecation") // setDeprecatedCode is deprecated.
+    Status.Builder builder =
+        Status.newBuilder().setCode(protoStatusCode).setDeprecatedCode(deprecatedStatusCode);
     if (status.getDescription() != null) {
       builder.setMessage(status.getDescription());
     }

@@ -11,7 +11,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
-class BaggageUtilsTest {
+class BaggageContextTest {
 
   @Test
   void testGetCurrentBaggage_Default() {
@@ -24,7 +24,7 @@ class BaggageUtilsTest {
   @Test
   void testGetCurrentBaggage_SetCorrContext() {
     Baggage baggage = Baggage.empty();
-    try (Scope ignored = BaggageUtils.withBaggage(baggage, Context.root()).makeCurrent()) {
+    try (Scope ignored = Context.root().with(baggage).makeCurrent()) {
       assertThat(Baggage.current()).isSameAs(baggage);
     }
   }
@@ -38,7 +38,7 @@ class BaggageUtilsTest {
   @Test
   void testGetBaggage_ExplicitContext() {
     Baggage baggage = Baggage.empty();
-    Context context = BaggageUtils.withBaggage(baggage, Context.root());
+    Context context = Context.root().with(baggage);
     assertThat(Baggage.fromContext(context)).isSameAs(baggage);
   }
 
@@ -51,7 +51,7 @@ class BaggageUtilsTest {
   @Test
   void testGetBaggageWithoutDefault_ExplicitContext() {
     Baggage baggage = Baggage.empty();
-    Context context = BaggageUtils.withBaggage(baggage, Context.root());
+    Context context = Context.root().with(baggage);
     assertThat(Baggage.fromContext(context)).isSameAs(baggage);
   }
 }
