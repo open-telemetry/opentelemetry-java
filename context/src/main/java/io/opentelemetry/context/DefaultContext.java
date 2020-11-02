@@ -39,6 +39,16 @@ final class DefaultContext implements Context {
 
   // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
   // this method.
+  //
+  // In particular, do not change this return type to DefaultContext because auto-instrumentation
+  // hijacks this method and returns a bridged implementation of the Context.
+  //
+  // Ideally auto-instrumentation would hijack Context.root() instead of DefaultContext.root(),
+  // but it also need to inject its own implementation of the Context into the class loader at the
+  // same time, which causes a problem because injecting a class into the class loader automatically
+  // resolves its super classes (interfaces), which in this case is Context, which is the same class
+  // (interface) being instrumented at that time, which leads to the JVM throwing a LinkageError
+  // "attempted duplicate interface definition"
   static Context root() {
     return ROOT;
   }
