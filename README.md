@@ -19,8 +19,8 @@ This project contains the following top level components:
   * [metrics api](api/src/main/java/io/opentelemetry/api/metrics/).
 * [extensions](extensions/) define additional API extensions, which are not part of the core API.
 * [sdk](sdk/) define the reference implementation complying to the OpenTelemetry API.
-* [sdk extensions](sdk_extensions/) define additional SDK extensions, which are not part of the core SDK.
-* [OpenTracing shim](opentracing_shim/) defines a bridge layer from OpenTracing to the OpenTelemetry API.
+* [sdk-extensions](sdk-extensions/) define additional SDK extensions, which are not part of the core SDK.
+* [OpenTracing shim](opentracing-shim/) defines a bridge layer from OpenTracing to the OpenTelemetry API.
 * [examples](examples/) on how to use the APIs, SDK, and standard exporters.
 
 We would love to hear from the larger community: please provide feedback proactively.
