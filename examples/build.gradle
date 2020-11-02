@@ -14,7 +14,7 @@ subprojects {
 
     ext {
         opentelemetryVersion = "0.9.1"
-        grpcVersion = '1.28.0'
+        grpcVersion = '1.30.2'
         protobufVersion = '3.11.4'
         protocVersion = protobufVersion
     }
