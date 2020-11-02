@@ -5,7 +5,7 @@
 
 package io.opentelemetry.opencensusshim;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -27,11 +27,14 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class InteroperabilityTest {
 
   private static final String NULL_SPAN_ID = "0000000000000000";
@@ -66,30 +69,30 @@ public class InteroperabilityTest {
     Collection<SpanData> export2 = spanDataCaptor.getAllValues().get(1);
     Collection<SpanData> export3 = spanDataCaptor.getAllValues().get(2);
 
-    assertEquals(1, export1.size());
+    assertThat(export1.size()).isEqualTo(1);
     SpanData spanData1 = export1.iterator().next();
-    assertEquals("OpenTelemetrySpan2", spanData1.getName());
-    assertEquals(2, spanData1.getTotalRecordedEvents());
-    assertEquals("OpenTelemetry2: Event 1", spanData1.getEvents().get(0).getName());
-    assertEquals("OpenTelemetry2: Event 2", spanData1.getEvents().get(1).getName());
+    assertThat(spanData1.getName()).isEqualTo("OpenTelemetrySpan2");
+    assertThat(spanData1.getTotalRecordedEvents()).isEqualTo(2);
+    assertThat(spanData1.getEvents().get(0).getName()).isEqualTo("OpenTelemetry2: Event 1");
+    assertThat(spanData1.getEvents().get(1).getName()).isEqualTo("OpenTelemetry2: Event 2");
 
-    assertEquals(1, export2.size());
+    assertThat(export2.size()).isEqualTo(1);
     SpanData spanData2 = export2.iterator().next();
-    assertEquals("OpenCensusSpan1", spanData2.getName());
-    assertEquals(2, spanData2.getTotalRecordedEvents());
-    assertEquals("OpenCensus1: Event 1", spanData2.getEvents().get(0).getName());
-    assertEquals("OpenCensus1: Event 2", spanData2.getEvents().get(1).getName());
+    assertThat(spanData2.getName()).isEqualTo("OpenCensusSpan1");
+    assertThat(spanData2.getTotalRecordedEvents()).isEqualTo(2);
+    assertThat(spanData2.getEvents().get(0).getName()).isEqualTo("OpenCensus1: Event 1");
+    assertThat(spanData2.getEvents().get(1).getName()).isEqualTo("OpenCensus1: Event 2");
 
-    assertEquals(1, export3.size());
+    assertThat(export3.size()).isEqualTo(1);
     SpanData spanData3 = export3.iterator().next();
-    assertEquals("OpenTelemetrySpan", spanData3.getName());
-    assertEquals(2, spanData3.getTotalRecordedEvents());
-    assertEquals("OpenTelemetry: Event 1", spanData3.getEvents().get(0).getName());
-    assertEquals("OpenTelemetry: Event 2", spanData3.getEvents().get(1).getName());
+    assertThat(spanData3.getName()).isEqualTo("OpenTelemetrySpan");
+    assertThat(spanData3.getTotalRecordedEvents()).isEqualTo(2);
+    assertThat(spanData3.getEvents().get(0).getName()).isEqualTo("OpenTelemetry: Event 1");
+    assertThat(spanData3.getEvents().get(1).getName()).isEqualTo("OpenTelemetry: Event 2");
 
-    assertEquals(spanData2.getSpanId(), spanData1.getParentSpanId());
-    assertEquals(spanData3.getSpanId(), spanData2.getParentSpanId());
-    assertEquals(NULL_SPAN_ID, spanData3.getParentSpanId());
+    assertThat(spanData1.getParentSpanId()).isEqualTo(spanData2.getSpanId());
+    assertThat(spanData2.getParentSpanId()).isEqualTo(spanData3.getSpanId());
+    assertThat(spanData3.getParentSpanId()).isEqualTo(NULL_SPAN_ID);
   }
 
   @Test
@@ -114,30 +117,30 @@ public class InteroperabilityTest {
     Collection<SpanData> export2 = spanDataCaptor.getAllValues().get(1);
     Collection<SpanData> export3 = spanDataCaptor.getAllValues().get(2);
 
-    assertEquals(1, export1.size());
+    assertThat(export1.size()).isEqualTo(1);
     SpanData spanData1 = export1.iterator().next();
-    assertEquals("OpenCensusSpan2", spanData1.getName());
-    assertEquals(2, spanData1.getTotalRecordedEvents());
-    assertEquals("OpenCensus2: Event 1", spanData1.getEvents().get(0).getName());
-    assertEquals("OpenCensus2: Event 2", spanData1.getEvents().get(1).getName());
+    assertThat(spanData1.getName()).isEqualTo("OpenCensusSpan2");
+    assertThat(spanData1.getTotalRecordedEvents()).isEqualTo(2);
+    assertThat(spanData1.getEvents().get(0).getName()).isEqualTo("OpenCensus2: Event 1");
+    assertThat(spanData1.getEvents().get(1).getName()).isEqualTo("OpenCensus2: Event 2");
 
-    assertEquals(1, export2.size());
+    assertThat(export2.size()).isEqualTo(1);
     SpanData spanData2 = export2.iterator().next();
-    assertEquals("OpenCensusSpan1", spanData2.getName());
-    assertEquals(2, spanData2.getTotalRecordedEvents());
-    assertEquals("OpenCensus1: Event 1", spanData2.getEvents().get(0).getName());
-    assertEquals("OpenCensus1: Event 2", spanData2.getEvents().get(1).getName());
+    assertThat(spanData2.getName()).isEqualTo("OpenCensusSpan1");
+    assertThat(spanData2.getTotalRecordedEvents()).isEqualTo(2);
+    assertThat(spanData2.getEvents().get(0).getName()).isEqualTo("OpenCensus1: Event 1");
+    assertThat(spanData2.getEvents().get(1).getName()).isEqualTo("OpenCensus1: Event 2");
 
-    assertEquals(1, export3.size());
+    assertThat(export3.size()).isEqualTo(1);
     SpanData spanData3 = export3.iterator().next();
-    assertEquals("OpenCensusSpan", spanData3.getName());
-    assertEquals(2, spanData3.getTotalRecordedEvents());
-    assertEquals("OpenCensus: Event 1", spanData3.getEvents().get(0).getName());
-    assertEquals("OpenCensus: Event 2", spanData3.getEvents().get(1).getName());
+    assertThat(spanData3.getName()).isEqualTo("OpenCensusSpan");
+    assertThat(spanData3.getTotalRecordedEvents()).isEqualTo(2);
+    assertThat(spanData3.getEvents().get(0).getName()).isEqualTo("OpenCensus: Event 1");
+    assertThat(spanData3.getEvents().get(1).getName()).isEqualTo("OpenCensus: Event 2");
 
-    assertEquals(spanData2.getSpanId(), spanData1.getParentSpanId());
-    assertEquals(spanData3.getSpanId(), spanData2.getParentSpanId());
-    assertEquals(NULL_SPAN_ID, spanData3.getParentSpanId());
+    assertThat(spanData1.getParentSpanId()).isEqualTo(spanData2.getSpanId());
+    assertThat(spanData2.getParentSpanId()).isEqualTo(spanData3.getSpanId());
+    assertThat(spanData3.getParentSpanId()).isEqualTo(NULL_SPAN_ID);
   }
 
   private static void createOpenCensusScopedSpanWithChildSpan(

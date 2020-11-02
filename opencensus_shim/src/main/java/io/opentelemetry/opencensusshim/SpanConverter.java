@@ -32,9 +32,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class SpanConverter {
+class SpanConverter {
 
-  public static class FakeSpan extends Span {
+  /**
+   * FakeSpan is used to represent OpenTelemetry spans in the OpenCensus context. Only the trace ID,
+   * span ID, trace options, and trace state are mapped, so that the correct context information can
+   * be picked up by the child spans. FakeSpan does not record events or links.
+   */
+  static class FakeSpan extends Span {
 
     private static final EnumSet<Options> RECORD_EVENTS_SPAN_OPTIONS =
         EnumSet.of(Options.RECORD_EVENTS);
@@ -56,6 +61,12 @@ public class SpanConverter {
     public void end(EndSpanOptions options) {}
   }
 
+  public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE = "message.event.type";
+  public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_UNCOMPRESSED =
+      "message.event.size.uncompressed";
+  public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED =
+      "message.event.size.compressed";
+
   private static final Tracer TRACER =
       OpenTelemetry.getGlobalTracer("io.opencensus.opentelemetry.migration");
 
@@ -63,21 +74,21 @@ public class SpanConverter {
 
   static io.opentelemetry.api.trace.Span toOtelSpan(Span span) {
     if (span == null) {
-      return null;
+      return io.opentelemetry.api.trace.Span.getInvalid();
     }
-    SpanData spanData = ((RecordEventsSpanImpl) span).toSpanData();
+    SpanData ocSpanData = ((RecordEventsSpanImpl) span).toSpanData();
     io.opentelemetry.api.trace.Span.Builder builder =
         TRACER
-            .spanBuilder(spanData.getName())
+            .spanBuilder(ocSpanData.getName())
             .setStartTimestamp(
-                TimeUnit.SECONDS.toNanos(spanData.getStartTimestamp().getSeconds())
-                    + spanData.getStartTimestamp().getNanos());
-    if (spanData.getKind() != null) {
-      builder.setSpanKind(mapKind(spanData.getKind()));
+                TimeUnit.SECONDS.toNanos(ocSpanData.getStartTimestamp().getSeconds())
+                    + ocSpanData.getStartTimestamp().getNanos());
+    if (ocSpanData.getKind() != null) {
+      builder.setSpanKind(mapKind(ocSpanData.getKind()));
     }
-    if (spanData.getAttributes() != null) {
+    if (ocSpanData.getAttributes() != null) {
       for (Map.Entry<String, AttributeValue> attribute :
-          spanData.getAttributes().getAttributeMap().entrySet()) {
+          ocSpanData.getAttributes().getAttributeMap().entrySet()) {
         attribute
             .getValue()
             .match(
@@ -88,8 +99,8 @@ public class SpanConverter {
                 arg -> null);
       }
     }
-    if (spanData.getLinks() != null) {
-      for (Link link : spanData.getLinks().getLinks()) {
+    if (ocSpanData.getLinks() != null) {
+      for (Link link : ocSpanData.getLinks().getLinks()) {
         Attributes.Builder attributesBuilder = Attributes.builder();
         link.getAttributes()
             .forEach(
@@ -119,7 +130,7 @@ public class SpanConverter {
       case SERVER:
         return Kind.SERVER;
     }
-    return null;
+    return Kind.INTERNAL;
   }
 
   static Span fromOtelSpan(io.opentelemetry.api.trace.Span otSpan) {
@@ -151,11 +162,11 @@ public class SpanConverter {
       span.addEvent(
           String.valueOf(event.getEvent().getMessageId()),
           Attributes.of(
-              AttributeKey.stringKey("message.event.type"),
+              AttributeKey.stringKey(MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE),
               event.getEvent().getType().toString(),
-              AttributeKey.longKey("message.event.size.uncompressed"),
+              AttributeKey.longKey(MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_UNCOMPRESSED),
               event.getEvent().getUncompressedMessageSize(),
-              AttributeKey.longKey("message.event.size.compressed"),
+              AttributeKey.longKey(MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED),
               event.getEvent().getCompressedMessageSize()),
           TimeUnit.SECONDS.toNanos(event.getTimestamp().getSeconds())
               + event.getTimestamp().getNanos());

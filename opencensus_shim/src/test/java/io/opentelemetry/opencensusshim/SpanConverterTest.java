@@ -7,8 +7,7 @@ package io.opentelemetry.opencensusshim;
 
 import static io.opencensus.trace.Link.Type.PARENT_LINKED_SPAN;
 import static io.opencensus.trace.Span.Kind.CLIENT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,14 +32,14 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.trace.IdsGenerator;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class SpanConverterTest {
-  private static final IdsGenerator RANDOM_IDS_GENERATOR = IdsGenerator.random();
+  private static final IdGenerator RANDOM_IDS_GENERATOR = IdGenerator.random();
 
   @Test
   void testToOtelSpan() {
@@ -48,8 +47,8 @@ class SpanConverterTest {
 
     Span otelSpan = SpanConverter.toOtelSpan(span);
 
-    assertEquals(0x1, otelSpan.getSpanContext().getTraceFlags());
-    assertTrue(otelSpan.isRecording());
+    assertThat(otelSpan.getSpanContext().getTraceFlags()).isEqualTo((byte) 0x1);
+    assertThat(otelSpan.isRecording()).isTrue();
   }
 
   @Test
@@ -71,11 +70,11 @@ class SpanConverterTest {
     io.opencensus.trace.Span ocSPan = SpanConverter.fromOtelSpan(otelSpan);
 
     SpanContext context = ocSPan.getContext();
-    assertEquals(traceIdHex, context.getTraceId().toLowerBase16());
-    assertEquals(spanIdHex, context.getSpanId().toLowerBase16());
-    assertTrue(context.getTraceOptions().isSampled());
-    assertEquals(1, context.getTracestate().getEntries().size());
-    assertEquals(traceStateValue, context.getTracestate().get(traceStateKey));
+    assertThat(context.getTraceId().toLowerBase16()).isEqualTo(traceIdHex);
+    assertThat(context.getSpanId().toLowerBase16()).isEqualTo(spanIdHex);
+    assertThat(context.getTraceOptions().isSampled()).isTrue();
+    assertThat(context.getTracestate().getEntries().size()).isEqualTo(1);
+    assertThat(context.getTracestate().get(traceStateKey)).isEqualTo(traceStateValue);
   }
 
   @Test

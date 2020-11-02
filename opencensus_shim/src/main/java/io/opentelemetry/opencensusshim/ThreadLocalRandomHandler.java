@@ -10,7 +10,10 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Implementation of the {@link RandomHandler} using {@link ThreadLocalRandom}. */
+/**
+ * Implementation of the {@link RandomHandler} using {@link ThreadLocalRandom}. There is an existing
+ * implementation in opencensus-impl, however we do not want to depend on opencensus-impl here.
+ */
 @ThreadSafe
 public final class ThreadLocalRandomHandler extends RandomHandler {
 

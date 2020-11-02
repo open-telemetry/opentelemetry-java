@@ -8,10 +8,13 @@ package io.opentelemetry.opencensusshim;
 import io.opencensus.trace.ContextHandle;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import javax.annotation.Nullable;
 
-public class OpenTelemetryCtx implements ContextHandle {
+class OpenTelemetryCtx implements ContextHandle {
 
   private final Context context;
+
+  @Nullable
   private Scope scope;
 
   public OpenTelemetryCtx(Context context) {
@@ -23,6 +26,7 @@ public class OpenTelemetryCtx implements ContextHandle {
   }
 
   @Override
+  @SuppressWarnings("MustBeClosedChecker")
   public ContextHandle attach() {
     scope = context.makeCurrent();
     return this;

@@ -10,7 +10,7 @@ import io.opencensus.implcore.trace.RecordEventsSpanImpl.StartEndHandler;
 import io.opencensus.trace.export.SpanData;
 import io.opentelemetry.api.trace.Span;
 
-public class OpenTelemetryStartEndHandler implements StartEndHandler {
+class OpenTelemetryStartEndHandler implements StartEndHandler {
 
   private final SpanCache spanCache;
 
@@ -20,16 +20,15 @@ public class OpenTelemetryStartEndHandler implements StartEndHandler {
 
   @Override
   public void onStart(RecordEventsSpanImpl ocSpan) {
-    spanCache.toOtelSpan(ocSpan);
+    spanCache.addToCache(ocSpan);
   }
 
   @Override
   public void onEnd(RecordEventsSpanImpl ocSpan) {
-    Span span = spanCache.toOtelSpan(ocSpan);
+    Span otelSpan = spanCache.removeFromCache(ocSpan);
     SpanData spanData = ocSpan.toSpanData();
-    spanCache.removeFromCache(ocSpan);
-    SpanConverter.mapAndAddAnnotations(span, spanData.getAnnotations().getEvents());
-    SpanConverter.mapAndAddTimedEvents(span, spanData.getMessageEvents().getEvents());
-    span.end();
+    SpanConverter.mapAndAddAnnotations(otelSpan, spanData.getAnnotations().getEvents());
+    SpanConverter.mapAndAddTimedEvents(otelSpan, spanData.getMessageEvents().getEvents());
+    otelSpan.end();
   }
 }

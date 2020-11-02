@@ -18,7 +18,11 @@ import io.opencensus.trace.config.TraceConfig;
 import io.opencensus.trace.export.ExportComponent;
 import io.opencensus.trace.propagation.PropagationComponent;
 
-/** Java 8 implementation of the {@link TraceComponent} for OpenTelemetry migration. */
+/**
+ * Implementation of the {@link TraceComponent} for OpenTelemetry migration, which uses the
+ * OpenTelemetry migration StartEndHandler. This class is loaded by reflection in {@link
+ * io.opencensus.trace.Tracing} and overrides the OpenCensus default implementation when present.
+ */
 public final class OpenTelemetryTraceComponentImpl extends TraceComponent {
   private final PropagationComponent propagationComponent = new PropagationComponentImpl();
   private final ExportComponent noopExportComponent = ExportComponent.newNoopExportComponent();

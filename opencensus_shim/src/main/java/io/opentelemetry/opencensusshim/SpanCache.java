@@ -11,24 +11,23 @@ import io.opencensus.implcore.trace.RecordEventsSpanImpl;
 import io.opencensus.trace.Span;
 import java.util.concurrent.TimeUnit;
 
-public class SpanCache {
+class SpanCache {
 
   private static final SpanCache SPAN_CACHE = new SpanCache();
 
-  private static final int MAXIMUM_CACHE_SIZE = 10000;
+  private static final int MAXIMUM_CACHE_SIZE = 100000;
   private static final int CACHE_EXPIRE_TIME_MINUTES = 10;
-  private static final TimeUnit CACHE_EXPIRE_UNIT = TimeUnit.MINUTES;
 
   private static final Cache<io.opentelemetry.api.trace.Span, Span> OT_TO_OC =
       CacheBuilder.newBuilder()
           .maximumSize(MAXIMUM_CACHE_SIZE)
-          .expireAfterAccess(CACHE_EXPIRE_TIME_MINUTES, CACHE_EXPIRE_UNIT)
+          .expireAfterAccess(CACHE_EXPIRE_TIME_MINUTES, TimeUnit.MINUTES)
           .build();
 
   private static final Cache<Span, io.opentelemetry.api.trace.Span> OC_TO_OT =
       CacheBuilder.newBuilder()
           .maximumSize(MAXIMUM_CACHE_SIZE)
-          .expireAfterAccess(CACHE_EXPIRE_TIME_MINUTES, CACHE_EXPIRE_UNIT)
+          .expireAfterAccess(CACHE_EXPIRE_TIME_MINUTES, TimeUnit.MINUTES)
           .build();
 
   public static SpanCache getInstance() {
@@ -37,7 +36,7 @@ public class SpanCache {
 
   private SpanCache() {}
 
-  io.opentelemetry.api.trace.Span toOtelSpan(Span ocSpan) {
+  io.opentelemetry.api.trace.Span addToCache(Span ocSpan) {
     io.opentelemetry.api.trace.Span otSpan = OC_TO_OT.getIfPresent(ocSpan);
     if (otSpan == null) {
       otSpan = SpanConverter.toOtelSpan(ocSpan);
@@ -57,11 +56,13 @@ public class SpanCache {
     return span;
   }
 
-  void removeFromCache(RecordEventsSpanImpl ocSpan) {
+  io.opentelemetry.api.trace.Span removeFromCache(RecordEventsSpanImpl ocSpan) {
     io.opentelemetry.api.trace.Span otSpan = OC_TO_OT.getIfPresent(ocSpan);
-    if (otSpan != null) {
-      OC_TO_OT.invalidate(ocSpan);
-      OT_TO_OC.invalidate(otSpan);
+    if (otSpan == null) {
+      return SpanConverter.toOtelSpan(ocSpan);
     }
+    OC_TO_OT.invalidate(ocSpan);
+    OT_TO_OC.invalidate(otSpan);
+    return otSpan;
   }
 }
