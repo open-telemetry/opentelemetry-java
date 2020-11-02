@@ -45,7 +45,7 @@ which uses [google-java-format](https://github.com/google/google-java-format) li
 
 ### Best practices that we follow
 
-* This project uses semantic versioning. Except for major versions, a user should be able to update
+* This project uses [semantic versioning](https://semver.org/). Except for major versions, a user should be able to update
 their dependency version on this project and have nothing break. This means we do not make breaking
 changes to the API (e.g., remove a public method) or to the ABI (e.g., change return type from void to non-void).
 * Avoid exposing publicly any class/method/variable that don't need to be public.
