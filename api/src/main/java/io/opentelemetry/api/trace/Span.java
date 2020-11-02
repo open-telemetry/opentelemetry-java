@@ -427,7 +427,7 @@ public interface Span extends ImplicitContextKeyed {
 
     /**
      * Sets the parent to use from the specified {@code Context}. If not set, the value of {@code
-     * Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
+     * Span.current()} at {@link #startSpan()} time will be used as parent.
      *
      * <p>If no {@link Span} is available in the specified {@code Context}, the resulting {@code
      * Span} will become a root instance, as if {@link #setNoParent()} had been called.
@@ -443,7 +443,7 @@ public interface Span extends ImplicitContextKeyed {
 
     /**
      * Sets the option to become a root {@code Span} for a new trace. If not set, the value of
-     * {@code Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
+     * {@code Span.current()} at {@link #startSpan()} time will be used as parent.
      *
      * <p>Observe that any previously set parent will be discarded.
      *
