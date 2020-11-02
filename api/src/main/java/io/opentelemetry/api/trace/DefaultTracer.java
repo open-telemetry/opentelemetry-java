@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.context.Context;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -107,7 +108,7 @@ final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setStartTimestamp(long startTimestamp) {
+    public NoopSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
       Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
       return this;
     }

@@ -690,9 +690,9 @@ class RecordEventsReadableSpanTest {
     span.setStatus(null, null);
     span.updateName(null);
     span.addEvent(null);
-    span.addEvent(null, 0);
+    span.addEvent(null, 0, null);
     span.addEvent(null, null);
-    span.addEvent(null, null, 0);
+    span.addEvent(null, null, 0, null);
     span.recordException(null);
     span.end(null);
 

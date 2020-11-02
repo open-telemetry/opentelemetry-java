@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -199,10 +200,11 @@ public interface Span extends ImplicitContextKeyed {
    * occurred.
    *
    * @param name the name of the event.
-   * @param timestamp the explicit event timestamp in nanos since epoch.
+   * @param timestamp the explicit event timestamp since epoch.
+   * @param unit the unit of the timestamp
    * @return this.
    */
-  Span addEvent(String name, long timestamp);
+  Span addEvent(String name, long timestamp, TimeUnit unit);
 
   /**
    * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the event
@@ -227,10 +229,11 @@ public interface Span extends ImplicitContextKeyed {
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
    *     the {@code Span} as for {@code setAttribute()}.
-   * @param timestamp the explicit event timestamp in nanos since epoch.
+   * @param timestamp the explicit event timestamp since epoch.
+   * @param unit the unit of the timestamp
    * @return this.
    */
-  Span addEvent(String name, Attributes attributes, long timestamp);
+  Span addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit);
 
   /**
    * Sets the status to the {@code Span}.
@@ -569,11 +572,12 @@ public interface Span extends ImplicitContextKeyed {
      *
      * <p>Important this is NOT equivalent with System.nanoTime().
      *
-     * @param startTimestamp the explicit start timestamp of the newly created {@code Span} in nanos
-     *     since epoch.
+     * @param startTimestamp the explicit start timestamp from the epoch of the newly created {@code
+     *     Span}.
+     * @param unit the unit of the timestamp.
      * @return this.
      */
-    Builder setStartTimestamp(long startTimestamp);
+    Builder setStartTimestamp(long startTimestamp, TimeUnit unit);
 
     /**
      * Starts a new {@link Span}.

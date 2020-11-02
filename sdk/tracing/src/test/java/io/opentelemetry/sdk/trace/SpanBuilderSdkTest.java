@@ -38,6 +38,7 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -796,7 +797,7 @@ class SpanBuilderSdkTest {
   void startTimestamp_null() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> tracerSdk.spanBuilder(SPAN_NAME).setStartTimestamp(-1),
+        () -> tracerSdk.spanBuilder(SPAN_NAME).setStartTimestamp(-1, TimeUnit.NANOSECONDS),
         "Negative startTimestamp");
   }
 
