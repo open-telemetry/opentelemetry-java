@@ -37,7 +37,8 @@ public class OpenTelemetryContextManager implements ContextManager {
     if (!(ctx instanceof OpenTelemetryCtx)) {
       LOGGER.warning(
           "ContextHandle is not an instance of OpenTelemetryCtx. "
-              + "There should not be a local implementation of ContextHandle other than OpenTelemetryCtx.");
+              + "There should not be a local implementation of ContextHandle "
+              + "other than OpenTelemetryCtx.");
     }
     OpenTelemetryCtx openTelemetryCtx = (OpenTelemetryCtx) ctx;
     return wrapContext(unwrapContext(openTelemetryCtx).with(spanCache.addToCache(span)));

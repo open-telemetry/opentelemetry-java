@@ -14,8 +14,7 @@ class OpenTelemetryCtx implements ContextHandle {
 
   private final Context context;
 
-  @Nullable
-  private Scope scope;
+  @Nullable private Scope scope;
 
   public OpenTelemetryCtx(Context context) {
     this.context = context;
