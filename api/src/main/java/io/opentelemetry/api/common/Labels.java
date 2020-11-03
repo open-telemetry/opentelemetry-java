@@ -30,7 +30,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
     public void forEach(LabelConsumer consumer) {
       List<Object> data = data();
       for (int i = 0; i < data.size(); i += 2) {
-        consumer.consume((String) data.get(i), (String) data.get(i + 1));
+        consumer.accept((String) data.get(i), (String) data.get(i + 1));
       }
     }
   }

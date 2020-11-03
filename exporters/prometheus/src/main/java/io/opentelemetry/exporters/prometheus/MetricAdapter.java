@@ -127,7 +127,7 @@ final class MetricAdapter {
     }
 
     @Override
-    public void consume(String key, String value) {
+    public void accept(String key, String value) {
       labelNames.add(toLabelName(key));
       labelValues.add(value == null ? "" : value);
     }
