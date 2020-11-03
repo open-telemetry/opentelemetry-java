@@ -13,9 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -23,13 +22,15 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class TestClientServerTest {
 
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = sdk.get(TestClientServerTest.class.getName());
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
+  private final Tracer tracer =
+      otelTesting.getOpenTelemetry().getTracer(TestClientServerTest.class.getName());
   private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(10);
   private Server server;
 
@@ -52,9 +53,9 @@ class TestClientServerTest {
 
     await()
         .atMost(15, TimeUnit.SECONDS)
-        .until(TestUtils.finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(2));
+        .until(TestUtils.finishedSpansSize(otelTesting), equalTo(2));
 
-    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finished = otelTesting.getSpans();
     assertEquals(2, finished.size());
 
     finished = TestUtils.sortByStartTime(finished);
