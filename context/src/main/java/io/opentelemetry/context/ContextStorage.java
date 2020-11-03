@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
  * >
  * >   @Override
  * >   public ContextStorage get() {
- * >     ContextStorage threadLocalStorage = Context.threadLocalStorage();
+ * >     ContextStorage threadLocalStorage = ContextStorage.defaultStorage();
  * >     return new RequestContextStorage() {
  * >       @Override
  * >       public Scope T attach(Context toAttach) {
@@ -69,6 +69,13 @@ public interface ContextStorage {
    */
   static ContextStorage get() {
     return LazyStorage.get();
+  }
+
+  /**
+   * Returns the default {@link ContextStorage} which stores {@link Context} using a threadlocal.
+   */
+  static ContextStorage defaultStorage() {
+    return ThreadLocalContextStorage.INSTANCE;
   }
 
   /**
