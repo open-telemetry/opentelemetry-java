@@ -7,7 +7,6 @@ package io.opentelemetry.exporters.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
-import io.opentelemetry.api.common.LabelConsumer;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
@@ -22,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Util methods to convert OpenTelemetry Metrics data models to Prometheus data models.
@@ -117,7 +117,7 @@ final class MetricAdapter {
     return Collector.sanitizeMetricName(labelKey);
   }
 
-  private static final class Consumer implements LabelConsumer {
+  private static final class Consumer implements BiConsumer<String, String> {
     final List<String> labelNames;
     final List<String> labelValues;
 
@@ -127,7 +127,7 @@ final class MetricAdapter {
     }
 
     @Override
-    public void consume(String key, String value) {
+    public void accept(String key, String value) {
       labelNames.add(toLabelName(key));
       labelValues.add(value == null ? "" : value);
     }
