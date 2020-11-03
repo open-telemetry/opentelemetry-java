@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -157,7 +156,7 @@ class DefaultPropagatorsTest {
     private static final MapGetter INSTANCE = new MapGetter();
 
     @Override
-    public Collection<String> keys(Map<String, String> map) {
+    public Iterable<String> keys(Map<String, String> map) {
       return map.keySet();
     }
 

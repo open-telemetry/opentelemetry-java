@@ -9,7 +9,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -96,7 +95,7 @@ public class PropagatorContextExtractBenchmark {
     private final TextMapPropagator.Getter<Map<String, String>> getter =
         new TextMapPropagator.Getter<Map<String, String>>() {
           @Override
-          public Collection<String> keys(Map<String, String> carrier) {
+          public Iterable<String> keys(Map<String, String> carrier) {
             return carrier.keySet();
           }
 
@@ -144,7 +143,7 @@ public class PropagatorContextExtractBenchmark {
     private final TextMapPropagator.Getter<Map<String, String>> getter =
         new TextMapPropagator.Getter<Map<String, String>>() {
           @Override
-          public Collection<String> keys(Map<String, String> carrier) {
+          public Iterable<String> keys(Map<String, String> carrier) {
             return carrier.keySet();
           }
 
@@ -192,7 +191,7 @@ public class PropagatorContextExtractBenchmark {
     private final TextMapPropagator.Getter<Map<String, String>> getter =
         new TextMapPropagator.Getter<Map<String, String>>() {
           @Override
-          public Collection<String> keys(Map<String, String> carrier) {
+          public Iterable<String> keys(Map<String, String> carrier) {
             return carrier.keySet();
           }
 
@@ -243,7 +242,7 @@ public class PropagatorContextExtractBenchmark {
     private final TextMapPropagator.Getter<Map<String, String>> getter =
         new TextMapPropagator.Getter<Map<String, String>>() {
           @Override
-          public Collection<String> keys(Map<String, String> carrier) {
+          public Iterable<String> keys(Map<String, String> carrier) {
             return carrier.keySet();
           }
 

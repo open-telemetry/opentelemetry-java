@@ -6,7 +6,6 @@
 package io.opentelemetry.context.propagation;
 
 import io.opentelemetry.context.Context;
-import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -122,7 +121,7 @@ public interface TextMapPropagator {
      * @param carrier carrier of propagation fields, such as an http request.
      * @since 0.10.0
      */
-    Collection<String> keys(C carrier);
+    Iterable<String> keys(C carrier);
 
     /**
      * Returns the first value of the given propagation {@code key} or returns {@code null}.

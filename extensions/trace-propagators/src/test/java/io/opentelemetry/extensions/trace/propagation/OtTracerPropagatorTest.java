@@ -16,7 +16,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,7 +35,7 @@ class OtTracerPropagatorTest {
   private static final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
         @Override
-        public Collection<String> keys(Map<String, String> carrier) {
+        public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
         }
 

@@ -29,7 +29,6 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,7 +56,7 @@ class JaegerPropagatorTest {
   private static final TextMapPropagator.Getter<Map<String, String>> getter =
       new TextMapPropagator.Getter<Map<String, String>>() {
         @Override
-        public Collection<String> keys(Map<String, String> carrier) {
+        public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
         }
 

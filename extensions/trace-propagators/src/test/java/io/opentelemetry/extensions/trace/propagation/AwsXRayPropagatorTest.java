@@ -14,7 +14,6 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,7 +32,7 @@ class AwsXRayPropagatorTest {
   private static final TextMapPropagator.Getter<Map<String, String>> getter =
       new TextMapPropagator.Getter<Map<String, String>>() {
         @Override
-        public Collection<String> keys(Map<String, String> carrier) {
+        public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
         }
 

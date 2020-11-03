@@ -11,7 +11,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -68,7 +67,7 @@ final class Propagation extends BaseShimObject {
 
     @Nullable
     @Override
-    public Collection<String> keys(Map<String, String> carrier) {
+    public Iterable<String> keys(Map<String, String> carrier) {
       return carrier.keySet();
     }
 

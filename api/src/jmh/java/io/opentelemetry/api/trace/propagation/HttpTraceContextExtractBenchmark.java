@@ -9,7 +9,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,7 @@ public class HttpTraceContextExtractBenchmark {
   private final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
         @Override
-        public Collection<String> keys(Map<String, String> carrier) {
+        public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
         }
 

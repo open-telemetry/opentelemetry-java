@@ -14,7 +14,6 @@ import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -69,7 +68,7 @@ public class Application {
                         request.raw(),
                         new Getter<HttpServletRequest>() {
                           @Override
-                          public Collection<String> keys(HttpServletRequest carrier) {
+                          public Iterable<String> keys(HttpServletRequest carrier) {
                             return Collections.list(carrier.getHeaderNames());
                           }
 

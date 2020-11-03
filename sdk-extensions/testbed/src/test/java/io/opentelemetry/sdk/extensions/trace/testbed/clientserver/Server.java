@@ -12,7 +12,6 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
-import java.util.Collection;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.annotation.Nullable;
 
@@ -35,7 +34,7 @@ final class Server extends Thread {
                 message,
                 new Getter<Message>() {
                   @Override
-                  public Collection<String> keys(Message carrier) {
+                  public Iterable<String> keys(Message carrier) {
                     return carrier.keySet();
                   }
 

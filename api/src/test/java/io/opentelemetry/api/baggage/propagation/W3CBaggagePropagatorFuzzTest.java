@@ -12,7 +12,6 @@ import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.JQF;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
-import java.util.Collection;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.runner.RunWith;
@@ -30,7 +29,7 @@ public class W3CBaggagePropagatorFuzzTest {
             ImmutableMap.of("baggage", baggage),
             new Getter<Map<String, String>>() {
               @Override
-              public Collection<String> keys(Map<String, String> carrier) {
+              public Iterable<String> keys(Map<String, String> carrier) {
                 return carrier.keySet();
               }
 
