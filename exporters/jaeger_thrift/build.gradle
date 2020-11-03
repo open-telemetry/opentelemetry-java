@@ -1,0 +1,33 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry - Jaeger Thrift Exporter'
+ext.moduleName = "io.opentelemetry.exporters.jaeger-thrift"
+
+dependencies {
+    api project(':opentelemetry-sdk')
+
+    implementation project(':opentelemetry-sdk'),
+            "io.jaegertracing:jaeger-client:0.33.1"
+
+    testImplementation "io.grpc:grpc-testing:${grpcVersion}",
+            'com.fasterxml.jackson.core:jackson-databind',
+            libraries.testcontainers,
+            libraries.okhttp
+
+    testImplementation project(':opentelemetry-testing-internal')
+
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+}
+
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
+}
