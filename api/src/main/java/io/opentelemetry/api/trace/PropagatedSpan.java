@@ -18,8 +18,8 @@ final class PropagatedSpan implements Span {
 
   static final PropagatedSpan INVALID = new PropagatedSpan(SpanContext.getInvalid());
 
-  // We expose a method to construct PropagatedSpan because currently auto-instrumentation needs to
-  // be able to intercept it.
+  // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
+  // this method.
   static Span create(SpanContext spanContext) {
     return new PropagatedSpan(spanContext);
   }

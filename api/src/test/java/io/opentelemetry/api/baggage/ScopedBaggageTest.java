@@ -10,10 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for the methods in {@link BaggageUtils} and {@link Baggage} that interact with the
- * current {@link Baggage}.
- */
+/** Unit tests for the methods in {@link Baggage} that interact with the current {@link Baggage}. */
 class ScopedBaggageTest {
 
   private static final String KEY_1 = "key 1";

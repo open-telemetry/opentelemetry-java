@@ -8,11 +8,11 @@ It takes OpenTelemetry Tracer and exposes it as an implementation of an OpenTrac
 There are 2 ways to expose an OpenTracing tracer: 
 1. From the global OpenTelemetry configuration: 
     ```java
-    Tracer tracer = TraceShim.createTracerShim();
+    Tracer tracer = OpenTracingShim.createTracerShim();
     ```
-1. From the provided `TracerProvider` and `CorrelationContextManager`:
+1. From a provided `OpenTelemetry` instance:
     ```java
-    Tracer tracer = TraceShim.createTracerShim(tracerProvider, contextManager);
+    Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
     ```
 
 Optionally register the tracer as the OpenTracing GlobalTracer:

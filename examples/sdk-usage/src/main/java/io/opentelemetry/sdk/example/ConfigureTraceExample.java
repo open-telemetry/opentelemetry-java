@@ -65,9 +65,7 @@ class ConfigureTraceExample {
     TraceConfig alwaysOn =
         tracerProvider.getActiveTraceConfig().toBuilder().setSampler(Samplers.alwaysOn()).build();
     TraceConfig probability =
-        tracerProvider
-            .getActiveTraceConfig()
-            .toBuilder()
+        tracerProvider.getActiveTraceConfig().toBuilder()
             .setSampler(Samplers.traceIdRatioBased(0.5))
             .build();
 

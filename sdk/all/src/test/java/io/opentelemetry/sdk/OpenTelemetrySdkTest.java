@@ -8,7 +8,6 @@ package io.opentelemetry.sdk;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.baggage.BaggageManager;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -29,7 +28,6 @@ class OpenTelemetrySdkTest {
 
   @Mock private TracerProvider tracerProvider;
   @Mock private MeterProvider meterProvider;
-  @Mock private BaggageManager baggageManager;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
