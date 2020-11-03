@@ -8,6 +8,7 @@ package io.opentelemetry.api.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.ByteBuffer;
+import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceId}. */
@@ -88,9 +89,21 @@ class TraceIdTest {
   }
 
   @Test
-  public void toLowerBase16() {
+  void toLowerBase16() {
     assertThat(TraceId.getInvalid()).isEqualTo("00000000000000000000000000000000");
     assertThat(TraceId.bytesToHex(firstBytes)).isEqualTo("00000000000000000000000000000061");
     assertThat(TraceId.bytesToHex(secondBytes)).isEqualTo("ff000000000000000000000000000041");
+  }
+
+  @Test
+  void toAndFromLongs() {
+    Random random = new Random();
+    for (int i = 0; i < 10000; i++) {
+      long idHi = random.nextLong();
+      long idLo = random.nextLong();
+      String traceId = TraceId.fromLongs(idHi, idLo);
+      assertThat(TraceId.traceIdHighBytesAsLong(traceId)).isEqualTo(idHi);
+      assertThat(TraceId.traceIdLowBytesAsLong(traceId)).isEqualTo(idLo);
+    }
   }
 }

@@ -809,7 +809,7 @@ class RecordEventsReadableSpanTest {
     spanDataAttributes.forEach(
         new AttributeConsumer() {
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             assertThat(attributes.get(key)).isEqualTo(value);
           }
         });
