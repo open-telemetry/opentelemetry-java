@@ -8,6 +8,7 @@ package io.opentelemetry.api.common;
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import javax.annotation.concurrent.Immutable;
 
 /** An immutable container for labels, which are pairs of {@link String}. */
@@ -16,7 +17,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
 
   private static final Labels EMPTY = Labels.builder().build();
 
-  public abstract void forEach(LabelConsumer consumer);
+  public abstract void forEach(BiConsumer<String, String> consumer);
 
   @AutoValue
   @Immutable
@@ -27,7 +28,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
     abstract List<Object> data();
 
     @Override
-    public void forEach(LabelConsumer consumer) {
+    public void forEach(BiConsumer<String, String> consumer) {
       List<Object> data = data();
       for (int i = 0; i < data.size(); i += 2) {
         consumer.accept((String) data.get(i), (String) data.get(i + 1));
