@@ -28,12 +28,12 @@ include ":opentelemetry-all",
         ":opentelemetry-extension-runtime-metrics",
         ":opentelemetry-extension-trace-propagators",
         ":opentelemetry-extension-trace-utils",
-        ":opentelemetry-exporters-inmemory",
-        ":opentelemetry-exporters-jaeger",
-        ":opentelemetry-exporters-logging",
-        ":opentelemetry-exporters-otlp",
-        ":opentelemetry-exporters-prometheus",
-        ":opentelemetry-exporters-zipkin",
+        ":opentelemetry-exporter-inmemory",
+        ":opentelemetry-exporter-jaeger",
+        ":opentelemetry-exporter-logging",
+        ":opentelemetry-exporter-otlp",
+        ":opentelemetry-exporter-prometheus",
+        ":opentelemetry-exporter-zipkin",
         ":opentelemetry-integration-tests",
         ":opentelemetry-integration-tests-tracecontext",
         ":opentelemetry-opentracing-shim",
@@ -59,7 +59,7 @@ include ":opentelemetry-all",
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name
             .replace("opentelemetry-integration-tests-", "integration-tests/")
-            .replace("opentelemetry-exporters-", "exporters/")
+            .replace("opentelemetry-exporter-", "exporters/")
             .replace("opentelemetry-extension-", "extensions/")
             .replace("opentelemetry-sdk-extension-", "sdk-extensions/")
             .replace("opentelemetry-sdk-", "sdk/")

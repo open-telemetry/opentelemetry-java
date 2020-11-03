@@ -12,5 +12,5 @@ dependencies {
 
     api libraries.junit_jupiter_api
 
-    implementation project(':opentelemetry-exporters-inmemory')
+    implementation project(':opentelemetry-exporter-inmemory')
 }
