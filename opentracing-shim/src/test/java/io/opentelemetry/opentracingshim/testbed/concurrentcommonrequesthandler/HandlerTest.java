@@ -13,12 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -26,8 +24,8 @@ import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * There is only one instance of 'RequestHandler' per 'Client'. Methods of 'RequestHandler' are
@@ -35,19 +33,11 @@ import org.junit.jupiter.api.Test;
  * use current active span and activate span. So one issue here is setting correct parent span.
  */
 class HandlerTest {
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final OpenTelemetry openTelemetry =
-      OpenTelemetry.get().toBuilder().setTracerProvider(sdk).build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
+  private final Tracer tracer = OpenTracingShim.createTracerShim(otelTesting.getOpenTelemetry());
   private final Client client = new Client(new RequestHandler(tracer));
-
-  @BeforeEach
-  void before() {
-    inMemoryTracing.getSpanExporter().reset();
-  }
 
   @Test
   void two_requests() throws Exception {
@@ -57,7 +47,7 @@ class HandlerTest {
     assertEquals("message:response", responseFuture.get(15, TimeUnit.SECONDS));
     assertEquals("message2:response", responseFuture2.get(15, TimeUnit.SECONDS));
 
-    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finished = otelTesting.getSpans();
     assertEquals(2, finished.size());
 
     for (SpanData spanData : finished) {
@@ -82,7 +72,7 @@ class HandlerTest {
       parentSpan.finish();
     }
 
-    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finished = otelTesting.getSpans();
     assertEquals(2, finished.size());
 
     SpanData child = getOneByName(finished, RequestHandler.OPERATION_NAME);
@@ -117,7 +107,7 @@ class HandlerTest {
     String response = client.send("wrong_parent").get(15, TimeUnit.SECONDS);
     assertEquals("wrong_parent:response", response);
 
-    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finished = otelTesting.getSpans();
     assertEquals(3, finished.size());
 
     finished = sortByStartTime(finished);
