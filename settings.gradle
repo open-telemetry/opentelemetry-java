@@ -54,7 +54,6 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-extension-zpages",
         ":opentelemetry-sdk-testing",
         ":opentelemetry-bom",
-        ":opentelemetry-testing-internal",
         ":opentelemetry-perf-harness"
 
 rootProject.children.each {

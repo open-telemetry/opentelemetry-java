@@ -18,7 +18,7 @@ dependencies {
     implementation libraries.zipkin_reporter,
             libraries.zipkin_okhttp
 
-    testImplementation project(':opentelemetry-testing-internal')
+    testImplementation project(':opentelemetry-sdk-testing')
     testImplementation libraries.guava,
             libraries.zipkin_junit
 
