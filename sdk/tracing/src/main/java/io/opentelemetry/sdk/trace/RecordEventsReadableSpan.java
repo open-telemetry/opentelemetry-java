@@ -583,7 +583,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
 
     @Override
-    public void consume(AttributeKey key, Object value) {
+    public void accept(AttributeKey key, Object value) {
       if (added < limit) {
         builder.put(key, value);
         added++;

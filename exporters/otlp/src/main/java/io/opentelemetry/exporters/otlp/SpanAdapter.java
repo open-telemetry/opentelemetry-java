@@ -100,7 +100,7 @@ final class SpanAdapter {
         .forEach(
             new AttributeConsumer() {
               @Override
-              public <T> void consume(AttributeKey<T> key, T value) {
+              public <T> void accept(AttributeKey<T> key, T value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
               }
             });
@@ -143,7 +143,7 @@ final class SpanAdapter {
         .forEach(
             new AttributeConsumer() {
               @Override
-              public <T> void consume(AttributeKey<T> key, T value) {
+              public <T> void accept(AttributeKey<T> key, T value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
               }
             });
@@ -161,7 +161,7 @@ final class SpanAdapter {
     attributes.forEach(
         new AttributeConsumer() {
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
           }
         });

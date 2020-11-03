@@ -5,12 +5,8 @@
 
 package io.opentelemetry.api.common;
 
-/**
- * Convenience interface for consuming {@link Labels}.
- *
- * <p>This interface should be considered to be a FunctionalInterface in the java 8+ meaning of that
- * term.
- */
+/** Convenience interface for consuming {@link Labels}. */
+@FunctionalInterface
 public interface LabelConsumer {
-  void consume(String key, String value);
+  void accept(String key, String value);
 }
