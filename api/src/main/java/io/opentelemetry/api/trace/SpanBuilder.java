@@ -94,13 +94,14 @@ import javax.annotation.Nonnull;
  * }
  * }</pre>
  *
- * @see Tracer#spanBuilder(String)
+ * <p>If your Java version is less than Java SE 7, see {@link SpanBuilder#startSpan} for usage
+ * examples.
  */
 public interface SpanBuilder {
 
   /**
    * Sets the parent to use from the specified {@code Context}. If not set, the value of {@code
-   * Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
+   * Span.current()} at {@link #startSpan()} time will be used as parent.
    *
    * <p>If no {@link Span} is available in the specified {@code Context}, the resulting {@code Span}
    * will become a root instance, as if {@link #setNoParent()} had been called.
@@ -116,7 +117,7 @@ public interface SpanBuilder {
 
   /**
    * Sets the option to become a root {@code Span} for a new trace. If not set, the value of {@code
-   * Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
+   * Span.current()} at {@link #startSpan()} time will be used as parent.
    *
    * <p>Observe that any previously set parent will be discarded.
    *
@@ -153,7 +154,7 @@ public interface SpanBuilder {
   SpanBuilder addLink(SpanContext spanContext, Attributes attributes);
 
   /**
-   * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+   * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
    * contained a mapping for the key, the old value is replaced by the specified value.
    *
    * <p>If a null or empty String {@code value} is passed in, the behavior is undefined, and hence
@@ -170,7 +171,7 @@ public interface SpanBuilder {
   SpanBuilder setAttribute(String key, @Nonnull String value);
 
   /**
-   * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+   * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
    * contained a mapping for the key, the old value is replaced by the specified value.
    *
    * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
@@ -184,7 +185,7 @@ public interface SpanBuilder {
   SpanBuilder setAttribute(String key, long value);
 
   /**
-   * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+   * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
    * contained a mapping for the key, the old value is replaced by the specified value.
    *
    * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
@@ -198,7 +199,7 @@ public interface SpanBuilder {
   SpanBuilder setAttribute(String key, double value);
 
   /**
-   * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+   * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
    * contained a mapping for the key, the old value is replaced by the specified value.
    *
    * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
@@ -212,7 +213,7 @@ public interface SpanBuilder {
   SpanBuilder setAttribute(String key, boolean value);
 
   /**
-   * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+   * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
    * contained a mapping for the key, the old value is replaced by the specified value.
    *
    * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.

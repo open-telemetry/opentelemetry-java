@@ -176,7 +176,7 @@ public final class HttpTraceContext implements TextMapPropagator {
           contextFromParentHeader.getTraceFlags(),
           traceState);
     } catch (IllegalArgumentException e) {
-      logger.info("Unparseable tracestate header. Returning span context without state.");
+      logger.fine("Unparseable tracestate header. Returning span context without state.");
       return contextFromParentHeader;
     }
   }
@@ -192,7 +192,7 @@ public final class HttpTraceContext implements TextMapPropagator {
             && traceparent.charAt(SPAN_ID_OFFSET - 1) == TRACEPARENT_DELIMITER
             && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER;
     if (!isValid) {
-      logger.info("Unparseable traceparent header. Returning INVALID span context.");
+      logger.fine("Unparseable traceparent header. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
@@ -214,7 +214,7 @@ public final class HttpTraceContext implements TextMapPropagator {
       }
       return SpanContext.getInvalid();
     } catch (IllegalArgumentException e) {
-      logger.info("Unparseable traceparent header. Returning INVALID span context.");
+      logger.fine("Unparseable traceparent header. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
   }
