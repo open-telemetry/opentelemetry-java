@@ -7,8 +7,8 @@ package io.opentelemetry.exporters.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
-import io.opentelemetry.common.LabelConsumer;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.LabelConsumer;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -127,7 +127,7 @@ final class MetricAdapter {
     }
 
     @Override
-    public void consume(String key, String value) {
+    public void accept(String key, String value) {
       labelNames.add(toLabelName(key));
       labelValues.add(value == null ? "" : value);
     }

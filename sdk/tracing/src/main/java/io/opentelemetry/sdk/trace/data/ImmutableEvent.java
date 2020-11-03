@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
 import javax.annotation.concurrent.Immutable;
 
 /** An immutable implementation of the {@link SpanData.Event}. */

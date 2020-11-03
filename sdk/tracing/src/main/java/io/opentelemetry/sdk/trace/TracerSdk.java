@@ -5,10 +5,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.trace.DefaultTracer;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 final class TracerSdk implements Tracer {
@@ -23,7 +22,7 @@ final class TracerSdk implements Tracer {
   @Override
   public Span.Builder spanBuilder(String spanName) {
     if (sharedState.isStopped()) {
-      return DefaultTracer.getInstance().spanBuilder(spanName);
+      return Tracer.getDefault().spanBuilder(spanName);
     }
     return new SpanBuilderSdk(
         spanName,

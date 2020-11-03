@@ -5,14 +5,14 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longArrayKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.proto.common.v1.AnyValue;

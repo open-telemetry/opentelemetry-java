@@ -10,12 +10,13 @@ description = 'OpenTelemetry API'
 ext.moduleName = "io.opentelemetry.api"
 
 dependencies {
-    api project(':opentelemetry-context-prop')
+    api project(':opentelemetry-context')
 
     annotationProcessor libraries.auto_value
 
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+
+    testImplementation libraries.jqf
 }
 
 javadoc {

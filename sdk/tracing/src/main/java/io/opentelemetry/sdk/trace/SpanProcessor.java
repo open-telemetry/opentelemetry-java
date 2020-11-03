@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.trace.Span;
 
 /**
  * SpanProcessor is the interface {@code TracerSdk} uses to allow synchronous hooks for when a
@@ -15,8 +15,8 @@ import io.opentelemetry.trace.Span;
  */
 public interface SpanProcessor {
   /**
-   * Called when a {@link io.opentelemetry.trace.Span} is started, if the {@link Span#isRecording()}
-   * returns true.
+   * Called when a {@link io.opentelemetry.api.trace.Span} is started, if the {@link
+   * Span#isRecording()} returns true.
    *
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.
@@ -34,8 +34,8 @@ public interface SpanProcessor {
   boolean isStartRequired();
 
   /**
-   * Called when a {@link io.opentelemetry.trace.Span} is ended, if the {@link Span#isRecording()}
-   * returns true.
+   * Called when a {@link io.opentelemetry.api.trace.Span} is ended, if the {@link
+   * Span#isRecording()} returns true.
    *
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.

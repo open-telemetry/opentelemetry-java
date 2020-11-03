@@ -22,6 +22,7 @@
 
 package io.opentelemetry.context;
 
+import com.google.errorprone.annotations.MustBeClosed;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -42,7 +43,7 @@ import javax.annotation.Nullable;
  * bound context. For example:
  *
  * <pre>{@code
- * Context withCredential = Context.current().withValues(CRED_KEY, cred);
+ * Context withCredential = Context.current().with(CRED_KEY, cred);
  * withCredential.wrap(new Runnable() {
  *   public void run() {
  *      readUserRecords(userId, CRED_KEY.get());
@@ -80,7 +81,7 @@ public interface Context {
    * is only a workaround hiding an underlying context propagation issue.
    */
   static Context root() {
-    return DefaultContext.ROOT;
+    return DefaultContext.root();
   }
 
   /**
@@ -94,7 +95,7 @@ public interface Context {
    * Returns a new context with the given key value set.
    *
    * <pre>{@code
-   * Context withCredential = Context.current().withValues(CRED_KEY, cred);
+   * Context withCredential = Context.current().with(CRED_KEY, cred);
    * withCredential.wrap(new Runnable() {
    *   public void run() {
    *      readUserRecords(userId, CRED_KEY.get());
@@ -102,12 +103,10 @@ public interface Context {
    * }).run();
    * }</pre>
    *
-   * <p>Note that multiple calls to {@code withValue} can be chained together. That is,
+   * <p>Note that multiple calls to {@link #with(ContextKey, Object)} can be chained together.
    *
    * <pre>{@code
-   * context.withValues(K1, V1, K2, V2);
-   * // is the same as
-   * context.withValue(K1, V1).withValue(K2, V2);
+   * context.with(K1, V1).with(K2, V2);
    * }</pre>
    *
    * <p>Nonetheless, {@link Context} should not be treated like a general purpose map with a large
@@ -115,45 +114,6 @@ public interface Context {
    * of separating them. But if the items are unrelated, have separate keys for them.
    */
   <V> Context with(ContextKey<V> k1, V v1);
-
-  /** Returns a new context with the given key value set. */
-  default <V1, V2> Context with(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
-    return with(k1, v1).with(k2, v2);
-  }
-
-  /** Returns a new context with the given key value set. */
-  default <V1, V2, V3> Context with(
-      ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3) {
-    return with(k1, v1, k2, v2).with(k3, v3);
-  }
-
-  /**
-   * Create a new context with the given key value set.
-   *
-   * <p>For more than 4 key-value pairs, note that multiple calls to {@link #with} can be chained
-   * together. That is,
-   *
-   * <pre>
-   * context.withValues(K1, V1, K2, V2);
-   * // is the same as
-   * context.withValue(K1, V1).withValue(K2, V2);
-   * </pre>
-   *
-   * <p>Nonetheless, {@link Context} should not be treated like a general purpose map with a large
-   * number of keys and values — combine multiple related items together into a single key instead
-   * of separating them. But if the items are unrelated, have separate keys for them.
-   */
-  default <V1, V2, V3, V4> Context with(
-      ContextKey<V1> k1,
-      V1 v1,
-      ContextKey<V2> k2,
-      V2 v2,
-      ContextKey<V3> k3,
-      V3 v3,
-      ContextKey<V4> k4,
-      V4 v4) {
-    return with(k1, v1, k2, v2, k3, v3).with(k4, v4);
-  }
 
   /** Returns a new {@link Context} with the given {@link ImplicitContextKeyed} set. */
   default Context with(ImplicitContextKeyed value) {
@@ -170,20 +130,21 @@ public interface Context {
    *
    * <pre>{@code
    * Context prevCtx = Context.current();
-   * try (Scope ignored = ctx.attach()) {
+   * try (Scope ignored = ctx.makeCurrent()) {
    *   assert Context.current() == ctx;
    *   ...
    * }
    * assert Context.current() == prevCtx;
    * }</pre>
    */
+  @MustBeClosed
   default Scope makeCurrent() {
     return ContextStorage.get().attach(this);
   }
 
   /**
-   * Returns a {@link Runnable} that makes this the {@linkplain Context#current current context} and
-   * then invokes the input {@link Runnable}.
+   * Returns a {@link Runnable} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link Runnable}.
    */
   default Runnable wrap(Runnable runnable) {
     return () -> {
@@ -194,8 +155,8 @@ public interface Context {
   }
 
   /**
-   * Returns a {@link Runnable} that makes this the {@linkplain Context#current current context} and
-   * then invokes the input {@link Runnable}.
+   * Returns a {@link Runnable} that makes this the {@linkplain Context#current() current context}
+   * and then invokes the input {@link Runnable}.
    */
   default <T> Callable<T> wrap(Callable<T> callable) {
     return () -> {
@@ -207,7 +168,7 @@ public interface Context {
 
   /**
    * Returns an {@link Executor} that will execute callbacks in the given {@code executor}, making
-   * this the {@linkplain Context#current current context} before each execution.
+   * this the {@linkplain Context#current() current context} before each execution.
    */
   default Executor wrap(Executor executor) {
     return command -> executor.execute(wrap(command));
@@ -215,7 +176,7 @@ public interface Context {
 
   /**
    * Returns an {@link ExecutorService} that will execute callbacks in the given {@code executor},
-   * making this the {@linkplain Context#current current context} before each execution.
+   * making this the {@linkplain Context#current() current context} before each execution.
    */
   default ExecutorService wrap(ExecutorService executor) {
     return new ContextExecutorService(this, executor);
@@ -223,7 +184,8 @@ public interface Context {
 
   /**
    * Returns an {@link ScheduledExecutorService} that will execute callbacks in the given {@code
-   * executor}, making this the {@linkplain Context#current current context} before each execution.
+   * executor}, making this the {@linkplain Context#current() current context} before each
+   * execution.
    */
   default ScheduledExecutorService wrap(ScheduledExecutorService executor) {
     return new ContextScheduledExecutorService(this, executor);

@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +65,7 @@ final class AttributesMap implements ReadableAttributes {
     for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
       AttributeKey key = entry.getKey();
       Object value = entry.getValue();
-      consumer.consume(key, value);
+      consumer.accept(key, value);
     }
   }
 

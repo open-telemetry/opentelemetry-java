@@ -5,34 +5,36 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longArrayKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -422,14 +424,17 @@ class SpanBuilderSdkTest {
   void addAttributes_OnlyViaSampler() {
     TraceConfig traceConfig =
         tracerSdkFactory.getActiveTraceConfig().toBuilder()
-            .setSampler(Samplers.traceIdRatioBased(1))
+            .setSampler(Sampler.traceIdRatioBased(1))
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
-      assertThat(span.toSpanData().getAttributes().get(Samplers.SAMPLING_PROBABILITY)).isEqualTo(1);
+      // TODO(anuraaga): Don't inline once spec is finalized and key is made public.
+      assertThat(
+              span.toSpanData().getAttributes().get(AttributeKey.doubleKey("sampling.probability")))
+          .isEqualTo(1);
     } finally {
       span.end();
       tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
@@ -472,7 +477,7 @@ class SpanBuilderSdkTest {
   @Test
   void sampler() {
     Span span =
-        TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.alwaysOff())
+        TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, SPAN_NAME, Sampler.alwaysOff())
             .startSpan();
     try {
       assertThat(span.getSpanContext().isSampled()).isFalse();
@@ -587,7 +592,7 @@ class SpanBuilderSdkTest {
   void sampledViaParentLinks() {
     Span span =
         TestUtils.startSpanWithSampler(
-                tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.traceIdRatioBased(0.0))
+                tracerSdkFactory, tracerSdk, SPAN_NAME, Sampler.traceIdRatioBased(0.0))
             .addLink(sampledSpanContext)
             .startSpan();
     try {
@@ -819,5 +824,19 @@ class SpanBuilderSdkTest {
     } finally {
       parent.end();
     }
+  }
+
+  @Test
+  void isSampled() {
+    assertThat(SpanBuilderSdk.isSampled(SamplingResult.Decision.DROP)).isFalse();
+    assertThat(SpanBuilderSdk.isSampled(SamplingResult.Decision.RECORD_ONLY)).isFalse();
+    assertThat(SpanBuilderSdk.isSampled(SamplingResult.Decision.RECORD_AND_SAMPLE)).isTrue();
+  }
+
+  @Test
+  void isRecording() {
+    assertThat(SpanBuilderSdk.isRecording(SamplingResult.Decision.DROP)).isFalse();
+    assertThat(SpanBuilderSdk.isRecording(SamplingResult.Decision.RECORD_ONLY)).isTrue();
+    assertThat(SpanBuilderSdk.isRecording(SamplingResult.Decision.RECORD_AND_SAMPLE)).isTrue();
   }
 }

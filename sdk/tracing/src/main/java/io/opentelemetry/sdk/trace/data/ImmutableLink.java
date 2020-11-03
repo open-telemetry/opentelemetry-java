@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import javax.annotation.concurrent.Immutable;
 
 /** An immutable implementation of {@link SpanData.Link}. */

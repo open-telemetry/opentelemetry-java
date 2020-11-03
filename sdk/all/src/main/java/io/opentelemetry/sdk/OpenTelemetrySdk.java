@@ -8,23 +8,21 @@ package io.opentelemetry.sdk;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.internal.Obfuscated;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.api.trace.spi.TracerProviderFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.internal.Obfuscated;
-import io.opentelemetry.metrics.DefaultMeterProvider;
-import io.opentelemetry.metrics.MeterProvider;
-import io.opentelemetry.metrics.spi.MeterProviderFactory;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.trace.DefaultTracerProvider;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerProvider;
-import io.opentelemetry.trace.spi.TracerProviderFactory;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
@@ -217,7 +215,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
         } else if (HAS_METRICS_SDK) {
           meterProvider = MeterSdkProvider.builder().setClock(clock).setResource(resource).build();
         } else {
-          meterProvider = DefaultMeterProvider.getInstance();
+          meterProvider = MeterProvider.getDefault();
         }
       }
 
@@ -231,7 +229,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
               new ObfuscatedTracerProvider(
                   TracerSdkProvider.builder().setClock(clock).setResource(resource).build());
         } else {
-          tracerProvider = DefaultTracerProvider.getInstance();
+          tracerProvider = TracerProvider.getDefault();
         }
       }
 

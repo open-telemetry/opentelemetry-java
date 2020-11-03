@@ -6,12 +6,12 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -46,7 +46,7 @@ abstract class SpanWrapper implements SpanData {
 
   abstract long endEpochNanos();
 
-  abstract boolean hasEnded();
+  abstract boolean internalHasEnded();
 
   /**
    * Note: the collections that are passed into this creator method are assumed to be immutable to
@@ -152,13 +152,13 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public boolean getHasRemoteParent() {
+  public boolean hasRemoteParent() {
     return delegate().hasRemoteParent();
   }
 
   @Override
-  public boolean getHasEnded() {
-    return hasEnded();
+  public boolean hasEnded() {
+    return internalHasEnded();
   }
 
   @Override

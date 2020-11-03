@@ -10,10 +10,15 @@ import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
+import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
+import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -24,9 +29,6 @@ import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.StatusCode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -98,7 +100,7 @@ final class SpanAdapter {
         .forEach(
             new AttributeConsumer() {
               @Override
-              public <T> void consume(AttributeKey<T> key, T value) {
+              public <T> void accept(AttributeKey<T> key, T value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
               }
             });
@@ -141,7 +143,7 @@ final class SpanAdapter {
         .forEach(
             new AttributeConsumer() {
               @Override
-              public <T> void consume(AttributeKey<T> key, T value) {
+              public <T> void accept(AttributeKey<T> key, T value) {
                 builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
               }
             });
@@ -159,7 +161,7 @@ final class SpanAdapter {
     attributes.forEach(
         new AttributeConsumer() {
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
           }
         });
@@ -169,12 +171,18 @@ final class SpanAdapter {
   }
 
   static Status toStatusProto(SpanData.Status status) {
-    // todo: Update this when the proto definitions are updated to include UNSET and ERROR
-    Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
-    if (status.getCanonicalCode() == StatusCode.ERROR) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_UNKNOWN_ERROR;
+    Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
+    Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
+    if (status.getCanonicalCode() == StatusCode.OK) {
+      protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
+    } else if (status.getCanonicalCode() == StatusCode.ERROR) {
+      protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
+      deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
     }
-    Status.Builder builder = Status.newBuilder().setCode(protoStatusCode);
+
+    @SuppressWarnings("deprecation") // setDeprecatedCode is deprecated.
+    Status.Builder builder =
+        Status.newBuilder().setCode(protoStatusCode).setDeprecatedCode(deprecatedStatusCode);
     if (status.getDescription() != null) {
       builder.setMessage(status.getDescription());
     }

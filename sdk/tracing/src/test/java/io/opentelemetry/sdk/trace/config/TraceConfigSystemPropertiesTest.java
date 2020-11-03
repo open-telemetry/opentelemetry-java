@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.trace.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.sdk.trace.Samplers;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +39,7 @@ public class TraceConfigSystemPropertiesTest {
             .build();
     // this is not a useful assertion. How can we do better?
     assertThat(traceConfig.getSampler())
-        .isEqualTo(Samplers.parentBased(Samplers.traceIdRatioBased(0.3)));
+        .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(0.3)));
     assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(5);
     assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(6);
     assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(9);

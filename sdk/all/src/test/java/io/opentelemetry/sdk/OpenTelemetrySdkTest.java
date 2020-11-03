@@ -7,18 +7,17 @@ package io.opentelemetry.sdk;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.baggage.BaggageManager;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.trace.TracerProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -29,7 +28,6 @@ class OpenTelemetrySdkTest {
 
   @Mock private TracerProvider tracerProvider;
   @Mock private MeterProvider meterProvider;
-  @Mock private BaggageManager baggageManager;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 

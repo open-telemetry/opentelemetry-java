@@ -22,6 +22,8 @@
 
 package io.opentelemetry.context;
 
+import javax.annotation.Nullable;
+
 /**
  * The storage for storing and retrieving the current {@link Context}.
  *
@@ -34,7 +36,7 @@ package io.opentelemetry.context;
  * >
  * >   @Override
  * >   public ContextStorage get() {
- * >     ContextStorage threadLocalStorage = Context.threadLocalStorage();
+ * >     ContextStorage threadLocalStorage = ContextStorage.defaultStorage();
  * >     return new RequestContextStorage() {
  * >       @Override
  * >       public Scope T attach(Context toAttach) {
@@ -66,7 +68,14 @@ public interface ContextStorage {
    * Scope#close()}.
    */
   static ContextStorage get() {
-    return LazyStorage.storage;
+    return LazyStorage.get();
+  }
+
+  /**
+   * Returns the default {@link ContextStorage} which stores {@link Context} using a threadlocal.
+   */
+  static ContextStorage defaultStorage() {
+    return ThreadLocalContextStorage.INSTANCE;
   }
 
   /**
@@ -77,16 +86,9 @@ public interface ContextStorage {
   Scope attach(Context toAttach);
 
   /**
-   * Returns the current {@link DefaultContext}. If no {@link DefaultContext} has been attached yet,
-   * this will be the {@linkplain Context#root()} root context}.
+   * Returns the current {@link Context}. If no {@link Context} has been attached yet, this will
+   * return {@code null}.
    */
+  @Nullable
   Context current();
-
-  /**
-   * Returns a {@link ContextKey} for the given name. This is only useful when integrating with a
-   * separate context propagation mechanism, where
-   */
-  default <T> ContextKey<T> contextKey(String name) {
-    return new DefaultContextKey<>(name);
-  }
 }

@@ -1,0 +1,33 @@
+name: Copy test container docker images
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  copy-images:
+    strategy:
+      matrix:
+        include:
+          - source: jaegertracing/all-in-one:1.17
+            target_tag: jaeger
+          - source: otel/opentelemetry-collector-dev:latest
+            target_tag: otel-collector-dev
+          - source: shopify/toxiproxy:latest
+            target_tag: toxiproxy
+          - source: adoptopenjdk/openjdk8:latest
+            target_tag: openjdk8
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          registry: open-telemetry-docker-dev.bintray.io
+          username: ${{ secrets.BINTRAY_USER }}
+          password: ${{ secrets.BINTRAY_KEY }}
+      - name: Pull and push
+        run: |
+          docker pull ${{ matrix.source }}
+          docker tag ${{ matrix.source }} open-telemetry-docker-dev.bintray.io/java-test-containers:${{ matrix.target_tag }}
+          docker push open-telemetry-docker-dev.bintray.io/java-test-containers:${{ matrix.target_tag }}

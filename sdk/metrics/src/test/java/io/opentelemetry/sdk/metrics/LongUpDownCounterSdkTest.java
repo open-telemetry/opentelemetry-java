@@ -5,14 +5,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.LongUpDownCounter;
-import io.opentelemetry.metrics.LongUpDownCounter.BoundLongUpDownCounter;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.LongUpDownCounter.BoundLongUpDownCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;

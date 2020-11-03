@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.Tracer;
 
 /**
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the

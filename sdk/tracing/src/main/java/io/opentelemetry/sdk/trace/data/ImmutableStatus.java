@@ -6,9 +6,9 @@
 package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.StatusCode;
 import java.util.EnumMap;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;

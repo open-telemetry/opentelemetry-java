@@ -7,6 +7,7 @@ package io.opentelemetry.context;
 
 import brave.propagation.CurrentTraceContext;
 import brave.propagation.TraceContext;
+import com.google.errorprone.annotations.MustBeClosed;
 
 public class OpenTelemetryCurrentTraceContext extends CurrentTraceContext {
 
@@ -18,8 +19,9 @@ public class OpenTelemetryCurrentTraceContext extends CurrentTraceContext {
     return Context.current().get(TRACE_CONTEXT_KEY);
   }
 
-  @SuppressWarnings("ReferenceEquality")
+  @SuppressWarnings({"ReferenceEquality", "MustBeClosedChecker"})
   @Override
+  @MustBeClosed
   public Scope newScope(TraceContext context) {
     Context currentOtel = Context.current();
     TraceContext currentBrave = currentOtel.get(TRACE_CONTEXT_KEY);

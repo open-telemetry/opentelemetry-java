@@ -1,9 +1,9 @@
 import nebula.plugin.release.git.opinion.Strategies
 
 plugins {
-    id "com.diffplug.spotless" version "5.6.1"
+    id "com.diffplug.spotless"
     id "com.jfrog.artifactory" apply false
-    id "com.jfrog.bintray" version "1.8.4" apply false // Need *specific* version.
+    id "com.jfrog.bintray" apply false
     id "nebula.release"
     id "net.ltgt.errorprone" apply false
     id "ru.vyarus.animalsniffer" apply false
@@ -170,6 +170,9 @@ configure(opentelemetryProjects) {
     }
 
     java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+
         toolchain {
             languageVersion = JavaLanguageVersion.of(11)
         }
@@ -329,7 +332,8 @@ configure(opentelemetryProjects) {
                 rest_assured            : 'io.rest-assured:rest-assured:4.2.0',
                 jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
                 zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
-                archunit                : 'com.tngtech.archunit:archunit-junit4:0.13.1' //Architectural constraints
+                archunit                : 'com.tngtech.archunit:archunit-junit4:0.13.1', //Architectural constraints
+                jqf                     : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6' // fuzz testing
         ]
     }
 
@@ -480,19 +484,25 @@ wrapper {
     gradleVersion = '6.7'
 }
 
-tasks.register("updateVersionInDocs") {
-    doLast {
-        def versionParts = version.toString().split('\\.')
-        def minorVersionNumber = Integer.parseInt(versionParts[1])
-        def nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
+allprojects {
+    tasks.register("updateVersionInDocs") {
+        group("documentation")
+        doLast {
+            def versionParts = version.toString().split('\\.')
+            def minorVersionNumber = Integer.parseInt(versionParts[1])
+            def nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
 
-        def readmeText = file("README.md").text
-        def updatedText = readmeText
-                .replaceAll("<version>\\d+\\.\\d+\\.\\d+</version>", "<version>${version}</version>")
-                .replaceAll("<version>\\d+\\.\\d+\\.\\d+-SNAPSHOT</version>", "<version>${nextSnapshot}</version>")
-                .replaceAll("implementation\\('io.opentelemetry:opentelemetry-api:\\d+\\.\\d+\\.\\d+'\\)", "implementation('io.opentelemetry:opentelemetry-api:${version}')")
-                .replaceAll("implementation\\('io.opentelemetry:opentelemetry-api:\\d+\\.\\d+\\.\\d+-SNAPSHOT'\\)", "implementation('io.opentelemetry:opentelemetry-api:${nextSnapshot}')")
-                .replaceAll("<!--VERSION_STABLE-->.*<!--/VERSION_STABLE-->", "<!--VERSION_STABLE-->${version}<!--/VERSION_STABLE-->")
-        file("README.md").text = updatedText
+            def readme = file("README.md")
+            if (!readme.exists()) return
+
+            def readmeText = readme.text
+            def updatedText = readmeText
+                    .replaceAll("<version>\\d+\\.\\d+\\.\\d+</version>", "<version>${version}</version>")
+                    .replaceAll("<version>\\d+\\.\\d+\\.\\d+-SNAPSHOT</version>", "<version>${nextSnapshot}</version>")
+                    .replaceAll("(implementation.*io\\.opentelemetry:.*:)(\\d+\\.\\d+\\.\\d+)(?!-SNAPSHOT)(.*)", "\$1${version}\$3")
+                    .replaceAll("(implementation.*io\\.opentelemetry:.*:)(\\d+\\.\\d+\\.\\d+-SNAPSHOT)(.*)", "\$1${nextSnapshot}\$3")
+                    .replaceAll("<!--VERSION_STABLE-->.*<!--/VERSION_STABLE-->", "<!--VERSION_STABLE-->${version}<!--/VERSION_STABLE-->")
+            readme.text = updatedText
+        }
     }
 }

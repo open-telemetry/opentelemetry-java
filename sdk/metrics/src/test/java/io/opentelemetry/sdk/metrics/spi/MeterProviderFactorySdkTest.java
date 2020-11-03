@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.spi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import org.junit.jupiter.api.Test;
 

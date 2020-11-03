@@ -5,21 +5,28 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKey.booleanArrayKey;
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleArrayKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longArrayKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -29,13 +36,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -64,7 +64,7 @@ class RecordEventsReadableSpanTest {
   private static final boolean EXPECTED_HAS_REMOTE_PARENT = true;
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
-  private final IdsGenerator idsGenerator = new RandomIdsGenerator();
+  private final IdGenerator idsGenerator = IdGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String spanId = idsGenerator.generateSpanId();
   private final String parentSpanId = idsGenerator.generateSpanId();
@@ -237,7 +237,7 @@ class RecordEventsReadableSpanTest {
     // toSpanData was called.
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size());
     assertThat(spanData.getAttributes().get(stringKey("anotherKey"))).isNull();
-    assertThat(spanData.getHasEnded()).isFalse();
+    assertThat(spanData.hasEnded()).isFalse();
     assertThat(spanData.getEndEpochNanos()).isEqualTo(0);
     assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
     assertThat(spanData.getEvents()).isEmpty();
@@ -247,7 +247,7 @@ class RecordEventsReadableSpanTest {
     spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size() + 1);
     assertThat(spanData.getAttributes().get(stringKey("anotherKey"))).isEqualTo("anotherValue");
-    assertThat(spanData.getHasEnded()).isTrue();
+    assertThat(spanData.hasEnded()).isTrue();
     assertThat(spanData.getEndEpochNanos()).isGreaterThan(0);
     assertThat(spanData.getName()).isEqualTo("changedName");
     assertThat(spanData.getEvents()).hasSize(1);
@@ -293,7 +293,7 @@ class RecordEventsReadableSpanTest {
   void getSpanHasRemoteParent() {
     RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
     try {
-      assertThat(span.toSpanData().getHasRemoteParent()).isTrue();
+      assertThat(span.toSpanData().hasRemoteParent()).isTrue();
     } finally {
       span.end();
     }
@@ -791,7 +791,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
-    assertThat(spanData.getHasRemoteParent()).isEqualTo(EXPECTED_HAS_REMOTE_PARENT);
+    assertThat(spanData.hasRemoteParent()).isEqualTo(EXPECTED_HAS_REMOTE_PARENT);
     assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
@@ -801,7 +801,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
     assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
     assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
-    assertThat(spanData.getHasEnded()).isEqualTo(hasEnded);
+    assertThat(spanData.hasEnded()).isEqualTo(hasEnded);
 
     // verify equality manually, since the implementations don't all equals with each other.
     ReadableAttributes spanDataAttributes = spanData.getAttributes();
@@ -809,7 +809,7 @@ class RecordEventsReadableSpanTest {
     spanDataAttributes.forEach(
         new AttributeConsumer() {
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             assertThat(attributes.get(key)).isEqualTo(value);
           }
         });

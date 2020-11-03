@@ -7,7 +7,7 @@ package io.opentelemetry.exporters.inmemory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;

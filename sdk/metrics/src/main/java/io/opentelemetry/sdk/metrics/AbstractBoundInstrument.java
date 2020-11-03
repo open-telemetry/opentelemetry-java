@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.SynchronousInstrument.BoundInstrument;
+import io.opentelemetry.api.metrics.SynchronousInstrument.BoundInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import java.util.concurrent.atomic.AtomicLong;
 

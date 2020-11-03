@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.AsynchronousInstrument;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.AsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;

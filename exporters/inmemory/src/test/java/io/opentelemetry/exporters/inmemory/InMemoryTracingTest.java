@@ -8,11 +8,11 @@ package io.opentelemetry.exporters.inmemory;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.sdk.trace.Samplers;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +53,7 @@ class InMemoryTracingTest {
     tracer.spanBuilder("A").startSpan().end();
     TraceConfig originalConfig = tracerSdkProvider.getActiveTraceConfig();
     tracerSdkProvider.updateActiveTraceConfig(
-        originalConfig.toBuilder().setSampler(Samplers.alwaysOff()).build());
+        originalConfig.toBuilder().setSampler(Sampler.alwaysOff()).build());
     try {
       tracer.spanBuilder("B").startSpan().end();
     } finally {

@@ -9,12 +9,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -34,14 +34,13 @@ class JaegerIntegrationTest {
 
   private static final int QUERY_PORT = 16686;
   private static final int COLLECTOR_PORT = 14250;
-  private static final String JAEGER_VERSION = "1.17";
   private static final String SERVICE_NAME = "E2E-test";
   private static final String JAEGER_URL = "http://localhost";
   private final Tracer tracer = OpenTelemetry.getGlobalTracer(getClass().getCanonicalName());
 
   @Container
   public static GenericContainer<?> jaegerContainer =
-      new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
+      new GenericContainer<>("open-telemetry-docker-dev.bintray.io/java-test-containers:jaeger")
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
           .waitingFor(new HttpWaitStrategy().forPath("/"));
 

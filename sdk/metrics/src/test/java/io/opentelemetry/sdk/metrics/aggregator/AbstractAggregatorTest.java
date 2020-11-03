@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;

@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 
 final class DefaultContext implements Context {
 
-  static final Context ROOT = new DefaultContext();
+  private static final Context ROOT = new DefaultContext();
 
   /**
    * Returns the default {@link ContextStorage} used to attach {@link Context}s to scopes of
@@ -35,6 +35,22 @@ final class DefaultContext implements Context {
    */
   static ContextStorage threadLocalStorage() {
     return ThreadLocalContextStorage.INSTANCE;
+  }
+
+  // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
+  // this method.
+  //
+  // In particular, do not change this return type to DefaultContext because auto-instrumentation
+  // hijacks this method and returns a bridged implementation of Context.
+  //
+  // Ideally auto-instrumentation would hijack the public Context.root() instead of this
+  // method, but auto-instrumentation also needs to inject its own implementation of Context
+  // into the class loader at the same time, which causes a problem because injecting a class into
+  // the class loader automatically resolves its super classes (interfaces), which in this case is
+  // Context, which would be the same class (interface) being instrumented at that time,
+  // which would lead to the JVM throwing a LinkageError "attempted duplicate interface definition"
+  static Context root() {
+    return ROOT;
   }
 
   @Nullable private final PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries;
@@ -60,42 +76,6 @@ final class DefaultContext implements Context {
   public <V> Context with(ContextKey<V> k1, V v1) {
     PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
         PersistentHashArrayMappedTrie.put(entries, k1, v1);
-    return new DefaultContext(newEntries);
-  }
-
-  @Override
-  public <V1, V2> Context with(ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2) {
-    PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
-        PersistentHashArrayMappedTrie.put(entries, k1, v1);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k2, v2);
-    return new DefaultContext(newEntries);
-  }
-
-  @Override
-  public <V1, V2, V3> Context with(
-      ContextKey<V1> k1, V1 v1, ContextKey<V2> k2, V2 v2, ContextKey<V3> k3, V3 v3) {
-    PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
-        PersistentHashArrayMappedTrie.put(entries, k1, v1);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k2, v2);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k3, v3);
-    return new DefaultContext(newEntries);
-  }
-
-  @Override
-  public <V1, V2, V3, V4> Context with(
-      ContextKey<V1> k1,
-      V1 v1,
-      ContextKey<V2> k2,
-      V2 v2,
-      ContextKey<V3> k3,
-      V3 v3,
-      ContextKey<V4> k4,
-      V4 v4) {
-    PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
-        PersistentHashArrayMappedTrie.put(entries, k1, v1);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k2, v2);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k3, v3);
-    newEntries = PersistentHashArrayMappedTrie.put(newEntries, k4, v4);
     return new DefaultContext(newEntries);
   }
 }

@@ -5,7 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.MeterProvider;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -24,7 +25,7 @@ import javax.annotation.Nonnull;
  * {@code Meter} provider implementation for {@link MeterProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
- * io.opentelemetry.OpenTelemetry}.
+ * OpenTelemetry}.
  */
 public final class MeterSdkProvider implements MeterProvider {
 

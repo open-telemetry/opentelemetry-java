@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.spi.OpenTelemetryFactory;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.spi.OpenTelemetryFactory;
 
 /**
  * Factory SPI implementation to register a {@link OpenTelemetrySdk} as the default {@link

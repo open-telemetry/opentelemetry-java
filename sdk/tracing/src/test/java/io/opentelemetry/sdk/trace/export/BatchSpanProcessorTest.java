@@ -10,15 +10,15 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -72,14 +72,14 @@ class BatchSpanProcessorTest {
 
   private ReadableSpan createSampledEndedSpan(String spanName) {
     Span span =
-        TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOn())
+        TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Sampler.alwaysOn())
             .startSpan();
     span.end();
     return (ReadableSpan) span;
   }
 
   private void createNotSampledEndedSpan(String spanName) {
-    TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOff())
+    TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Sampler.alwaysOff())
         .startSpan()
         .end();
   }

@@ -8,11 +8,10 @@ package io.opentelemetry.sdk.trace.config;
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.opentelemetry.internal.Utils;
+import io.opentelemetry.api.internal.Utils;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
-import io.opentelemetry.sdk.trace.Sampler;
-import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
 import java.util.Properties;
 import javax.annotation.concurrent.Immutable;
@@ -74,7 +73,7 @@ import javax.annotation.concurrent.Immutable;
 public abstract class TraceConfig {
   // These values are the default values for all the global parameters.
   // TODO: decide which default sampler to use
-  private static final Sampler DEFAULT_SAMPLER = Samplers.parentBased(Samplers.alwaysOn());
+  private static final Sampler DEFAULT_SAMPLER = Sampler.parentBased(Sampler.alwaysOn());
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 1000;
   private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 1000;
   private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 1000;
@@ -279,11 +278,11 @@ public abstract class TraceConfig {
       Utils.checkArgument(samplerRatio >= 0, "samplerRatio must be greater than or equal to 0.");
       Utils.checkArgument(samplerRatio <= 1, "samplerRatio must be lesser than or equal to 1.");
       if (samplerRatio == 1) {
-        setSampler(Samplers.parentBased(Samplers.alwaysOn()));
+        setSampler(Sampler.parentBased(Sampler.alwaysOn()));
       } else if (samplerRatio == 0) {
-        setSampler(Samplers.alwaysOff());
+        setSampler(Sampler.alwaysOff());
       } else {
-        setSampler(Samplers.parentBased(Samplers.traceIdRatioBased(samplerRatio)));
+        setSampler(Sampler.parentBased(Sampler.traceIdRatioBased(samplerRatio)));
       }
       return this;
     }

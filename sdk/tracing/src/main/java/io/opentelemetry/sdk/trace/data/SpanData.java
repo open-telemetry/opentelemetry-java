@@ -5,22 +5,23 @@
 
 package io.opentelemetry.sdk.trace.data;
 
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Immutable representation of all data collected by the {@link io.opentelemetry.trace.Span} class.
+ * Immutable representation of all data collected by the {@link io.opentelemetry.api.trace.Span}
+ * class.
  */
 @Immutable
 public interface SpanData {
@@ -135,14 +136,14 @@ public interface SpanData {
    * @return {@code true} if the parent is on a different process. {@code false} if this is a root
    *     span.
    */
-  boolean getHasRemoteParent();
+  boolean hasRemoteParent();
 
   /**
    * Returns whether this Span has already been ended.
    *
    * @return {@code true} if the span has already been ended, {@code false} if not.
    */
-  boolean getHasEnded();
+  boolean hasEnded();
 
   /**
    * The total number of {@link Event} events that were recorded on this span. This number may be

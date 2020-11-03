@@ -39,8 +39,6 @@ class ContextTest {
 
   private static final ContextKey<String> ANIMAL = ContextKey.named("animal");
   private static final ContextKey<Object> BAG = ContextKey.named("bag");
-  private static final ContextKey<String> FOOD = ContextKey.named("food");
-  private static final ContextKey<Integer> COOKIES = ContextKey.named("cookies");
 
   private static final Context CAT = Context.current().with(ANIMAL, "cat");
 
@@ -167,31 +165,6 @@ class ContextTest {
 
     assertThat(context4.get(ANIMAL)).isEqualTo("dog");
     assertThat(context4.get(BAG)).isNull();
-  }
-
-  @Test
-  void withTwoValues() {
-    Context context = Context.current().with(ANIMAL, "cat", FOOD, "hot dog");
-    assertThat(context.get(ANIMAL)).isEqualTo("cat");
-    assertThat(context.get(FOOD)).isEqualTo("hot dog");
-  }
-
-  @Test
-  void withThreeValues() {
-    Context context = Context.current().with(ANIMAL, "cat", FOOD, "hot dog", COOKIES, 100);
-    assertThat(context.get(ANIMAL)).isEqualTo("cat");
-    assertThat(context.get(FOOD)).isEqualTo("hot dog");
-    assertThat(context.get(COOKIES)).isEqualTo(100);
-  }
-
-  @Test
-  void withFourValues() {
-    Context context =
-        Context.current().with(ANIMAL, "cat", FOOD, "hot dog", COOKIES, 100, BAG, "prada");
-    assertThat(context.get(ANIMAL)).isEqualTo("cat");
-    assertThat(context.get(FOOD)).isEqualTo("hot dog");
-    assertThat(context.get(COOKIES)).isEqualTo(100);
-    assertThat(context.get(BAG)).isEqualTo("prada");
   }
 
   @Test

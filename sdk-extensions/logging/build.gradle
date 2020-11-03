@@ -1,0 +1,19 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry Contrib Logging Support'
+ext.moduleName = "io.opentelemetry.sdk.extensions.logging"
+
+dependencies {
+    api project(':opentelemetry-sdk')
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.4'
+    testImplementation libraries.awaitility
+
+    annotationProcessor libraries.auto_value
+
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+}

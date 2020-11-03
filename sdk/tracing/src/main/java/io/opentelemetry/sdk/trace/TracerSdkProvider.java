@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -12,8 +15,6 @@ import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerProvider;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,8 +23,8 @@ import java.util.logging.Logger;
  * {@code Tracer} provider implementation for {@link TracerProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
- * io.opentelemetry.OpenTelemetry}. However, if you need a custom implementation of the factory, you
- * can create one as needed.
+ * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
+ * as needed.
  */
 public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   private static final Logger logger = Logger.getLogger(TracerSdkProvider.class.getName());
@@ -39,7 +40,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     return new Builder();
   }
 
-  private TracerSdkProvider(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+  private TracerSdkProvider(Clock clock, IdGenerator idsGenerator, Resource resource) {
     this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
@@ -90,7 +91,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   public static class Builder {
 
     private Clock clock = MillisClock.getInstance();
-    private IdsGenerator idsGenerator = new RandomIdsGenerator();
+    private IdGenerator idsGenerator = IdGenerator.random();
     private Resource resource = Resource.getDefault();
 
     /**
@@ -106,13 +107,13 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     }
 
     /**
-     * Assign an {@link IdsGenerator}.
+     * Assign an {@link IdGenerator}.
      *
      * @param idsGenerator A generator for trace and span ids. Note: this should be thread-safe and
      *     as contention free as possible.
      * @return this
      */
-    public Builder setIdsGenerator(IdsGenerator idsGenerator) {
+    public Builder setIdsGenerator(IdGenerator idsGenerator) {
       Objects.requireNonNull(idsGenerator, "idsGenerator");
       this.idsGenerator = idsGenerator;
       return this;

@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.trace.spi;
 
+import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.api.trace.spi.TracerProviderFactory;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.trace.TracerProvider;
-import io.opentelemetry.trace.spi.TracerProviderFactory;
 
 /** SDK implementation of the TracerProviderFactory for SPI. */
 public final class TracerProviderFactorySdk implements TracerProviderFactory {

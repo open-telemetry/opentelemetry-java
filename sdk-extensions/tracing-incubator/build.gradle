@@ -1,0 +1,22 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+// SDK modules that are still being developed.
+
+description = 'OpenTelemetry SDK Tracing Incubator'
+ext.moduleName = "io.opentelemetry.sdk.extension.trace.incubator"
+
+dependencies {
+    api project(':opentelemetry-api'),
+            project(':opentelemetry-sdk')
+
+
+    annotationProcessor libraries.auto_value
+    testImplementation project(':opentelemetry-testing-internal')
+
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+}

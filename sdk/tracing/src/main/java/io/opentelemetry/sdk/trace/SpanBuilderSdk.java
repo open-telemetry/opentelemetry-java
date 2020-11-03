@@ -5,30 +5,31 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.doubleKey;
-import static io.opentelemetry.common.AttributeKey.longKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.common.AttributeConsumer;
-import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ReadableAttributes;
+import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.api.common.AttributeConsumer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.internal.Utils;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.Sampler.SamplingResult;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +44,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
   private final Resource resource;
-  private final IdsGenerator idsGenerator;
+  private final IdGenerator idsGenerator;
   private final Clock clock;
 
   @Nullable private Context parent;
@@ -60,7 +61,7 @@ final class SpanBuilderSdk implements Span.Builder {
       SpanProcessor spanProcessor,
       TraceConfig traceConfig,
       Resource resource,
-      IdsGenerator idsGenerator,
+      IdGenerator idsGenerator,
       Clock clock) {
     this.spanName = spanName;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
@@ -196,15 +197,14 @@ final class SpanBuilderSdk implements Span.Builder {
             .getSampler()
             .shouldSample(
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
-    Sampler.Decision samplingDecision = samplingResult.getDecision();
+    SamplingResult.Decision samplingDecision = samplingResult.getDecision();
 
     TraceState samplingResultTraceState =
         samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
-        createSpanContext(
-            traceId, spanId, samplingResultTraceState, Samplers.isSampled(samplingDecision));
+        createSpanContext(traceId, spanId, samplingResultTraceState, isSampled(samplingDecision));
 
-    if (!Samplers.isRecording(samplingDecision)) {
+    if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);
     }
     ReadableAttributes samplingAttributes = samplingResult.getAttributes();
@@ -215,7 +215,7 @@ final class SpanBuilderSdk implements Span.Builder {
       samplingAttributes.forEach(
           new AttributeConsumer() {
             @Override
-            public <T> void consume(AttributeKey<T> key, T value) {
+            public <T> void accept(AttributeKey<T> key, T value) {
               attributes.put(key, value);
             }
           });
@@ -257,5 +257,16 @@ final class SpanBuilderSdk implements Span.Builder {
     } else {
       return MonotonicClock.create(clock);
     }
+  }
+
+  @VisibleForTesting
+  static boolean isRecording(SamplingResult.Decision decision) {
+    return SamplingResult.Decision.RECORD_ONLY.equals(decision)
+        || SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
+  }
+
+  @VisibleForTesting
+  static boolean isSampled(SamplingResult.Decision decision) {
+    return SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
   }
 }

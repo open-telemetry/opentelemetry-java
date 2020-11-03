@@ -5,19 +5,29 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import static io.opentelemetry.common.AttributeKey.booleanKey;
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CLIENT;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
+import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
+import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
+import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_ERROR;
 import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_OK;
-import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNKNOWN_ERROR;
+import static io.opentelemetry.proto.trace.v1.Status.StatusCode.STATUS_CODE_UNSET;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.ByteString;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -26,13 +36,6 @@ import io.opentelemetry.sdk.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.StatusCode;
-import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -109,17 +112,35 @@ class SpanAdapterTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation") // setDeprecatedCode is deprecated.
   void toProtoStatus() {
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.unset()))
-        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
+        .isEqualTo(
+            Status.newBuilder()
+                .setCode(STATUS_CODE_UNSET)
+                .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
+                .build());
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.ERROR, "ERROR")))
         .isEqualTo(
-            Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("ERROR").build());
+            Status.newBuilder()
+                .setCode(STATUS_CODE_ERROR)
+                .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
+                .setMessage("ERROR")
+                .build());
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.ERROR, "UNKNOWN")))
         .isEqualTo(
-            Status.newBuilder().setCode(STATUS_CODE_UNKNOWN_ERROR).setMessage("UNKNOWN").build());
+            Status.newBuilder()
+                .setCode(STATUS_CODE_ERROR)
+                .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
+                .setMessage("UNKNOWN")
+                .build());
     assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.OK, "OK_OVERRIDE")))
-        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
+        .isEqualTo(
+            Status.newBuilder()
+                .setCode(STATUS_CODE_OK)
+                .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
+                .setMessage("OK_OVERRIDE")
+                .build());
   }
 
   @Test

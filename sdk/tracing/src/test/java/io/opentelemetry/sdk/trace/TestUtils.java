@@ -5,17 +5,18 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public final class TestUtils {
   /**
    * Generates some random attributes used for testing.
    *
-   * @return some {@link io.opentelemetry.common.Attributes}
+   * @return some {@link io.opentelemetry.api.common.Attributes}
    */
   static Attributes generateRandomAttributes() {
     return Attributes.of(stringKey(UUID.randomUUID().toString()), UUID.randomUUID().toString());
