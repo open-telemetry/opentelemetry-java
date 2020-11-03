@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporters.jaeger;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -29,11 +30,12 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model.KeyValue;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model.Span;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.TestSpanData;
+import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import java.net.InetAddress;
@@ -113,7 +115,9 @@ class JaegerGrpcSpanExporterTest {
             .build();
 
     // test
-    exporter.export(Collections.singletonList(span));
+    CompletableResultCode result = exporter.export(Collections.singletonList(span));
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
     verify(service).postSpans(requestCaptor.capture(), ArgumentMatchers.any());
@@ -179,7 +183,9 @@ class JaegerGrpcSpanExporterTest {
             .build();
 
     // test
-    exporter.export(Lists.newArrayList(span, span2));
+    CompletableResultCode result = exporter.export(Lists.newArrayList(span, span2));
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
     verify(service, times(2)).postSpans(requestCaptor.capture(), ArgumentMatchers.any());

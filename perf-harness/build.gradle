@@ -16,16 +16,16 @@ ext {
 dependencies {
     compile project(':opentelemetry-api'),
             project(":opentelemetry-sdk"),
-            project(":opentelemetry-exporters-otlp"),
-            project(":opentelemetry-exporters-logging"),
-            project(":opentelemetry-exporters-inmemory")
+            project(":opentelemetry-exporter-otlp"),
+            project(":opentelemetry-exporter-logging"),
+            project(":opentelemetry-exporter-inmemory")
 
 
 //    compile("io.opentelemetry:opentelemetry-api:${opentelemetryVersion}")
 //    compile("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
-//    compile("io.opentelemetry:opentelemetry-exporters-otlp:${opentelemetryVersion}")
-//    compile("io.opentelemetry:opentelemetry-exporters-logging:${opentelemetryVersion}")
-//    compile("io.opentelemetry:opentelemetry-exporters-inmemory:${opentelemetryVersion}")
+//    compile("io.opentelemetry:opentelemetry-exporter-otlp:${opentelemetryVersion}")
+//    compile("io.opentelemetry:opentelemetry-exporter-logging:${opentelemetryVersion}")
+//    compile("io.opentelemetry:opentelemetry-exporter-inmemory:${opentelemetryVersion}")
 
     compile("io.grpc:grpc-netty-shaded:${grpcVersion}")
 
