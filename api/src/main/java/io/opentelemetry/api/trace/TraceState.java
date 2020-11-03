@@ -87,7 +87,7 @@ public abstract class TraceState {
    *
    * @return a {@link List} view of the mappings contained in this {@code TraceState}.
    */
-  public abstract List<Entry> getEntries();
+  abstract List<Entry> getEntries();
 
   /**
    * Returns a {@code Builder} based on an empty {@code TraceState}.
