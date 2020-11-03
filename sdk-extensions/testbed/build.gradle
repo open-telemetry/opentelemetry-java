@@ -8,8 +8,8 @@ description = 'OpenTelemetry SDK Testbed'
 ext.moduleName = 'io.opentelemetry.sdk.extension.trace.testbed'
 
 dependencies {
-    implementation project(':opentelemetry-api'),
+    testImplementation project(':opentelemetry-api'),
             project(':opentelemetry-sdk'),
-            project(':opentelemetry-exporter-inmemory'),
+            project(':opentelemetry-sdk-testing'),
             libraries.guava
 }

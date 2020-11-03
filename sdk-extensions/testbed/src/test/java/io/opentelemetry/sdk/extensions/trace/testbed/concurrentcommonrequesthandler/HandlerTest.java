@@ -12,15 +12,14 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * There is only one instance of 'RequestHandler' per 'Client'. Methods of 'RequestHandler' are
@@ -29,16 +28,13 @@ import org.junit.jupiter.api.Test;
  */
 class HandlerTest {
 
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = sdk.get(HandlerTest.class.getName());
-  private final Client client = new Client(new RequestHandler(tracer));
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
-  @BeforeEach
-  void before() {
-    inMemoryTracing.getSpanExporter().reset();
-  }
+  private final Tracer tracer =
+      otelTesting.getOpenTelemetry().getTracer(HandlerTest.class.getName());
+
+  private final Client client = new Client(new RequestHandler(tracer));
 
   @Test
   void two_requests() throws Exception {
@@ -48,7 +44,7 @@ class HandlerTest {
     assertThat(responseFuture.get(15, TimeUnit.SECONDS)).isEqualTo("message:response");
     assertThat(responseFuture2.get(15, TimeUnit.SECONDS)).isEqualTo("message2:response");
 
-    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished).hasSize(2);
 
     for (SpanData spanProto : finished) {
@@ -73,7 +69,7 @@ class HandlerTest {
       parentSpan.end();
     }
 
-    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished).hasSize(2);
 
     SpanData child = TestUtils.getOneByName(finished, RequestHandler.OPERATION_NAME);
@@ -108,7 +104,7 @@ class HandlerTest {
     String response = client.send("wrong_parent").get(15, TimeUnit.SECONDS);
     assertThat(response).isEqualTo("wrong_parent:response");
 
-    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished).hasSize(3);
 
     finished = TestUtils.sortByStartTime(finished);

@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,9 +22,11 @@ import javax.annotation.Nullable;
 public final class TestUtils {
   private TestUtils() {}
 
-  /** Returns the number of finished {@code Span}s in the specified {@code InMemorySpanExporter}. */
-  public static Callable<Integer> finishedSpansSize(final InMemorySpanExporter tracer) {
-    return () -> tracer.getFinishedSpanItems().size();
+  /**
+   * Returns the number of finished {@code Span}s in the specified {@code OpenTelemetryExtension}.
+   */
+  public static Callable<Integer> finishedSpansSize(final OpenTelemetryExtension otelTesting) {
+    return () -> otelTesting.getSpans().size();
   }
 
   /** Returns a {@code List} with the {@code Span} matching the specified attribute. */

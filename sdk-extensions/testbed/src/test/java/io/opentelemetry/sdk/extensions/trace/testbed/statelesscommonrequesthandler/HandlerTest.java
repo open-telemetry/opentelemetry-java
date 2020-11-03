@@ -8,14 +8,13 @@ package io.opentelemetry.sdk.extensions.trace.testbed.statelesscommonrequesthand
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * There is only one instance of 'RequestHandler' per 'Client'. Methods of 'RequestHandler' are
@@ -23,16 +22,12 @@ import org.junit.jupiter.api.Test;
  */
 public final class HandlerTest {
 
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = sdk.get(HandlerTest.class.getName());
-  private final Client client = new Client(new RequestHandler(tracer));
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
-  @BeforeEach
-  void before() {
-    inMemoryTracing.getSpanExporter().reset();
-  }
+  private final Tracer tracer =
+      otelTesting.getOpenTelemetry().getTracer(HandlerTest.class.getName());
+  private final Client client = new Client(new RequestHandler(tracer));
 
   @Test
   void test_requests() throws Exception {
@@ -44,7 +39,7 @@ public final class HandlerTest {
     assertEquals("message2:response", responseFuture2.get(5, TimeUnit.SECONDS));
     assertEquals("message:response", responseFuture.get(5, TimeUnit.SECONDS));
 
-    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finished = otelTesting.getSpans();
     assertEquals(3, finished.size());
   }
 }
