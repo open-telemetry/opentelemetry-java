@@ -14,11 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -28,16 +26,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 class ActiveSpanReplacementTest {
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final OpenTelemetry openTelemetry =
-      OpenTelemetry.get().toBuilder().setTracerProvider(sdk).build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
+  private final Tracer tracer = OpenTracingShim.createTracerShim(otelTesting.getOpenTelemetry());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -49,11 +45,9 @@ class ActiveSpanReplacementTest {
       submitAnotherTask(span);
     }
 
-    await()
-        .atMost(15, TimeUnit.SECONDS)
-        .until(finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(3));
+    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(3));
 
-    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> spans = otelTesting.getSpans();
     assertEquals(3, spans.size());
     assertEquals("initial", spans.get(0).getName()); // Isolated task
     assertEquals("subtask", spans.get(1).getName());

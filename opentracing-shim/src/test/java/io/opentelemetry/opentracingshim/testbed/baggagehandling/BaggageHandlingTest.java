@@ -7,10 +7,8 @@ package io.opentelemetry.opentracingshim.testbed.baggagehandling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.util.concurrent.ExecutorService;
@@ -18,14 +16,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public final class BaggageHandlingTest {
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final OpenTelemetry openTelemetry =
-      OpenTelemetry.get().toBuilder().setTracerProvider(sdk).build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
+  private final Tracer tracer = OpenTracingShim.createTracerShim(otelTesting.getOpenTelemetry());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -58,7 +55,7 @@ public final class BaggageHandlingTest {
     /* Single call, no need to use await() */
     f.get(5, TimeUnit.SECONDS);
 
-    assertEquals(2, inMemoryTracing.getSpanExporter().getFinishedSpanItems().size());
+    assertEquals(2, otelTesting.getSpans().size());
     assertEquals(span.getBaggageItem("key1"), "value2");
     assertEquals(span.getBaggageItem("newkey"), "newvalue");
   }
