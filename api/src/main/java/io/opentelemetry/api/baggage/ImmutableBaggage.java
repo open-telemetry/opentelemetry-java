@@ -158,7 +158,7 @@ class ImmutableBaggage implements Baggage {
       if (key == null) {
         return this;
       }
-      entries.remove(Objects.requireNonNull(key, "key"));
+      entries.remove(key);
       if (parent != null && parent.getEntryValue(key) != null) {
         entries.put(key, null);
       }
