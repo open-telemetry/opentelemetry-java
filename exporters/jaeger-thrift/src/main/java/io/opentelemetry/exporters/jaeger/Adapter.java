@@ -175,7 +175,7 @@ final class Adapter {
     attributes.forEach(
         new AttributeConsumer() {
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             results.add(toTag(key, value));
           }
         });
