@@ -7,6 +7,7 @@ package io.opentelemetry.context;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 enum ThreadLocalContextStorage implements ContextStorage {
   INSTANCE;
@@ -14,10 +15,6 @@ enum ThreadLocalContextStorage implements ContextStorage {
   private static final Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
 
   private static final ThreadLocal<Context> THREAD_LOCAL_STORAGE = new ThreadLocal<>();
-
-  static {
-    THREAD_LOCAL_STORAGE.set(Context.root());
-  }
 
   @Override
   public Scope attach(Context toAttach) {
@@ -44,6 +41,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
   }
 
   @Override
+  @Nullable
   public Context current() {
     return THREAD_LOCAL_STORAGE.get();
   }
