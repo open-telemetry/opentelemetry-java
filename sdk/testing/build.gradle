@@ -13,5 +13,5 @@ dependencies {
 
     annotationProcessor libraries.auto_value
 
-    implementation project(':opentelemetry-exporters-inmemory')
+    implementation project(':opentelemetry-exporter-inmemory')
 }

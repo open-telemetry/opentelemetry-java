@@ -11,7 +11,7 @@ dependencies {
             libraries.opentracing
 
     testImplementation project(':opentelemetry-sdk-testing'),
-            project(':opentelemetry-exporters-inmemory'),
+            project(':opentelemetry-exporter-inmemory'),
             libraries.junit,
             libraries.assertj,
             libraries.slf4jsimple
