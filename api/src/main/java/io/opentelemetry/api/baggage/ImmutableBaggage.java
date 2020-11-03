@@ -136,15 +136,10 @@ class ImmutableBaggage implements Baggage {
 
     @Override
     public Baggage.Builder put(String key, String value, EntryMetadata entryMetadata) {
-      if (!isKeyValid(key) || !isValueValid(value)) {
+      if (!isKeyValid(key) || !isValueValid(value) || entryMetadata == null) {
         return this;
       }
-      entries.put(
-          Objects.requireNonNull(key, "key"),
-          Entry.create(
-              key,
-              Objects.requireNonNull(value, "value"),
-              Objects.requireNonNull(entryMetadata, "entryMetadata")));
+      entries.put(key, Entry.create(key, value, entryMetadata));
       return this;
     }
 

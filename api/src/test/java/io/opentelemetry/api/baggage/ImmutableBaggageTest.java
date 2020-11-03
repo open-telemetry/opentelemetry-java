@@ -94,6 +94,16 @@ class ImmutableBaggageTest {
   }
 
   @Test
+  void put_nullMetadata() {
+    Baggage parent = listToBaggage(T1);
+    Context parentContext = Context.root().with(parent);
+    Baggage.Builder builder = Baggage.builder().setParent(parentContext);
+    Baggage built = builder.build();
+    builder.put(K2, V2, null);
+    assertThat(builder.build()).isEqualTo(built);
+  }
+
+  @Test
   void put_keyUnprintableChars() {
     Baggage parent = listToBaggage(T1);
     Context parentContext = Context.root().with(parent);
