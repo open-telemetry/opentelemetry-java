@@ -694,7 +694,7 @@ class RecordEventsReadableSpanTest {
     span.addEvent(null, null);
     span.addEvent(null, null, 0);
     span.recordException(null);
-    span.end(null);
+    span.end(0);
 
     // Ignored the bad calls
     SpanData data = span.toSpanData();

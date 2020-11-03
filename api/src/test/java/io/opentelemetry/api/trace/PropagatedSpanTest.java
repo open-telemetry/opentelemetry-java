@@ -49,8 +49,7 @@ class PropagatedSpanTest {
     span.recordException(new IllegalStateException());
     span.recordException(new IllegalStateException(), Attributes.empty());
     span.end();
-    span.end(EndSpanOptions.getDefault());
-    span.end(null);
+    span.end(0);
   }
 
   @Test

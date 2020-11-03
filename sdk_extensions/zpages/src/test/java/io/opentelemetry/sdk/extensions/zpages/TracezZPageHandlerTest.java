@@ -9,7 +9,6 @@ import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.trace.EndSpanOptions;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -61,8 +60,7 @@ class TracezZPageHandlerTest {
     Span runningSpan = tracer.spanBuilder(RUNNING_SPAN).startSpan();
 
     Span latencySpan = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions = EndSpanOptions.create(10002L);
-    latencySpan.end(endOptions);
+    latencySpan.end(10002);
 
     Span errorSpan = tracer.spanBuilder(ERROR_SPAN).startSpan();
     errorSpan.setStatus(StatusCode.ERROR);
@@ -145,40 +143,31 @@ class TracezZPageHandlerTest {
     OutputStream output = new ByteArrayOutputStream();
     // Boundary 0, >1us
     Span latencySpanSubtype0 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions0 = EndSpanOptions.create(1002L);
-    latencySpanSubtype0.end(endOptions0);
+    latencySpanSubtype0.end(1002);
     // Boundary 1, >10us
     Span latencySpanSubtype1 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions1 = EndSpanOptions.create(10002L);
-    latencySpanSubtype1.end(endOptions1);
+    latencySpanSubtype1.end(10002);
     // Boundary 2, >100us
     Span latencySpanSubtype2 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions2 = EndSpanOptions.create(100002L);
-    latencySpanSubtype2.end(endOptions2);
+    latencySpanSubtype2.end(100002);
     // Boundary 3, >1ms
     Span latencySpanSubtype3 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions3 = EndSpanOptions.create(1000002L);
-    latencySpanSubtype3.end(endOptions3);
+    latencySpanSubtype3.end(1000002);
     // Boundary 4, >10ms
     Span latencySpanSubtype4 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions4 = EndSpanOptions.create(10000002L);
-    latencySpanSubtype4.end(endOptions4);
+    latencySpanSubtype4.end(10000002);
     // Boundary 5, >100ms
     Span latencySpanSubtype5 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions5 = EndSpanOptions.create(100000002L);
-    latencySpanSubtype5.end(endOptions5);
+    latencySpanSubtype5.end(100000002);
     // Boundary 6, >1s
     Span latencySpanSubtype6 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions6 = EndSpanOptions.create(1000000002L);
-    latencySpanSubtype6.end(endOptions6);
+    latencySpanSubtype6.end(1000000002);
     // Boundary 7, >10s
     Span latencySpanSubtype7 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions7 = EndSpanOptions.create(10000000002L);
-    latencySpanSubtype7.end(endOptions7);
+    latencySpanSubtype7.end(10000000002L);
     // Boundary 8, >100s
     Span latencySpanSubtype8 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions8 = EndSpanOptions.create(100000000002L);
-    latencySpanSubtype8.end(endOptions8);
+    latencySpanSubtype8.end(100000000002L);
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     tracezZPageHandler.emitHtml(emptyQueryMap, output);
@@ -217,17 +206,13 @@ class TracezZPageHandlerTest {
     OutputStream output = new ByteArrayOutputStream();
     // 4 samples in boundary 5, >100ms
     Span latencySpan100ms1 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions1 = EndSpanOptions.create(112931232L);
-    latencySpan100ms1.end(endOptions1);
+    latencySpan100ms1.end(112931232L);
     Span latencySpan100ms2 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions2 = EndSpanOptions.create(138694322L);
-    latencySpan100ms2.end(endOptions2);
+    latencySpan100ms2.end(138694322L);
     Span latencySpan100ms3 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions3 = EndSpanOptions.create(154486482L);
-    latencySpan100ms3.end(endOptions3);
+    latencySpan100ms3.end(154486482L);
     Span latencySpan100ms4 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions4 = EndSpanOptions.create(194892582L);
-    latencySpan100ms4.end(endOptions4);
+    latencySpan100ms4.end(194892582L);
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     tracezZPageHandler.emitHtml(emptyQueryMap, output);
@@ -286,11 +271,9 @@ class TracezZPageHandlerTest {
   void spanDetails_emitLatencySpanDetailsCorrectly() {
     OutputStream output = new ByteArrayOutputStream();
     Span latencySpan1 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions1 = EndSpanOptions.create(10002L);
-    latencySpan1.end(endOptions1);
+    latencySpan1.end(10002);
     Span latencySpan2 = tracer.spanBuilder(LATENCY_SPAN).setStartTimestamp(1L).startSpan();
-    EndSpanOptions endOptions2 = EndSpanOptions.create(10002L);
-    latencySpan2.end(endOptions2);
+    latencySpan2.end(10002);
     Map<String, String> queryMap =
         ImmutableMap.of("zspanname", LATENCY_SPAN, "ztype", "1", "zsubtype", "1");
 
