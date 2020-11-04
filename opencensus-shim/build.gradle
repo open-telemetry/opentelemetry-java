@@ -3,7 +3,7 @@ plugins {
     id "maven-publish"
 }
 
-description = 'OpenTelemetry OpenCensus Bridge'
+description = 'OpenTelemetry OpenCensus Shim'
 ext.moduleName = "io.opentelemetry.opencensusshim"
 
 dependencies {

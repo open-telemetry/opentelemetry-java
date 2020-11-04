@@ -150,9 +150,7 @@ class SpanConverter {
 
   private static Tracestate mapTracestate(TraceState traceState) {
     Tracestate.Builder tracestateBuilder = Tracestate.builder();
-    traceState
-        .getEntries()
-        .forEach(entry -> tracestateBuilder.set(entry.getKey(), entry.getValue()));
+    traceState.forEach(tracestateBuilder::set);
     return tracestateBuilder.build();
   }
 
