@@ -67,7 +67,7 @@ public class OpenTelemetryExtension
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
 
-  private OpenTelemetry previousGlobalOpenTelemetry;
+  private volatile OpenTelemetry previousGlobalOpenTelemetry;
 
   private OpenTelemetryExtension(
       OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {

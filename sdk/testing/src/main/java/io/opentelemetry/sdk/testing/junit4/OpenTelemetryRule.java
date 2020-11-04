@@ -68,7 +68,7 @@ public class OpenTelemetryRule extends ExternalResource {
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
 
-  private OpenTelemetry previousGlobalOpenTelemetry;
+  private volatile OpenTelemetry previousGlobalOpenTelemetry;
 
   private OpenTelemetryRule(OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
     this.openTelemetry = openTelemetry;
