@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry;
+package io.opentelemetry.all;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
@@ -19,11 +19,24 @@ class InternalApiProtectionTest {
       new ClassFileImporter().importPackages(OTEL_BASE_PACKAGE);
 
   @Test
-  void contrib_should_not_use_internal_api() {
+  void extensionsShouldNotUseInternalApi() {
     ClassesShouldConjunction contribRule =
         noClasses()
             .that()
-            .resideInAPackage("..extensions..")
+            .resideInAPackage("..extension..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAPackage(OTEL_BASE_PACKAGE + ".internal");
+
+    contribRule.check(ALL_OTEL_CLASSES);
+  }
+
+  @Test
+  void exportersShouldNotUseInternalApi() {
+    ClassesShouldConjunction contribRule =
+        noClasses()
+            .that()
+            .resideInAPackage("..exporter..")
             .should()
             .dependOnClassesThat()
             .resideInAPackage(OTEL_BASE_PACKAGE + ".internal");
