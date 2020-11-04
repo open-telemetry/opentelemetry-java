@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-syntax="proto3";
+syntax = "proto3";
 
 package jaeger.api_v2;
 
 import "google/api/annotations.proto";
 
-option java_package = "io.opentelemetry.exporters.jaeger.proto.api_v2";
+option java_package = "io.opentelemetry.sdk.extensions.trace.jaeger.proto.api_v2";
 
 enum SamplingStrategyType {
   PROBABILISTIC = 0;
@@ -40,7 +40,7 @@ message SamplingStrategyResponse {
   SamplingStrategyType strategyType = 1;
   ProbabilisticSamplingStrategy probabilisticSampling = 2;
   RateLimitingSamplingStrategy rateLimitingSampling = 3;
-  PerOperationSamplingStrategies operationSampling =4;
+  PerOperationSamplingStrategies operationSampling = 4;
 }
 
 message SamplingStrategyParameters {
@@ -50,8 +50,8 @@ message SamplingStrategyParameters {
 service SamplingManager {
   rpc GetSamplingStrategy(SamplingStrategyParameters) returns (SamplingStrategyResponse) {
     option (google.api.http) = {
-            post: "/api/v2/samplingStrategy"
-            body: "*"
-        };
+      post: "/api/v2/samplingStrategy"
+      body: "*"
+    };
   }
 }
