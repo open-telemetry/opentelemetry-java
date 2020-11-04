@@ -216,7 +216,7 @@ final class SpanBuilderSdk implements Span.Builder {
       samplingAttributes.forEach(
           new AttributeConsumer() {
             @Override
-            public <T> void consume(AttributeKey<T> key, T value) {
+            public <T> void accept(AttributeKey<T> key, T value) {
               attributes.put(key, value);
             }
           });

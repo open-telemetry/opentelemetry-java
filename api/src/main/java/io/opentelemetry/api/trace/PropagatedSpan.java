@@ -21,6 +21,16 @@ final class PropagatedSpan implements Span {
 
   // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
   // this method.
+  //
+  // In particular, do not change this return type to PropagatedSpan because auto-instrumentation
+  // hijacks this method and returns a bridged implementation of Span.
+  //
+  // Ideally auto-instrumentation would hijack the public Span.wrap() instead of this
+  // method, but auto-instrumentation also needs to inject its own implementation of Span
+  // into the class loader at the same time, which causes a problem because injecting a class into
+  // the class loader automatically resolves its super classes (interfaces), which in this case is
+  // Span, which would be the same class (interface) being instrumented at that time,
+  // which would lead to the JVM throwing a LinkageError "attempted duplicate interface definition"
   static Span create(SpanContext spanContext) {
     return new PropagatedSpan(spanContext);
   }
@@ -105,7 +115,7 @@ final class PropagatedSpan implements Span {
   public void end() {}
 
   @Override
-  public void end(EndSpanOptions endOptions) {}
+  public void end(long timestamp) {}
 
   @Override
   public SpanContext getSpanContext() {

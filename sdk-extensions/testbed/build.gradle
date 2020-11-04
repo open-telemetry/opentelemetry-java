@@ -1,0 +1,15 @@
+plugins {
+    id "java"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry SDK Testbed'
+ext.moduleName = 'io.opentelemetry.sdk.extension.trace.testbed'
+
+dependencies {
+    testImplementation project(':opentelemetry-api'),
+            project(':opentelemetry-sdk'),
+            project(':opentelemetry-sdk-testing'),
+            libraries.guava
+}
