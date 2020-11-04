@@ -410,6 +410,16 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void extract_baggageOnly_withHeader_andSpaces() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, "nometa = nometa-value , meta = meta-value");
+
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            Baggage.builder().put("nometa", "nometa-value").put("meta", "meta-value").build());
+  }
+
+  @Test
   void extract_baggageOnly_withHeader_invalid() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(BAGGAGE_HEADER, "nometa+novalue");
