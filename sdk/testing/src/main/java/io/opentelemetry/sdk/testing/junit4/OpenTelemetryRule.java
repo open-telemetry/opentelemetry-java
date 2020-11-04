@@ -23,13 +23,18 @@ import org.junit.rules.ExternalResource;
  *
  * <pre>{@code
  * > class CoolTest {
- * >   {@literal @}RegisterExtension
- * >   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ * >   {@literal @}Rule
+ * >   public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
  * >
- * >   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * >   private Tracer tracer;
+ * >
+ * >   {@literal @}Before
+ * >   public void setUp() {
+ * >       tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * >   }
  * >
  * >   {@literal @}Test
- * >   void test() {
+ * >   public void test() {
  * >     tracer.spanBuilder("name").startSpan().end();
  * >     assertThat(otelTesting.getSpans()).containsExactly(expected);
  * >   }
