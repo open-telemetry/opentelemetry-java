@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.baggage;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,6 +21,12 @@ class BaggageTestUtil {
       builder.put(entry.getKey(), entry.getValue(), entry.getEntryMetadata());
     }
     return builder.build();
+  }
+
+  static List<Entry> baggageToList(Baggage baggage) {
+    List<Entry> list = new ArrayList<>(baggage.size());
+    baggage.forEach((key, value, metadata) -> list.add(Entry.create(key, value, metadata)));
+    return list;
   }
 
   private BaggageTestUtil() {}
