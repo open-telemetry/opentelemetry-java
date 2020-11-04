@@ -6,14 +6,14 @@ plugins {
 }
 
 description = 'OpenTelemetry InMemory Export'
-ext.moduleName = "io.opentelemetry.exporters.inmemory"
+ext.moduleName = "io.opentelemetry.exporter.inmemory"
 
 dependencies {
     api project(':opentelemetry-sdk')
 
     annotationProcessor libraries.auto_value
 
-    testImplementation project(':opentelemetry-testing-internal')
+    testImplementation project(':opentelemetry-sdk-testing')
 
     signature "org.codehaus.mojo.signature:java18:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"

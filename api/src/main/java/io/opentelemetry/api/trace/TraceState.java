@@ -10,6 +10,7 @@ import io.opentelemetry.api.internal.Utils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -63,12 +64,29 @@ public abstract class TraceState {
     return null;
   }
 
+  /** Returns the number of entries in this {@link TraceState}. */
+  public int size() {
+    return getEntries().size();
+  }
+
+  /** Returns whether this {@link TraceState} is empty, containing no entries. */
+  public boolean isEmpty() {
+    return getEntries().isEmpty();
+  }
+
+  /** Iterates over all the key-value entries contained in this {@link TraceState}. */
+  public void forEach(BiConsumer<String, String> consumer) {
+    for (Entry entry : getEntries()) {
+      consumer.accept(entry.getKey(), entry.getValue());
+    }
+  }
+
   /**
    * Returns a {@link List} view of the mappings contained in this {@code TraceState}.
    *
    * @return a {@link List} view of the mappings contained in this {@code TraceState}.
    */
-  public abstract List<Entry> getEntries();
+  abstract List<Entry> getEntries();
 
   /**
    * Returns a {@code Builder} based on an empty {@code TraceState}.
@@ -98,8 +116,7 @@ public abstract class TraceState {
   /** Immutable key-value pair for {@code TraceState}. */
   @Immutable
   @AutoValue
-  public abstract static class Entry {
-
+  abstract static class Entry {
     /**
      * Creates a new {@code Entry} for the {@code TraceState}.
      *
@@ -107,7 +124,8 @@ public abstract class TraceState {
      * @param value the Entry's value.
      * @return the new {@code Entry}.
      */
-    public static Entry create(String key, String value) {
+    // Visible for testing
+    static Entry create(String key, String value) {
       Objects.requireNonNull(key, "key");
       Objects.requireNonNull(value, "value");
       Utils.checkArgument(validateKey(key), "Invalid key %s", key);
@@ -120,14 +138,14 @@ public abstract class TraceState {
      *
      * @return the key {@code String}.
      */
-    public abstract String getKey();
+    abstract String getKey();
 
     /**
      * Returns the value {@code String}.
      *
      * @return the value {@code String}.
      */
-    public abstract String getValue();
+    abstract String getValue();
 
     Entry() {}
   }

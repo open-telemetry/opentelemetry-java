@@ -13,15 +13,16 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.extensions.trace.testbed.nestedcallbacks.NestedCallbacksTest;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * These tests are intended to simulate the kind of async models that are common in java async
@@ -31,10 +32,11 @@ import org.junit.jupiter.api.Test;
  * execution for the tests without sleeps.
  */
 class PromisePropagationTest {
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = sdk.get(PromisePropagationTest.class.getName());
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
+  private final Tracer tracer =
+      otelTesting.getOpenTelemetry().getTracer(NestedCallbacksTest.class.getName());
   private Phaser phaser;
 
   @BeforeEach
@@ -77,7 +79,7 @@ class PromisePropagationTest {
               phaser.arriveAndAwaitAdvance(); // result set
             });
 
-        assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems().size()).isEqualTo(0);
+        assertThat(otelTesting.getSpans().size()).isEqualTo(0);
         successPromise.success("success!");
         errorPromise.error(new Exception("some error."));
       } finally {
@@ -91,7 +93,7 @@ class PromisePropagationTest {
 
       phaser.arriveAndAwaitAdvance(); // wait for traces to be reported
 
-      List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+      List<SpanData> finished = otelTesting.getSpans();
       assertThat(finished.size()).isEqualTo(4);
 
       AttributeKey<String> component = stringKey("component");

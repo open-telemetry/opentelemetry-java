@@ -66,7 +66,7 @@ final class AttributesMap implements ReadableAttributes {
     for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
       AttributeKey key = entry.getKey();
       Object value = entry.getValue();
-      consumer.consume(key, value);
+      consumer.accept(key, value);
     }
   }
 

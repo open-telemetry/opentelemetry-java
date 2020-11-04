@@ -695,7 +695,7 @@ class RecordEventsReadableSpanTest {
     span.addEvent(null, null);
     span.addEvent(null, null, 0);
     span.recordException(null);
-    span.end(null);
+    span.end(0);
 
     // Ignored the bad calls
     SpanData data = span.toSpanData();
@@ -810,7 +810,7 @@ class RecordEventsReadableSpanTest {
     spanDataAttributes.forEach(
         new AttributeConsumer() {
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             assertThat(attributes.get(key)).isEqualTo(value);
           }
         });

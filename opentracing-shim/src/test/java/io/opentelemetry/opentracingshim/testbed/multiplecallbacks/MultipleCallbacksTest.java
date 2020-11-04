@@ -11,10 +11,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -23,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * These tests are intended to simulate a task with independent, asynchronous callbacks.
@@ -32,12 +31,10 @@ import org.junit.jupiter.api.Test;
  */
 @SuppressWarnings("FutureReturnValueIgnored")
 class MultipleCallbacksTest {
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final OpenTelemetry openTelemetry =
-      OpenTelemetry.get().toBuilder().setTracerProvider(sdk).build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
+  private final Tracer tracer = OpenTracingShim.createTracerShim(otelTesting.getOpenTelemetry());
 
   @Test
   void test() {
@@ -54,11 +51,9 @@ class MultipleCallbacksTest {
       parentDoneLatch.countDown();
     }
 
-    await()
-        .atMost(15, TimeUnit.SECONDS)
-        .until(finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(4));
+    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(4));
 
-    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> spans = otelTesting.getSpans();
     assertEquals(4, spans.size());
     assertEquals("parent", spans.get(0).getName());
 

@@ -9,11 +9,9 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByKind;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByKind;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -25,6 +23,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * These tests are intended to simulate the kind of async models that are common in java async
@@ -37,12 +36,10 @@ import org.junit.jupiter.api.Test;
  */
 @SuppressWarnings("FutureReturnValueIgnored")
 class ActorPropagationTest {
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final OpenTelemetry openTelemetry =
-      OpenTelemetry.get().toBuilder().setTracerProvider(sdk).build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry);
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
+  private final Tracer tracer = OpenTracingShim.createTracerShim(otelTesting.getOpenTelemetry());
   private Phaser phaser;
 
   @BeforeEach
@@ -68,15 +65,14 @@ class ActorPropagationTest {
       }
 
       phaser.arriveAndAwaitAdvance(); // child tracer started
-      assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems().size()).isEqualTo(1);
+      assertThat(otelTesting.getSpans().size()).isEqualTo(1);
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
-      assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems().size()).isEqualTo(3);
-      assertThat(getByKind(inMemoryTracing.getSpanExporter().getFinishedSpanItems(), Kind.CONSUMER))
-          .hasSize(2);
+      assertThat(otelTesting.getSpans().size()).isEqualTo(3);
+      assertThat(getByKind(otelTesting.getSpans(), Kind.CONSUMER)).hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
-      List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+      List<SpanData> finished = otelTesting.getSpans();
       assertThat(finished.size()).isEqualTo(3);
       assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
       assertThat(getByKind(finished, Kind.CONSUMER)).hasSize(2);
@@ -105,15 +101,14 @@ class ActorPropagationTest {
         span.finish();
       }
       phaser.arriveAndAwaitAdvance(); // child tracer started
-      assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems().size()).isEqualTo(1);
+      assertThat(otelTesting.getSpans().size()).isEqualTo(1);
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
-      assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems().size()).isEqualTo(3);
-      assertThat(getByKind(inMemoryTracing.getSpanExporter().getFinishedSpanItems(), Kind.CONSUMER))
-          .hasSize(2);
+      assertThat(otelTesting.getSpans().size()).isEqualTo(3);
+      assertThat(getByKind(otelTesting.getSpans(), Kind.CONSUMER)).hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
-      List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+      List<SpanData> finished = otelTesting.getSpans();
       String message1 = future1.get(); // This really should be a non-blocking callback...
       String message2 = future2.get(); // This really should be a non-blocking callback...
       assertThat(message1).isEqualTo("received my message 1");

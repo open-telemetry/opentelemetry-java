@@ -9,22 +9,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.extensions.trace.testbed.statelesscommonrequesthandler.HandlerTest;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * These tests are intended to simulate the kind of async models that are common in java async
  * frameworks.
  */
 class SuspendResumePropagationTest {
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = sdk.get(SuspendResumePropagationTest.class.getName());
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
+  private final Tracer tracer =
+      otelTesting.getOpenTelemetry().getTracer(HandlerTest.class.getName());
 
   @BeforeEach
   void before() {}
@@ -45,7 +47,7 @@ class SuspendResumePropagationTest {
     job1.done();
     job2.done();
 
-    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished.size()).isEqualTo(2);
 
     assertThat(finished.get(0).getName()).isEqualTo("job 1");

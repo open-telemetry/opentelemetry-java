@@ -16,7 +16,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
-import io.opentelemetry.api.trace.EndSpanOptions;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
@@ -450,12 +449,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void end(EndSpanOptions endOptions) {
-    if (endOptions == null) {
-      end();
-      return;
-    }
-    endInternal(endOptions.getEndTimestamp() == 0 ? clock.now() : endOptions.getEndTimestamp());
+  public void end(long timestamp) {
+    endInternal(timestamp == 0 ? clock.now() : timestamp);
   }
 
   private void endInternal(long endEpochNanos) {
@@ -584,7 +579,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
 
     @Override
-    public void consume(AttributeKey key, Object value) {
+    public void accept(AttributeKey key, Object value) {
       if (added < limit) {
         builder.put(key, value);
         added++;

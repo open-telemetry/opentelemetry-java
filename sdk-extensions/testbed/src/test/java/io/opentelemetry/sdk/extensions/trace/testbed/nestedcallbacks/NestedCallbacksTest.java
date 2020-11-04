@@ -14,23 +14,23 @@ import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class NestedCallbacksTest {
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = sdk.get(NestedCallbacksTest.class.getName());
+  private final Tracer tracer =
+      otelTesting.getOpenTelemetry().getTracer(NestedCallbacksTest.class.getName());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -41,9 +41,9 @@ public final class NestedCallbacksTest {
 
     await()
         .atMost(15, TimeUnit.SECONDS)
-        .until(TestUtils.finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(1));
+        .until(TestUtils.finishedSpansSize(otelTesting), equalTo(1));
 
-    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getName()).isEqualTo("one");
 

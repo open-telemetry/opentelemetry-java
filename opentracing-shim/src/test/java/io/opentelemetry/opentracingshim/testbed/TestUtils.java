@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,8 +24,8 @@ public final class TestUtils {
   private TestUtils() {}
 
   /** Returns the number of finished {@code Span}s in the specified {@code InMemorySpanExporter}. */
-  public static Callable<Integer> finishedSpansSize(final InMemorySpanExporter exporter) {
-    return () -> exporter.getFinishedSpanItems().size();
+  public static Callable<Integer> finishedSpansSize(final OpenTelemetryExtension otelTesting) {
+    return () -> otelTesting.getSpans().size();
   }
 
   /** Returns a {@code List} with the {@code Span} matching the specified attribute. */

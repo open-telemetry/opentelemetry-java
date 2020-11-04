@@ -12,14 +12,14 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * These tests are intended to simulate a task with independent, asynchronous callbacks.
@@ -29,10 +29,11 @@ import org.junit.jupiter.api.Test;
  */
 @SuppressWarnings("FutureReturnValueIgnored")
 class MultipleCallbacksTest {
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
-  private final InMemoryTracing inMemoryTracing =
-      InMemoryTracing.builder().setTracerSdkManagement(sdk).build();
-  private final Tracer tracer = sdk.get(MultipleCallbacksTest.class.getName());
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+
+  private final Tracer tracer =
+      otelTesting.getOpenTelemetry().getTracer(MultipleCallbacksTest.class.getName());
 
   @Test
   void test() {
@@ -51,9 +52,9 @@ class MultipleCallbacksTest {
 
     await()
         .atMost(15, TimeUnit.SECONDS)
-        .until(TestUtils.finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(4));
+        .until(TestUtils.finishedSpansSize(otelTesting), equalTo(4));
 
-    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
+    List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(4);
     assertThat(spans.get(0).getName()).isEqualTo("parent");
 

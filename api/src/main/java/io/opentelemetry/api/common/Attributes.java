@@ -51,7 +51,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
   public void forEach(AttributeConsumer consumer) {
     List<Object> data = data();
     for (int i = 0; i < data.size(); i += 2) {
-      consumer.consume((AttributeKey) data.get(i), data.get(i + 1));
+      consumer.accept((AttributeKey) data.get(i), data.get(i + 1));
     }
   }
 

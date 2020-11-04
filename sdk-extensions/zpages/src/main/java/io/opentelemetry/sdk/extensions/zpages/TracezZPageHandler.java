@@ -386,7 +386,7 @@ final class TracezZPageHandler extends ZPageHandler {
           private boolean first = true;
 
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             if (first) {
               first = false;
             } else {

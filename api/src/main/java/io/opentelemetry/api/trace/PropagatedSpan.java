@@ -114,7 +114,7 @@ final class PropagatedSpan implements Span {
   public void end() {}
 
   @Override
-  public void end(EndSpanOptions endOptions) {}
+  public void end(long timestamp) {}
 
   @Override
   public SpanContext getSpanContext() {
