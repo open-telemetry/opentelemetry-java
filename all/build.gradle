@@ -29,7 +29,6 @@ def subprojects = [
         project(':opentelemetry-sdk-extension-logging'),
         project(':opentelemetry-sdk-extension-otproto'),
         project(':opentelemetry-sdk-extension-resources'),
-        project(':opentelemetry-sdk-extension-testbed'),
         project(':opentelemetry-sdk-extension-tracing-incubator'),
         project(':opentelemetry-sdk-extension-zpages'),
 ]
