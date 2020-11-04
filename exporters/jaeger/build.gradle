@@ -7,7 +7,7 @@ plugins {
 }
 
 description = 'OpenTelemetry - Jaeger Exporter'
-ext.moduleName = "io.opentelemetry.exporters.jaeger"
+ext.moduleName = "io.opentelemetry.exporter.jaeger"
 
 dependencies {
     api project(':opentelemetry-sdk'),
@@ -25,7 +25,7 @@ dependencies {
             libraries.testcontainers,
             libraries.okhttp
 
-    testImplementation project(':opentelemetry-testing-internal')
+    testImplementation project(':opentelemetry-sdk-testing')
 
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
 

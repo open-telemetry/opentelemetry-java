@@ -169,7 +169,7 @@ public abstract class Resource {
     }
 
     @Override
-    public <T> void consume(AttributeKey<T> key, T value) {
+    public <T> void accept(AttributeKey<T> key, T value) {
       attrBuilder.put(key, value);
     }
   }
@@ -178,7 +178,7 @@ public abstract class Resource {
     attributes.forEach(
         new AttributeConsumer() {
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             Utils.checkArgument(
                 isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
             Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
