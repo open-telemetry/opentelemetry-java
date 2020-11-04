@@ -576,7 +576,10 @@ class B3PropagatorTest {
   void fieldsList() {
     assertThat(b3Propagator.fields())
         .containsExactly(
-            B3Propagator.TRACE_ID_HEADER, B3Propagator.SPAN_ID_HEADER, B3Propagator.SAMPLED_HEADER);
+            B3Propagator.TRACE_ID_HEADER,
+            B3Propagator.SPAN_ID_HEADER,
+            B3Propagator.SAMPLED_HEADER,
+            B3Propagator.COMBINED_HEADER);
   }
 
   @Test
@@ -584,6 +587,7 @@ class B3PropagatorTest {
     assertThat(B3Propagator.TRACE_ID_HEADER).isEqualTo("X-B3-TraceId");
     assertThat(B3Propagator.SPAN_ID_HEADER).isEqualTo("X-B3-SpanId");
     assertThat(B3Propagator.SAMPLED_HEADER).isEqualTo("X-B3-Sampled");
+    assertThat(B3Propagator.COMBINED_HEADER).isEqualTo("b3");
   }
 
   @Test
