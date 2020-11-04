@@ -22,7 +22,7 @@ import org.junit.rules.ExternalResource;
  * tests. This rule cannot be used with {@link org.junit.ClassRule}.
  *
  * <pre>{@code
- * > class CoolTest {
+ * > public class CoolTest {
  * >   {@literal @}Rule
  * >   public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
  * >
