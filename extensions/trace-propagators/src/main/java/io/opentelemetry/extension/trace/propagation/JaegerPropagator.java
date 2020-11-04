@@ -212,7 +212,7 @@ public class JaegerPropagator implements TextMapPropagator {
 
     for (String key : getter.keys(carrier)) {
       if (key.startsWith(BAGGAGE_PREFIX)) {
-        if (key.length() <= BAGGAGE_PREFIX.length()) {
+        if (key.length() == BAGGAGE_PREFIX.length()) {
           continue;
         }
 
