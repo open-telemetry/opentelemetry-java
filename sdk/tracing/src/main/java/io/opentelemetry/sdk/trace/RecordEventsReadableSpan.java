@@ -453,8 +453,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void end(long timestamp) {
-    endInternal(timestamp == 0 ? clock.now() : timestamp);
+  public void end(long timestamp, TimeUnit unit) {
+    if (unit == null) {
+      unit = TimeUnit.NANOSECONDS;
+    }
+    endInternal(timestamp == 0 ? clock.now() : unit.toNanos(timestamp));
   }
 
   private void endInternal(long endEpochNanos) {

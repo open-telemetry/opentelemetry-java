@@ -315,10 +315,11 @@ public interface Span extends ImplicitContextKeyed {
    * <p>Use this method for specifying explicit end options, such as end {@code Timestamp}. When no
    * explicit values are required, use {@link #end()}.
    *
-   * @param timestamp the explicit timestamp, as nanos from the epoch, for this {@code Span}. {@code
-   *     0} indicates current time should be used.
+   * @param timestamp the explicit timestamp from the epoch, for this {@code Span}. {@code 0}
+   *     indicates current time should be used.
+   * @param unit the unit of the timestamp
    */
-  void end(long timestamp);
+  void end(long timestamp, TimeUnit unit);
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.

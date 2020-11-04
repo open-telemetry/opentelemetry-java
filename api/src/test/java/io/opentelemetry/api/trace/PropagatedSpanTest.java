@@ -51,7 +51,7 @@ class PropagatedSpanTest {
     span.recordException(new IllegalStateException());
     span.recordException(new IllegalStateException(), Attributes.empty());
     span.end();
-    span.end(0);
+    span.end(0, TimeUnit.NANOSECONDS);
   }
 
   @Test
