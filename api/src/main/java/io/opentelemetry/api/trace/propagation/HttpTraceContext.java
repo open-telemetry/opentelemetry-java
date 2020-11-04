@@ -119,21 +119,19 @@ public final class HttpTraceContext implements TextMapPropagator {
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
-    List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
-    if (entries.isEmpty()) {
+    TraceState traceState = spanContext.getTraceState();
+    if (traceState.isEmpty()) {
       // No need to add an empty "tracestate" header.
       return;
     }
     StringBuilder stringBuilder = new StringBuilder(TRACESTATE_MAX_SIZE);
-    for (TraceState.Entry entry : entries) {
-      if (stringBuilder.length() != 0) {
-        stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
-      }
-      stringBuilder
-          .append(entry.getKey())
-          .append(TRACESTATE_KEY_VALUE_DELIMITER)
-          .append(entry.getValue());
-    }
+    traceState.forEach(
+        (key, value) -> {
+          if (stringBuilder.length() != 0) {
+            stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
+          }
+          stringBuilder.append(key).append(TRACESTATE_KEY_VALUE_DELIMITER).append(value);
+        });
     setter.set(carrier, TRACE_STATE, stringBuilder.toString());
   }
 

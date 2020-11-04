@@ -21,7 +21,7 @@ dependencies {
     api project(':opentelemetry-api')
 
     implementation project(':opentelemetry-sdk'),
-        project(':opentelemetry-exporters-jaeger'), 
+        project(':opentelemetry-exporter-jaeger'),
         libraries.grpc_protobuf,
         libraries.protobuf,
         libraries.protobuf_util,

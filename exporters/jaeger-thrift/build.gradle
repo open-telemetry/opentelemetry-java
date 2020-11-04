@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry - Jaeger Thrift Exporter'
-ext.moduleName = "io.opentelemetry.exporters.jaeger-thrift"
+ext.moduleName = "io.opentelemetry.exporter.jaeger.thrift"
 
 dependencies {
     api project(':opentelemetry-sdk')
@@ -19,7 +19,7 @@ dependencies {
             libraries.testcontainers,
             libraries.okhttp
 
-    testImplementation project(':opentelemetry-testing-internal')
+    testImplementation project(':opentelemetry-sdk-testing')
 
     signature "org.codehaus.mojo.signature:java18:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"

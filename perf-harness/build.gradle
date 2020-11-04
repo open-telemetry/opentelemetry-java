@@ -16,20 +16,12 @@ ext {
 dependencies {
     compile project(':opentelemetry-api'),
             project(":opentelemetry-sdk"),
-            project(":opentelemetry-exporters-otlp"),
-            project(":opentelemetry-exporters-logging"),
-            project(":opentelemetry-exporters-inmemory")
-
-
-//    compile("io.opentelemetry:opentelemetry-api:${opentelemetryVersion}")
-//    compile("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
-//    compile("io.opentelemetry:opentelemetry-exporters-otlp:${opentelemetryVersion}")
-//    compile("io.opentelemetry:opentelemetry-exporters-logging:${opentelemetryVersion}")
-//    compile("io.opentelemetry:opentelemetry-exporters-inmemory:${opentelemetryVersion}")
+            project(":opentelemetry-sdk-testing"),
+            project(":opentelemetry-exporter-otlp"),
+            project(":opentelemetry-exporter-logging")
 
     compile("io.grpc:grpc-netty-shaded:${grpcVersion}")
+    compile("eu.rekawek.toxiproxy:toxiproxy-java:2.1.3")
 
     implementation libraries.testcontainers
-
-    compile("eu.rekawek.toxiproxy:toxiproxy-java:2.1.3")
 }

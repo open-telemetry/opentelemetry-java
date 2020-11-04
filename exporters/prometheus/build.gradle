@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry Prometheus Exporter'
-ext.moduleName = "io.opentelemetry.exporters.prometheus"
+ext.moduleName = "io.opentelemetry.exporter.prometheus"
 
 dependencies {
     api project(':opentelemetry-sdk')

@@ -7,7 +7,7 @@ common environments. Currently the resources provide the following semantic conv
 
 ### Operating System
 
-Provider: `io.opentelemetry.sdk.extensions.resources.OsResource`
+Provider: `io.opentelemetry.sdk.extension.resources.OsResource`
 
 Specification: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/semantic_conventions/os.md
 
@@ -17,7 +17,7 @@ Implemented attributes:
 
 ### Process
 
-Implementation: `io.opentelemetry.sdk.extensions.resources.ProcessResource`
+Implementation: `io.opentelemetry.sdk.extension.resources.ProcessResource`
 
 Specification: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/semantic_conventions/process.md
 

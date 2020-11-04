@@ -304,7 +304,7 @@ public interface Span extends ImplicitContextKeyed {
   void end();
 
   /**
-   * Marks the end of {@code Span} execution with the specified {@link EndSpanOptions}.
+   * Marks the end of {@code Span} execution with the specified timestamp.
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
    * implementations are free to ignore all further calls.
@@ -312,9 +312,10 @@ public interface Span extends ImplicitContextKeyed {
    * <p>Use this method for specifying explicit end options, such as end {@code Timestamp}. When no
    * explicit values are required, use {@link #end()}.
    *
-   * @param endOptions the explicit {@link EndSpanOptions} for this {@code Span}.
+   * @param timestamp the explicit timestamp, as nanos from the epoch, for this {@code Span}. {@code
+   *     0} indicates current time should be used.
    */
-  void end(EndSpanOptions endOptions);
+  void end(long timestamp);
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.
