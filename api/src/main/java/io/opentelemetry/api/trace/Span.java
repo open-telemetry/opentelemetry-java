@@ -28,7 +28,8 @@ public interface Span extends ImplicitContextKeyed {
    * {@link Span} if there is no span in the current context.
    */
   static Span current() {
-    return TracingContextUtils.getCurrentSpan();
+    Span span = Context.current().get(SpanContextKey.KEY);
+    return span == null ? getInvalid() : span;
   }
 
   /**
@@ -36,7 +37,8 @@ public interface Span extends ImplicitContextKeyed {
    * {@link Span} if there is no span in the context.
    */
   static Span fromContext(Context context) {
-    return TracingContextUtils.getSpan(context);
+    Span span = context.get(SpanContextKey.KEY);
+    return span == null ? getInvalid() : span;
   }
 
   /**
@@ -45,7 +47,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   @Nullable
   static Span fromContextOrNull(Context context) {
-    return TracingContextUtils.getSpanWithoutDefault(context);
+    return context.get(SpanContextKey.KEY);
   }
 
   /**
@@ -302,7 +304,7 @@ public interface Span extends ImplicitContextKeyed {
   void end();
 
   /**
-   * Marks the end of {@code Span} execution with the specified {@link EndSpanOptions}.
+   * Marks the end of {@code Span} execution with the specified timestamp.
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
    * implementations are free to ignore all further calls.
@@ -310,9 +312,10 @@ public interface Span extends ImplicitContextKeyed {
    * <p>Use this method for specifying explicit end options, such as end {@code Timestamp}. When no
    * explicit values are required, use {@link #end()}.
    *
-   * @param endOptions the explicit {@link EndSpanOptions} for this {@code Span}.
+   * @param timestamp the explicit timestamp, as nanos from the epoch, for this {@code Span}. {@code
+   *     0} indicates current time should be used.
    */
-  void end(EndSpanOptions endOptions);
+  void end(long timestamp);
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.
@@ -331,7 +334,7 @@ public interface Span extends ImplicitContextKeyed {
 
   @Override
   default Context storeInContext(Context context) {
-    return TracingContextUtils.withSpan(this, context);
+    return context.with(SpanContextKey.KEY, this);
   }
 
   /**
@@ -425,7 +428,7 @@ public interface Span extends ImplicitContextKeyed {
 
     /**
      * Sets the parent to use from the specified {@code Context}. If not set, the value of {@code
-     * Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
+     * Span.current()} at {@link #startSpan()} time will be used as parent.
      *
      * <p>If no {@link Span} is available in the specified {@code Context}, the resulting {@code
      * Span} will become a root instance, as if {@link #setNoParent()} had been called.
@@ -441,7 +444,7 @@ public interface Span extends ImplicitContextKeyed {
 
     /**
      * Sets the option to become a root {@code Span} for a new trace. If not set, the value of
-     * {@code Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
+     * {@code Span.current()} at {@link #startSpan()} time will be used as parent.
      *
      * <p>Observe that any previously set parent will be discarded.
      *

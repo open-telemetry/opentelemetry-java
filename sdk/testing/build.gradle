@@ -9,8 +9,7 @@ ext.moduleName = 'io.opentelemetry.sdk.testing'
 dependencies {
     api project(':opentelemetry-api')
     api project(':opentelemetry-sdk')
-
     api libraries.junit_jupiter_api
 
-    implementation project(':opentelemetry-exporters-inmemory')
+    annotationProcessor libraries.auto_value
 }

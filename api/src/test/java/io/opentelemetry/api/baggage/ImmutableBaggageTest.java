@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.baggage;
 
+import static io.opentelemetry.api.baggage.BaggageTestUtil.baggageToList;
 import static io.opentelemetry.api.baggage.BaggageTestUtil.listToBaggage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,13 +36,16 @@ class ImmutableBaggageTest {
   @Test
   void getEntries_empty() {
     Baggage baggage = Baggage.empty();
-    assertThat(baggage.getEntries()).isEmpty();
+    assertThat(baggage.size()).isZero();
+    assertThat(baggage.isEmpty()).isTrue();
   }
 
   @Test
   void getEntries_nonEmpty() {
     Baggage baggage = listToBaggage(T1, T2);
-    assertThat(baggage.getEntries()).containsExactly(T1, T2);
+    assertThat(baggageToList(baggage)).containsExactly(T1, T2);
+    assertThat(baggage.size()).isEqualTo(2);
+    assertThat(baggage.isEmpty()).isFalse();
   }
 
   @Test
@@ -54,22 +58,22 @@ class ImmutableBaggageTest {
             .setParent(parentContext)
             .put(t1alt.getKey(), t1alt.getValue(), t1alt.getEntryMetadata())
             .build();
-    assertThat(baggage.getEntries()).containsExactly(t1alt, T2);
+    assertThat(baggageToList(baggage)).containsExactly(t1alt, T2);
   }
 
   @Test
   void put_newKey() {
     Baggage parent = listToBaggage(T1);
     Context parentContext = Context.root().with(parent);
-    assertThat(Baggage.builder().setParent(parentContext).put(K2, V2, TMD).build().getEntries())
-        .containsExactly(T1, T2);
+    assertThat(baggageToList(Baggage.builder().setParent(parentContext).put(K2, V2, TMD).build()))
+        .containsExactlyInAnyOrder(T1, T2);
   }
 
   @Test
   void put_existingKey() {
     Baggage parent = listToBaggage(T1);
     Context parentContext = Context.root().with(parent);
-    assertThat(Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build().getEntries())
+    assertThat(baggageToList(Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build()))
         .containsExactly(Entry.create(K1, V2, TMD));
   }
 
@@ -98,7 +102,7 @@ class ImmutableBaggageTest {
   void setParent_fromContext() {
     Context context = Context.root().with(listToBaggage(T2));
     Baggage baggage = Baggage.builder().setParent(context).build();
-    assertThat(baggage.getEntries()).containsExactly(T2);
+    assertThat(baggageToList(baggage)).containsExactly(T2);
   }
 
   @Test
@@ -107,7 +111,7 @@ class ImmutableBaggageTest {
     Baggage parent = listToBaggage(T1);
     try (Scope scope = parent.makeCurrent()) {
       Baggage baggage = Baggage.builder().setParent(emptyContext).build();
-      assertThat(baggage.getEntries()).isEmpty();
+      assertThat(baggageToList(baggage)).isEmpty();
     }
   }
 
@@ -116,7 +120,7 @@ class ImmutableBaggageTest {
     Baggage parent = listToBaggage(T1);
     Context parentContext = Context.root().with(parent);
     Baggage baggage = Baggage.builder().setParent(parentContext).setNoParent().build();
-    assertThat(baggage.getEntries()).isEmpty();
+    assertThat(baggageToList(baggage)).isEmpty();
   }
 
   @Test
@@ -125,7 +129,7 @@ class ImmutableBaggageTest {
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
-    assertThat(builder.remove(K1).build().getEntries()).containsExactly(T2);
+    assertThat(baggageToList(builder.remove(K1).build())).containsExactly(T2);
   }
 
   @Test
@@ -134,14 +138,14 @@ class ImmutableBaggageTest {
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
-    assertThat(builder.remove(K2).build().getEntries()).containsExactly(T1);
+    assertThat(baggageToList(builder.remove(K2).build())).containsExactly(T1);
   }
 
   @Test
   void remove_keyFromParent() {
     Baggage parent = listToBaggage(T1, T2);
     Context parentContext = Context.root().with(parent);
-    assertThat(Baggage.builder().setParent(parentContext).remove(K1).build().getEntries())
+    assertThat(baggageToList(Baggage.builder().setParent(parentContext).remove(K1).build()))
         .containsExactly(T2);
   }
 

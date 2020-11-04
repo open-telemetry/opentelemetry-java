@@ -25,7 +25,7 @@ class W3CBaggagePropagatorTest {
 
   @Test
   void extract_noBaggageHeader() {
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
         propagator.extract(Context.root(), ImmutableMap.<String, String>of(), Map::get);
@@ -35,7 +35,7 @@ class W3CBaggagePropagatorTest {
 
   @Test
   void extract_emptyBaggageHeader() {
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
         propagator.extract(Context.root(), ImmutableMap.of("baggage", ""), ImmutableMap::get);
@@ -45,7 +45,7 @@ class W3CBaggagePropagatorTest {
 
   @Test
   void extract_singleEntry() {
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
         propagator.extract(
@@ -57,7 +57,7 @@ class W3CBaggagePropagatorTest {
 
   @Test
   void extract_multiEntry() {
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
         propagator.extract(
@@ -71,7 +71,7 @@ class W3CBaggagePropagatorTest {
 
   @Test
   void extract_duplicateKeys() {
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
         propagator.extract(
@@ -83,7 +83,7 @@ class W3CBaggagePropagatorTest {
 
   @Test
   void extract_withMetadata() {
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
         propagator.extract(
@@ -100,7 +100,7 @@ class W3CBaggagePropagatorTest {
 
   @Test
   void extract_fullComplexities() {
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
         propagator.extract(
@@ -126,7 +126,7 @@ class W3CBaggagePropagatorTest {
    */
   @Test
   void extract_invalidHeader() {
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
         propagator.extract(
@@ -142,7 +142,7 @@ class W3CBaggagePropagatorTest {
 
   @Test
   void inject_noBaggage() {
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();
     propagator.inject(Context.root(), carrier, Map::put);
     assertThat(carrier).isEmpty();
@@ -151,7 +151,7 @@ class W3CBaggagePropagatorTest {
   @Test
   void inject_emptyBaggage() {
     Baggage baggage = Baggage.empty();
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();
     propagator.inject(Context.root().with(baggage), carrier, Map::put);
     assertThat(carrier).isEmpty();
@@ -164,7 +164,7 @@ class W3CBaggagePropagatorTest {
             .put("nometa", "nometa-value")
             .put("meta", "meta-value", EntryMetadata.create("somemetadata; someother=foo"))
             .build();
-    W3CBaggagePropagator propagator = new W3CBaggagePropagator();
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();
     propagator.inject(Context.root().with(baggage), carrier, Map::put);
     assertThat(carrier)

@@ -22,6 +22,8 @@
 
 package io.opentelemetry.context;
 
+import javax.annotation.Nullable;
+
 /**
  * The storage for storing and retrieving the current {@link Context}.
  *
@@ -34,7 +36,7 @@ package io.opentelemetry.context;
  * >
  * >   @Override
  * >   public ContextStorage get() {
- * >     ContextStorage threadLocalStorage = Context.threadLocalStorage();
+ * >     ContextStorage threadLocalStorage = ContextStorage.defaultStorage();
  * >     return new RequestContextStorage() {
  * >       @Override
  * >       public Scope T attach(Context toAttach) {
@@ -70,6 +72,13 @@ public interface ContextStorage {
   }
 
   /**
+   * Returns the default {@link ContextStorage} which stores {@link Context} using a threadlocal.
+   */
+  static ContextStorage defaultStorage() {
+    return ThreadLocalContextStorage.INSTANCE;
+  }
+
+  /**
    * Sets the specified {@link Context} as the current {@link Context} and returns a {@link Scope}
    * representing the scope of execution. {@link Scope#close()} must be called when the current
    * {@link Context} should be restored to what it was before attaching {@code toAttach}.
@@ -77,8 +86,9 @@ public interface ContextStorage {
   Scope attach(Context toAttach);
 
   /**
-   * Returns the current {@link DefaultContext}. If no {@link DefaultContext} has been attached yet,
-   * this will be the {@linkplain Context#root()} root context}.
+   * Returns the current {@link Context}. If no {@link Context} has been attached yet, this will
+   * return {@code null}.
    */
+  @Nullable
   Context current();
 }

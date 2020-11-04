@@ -6,6 +6,7 @@
 package io.opentelemetry.api.common;
 
 /** Used for iterating over all the key/value pairs in an {@link Attributes} instance. */
+@FunctionalInterface
 public interface AttributeConsumer {
-  <T> void consume(AttributeKey<T> key, T value);
+  <T> void accept(AttributeKey<T> key, T value);
 }
