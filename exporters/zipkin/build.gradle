@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry - Zipkin Exporter'
-ext.moduleName = "io.opentelemetry.exporters.zipkin"
+ext.moduleName = "io.opentelemetry.exporter.zipkin"
 
 dependencies {
     compileOnly libraries.auto_value

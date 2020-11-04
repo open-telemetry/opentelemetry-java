@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry InMemory Export'
-ext.moduleName = "io.opentelemetry.exporters.inmemory"
+ext.moduleName = "io.opentelemetry.exporter.inmemory"
 
 dependencies {
     api project(':opentelemetry-sdk')

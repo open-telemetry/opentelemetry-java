@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.testing.junit5;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporter.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
