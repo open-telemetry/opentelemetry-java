@@ -31,7 +31,7 @@ dependencies {
             libraries.testcontainers,
             libraries.okhttp
 
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    signature libraries.android_signature
 
     tasks.withType(Test) {
         dependsOn fatJar
