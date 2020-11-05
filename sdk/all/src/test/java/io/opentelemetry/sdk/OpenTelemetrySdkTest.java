@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,13 +28,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class OpenTelemetrySdkTest {
 
   @Mock private TracerProvider tracerProvider;
+  @Mock private TracerSdkManagement tracerSdkManagement;
   @Mock private MeterProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
   @Test
   void testGlobalDefault() {
-    assertThat(((TracerSdkProvider) OpenTelemetrySdk.getGlobalTracerManagement()).get(""))
+    assertThat(OpenTelemetrySdk.get().getTracerProvider().get(""))
         .isSameAs(OpenTelemetry.getGlobalTracerProvider().get(""));
     assertThat(OpenTelemetrySdk.getGlobalMeterProvider())
         .isSameAs(OpenTelemetry.getGlobalMeterProvider());
@@ -71,6 +73,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
+            .setTracerSdkManagement(tracerSdkManagement)
             .setMeterProvider(meterProvider)
             .setPropagators(propagators)
             .setClock(clock)
@@ -81,5 +84,16 @@ class OpenTelemetrySdkTest {
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
     assertThat(openTelemetry.getResource()).isEqualTo(resource);
     assertThat(openTelemetry.getClock()).isEqualTo(clock);
+  }
+
+  @Test
+  void testTracerProviderAccess() {
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setTracerSdkManagement(tracerSdkManagement)
+            .build();
+    assertThat(openTelemetry.getTracerProvider()).isEqualTo(tracerProvider);
+    assertThat(openTelemetry.getTracerManagement()).isEqualTo(tracerSdkManagement);
   }
 }

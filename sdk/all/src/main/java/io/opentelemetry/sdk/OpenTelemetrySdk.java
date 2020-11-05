@@ -47,13 +47,20 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
   /** Returns the global {@link TracerSdkManagement}. */
   public static TracerSdkManagement getGlobalTracerManagement() {
-    TracerProvider tracerProvider = OpenTelemetry.get().getTracerProvider();
+    OpenTelemetry openTelemetry = OpenTelemetry.get();
+    if (openTelemetry instanceof OpenTelemetrySdk) {
+      return ((OpenTelemetrySdk) openTelemetry).tracerSdkManagement;
+    }
+    TracerProvider tracerProvider = openTelemetry.getTracerProvider();
+    if (tracerProvider instanceof TracerSdkManagement) {
+      return (TracerSdkManagement) tracerProvider;
+    }
     if (!(tracerProvider instanceof ObfuscatedTracerProvider)) {
       throw new IllegalStateException(
           "Trying to access global TracerSdkManagement but global TracerProvider is not an "
               + "instance created by this SDK.");
     }
-    return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
+    return (TracerSdkManagement) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
   /** Returns the global {@link MeterSdkProvider}. */
@@ -67,6 +74,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   private static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
 
   private final TracerProvider tracerProvider;
+  @Nullable private final TracerSdkManagement tracerSdkManagement;
   private final MeterProvider meterProvider;
   private final ContextPropagators contextPropagators;
 
@@ -75,11 +83,13 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
   private OpenTelemetrySdk(
       TracerProvider tracerProvider,
+      @Nullable TracerSdkManagement tracerSdkManagement,
       MeterProvider meterProvider,
       ContextPropagators contextPropagators,
       Clock clock,
       Resource resource) {
     this.tracerProvider = tracerProvider;
+    this.tracerSdkManagement = tracerSdkManagement;
     this.meterProvider = meterProvider;
     this.contextPropagators = contextPropagators;
     this.clock = clock;
@@ -113,6 +123,9 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
   /** Returns the {@link TracerSdkManagement} for this {@link OpenTelemetrySdk}. */
   public TracerSdkManagement getTracerManagement() {
+    if (tracerSdkManagement != null) {
+      return tracerSdkManagement;
+    }
     return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
@@ -135,17 +148,39 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
     private TracerProvider tracerProvider;
     private MeterProvider meterProvider;
+    private TracerSdkManagement tracerSdkManagement;
 
     /**
      * Sets the {@link TracerProvider} to use. This can be used to configure tracing settings by
-     * returning the instance created by a {@link TracerSdkProvider.Builder}.
+     * returning the instance created by a {@link TracerSdkProvider.Builder}. If the TracerProvider
+     * also implements the {@link TracerSdkManagement} interface, it will be used for that as well.
+     * Otherwise, you must explicitly set a {@link TracerSdkManagement} instance via the {@link
+     * #setTracerSdkManagement(TracerSdkManagement)} method.
      *
      * @see TracerSdkProvider#builder()
+     * @see #setTracerSdkManagement(TracerSdkManagement)
      */
     @Override
     public Builder setTracerProvider(TracerProvider tracerProvider) {
       requireNonNull(tracerProvider, "tracerProvider");
       this.tracerProvider = tracerProvider;
+      if (tracerProvider instanceof TracerSdkManagement) {
+        this.tracerSdkManagement = (TracerSdkManagement) tracerProvider;
+      }
+      return this;
+    }
+
+    /**
+     * Sets the {@link TracerSdkManagement} to use. Note that it is not necessary to set this
+     * explicitly if your {@link TracerProvider} implementation also implements the {@link
+     * TracerSdkManagement} interface.
+     *
+     * @see TracerSdkProvider#builder()
+     * @see #setTracerProvider(TracerProvider)
+     */
+    public Builder setTracerSdkManagement(TracerSdkManagement tracerSdkManagement) {
+      requireNonNull(tracerSdkManagement, "tracerSdkManagement");
+      this.tracerSdkManagement = tracerSdkManagement;
       return this;
     }
 
@@ -223,18 +258,28 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
       if (tracerProvider == null) {
         TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
         if (tracerProviderFactory != null) {
-          tracerProvider = new ObfuscatedTracerProvider(tracerProviderFactory.create());
+          TracerProvider bareTracerProvider = tracerProviderFactory.create();
+          tracerProvider = new ObfuscatedTracerProvider(bareTracerProvider);
+          if (bareTracerProvider instanceof TracerSdkManagement) {
+            tracerSdkManagement = (TracerSdkManagement) bareTracerProvider;
+          }
         } else if (HAS_TRACING_SDK) {
-          tracerProvider =
-              new ObfuscatedTracerProvider(
-                  TracerSdkProvider.builder().setClock(clock).setResource(resource).build());
+          TracerSdkProvider bareTracerProvider =
+              TracerSdkProvider.builder().setClock(clock).setResource(resource).build();
+          tracerProvider = new ObfuscatedTracerProvider(bareTracerProvider);
+          tracerSdkManagement = bareTracerProvider;
         } else {
           tracerProvider = TracerProvider.getDefault();
         }
       }
 
+      if (tracerSdkManagement == null) {
+        throw new IllegalStateException(
+            "An OpenTelemetrySdk cannot be created without a valid TracerSdkManagement instance");
+      }
       OpenTelemetrySdk sdk =
-          new OpenTelemetrySdk(tracerProvider, meterProvider, propagators, clock, resource);
+          new OpenTelemetrySdk(
+              tracerProvider, tracerSdkManagement, meterProvider, propagators, clock, resource);
       // Automatically initialize global OpenTelemetry with the first SDK we build.
       if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
         OpenTelemetry.set(sdk);
