@@ -6,7 +6,6 @@ on:
       - master
     paths:
       - 'examples/**'
-      - '!**.md'
 jobs:
   build:
     name: Build
