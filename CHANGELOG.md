@@ -32,6 +32,7 @@
 - `AttributesBuilder` now uses `put` instead of `add` as the method name for adding attributes.
 - All parameters are now marked as non-nullable by default.
 - `TextMapPropagators` could receive a null carrier passed to the extract method.
+- The `TextMapPropagator.Getter` interface has added a method to return the keys that the propagator uses.
 
 ### SDK
 
