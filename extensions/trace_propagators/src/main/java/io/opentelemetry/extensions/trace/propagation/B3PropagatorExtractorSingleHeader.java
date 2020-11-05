@@ -9,7 +9,6 @@ import static io.opentelemetry.extensions.trace.propagation.B3Propagator.COMBINE
 import static io.opentelemetry.extensions.trace.propagation.B3Propagator.COMBINED_HEADER_DELIMITER;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Objects;
@@ -27,20 +26,15 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
       Context context, C carrier, TextMapPropagator.Getter<C> getter) {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
-    SpanContext spanContext = getSpanContextFromSingleHeader(carrier, getter);
-    if (!spanContext.isValid()) {
-      return Optional.empty();
-    }
-
-    return Optional.of(context.with(Span.wrap(spanContext)));
+    return extractSpanContextFromSingleHeader(context, carrier, getter);
   }
 
   @SuppressWarnings("StringSplitter")
-  private static <C> SpanContext getSpanContextFromSingleHeader(
-      C carrier, TextMapPropagator.Getter<C> getter) {
+  private static <C> Optional<Context> extractSpanContextFromSingleHeader(
+      Context context, C carrier, TextMapPropagator.Getter<C> getter) {
     String value = getter.get(carrier, COMBINED_HEADER);
     if (StringUtils.isNullOrEmpty(value)) {
-      return SpanContext.getInvalid();
+      return Optional.empty();
     }
 
     // must have between 2 and 4 hyphen delimited parts:
@@ -50,25 +44,34 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
     if (parts.length < 2 || parts.length > 4) {
       logger.fine(
           "Invalid combined header '" + COMBINED_HEADER + ". Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Optional.empty();
     }
 
     String traceId = parts[0];
     if (!Common.isTraceIdValid(traceId)) {
       logger.fine(
           "Invalid TraceId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Optional.empty();
     }
 
     String spanId = parts[1];
     if (!Common.isSpanIdValid(spanId)) {
       logger.fine(
           "Invalid SpanId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
-      return SpanContext.getInvalid();
+      return Optional.empty();
     }
 
     String sampled = parts.length >= 3 ? parts[2] : null;
 
-    return Common.buildSpanContext(traceId, spanId, sampled);
+    // if sampled is marked as 'd'ebug, then set sampled flag, and also store the B3 debug flag in
+    // the context for onward use by the B3 injector
+    if (!StringUtils.isNullOrEmpty(sampled) && sampled.contentEquals("d")) {
+      return Optional.of(
+          context
+              .with(B3Propagator.DEBUG_CONTEXT, Common.TRUE_INT)
+              .with(Span.wrap(Common.buildSpanContext(traceId, spanId, Common.TRUE_INT))));
+    }
+
+    return Optional.of(context.with(Span.wrap(Common.buildSpanContext(traceId, spanId, sampled))));
   }
 }

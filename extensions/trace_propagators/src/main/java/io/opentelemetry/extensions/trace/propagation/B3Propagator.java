@@ -6,6 +6,7 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,12 +50,16 @@ public class B3Propagator implements TextMapPropagator {
   static final String TRACE_ID_HEADER = "X-B3-TraceId";
   static final String SPAN_ID_HEADER = "X-B3-SpanId";
   static final String SAMPLED_HEADER = "X-B3-Sampled";
+  static final String DEBUG_HEADER = "X-B3-Flags";
   static final String COMBINED_HEADER = "b3";
   static final String COMBINED_HEADER_DELIMITER = "-";
+  static final String DEBUG_CONTEXT_KEY = "b3-debug-flag";
+  static final ContextKey<String> DEBUG_CONTEXT = ContextKey.named(B3Propagator.DEBUG_CONTEXT_KEY);
 
   static final char COMBINED_HEADER_DELIMITER_CHAR = '-';
   static final char IS_SAMPLED = '1';
   static final char NOT_SAMPLED = '0';
+  static final char DEBUG_SAMPLED = 'd';
 
   private static final List<String> FIELDS =
       Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));

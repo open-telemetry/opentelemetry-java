@@ -44,8 +44,13 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
     System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getHexLength());
 
     chars[SAMPLED_FLAG_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
-    chars[SAMPLED_FLAG_OFFSET] =
-        spanContext.isSampled() ? B3Propagator.IS_SAMPLED : B3Propagator.NOT_SAMPLED;
+    String debug = context.get(B3Propagator.DEBUG_CONTEXT);
+    if (!StringUtils.isNullOrEmpty(debug) && debug.contentEquals(Common.TRUE_INT)) {
+      chars[SAMPLED_FLAG_OFFSET] = B3Propagator.DEBUG_SAMPLED;
+    } else {
+      chars[SAMPLED_FLAG_OFFSET] =
+          spanContext.isSampled() ? B3Propagator.IS_SAMPLED : B3Propagator.NOT_SAMPLED;
+    }
     setter.set(carrier, B3Propagator.COMBINED_HEADER, new String(chars));
   }
 }
