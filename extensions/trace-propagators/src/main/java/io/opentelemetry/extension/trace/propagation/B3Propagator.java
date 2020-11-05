@@ -57,7 +57,8 @@ public class B3Propagator implements TextMapPropagator {
   static final char NOT_SAMPLED = '0';
 
   private static final List<String> FIELDS =
-      Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));
+      Collections.unmodifiableList(
+          Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER, COMBINED_HEADER));
 
   private static final B3Propagator INSTANCE = B3Propagator.builder().build();
 

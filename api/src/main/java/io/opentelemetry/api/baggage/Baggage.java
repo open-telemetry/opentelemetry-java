@@ -7,7 +7,6 @@ package io.opentelemetry.api.baggage;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
-import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -62,16 +61,19 @@ public interface Baggage extends ImplicitContextKeyed {
     return context.with(BaggageContextKey.KEY, this);
   }
 
-  /**
-   * Returns an immutable collection of the entries in this {@code Baggage}. Order of entries is not
-   * guaranteed.
-   *
-   * @return an immutable collection of the entries in this {@code Baggage}.
-   */
-  Collection<Entry> getEntries();
+  /** Returns the number of entries in this {@link Baggage}. */
+  int size();
+
+  /** Returns whether this {@link Baggage} is empty, containing no entries. */
+  default boolean isEmpty() {
+    return size() == 0;
+  }
+
+  /** Iterates over all the entries in this {@link Baggage}. */
+  void forEach(BaggageConsumer consumer);
 
   /**
-   * Returns the {@code String} associated with the given key.
+   * Returns the {@code String} value associated with the given key, without metadata.
    *
    * @param entryKey entry key to return the value for.
    * @return the value associated with the given key, or {@code null} if no {@code Entry} with the
