@@ -115,7 +115,7 @@ public class HelloWorldClient {
     }
   }
 
-  private static void initTracer() {
+  private static void initTracing() {
     OpenTelemetry.setGlobalPropagators(
         DefaultContextPropagators.builder()
             .addTextMapPropagator(HttpTraceContext.getInstance())
@@ -133,7 +133,7 @@ public class HelloWorldClient {
    * greeting.
    */
   public static void main(String[] args) throws Exception {
-    initTracer();
+    initTracing();
     // Access a service running on the local machine on port 50051
     HelloWorldClient client = new HelloWorldClient("localhost", 50051);
     try {
