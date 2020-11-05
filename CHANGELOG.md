@@ -75,6 +75,12 @@
 - The 's' was removed from the word "exporters" for every exporter artifact. For example, `opentelemetry-exporters-logging` was renamed to `opentelemetry-exporter-logging`. 
 - The 's' was removed from the word "extensions" for the package for every SDK extension. For example, `io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils` was renamed to `io.opentelemetry.sdk.extension.otproto.TraceProtoUtils`.
 
+
+### Thanks
+Many thanks to everyone who made this release possible!
+
+@anuraaga @bogdandrutu @Oberon00 @thisthat @HaloFour @jkwatson @kenfinnigan @MariusVolkhart @malafeev @trask  @tylerbenson @XiXiaPdx @dengliming @hengyunabc @jarebudev @brianashby-sfx 
+
 ## 0.9.1 - 2020-10-07
 
 - API
@@ -121,7 +127,8 @@
     - New incubator module with some utilities for mutating SpanData instances.
     - The AWS Resource extension will now pull in EKS Resource attributes.
     - New pre-release extension for handling logging natively.
-    
+ 
+### Thanks    
 Many thanks to all who made this release possible:
    
 @bogdandrutu @Oberon00 @jkwatson @thisthat @anuraaga @jarebudev @malafeev @quijote @JasonXZLiu @zoercai @eunice98k @dengliming @breedx-nr @iNikem @wangzlei @imavroukakis 
