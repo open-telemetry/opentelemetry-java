@@ -20,8 +20,10 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -41,8 +43,6 @@ public class HelloWorldClient {
   OpenTelemetry openTelemetry = OpenTelemetry.get();
   // OTel API
   Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
-  // Export traces as log
-  LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text headers
   TextMapPropagator textFormat = openTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
@@ -64,14 +64,6 @@ public class HelloWorldClient {
             .build();
     blockingStub = GreeterGrpc.newBlockingStub(channel);
     // Initialize the OTel tracer
-    initTracer();
-  }
-
-  private void initTracer() {
-    // Use the OpenTelemetry SDK
-    TracerSdkManagement tracerProvider = OpenTelemetrySdk.getGlobalTracerManagement();
-    // Set to process the spans by the log exporter
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
   }
 
   public void shutdown() throws InterruptedException {
@@ -123,11 +115,25 @@ public class HelloWorldClient {
     }
   }
 
+  private static void initTracer() {
+    OpenTelemetry.setGlobalPropagators(
+        DefaultContextPropagators.builder()
+            .addTextMapPropagator(HttpTraceContext.getInstance())
+            .build());
+
+    // Use the OpenTelemetry SDK
+    LoggingSpanExporter exporter = new LoggingSpanExporter();
+    TracerSdkManagement tracerProvider = OpenTelemetrySdk.getGlobalTracerManagement();
+    // Set to process the spans by the log exporter
+    tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+  }
+
   /**
    * Greet server. If provided, the first element of {@code args} is the name to use in the
    * greeting.
    */
   public static void main(String[] args) throws Exception {
+    initTracer();
     // Access a service running on the local machine on port 50051
     HelloWorldClient client = new HelloWorldClient("localhost", 50051);
     try {

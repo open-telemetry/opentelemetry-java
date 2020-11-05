@@ -9,8 +9,10 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -35,7 +37,13 @@ public class HttpClient {
   private static final TextMapPropagator.Setter<HttpURLConnection> setter =
       URLConnection::setRequestProperty;
 
-  private static void initTracerSdk() {
+  private static void initTracing() {
+    // install the W3C Trace Context propagator
+    OpenTelemetry.setGlobalPropagators(
+        DefaultContextPropagators.builder()
+            .addTextMapPropagator(HttpTraceContext.getInstance())
+            .build());
+
     // Get the tracer management instance.
     TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
     // Show that multiple exporters can be used
@@ -103,7 +111,7 @@ public class HttpClient {
    * @param args It is not required.
    */
   public static void main(String[] args) {
-    initTracerSdk();
+    initTracing();
     HttpClient httpClient = new HttpClient();
 
     // Perform request every 5s

@@ -13,8 +13,10 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -110,7 +112,6 @@ public class HttpServer {
   }
 
   private HttpServer(int port) throws IOException {
-    initTracer();
     server = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(port), 0);
     // Test urls
     server.createContext("/", new HelloHandler());
@@ -118,7 +119,13 @@ public class HttpServer {
     System.out.println("Server ready on http://127.0.0.1:" + port);
   }
 
-  private void initTracer() {
+  private static void initTracing() {
+    // install the W3C Trace Context propagator
+    OpenTelemetry.setGlobalPropagators(
+        DefaultContextPropagators.builder()
+            .addTextMapPropagator(HttpTraceContext.getInstance())
+            .build());
+
     // Get the tracer
     TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
     // Show that multiple exporters can be used
@@ -138,6 +145,8 @@ public class HttpServer {
    * @throws Exception Something might go wrong.
    */
   public static void main(String[] args) throws Exception {
+    initTracing();
+
     final HttpServer s = new HttpServer();
     // Gracefully close the server
     Runtime.getRuntime().addShutdownHook(new Thread(s::stop));
