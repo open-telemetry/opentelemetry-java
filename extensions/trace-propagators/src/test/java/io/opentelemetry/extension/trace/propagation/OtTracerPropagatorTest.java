@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 class OtTracerPropagatorTest {
@@ -31,7 +32,19 @@ class OtTracerPropagatorTest {
   private static final String SPAN_ID = "ff00000000000041";
   private static final byte SAMPLED_TRACE_OPTIONS = TraceFlags.getSampled();
   private static final Setter<Map<String, String>> setter = Map::put;
-  private static final Getter<Map<String, String>> getter = Map::get;
+  private static final Getter<Map<String, String>> getter =
+      new Getter<Map<String, String>>() {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
+        @Nullable
+        @Override
+        public String get(Map<String, String> carrier, String key) {
+          return carrier.get(key);
+        }
+      };
   private final OtTracerPropagator propagator = OtTracerPropagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
@@ -104,7 +117,7 @@ class OtTracerPropagatorTest {
   void extract_Nothing() {
     // Context remains untouched.
     assertThat(
-            propagator.extract(Context.current(), Collections.<String, String>emptyMap(), Map::get))
+            propagator.extract(Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 

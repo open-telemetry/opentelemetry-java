@@ -116,6 +116,14 @@ public interface TextMapPropagator {
   interface Getter<C> {
 
     /**
+     * Returns all the keys in the given carrier.
+     *
+     * @param carrier carrier of propagation fields, such as an http request.
+     * @since 0.10.0
+     */
+    Iterable<String> keys(C carrier);
+
+    /**
      * Returns the first value of the given propagation {@code key} or returns {@code null}.
      *
      * @param carrier carrier of propagation fields, such as an http request.

@@ -31,6 +31,11 @@ class AwsXRayPropagatorTest {
   private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
   private static final TextMapPropagator.Getter<Map<String, String>> getter =
       new TextMapPropagator.Getter<Map<String, String>>() {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
         @Nullable
         @Override
         public String get(Map<String, String> carrier, String key) {
@@ -99,7 +104,7 @@ class AwsXRayPropagatorTest {
     // Context remains untouched.
     assertThat(
             xrayPropagator.extract(
-                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+                Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 

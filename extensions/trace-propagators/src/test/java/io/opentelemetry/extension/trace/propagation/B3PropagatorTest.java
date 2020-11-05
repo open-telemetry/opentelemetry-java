@@ -39,6 +39,11 @@ class B3PropagatorTest {
   private static final Setter<Map<String, String>> setter = Map::put;
   private static final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
         @Nullable
         @Override
         public String get(Map<String, String> carrier, String key) {
@@ -118,8 +123,7 @@ class B3PropagatorTest {
   void extract_Nothing() {
     // Context remains untouched.
     assertThat(
-            b3Propagator.extract(
-                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+            b3Propagator.extract(Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 
@@ -329,8 +333,7 @@ class B3PropagatorTest {
   void extract_Nothing_SingleHeader() {
     // Context remains untouched.
     assertThat(
-            b3Propagator.extract(
-                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+            b3Propagator.extract(Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 

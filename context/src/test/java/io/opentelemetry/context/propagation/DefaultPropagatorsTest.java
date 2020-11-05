@@ -156,6 +156,11 @@ class DefaultPropagatorsTest {
     private static final MapGetter INSTANCE = new MapGetter();
 
     @Override
+    public Iterable<String> keys(Map<String, String> map) {
+      return map.keySet();
+    }
+
+    @Override
     public String get(Map<String, String> map, String key) {
       return map.get(key);
     }
