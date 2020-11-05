@@ -272,6 +272,7 @@ configure(opentelemetryProjects) {
         jmhVersion = '1.19'
         junitVersion = '5.6.2'
         mockitoVersion = '3.3.3'
+        opencensusVersion = '0.28.2'
         opentracingVersion = '0.33.0'
         prometheusVersion = '0.8.1'
         protobufVersion = '3.11.4'
@@ -312,6 +313,9 @@ configure(opentelemetryProjects) {
                 zipkin_okhttp           : "io.zipkin.reporter2:zipkin-sender-okhttp3",
 
                 // Compatibility layer
+                opencensus_api          : "io.opencensus:opencensus-api:${opencensusVersion}",
+                opencensus_impl         : "io.opencensus:opencensus-impl:${opencensusVersion}",
+                opencensus_impl_core    : "io.opencensus:opencensus-impl-core:${opencensusVersion}",
                 opentracing             : "io.opentracing:opentracing-api:${opentracingVersion}",
 
                 // Test dependencies.
