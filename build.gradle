@@ -117,6 +117,10 @@ subprojects {
             }
         }
 
+        artifactoryPublish {
+            enabled = version.toString().endsWith('-SNAPSHOT')
+        }
+
         // Release artifacts publishing.
         bintray {
             user = System.getenv("BINTRAY_USER")
