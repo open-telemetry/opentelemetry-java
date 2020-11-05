@@ -406,7 +406,6 @@ configure(opentelemetryProjects) {
     }
 
     tasks.withType(Test) {
-        systemProperties project.properties.subMap(["enable.docker.tests"])
         useJUnitPlatform()
 
         // At a test failure, log the stack trace to the console so that we don't

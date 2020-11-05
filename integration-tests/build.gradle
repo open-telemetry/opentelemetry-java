@@ -13,10 +13,6 @@ task fatJar(type: Jar) {
     with jar
 }
 
-test.onlyIf {
-    property('enable.docker.tests') == "true" 
-}
-
 dependencies {
     api project(':opentelemetry-api')
 

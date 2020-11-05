@@ -39,7 +39,6 @@ jobs:
           arguments: check --stacktrace ${{ matrix.coverage && ':opentelemetry-all:jacocoTestReport' || '' }}
           properties: |
             testAdditionalJavaVersions=${{ matrix.testAdditionalJavaVersions }}
-            enable.docker.tests=${{ matrix.os == 'ubuntu-latest' }}
             org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }}
       - uses: codecov/codecov-action@v1
         if: ${{ matrix.coverage }}
