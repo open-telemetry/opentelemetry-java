@@ -20,15 +20,15 @@ and create a **Child Span**.
 
 ## 2 - Start the Server
 ```shell script
-java -cp ./build/libs/opentelemetry-examples-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.HelloWorldServer
+java -cp ./build/libs/opentelemetry-examples-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.grpc.HelloWorldServer
 ```
  
 ## 3 - Start the normal Client
 ```shell script
-java -cp ./build/libs/opentelemetry-examples-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.HelloWorldClient
+java -cp ./build/libs/opentelemetry-examples-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.grpc.HelloWorldClient
 ```
 
 ## 4 - Start the streamed Client
 ```shell script
-java -cp ./build/libs/opentelemetry-examples-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.HelloWorldClientStream
+java -cp ./build/libs/opentelemetry-examples-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.grpc.HelloWorldClientStream
 ```

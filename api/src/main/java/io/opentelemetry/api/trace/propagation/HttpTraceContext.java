@@ -32,7 +32,7 @@ import javax.annotation.concurrent.Immutable;
  * href=https://github.com/w3c/distributed-tracing>w3c/distributed-tracing</a>.
  */
 @Immutable
-public class HttpTraceContext implements TextMapPropagator {
+public final class HttpTraceContext implements TextMapPropagator {
   private static final Logger logger = Logger.getLogger(HttpTraceContext.class.getName());
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
@@ -119,21 +119,19 @@ public class HttpTraceContext implements TextMapPropagator {
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
-    List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
-    if (entries.isEmpty()) {
+    TraceState traceState = spanContext.getTraceState();
+    if (traceState.isEmpty()) {
       // No need to add an empty "tracestate" header.
       return;
     }
     StringBuilder stringBuilder = new StringBuilder(TRACESTATE_MAX_SIZE);
-    for (TraceState.Entry entry : entries) {
-      if (stringBuilder.length() != 0) {
-        stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
-      }
-      stringBuilder
-          .append(entry.getKey())
-          .append(TRACESTATE_KEY_VALUE_DELIMITER)
-          .append(entry.getValue());
-    }
+    traceState.forEach(
+        (key, value) -> {
+          if (stringBuilder.length() != 0) {
+            stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
+          }
+          stringBuilder.append(key).append(TRACESTATE_KEY_VALUE_DELIMITER).append(value);
+        });
     setter.set(carrier, TRACE_STATE, stringBuilder.toString());
   }
 
@@ -175,7 +173,7 @@ public class HttpTraceContext implements TextMapPropagator {
           contextFromParentHeader.getTraceFlags(),
           traceState);
     } catch (IllegalArgumentException e) {
-      logger.info("Unparseable tracestate header. Returning span context without state.");
+      logger.fine("Unparseable tracestate header. Returning span context without state.");
       return contextFromParentHeader;
     }
   }
@@ -191,7 +189,7 @@ public class HttpTraceContext implements TextMapPropagator {
             && traceparent.charAt(SPAN_ID_OFFSET - 1) == TRACEPARENT_DELIMITER
             && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER;
     if (!isValid) {
-      logger.info("Unparseable traceparent header. Returning INVALID span context.");
+      logger.fine("Unparseable traceparent header. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
@@ -213,7 +211,7 @@ public class HttpTraceContext implements TextMapPropagator {
       }
       return SpanContext.getInvalid();
     } catch (IllegalArgumentException e) {
-      logger.info("Unparseable traceparent header. Returning INVALID span context.");
+      logger.fine("Unparseable traceparent header. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
   }

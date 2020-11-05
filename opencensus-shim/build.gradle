@@ -1,0 +1,19 @@
+plugins {
+    id "java"
+    id "maven-publish"
+}
+
+description = 'OpenTelemetry OpenCensus Shim'
+ext.moduleName = "io.opentelemetry.opencensusshim"
+
+dependencies {
+    api project(':opentelemetry-api'),
+            libraries.opencensus_api,
+            libraries.opencensus_impl_core
+
+    testImplementation project(':opentelemetry-sdk'),
+            libraries.junit,
+            libraries.assertj,
+            libraries.slf4jsimple,
+            libraries.opencensus_impl
+}

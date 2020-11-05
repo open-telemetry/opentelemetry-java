@@ -61,7 +61,7 @@ class AttributesTest {
     emptyAttributes.forEach(
         new AttributeConsumer() {
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             sawSomething.set(true);
           }
         });
@@ -173,21 +173,21 @@ class AttributesTest {
   void builder_arrayTypes() {
     Attributes attributes =
         Attributes.builder()
-            .put("string", "value1", "value2")
-            .put("long", 100L, 200L)
-            .put("double", 33.44, -44.33)
+            .put("string", "value1", "value2", null)
+            .put("long", null, 100L, 200L)
+            .put("double", 33.44, null, -44.33)
             .put("boolean", "duplicateShouldBeRemoved")
             .put(stringKey("boolean"), "true")
-            .put("boolean", false, true)
+            .put("boolean", false, null, true)
             .build();
 
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                stringArrayKey("string"), Arrays.asList("value1", "value2"),
-                longArrayKey("long"), Arrays.asList(100L, 200L),
-                doubleArrayKey("double"), Arrays.asList(33.44, -44.33),
-                booleanArrayKey("boolean"), Arrays.asList(false, true)));
+                stringArrayKey("string"), Arrays.asList("value1", "value2", null),
+                longArrayKey("long"), Arrays.asList(null, 100L, 200L),
+                doubleArrayKey("double"), Arrays.asList(33.44, null, -44.33),
+                booleanArrayKey("boolean"), Arrays.asList(false, null, true)));
   }
 
   @Test

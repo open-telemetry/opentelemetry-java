@@ -7,7 +7,6 @@ package io.opentelemetry.api.baggage;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
-import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -36,7 +35,7 @@ public interface Baggage extends ImplicitContextKeyed {
    * the current Context.
    */
   static Baggage current() {
-    return BaggageUtils.getCurrentBaggage();
+    return fromContext(Context.current());
   }
 
   /**
@@ -44,7 +43,8 @@ public interface Baggage extends ImplicitContextKeyed {
    * Baggage} if there is no baggage in the context.
    */
   static Baggage fromContext(Context context) {
-    return BaggageUtils.getBaggage(context);
+    Baggage baggage = fromContextOrNull(context);
+    return baggage != null ? baggage : empty();
   }
 
   /**
@@ -53,24 +53,27 @@ public interface Baggage extends ImplicitContextKeyed {
    */
   @Nullable
   static Baggage fromContextOrNull(Context context) {
-    return BaggageUtils.getBaggageWithoutDefault(context);
+    return context.get(BaggageContextKey.KEY);
   }
 
   @Override
   default Context storeInContext(Context context) {
-    return BaggageUtils.withBaggage(this, context);
+    return context.with(BaggageContextKey.KEY, this);
   }
 
-  /**
-   * Returns an immutable collection of the entries in this {@code Baggage}. Order of entries is not
-   * guaranteed.
-   *
-   * @return an immutable collection of the entries in this {@code Baggage}.
-   */
-  Collection<Entry> getEntries();
+  /** Returns the number of entries in this {@link Baggage}. */
+  int size();
+
+  /** Returns whether this {@link Baggage} is empty, containing no entries. */
+  default boolean isEmpty() {
+    return size() == 0;
+  }
+
+  /** Iterates over all the entries in this {@link Baggage}. */
+  void forEach(BaggageConsumer consumer);
 
   /**
-   * Returns the {@code String} associated with the given key.
+   * Returns the {@code String} value associated with the given key, without metadata.
    *
    * @param entryKey entry key to return the value for.
    * @return the value associated with the given key, or {@code null} if no {@code Entry} with the

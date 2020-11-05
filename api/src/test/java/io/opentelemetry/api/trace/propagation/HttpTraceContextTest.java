@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link HttpTraceContext}. */
@@ -39,7 +40,19 @@ class HttpTraceContextTest {
   private static final String TRACEPARENT_HEADER_NOT_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00";
   private static final Setter<Map<String, String>> setter = Map::put;
-  private static final Getter<Map<String, String>> getter = Map::get;
+  private static final Getter<Map<String, String>> getter =
+      new Getter<Map<String, String>>() {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
+        @Nullable
+        @Override
+        public String get(Map<String, String> carrier, String key) {
+          return carrier.get(key);
+        }
+      };
   // Encoding preserves the order which is the reverse order of adding.
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING = "bar=baz,foo=bar";
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING_WITH_SPACES =
@@ -151,7 +164,7 @@ class HttpTraceContextTest {
     // Context remains untouched.
     assertThat(
             httpTraceContext.extract(
-                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+                Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 
@@ -169,9 +182,7 @@ class HttpTraceContextTest {
   void extract_NullCarrier() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED);
-    assertThat(
-            getSpanContext(
-                httpTraceContext.extract(Context.current(), null, (c, k) -> carrier.get(k))))
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));

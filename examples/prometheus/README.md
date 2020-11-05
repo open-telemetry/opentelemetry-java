@@ -31,7 +31,7 @@ docker run --network="host" --rm -it \
 
 ## 3 - Start the Application
 ```shell script
-java -cp build/libs/opentelemetry-examples-prometheus-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.PrometheusExample 19090
+java -cp build/libs/opentelemetry-examples-prometheus-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.prometheus.PrometheusExample 19090
 ```
 ## 4 - Open the Prometheus UI
 
