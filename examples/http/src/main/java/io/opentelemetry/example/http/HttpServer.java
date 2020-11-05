@@ -5,22 +5,21 @@
 
 package io.opentelemetry.example.http;
 
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import io.grpc.Context;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporters.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -32,19 +31,16 @@ public class HttpServer {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-      // Name convention for the Span is not yet defined.
-      // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
-
       // Extract the context from the HTTP request
       Context context =
-          OpenTelemetry.getPropagators()
+          OpenTelemetry.getGlobalPropagators()
               .getTextMapPropagator()
               .extract(Context.current(), exchange, getter);
 
       Span span =
-          tracer.spanBuilder("/").setParent(context).setSpanKind(Span.Kind.SERVER).startSpan();
+          tracer.spanBuilder("GET /").setParent(context).setSpanKind(Span.Kind.SERVER).startSpan();
 
-      try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+      try (Scope scope = span.makeCurrent()) {
         // Set the Semantic Convention
         span.setAttribute("component", "http");
         span.setAttribute("http.method", "GET");
@@ -89,16 +85,24 @@ public class HttpServer {
 
   // OTel API
   private static final Tracer tracer =
-      OpenTelemetry.getTracer("io.opentelemetry.example.http.HttpServer");
+      OpenTelemetry.getGlobalTracer("io.opentelemetry.example.http.HttpServer");
   // Export traces to log
   private static final LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
   // Extract the context from http headers
   private static final TextMapPropagator.Getter<HttpExchange> getter =
-      (carrier, key) -> {
-        if (carrier.getRequestHeaders().containsKey(key)) {
-          return carrier.getRequestHeaders().get(key).get(0);
+      new TextMapPropagator.Getter<>() {
+        @Override
+        public Iterable<String> keys(HttpExchange carrier) {
+          return carrier.getRequestHeaders().keySet();
         }
-        return "";
+
+        @Override
+        public String get(HttpExchange carrier, String key) {
+          if (carrier.getRequestHeaders().containsKey(key)) {
+            return carrier.getRequestHeaders().get(key).get(0);
+          }
+          return "";
+        }
       };
 
   private HttpServer() throws IOException {
@@ -116,11 +120,11 @@ public class HttpServer {
 
   private void initTracer() {
     // Get the tracer
-    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getTracerManagement();
+    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
     // Show that multiple exporters can be used
 
     // Set to export the traces also to a log file
-    tracerManagement.addSpanProcessor(SimpleSpanProcessor.newBuilder(loggingExporter).build());
+    tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(loggingExporter).build());
   }
 
   private void stop() {

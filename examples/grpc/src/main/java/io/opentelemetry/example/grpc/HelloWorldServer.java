@@ -6,7 +6,6 @@
 
 package io.opentelemetry.example.grpc;
 
-import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.Grpc;
 import io.grpc.Metadata;
@@ -15,16 +14,16 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.context.ContextUtils;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporters.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.logging.Logger;
@@ -37,20 +36,28 @@ public class HelloWorldServer {
   private Server server;
 
   // OTel API
-  Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
+  Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.example.HelloWorldServer");
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text
-  TextMapPropagator textFormat = OpenTelemetry.getPropagators().getTextMapPropagator();
+  TextMapPropagator textFormat = OpenTelemetry.getGlobalPropagators().getTextMapPropagator();
 
   // Extract the Distributed Context from the gRPC metadata
   TextMapPropagator.Getter<Metadata> getter =
-      (carrier, key) -> {
-        Metadata.Key<String> k = Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER);
-        if (carrier.containsKey(k)) {
-          return carrier.get(k);
+      new TextMapPropagator.Getter<>() {
+        @Override
+        public Iterable<String> keys(Metadata carrier) {
+          return carrier.keys();
         }
-        return "";
+
+        @Override
+        public String get(Metadata carrier, String key) {
+          Metadata.Key<String> k = Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER);
+          if (carrier.containsKey(k)) {
+            return carrier.get(k);
+          }
+          return "";
+        }
       };
 
   public HelloWorldServer() {
@@ -91,9 +98,9 @@ public class HelloWorldServer {
 
   private void initTracer() {
     // Get the tracer management instance
-    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getTracerManagement();
+    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
     // Set to process the the spans by the LogExporter
-    tracerManagement.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
+    tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
   }
 
   /** Await termination on the main thread since the grpc library uses daemon threads. */
@@ -148,7 +155,7 @@ public class HelloWorldServer {
       InetSocketAddress clientInfo =
           (InetSocketAddress) call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
       // Build a span based on the received context
-      try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
+      try (Scope scope = extractedContext.makeCurrent()) {
         Span span =
             tracer
                 .spanBuilder("helloworld.Greeter/SayHello")
@@ -160,7 +167,7 @@ public class HelloWorldServer {
         span.setAttribute("net.peer.port", clientInfo.getPort());
         // Process the gRPC call normally
         try {
-          return Contexts.interceptCall(Context.current(), call, headers, next);
+          return Contexts.interceptCall(io.grpc.Context.current(), call, headers, next);
         } finally {
           span.end();
         }

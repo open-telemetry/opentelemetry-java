@@ -5,15 +5,15 @@
 
 package io.opentelemetry.sdk.example;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.exporters.logging.LoggingSpanExporter;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.trace.Tracer;
 import java.util.Arrays;
 
 /** This example shows how to instantiate different Span Processors. */
@@ -22,9 +22,9 @@ public class ConfigureSpanProcessorExample {
   static LoggingSpanExporter exporter = new LoggingSpanExporter();
 
   // Get the Tracer Provider
-  static TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
+  static TracerSdkManagement tracerProvider = OpenTelemetrySdk.getGlobalTracerManagement();
   // Acquire a tracer
-  static Tracer tracer = OpenTelemetry.getTracer("ConfigureSpanProcessorExample");
+  static Tracer tracer = OpenTelemetry.getGlobalTracer("ConfigureSpanProcessorExample");
 
   public static void main(String[] args) {
 
@@ -57,12 +57,12 @@ public class ConfigureSpanProcessorExample {
 
     // Configure the simple spans processor. This span processor exports span immediately after they
     // are ended.
-    SimpleSpanProcessor simpleSpansProcessor = SimpleSpanProcessor.newBuilder(exporter).build();
+    SimpleSpanProcessor simpleSpansProcessor = SimpleSpanProcessor.builder(exporter).build();
     tracerProvider.addSpanProcessor(simpleSpansProcessor);
 
     // Configure the batch spans processor. This span processor exports span in batches.
     BatchSpanProcessor batchSpansProcessor =
-        BatchSpanProcessor.newBuilder(exporter)
+        BatchSpanProcessor.builder(exporter)
             .setExportOnlySampled(true) // send to the exporter only spans that have been sampled
             .setMaxExportBatchSize(512) // set the maximum batch size to use
             .setMaxQueueSize(2048) // set the queue size. This must be >= the export batch size
