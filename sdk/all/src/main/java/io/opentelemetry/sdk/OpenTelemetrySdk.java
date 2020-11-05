@@ -74,7 +74,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   private static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
 
   private final TracerProvider tracerProvider;
-  @Nullable private final TracerSdkManagement tracerSdkManagement;
+  private final TracerSdkManagement tracerSdkManagement;
   private final MeterProvider meterProvider;
   private final ContextPropagators contextPropagators;
 
@@ -83,7 +83,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
   private OpenTelemetrySdk(
       TracerProvider tracerProvider,
-      @Nullable TracerSdkManagement tracerSdkManagement,
+      TracerSdkManagement tracerSdkManagement,
       MeterProvider meterProvider,
       ContextPropagators contextPropagators,
       Clock clock,
@@ -123,10 +123,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
   /** Returns the {@link TracerSdkManagement} for this {@link OpenTelemetrySdk}. */
   public TracerSdkManagement getTracerManagement() {
-    if (tracerSdkManagement != null) {
-      return tracerSdkManagement;
-    }
-    return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
+    return tracerSdkManagement;
   }
 
   /** Returns a new {@link Builder} initialized with the values of this {@link OpenTelemetrySdk}. */
