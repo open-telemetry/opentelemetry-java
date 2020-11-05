@@ -36,37 +36,37 @@ final class BatchRecorderSdk implements BatchRecorder {
 
   @Override
   public BatchRecorder put(LongValueRecorder valueRecorder, long value) {
-    pendingRecordings.offer(new Recording(valueRecorder, value));
+    pendingRecordings.offer(new LongRecording(valueRecorder, value));
     return this;
   }
 
   @Override
   public BatchRecorder put(DoubleValueRecorder valueRecorder, double value) {
-    pendingRecordings.offer(new Recording(valueRecorder, value));
+    pendingRecordings.offer(new DoubleRecording(valueRecorder, value));
     return this;
   }
 
   @Override
   public BatchRecorder put(LongCounter counter, long value) {
-    pendingRecordings.offer(new Recording(counter, value));
+    pendingRecordings.offer(new LongRecording(counter, value));
     return this;
   }
 
   @Override
   public BatchRecorder put(DoubleCounter counter, double value) {
-    pendingRecordings.offer(new Recording(counter, value));
+    pendingRecordings.offer(new DoubleRecording(counter, value));
     return this;
   }
 
   @Override
   public BatchRecorder put(LongUpDownCounter upDownCounter, long value) {
-    pendingRecordings.offer(new Recording(upDownCounter, value));
+    pendingRecordings.offer(new LongRecording(upDownCounter, value));
     return this;
   }
 
   @Override
   public BatchRecorder put(DoubleUpDownCounter upDownCounter, double value) {
-    pendingRecordings.offer(new Recording(upDownCounter, value));
+    pendingRecordings.offer(new DoubleRecording(upDownCounter, value));
     return this;
   }
 
@@ -77,31 +77,78 @@ final class BatchRecorderSdk implements BatchRecorder {
 
     recordings.forEach(
         (recording) -> {
-          Instrument instrument = recording.instrument;
-          Number value = recording.value;
+          Instrument instrument = recording.getInstrument();
           if (instrument instanceof DoubleUpDownCounter) {
-            ((DoubleUpDownCounter) instrument).add(value.doubleValue(), labelSet);
+            ((DoubleUpDownCounter) instrument).add(recording.getDoubleValue(), labelSet);
           } else if (instrument instanceof DoubleCounter) {
-            ((DoubleCounter) instrument).add(value.doubleValue(), labelSet);
+            ((DoubleCounter) instrument).add(recording.getDoubleValue(), labelSet);
           } else if (instrument instanceof DoubleValueRecorder) {
-            ((DoubleValueRecorder) instrument).record(value.doubleValue(), labelSet);
+            ((DoubleValueRecorder) instrument).record(recording.getDoubleValue(), labelSet);
           } else if (instrument instanceof LongUpDownCounter) {
-            ((LongUpDownCounter) instrument).add(value.longValue(), labelSet);
+            ((LongUpDownCounter) instrument).add(recording.getLongValue(), labelSet);
           } else if (instrument instanceof LongCounter) {
-            ((LongCounter) instrument).add(value.longValue(), labelSet);
+            ((LongCounter) instrument).add(recording.getLongValue(), labelSet);
           } else if (instrument instanceof LongValueRecorder) {
-            ((LongValueRecorder) instrument).record(value.longValue(), labelSet);
+            ((LongValueRecorder) instrument).record(recording.getLongValue(), labelSet);
           }
         });
   }
 
-  private static class Recording {
-    private final Instrument instrument;
-    private final Number value;
+  private interface Recording {
+    Instrument getInstrument();
 
-    private Recording(Instrument instrument, Number value) {
+    long getLongValue();
+
+    double getDoubleValue();
+  }
+
+  private static class LongRecording implements Recording {
+    private final Instrument instrument;
+    private final long value;
+
+    private LongRecording(Instrument instrument, long value) {
       this.instrument = instrument;
       this.value = value;
+    }
+
+    @Override
+    public Instrument getInstrument() {
+      return instrument;
+    }
+
+    @Override
+    public long getLongValue() {
+      return value;
+    }
+
+    @Override
+    public double getDoubleValue() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  private static class DoubleRecording implements Recording {
+    private final Instrument instrument;
+    private final double value;
+
+    private DoubleRecording(Instrument instrument, double value) {
+      this.instrument = instrument;
+      this.value = value;
+    }
+
+    @Override
+    public Instrument getInstrument() {
+      return instrument;
+    }
+
+    @Override
+    public long getLongValue() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public double getDoubleValue() {
+      return value;
     }
   }
 }
