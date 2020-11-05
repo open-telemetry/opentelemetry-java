@@ -82,7 +82,8 @@ class SpanConverter {
             .spanBuilder(ocSpanData.getName())
             .setStartTimestamp(
                 TimeUnit.SECONDS.toNanos(ocSpanData.getStartTimestamp().getSeconds())
-                    + ocSpanData.getStartTimestamp().getNanos());
+                    + ocSpanData.getStartTimestamp().getNanos(),
+                TimeUnit.NANOSECONDS);
     if (ocSpanData.getKind() != null) {
       builder.setSpanKind(mapKind(ocSpanData.getKind()));
     }
@@ -167,7 +168,8 @@ class SpanConverter {
               AttributeKey.longKey(MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED),
               event.getEvent().getCompressedMessageSize()),
           TimeUnit.SECONDS.toNanos(event.getTimestamp().getSeconds())
-              + event.getTimestamp().getNanos());
+              + event.getTimestamp().getNanos(),
+          TimeUnit.NANOSECONDS);
     }
   }
 
@@ -190,7 +192,8 @@ class SpanConverter {
           annotation.getEvent().getDescription(),
           attributesBuilder.build(),
           TimeUnit.SECONDS.toNanos(annotation.getTimestamp().getSeconds())
-              + annotation.getTimestamp().getNanos());
+              + annotation.getTimestamp().getNanos(),
+          TimeUnit.NANOSECONDS);
     }
   }
 
