@@ -170,6 +170,6 @@ class W3CBaggagePropagatorTest {
     assertThat(carrier)
         .containsExactlyInAnyOrderEntriesOf(
             singletonMap(
-                "baggage", "nometa=nometa-value,meta=meta-value;somemetadata; someother=foo"));
+                "baggage", "meta=meta-value;somemetadata; someother=foo,nometa=nometa-value"));
   }
 }

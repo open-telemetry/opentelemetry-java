@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,7 +33,7 @@ class ImmutableKeyValuePairsTest {
     }
 
     @Override
-    List<Object> data() {
+    public List<Object> data() {
       return data;
     }
   }

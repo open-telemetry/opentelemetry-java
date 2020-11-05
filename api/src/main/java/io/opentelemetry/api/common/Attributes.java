@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +43,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     ArrayBackedAttributes() {}
 
     @Override
-    abstract List<Object> data();
+    public abstract List<Object> data();
 
     @Override
     public Builder toBuilder() {
@@ -175,7 +176,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
         data[i] = null;
       }
     }
-    return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
+    return new AutoValue_Attributes_ArrayBackedAttributes(
+        sortAndFilter(data, /* filterNullValues= */ false));
   }
 
   /** Returns a new {@link Builder} instance for creating arbitrary {@link Attributes}. */

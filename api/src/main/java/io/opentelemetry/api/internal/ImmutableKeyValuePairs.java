@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.internal;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Labels;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,13 +16,13 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An immutable set of key-value pairs. Keys are only {@link String} typed.
+ * An immutable set of key-value pairs.
  *
  * <p>Key-value pairs are dropped for {@code null} or empty keys.
  *
  * <p>Note: for subclasses of this, null keys will be removed, but if your key has another concept
- * of being "empty", you'll need to remove them before calling {@link #sortAndFilter(Object[])},
- * assuming you don't want the "empty" keys to be kept in your collection.
+ * of being "empty", you'll need to remove them before calling {@link #sortAndFilter(Object[],
+ * boolean)}, assuming you don't want the "empty" keys to be kept in your collection.
  *
  * @param <V> The type of the values contained in this.
  * @see Labels
@@ -28,9 +30,9 @@ import javax.annotation.concurrent.Immutable;
  */
 @SuppressWarnings("rawtypes")
 @Immutable
-abstract class ImmutableKeyValuePairs<K, V> {
+public abstract class ImmutableKeyValuePairs<K, V> {
 
-  List<Object> data() {
+  public List<Object> data() {
     return Collections.emptyList();
   }
 
@@ -42,6 +44,7 @@ abstract class ImmutableKeyValuePairs<K, V> {
     return data().isEmpty();
   }
 
+  /** Returns the value for the given {@code key}, or {@code null} if the key is not present. */
   @Nullable
   @SuppressWarnings("unchecked")
   public V get(K key) {
@@ -53,13 +56,17 @@ abstract class ImmutableKeyValuePairs<K, V> {
     return null;
   }
 
+  /**
+   * Sorts and dedupes the key/value pairs in {@code data}. If {@code filterNullValues} is {@code
+   * true}, {@code null} values will be removed.
+   */
   @SuppressWarnings("unchecked")
-  static List<Object> sortAndFilter(Object[] data) {
+  public static List<Object> sortAndFilter(Object[] data, boolean filterNullValues) {
     checkArgument(
         data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
 
     quickSort(data, 0, data.length - 2);
-    return dedupe(data);
+    return dedupe(data, filterNullValues);
   }
 
   @SuppressWarnings("unchecked")
@@ -95,7 +102,7 @@ abstract class ImmutableKeyValuePairs<K, V> {
     return key.compareTo(pivotKey);
   }
 
-  private static List<Object> dedupe(Object[] data) {
+  private static List<Object> dedupe(Object[] data, boolean filterNullValues) {
     List<Object> result = new ArrayList<>(data.length);
     Object previousKey = null;
 
@@ -110,6 +117,9 @@ abstract class ImmutableKeyValuePairs<K, V> {
         continue;
       }
       previousKey = key;
+      if (filterNullValues && value == null) {
+        continue;
+      }
       // add them in reverse order, because we'll reverse the list before returning,
       // to preserve insertion order.
       result.add(value);
