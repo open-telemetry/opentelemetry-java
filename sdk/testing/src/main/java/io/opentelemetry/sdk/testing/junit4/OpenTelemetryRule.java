@@ -3,50 +3,51 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.testing.junit5;
+package io.opentelemetry.sdk.testing.junit4;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.exporter.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.List;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.rules.ExternalResource;
 
 /**
- * A JUnit5 extension which sets up the {@link OpenTelemetrySdk} for testing, resetting state
- * between tests.
+ * A JUnit4 rule which sets up the {@link OpenTelemetrySdk} for testing, resetting state between
+ * tests. This rule cannot be used with {@link org.junit.ClassRule}.
  *
  * <pre>{@code
- * > class CoolTest {
- * >   {@literal @}RegisterExtension
- * >   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ * > public class CoolTest {
+ * >   {@literal @}Rule
+ * >   public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
  * >
- * >   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * >   private Tracer tracer;
+ * >
+ * >   {@literal @}Before
+ * >   public void setUp() {
+ * >       tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * >   }
  * >
  * >   {@literal @}Test
- * >   void test() {
+ * >   public void test() {
  * >     tracer.spanBuilder("name").startSpan().end();
  * >     assertThat(otelTesting.getSpans()).containsExactly(expected);
  * >   }
  * >  }
  * }</pre>
  */
-public class OpenTelemetryExtension
-    implements BeforeEachCallback, BeforeAllCallback, AfterAllCallback {
+public class OpenTelemetryRule extends ExternalResource {
 
   /**
-   * Returns a {@link OpenTelemetryExtension} with a default SDK initialized with an in-memory span
+   * Returns a {@link OpenTelemetryRule} with a default SDK initialized with an in-memory span
    * exporter and W3C trace context propagation.
    */
-  public static OpenTelemetryExtension create() {
+  public static OpenTelemetryRule create() {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
     TracerSdkProvider tracerProvider = TracerSdkProvider.builder().build();
@@ -61,7 +62,7 @@ public class OpenTelemetryExtension
             .setTracerProvider(tracerProvider)
             .build();
 
-    return new OpenTelemetryExtension(openTelemetry, spanExporter);
+    return new OpenTelemetryRule(openTelemetry, spanExporter);
   }
 
   private final OpenTelemetrySdk openTelemetry;
@@ -69,8 +70,7 @@ public class OpenTelemetryExtension
 
   private volatile OpenTelemetry previousGlobalOpenTelemetry;
 
-  private OpenTelemetryExtension(
-      OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
+  private OpenTelemetryRule(OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
     this.openTelemetry = openTelemetry;
     this.spanExporter = spanExporter;
   }
@@ -99,18 +99,14 @@ public class OpenTelemetryExtension
   }
 
   @Override
-  public void beforeEach(ExtensionContext context) {
+  protected void before() throws Throwable {
+    previousGlobalOpenTelemetry = OpenTelemetry.get();
+    OpenTelemetry.set(openTelemetry);
     clearSpans();
   }
 
   @Override
-  public void beforeAll(ExtensionContext context) {
-    previousGlobalOpenTelemetry = OpenTelemetry.get();
-    OpenTelemetry.set(openTelemetry);
-  }
-
-  @Override
-  public void afterAll(ExtensionContext context) {
+  protected void after() {
     OpenTelemetry.set(previousGlobalOpenTelemetry);
   }
 }
