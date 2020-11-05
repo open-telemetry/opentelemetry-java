@@ -57,7 +57,7 @@ public interface SpanProcessor {
    * @return a {@link CompletableResultCode} which completes when shutdown is finished.
    */
   default CompletableResultCode shutdown() {
-    return CompletableResultCode.ofSuccess();
+    return forceFlush();
   }
 
   /**
