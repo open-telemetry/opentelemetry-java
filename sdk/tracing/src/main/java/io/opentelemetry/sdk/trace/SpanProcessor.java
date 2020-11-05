@@ -56,7 +56,9 @@ public interface SpanProcessor {
    *
    * @return a {@link CompletableResultCode} which completes when shutdown is finished.
    */
-  CompletableResultCode shutdown();
+  default CompletableResultCode shutdown() {
+    return CompletableResultCode.ofSuccess();
+  }
 
   /**
    * Processes all span events that have not yet been processed.
@@ -64,5 +66,7 @@ public interface SpanProcessor {
    * @return a {@link CompletableResultCode} which completes when currently queued spans are
    *     finished processing.
    */
-  CompletableResultCode forceFlush();
+  default CompletableResultCode forceFlush() {
+    return CompletableResultCode.ofSuccess();
+  }
 }
