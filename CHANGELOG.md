@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.0 - 2010-11-06
 
 ### API
 
@@ -65,6 +65,7 @@
 
 - A new JUnit5 extension was added for writing tests. For more information, see [OpenTelemetryExtension.java](sdk/testing/src/main/java/io/opentelemetry/sdk/testing/junit5/OpenTelemetryExtension.java). 
 - A Jaeger `SpanExporter` which exports via the `thrift-over-http protocol` is now available.
+- A Jaeger Propagator is now available.
 
 #### Breaking changes
 
