@@ -21,6 +21,7 @@ def subprojects = [
         project(':opentelemetry-opentracing-shim'),
         project(':opentelemetry-sdk-common'),
         project(':opentelemetry-sdk-metrics'),
+        project(':opentelemetry-sdk-metrics-v2'),
         project(':opentelemetry-sdk-testing'),
         project(':opentelemetry-sdk-trace'),
         project(':opentelemetry-sdk'),

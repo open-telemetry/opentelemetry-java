@@ -1,0 +1,50 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "me.champeau.gradle.jmh"
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry SDK Metrics V2'
+ext.moduleName = "io.opentelemetry.sdk.metrics-v2"
+ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/metrics-v2"
+
+dependencies {
+    api project(':opentelemetry-api'),
+            project(':opentelemetry-sdk-common')
+
+    annotationProcessor libraries.auto_value
+
+    testAnnotationProcessor libraries.auto_value
+    testCompileOnly libraries.auto_value_annotation
+
+    testCompile project(path: ':opentelemetry-sdk-common', configuration: 'testClasses')
+
+    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation libraries.junit_pioneer
+
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+}
+
+sourceSets {
+    main {
+        output.dir("build/generated/properties", builtBy: 'generateVersionResource')
+    }
+}
+
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
+}
+
+task generateVersionResource {
+    doLast {
+        def folder = file(propertiesDir)
+        folder.mkdirs()
+        def propertiesFile = new File(folder.getAbsolutePath(), "version.properties")
+        propertiesFile.write("sdk.version=${project.version}")
+    }
+}
