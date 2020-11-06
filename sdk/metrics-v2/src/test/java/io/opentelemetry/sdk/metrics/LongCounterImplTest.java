@@ -43,7 +43,7 @@ class LongCounterImplTest {
 
     verify(accumulator)
         .recordLongAdd(
-            instrumentationLibraryInfo, expectedInstrumentDescriptor, 100, Labels.empty());
+            instrumentationLibraryInfo, expectedInstrumentDescriptor, Labels.empty(), 100);
   }
 
   @Test
@@ -66,8 +66,8 @@ class LongCounterImplTest {
         .recordLongAdd(
             instrumentationLibraryInfo,
             expectedInstrumentDescriptor,
-            100,
-            Labels.of("key", "value"));
+            Labels.of("key", "value"),
+            100);
   }
 
   @Test
@@ -91,7 +91,7 @@ class LongCounterImplTest {
         .recordLongAdd(
             instrumentationLibraryInfo,
             expectedInstrumentDescriptor,
-            100,
-            Labels.of("key", "value"));
+            Labels.of("key", "value"),
+            100);
   }
 }

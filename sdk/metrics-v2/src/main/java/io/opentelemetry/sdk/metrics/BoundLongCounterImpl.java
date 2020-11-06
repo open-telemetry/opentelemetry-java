@@ -29,7 +29,7 @@ class BoundLongCounterImpl implements BoundLongCounter {
 
   @Override
   public void add(long increment) {
-    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, increment, labels);
+    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, increment);
   }
 
   @Override

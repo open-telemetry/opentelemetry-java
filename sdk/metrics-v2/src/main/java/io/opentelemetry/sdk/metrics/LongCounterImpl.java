@@ -31,7 +31,7 @@ class LongCounterImpl implements LongCounter {
 
   @Override
   public void add(long increment, Labels labels) {
-    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, increment, labels);
+    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, increment);
   }
 
   @Override
