@@ -10,6 +10,7 @@ dependencies {
     api project(':opentelemetry-api')
     api project(':opentelemetry-sdk')
 
+    compileOnly libraries.assertj
     compileOnly libraries.junit
     compileOnly libraries.junit_jupiter_api
 
