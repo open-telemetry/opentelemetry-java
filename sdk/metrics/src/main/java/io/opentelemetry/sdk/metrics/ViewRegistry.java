@@ -66,7 +66,7 @@ class ViewRegistry {
     throw new IllegalStateException("unsupported Temporality: " + specification.temporality());
   }
 
-  // todo: consider moving this method to its own class, for more targetted testing.
+  // todo: consider moving this method to its own class, for more targeted testing.
   private AggregationConfiguration findBestMatch(InstrumentDescriptor descriptor) {
 
     for (Map.Entry<InstrumentSelector, AggregationConfiguration> entry : configuration.entrySet()) {
@@ -103,9 +103,9 @@ class ViewRegistry {
     switch (descriptor.getType()) {
       case COUNTER:
       case UP_DOWN_COUNTER:
-        return Aggregations.sum();
+        return CUMULATIVE_SUM;
       case VALUE_RECORDER:
-        return Aggregations.minMaxSumCount();
+        return DELTA_SUMMARY;
       case VALUE_OBSERVER:
       case SUM_OBSERVER:
       case UP_DOWN_SUM_OBSERVER:
