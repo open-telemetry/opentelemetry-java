@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.spi;
+package io.opentelemetry.spi;
 
 import io.opentelemetry.api.OpenTelemetry;
 

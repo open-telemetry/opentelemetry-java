@@ -8,6 +8,6 @@ ext.moduleName = "io.opentelemetry.examples.otlp"
 dependencies {
     compile("io.opentelemetry:opentelemetry-api")
     compile("io.opentelemetry:opentelemetry-sdk")
-    compile("io.opentelemetry:opentelemetry-exporters-otlp")
+    compile("io.opentelemetry:opentelemetry-exporter-otlp")
     compile "io.grpc:grpc-netty-shaded"
 }

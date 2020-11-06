@@ -1,10 +1,10 @@
 package io.opentelemetry.example.prometheus;
 
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.exporters.prometheus.PrometheusCollector;
-import io.opentelemetry.metrics.AsynchronousInstrument;
-import io.opentelemetry.metrics.LongValueObserver;
-import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.AsynchronousInstrument;
+import io.opentelemetry.api.metrics.LongValueObserver;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.prometheus.client.exporter.HTTPServer;
@@ -21,7 +21,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class PrometheusExample {
 
-  private final MeterSdkProvider meterSdkProvider = OpenTelemetrySdk.getMeterProvider();
+  private final MeterSdkProvider meterSdkProvider = OpenTelemetrySdk.getGlobalMeterProvider();
   private final Meter meter = meterSdkProvider.get("PrometheusExample", "0.7");
   private final HTTPServer server;
   private long incomingMessageCount;
@@ -43,7 +43,7 @@ public class PrometheusExample {
           }
         });
 
-    PrometheusCollector.newBuilder()
+    PrometheusCollector.builder()
         .setMetricProducer(meterSdkProvider.getMetricProducer())
         .buildAndRegister();
 

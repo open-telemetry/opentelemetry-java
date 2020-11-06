@@ -1,10 +1,9 @@
 package io.opentelemetry.example.metrics;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
-import io.opentelemetry.metrics.LongValueObserver;
-import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.LongValueObserver;
+import io.opentelemetry.api.metrics.Meter;
 
 /**
  * Example of using {@link LongValueObserver} to measure execution time of method. Setting {@link
@@ -14,8 +13,7 @@ import io.opentelemetry.metrics.Meter;
 public class LongValueObserverExample {
 
   public static void main(String[] args) {
-    Meter sampleMeter =
-        OpenTelemetry.getMeterProvider().get("io.opentelemetry.example.metrics", "0.5");
+    Meter sampleMeter = OpenTelemetry.getGlobalMeter("io.opentelemetry.example.metrics", "0.5");
     LongValueObserver observer =
         sampleMeter
             .longValueObserverBuilder("jvm.memory.total")
@@ -24,12 +22,6 @@ public class LongValueObserverExample {
             .build();
 
     observer.setCallback(
-        new LongValueObserver.Callback<LongValueObserver.LongResult>() {
-          @Override
-          public void update(LongResult result) {
-            result.observe(Runtime.getRuntime().totalMemory(), Labels.empty());
-          }
-        });
-    // someWork();
+        result -> result.observe(Runtime.getRuntime().totalMemory(), Labels.empty()));
   }
 }

@@ -11,7 +11,9 @@ import com.google.common.collect.ImmutableMap;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.JQF;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.runner.RunWith;
 
 @RunWith(JQF.class)
@@ -25,7 +27,19 @@ public class HttpTraceContextFuzzTest {
         httpTraceContext.extract(
             Context.root(),
             ImmutableMap.of("traceparent", traceParentHeader, "tracestate", traceStateHeader),
-            Map::get);
+            new Getter<Map<String, String>>() {
+              @Override
+              public Iterable<String> keys(Map<String, String> carrier) {
+                return carrier.keySet();
+              }
+
+              @Nullable
+              @Override
+              public String get(Map<String, String> carrier, String key) {
+                return carrier.get(key);
+              }
+            });
+
     assertThat(context).isNotNull();
   }
 }

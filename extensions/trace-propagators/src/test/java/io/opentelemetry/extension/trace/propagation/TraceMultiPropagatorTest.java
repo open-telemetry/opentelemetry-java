@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -33,6 +34,20 @@ class TraceMultiPropagatorTest {
   private static final TextMapPropagator PROPAGATOR2 =
       B3Propagator.builder().injectMultipleHeaders().build();
   private static final TextMapPropagator PROPAGATOR3 = HttpTraceContext.getInstance();
+
+  private static final TextMapPropagator.Getter<Map<String, String>> getter =
+      new TextMapPropagator.Getter<Map<String, String>>() {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
+        @Nullable
+        @Override
+        public String get(Map<String, String> carrier, String key) {
+          return carrier.get(key);
+        }
+      };
 
   private static final Span SPAN =
       Span.wrap(
@@ -112,15 +127,15 @@ class TraceMultiPropagatorTest {
     prop.inject(Context.current().with(SPAN), carrier, Map::put);
 
     assertThat(
-            Span.fromContext(PROPAGATOR1.extract(Context.current(), carrier, Map::get))
+            Span.fromContext(PROPAGATOR1.extract(Context.current(), carrier, getter))
                 .getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
     assertThat(
-            Span.fromContext(PROPAGATOR2.extract(Context.current(), carrier, Map::get))
+            Span.fromContext(PROPAGATOR2.extract(Context.current(), carrier, getter))
                 .getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
     assertThat(
-            Span.fromContext(PROPAGATOR3.extract(Context.current(), carrier, Map::get))
+            Span.fromContext(PROPAGATOR3.extract(Context.current(), carrier, getter))
                 .getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
   }
@@ -131,7 +146,7 @@ class TraceMultiPropagatorTest {
     Map<String, String> carrier = new HashMap<>();
 
     Context context = Context.current();
-    Context resContext = prop.extract(context, carrier, Map::get);
+    Context resContext = prop.extract(context, carrier, getter);
     assertThat(context).isSameAs(resContext);
   }
 
@@ -146,8 +161,7 @@ class TraceMultiPropagatorTest {
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR2.inject(Context.current().with(SPAN), carrier, Map::put);
-    assertThat(
-            Span.fromContext(prop.extract(Context.current(), carrier, Map::get)).getSpanContext())
+    assertThat(Span.fromContext(prop.extract(Context.current(), carrier, getter)).getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
   }
 
@@ -157,7 +171,7 @@ class TraceMultiPropagatorTest {
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR3.inject(Context.current().with(SPAN), carrier, Map::put);
-    assertThat(prop.extract(Context.current(), carrier, Map::get)).isEqualTo(Context.current());
+    assertThat(prop.extract(Context.current(), carrier, getter)).isEqualTo(Context.current());
   }
 
   @Test
@@ -171,8 +185,7 @@ class TraceMultiPropagatorTest {
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR3.inject(Context.current().with(SPAN), carrier, Map::put);
-    assertThat(
-            Span.fromContext(prop.extract(Context.current(), carrier, Map::get)).getSpanContext())
+    assertThat(Span.fromContext(prop.extract(Context.current(), carrier, getter)).getSpanContext())
         .isEqualTo(SPAN.getSpanContext());
     verify(mockPropagator).fields();
     verifyNoMoreInteractions(mockPropagator);

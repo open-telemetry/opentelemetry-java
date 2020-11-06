@@ -2,12 +2,12 @@ package io.opentelemetry.example.jaeger;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.exporters.jaeger.JaegerGrpcSpanExporter;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 
 public class JaegerExample {
 
@@ -16,7 +16,8 @@ public class JaegerExample {
   private final int port; // = 14250;
 
   // OTel API
-  private final Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.JaegerExample");
+  private final Tracer tracer =
+      OpenTelemetry.getGlobalTracer("io.opentelemetry.example.JaegerExample");
 
   public JaegerExample(String ip, int port) {
     this.ip = ip;
@@ -30,15 +31,15 @@ public class JaegerExample {
     // Export traces to Jaeger
     // Export traces to Jaeger
     JaegerGrpcSpanExporter jaegerExporter =
-        JaegerGrpcSpanExporter.newBuilder()
+        JaegerGrpcSpanExporter.builder()
             .setServiceName("otel-jaeger-example")
             .setChannel(jaegerChannel)
             .setDeadlineMs(30000)
             .build();
 
     // Set to process the spans by the Jaeger Exporter
-    OpenTelemetrySdk.getTracerManagement()
-        .addSpanProcessor(SimpleSpanProcessor.newBuilder(jaegerExporter).build());
+    OpenTelemetrySdk.getGlobalTracerManagement()
+        .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
   }
 
   private void myWonderfulUseCase() {
@@ -61,7 +62,7 @@ public class JaegerExample {
 
   // graceful shutdown
   public void shutdown() {
-    OpenTelemetrySdk.getTracerManagement().shutdown();
+    OpenTelemetrySdk.getGlobalTracerManagement().shutdown();
   }
 
   public static void main(String[] args) {

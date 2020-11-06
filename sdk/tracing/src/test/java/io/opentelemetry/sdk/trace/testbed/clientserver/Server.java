@@ -33,6 +33,11 @@ final class Server extends Thread {
                 Context.current(),
                 message,
                 new Getter<Message>() {
+                  @Override
+                  public Iterable<String> keys(Message carrier) {
+                    return carrier.keySet();
+                  }
+
                   @Nullable
                   @Override
                   public String get(Message carrier, String key) {

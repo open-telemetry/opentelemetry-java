@@ -22,5 +22,5 @@ dependencies {
 
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
 
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    signature libraries.android_signature
 }
