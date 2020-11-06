@@ -39,6 +39,8 @@ class ViewRegistry {
       AggregationConfiguration.create(Aggregations.minMaxSumCount(), Temporality.DELTA);
   private static final AggregationConfiguration CUMULATIVE_LAST_VALUE =
       AggregationConfiguration.create(Aggregations.lastValue(), Temporality.CUMULATIVE);
+  private static final AggregationConfiguration DELTA_LAST_VALUE =
+      AggregationConfiguration.create(Aggregations.lastValue(), Temporality.DELTA);
 
   private final Map<InstrumentSelector, AggregationConfiguration> configuration =
       new ConcurrentHashMap<>();
@@ -107,6 +109,7 @@ class ViewRegistry {
       case VALUE_RECORDER:
         return DELTA_SUMMARY;
       case VALUE_OBSERVER:
+        return DELTA_LAST_VALUE;
       case SUM_OBSERVER:
       case UP_DOWN_SUM_OBSERVER:
         return CUMULATIVE_LAST_VALUE;
