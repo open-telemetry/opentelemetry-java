@@ -101,4 +101,10 @@ class MeterSdkRegistryTest {
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))));
   }
+
+  @Test
+  void rejectsNullInstrumentationName() {
+    assertThrows(NullPointerException.class, () -> meterProvider.get(null));
+    assertThrows(NullPointerException.class, () -> meterProvider.get(null, "1.0.0"));
+  }
 }

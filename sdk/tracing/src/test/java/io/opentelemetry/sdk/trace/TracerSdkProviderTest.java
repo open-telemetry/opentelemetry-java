@@ -134,4 +134,10 @@ class TracerSdkProviderTest {
     assertThat(span.getSpanContext().isValid()).isFalse();
     span.end();
   }
+
+  @Test
+  void rejectsNullInstrumentationName() {
+    assertThrows(NullPointerException.class, () -> tracerFactory.get(null));
+    assertThrows(NullPointerException.class, () -> tracerFactory.get(null, "1.0.0"));
+  }
 }
