@@ -70,16 +70,12 @@ jobs:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
           arguments: build --stacktrace -Prelease.version=${{ github.event.inputs.version }}
-          properties: |
-            enable.docker.tests=true
       - name: Publish artifacts
         uses: burrunan/gradle-cache-action@v1.5
         with:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
           arguments: final --stacktrace -Prelease.version=${{ github.event.inputs.version }}
-          properties: |
-            enable.docker.tests=true
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}

@@ -33,7 +33,7 @@ import org.testcontainers.utility.MountableFile;
  * executable JAR added to it and executed which will send a trace to the Jaeger instance. The test
  * verifies that the trace is received by Jaeger.
  */
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class JaegerExporterIntegrationTest {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
