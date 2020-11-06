@@ -13,10 +13,6 @@ task fatJar(type: Jar) {
     with jar
 }
 
-test.onlyIf {
-    property('enable.docker.tests') == "true" 
-}
-
 dependencies {
     api project(':opentelemetry-api')
 
@@ -31,7 +27,7 @@ dependencies {
             libraries.testcontainers,
             libraries.okhttp
 
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    signature libraries.android_signature
 
     tasks.withType(Test) {
         dependsOn fatJar

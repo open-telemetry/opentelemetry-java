@@ -8,12 +8,12 @@ package io.opentelemetry.api;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
-import io.opentelemetry.api.spi.OpenTelemetryFactory;
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.api.trace.spi.TracerProviderFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.spi.OpenTelemetryFactory;
+import io.opentelemetry.spi.metrics.MeterProviderFactory;
+import io.opentelemetry.spi.trace.TracerProviderFactory;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;

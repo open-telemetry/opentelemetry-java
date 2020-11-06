@@ -11,7 +11,7 @@ pluginManagement {
         id "nebula.release" version "15.1.0"
         id "net.ltgt.errorprone" version "1.3.0"
         id "org.unbroken-dome.test-sets" version "3.0.1"
-        id "ru.vyarus.animalsniffer" version "1.5.1"
+        id "ru.vyarus.animalsniffer" version "1.5.2"
     }
 
     repositories {
@@ -28,7 +28,6 @@ include ":opentelemetry-all",
         ":opentelemetry-extension-runtime-metrics",
         ":opentelemetry-extension-trace-propagators",
         ":opentelemetry-extension-trace-utils",
-        ":opentelemetry-exporter-inmemory",
         ":opentelemetry-exporter-jaeger",
         ":opentelemetry-exporter-jaeger-thrift",
         ":opentelemetry-exporter-logging",
@@ -37,6 +36,7 @@ include ":opentelemetry-all",
         ":opentelemetry-exporter-zipkin",
         ":opentelemetry-integration-tests",
         ":opentelemetry-integration-tests-tracecontext",
+        ":opentelemetry-opencensus-shim",
         ":opentelemetry-opentracing-shim",
         ":opentelemetry-proto",
         ":opentelemetry-sdk-common",
@@ -48,7 +48,6 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-extension-logging",
         ":opentelemetry-sdk-extension-otproto",
         ":opentelemetry-sdk-extension-resources",
-        ":opentelemetry-sdk-extension-testbed",
         ":opentelemetry-sdk-extension-tracing-incubator",
         ":opentelemetry-sdk-extension-jaeger-remote-sampler",
         ":opentelemetry-sdk-extension-zpages",

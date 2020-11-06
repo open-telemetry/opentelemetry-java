@@ -98,12 +98,6 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     return spanExporter.shutdown();
   }
 
-  @Override
-  public CompletableResultCode forceFlush() {
-    // Do nothing.
-    return CompletableResultCode.ofSuccess();
-  }
-
   /**
    * Returns a new Builder for {@link SimpleSpanProcessor}.
    *

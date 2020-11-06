@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry Contrib Logging Support'
-ext.moduleName = "io.opentelemetry.sdk.extensions.logging"
+ext.moduleName = "io.opentelemetry.sdk.extension.logging"
 
 dependencies {
     api project(':opentelemetry-sdk')
@@ -15,5 +15,5 @@ dependencies {
 
     annotationProcessor libraries.auto_value
 
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    signature libraries.android_signature
 }

@@ -6,11 +6,12 @@
 package io.opentelemetry.api.baggage;
 
 import io.opentelemetry.context.Context;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -42,19 +43,43 @@ class ImmutableBaggage implements Baggage {
   }
 
   @Override
-  public Collection<Entry> getEntries() {
-    Map<String, Entry> combined = new HashMap<>(entries);
-    if (parent != null) {
-      for (Entry entry : parent.getEntries()) {
-        if (!combined.containsKey(entry.getKey())) {
-          combined.put(entry.getKey(), entry);
-        }
-      }
-    }
-    // Clean out any null values that may have been added by Builder.remove.
-    combined.values().removeIf(Objects::isNull);
+  public int size() {
+    // TODO(anuraaga): Optimize this
+    BaggageCounter counter = new BaggageCounter();
+    forEach(counter);
+    return counter.count;
+  }
 
-    return Collections.unmodifiableCollection(combined.values());
+  private static class BaggageCounter implements BaggageConsumer {
+    private int count = 0;
+
+    @Override
+    public void accept(String key, String value, EntryMetadata metadata) {
+      count++;
+    }
+  }
+
+  @Override
+  public void forEach(BaggageConsumer consumer) {
+    Set<String> consumedKeys = new HashSet<>(entries.size());
+    entries.forEach(
+        (key, entry) -> {
+          consumedKeys.add(key);
+          // Skip any null entries that may have been added by Builder.remove. We already added to
+          // consumed keys, so even if a parent has it it won't be consumed.
+          if (entry == null) {
+            return;
+          }
+          consumer.accept(key, entry.getValue(), entry.getEntryMetadata());
+        });
+    if (parent != null) {
+      parent.forEach(
+          (key, value, metadata) -> {
+            if (consumedKeys.add(key)) {
+              consumer.accept(key, value, metadata);
+            }
+          });
+    }
   }
 
   @Nullable

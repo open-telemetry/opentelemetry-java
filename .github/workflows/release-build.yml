@@ -23,8 +23,6 @@ jobs:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
           arguments: updateVersionInDocs build --stacktrace -Prelease.version=${{ github.event.inputs.version }}
-          properties: |
-            enable.docker.tests=true
       - name: Setup git name
         run: |
           git config user.name github-actions
