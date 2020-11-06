@@ -16,6 +16,11 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapAdapter;
+import io.opentracing.tag.BooleanTag;
+import io.opentracing.tag.IntTag;
+import io.opentracing.tag.StringTag;
+import io.opentracing.tag.Tag;
+import io.opentracing.tag.Tags;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -82,5 +87,64 @@ class TracerShimTest {
     Span otSpan = tracerShim.buildSpan(null).start();
     io.opentelemetry.api.trace.Span span = ((SpanShim) otSpan).getSpan();
     assertThat(span.getSpanContext().isValid()).isFalse();
+  }
+
+  @Test
+  void doesNotCrash() {
+    Span span =
+        tracerShim
+            .buildSpan("test")
+            .asChildOf((Span) null)
+            .asChildOf((SpanContext) null)
+            .addReference(null, null)
+            .addReference("parent", tracerShim.buildSpan("parent").start().context())
+            .ignoreActiveSpan()
+            .withTag((Tag<?>) null, null)
+            .withTag("foo", (String) null)
+            .withTag("bar", false)
+            .withTag("cat", (Number) null)
+            .withTag("dog", 0.0f)
+            .withTag("bear", 10)
+            .withTag(new StringTag("string"), "string")
+            .withTag(new BooleanTag("boolean"), false)
+            .withTag(new IntTag("int"), 10)
+            .start();
+
+    span.setTag((Tag<?>) null, null)
+        .setTag("foo", (String) null)
+        .setTag("bar", false)
+        .setTag("cat", (Number) null)
+        .setTag("dog", 0.0f)
+        .setTag("bear", 10)
+        .setTag(new StringTag("string"), "string")
+        .setTag(new BooleanTag("boolean"), false)
+        .setTag(new IntTag("int"), 10)
+        .log(10, new HashMap<>())
+        .log(20, "foo")
+        .setBaggageItem(null, null)
+        .setOperationName("name")
+        .setTag(Tags.ERROR.getKey(), "true");
+
+    assertThat(((SpanShim) span).getSpan().isRecording()).isTrue();
+  }
+
+  @Test
+  void noopDoesNotCrash() {
+    tracerShim.close();
+    Span span =
+        tracerShim
+            .buildSpan("test")
+            .asChildOf((Span) null)
+            .asChildOf((SpanContext) null)
+            .addReference(null, null)
+            .ignoreActiveSpan()
+            .withTag((Tag<?>) null, null)
+            .withTag("foo", (String) null)
+            .withTag("bar", false)
+            .withTag("cat", (Number) null)
+            .withStartTimestamp(0)
+            .start();
+
+    assertThat(((SpanShim) span).getSpan().isRecording()).isFalse();
   }
 }
