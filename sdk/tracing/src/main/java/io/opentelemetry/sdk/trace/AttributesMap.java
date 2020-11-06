@@ -7,8 +7,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
 import java.util.Collections;
 import java.util.LinkedHashMap;
