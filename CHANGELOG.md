@@ -1,6 +1,23 @@
 # Changelog
 
-## 0.10.0 - 2010-11-06
+## Unreleased:
+
+### API
+
+#### Breaking changes:
+
+- The SPI interfaces have moved to a package (not a module) separate from the API packages, and now live in `io.opentelemetry.spi.*` package namespace.
+
+### SDK
+
+#### Miscellaneous:
+
+- The `SpanProcessor` interface now includes default method implementations for the `shutdown()` and `forceFlush()` methods.
+
+
+-----
+
+## Version 0.10.0 - 2010-11-06
 
 ### API
 
