@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/** The SPI (service provider interface) for initializing the OpenTelemetry metrics API. */
+/** The SPI (service provider interface) for initializing the OpenTelemetry tracing API. */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.api.metrics.spi;
+package io.opentelemetry.spi.trace;
 
 import javax.annotation.ParametersAreNonnullByDefault;
