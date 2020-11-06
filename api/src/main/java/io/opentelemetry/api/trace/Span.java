@@ -5,10 +5,14 @@
 
 package io.opentelemetry.api.trace;
 
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -207,6 +211,27 @@ public interface Span extends ImplicitContextKeyed {
   Span addEvent(String name, long timestamp, TimeUnit unit);
 
   /**
+   * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
+   * this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed using
+   * it, for example, by taking a difference of readings from {@link System#nanoTime()} and adding
+   * to the span start time.
+   *
+   * <p>When possible, it is preferred to use {@link #addEvent(String)} at the time the event
+   * occurred.
+   *
+   * @param name the name of the event.
+   * @param timestamp the explicit event timestamp since epoch.
+   * @return this.
+   */
+  default Span addEvent(String name, Instant timestamp) {
+    if (timestamp == null) {
+      return addEvent(name);
+    }
+    return addEvent(
+        name, SECONDS.toNanos(timestamp.getEpochSecond()) + timestamp.getNano(), NANOSECONDS);
+  }
+
+  /**
    * Adds an event to the {@link Span} with the given {@link Attributes}. The timestamp of the event
    * will be the current time.
    *
@@ -234,6 +259,32 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   Span addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit);
+
+  /**
+   * Adds an event to the {@link Span} with the given {@link Attributes} and {@code timestamp}.
+   * Note, this {@code timestamp} is not the same as {@link System#nanoTime()} but may be computed
+   * using it, for example, by taking a difference of readings from {@link System#nanoTime()} and
+   * adding to the span start time.
+   *
+   * <p>When possible, it is preferred to use {@link #addEvent(String)} at the time the event
+   * occurred.
+   *
+   * @param name the name of the event.
+   * @param attributes the attributes that will be added; these are associated with this event, not
+   *     the {@code Span} as for {@code setAttribute()}.
+   * @param timestamp the explicit event timestamp since epoch.
+   * @return this.
+   */
+  default Span addEvent(String name, Attributes attributes, Instant timestamp) {
+    if (timestamp == null) {
+      return addEvent(name, attributes);
+    }
+    return addEvent(
+        name,
+        attributes,
+        SECONDS.toNanos(timestamp.getEpochSecond()) + timestamp.getNano(),
+        NANOSECONDS);
+  }
 
   /**
    * Sets the status to the {@code Span}.
@@ -320,6 +371,26 @@ public interface Span extends ImplicitContextKeyed {
    * @param unit the unit of the timestamp
    */
   void end(long timestamp, TimeUnit unit);
+
+  /**
+   * Marks the end of {@code Span} execution with the specified timestamp.
+   *
+   * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
+   * implementations are free to ignore all further calls.
+   *
+   * <p>Use this method for specifying explicit end options, such as end {@code Timestamp}. When no
+   * explicit values are required, use {@link #end()}.
+   *
+   * @param timestamp the explicit timestamp from the epoch, for this {@code Span}. {@code 0}
+   *     indicates current time should be used.
+   */
+  default void end(Instant timestamp) {
+    if (timestamp == null) {
+      end();
+      return;
+    }
+    end(SECONDS.toNanos(timestamp.getEpochSecond()) + timestamp.getNano(), NANOSECONDS);
+  }
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.
@@ -580,6 +651,26 @@ public interface Span extends ImplicitContextKeyed {
      * @return this.
      */
     Builder setStartTimestamp(long startTimestamp, TimeUnit unit);
+
+    /**
+     * Sets an explicit start timestamp for the newly created {@code Span}.
+     *
+     * <p>Use this method to specify an explicit start timestamp. If not called, the implementation
+     * will use the timestamp value at {@link #startSpan()} time, which should be the default case.
+     *
+     * <p>Important this is NOT equivalent with System.nanoTime().
+     *
+     * @param startTimestamp the explicit start timestamp from the epoch of the newly created {@code
+     *     Span}.
+     * @return this.
+     */
+    default Builder setStartTimestamp(Instant startTimestamp) {
+      if (startTimestamp == null) {
+        return this;
+      }
+      return setStartTimestamp(
+          SECONDS.toNanos(startTimestamp.getEpochSecond()) + startTimestamp.getNano(), NANOSECONDS);
+    }
 
     /**
      * Starts a new {@link Span}.

@@ -35,6 +35,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -791,6 +792,31 @@ class SpanBuilderSdkTest {
     } finally {
       span.end();
     }
+  }
+
+  @Test
+  void startTimestamp_numeric() {
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
+            tracerSdk
+                .spanBuilder(SPAN_NAME)
+                .setStartTimestamp(10, TimeUnit.NANOSECONDS)
+                .startSpan();
+    span.end();
+    assertThat(span.toSpanData().getStartEpochNanos()).isEqualTo(10);
+  }
+
+  @Test
+  void startTimestamp_instant() {
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
+            tracerSdk
+                .spanBuilder(SPAN_NAME)
+                .setStartTimestamp(Instant.ofEpochMilli(100))
+                .startSpan();
+    span.end();
+    assertThat(span.toSpanData().getStartEpochNanos())
+        .isEqualTo(TimeUnit.MILLISECONDS.toNanos(100));
   }
 
   @Test
