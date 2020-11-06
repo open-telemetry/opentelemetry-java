@@ -10,7 +10,6 @@ import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
 import io.grpc.ClientInterceptor;
-import io.grpc.Context;
 import io.grpc.ForwardingClientCall;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -18,17 +17,17 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporters.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.StatusCanonicalCode;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -43,11 +42,11 @@ public class HelloWorldClientStream {
   private final GreeterGrpc.GreeterStub asyncStub;
 
   // OTel API
-  Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
+  Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.example.HelloWorldClient");
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text headers
-  TextMapPropagator textFormat = OpenTelemetry.getPropagators().getTextMapPropagator();
+  TextMapPropagator textFormat = OpenTelemetry.getGlobalPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
   TextMapPropagator.Setter<Metadata> setter =
       (carrier, key, value) ->
@@ -72,9 +71,9 @@ public class HelloWorldClientStream {
 
   private void initTracer() {
     // Use the OpenTelemetry SDK
-    TracerSdkManagement tracerProvider = OpenTelemetrySdk.getTracerManagement();
+    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
     // Set to process the spans by the log exporter
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
+    tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
   }
 
   public void shutdown() throws InterruptedException {
@@ -96,7 +95,7 @@ public class HelloWorldClientStream {
     StreamObserver<HelloRequest> requestObserver;
 
     // Set the context with the current span
-    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+    try (Scope scope = span.makeCurrent()) {
       HelloReplyStreamObserver replyObserver = new HelloReplyStreamObserver();
       requestObserver = asyncStub.sayHelloStream(replyObserver);
       for (String name : names) {
@@ -113,13 +112,13 @@ public class HelloWorldClientStream {
       span.addEvent("Done sending");
     } catch (StatusRuntimeException e) {
       logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-      span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + e.getStatus());
+      span.setStatus(StatusCode.ERROR, "gRPC status: " + e.getStatus());
     } finally {
       span.end();
     }
   }
 
-  private class HelloReplyStreamObserver implements StreamObserver<HelloReply> {
+  private static class HelloReplyStreamObserver implements StreamObserver<HelloReply> {
 
     public HelloReplyStreamObserver() {
       logger.info("Greeting: ");
@@ -127,16 +126,16 @@ public class HelloWorldClientStream {
 
     @Override
     public void onNext(HelloReply value) {
-      Span span = TracingContextUtils.getCurrentSpan();
+      Span span = Span.current();
       span.addEvent("Data received: " + value.getMessage());
       logger.info(value.getMessage());
     }
 
     @Override
     public void onError(Throwable t) {
-      Span span = TracingContextUtils.getCurrentSpan();
+      Span span = Span.current();
       logger.log(Level.WARNING, "RPC failed: {0}", t.getMessage());
-      span.setStatus(StatusCanonicalCode.ERROR, "gRPC status: " + t.getMessage());
+      span.setStatus(StatusCode.ERROR, "gRPC status: " + t.getMessage());
     }
 
     @Override

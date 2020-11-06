@@ -8,5 +8,5 @@ ext.moduleName = "io.opentelemetry.examples.zipkin"
 dependencies {
     compile("io.opentelemetry:opentelemetry-api")
     compile("io.opentelemetry:opentelemetry-sdk")
-    compile("io.opentelemetry:opentelemetry-exporters-zipkin")
+    compile("io.opentelemetry:opentelemetry-exporter-zipkin")
 }
