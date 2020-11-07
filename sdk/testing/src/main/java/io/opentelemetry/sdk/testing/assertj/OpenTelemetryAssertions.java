@@ -25,4 +25,6 @@ public class OpenTelemetryAssertions extends Assertions {
   public static SpanDataAssert assertThat(SpanData spanData) {
     return new SpanDataAssert(spanData);
   }
+
+  protected OpenTelemetryAssertions() {}
 }

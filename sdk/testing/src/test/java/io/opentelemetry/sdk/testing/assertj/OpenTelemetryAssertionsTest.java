@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 class OpenTelemetryAssertionsTest {
-
   private static final String TRACE_ID = TraceId.fromLongs(1, 2);
   private static final String SPAN_ID1 = SpanId.fromLong(3);
   private static final String SPAN_ID2 = SpanId.fromLong(4);

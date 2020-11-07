@@ -57,6 +57,26 @@ public class AttributesAssert extends AbstractAssert<AttributesAssert, ReadableA
   }
 
   /** Asserts the attributes have the given key and string array value. */
+  public AttributesAssert containsEntry(String key, String... value) {
+    return containsEntry(AttributeKey.stringArrayKey(key), Arrays.asList(value));
+  }
+
+  /** Asserts the attributes have the given key and boolean array value. */
+  public AttributesAssert containsEntry(String key, Boolean... value) {
+    return containsEntry(AttributeKey.booleanArrayKey(key), Arrays.asList(value));
+  }
+
+  /** Asserts the attributes have the given key and long array value. */
+  public AttributesAssert containsEntry(String key, Long... value) {
+    return containsEntry(AttributeKey.longArrayKey(key), Arrays.asList(value));
+  }
+
+  /** Asserts the attributes have the given key and double array value. */
+  public AttributesAssert containsEntry(String key, Double... value) {
+    return containsEntry(AttributeKey.doubleArrayKey(key), Arrays.asList(value));
+  }
+
+  /** Asserts the attributes have the given key and string array value. */
   public AttributesAssert containsEntryWithStringValuesOf(String key, Iterable<String> value) {
     isNotNull();
     List<String> actualValue = actual.get(AttributeKey.stringArrayKey(key));
@@ -66,11 +86,6 @@ public class AttributesAssert extends AbstractAssert<AttributesAssert, ReadableA
             key, value, actualValue)
         .containsExactlyElementsOf(value);
     return this;
-  }
-
-  /** Asserts the attributes have the given key and string array value. */
-  public AttributesAssert containsEntry(String key, String... value) {
-    return containsEntry(AttributeKey.stringArrayKey(key), Arrays.asList(value));
   }
 
   /** Asserts the attributes have the given key and boolean array value. */
@@ -85,11 +100,6 @@ public class AttributesAssert extends AbstractAssert<AttributesAssert, ReadableA
     return this;
   }
 
-  /** Asserts the attributes have the given key and boolean array value. */
-  public AttributesAssert containsEntry(String key, Boolean... value) {
-    return containsEntry(AttributeKey.booleanArrayKey(key), Arrays.asList(value));
-  }
-
   /** Asserts the attributes have the given key and long array value. */
   public AttributesAssert containsEntryWithLongValuesOf(String key, Iterable<Long> value) {
     isNotNull();
@@ -102,11 +112,6 @@ public class AttributesAssert extends AbstractAssert<AttributesAssert, ReadableA
     return this;
   }
 
-  /** Asserts the attributes have the given key and long array value. */
-  public AttributesAssert containsEntry(String key, Long... value) {
-    return containsEntry(AttributeKey.longArrayKey(key), Arrays.asList(value));
-  }
-
   /** Asserts the attributes have the given key and double array value. */
   public AttributesAssert containsEntryWithDoubleValuesOf(String key, Iterable<Double> value) {
     isNotNull();
@@ -117,10 +122,5 @@ public class AttributesAssert extends AbstractAssert<AttributesAssert, ReadableA
             key, value, actualValue)
         .containsExactlyElementsOf(value);
     return this;
-  }
-
-  /** Asserts the attributes have the given key and double array value. */
-  public AttributesAssert containsEntry(String key, Double... value) {
-    return containsEntry(AttributeKey.doubleArrayKey(key), Arrays.asList(value));
   }
 }

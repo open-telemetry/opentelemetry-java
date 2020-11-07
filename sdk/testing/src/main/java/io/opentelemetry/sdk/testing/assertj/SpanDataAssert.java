@@ -34,7 +34,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getTraceId(),
           traceId,
-          "Expected span to have trace ID <%s> but was <%s>",
+          "Expected span [%s] to have trace ID <%s> but was <%s>",
+          actual.getName(),
           traceId,
           actual.getTraceId());
     }
@@ -48,7 +49,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getSpanId(),
           spanId,
-          "Expected span to have span ID <%s> but was <%s>",
+          "Expected span [%s] to have span ID <%s> but was <%s>",
+          actual.getName(),
           spanId,
           actual.getSpanId());
     }
@@ -59,7 +61,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   public SpanDataAssert isSampled() {
     isNotNull();
     if (!actual.isSampled()) {
-      failWithMessage("Expected span to be sampled but was not.");
+      failWithMessage("Expected span [%s] to be sampled but was not.", actual.getName());
     }
     return this;
   }
@@ -68,7 +70,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   public SpanDataAssert isNotSampled() {
     isNotNull();
     if (actual.isSampled()) {
-      failWithMessage("Expected span to not be sampled but it was.");
+      failWithMessage("Expected span [%s] to not be sampled but it was.", actual.getName());
     }
     return this;
   }
@@ -80,7 +82,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getTraceState(),
           traceState,
-          "Expected span to have trace state <%s> but was <%s>",
+          "Expected span [%s] to have trace state <%s> but was <%s>",
+          actual.getName(),
           traceState,
           actual.getTraceState());
     }
@@ -94,7 +97,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getParentSpanId(),
           parentSpanId,
-          "Expected span to have parent span ID <%s> but was <%s>",
+          "Expected span [%s] to have parent span ID <%s> but was <%s>",
+          actual.getName(),
           parentSpanId,
           actual.getParentSpanId());
     }
@@ -108,7 +112,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getResource(),
           resource,
-          "Expected span to have resource <%s> but was <%s>",
+          "Expected span [%s] to have resource <%s> but was <%s>",
+          actual.getName(),
           resource,
           actual.getResource());
     }
@@ -123,7 +128,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getInstrumentationLibraryInfo(),
           instrumentationLibraryInfo,
-          "Expected span to have instrumentation library info <%s> but was <%s>",
+          "Expected span [%s] to have instrumentation library info <%s> but was <%s>",
+          actual.getName(),
           instrumentationLibraryInfo,
           actual.getInstrumentationLibraryInfo());
     }
@@ -151,7 +157,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getKind(),
           kind,
-          "Expected span to have kind <%s> but was <%s>",
+          "Expected span [%s] to have kind <%s> but was <%s>",
+          actual.getName(),
           kind,
           actual.getKind());
     }
@@ -165,7 +172,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getStartEpochNanos(),
           startEpochNanos,
-          "Expected span to have start epoch <%s> nanos but was <%s>",
+          "Expected span [%s] to have start epoch <%s> nanos but was <%s>",
+          actual.getName(),
           startEpochNanos,
           actual.getStartEpochNanos());
     }
@@ -190,7 +198,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getAttributes(),
           attributes,
-          "Expected span to have attributes <%s> but was <%s>",
+          "Expected span [%s] to have attributes <%s> but was <%s>",
+          actual.getName(),
           attributes,
           actual.getAttributes());
     }
@@ -209,7 +218,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
     isNotNull();
     assertThat(actual.getEvents())
         .withFailMessage(
-            "Expected span to have events <%s> but was <%s>", events, actual.getEvents())
+            "Expected span [%s] to have events <%s> but was <%s>",
+            actual.getName(), events, actual.getEvents())
         .containsExactlyInAnyOrderElementsOf(events);
     return this;
   }
@@ -230,7 +240,9 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   public SpanDataAssert hasLinks(Iterable<SpanData.Link> links) {
     isNotNull();
     assertThat(actual.getLinks())
-        .withFailMessage("Expected span to have links <%s> but was <%s>", links, actual.getLinks())
+        .withFailMessage(
+            "Expected span [%s] to have links <%s> but was <%s>",
+            actual.getName(), links, actual.getLinks())
         .containsExactlyInAnyOrderElementsOf(links);
     return this;
   }
@@ -254,7 +266,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getStatus(),
           status,
-          "Expected span to have status <%s> but was <%s>",
+          "Expected span [%s] to have status <%s> but was <%s>",
+          actual.getName(),
           status,
           actual.getStatus());
     }
@@ -268,7 +281,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getEndEpochNanos(),
           endEpochNanos,
-          "Expected span to have end epoch <%s> nanos but was <%s>",
+          "Expected span [%s] to have end epoch <%s> nanos but was <%s>",
+          actual.getName(),
           endEpochNanos,
           actual.getEndEpochNanos());
     }
@@ -290,7 +304,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   public SpanDataAssert hasRemoteParent() {
     isNotNull();
     if (!actual.hasRemoteParent()) {
-      failWithMessage("Expected span to have remote parent but did not");
+      failWithMessage("Expected span [%s] to have remote parent but did not", actual.getName());
     }
     return this;
   }
@@ -299,7 +313,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   public SpanDataAssert doesNotHaveRemoteParent() {
     isNotNull();
     if (actual.hasRemoteParent()) {
-      failWithMessage("Expected span to have remote parent but did not");
+      failWithMessage("Expected span [%s] to have remote parent but did not", actual.getName());
     }
     return this;
   }
@@ -308,7 +322,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   public SpanDataAssert hasEnded() {
     isNotNull();
     if (!actual.hasEnded()) {
-      failWithMessage("Expected span to have ended but did has not");
+      failWithMessage("Expected span [%s] to have ended but did not", actual.getName());
     }
     return this;
   }
@@ -317,7 +331,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   public SpanDataAssert hasNotEnded() {
     isNotNull();
     if (actual.hasEnded()) {
-      failWithMessage("Expected span to have not ended but did has");
+      failWithMessage("Expected span [%s] to have not ended but did has", actual.getName());
     }
     return this;
   }
@@ -329,7 +343,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getTotalRecordedEvents(),
           totalRecordedEvents,
-          "Expected span to have recorded <%s> total events but did not",
+          "Expected span [%s] to have recorded <%s> total events but did not",
+          actual.getName(),
           totalRecordedEvents,
           actual.getTotalRecordedEvents());
     }
@@ -343,7 +358,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getTotalRecordedLinks(),
           totalRecordedLinks,
-          "Expected span to have recorded <%s> total links but did not",
+          "Expected span [%s] to have recorded <%s> total links but did not",
+          actual.getName(),
           totalRecordedLinks,
           actual.getTotalRecordedLinks());
     }
@@ -357,7 +373,8 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
       failWithActualExpectedAndMessage(
           actual.getTotalAttributeCount(),
           totalAttributeCount,
-          "Expected span to have recorded <%s> total attributes but did not",
+          "Expected span [%s] to have recorded <%s> total attributes but did not",
+          actual.getName(),
           totalAttributeCount,
           actual.getTotalAttributeCount());
     }
