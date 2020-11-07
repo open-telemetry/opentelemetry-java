@@ -5,16 +5,14 @@
 
 package io.opentelemetry.opentracingshim.testbed.activespanreplacement;
 
+import static io.opentelemetry.api.trace.SpanId.isValid;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -24,7 +22,6 @@ import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -45,23 +42,23 @@ class ActiveSpanReplacementTest {
       submitAnotherTask(span);
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(3));
+    await().atMost(15, SECONDS).until(finishedSpansSize(otelTesting), equalTo(3));
 
     List<SpanData> spans = otelTesting.getSpans();
-    assertEquals(3, spans.size());
-    assertEquals("initial", spans.get(0).getName()); // Isolated task
-    assertEquals("subtask", spans.get(1).getName());
-    assertEquals("task", spans.get(2).getName());
+    assertThat(spans).hasSize(3);
+    assertThat(spans.get(0).getName()).isEqualTo("initial"); // Isolated task
+    assertThat(spans.get(1).getName()).isEqualTo("subtask");
+    assertThat(spans.get(2).getName()).isEqualTo("task");
 
     // task/subtask are part of the same trace, and subtask is a child of task
-    assertEquals(spans.get(1).getTraceId(), spans.get(2).getTraceId());
-    assertEquals(spans.get(2).getSpanId(), spans.get(1).getParentSpanId());
+    assertThat(spans.get(2).getTraceId()).isEqualTo(spans.get(1).getTraceId());
+    assertThat(spans.get(1).getParentSpanId()).isEqualTo(spans.get(2).getSpanId());
 
     // initial task is not related in any way to those two tasks
-    assertNotEquals(spans.get(0).getTraceId(), spans.get(1).getTraceId());
-    assertFalse(SpanId.isValid(spans.get(0).getParentSpanId()));
+    assertThat(spans.get(1).getTraceId()).isNotEqualTo(spans.get(0).getTraceId());
+    assertThat(isValid(spans.get(0).getParentSpanId())).isFalse();
 
-    assertNull(tracer.scopeManager().activeSpan());
+    assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
 
   private void submitAnotherTask(final Span initialSpan) {

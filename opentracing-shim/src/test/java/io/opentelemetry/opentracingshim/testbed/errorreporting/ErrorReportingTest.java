@@ -6,10 +6,10 @@
 package io.opentelemetry.opentracingshim.testbed.errorreporting;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
@@ -50,11 +50,11 @@ public final class ErrorReportingTest {
       span.finish();
     }
 
-    assertNull(tracer.scopeManager().activeSpan());
+    assertThat(tracer.scopeManager().activeSpan()).isNull();
 
     List<SpanData> spans = otelTesting.getSpans();
-    assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
+    assertThat(spans).hasSize(1);
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
   }
 
   /* Error handling in a callback capturing/activating the Span */
@@ -75,8 +75,8 @@ public final class ErrorReportingTest {
     await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(1));
 
     List<SpanData> spans = otelTesting.getSpans();
-    assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
+    assertThat(spans).hasSize(1);
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
   }
 
   /* Error handling for a max-retries task (such as url fetching).
@@ -103,15 +103,15 @@ public final class ErrorReportingTest {
     Tags.ERROR.set(span, true); // Could not fetch anything.
     span.finish();
 
-    assertNull(tracer.scopeManager().activeSpan());
+    assertThat(tracer.scopeManager().activeSpan()).isNull();
 
     List<SpanData> spans = otelTesting.getSpans();
-    assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
+    assertThat(spans).hasSize(1);
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
 
     List<Event> events = spans.get(0).getEvents();
-    assertEquals(events.size(), maxRetries);
-    assertEquals(events.get(0).getName(), Tags.ERROR.getKey());
+    assertThat(events).hasSize(maxRetries);
+    assertThat(Tags.ERROR.getKey()).isEqualTo(events.get(0).getName());
     /* TODO: Handle actual objects being passed to log/events. */
     /*assertNotNull(events.get(0).getEvent().getAttributes().get(Fields.ERROR_OBJECT));*/
   }
@@ -141,8 +141,8 @@ public final class ErrorReportingTest {
     await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(1));
 
     List<SpanData> spans = otelTesting.getSpans();
-    assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
+    assertThat(spans).hasSize(1);
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
   }
 
   static class ScopedRunnable implements Runnable {

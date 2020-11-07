@@ -7,9 +7,7 @@ package io.opentelemetry.opentracingshim.testbed.latespanfinish;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.assertSameTrace;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -47,14 +45,15 @@ public final class LateSpanFinishTest {
 
     // Children finish order is not guaranteed, but parent should finish *last*.
     List<SpanData> spans = otelTesting.getSpans();
-    assertEquals(3, spans.size());
-    assertTrue(spans.get(0).getName().startsWith("task"));
-    assertTrue(spans.get(1).getName().startsWith("task"));
-    assertEquals("parent", spans.get(2).getName());
+    assertThat(spans).hasSize(3);
+    assertThat(spans.get(0).getName()).startsWith("task");
+    assertThat(spans.get(0).getName()).startsWith("task");
+    assertThat(spans.get(1).getName()).startsWith("task");
+    assertThat(spans.get(2).getName()).isEqualTo("parent");
 
     assertSameTrace(spans);
 
-    assertNull(tracer.scopeManager().activeSpan());
+    assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
 
   /*

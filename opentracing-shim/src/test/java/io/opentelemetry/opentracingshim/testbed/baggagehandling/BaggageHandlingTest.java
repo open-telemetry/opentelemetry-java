@@ -5,7 +5,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.baggagehandling;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -55,8 +55,8 @@ public final class BaggageHandlingTest {
     /* Single call, no need to use await() */
     f.get(5, TimeUnit.SECONDS);
 
-    assertEquals(2, otelTesting.getSpans().size());
-    assertEquals(span.getBaggageItem("key1"), "value2");
-    assertEquals(span.getBaggageItem("newkey"), "newvalue");
+    assertThat(otelTesting.getSpans()).hasSize(2);
+    assertThat("value2").isEqualTo(span.getBaggageItem("key1"));
+    assertThat("newvalue").isEqualTo(span.getBaggageItem("newkey"));
   }
 }

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.testbed.clientserver;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
@@ -56,7 +55,7 @@ class TestClientServerTest {
         .until(TestUtils.finishedSpansSize(otelTesting), equalTo(2));
 
     List<SpanData> finished = otelTesting.getSpans();
-    assertEquals(2, finished.size());
+    assertThat(finished).hasSize(2);
 
     finished = TestUtils.sortByStartTime(finished);
     assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());

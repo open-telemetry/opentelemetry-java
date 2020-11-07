@@ -7,10 +7,9 @@ package io.opentelemetry.opentracingshim.testbed.clientserver;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
@@ -53,13 +52,13 @@ class TestClientServerTest {
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(2));
 
     List<SpanData> finished = otelTesting.getSpans();
-    assertEquals(2, finished.size());
+    assertThat(finished).hasSize(2);
 
     finished = sortByStartTime(finished);
-    assertEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
-    assertEquals(Kind.CLIENT, finished.get(0).getKind());
-    assertEquals(Kind.SERVER, finished.get(1).getKind());
+    assertThat(finished.get(1).getTraceId()).isEqualTo(finished.get(0).getTraceId());
+    assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
+    assertThat(finished.get(1).getKind()).isEqualTo(Kind.SERVER);
 
-    assertNull(tracer.scopeManager().activeSpan());
+    assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
 }

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace.testbed.statelesscommonrequesthandler;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -35,11 +35,11 @@ public final class HandlerTest {
     Future<String> responseFuture2 = client.send("message2");
     Future<String> responseFuture3 = client.send("message3");
 
-    assertEquals("message3:response", responseFuture3.get(5, TimeUnit.SECONDS));
-    assertEquals("message2:response", responseFuture2.get(5, TimeUnit.SECONDS));
-    assertEquals("message:response", responseFuture.get(5, TimeUnit.SECONDS));
+    assertThat(responseFuture3.get(5, TimeUnit.SECONDS)).isEqualTo("message3:response");
+    assertThat(responseFuture2.get(5, TimeUnit.SECONDS)).isEqualTo("message2:response");
+    assertThat(responseFuture.get(5, TimeUnit.SECONDS)).isEqualTo("message:response");
 
     List<SpanData> finished = otelTesting.getSpans();
-    assertEquals(3, finished.size());
+    assertThat(finished).hasSize(3);
   }
 }

@@ -15,7 +15,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -41,6 +40,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 /** Unit tests for {@link SpanBuilderSdk}. */
@@ -783,10 +783,10 @@ class SpanBuilderSdkTest {
             tracerSdk.spanBuilder(SPAN_NAME).setParent(parentContext).startSpan();
     try {
       Mockito.verify(mockedSpanProcessor)
-          .onStart(Mockito.same(parentContext), Mockito.same((ReadWriteSpan) span));
+          .onStart(ArgumentMatchers.same(parentContext), ArgumentMatchers.same((ReadWriteSpan) span));
       assertThat(span.getSpanContext().getTraceIdAsHexString())
           .isNotEqualTo(parent.getSpanContext().getTraceIdAsHexString());
-      assertFalse(SpanId.isValid(span.toSpanData().getParentSpanId()));
+      assertThat(SpanId.isValid(span.toSpanData().getParentSpanId())).isFalse();
     } finally {
       span.end();
     }

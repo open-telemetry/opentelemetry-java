@@ -7,10 +7,9 @@ package io.opentelemetry.opentracingshim.testbed.nestedcallbacks;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
@@ -43,16 +42,16 @@ public final class NestedCallbacksTest {
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(1));
 
     List<SpanData> spans = otelTesting.getSpans();
-    assertEquals(1, spans.size());
-    assertEquals("one", spans.get(0).getName());
+    assertThat(spans).hasSize(1);
+    assertThat(spans.get(0).getName()).isEqualTo("one");
 
     ReadableAttributes attrs = spans.get(0).getAttributes();
-    assertEquals(3, attrs.size());
+    assertThat(attrs.size()).isEqualTo(3);
     for (int i = 1; i <= 3; i++) {
-      assertEquals(Integer.toString(i), spans.get(0).getAttributes().get(stringKey("key" + i)));
+      assertThat(spans.get(0).getAttributes().get(stringKey("key" + i))).isEqualTo(Integer.toString(i));
     }
 
-    assertNull(tracer.scopeManager().activeSpan());
+    assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
 
   private void submitCallbacks(final Span span) {

@@ -15,8 +15,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.jaegertracing.thriftjava.Log;
 import io.jaegertracing.thriftjava.SpanRef;
@@ -64,7 +62,7 @@ class AdapterTest {
     List<io.jaegertracing.thriftjava.Span> jaegerSpans = Adapter.toJaeger(spans);
 
     // the span contents are checked somewhere else
-    assertEquals(1, jaegerSpans.size());
+    assertThat(jaegerSpans).hasSize(1);
   }
 
   @Test
@@ -114,7 +112,7 @@ class AdapterTest {
     Collection<Log> logs = Adapter.toJaegerLogs(Collections.singletonList(eventsData));
 
     // verify
-    assertEquals(1, logs.size());
+    assertThat(logs).hasSize(1);
   }
 
   @Test
@@ -126,7 +124,7 @@ class AdapterTest {
     Log log = Adapter.toJaegerLog(event);
 
     // verify
-    assertEquals(2, log.getFieldsSize());
+    assertThat(log.getFieldsSize()).isEqualTo(2);
 
     assertThat(getValue(log.getFields(), Adapter.KEY_LOG_EVENT).getVStr())
         .isEqualTo("the log message");
@@ -180,7 +178,7 @@ class AdapterTest {
     Collection<SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
 
     // verify
-    assertEquals(1, spanRefs.size()); // the actual span ref is tested in another test
+    assertThat(spanRefs).hasSize(1); // the actual span ref is tested in another test
   }
 
   @Test
@@ -216,7 +214,7 @@ class AdapterTest {
             .setTotalRecordedLinks(0)
             .build();
 
-    assertNotNull(Adapter.toJaeger(span));
+    assertThat(Adapter.toJaeger(span)).isNotNull();
   }
 
   @Test

@@ -7,7 +7,6 @@ package io.opentelemetry.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.metrics.BatchRecorder;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -77,10 +76,10 @@ class OpenTelemetryTest {
             FirstTracerProviderFactory.class,
             SecondTracerProviderFactory.class);
     try {
-      assertTrue(
+      assertThat(
           (OpenTelemetry.getGlobalTracerProvider().get("") instanceof FirstTracerProviderFactory)
               || (OpenTelemetry.getGlobalTracerProvider().get("")
-                  instanceof SecondTracerProviderFactory));
+                  instanceof SecondTracerProviderFactory)).isTrue();
     } finally {
       serviceFile.delete();
     }
@@ -117,9 +116,10 @@ class OpenTelemetryTest {
             FirstMeterProviderFactory.class,
             SecondMeterProviderFactory.class);
     try {
-      assertTrue(
+      assertThat(
           (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
-              || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory));
+              || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory))
+          .isTrue();
       assertThat(OpenTelemetry.getGlobalMeterProvider())
           .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
     } finally {

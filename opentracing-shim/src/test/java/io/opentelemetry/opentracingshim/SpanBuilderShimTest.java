@@ -6,8 +6,7 @@
 package io.opentelemetry.opentracingshim;
 
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
@@ -32,10 +31,8 @@ class SpanBuilderShimTest {
       SpanShim childSpan =
           (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan).start();
       try {
-        assertEquals(childSpan.getBaggageItem("key1"), "value1");
-        assertEquals(
-            getBaggageMap(childSpan.context().baggageItems()),
-            getBaggageMap(parentSpan.context().baggageItems()));
+        assertThat("value1").isEqualTo(childSpan.getBaggageItem("key1"));
+        assertThat(getBaggageMap(parentSpan.context().baggageItems())).isEqualTo(getBaggageMap(childSpan.context().baggageItems()));
       } finally {
         childSpan.finish();
       }
@@ -54,10 +51,8 @@ class SpanBuilderShimTest {
           (SpanShim)
               new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan.context()).start();
       try {
-        assertEquals(childSpan.getBaggageItem("key1"), "value1");
-        assertEquals(
-            getBaggageMap(childSpan.context().baggageItems()),
-            getBaggageMap(parentSpan.context().baggageItems()));
+        assertThat("value1").isEqualTo(childSpan.getBaggageItem("key1"));
+        assertThat(getBaggageMap(parentSpan.context().baggageItems())).isEqualTo(getBaggageMap(childSpan.context().baggageItems()));
       } finally {
         childSpan.finish();
       }
@@ -75,7 +70,7 @@ class SpanBuilderShimTest {
       SpanShim childSpan =
           (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan).start();
       try {
-        assertFalse(childSpan.context().baggageItems().iterator().hasNext());
+        assertThat(childSpan.context().baggageItems().iterator().hasNext()).isFalse();
       } finally {
         childSpan.finish();
       }
