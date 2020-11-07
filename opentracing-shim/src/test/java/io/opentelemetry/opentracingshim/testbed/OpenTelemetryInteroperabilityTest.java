@@ -5,9 +5,7 @@
 
 package io.opentelemetry.opentracingshim.testbed;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -38,10 +36,10 @@ class OpenTelemetryInteroperabilityTest {
       otSpan.finish();
     }
     assertThat(io.opentelemetry.api.trace.Span.current().getSpanContext().isValid()).isFalse();
-    assertNull(otTracer.activeSpan());
+    assertThat(otTracer.activeSpan()).isNull();
 
     List<SpanData> finishedSpans = otelTesting.getSpans();
-    assertEquals(2, finishedSpans.size());
+    assertThat(finishedSpans).hasSize(2);
     TestUtils.assertSameTrace(finishedSpans);
   }
 
@@ -55,10 +53,10 @@ class OpenTelemetryInteroperabilityTest {
     }
 
     assertThat(io.opentelemetry.api.trace.Span.current().getSpanContext().isValid()).isFalse();
-    assertNull(otTracer.activeSpan());
+    assertThat(otTracer.activeSpan()).isNull();
 
     List<SpanData> finishedSpans = otelTesting.getSpans();
-    assertEquals(2, finishedSpans.size());
+    assertThat(finishedSpans).hasSize(2);
     TestUtils.assertSameTrace(finishedSpans);
   }
 }

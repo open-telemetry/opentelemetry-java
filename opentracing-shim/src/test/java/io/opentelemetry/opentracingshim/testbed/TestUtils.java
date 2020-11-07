@@ -5,8 +5,7 @@
 
 package io.opentelemetry.opentracingshim.testbed;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span.Kind;
@@ -133,9 +132,10 @@ public final class TestUtils {
   public static void assertSameTrace(List<SpanData> spans) {
     for (int i = 0; i < spans.size() - 1; i++) {
       // TODO - Include nanos in this comparison.
-      assertTrue(spans.get(spans.size() - 1).getEndEpochNanos() >= spans.get(i).getEndEpochNanos());
-      assertEquals(spans.get(spans.size() - 1).getTraceId(), spans.get(i).getTraceId());
-      assertEquals(spans.get(spans.size() - 1).getSpanId(), spans.get(i).getParentSpanId());
+      assertThat(spans.get(i).getEndEpochNanos())
+          .isLessThanOrEqualTo(spans.get(spans.size() - 1).getEndEpochNanos());
+      assertThat(spans.get(i).getTraceId()).isEqualTo(spans.get(spans.size() - 1).getTraceId());
+      assertThat(spans.get(i).getParentSpanId()).isEqualTo(spans.get(spans.size() - 1).getSpanId());
     }
   }
 }

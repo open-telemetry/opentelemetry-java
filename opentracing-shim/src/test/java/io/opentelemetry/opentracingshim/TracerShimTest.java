@@ -6,9 +6,6 @@
 package io.opentelemetry.opentracingshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentracing.Scope;
@@ -42,10 +39,10 @@ class TracerShimTest {
 
   @Test
   void defaultTracer() {
-    assertNotNull(tracerShim.buildSpan("one"));
-    assertNotNull(tracerShim.scopeManager());
-    assertNull(tracerShim.activeSpan());
-    assertNull(tracerShim.scopeManager().activeSpan());
+    assertThat(tracerShim.buildSpan("one")).isNotNull();
+    assertThat(tracerShim.scopeManager()).isNotNull();
+    assertThat(tracerShim.activeSpan()).isNull();
+    assertThat(tracerShim.scopeManager().activeSpan()).isNull();
   }
 
   @Test
@@ -53,32 +50,32 @@ class TracerShimTest {
     Span otSpan = tracerShim.buildSpan("one").start();
     io.opentelemetry.api.trace.Span span = ((SpanShim) otSpan).getSpan();
 
-    assertNull(tracerShim.activeSpan());
-    assertNull(tracerShim.scopeManager().activeSpan());
+    assertThat(tracerShim.activeSpan()).isNull();
+    assertThat(tracerShim.scopeManager().activeSpan()).isNull();
 
     try (Scope scope = tracerShim.activateSpan(otSpan)) {
-      assertNotNull(tracerShim.activeSpan());
-      assertNotNull(tracerShim.scopeManager().activeSpan());
-      assertEquals(span, ((SpanShim) tracerShim.activeSpan()).getSpan());
-      assertEquals(span, ((SpanShim) tracerShim.scopeManager().activeSpan()).getSpan());
+      assertThat(tracerShim.activeSpan()).isNotNull();
+      assertThat(tracerShim.scopeManager().activeSpan()).isNotNull();
+      assertThat(((SpanShim) tracerShim.activeSpan()).getSpan()).isEqualTo(span);
+      assertThat(((SpanShim) tracerShim.scopeManager().activeSpan()).getSpan()).isEqualTo(span);
     }
 
-    assertNull(tracerShim.activeSpan());
-    assertNull(tracerShim.scopeManager().activeSpan());
+    assertThat(tracerShim.activeSpan()).isNull();
+    assertThat(tracerShim.scopeManager().activeSpan()).isNull();
   }
 
   @Test
   void extract_nullContext() {
     SpanContext result =
         tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(Collections.emptyMap()));
-    assertNull(result);
+    assertThat(result).isNull();
   }
 
   @Test
   void inject_nullContext() {
     Map<String, String> map = new HashMap<>();
     tracerShim.inject(null, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
-    assertEquals(0, map.size());
+    assertThat(map).isEmpty();
   }
 
   @Test

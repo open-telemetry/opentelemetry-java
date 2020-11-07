@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.testbed.errorreporting;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
@@ -103,8 +102,8 @@ public final class ErrorReportingTest {
     assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCode.ERROR);
 
     List<Event> events = spans.get(0).getEvents();
-    assertEquals(events.size(), maxRetries);
-    assertEquals(events.get(0).getName(), "error");
+    assertThat(events).hasSize(maxRetries);
+    assertThat("error").isEqualTo(events.get(0).getName());
   }
 
   /* Error handling for a mocked layer automatically capturing/activating
@@ -131,8 +130,8 @@ public final class ErrorReportingTest {
     await().atMost(5, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(otelTesting), equalTo(1));
 
     List<SpanData> spans = otelTesting.getSpans();
-    assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCanonicalCode(), StatusCode.ERROR);
+    assertThat(spans).hasSize(1);
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
   }
 
   private static class ScopedRunnable implements Runnable {

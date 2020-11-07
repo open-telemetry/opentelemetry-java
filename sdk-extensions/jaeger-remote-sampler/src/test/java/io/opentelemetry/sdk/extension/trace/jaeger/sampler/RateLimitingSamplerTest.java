@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -88,16 +87,15 @@ class RateLimitingSamplerTest {
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(SamplingResult.Decision.DROP);
-    assertEquals(2, samplingResult.getAttributes().size());
-    assertEquals(1d, samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_PARAM));
-    assertEquals(
-        RateLimitingSampler.TYPE,
-        samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_TYPE));
+    assertThat(samplingResult.getAttributes().size()).isEqualTo(2);
+    assertThat(samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_PARAM)).isEqualTo(1d);
+    assertThat(samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_TYPE))
+        .isEqualTo(RateLimitingSampler.TYPE);
   }
 
   @Test
   void description() {
     RateLimitingSampler sampler = new RateLimitingSampler(15);
-    assertEquals("RateLimitingSampler{15.00}", sampler.getDescription());
+    assertThat(sampler.getDescription()).isEqualTo("RateLimitingSampler{15.00}");
   }
 }
