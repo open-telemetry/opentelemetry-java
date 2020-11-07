@@ -65,8 +65,7 @@ final class LazyStorage {
 
   private static final String CONTEXT_STORAGE_PROVIDER_PROPERTY =
       "io.opentelemetry.context.contextStorageProvider";
-  private static final String CONTEXT_STORAGE_PROVIDER_ENFORCE_DEFAULT_PROPERTY =
-      "io.opentelemetry.context.contextStorageProvider.enforceDefault";
+  private static final String ENFORCE_DEFAULT_VALUE = "default";
 
   private static final Logger logger = Logger.getLogger(LazyStorage.class.getName());
 
@@ -85,8 +84,8 @@ final class LazyStorage {
 
   static ContextStorage createStorage(AtomicReference<Throwable> deferredStorageFailure) {
     String providerClassName = System.getProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY, "");
-    boolean enforceDefault = Boolean.getBoolean(CONTEXT_STORAGE_PROVIDER_ENFORCE_DEFAULT_PROPERTY);
-    if (enforceDefault) {
+    // enforceDefault
+    if (ENFORCE_DEFAULT_VALUE.equals(providerClassName)) {
       return DefaultContext.threadLocalStorage();
     }
 

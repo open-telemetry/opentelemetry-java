@@ -20,15 +20,12 @@ class LazyStorageTest {
 
   private static final String CONTEXT_STORAGE_PROVIDER_PROPERTY =
       "io.opentelemetry.context.contextStorageProvider";
-  private static final String CONTEXT_STORAGE_PROVIDER_ENFORCE_DEFAULT_PROPERTY =
-      "io.opentelemetry.context.contextStorageProvider.enforceDefault";
   private static final AtomicReference<Throwable> DEFERRED_STORAGE_FAILURE =
       new AtomicReference<>();
 
   @AfterEach
   public void after() {
     System.clearProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY);
-    System.clearProperty(CONTEXT_STORAGE_PROVIDER_ENFORCE_DEFAULT_PROPERTY);
   }
 
   @Test
@@ -81,7 +78,7 @@ class LazyStorageTest {
 
   @Test
   public void enforce_default_thread_local_storage() {
-    System.setProperty(CONTEXT_STORAGE_PROVIDER_ENFORCE_DEFAULT_PROPERTY, "true");
+    System.setProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY, "default");
     assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
         .isEqualTo(DefaultContext.threadLocalStorage());
   }
