@@ -46,22 +46,31 @@ which uses [google-java-format](https://github.com/google/google-java-format) li
 ### Best practices that we follow
 
 * Avoid exposing publicly any class/method/variable that don't need to be public.
-* By default, all arguments/members are treated as non-null. Every argument/member that can be `null` must be annotated with `@Nullable`.
-* The project aims to provide a consistent experience across all the public APIs. It is important to ensure consistency (same look and feel) across different public packages.
-* Use `final` for public classes everywhere it is possible, this ensures that these classes cannot be extended when the API does not intend to offer that functionality.
+* By default, all arguments/members are treated as non-null. Every
+  argument/member that can be `null` must be annotated with `@Nullable`.
+* The project aims to provide a consistent experience across all the public
+  APIs. It is important to ensure consistency (same look and feel) across
+  different public packages.
+* Use `final` for public classes everywhere it is possible, this ensures that
+  these classes cannot be extended when the API does not intend to offer that
+  functionality.
 
-If you notice any practice being applied in the project consistently that isn't listed here, please consider a pull request to add it.
+If you notice any practice being applied in the project consistently that isn't
+listed here, please consider a pull request to add it.
 
 ### Pre-commit hook
-To completely delegate code style formatting to the machine, 
+
+To completely delegate code style formatting to the machine,
 you can add [git pre-commit hook](https://git-scm.com/docs/githooks).
 We provide an example script in `buildscripts/pre-commit` file.
 Just copy or symlink it into `.git/hooks` folder.
 
-### Editorconfig 
-As additional convenience for IntelliJ Idea users, we provide `.editorconfig` file.
-Idea will automatically use it to adjust its code formatting settings.
-It does not support all required rules, so you still have to run `spotlessApply` from time to time.
+### Editorconfig
+
+As additional convenience for IntelliJ Idea users, we provide `.editorconfig`
+file. Idea will automatically use it to adjust its code formatting settings. It
+does not support all required rules, so you still have to run `spotlessApply`
+from time to time.
 
 ### Javadoc
 
@@ -88,8 +97,7 @@ It does not support all required rules, so you still have to run `spotlessApply`
   possible, for any new value classes. Remember to add package-private
   constructors to all AutoValue classes to prevent classes in other packages
   from extending them.
-  
-  
+
 ### Unit Tests
 
 * Unit tests target Java 8, so language features such as lambda and streams can be used in tests.
@@ -111,9 +119,48 @@ you must run a local docker daemon.
 or alternatively initialize submodules for an existing clone.
 
    `git submodule init`
-   `git submodule update`   
+   `git submodule update`
 
 3. Run the following commands to build, run tests and most static analysis, and
 check formatting:
 
     `./gradlew check`
+
+## Snapshots
+
+Snapshots based out the `master` branch are available for `opentelemetry-api`,
+`opentelemetry-sdk` and the rest of the artifacts:
+
+### Maven
+
+```xml
+  <repositories>
+    <repository>
+      <id>oss.sonatype.org-snapshot</id>
+      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+      <version>0.11.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+```
+
+### Gradle
+
+```groovy
+repositories {
+	maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+}
+
+dependencies {
+	implementation('io.opentelemetry:opentelemetry-api:0.11.0-SNAPSHOT')
+}
+```
+
+Libraries will usually only need `opentelemetry-api`, while applications
+may want to use `opentelemetry-sdk`.

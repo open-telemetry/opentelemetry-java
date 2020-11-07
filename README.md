@@ -1,15 +1,37 @@
-# OpenTelemetry
-[![Gitter chat][gitter-image]][gitter-url]
-![Continuous Build](https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg)
-[![Coverage Status][codecov-image]][codecov-url]
-[![Maven Central][maven-image]][maven-url]
+<p align="center">
+  <strong>
+    <a href="https://opentelemetry.io/docs/java/getting_started/#automatic-instrumentation">Getting Started<a/>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://github.com/open-telemetry/community#special-interest-groups">Getting Involved<a/>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://gitter.im/open-telemetry/opentelemetry-java">Getting In Touch<a/>
+  </strong>
+</p>
 
-We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
+<p align="center">
+  <a href="https://circleci.com/gh/open-telemetry/opentelemetry-java">
+    <img alt="Build Status" src="https://img.shields.io/circleci/build/github/open-telemetry/opentelemetry-java?style=for-the-badge">
+  </a>
+  <a href="https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/">
+    <img alt="Codecov Status" src="https://img.shields.io/codecov/c/github/open-telemetry/opentelemetry-java?style=for-the-badge">
+  </a>
+  <a href="https://opentelemetry.io/docs/java/#releases">
+    <img alt="Maven" src="https://img.shields.io/maven-central/v/release/io.opentelemetry/opentelemetry-java&style=for-the-badge">
+  </a>
+  <img alt="Beta" src="https://img.shields.io/badge/status-beta-informational?style=for-the-badge&logo=data:image/png;base64,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">
+</p>
 
-## Overview
+<p align="center">
+  <strong>
+    <a href="CONTRIBUTING.md">Contributing<a/>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://github.com/open-telemetry/opentelemetry-java/milestones">Milestones<a/>dd
+  </strong>
+</p>
 
-OpenTelemetry is the merging of OpenCensus and OpenTracing into one
-project.
+---
+
+# <img src="https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png" alt="OpenTelemetry Icon" width="45" height=""> OpenTelemetry Java
 
 This project contains the following top level components:
 
@@ -24,118 +46,6 @@ This project contains the following top level components:
 * [examples](examples/) on how to use the APIs, SDK, and standard exporters.
 
 We would love to hear from the larger community: please provide feedback proactively.
-
-### Note about extensions
-
-Both API and SDK extensions consist of various additional components which are excluded from the core artifacts
-to keep them from growing too large.
-We still aim to provide the same level of quality and guarantee for them as for the core components.
-Please don't hesitate to use them if you find them useful. 
-
-## Project setup and contribute
-
-Please refer to the [contribution guide](CONTRIBUTING.md)
-on how to setup and contribute!
-
-## Quick Start
-
-Please refer to the [quick start guide](QUICKSTART.md) on how use the OpenTelemetry API.
-
-## Published Releases
-
-Published releases are available on maven central.
-
-### Maven
-
-```xml
-  <dependencies>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-api</artifactId>
-      <version>0.10.0</version>
-    </dependency>
-  </dependencies>
-```
-
-### Gradle
-
-```groovy
-dependencies {
-	implementation('io.opentelemetry:opentelemetry-api:0.10.0')
-}
-```
-
-## Snapshots
-
-Snapshots based out the `master` branch are available for `opentelemetry-api`, `opentelemetry-sdk` and the rest of the artifacts:
-
-### Maven
-
-```xml
-  <repositories>
-    <repository>
-      <id>oss.sonatype.org-snapshot</id>
-      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-    </repository>
-  </repositories>
-
-  <dependencies>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-api</artifactId>
-      <version>0.11.0-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
-```
-
-### Gradle
-
-```groovy
-repositories {
-	maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
-}
-
-dependencies {
-	implementation('io.opentelemetry:opentelemetry-api:0.11.0-SNAPSHOT')
-}
-```
-
-Libraries will usually only need `opentelemetry-api`, while applications
-may want to use `opentelemetry-sdk`.
-
-## Releases
-
-OpenTelemetry Java is under active development. Releases aren't guaranteed
-to conform to a specific version of the specification. Future releases will
-not attempt to maintain backwards compatibility with previous releases.
-
-Check out information about the [latest release](https://github.com/open-telemetry/opentelemetry-java/releases).
-
-This is a **current** feature status list:
-
-| Component                   | Version |
-| --------------------------- | ------- |
-| Tracing API                 | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| Tracing SDK                 | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| Metrics API                 | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| Metrics SDK                 | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter               | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| Prometheus Metrics Exporter | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| Context Propagation         | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| OpenTracing Bridge          | v<!--VERSION_STABLE-->0.10.0<!--/VERSION_STABLE-->  |
-| OpenCensus Bridge           | N/A     |
-
-See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
-for details on upcoming releases. The dates and features described in issues
-and milestones are estimates, and subject to change.
-
-### Summary
-
-We plan to merge projects and pave the path for future improvements as a unified
-community of tracing vendors, users and library authors who wants apps be
-managed better. We are open to feedback and suggestions from all of you!
 
 ## Contributing
 
@@ -162,12 +72,3 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 ### Thanks to all the people who have contributed
 
 [![contributors](https://contributors-img.web.app/image?repo=open-telemetry/opentelemetry-java)](https://github.com/open-telemetry/opentelemetry-java/graphs/contributors)
-
-[circleci-image]: https://circleci.com/gh/open-telemetry/opentelemetry-java.svg?style=svg 
-[circleci-url]: https://circleci.com/gh/open-telemetry/opentelemetry-java
-[gitter-image]: https://badges.gitter.im/open-telemetry/opentelemetry-java.svg 
-[gitter-url]: https://gitter.im/open-telemetry/opentelemetry-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-[codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/
-[maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
-[maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api
