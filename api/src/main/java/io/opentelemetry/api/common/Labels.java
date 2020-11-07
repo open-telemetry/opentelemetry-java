@@ -26,7 +26,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
     ArrayBackedLabels() {}
 
     @Override
-    public abstract List<Object> data();
+    protected abstract List<Object> data();
 
     @Override
     public void forEach(BiConsumer<String, String> consumer) {

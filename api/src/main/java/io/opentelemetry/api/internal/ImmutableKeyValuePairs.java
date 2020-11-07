@@ -32,7 +32,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class ImmutableKeyValuePairs<K, V> {
 
-  public List<Object> data() {
+  protected List<Object> data() {
     return Collections.emptyList();
   }
 

@@ -33,7 +33,7 @@ class ImmutableKeyValuePairsTest {
     }
 
     @Override
-    public List<Object> data() {
+    protected List<Object> data() {
       return data;
     }
   }

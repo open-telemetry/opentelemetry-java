@@ -26,7 +26,7 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
     ArrayBackedBaggage() {}
 
     @Override
-    public abstract List<Object> data();
+    protected abstract List<Object> data();
 
     @Override
     public Baggage.Builder toBuilder() {

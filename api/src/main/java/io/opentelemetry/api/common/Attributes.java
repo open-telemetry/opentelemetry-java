@@ -43,7 +43,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
     ArrayBackedAttributes() {}
 
     @Override
-    public abstract List<Object> data();
+    protected abstract List<Object> data();
 
     @Override
     public Builder toBuilder() {
@@ -172,12 +172,9 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Ob
       if (key != null && (key.getKey() == null || "".equals(key.getKey()))) {
         data[i] = null;
       }
-      if (data[i + 1] == null) {
-        data[i] = null;
-      }
     }
     return new AutoValue_Attributes_ArrayBackedAttributes(
-        sortAndFilter(data, /* filterNullValues= */ false));
+        sortAndFilter(data, /* filterNullValues= */ true));
   }
 
   /** Returns a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
