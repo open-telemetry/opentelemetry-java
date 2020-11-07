@@ -89,8 +89,8 @@ class RateLimitingSamplerTest {
         .isEqualTo(SamplingResult.Decision.DROP);
     assertThat(samplingResult.getAttributes().size()).isEqualTo(2);
     assertThat(samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_PARAM)).isEqualTo(1d);
-    assertThat(samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_TYPE)).isEqualTo(
-        RateLimitingSampler.TYPE);
+    assertThat(samplingResult.getAttributes().get(RateLimitingSampler.SAMPLER_TYPE))
+        .isEqualTo(RateLimitingSampler.TYPE);
   }
 
   @Test

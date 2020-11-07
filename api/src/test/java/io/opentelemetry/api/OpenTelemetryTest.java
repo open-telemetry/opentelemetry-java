@@ -77,9 +77,11 @@ class OpenTelemetryTest {
             SecondTracerProviderFactory.class);
     try {
       assertThat(
-          (OpenTelemetry.getGlobalTracerProvider().get("") instanceof FirstTracerProviderFactory)
-              || (OpenTelemetry.getGlobalTracerProvider().get("")
-                  instanceof SecondTracerProviderFactory)).isTrue();
+              (OpenTelemetry.getGlobalTracerProvider().get("")
+                      instanceof FirstTracerProviderFactory)
+                  || (OpenTelemetry.getGlobalTracerProvider().get("")
+                      instanceof SecondTracerProviderFactory))
+          .isTrue();
     } finally {
       serviceFile.delete();
     }
@@ -117,8 +119,8 @@ class OpenTelemetryTest {
             SecondMeterProviderFactory.class);
     try {
       assertThat(
-          (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
-              || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory))
+              (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
+                  || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory))
           .isTrue();
       assertThat(OpenTelemetry.getGlobalMeterProvider())
           .isEqualTo(OpenTelemetry.getGlobalMeterProvider());

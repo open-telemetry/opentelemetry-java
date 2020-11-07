@@ -44,8 +44,10 @@ class SpanShimTest {
     SpanContextShim contextShim = (SpanContextShim) spanShim.context();
     assertThat(contextShim).isNotNull();
     assertThat(span.getSpanContext()).isEqualTo(contextShim.getSpanContext());
-    assertThat(span.getSpanContext().getTraceIdAsHexString().toString()).isEqualTo(contextShim.toTraceId());
-    assertThat(span.getSpanContext().getSpanIdAsHexString().toString()).isEqualTo(contextShim.toSpanId());
+    assertThat(span.getSpanContext().getTraceIdAsHexString().toString())
+        .isEqualTo(contextShim.toTraceId());
+    assertThat(span.getSpanContext().getSpanIdAsHexString().toString())
+        .isEqualTo(contextShim.toSpanId());
     assertThat(contextShim.baggageItems().iterator().hasNext()).isFalse();
   }
 
@@ -89,6 +91,7 @@ class SpanShimTest {
     spanShim2.setBaggageItem("key1", "value2");
     assertThat(spanShim1.getBaggageItem("key1")).isEqualTo("value2");
     assertThat(spanShim2.getBaggageItem("key1")).isEqualTo("value2");
-    assertThat(getBaggageMap(spanShim2.context().baggageItems())).isEqualTo(getBaggageMap(spanShim1.context().baggageItems()));
+    assertThat(getBaggageMap(spanShim2.context().baggageItems()))
+        .isEqualTo(getBaggageMap(spanShim1.context().baggageItems()));
   }
 }

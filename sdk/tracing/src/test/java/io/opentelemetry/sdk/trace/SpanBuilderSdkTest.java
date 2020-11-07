@@ -783,7 +783,8 @@ class SpanBuilderSdkTest {
             tracerSdk.spanBuilder(SPAN_NAME).setParent(parentContext).startSpan();
     try {
       Mockito.verify(mockedSpanProcessor)
-          .onStart(ArgumentMatchers.same(parentContext), ArgumentMatchers.same((ReadWriteSpan) span));
+          .onStart(
+              ArgumentMatchers.same(parentContext), ArgumentMatchers.same((ReadWriteSpan) span));
       assertThat(span.getSpanContext().getTraceIdAsHexString())
           .isNotEqualTo(parent.getSpanContext().getTraceIdAsHexString());
       assertThat(SpanId.isValid(span.toSpanData().getParentSpanId())).isFalse();

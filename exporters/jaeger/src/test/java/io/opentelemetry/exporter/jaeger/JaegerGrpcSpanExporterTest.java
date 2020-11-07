@@ -122,10 +122,10 @@ class JaegerGrpcSpanExporterTest {
     assertThat(batch.getSpans(0).getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(SPAN_ID));
 
     assertThat(
-        getTagValue(batch.getProcess().getTagsList(), "resource-attr-key")
-            .orElseThrow(() -> new AssertionError("resource-attr-key not found"))
-            .getVStr()
-    ).isEqualTo("resource-attr-value");
+            getTagValue(batch.getProcess().getTagsList(), "resource-attr-key")
+                .orElseThrow(() -> new AssertionError("resource-attr-key not found"))
+                .getVStr())
+        .isEqualTo("resource-attr-value");
 
     verifyBatch(batch);
   }
@@ -203,7 +203,8 @@ class JaegerGrpcSpanExporterTest {
         assertThat(processTag.get().getVStr()).isEqualTo("resource-attr-value-1");
       } else if (processTag2.isPresent()) {
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/2");
-        assertThat(batch.getSpans(0).getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(SPAN_ID_2));
+        assertThat(batch.getSpans(0).getSpanId())
+            .isEqualTo(TraceProtoUtils.toProtoSpanId(SPAN_ID_2));
         assertThat(processTag2.get().getVStr()).isEqualTo("resource-attr-value-2");
       } else {
         fail("No process tag resource-attr-key-1 or resource-attr-key-2");
@@ -217,30 +218,35 @@ class JaegerGrpcSpanExporterTest {
     assertThat(batch.getProcess().getServiceName()).isEqualTo("test");
     assertThat(batch.getProcess().getTagsCount()).isEqualTo(4);
 
-    assertThat(getSpanTagValue(batch.getSpans(0), "otel.library.name")
-        .orElseThrow(() -> new AssertionError("otel.library.name not found"))
-        .getVStr()
-    ).isEqualTo("io.opentelemetry.auto");
+    assertThat(
+            getSpanTagValue(batch.getSpans(0), "otel.library.name")
+                .orElseThrow(() -> new AssertionError("otel.library.name not found"))
+                .getVStr())
+        .isEqualTo("io.opentelemetry.auto");
 
-    assertThat(getSpanTagValue(batch.getSpans(0), "otel.library.version")
-        .orElseThrow(() -> new AssertionError("otel.library.version not found"))
-        .getVStr()
-    ).isEqualTo("1.0.0");
+    assertThat(
+            getSpanTagValue(batch.getSpans(0), "otel.library.version")
+                .orElseThrow(() -> new AssertionError("otel.library.version not found"))
+                .getVStr())
+        .isEqualTo("1.0.0");
 
-    assertThat(getTagValue(batch.getProcess().getTagsList(), "ip")
-        .orElseThrow(() -> new AssertionError("ip not found"))
-        .getVStr()
-    ).isEqualTo(InetAddress.getLocalHost().getHostAddress());
+    assertThat(
+            getTagValue(batch.getProcess().getTagsList(), "ip")
+                .orElseThrow(() -> new AssertionError("ip not found"))
+                .getVStr())
+        .isEqualTo(InetAddress.getLocalHost().getHostAddress());
 
-    assertThat(getTagValue(batch.getProcess().getTagsList(), "hostname")
-        .orElseThrow(() -> new AssertionError("hostname not found"))
-        .getVStr()
-    ).isEqualTo(InetAddress.getLocalHost().getHostName());
+    assertThat(
+            getTagValue(batch.getProcess().getTagsList(), "hostname")
+                .orElseThrow(() -> new AssertionError("hostname not found"))
+                .getVStr())
+        .isEqualTo(InetAddress.getLocalHost().getHostName());
 
-    assertThat(getTagValue(batch.getProcess().getTagsList(), "jaeger.version")
-        .orElseThrow(() -> new AssertionError("jaeger.version not found"))
-        .getVStr()
-    ).isEqualTo("opentelemetry-java");
+    assertThat(
+            getTagValue(batch.getProcess().getTagsList(), "jaeger.version")
+                .orElseThrow(() -> new AssertionError("jaeger.version not found"))
+                .getVStr())
+        .isEqualTo("opentelemetry-java");
   }
 
   private static Optional<Model.KeyValue> getSpanTagValue(Model.Span span, String tagKey) {

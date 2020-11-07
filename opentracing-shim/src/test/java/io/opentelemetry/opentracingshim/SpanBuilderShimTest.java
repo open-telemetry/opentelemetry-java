@@ -32,7 +32,8 @@ class SpanBuilderShimTest {
           (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan).start();
       try {
         assertThat("value1").isEqualTo(childSpan.getBaggageItem("key1"));
-        assertThat(getBaggageMap(parentSpan.context().baggageItems())).isEqualTo(getBaggageMap(childSpan.context().baggageItems()));
+        assertThat(getBaggageMap(parentSpan.context().baggageItems()))
+            .isEqualTo(getBaggageMap(childSpan.context().baggageItems()));
       } finally {
         childSpan.finish();
       }
@@ -52,7 +53,8 @@ class SpanBuilderShimTest {
               new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan.context()).start();
       try {
         assertThat("value1").isEqualTo(childSpan.getBaggageItem("key1"));
-        assertThat(getBaggageMap(parentSpan.context().baggageItems())).isEqualTo(getBaggageMap(childSpan.context().baggageItems()));
+        assertThat(getBaggageMap(parentSpan.context().baggageItems()))
+            .isEqualTo(getBaggageMap(childSpan.context().baggageItems()));
       } finally {
         childSpan.finish();
       }

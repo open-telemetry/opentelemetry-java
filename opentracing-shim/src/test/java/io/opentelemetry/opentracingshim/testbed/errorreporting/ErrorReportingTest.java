@@ -6,7 +6,6 @@
 package io.opentelemetry.opentracingshim.testbed.errorreporting;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
