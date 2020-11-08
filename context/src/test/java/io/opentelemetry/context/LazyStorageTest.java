@@ -28,21 +28,21 @@ class LazyStorageTest {
 
   @Test
   @ClearSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY)
-  public void empty_providers() {
+  void empty_providers() {
     assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
         .isEqualTo(DefaultContext.threadLocalStorage());
   }
 
   @Test
   @SetSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY, value = MOCK_CONTEXT_STORAGE_PROVIDER)
-  public void set_storage_provider_property_and_empty_providers() {
+  void set_storage_provider_property_and_empty_providers() {
     assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
         .isEqualTo(DefaultContext.threadLocalStorage());
   }
 
   @Test
   @ClearSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY)
-  public void unset_storage_provider_property_and_one_providers() throws Exception {
+  void unset_storage_provider_property_and_one_providers() throws Exception {
     File serviceFile = createContextStorageProvider();
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE)).isEqualTo(mockContextStorage);
@@ -55,7 +55,7 @@ class LazyStorageTest {
   @SetSystemProperty(
       key = CONTEXT_STORAGE_PROVIDER_PROPERTY,
       value = "not.match.provider.class.name")
-  public void set_storage_provider_property_not_matches_one_providers() throws Exception {
+  void set_storage_provider_property_not_matches_one_providers() throws Exception {
     File serviceFile = createContextStorageProvider();
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
@@ -67,7 +67,7 @@ class LazyStorageTest {
 
   @Test
   @SetSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY, value = MOCK_CONTEXT_STORAGE_PROVIDER)
-  public void set_storage_provider_property_matches_one_providers() throws Exception {
+  void set_storage_provider_property_matches_one_providers() throws Exception {
     File serviceFile = createContextStorageProvider();
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE)).isEqualTo(mockContextStorage);
@@ -78,14 +78,14 @@ class LazyStorageTest {
 
   @Test
   @SetSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY, value = "default")
-  public void enforce_default_and_empty_providers() {
+  void enforce_default_and_empty_providers() {
     assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
         .isEqualTo(DefaultContext.threadLocalStorage());
   }
 
   @Test
   @SetSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY, value = "default")
-  public void enforce_default_and_one_providers() throws IOException {
+  void enforce_default_and_one_providers() throws IOException {
     File serviceFile = createContextStorageProvider();
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
