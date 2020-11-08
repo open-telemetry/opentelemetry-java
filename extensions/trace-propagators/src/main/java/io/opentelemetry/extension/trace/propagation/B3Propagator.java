@@ -53,7 +53,7 @@ public class B3Propagator implements TextMapPropagator {
   static final String DEBUG_HEADER = "X-B3-Flags";
   static final String COMBINED_HEADER = "b3";
   static final String COMBINED_HEADER_DELIMITER = "-";
-  static final ContextKey<String> DEBUG_CONTEXT_KEY = ContextKey.named("b3-debug);
+  static final ContextKey<String> DEBUG_CONTEXT_KEY = ContextKey.named("b3-debug");
 
   static final char COMBINED_HEADER_DELIMITER_CHAR = '-';
   static final char IS_SAMPLED = '1';
