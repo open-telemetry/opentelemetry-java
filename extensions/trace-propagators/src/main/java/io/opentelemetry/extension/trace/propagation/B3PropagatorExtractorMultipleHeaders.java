@@ -51,7 +51,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
 
     // if debug flag is set, then set sampled flag, and also store the B3 debug flag in the context
     // for onward use by B3 injector
-    if (Common.TRUE_INT.equals(getter.get(carrier, DEBUG_HEADER))) {
+    if (B3Propagator.MULTI_HEADER_DEBUG.equals(getter.get(carrier, DEBUG_HEADER))) {
       return Optional.of(
           context
               .with(B3Propagator.DEBUG_CONTEXT_KEY, Common.TRUE_INT)

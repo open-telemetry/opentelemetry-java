@@ -65,7 +65,7 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
 
     // if sampled is marked as 'd'ebug, then set sampled flag, and also store the B3 debug flag in
     // the context for onward use by the B3 injector
-    if (sampled != null && sampled.equals("d")) {
+    if (B3Propagator.SINGLE_HEADER_DEBUG.equals(sampled)) {
       return Optional.of(
           context
               .with(B3Propagator.DEBUG_CONTEXT_KEY, Common.TRUE_INT)
