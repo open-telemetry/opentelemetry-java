@@ -65,34 +65,72 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     checkArgument(
         data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
 
-    quickSort(data, 0, data.length - 2);
+    mergeSort(data);
     return dedupe(data, filterNullValues);
   }
 
-  @SuppressWarnings("unchecked")
-  private static <K extends Comparable<K>> void quickSort(
-      Object[] data, int leftIndex, int rightIndex) {
-    if (leftIndex >= rightIndex) {
-      return;
-    }
-
-    K pivotKey = (K) data[rightIndex];
-    int counter = leftIndex;
-
-    for (int i = leftIndex; i <= rightIndex; i += 2) {
-      K value = (K) data[i];
-
-      if (compareToNullSafe(value, pivotKey) <= 0) {
-        swap(data, counter, i);
-        counter += 2;
-      }
-    }
-
-    quickSort(data, leftIndex, counter - 4);
-    quickSort(data, counter, rightIndex);
+  private static void mergeSort(Object[] data) {
+    Object[] workArray = new Object[data.length];
+    mergeSort(data, workArray, data.length);
   }
 
-  private static <K extends Comparable<K>> int compareToNullSafe(K key, K pivotKey) {
+  // note: merge sort implementation cribbed from this wikipedia article:
+  // https://en.wikipedia.org/wiki/Merge_sort (this is the top-down variant)
+  private static <K extends Comparable<K>> void mergeSort(
+      Object[] sourceArray, Object[] workArray, int n) {
+    System.arraycopy(sourceArray, 0, workArray, 0, sourceArray.length);
+    splitAndMerge(workArray, 0, n, sourceArray); // sort data from workArray[] into sourceArray[]
+  }
+
+  /**
+   * Sort the given run of array targetArray[] using array workArray[] as a source. beginIndex is
+   * inclusive; endIndex is exclusive (targetArray[endIndex] is not in the set).
+   */
+  private static <K extends Comparable<K>> void splitAndMerge(
+      Object[] workArray, int beginIndex, int endIndex, Object[] targetArray) {
+    if (endIndex - beginIndex <= 2) { // if single element in the run, it's sorted
+      return;
+    }
+    // split the run longer than 1 item into halves
+    int midpoint = ((endIndex + beginIndex) / 4) * 2; // note: due to it's being key/value pairs
+    // recursively sort both runs from array targetArray[] into workArray[]
+    splitAndMerge(targetArray, beginIndex, midpoint, workArray);
+    splitAndMerge(targetArray, midpoint, endIndex, workArray);
+    // merge the resulting runs from array workArray[] into targetArray[]
+    merge(workArray, beginIndex, midpoint, endIndex, targetArray);
+  }
+
+  /**
+   * Left source half is sourceArray[ beginIndex:middleIndex-1]. Right source half is sourceArray[
+   * middleIndex:endIndex-1]. Result is targetArray[ beginIndex:endIndex-1].
+   */
+  @SuppressWarnings("unchecked")
+  private static <K extends Comparable<K>> void merge(
+      Object[] sourceArray, int beginIndex, int middleIndex, int endIndex, Object[] targetArray) {
+    int leftKeyIndex = beginIndex;
+    int rightKeyIndex = middleIndex;
+
+    // While there are elements in the left or right runs, fill in the target array from left to
+    // right
+    for (int k = beginIndex; k < endIndex; k += 2) {
+      // If left run head exists and is <= existing right run head.
+      if (leftKeyIndex < middleIndex - 1
+          && (rightKeyIndex >= endIndex - 1
+              || compareToNullSafe((K) sourceArray[leftKeyIndex], (K) sourceArray[rightKeyIndex])
+                  <= 0)) {
+        targetArray[k] = sourceArray[leftKeyIndex];
+        targetArray[k + 1] = sourceArray[leftKeyIndex + 1];
+        leftKeyIndex = leftKeyIndex + 2;
+      } else {
+        targetArray[k] = sourceArray[rightKeyIndex];
+        targetArray[k + 1] = sourceArray[rightKeyIndex + 1];
+        rightKeyIndex = rightKeyIndex + 2;
+      }
+    }
+  }
+
+  private static <K extends Comparable<K>> int compareToNullSafe(
+      @Nullable K key, @Nullable K pivotKey) {
     if (key == null) {
       return pivotKey == null ? 0 : -1;
     }
@@ -127,16 +165,6 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     }
     Collections.reverse(result);
     return result;
-  }
-
-  private static void swap(Object[] data, int a, int b) {
-    Object keyA = data[a];
-    Object valueA = data[a + 1];
-    data[a] = data[b];
-    data[a + 1] = data[b + 1];
-
-    data[b] = keyA;
-    data[b + 1] = valueA;
   }
 
   @Override
