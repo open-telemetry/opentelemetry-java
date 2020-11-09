@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,7 +73,13 @@ final class LazyStorage {
 
   static {
     AtomicReference<Throwable> deferredStorageFailure = new AtomicReference<>();
-    storage = createStorage(deferredStorageFailure);
+    ContextStorage created = createStorage(deferredStorageFailure);
+    for (Function<? super ContextStorage, ? extends ContextStorage> wrapper :
+        ContextStorageWrappers.getWrappers()) {
+      created = wrapper.apply(created);
+    }
+    storage = created;
+    ContextStorageWrappers.setStorageInitialized();
     Throwable failure = deferredStorageFailure.get();
     // Logging must happen after storage has been set, as loggers may use Context.
     if (failure != null) {
