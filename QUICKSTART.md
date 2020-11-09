@@ -43,7 +43,7 @@ monitored. More information is available in the specification chapter [Obtaining
 
 ```java
 Tracer tracer =
-    OpenTelemetry.getTracer("instrumentation-library-name","semver:1.0.0");
+    OpenTelemetry.getGlobalTracer("instrumentation-library-name","semver:1.0.0");
 ```
 
 ### Create basic Span
@@ -51,11 +51,11 @@ To create a basic span, you only need to specify the name of the span.
 The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
 Span span = tracer.spanBuilder("my span").startSpan();
-try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+try (Scope scope = span.makeCurrent()) {
 	// your use case
 	...
 } catch (Throwable t) {
-    span.setStatus(StatusCanonicalCode.ERROR, "Change it to your error message");
+    span.setStatus(StatusCode.ERROR, "Change it to your error message");
 } finally {
     span.end(); // closing the scope does not end the span, this has to be done manually
 }
@@ -70,24 +70,27 @@ processes, see [Context Propagation](#context-propagation).
 For a method `a` calling a method `b`, the spans could be manually linked in the following way:
 ```java
 void a() {
-  Span parentSpan = tracer.spanBuilder("a")
-        .startSpan();
-  b(parentSpan);
-  parentSpan.end();
+  Span parentSpan = tracer.spanBuilder("a").startSpan();
+  try {
+    b(parentSpan);
+  } finally {
+    parentSpan.end();
+  }
 }
+
 void b(Span parentSpan) {
   Span childSpan = tracer.spanBuilder("b")
-        .setParent(parentSpan)
+        .setParent(Context.current().with(parentSpan))
         .startSpan();
   // do stuff
   childSpan.end();
 }
 ```
-The OpenTelemetry API offers also an automated way to propagate the `parentSpan`:
+The OpenTelemetry API offers also an automated way to propagate the parent span on the current thread:
 ```java
 void a() {
   Span parentSpan = tracer.spanBuilder("a").startSpan();
-  try(Scope scope = TracingContextUtils.currentContextWith(parentSpan)) {
+  try(Scope scope = parentSpan.makeCurrent()) {
     b();
   } finally {
     parentSpan.end();
@@ -95,10 +98,10 @@ void a() {
 }
 void b() {
   Span childSpan = tracer.spanBuilder("b")
-    // NOTE: setParent(parentSpan) is not required; 
-    // `TracingContextUtils.getCurrentSpan()` is automatically added as parent
+    // NOTE: setParent(...) is not required; 
+    // `Span.current()` is automatically added as the parent
     .startSpan();
-  try(Scope scope = TracingContextUtils.currentContextWith(childSpan)) {
+  try(Scope scope = childSpan.makeCurrent()) {
     // do stuff
   } finally {
     childSpan.end();
@@ -155,10 +158,10 @@ representing a single incoming item being processed in the batch.
 
 ```java
 Span child = tracer.spanBuilder("childWithLink")
-        .addLink(parentSpan1.getContext())
-        .addLink(parentSpan2.getContext())
-        .addLink(parentSpan3.getContext())
-        .addLink(remoteContext)
+        .addLink(parentSpan1.getSpanContext())
+        .addLink(parentSpan2.getSpanContext())
+        .addLink(parentSpan3.getSpanContext())
+        .addLink(remoteSpanContext)
     .startSpan();
 ```
 
@@ -177,7 +180,7 @@ The following presents an example of an outgoing HTTP request using `HttpURLConn
 TextMapPropagator.Setter<HttpURLConnection> setter =
   new TextMapPropagator.Setter<HttpURLConnection>() {
     @Override
-    public void put(HttpURLConnection carrier, String key, String value) {
+    public void set(HttpURLConnection carrier, String key, String value) {
         // Insert the context as Header
         carrier.setRequestProperty(key, value);
     }
@@ -185,14 +188,14 @@ TextMapPropagator.Setter<HttpURLConnection> setter =
 
 URL url = new URL("http://127.0.0.1:8080/resource");
 Span outGoing = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.CLIENT).startSpan();
-try (Scope scope = TracingContextUtils.currentContextWith(outGoing)) {
+try (Scope scope = outGoing.makeCurrent()) {
   // Semantic Convention.
-  // (Observe that to set these, Span does not *need* to be the current instance.)
-  outGoing.setAttribute("http.method", "GET");
-  outGoing.setAttribute("http.url", url.toString());
+  // (Note that to set these, Span does not *need* to be the current instance in Context or Scope.)
+  outGoing.setAttribute(SemanticAttributes.HTTP_METHOD, "GET");
+  outGoing.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
   HttpURLConnection transportLayer = (HttpURLConnection) url.openConnection();
   // Inject the request with the *current*  Context, which contains our current Span.
-  OpenTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), transportLayer, setter);
+  OpenTelemetry.getGlobalPropagators().getTextMapPropagator().inject(Context.current(), transportLayer, setter);
   // Make outgoing call
 } finally {
   outGoing.end();
@@ -214,26 +217,31 @@ TextMapPropagator.Getter<HttpExchange> getter =
       }
       return null;
     }
+
+   @Override
+   public Iterable<String> keys(HttpExchange carrier) {
+     return carrier.getRequestHeaders().keySet();
+   } 
 };
 ...
 public void handle(HttpExchange httpExchange) {
   // Extract the SpanContext and other elements from the request.
-  Context extractedContext = OpenTelemetry.getPropagators().getTextMapPropagator()
+  Context extractedContext = OpenTelemetry.getGlobalPropagators().getTextMapPropagator()
         .extract(Context.current(), httpExchange, getter);
-  Span serverSpan = null;
-  try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
+  try (Scope scope = extractedContext.makeCurrent()) {
     // Automatically use the extracted SpanContext as parent.
-    serverSpan = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.SERVER)
+    Span serverSpan = tracer.spanBuilder("GET /resource")
+        .setSpanKind(Span.Kind.SERVER)
         .startSpan();
-    // Add the attributes defined in the Semantic Conventions
-    serverSpan.setAttribute("http.method", "GET");
-    serverSpan.setAttribute("http.scheme", "http");
-    serverSpan.setAttribute("http.host", "localhost:8080");
-    serverSpan.setAttribute("http.target", "/resource");
-    // Serve the request
-    ...
-  } finally {
-    if (serverSpan != null) {
+    try {
+      // Add the attributes defined in the Semantic Conventions
+      serverSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "GET");
+      serverSpan.setAttribute(SemanticAttributes.HTTP_SCHEME, "http");
+      serverSpan.setAttribute(SemanticAttributes.HTTP_HOST, "localhost:8080");
+      serverSpan.setAttribute(SemanticAttributes.HTTP_TARGET, "/resource");
+      // Serve the request
+      ...
+    } finally {
       serverSpan.end();
     }
   }
@@ -254,7 +262,7 @@ The following is an example of counter usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = OpenTelemetry.getMeter("instrumentation-library-name","semver:1.0.0");
+Meter meter = OpenTelemetry.getGlobalMeter("instrumentation-library-name","semver:1.0.0");
 
 // Build counter e.g. LongCounter 
 LongCounter counter = meter
@@ -311,8 +319,8 @@ For example, a basic configuration instantiates the SDK tracer registry and sets
 traces to a logging stream.
 
 ```java
-// Get the tracer
-TracerSdkManagement tracerSdkManagement = OpenTelemetrySdk.getTracerManagement();
+// Get the tracer management interface
+TracerSdkManagement tracerSdkManagement = OpenTelemetrySdk.getGlobalTracerManagement();
 
 // Set to export the traces to a logging stream
 tracerSdkManagement.addSpanProcessor(
@@ -326,10 +334,11 @@ tracerSdkManagement.addSpanProcessor(
 It is not always feasible to trace and export every user request in an application.
 In order to strike a balance between observability and expenses, traces can be sampled. 
 
-The OpenTelemetry SDK offers three samplers out of the box:
+The OpenTelemetry SDK offers four samplers out of the box:
  - [AlwaysOnSampler] which samples every trace regardless of upstream sampling decisions.
  - [AlwaysOffSampler] which doesn't sample any trace, regardless of upstream sampling decisions.
- - [Probability] which samples a configurable percentage of traces, and additionally samples any
+ - [ParentBased] which uses the parent span to make sampling decisions, if present.
+ - [TraceIdRatioBased] which samples a configurable percentage of traces, and additionally samples any
    trace that was sampled upstream.
 
 Additional samplers can be provided by implementing the `io.opentelemetry.sdk.trace.Sampler`
@@ -337,13 +346,13 @@ interface.
 
 ```java
 TraceConfig alwaysOn = TraceConfig.getDefault().toBuilder().setSampler(
-        Samplers.alwaysOn()
+        Sampler.alwaysOn()
 ).build();
 TraceConfig alwaysOff = TraceConfig.getDefault().toBuilder().setSampler(
-        Samplers.alwaysOff()
+        Sampler.alwaysOff()
 ).build();
 TraceConfig half = TraceConfig.getDefault().toBuilder().setSampler(
-        Samplers.probability(0.5)
+        Sampler.traceIdRatioBased(0.5)
 ).build();
 // Configure the sampler to use
 tracerProvider.updateActiveTraceConfig(
@@ -406,7 +415,7 @@ environment variables and builder `set*` methods.
 
 ```java
 // Get TraceConfig associated with TracerSdk 
-TracerConfig traceConfig = OpenTelemetrySdk.getTracerManagement().getActiveTraceConfig();
+TracerConfig traceConfig = OpenTelemetrySdk.getGlobalTracerManagement().getActiveTraceConfig();
 
 // Get TraceConfig Builder
 Builder builder = traceConfig.toBuilder();
@@ -421,7 +430,7 @@ builder.readEnvironmentVariables()
 builder.setMaxNumberOfLinks(10);
 
 // Update the resulting TraceConfig instance
-OpenTelemetrySdk.getTracerManagement().updateActiveTraceConfig(builder.build());
+OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(builder.build());
 ```
 
 Supported system properties and environment variables:
@@ -436,9 +445,10 @@ Supported system properties and environment variables:
 | otel.config.max.link.attrs       | OTEL_CONFIG_MAX_LINK_ATTRS       | Max number of attributes per link, extra will be dropped  (default: 32)                             |
 | otel.config.max.attr.length      | OTEL_CONFIG_MAX_ATTR_LENGTH      | Max length of string attribute value in characters, too long will be truncated (default: unlimited) |
 
-[AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L82--L105
-[AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L108--L131
-[Probability]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L142--L203
+[AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L29
+[AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L40
+[ParentBased]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L54
+[TraceIdRatioBased]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L78
 [Library Guidelines]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/library-guidelines.md
 [OpenTelemetry Collector]: https://github.com/open-telemetry/opentelemetry-collector
 [OpenTelemetry Registry]: https://opentelemetry.io/registry/?s=exporter
