@@ -6,6 +6,7 @@
 package io.opentelemetry.api.common;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -25,7 +26,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
     ArrayBackedLabels() {}
 
     @Override
-    abstract List<Object> data();
+    protected abstract List<Object> data();
 
     @Override
     public void forEach(BiConsumer<String, String> consumer) {
@@ -107,7 +108,8 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
   }
 
   private static Labels sortAndFilterToLabels(Object... data) {
-    return new AutoValue_Labels_ArrayBackedLabels(sortAndFilter(data));
+    return new AutoValue_Labels_ArrayBackedLabels(
+        sortAndFilter(data, /* filterNullValues= */ false));
   }
 
   /** Create a {@link Builder} pre-populated with the contents of this Labels instance. */
