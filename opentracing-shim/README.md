@@ -1,7 +1,9 @@
 [![Javadocs][javadoc-image]][javadoc-url]
-# OpenTelemetry - OpenTracing Shim
+# OpenTelemetry - OpenTracing Shim (Bridge)
 The OpenTracing shim is a bridge layer from OpenTelemetry to the OpenTracing API.
 It takes OpenTelemetry Tracer and exposes it as an implementation of an OpenTracing Tracer.
+
+The latest version is available on Maven Central under [io.opentelemetry:opentelemetry-opentracing-shim](https://search.maven.org/artifact/io.opentelemetry/opentelemetry-opentracing-shim).
 
 ## Usage
 
