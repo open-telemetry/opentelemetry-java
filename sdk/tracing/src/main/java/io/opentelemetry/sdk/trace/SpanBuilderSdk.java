@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
@@ -165,9 +166,9 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder setStartTimestamp(long startTimestamp) {
+  public Span.Builder setStartTimestamp(long startTimestamp, TimeUnit unit) {
     Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
-    startEpochNanos = startTimestamp;
+    startEpochNanos = unit.toNanos(startTimestamp);
     return this;
   }
 

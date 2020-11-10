@@ -38,6 +38,7 @@ import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -481,11 +482,62 @@ class RecordEventsReadableSpanTest {
     try {
       span.addEvent("event1");
       span.addEvent("event2", Attributes.of(stringKey("e1key"), "e1Value"));
+      span.addEvent("event3", 10, TimeUnit.SECONDS);
+      span.addEvent("event4", Instant.ofEpochSecond(20));
+      span.addEvent(
+          "event5", Attributes.builder().put("foo", "bar").build(), 30, TimeUnit.MILLISECONDS);
+      span.addEvent(
+          "event6", Attributes.builder().put("foo", "bar").build(), Instant.ofEpochMilli(1000));
     } finally {
       span.end();
     }
     List<Event> events = span.toSpanData().getEvents();
-    assertThat(events.size()).isEqualTo(2);
+    assertThat(events).hasSize(6);
+    assertThat(events.get(0))
+        .satisfies(
+            event -> {
+              assertThat(event.getName()).isEqualTo("event1");
+              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+              assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+            });
+    assertThat(events.get(1))
+        .satisfies(
+            event -> {
+              assertThat(event.getName()).isEqualTo("event2");
+              assertThat(event.getAttributes())
+                  .isEqualTo(Attributes.of(stringKey("e1key"), "e1Value"));
+              assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+            });
+    assertThat(events.get(2))
+        .satisfies(
+            event -> {
+              assertThat(event.getName()).isEqualTo("event3");
+              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(10));
+            });
+    assertThat(events.get(3))
+        .satisfies(
+            event -> {
+              assertThat(event.getName()).isEqualTo("event4");
+              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(20));
+            });
+    assertThat(events.get(4))
+        .satisfies(
+            event -> {
+              assertThat(event.getName()).isEqualTo("event5");
+              assertThat(event.getAttributes())
+                  .isEqualTo(Attributes.builder().put("foo", "bar").build());
+              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(30));
+            });
+    assertThat(events.get(5))
+        .satisfies(
+            event -> {
+              assertThat(event.getName()).isEqualTo("event6");
+              assertThat(event.getAttributes())
+                  .isEqualTo(Attributes.builder().put("foo", "bar").build());
+              assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(1000));
+            });
   }
 
   @Test
@@ -509,6 +561,20 @@ class RecordEventsReadableSpanTest {
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
     assertThat(spanData.getTotalAttributeCount()).isEqualTo(2 * maxNumberOfAttributes);
+  }
+
+  @Test
+  void endWithTimestamp_numeric() {
+    RecordEventsReadableSpan span1 = createTestRootSpan();
+    span1.end(10, TimeUnit.NANOSECONDS);
+    assertThat(span1.toSpanData().getEndEpochNanos()).isEqualTo(10);
+  }
+
+  @Test
+  void endWithTimestamp_instant() {
+    RecordEventsReadableSpan span1 = createTestRootSpan();
+    span1.end(Instant.ofEpochMilli(10));
+    assertThat(span1.toSpanData().getEndEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(10));
   }
 
   @Test
@@ -690,11 +756,15 @@ class RecordEventsReadableSpanTest {
     span.setStatus(null, null);
     span.updateName(null);
     span.addEvent(null);
-    span.addEvent(null, 0);
-    span.addEvent(null, null);
-    span.addEvent(null, null, 0);
+    span.addEvent(null, 0, null);
+    span.addEvent(null, (Attributes) null);
+    span.addEvent(null, (Instant) null);
+    span.addEvent(null, null, 0, null);
+    span.addEvent(null, null, null);
     span.recordException(null);
-    span.end(0);
+    span.end(0, TimeUnit.NANOSECONDS);
+    span.end(1, null);
+    span.end(null);
 
     // Ignored the bad calls
     SpanData data = span.toSpanData();

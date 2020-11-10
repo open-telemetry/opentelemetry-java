@@ -31,6 +31,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
@@ -317,11 +318,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public ReadWriteSpan addEvent(String name, long timestamp) {
+  public ReadWriteSpan addEvent(String name, long timestamp, TimeUnit unit) {
     if (name == null) {
       return this;
     }
-    addTimedEvent(Event.create(timestamp, name, Attributes.empty(), 0));
+    addTimedEvent(Event.create(unit.toNanos(timestamp), name, Attributes.empty(), 0));
     return this;
   }
 
@@ -341,14 +342,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public ReadWriteSpan addEvent(String name, Attributes attributes, long timestamp) {
+  public ReadWriteSpan addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
     if (name == null) {
       return this;
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         Event.create(
-            timestamp,
+            unit.toNanos(timestamp),
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
@@ -408,7 +409,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (exception == null) {
       return this;
     }
-    long timestamp = clock.now();
+    long timestampNanos = clock.now();
 
     Attributes.Builder attributes = Attributes.builder();
     attributes.put(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
@@ -423,7 +424,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       attributes.putAll(additionalAttributes);
     }
 
-    addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
+    addEvent(
+        SemanticAttributes.EXCEPTION_EVENT_NAME,
+        attributes.build(),
+        timestampNanos,
+        TimeUnit.NANOSECONDS);
     return this;
   }
 
@@ -448,8 +453,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void end(long timestamp) {
-    endInternal(timestamp == 0 ? clock.now() : timestamp);
+  public void end(long timestamp, TimeUnit unit) {
+    if (unit == null) {
+      unit = TimeUnit.NANOSECONDS;
+    }
+    endInternal(timestamp == 0 ? clock.now() : unit.toNanos(timestamp));
   }
 
   private void endInternal(long endEpochNanos) {
