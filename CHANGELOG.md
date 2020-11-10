@@ -21,7 +21,7 @@ Methods to create the builders remain in the same place as they were before.
 #### Miscellaneous:
 
 - The `SpanProcessor` interface now includes default method implementations for the `shutdown()` and `forceFlush()` methods.
-
+- The BatchRecorder implementation has been updated to actually batch the recordings, rather than simply passing them through.
 
 -----
 
