@@ -87,7 +87,7 @@ final class LazyStorage {
     String providerClassName = System.getProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY, "");
     // Allow user to enforce default ThreadLocalContextStorage
     if (ENFORCE_DEFAULT_VALUE.equals(providerClassName)) {
-      return DefaultContext.threadLocalStorage();
+      return ContextStorage.defaultStorage();
     }
 
     List<ContextStorageProvider> providers = new ArrayList<>();
@@ -118,7 +118,7 @@ final class LazyStorage {
                   + "qualified class name of the provider to use. Falling back to default "
                   + "ContextStorage. Found providers: "
                   + providers));
-      return DefaultContext.threadLocalStorage();
+      return ContextStorage.defaultStorage();
     }
 
     for (ContextStorageProvider provider : providers) {
@@ -134,7 +134,7 @@ final class LazyStorage {
                 + providerClassName
                 + " but found providers: "
                 + providers));
-    return DefaultContext.threadLocalStorage();
+    return ContextStorage.defaultStorage();
   }
 
   private LazyStorage() {}
