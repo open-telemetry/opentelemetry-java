@@ -83,8 +83,9 @@ final class LazyStorage {
   }
 
   static ContextStorage createStorage(AtomicReference<Throwable> deferredStorageFailure) {
+    // Get the specified SPI implementation first here
     String providerClassName = System.getProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY, "");
-    // enforceDefault
+    // Allow user to enforce default ThreadLocalContextStorage
     if (ENFORCE_DEFAULT_VALUE.equals(providerClassName)) {
       return DefaultContext.threadLocalStorage();
     }
