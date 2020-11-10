@@ -7,6 +7,14 @@
 #### Breaking changes:
 
 - The SPI interfaces have moved to a package (not a module) separate from the API packages, and now live in `io.opentelemetry.spi.*` package namespace.
+- Builder classes have been moved to the top level, rather than being inner classes. 
+For example, rather than `io.opentelemetry.api.trace.Span.Builder`, the builder is now in its own top-level class: `io.opentelemetry.api.trace.SpanBuilder`.
+Methods to create the builders remain in the same place as they were before.
+- SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent methods which accept a timestamp now accept a timestamp with a TimeUnit instead of requiring a nanos timestamp
+   
+#### Enhancements:
+
+- Versions of SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent added which accept Instant timestamps
 
 ### SDK
 
