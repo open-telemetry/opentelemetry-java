@@ -11,7 +11,9 @@ class LongSumAggregator implements LongAggregator {
   private final LongAdder longAdder = new LongAdder();
   private final boolean keepCumulativeSums;
 
-  LongSumAggregator(boolean keepCumulativeSums) {this.keepCumulativeSums = keepCumulativeSums;}
+  LongSumAggregator(boolean keepCumulativeSums) {
+    this.keepCumulativeSums = keepCumulativeSums;
+  }
 
   @Override
   public void record(long recording) {

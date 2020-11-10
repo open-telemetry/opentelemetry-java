@@ -12,14 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 class Accumulator {
-  private final Processor processor;
 
   private final ConcurrentMap<AggregatorKey, LongAggregator> longAggregators =
       new ConcurrentHashMap<>();
-
-  Accumulator(Processor processor) {
-    this.processor = processor;
-  }
 
   void recordLongAdd(
       InstrumentationLibraryInfo instrumentationLibraryInfo,
@@ -39,11 +34,11 @@ class Accumulator {
 
   private static LongAggregator lookupLongAggregator(AggregatorKey aggregatorKey) {
     // todo: look up from a ViewRegistry-like thingee.
-    return new LongSumAggregator(false);
+    return new LongSumAggregator(/* keepCumulativeSums=*/ false);
   }
 
   // called by the Controller, either on an interval, or when a pull-based exporter needs it.
-  void collect() {
+  void collectAndSendTo(Processor processor) {
     // this method will take all the accumulations and pass them on to the Processor
     // it will do this for each of the Aggregators that have been created this collection cycle,
     // doing a snapshot ("synchronized move") on each of them to get the appropriate Accumulation

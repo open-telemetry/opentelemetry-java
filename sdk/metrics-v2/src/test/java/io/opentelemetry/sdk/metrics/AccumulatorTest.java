@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -23,7 +22,7 @@ class AccumulatorTest {
   @Test
   void collectionCycle() {
     Processor processor = mock(Processor.class);
-    Accumulator accumulator = new Accumulator(processor);
+    Accumulator accumulator = new Accumulator();
 
     InstrumentDescriptor instrumentDescriptor =
         InstrumentDescriptor.create(
@@ -40,7 +39,7 @@ class AccumulatorTest {
 
     verifyNoInteractions(processor);
 
-    accumulator.collect();
+    accumulator.collectAndSendTo(processor);
 
     AggregatorKey expectedKey1 =
         AggregatorKey.create(
@@ -55,7 +54,7 @@ class AccumulatorTest {
   @Test
   void collectionCycle_twoRecordingsSameKey() {
     Processor processor = mock(Processor.class);
-    Accumulator accumulator = new Accumulator(processor);
+    Accumulator accumulator = new Accumulator();
 
     InstrumentDescriptor instrumentDescriptor =
         InstrumentDescriptor.create(
@@ -71,7 +70,7 @@ class AccumulatorTest {
 
     verifyNoInteractions(processor);
 
-    accumulator.collect();
+    accumulator.collectAndSendTo(processor);
 
     AggregatorKey expectedKey =
         AggregatorKey.create(instrumentationLibraryInfo, instrumentDescriptor, labels);
@@ -81,7 +80,7 @@ class AccumulatorTest {
   @Test
   void collectionCycle_twoRecordingsCycles() {
     Processor processor = mock(Processor.class);
-    Accumulator accumulator = new Accumulator(processor);
+    Accumulator accumulator = new Accumulator();
 
     InstrumentDescriptor instrumentDescriptor =
         InstrumentDescriptor.create(
@@ -96,17 +95,17 @@ class AccumulatorTest {
 
     verifyNoInteractions(processor);
 
-    accumulator.collect();
+    accumulator.collectAndSendTo(processor);
 
     AggregatorKey expectedKey =
         AggregatorKey.create(instrumentationLibraryInfo, instrumentDescriptor, labels);
 
     verify(processor, only()).process(expectedKey, LongAccumulation.create(24));
 
-    //reset here so we don't get confused by the first cycle
+    // reset here so we don't get confused by the first cycle
     Mockito.reset(processor);
     accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, 12);
-    accumulator.collect();
+    accumulator.collectAndSendTo(processor);
 
     verify(processor, only()).process(expectedKey, LongAccumulation.create(12));
   }

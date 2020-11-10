@@ -17,7 +17,7 @@ public class MeterProviderImpl implements MeterProvider {
   }
 
   public static MeterProvider create() {
-    return new MeterProviderImpl(new Accumulator(new Processor()));
+    return new MeterProviderImpl(new Accumulator());
   }
 
   @Override
