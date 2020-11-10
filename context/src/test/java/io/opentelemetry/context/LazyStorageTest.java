@@ -13,37 +13,36 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ClearSystemProperty;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 class LazyStorageTest {
 
   private static final String CONTEXT_STORAGE_PROVIDER_PROPERTY =
       "io.opentelemetry.context.contextStorageProvider";
+  private static final String MOCK_CONTEXT_STORAGE_PROVIDER =
+      "io.opentelemetry.context.LazyStorageTest$MockContextStorageProvider";
   private static final AtomicReference<Throwable> DEFERRED_STORAGE_FAILURE =
       new AtomicReference<>();
 
-  @AfterEach
-  public void after() {
-    System.clearProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY);
-  }
-
   @Test
-  public void empty_provides() {
+  @ClearSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY)
+  void empty_providers() {
     assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
-        .isEqualTo(DefaultContext.threadLocalStorage());
+        .isEqualTo(ContextStorage.defaultStorage());
   }
 
   @Test
-  public void set_storage_provider_property_and_empty_provides() {
-    System.setProperty(
-        CONTEXT_STORAGE_PROVIDER_PROPERTY, MockContextStorageProvider.class.getName());
+  @SetSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY, value = MOCK_CONTEXT_STORAGE_PROVIDER)
+  void set_storage_provider_property_and_empty_providers() {
     assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
-        .isEqualTo(DefaultContext.threadLocalStorage());
+        .isEqualTo(ContextStorage.defaultStorage());
   }
 
   @Test
-  public void unset_storage_provider_property_and_one_provides() throws Exception {
+  @ClearSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY)
+  void unset_storage_provider_property_and_one_providers() throws Exception {
     File serviceFile = createContextStorageProvider();
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE)).isEqualTo(mockContextStorage);
@@ -53,24 +52,44 @@ class LazyStorageTest {
   }
 
   @Test
-  public void set_storage_provider_property_not_matches_one_provides() throws Exception {
-    System.setProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY, "not.match.provider.class.name");
+  @SetSystemProperty(
+      key = CONTEXT_STORAGE_PROVIDER_PROPERTY,
+      value = "not.match.provider.class.name")
+  void set_storage_provider_property_not_matches_one_providers() throws Exception {
     File serviceFile = createContextStorageProvider();
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
-          .isEqualTo(DefaultContext.threadLocalStorage());
+          .isEqualTo(ContextStorage.defaultStorage());
     } finally {
       serviceFile.delete();
     }
   }
 
   @Test
-  public void set_storage_provider_property_matches_one_provides() throws Exception {
-    System.setProperty(
-        CONTEXT_STORAGE_PROVIDER_PROPERTY, MockContextStorageProvider.class.getName());
+  @SetSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY, value = MOCK_CONTEXT_STORAGE_PROVIDER)
+  void set_storage_provider_property_matches_one_providers() throws Exception {
     File serviceFile = createContextStorageProvider();
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE)).isEqualTo(mockContextStorage);
+    } finally {
+      serviceFile.delete();
+    }
+  }
+
+  @Test
+  @SetSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY, value = "default")
+  void enforce_default_and_empty_providers() {
+    assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
+        .isEqualTo(ContextStorage.defaultStorage());
+  }
+
+  @Test
+  @SetSystemProperty(key = CONTEXT_STORAGE_PROVIDER_PROPERTY, value = "default")
+  void enforce_default_and_one_providers() throws IOException {
+    File serviceFile = createContextStorageProvider();
+    try {
+      assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
+          .isEqualTo(ContextStorage.defaultStorage());
     } finally {
       serviceFile.delete();
     }
