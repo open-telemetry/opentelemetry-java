@@ -21,6 +21,7 @@ public class TraceAssert
     super(spanData, TraceAssert.class);
   }
 
+  /** Asserts that the trace has the given trace ID. */
   public TraceAssert hasTraceId(String traceId) {
     isNotNull();
     isNotEmpty();

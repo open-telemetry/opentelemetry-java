@@ -77,7 +77,7 @@ class OpenTelemetryExtensionTest {
 
     otelTesting
         .assertTraces()
-        .hasTracesSatisfyingExactly(
+        .hasTracesSatisfyingInAnyOrder(
             trace ->
                 trace.hasSpansSatisfyingExactly(s -> s.hasName("testa1"), s -> s.hasName("testa2")),
             trace ->

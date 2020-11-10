@@ -22,7 +22,7 @@ public class TracesAssert
         TracesAssert, List<List<SpanData>>, List<SpanData>, TraceAssert> {
 
   /**
-   * Returns an assertion for a list of traces. The traces must already be grouped into {@link
+   * Returns an assertion for a list of traces. The traces must already be grouped into {@code
    * List<SpanData>} where each list has spans with the same trace ID.
    */
   public static TracesAssert assertThat(Collection<List<SpanData>> traces) {
@@ -48,7 +48,7 @@ public class TracesAssert
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public final TracesAssert hasTracesSatisfyingExactly(Consumer<TraceAssert>... assertions) {
+  public final TracesAssert hasTracesSatisfyingInAnyOrder(Consumer<TraceAssert>... assertions) {
     hasSize(assertions.length);
     zipSatisfy(
         Arrays.asList(assertions), (trace, assertion) -> assertion.accept(new TraceAssert(trace)));

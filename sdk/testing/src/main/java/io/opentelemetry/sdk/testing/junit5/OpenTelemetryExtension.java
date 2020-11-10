@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -102,7 +103,10 @@ public class OpenTelemetryExtension
    */
   public TracesAssert assertTraces() {
     Map<String, List<SpanData>> traces =
-        getSpans().stream().collect(Collectors.groupingBy(SpanData::getTraceId));
+        getSpans().stream()
+            .collect(
+                Collectors.groupingBy(
+                    SpanData::getTraceId, LinkedHashMap::new, Collectors.toList()));
     for (List<SpanData> trace : traces.values()) {
       trace.sort(Comparator.comparing(SpanData::getStartEpochNanos));
     }
