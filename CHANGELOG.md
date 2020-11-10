@@ -15,6 +15,9 @@ Methods to create the builders remain in the same place as they were before.
 #### Enhancements:
 
 - Versions of SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent added which accept Instant timestamps
+- Setting the value of the `io.opentelemetry.context.contextStorageProvider` System property to `default` will enforce that
+the default (thread local) ContextStorage will be used for the Context implementation, regardless of what SPI implementations are
+available.
 
 ### SDK
 
