@@ -39,7 +39,7 @@ class Accumulator {
 
   private static LongAggregator lookupLongAggregator(AggregatorKey aggregatorKey) {
     // todo: look up from a ViewRegistry-like thingee.
-    return new LongSumAggregator();
+    return new LongSumAggregator(false);
   }
 
   // called by the Controller, either on an interval, or when a pull-based exporter needs it.
@@ -57,7 +57,8 @@ class Accumulator {
     // to this with a method call? like aggregator.hasRecordings() ?
     // - when to remove the keys from the map? maybe if it has no recording in the interval?
     // - double typed aggregators
-    // -
+    // - maybe, since the Accumulator can't be stateful, we can just remove them all, always?
+
     for (Map.Entry<AggregatorKey, LongAggregator> entry : longAggregators.entrySet()) {
       AggregatorKey key = entry.getKey();
       LongAggregator longAggregator = entry.getValue();

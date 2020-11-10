@@ -9,6 +9,9 @@ import java.util.concurrent.atomic.LongAdder;
 
 class LongSumAggregator implements LongAggregator {
   private final LongAdder longAdder = new LongAdder();
+  private final boolean keepCumulativeSums;
+
+  LongSumAggregator(boolean keepCumulativeSums) {this.keepCumulativeSums = keepCumulativeSums;}
 
   @Override
   public void record(long recording) {
@@ -17,7 +20,7 @@ class LongSumAggregator implements LongAggregator {
 
   @Override
   public Accumulation collect() {
-    // todo: reset if delta-style aggregation
-    return LongAccumulation.create(longAdder.sum());
+    long value = keepCumulativeSums ? longAdder.sum() : longAdder.sumThenReset();
+    return LongAccumulation.create(value);
   }
 }
