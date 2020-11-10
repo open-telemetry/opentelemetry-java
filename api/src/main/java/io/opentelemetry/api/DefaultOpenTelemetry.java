@@ -117,7 +117,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
         .setPropagators(propagators);
   }
 
-  static class Builder implements OpenTelemetry.Builder<Builder> {
+  static class Builder implements OpenTelemetryBuilder<Builder> {
     private ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
     private TracerProvider tracerProvider;

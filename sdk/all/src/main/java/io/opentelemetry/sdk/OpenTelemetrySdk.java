@@ -9,6 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetryBuilder;
 import io.opentelemetry.api.internal.Obfuscated;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
@@ -128,7 +129,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   }
 
   /** A builder for configuring an {@link OpenTelemetrySdk}. */
-  public static class Builder implements OpenTelemetry.Builder<Builder> {
+  public static class Builder implements OpenTelemetryBuilder<Builder> {
     private Clock clock = MillisClock.getInstance();
     private Resource resource = Resource.getDefault();
     private ContextPropagators propagators = DefaultContextPropagators.builder().build();

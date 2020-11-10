@@ -21,7 +21,9 @@ import io.opencensus.trace.export.SpanData.TimedEvent;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
@@ -77,7 +79,7 @@ class SpanConverter {
       return io.opentelemetry.api.trace.Span.getInvalid();
     }
     SpanData ocSpanData = ((RecordEventsSpanImpl) span).toSpanData();
-    io.opentelemetry.api.trace.Span.Builder builder =
+    SpanBuilder builder =
         TRACER
             .spanBuilder(ocSpanData.getName())
             .setStartTimestamp(
@@ -102,7 +104,7 @@ class SpanConverter {
     }
     if (ocSpanData.getLinks() != null) {
       for (Link link : ocSpanData.getLinks().getLinks()) {
-        Attributes.Builder attributesBuilder = Attributes.builder();
+        AttributesBuilder attributesBuilder = Attributes.builder();
         link.getAttributes()
             .forEach(
                 (s, attributeValue) ->
@@ -176,7 +178,7 @@ class SpanConverter {
   static void mapAndAddAnnotations(
       io.opentelemetry.api.trace.Span span, List<TimedEvent<Annotation>> annotations) {
     for (TimedEvent<Annotation> annotation : annotations) {
-      Attributes.Builder attributesBuilder = Attributes.builder();
+      AttributesBuilder attributesBuilder = Attributes.builder();
       annotation
           .getEvent()
           .getAttributes()
@@ -197,7 +199,7 @@ class SpanConverter {
     }
   }
 
-  private static Function<String, Void> setStringAttribute(Attributes.Builder builder, String key) {
+  private static Function<String, Void> setStringAttribute(AttributesBuilder builder, String key) {
     return arg -> {
       builder.put(key, arg);
       return null;
@@ -205,8 +207,7 @@ class SpanConverter {
   }
 
   private static Function<String, Void> setStringAttribute(
-      io.opentelemetry.api.trace.Span.Builder builder,
-      Map.Entry<String, AttributeValue> attribute) {
+      SpanBuilder builder, Map.Entry<String, AttributeValue> attribute) {
     return arg -> {
       builder.setAttribute(attribute.getKey(), arg);
       return null;
@@ -214,7 +215,7 @@ class SpanConverter {
   }
 
   private static Function<Boolean, Void> setBooleanAttribute(
-      Attributes.Builder builder, String key) {
+      AttributesBuilder builder, String key) {
     return arg -> {
       builder.put(key, arg);
       return null;
@@ -222,15 +223,14 @@ class SpanConverter {
   }
 
   private static Function<Boolean, Void> setBooleanAttribute(
-      io.opentelemetry.api.trace.Span.Builder builder,
-      Map.Entry<String, AttributeValue> attribute) {
+      SpanBuilder builder, Map.Entry<String, AttributeValue> attribute) {
     return arg -> {
       builder.setAttribute(attribute.getKey(), arg);
       return null;
     };
   }
 
-  private static Function<Long, Void> setLongAttribute(Attributes.Builder builder, String key) {
+  private static Function<Long, Void> setLongAttribute(AttributesBuilder builder, String key) {
     return arg -> {
       builder.put(key, arg);
       return null;
@@ -238,15 +238,14 @@ class SpanConverter {
   }
 
   private static Function<Long, Void> setLongAttribute(
-      io.opentelemetry.api.trace.Span.Builder builder,
-      Map.Entry<String, AttributeValue> attribute) {
+      SpanBuilder builder, Map.Entry<String, AttributeValue> attribute) {
     return arg -> {
       builder.setAttribute(attribute.getKey(), arg);
       return null;
     };
   }
 
-  private static Function<Double, Void> setDoubleAttribute(Attributes.Builder builder, String key) {
+  private static Function<Double, Void> setDoubleAttribute(AttributesBuilder builder, String key) {
     return arg -> {
       builder.put(key, arg);
       return null;
@@ -254,8 +253,7 @@ class SpanConverter {
   }
 
   private static Function<Double, Void> setDoubleAttribute(
-      io.opentelemetry.api.trace.Span.Builder builder,
-      Map.Entry<String, AttributeValue> attribute) {
+      SpanBuilder builder, Map.Entry<String, AttributeValue> attribute) {
     return arg -> {
       builder.setAttribute(attribute.getKey(), arg);
       return null;

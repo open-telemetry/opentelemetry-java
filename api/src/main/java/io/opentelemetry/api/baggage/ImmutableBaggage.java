@@ -18,7 +18,15 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements Baggage {
 
-  static final Baggage EMPTY = new ImmutableBaggage.Builder().setNoParent().build();
+  private static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
+
+  static Baggage empty() {
+    return EMPTY;
+  }
+
+  static BaggageBuilder builder() {
+    return new Builder();
+  }
 
   @AutoValue
   @Immutable
@@ -29,13 +37,9 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
     protected abstract List<Object> data();
 
     @Override
-    public Baggage.Builder toBuilder() {
+    public BaggageBuilder toBuilder() {
       return new ImmutableBaggage.Builder(new ArrayList<>(data()));
     }
-  }
-
-  public static Baggage.Builder builder() {
-    return new Builder();
   }
 
   @Override
@@ -54,7 +58,7 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
   }
 
   @Override
-  public Baggage.Builder toBuilder() {
+  public BaggageBuilder toBuilder() {
     Builder builder = new Builder(data());
     builder.noImplicitParent = true;
     return builder;
@@ -67,7 +71,7 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
 
   // TODO: Migrate to AutoValue.Builder
   // @AutoValue.Builder
-  static class Builder implements Baggage.Builder {
+  static class Builder implements BaggageBuilder {
 
     @Nullable private Baggage parent;
     private boolean noImplicitParent;
@@ -82,21 +86,21 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
     }
 
     @Override
-    public Baggage.Builder setParent(Context context) {
+    public BaggageBuilder setParent(Context context) {
       requireNonNull(context, "context");
       parent = Baggage.fromContext(context);
       return this;
     }
 
     @Override
-    public Baggage.Builder setNoParent() {
+    public BaggageBuilder setNoParent() {
       this.parent = null;
       noImplicitParent = true;
       return this;
     }
 
     @Override
-    public Baggage.Builder put(String key, String value, EntryMetadata entryMetadata) {
+    public BaggageBuilder put(String key, String value, EntryMetadata entryMetadata) {
       requireNonNull(key, "key");
       requireNonNull(value, "value");
       requireNonNull(entryMetadata, "entryMetadata");
@@ -107,14 +111,14 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
     }
 
     @Override
-    public Baggage.Builder put(String key, String value) {
+    public BaggageBuilder put(String key, String value) {
       requireNonNull(key, "key");
       requireNonNull(value, "value");
       return put(key, value, EntryMetadata.EMPTY);
     }
 
     @Override
-    public Baggage.Builder remove(String key) {
+    public BaggageBuilder remove(String key) {
       requireNonNull(key, "key");
       data.add(key);
       data.add(null);

@@ -14,6 +14,7 @@ import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -361,7 +362,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return attributes;
     }
 
-    Attributes.Builder result = Attributes.builder();
+    AttributesBuilder result = Attributes.builder();
     attributes.forEach(new LimitingAttributeConsumer(limit, result));
     return result.build();
   }
@@ -411,7 +412,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     long timestampNanos = clock.now();
 
-    Attributes.Builder attributes = Attributes.builder();
+    AttributesBuilder attributes = Attributes.builder();
     attributes.put(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
       attributes.put(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
@@ -577,10 +578,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   @SuppressWarnings({"rawtypes", "unchecked"})
   private static class LimitingAttributeConsumer implements AttributeConsumer {
     private final int limit;
-    private final Attributes.Builder builder;
+    private final AttributesBuilder builder;
     private int added;
 
-    public LimitingAttributeConsumer(int limit, Attributes.Builder builder) {
+    public LimitingAttributeConsumer(int limit, AttributesBuilder builder) {
       this.limit = limit;
       this.builder = builder;
     }

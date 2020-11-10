@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
@@ -44,7 +45,7 @@ class DelegatingSpanDataTest {
       } else {
         clientType = "unknown";
       }
-      Attributes.Builder newAttributes = Attributes.builder();
+      AttributesBuilder newAttributes = Attributes.builder();
       delegate.getAttributes().forEach(newAttributes::put);
       newAttributes.put("client_type", clientType);
       attributes = newAttributes.build();

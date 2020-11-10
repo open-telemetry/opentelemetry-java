@@ -16,7 +16,7 @@ import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for {@link Baggage} and {@link Baggage.Builder}.
+ * Tests for {@link Baggage} and {@link BaggageBuilder}.
  *
  * <p>Tests for scope management with {@link Baggage} are in {@link ScopedBaggageTest}.
  */
@@ -81,7 +81,7 @@ class ImmutableBaggageTest {
   void put_nullKey() {
     Baggage parent = listToBaggage(T1);
     Context parentContext = Context.root().with(parent);
-    Baggage.Builder builder = Baggage.builder().setParent(parentContext);
+    BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     assertThrows(NullPointerException.class, () -> builder.put(null, V2, TMD), "key");
   }
 
@@ -89,7 +89,7 @@ class ImmutableBaggageTest {
   void put_nullValue() {
     Baggage parent = listToBaggage(T1);
     Context parentContext = Context.root().with(parent);
-    Baggage.Builder builder = Baggage.builder().setParent(parentContext);
+    BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     assertThrows(NullPointerException.class, () -> builder.put(K2, null, TMD), "value");
   }
 
@@ -125,7 +125,7 @@ class ImmutableBaggageTest {
 
   @Test
   void remove_existingKey() {
-    Baggage.Builder builder = Baggage.builder();
+    BaggageBuilder builder = Baggage.builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
@@ -134,7 +134,7 @@ class ImmutableBaggageTest {
 
   @Test
   void remove_differentKey() {
-    Baggage.Builder builder = Baggage.builder();
+    BaggageBuilder builder = Baggage.builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
@@ -151,7 +151,7 @@ class ImmutableBaggageTest {
 
   @Test
   void remove_nullKey() {
-    Baggage.Builder builder = Baggage.builder();
+    BaggageBuilder builder = Baggage.builder();
     assertThrows(NullPointerException.class, () -> builder.remove(null), "key");
   }
 

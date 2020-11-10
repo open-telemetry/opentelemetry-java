@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.util.ServiceLoader;
@@ -69,7 +70,7 @@ public class Ec2ResourceTest {
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
     Attributes attributes = populator.getAttributes();
-    Attributes.Builder expectedAttrBuilders = Attributes.builder();
+    AttributesBuilder expectedAttrBuilders = Attributes.builder();
 
     expectedAttrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, "aws");
     expectedAttrBuilders.put(ResourceAttributes.HOST_ID, "i-1234567890abcdef0");
@@ -103,7 +104,7 @@ public class Ec2ResourceTest {
 
     Attributes attributes = populator.getAttributes();
 
-    Attributes.Builder expectedAttrBuilders =
+    AttributesBuilder expectedAttrBuilders =
         Attributes.builder()
             .put(ResourceAttributes.CLOUD_PROVIDER, "aws")
             .put(ResourceAttributes.HOST_ID, "i-1234567890abcdef0")

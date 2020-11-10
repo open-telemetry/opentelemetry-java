@@ -25,14 +25,14 @@ final class DefaultTracer implements Tracer {
   }
 
   @Override
-  public Span.Builder spanBuilder(String spanName) {
+  public SpanBuilder spanBuilder(String spanName) {
     return NoopSpanBuilder.create(spanName);
   }
 
   private DefaultTracer() {}
 
   // Noop implementation of Span.Builder.
-  private static final class NoopSpanBuilder implements Span.Builder {
+  private static final class NoopSpanBuilder implements SpanBuilder {
     static NoopSpanBuilder create(String spanName) {
       return new NoopSpanBuilder(spanName);
     }

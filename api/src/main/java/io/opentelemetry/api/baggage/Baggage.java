@@ -22,11 +22,11 @@ public interface Baggage extends ImplicitContextKeyed {
 
   /** Baggage with no entries. */
   static Baggage empty() {
-    return ImmutableBaggage.EMPTY;
+    return ImmutableBaggage.empty();
   }
 
-  /** Creates a new {@link Builder} for creating Baggage. */
-  static Builder builder() {
+  /** Creates a new {@link BaggageBuilder} for creating Baggage. */
+  static BaggageBuilder builder() {
     return ImmutableBaggage.builder();
   }
 
@@ -86,72 +86,5 @@ public interface Baggage extends ImplicitContextKeyed {
    * Create a Builder pre-initialized with the contents of this Baggage. The returned Builder will
    * be set to not use an implicit parent, so any parent assignment must be done manually.
    */
-  Builder toBuilder();
-
-  /** Builder for the {@link Baggage} class. */
-  interface Builder {
-
-    /**
-     * Sets the parent {@link Baggage} to use from the specified {@code Context}. If no parent
-     * {@link Baggage} is provided, the value of {@link Baggage#current()} at {@link #build()} time
-     * will be used as parent, unless {@link #setNoParent()} was called.
-     *
-     * <p>If no parent {@link Baggage} is available in the specified {@code Context}, the resulting
-     * {@link Baggage} will become a root instance, as if {@link #setNoParent()} had been called.
-     *
-     * <p>This <b>must</b> be used to create a {@link Baggage} when manual Context propagation is
-     * used.
-     *
-     * <p>If called multiple times, only the last specified value will be used.
-     *
-     * @param context the {@code Context}.
-     * @return this.
-     * @throws NullPointerException if {@code context} is {@code null}.
-     * @see #setNoParent()
-     */
-    Builder setParent(Context context);
-
-    /**
-     * Sets the option to become a root {@link Baggage} with no parent. If <b>not</b> called, the
-     * value provided using {@link #setParent(Context)} or otherwise {@link Baggage#current()} at
-     * {@link #build()} time will be used as parent.
-     *
-     * @return this.
-     */
-    Builder setNoParent();
-
-    /**
-     * Adds the key/value pair and metadata regardless of whether the key is present.
-     *
-     * @param key the {@code String} key which will be set.
-     * @param value the {@code String} value to set for the given key.
-     * @param entryMetadata the {@code EntryMetadata} associated with this {@link Entry}.
-     * @return this
-     */
-    Builder put(String key, String value, EntryMetadata entryMetadata);
-
-    /**
-     * Adds the key/value pair with empty metadata regardless of whether the key is present.
-     *
-     * @param key the {@code String} key which will be set.
-     * @param value the {@code String} value to set for the given key.
-     * @return this
-     */
-    Builder put(String key, String value);
-
-    /**
-     * Removes the key if it exists.
-     *
-     * @param key the {@code String} key which will be removed.
-     * @return this
-     */
-    Builder remove(String key);
-
-    /**
-     * Creates a {@code Baggage} from this builder.
-     *
-     * @return a {@code Baggage} with the same entries as this builder.
-     */
-    Baggage build();
-  }
+  BaggageBuilder toBuilder();
 }

@@ -22,6 +22,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -82,7 +83,7 @@ class SpanBuilderSdkTest {
   @Test
   void addLink() {
     // Verify methods do not crash.
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(Span.getInvalid().getSpanContext());
     spanBuilder.addLink(Span.getInvalid().getSpanContext(), Attributes.empty());
 
@@ -103,7 +104,7 @@ class SpanBuilderSdkTest {
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     // Verify methods do not crash.
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
       spanBuilder.addLink(sampledSpanContext);
     }
@@ -129,7 +130,7 @@ class SpanBuilderSdkTest {
             .setMaxNumberOfAttributesPerLink(1)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     Attributes attributes =
         Attributes.of(
             stringKey("key0"), "str",
@@ -149,7 +150,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void addLink_NoEffectAfterStartSpan() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(sampledSpanContext);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
@@ -191,7 +192,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute() {
-    Span.Builder spanBuilder =
+    SpanBuilder spanBuilder =
         tracerSdk
             .spanBuilder(SPAN_NAME)
             .setAttribute("string", "value")
@@ -218,7 +219,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_afterEnd() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("string", "value");
     spanBuilder.setAttribute("long", 12345L);
     spanBuilder.setAttribute("double", .12345);
@@ -255,7 +256,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_emptyArrayAttributeValue() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute(stringArrayKey("stringArrayAttribute"), emptyList());
     spanBuilder.setAttribute(booleanArrayKey("boolArrayAttribute"), emptyList());
     spanBuilder.setAttribute(longArrayKey("longArrayAttribute"), emptyList());
@@ -266,7 +267,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_nullStringValue() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", null);
     spanBuilder.setAttribute(stringKey("nullStringAttributeValue"), null);
@@ -277,7 +278,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_onlyNullStringValue() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute(stringKey("nullStringAttributeValue"), null);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
@@ -285,7 +286,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_NoEffectAfterStartSpan() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("key1", "value1");
     spanBuilder.setAttribute("key2", "value2");
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
@@ -305,7 +306,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_nullAttributeValue() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", null);
     spanBuilder.setAttribute(stringKey("nullStringAttributeValue"), null);
@@ -323,7 +324,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_nullAttributeValue_afterEnd() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute(stringKey("emptyStringAttributeValue"), "");
     spanBuilder.setAttribute("longAttribute", 0L);
@@ -356,7 +357,7 @@ class SpanBuilderSdkTest {
             .setMaxNumberOfAttributes(maxNumberOfAttrs)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfAttrs; i++) {
       spanBuilder.setAttribute("key" + i, i);
     }
@@ -380,7 +381,7 @@ class SpanBuilderSdkTest {
             .setMaxLengthOfAttributeValues(10)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("builderStringNull", null);
     spanBuilder.setAttribute("builderStringSmall", "small");
     spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
@@ -429,7 +430,7 @@ class SpanBuilderSdkTest {
             .setSampler(Sampler.traceIdRatioBased(1))
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);

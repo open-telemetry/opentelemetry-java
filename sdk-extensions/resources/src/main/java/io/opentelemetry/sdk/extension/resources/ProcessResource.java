@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.resources;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
@@ -16,7 +17,7 @@ import java.lang.management.RuntimeMXBean;
 public class ProcessResource extends ResourceProvider {
   @Override
   protected Attributes getAttributes() {
-    Attributes.Builder attributes = Attributes.builder();
+    AttributesBuilder attributes = Attributes.builder();
 
     // TODO(anuraaga): Use reflection to get more stable values on Java 9+
     RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();

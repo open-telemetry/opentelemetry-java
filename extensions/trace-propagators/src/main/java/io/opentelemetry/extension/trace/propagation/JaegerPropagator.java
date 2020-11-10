@@ -6,6 +6,7 @@
 package io.opentelemetry.extension.trace.propagation;
 
 import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -208,7 +209,7 @@ public class JaegerPropagator implements TextMapPropagator {
   }
 
   private static <C> Baggage getBaggageFromHeader(C carrier, Getter<C> getter) {
-    Baggage.Builder builder = null;
+    BaggageBuilder builder = null;
 
     for (String key : getter.keys(carrier)) {
       if (key.startsWith(BAGGAGE_PREFIX)) {
@@ -228,7 +229,7 @@ public class JaegerPropagator implements TextMapPropagator {
   }
 
   @SuppressWarnings("StringSplitter")
-  private static Baggage.Builder parseBaggageHeader(String header, Baggage.Builder builder) {
+  private static BaggageBuilder parseBaggageHeader(String header, BaggageBuilder builder) {
     for (String part : header.split("\\s*,\\s*")) {
       String[] kv = part.split("\\s*=\\s*");
       if (kv.length == 2) {

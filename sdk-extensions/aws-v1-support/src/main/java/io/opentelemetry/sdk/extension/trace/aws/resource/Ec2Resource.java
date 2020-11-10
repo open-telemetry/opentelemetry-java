@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.ByteArrayOutputStream;
@@ -148,7 +149,7 @@ public class Ec2Resource extends ResourceProvider {
 
     String hostname = fetchHostname(token);
 
-    Attributes.Builder attrBuilders = Attributes.builder();
+    AttributesBuilder attrBuilders = Attributes.builder();
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
