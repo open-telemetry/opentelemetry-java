@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanBuilder}. */
@@ -32,7 +34,8 @@ class SpanBuilderTest {
     spanBuilder.setAttribute("key", .12345);
     spanBuilder.setAttribute("key", true);
     spanBuilder.setAttribute(stringKey("key"), "value");
-    spanBuilder.setStartTimestamp(12345L);
+    spanBuilder.setStartTimestamp(12345L, TimeUnit.NANOSECONDS);
+    spanBuilder.setStartTimestamp(Instant.EPOCH);
     assertThat(spanBuilder.startSpan().getSpanContext().isValid()).isFalse();
   }
 
@@ -47,7 +50,7 @@ class SpanBuilderTest {
     SpanBuilder spanBuilder = tracer.spanBuilder("MySpanName");
     assertThrows(
         IllegalArgumentException.class,
-        () -> spanBuilder.setStartTimestamp(-1),
+        () -> spanBuilder.setStartTimestamp(-1, TimeUnit.NANOSECONDS),
         "Negative startTimestamp");
   }
 }

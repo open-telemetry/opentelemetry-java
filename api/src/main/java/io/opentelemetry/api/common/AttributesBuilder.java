@@ -152,7 +152,7 @@ public class AttributesBuilder {
    * @return this Builder
    */
   public AttributesBuilder putAll(Attributes attributes) {
-    data.addAll(attributes.data());
+    attributes.forEach(this::put);
     return this;
   }
 }

@@ -194,6 +194,10 @@ class ImmutableBaggageTest {
 
   @Test
   void testEquals() {
+    Baggage baggage1 = Baggage.builder().put(K1, V1).build();
+    Baggage baggage2 =
+        Baggage.builder().setParent(Context.current().with(baggage1)).put(K1, V2).build();
+    Baggage baggage3 = Baggage.builder().put(K1, V2).build();
     new EqualsTester()
         .addEqualityGroup(
             Baggage.builder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
@@ -201,6 +205,7 @@ class ImmutableBaggageTest {
             Baggage.builder().put(K2, V2, TMD).put(K1, V1, TMD).build())
         .addEqualityGroup(Baggage.builder().put(K1, V1, TMD).put(K2, V1, TMD).build())
         .addEqualityGroup(Baggage.builder().put(K1, V2, TMD).put(K2, V1, TMD).build())
+        .addEqualityGroup(baggage2, baggage3)
         .testEquals();
   }
 }

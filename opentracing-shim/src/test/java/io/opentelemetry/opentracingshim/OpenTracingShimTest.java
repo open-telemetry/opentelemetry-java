@@ -5,7 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -19,7 +19,7 @@ class OpenTracingShimTest {
   @Test
   void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) OpenTracingShim.createTracerShim();
-    assertEquals(OpenTelemetry.getGlobalTracer("opentracingshim"), tracerShim.tracer());
+    assertThat(tracerShim.tracer()).isEqualTo(OpenTelemetry.getGlobalTracer("opentracingshim"));
   }
 
   @Test
@@ -30,6 +30,6 @@ class OpenTracingShimTest {
     when(openTelemetry.getPropagators()).thenReturn(mock(ContextPropagators.class));
 
     TracerShim tracerShim = (TracerShim) OpenTracingShim.createTracerShim(openTelemetry);
-    assertEquals(sdk.get("opentracingshim"), tracerShim.tracer());
+    assertThat(tracerShim.tracer()).isEqualTo(sdk.get("opentracingshim"));
   }
 }

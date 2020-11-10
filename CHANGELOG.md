@@ -1,6 +1,23 @@
 # Changelog
 
-## Unreleased
+## Unreleased:
+
+### API
+
+#### Breaking changes:
+
+- The SPI interfaces have moved to a package (not a module) separate from the API packages, and now live in `io.opentelemetry.spi.*` package namespace.
+
+### SDK
+
+#### Miscellaneous:
+
+- The `SpanProcessor` interface now includes default method implementations for the `shutdown()` and `forceFlush()` methods.
+
+
+-----
+
+## Version 0.10.0 - 2010-11-06
 
 ### API
 
@@ -32,6 +49,7 @@
 - `AttributesBuilder` now uses `put` instead of `add` as the method name for adding attributes.
 - All parameters are now marked as non-nullable by default.
 - `TextMapPropagators` could receive a null carrier passed to the extract method.
+- The `TextMapPropagator.Getter` interface has added a method to return the keys that the propagator uses.
 
 ### SDK
 
@@ -65,6 +83,7 @@
 
 - A new JUnit5 extension was added for writing tests. For more information, see [OpenTelemetryExtension.java](sdk/testing/src/main/java/io/opentelemetry/sdk/testing/junit5/OpenTelemetryExtension.java). 
 - A Jaeger `SpanExporter` which exports via the `thrift-over-http protocol` is now available.
+- A Jaeger Propagator is now available.
 
 #### Breaking changes
 
@@ -72,6 +91,12 @@
 - The OpenTracing shim factory class has been renamed from `TraceShim` to `OpenTracingShim`. The factory methods have changed because `BaggageManager` was removed and non-global `OpenTelemetry` instances are now available.
 - The 's' was removed from the word "exporters" for every exporter artifact. For example, `opentelemetry-exporters-logging` was renamed to `opentelemetry-exporter-logging`. 
 - The 's' was removed from the word "extensions" for the package for every SDK extension. For example, `io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils` was renamed to `io.opentelemetry.sdk.extension.otproto.TraceProtoUtils`.
+
+
+### Thanks
+Many thanks to everyone who made this release possible!
+
+@anuraaga @bogdandrutu @Oberon00 @thisthat @HaloFour @jkwatson @kenfinnigan @MariusVolkhart @malafeev @trask  @tylerbenson @XiXiaPdx @dengliming @hengyunabc @jarebudev @brianashby-sfx 
 
 ## 0.9.1 - 2020-10-07
 
@@ -119,7 +144,8 @@
     - New incubator module with some utilities for mutating SpanData instances.
     - The AWS Resource extension will now pull in EKS Resource attributes.
     - New pre-release extension for handling logging natively.
-    
+ 
+### Thanks    
 Many thanks to all who made this release possible:
    
 @bogdandrutu @Oberon00 @jkwatson @thisthat @anuraaga @jarebudev @malafeev @quijote @JasonXZLiu @zoercai @eunice98k @dengliming @breedx-nr @iNikem @wangzlei @imavroukakis 

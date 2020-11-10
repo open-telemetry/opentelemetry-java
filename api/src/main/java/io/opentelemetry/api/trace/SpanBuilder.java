@@ -5,9 +5,14 @@
 
 package io.opentelemetry.api.trace;
 
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
 /**
@@ -238,16 +243,38 @@ public interface SpanBuilder {
   /**
    * Sets an explicit start timestamp for the newly created {@code Span}.
    *
+   * <p>LIRInstruction.Use this method to specify an explicit start timestamp. If not called, the
+   * implementation will use the timestamp value at {@link #startSpan()} time, which should be the
+   * default case.
+   *
+   * <p>Important this is NOT equivalent with System.nanoTime().
+   *
+   * @param startTimestamp the explicit start timestamp from the epoch of the newly created {@code
+   *     Span}.
+   * @param unit the unit of the timestamp.
+   * @return this.
+   */
+  SpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit);
+
+  /**
+   * Sets an explicit start timestamp for the newly created {@code Span}.
+   *
    * <p>Use this method to specify an explicit start timestamp. If not called, the implementation
    * will use the timestamp value at {@link #startSpan()} time, which should be the default case.
    *
    * <p>Important this is NOT equivalent with System.nanoTime().
    *
-   * @param startTimestamp the explicit start timestamp of the newly created {@code Span} in nanos
-   *     since epoch.
+   * @param startTimestamp the explicit start timestamp from the epoch of the newly created {@code
+   *     Span}.
    * @return this.
    */
-  SpanBuilder setStartTimestamp(long startTimestamp);
+  default SpanBuilder setStartTimestamp(Instant startTimestamp) {
+    if (startTimestamp == null) {
+      return this;
+    }
+    return setStartTimestamp(
+        SECONDS.toNanos(startTimestamp.getEpochSecond()) + startTimestamp.getNano(), NANOSECONDS);
+  }
 
   /**
    * Starts a new {@link Span}.

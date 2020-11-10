@@ -22,7 +22,7 @@ public interface Baggage extends ImplicitContextKeyed {
 
   /** Baggage with no entries. */
   static Baggage empty() {
-    return ImmutableBaggage.EMPTY;
+    return ImmutableBaggage.empty();
   }
 
   /** Creates a new {@link BaggageBuilder} for creating Baggage. */

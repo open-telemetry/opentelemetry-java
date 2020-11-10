@@ -7,11 +7,7 @@ package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByName;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
@@ -44,21 +40,21 @@ class HandlerTest {
     Future<String> responseFuture = client.send("message");
     Future<String> responseFuture2 = client.send("message2");
 
-    assertEquals("message:response", responseFuture.get(15, TimeUnit.SECONDS));
-    assertEquals("message2:response", responseFuture2.get(15, TimeUnit.SECONDS));
+    assertThat(responseFuture.get(15, TimeUnit.SECONDS)).isEqualTo("message:response");
+    assertThat(responseFuture2.get(15, TimeUnit.SECONDS)).isEqualTo("message2:response");
 
     List<SpanData> finished = otelTesting.getSpans();
-    assertEquals(2, finished.size());
+    assertThat(finished).hasSize(2);
 
     for (SpanData spanData : finished) {
-      assertEquals(Kind.CLIENT, spanData.getKind());
+      assertThat(spanData.getKind()).isEqualTo(Kind.CLIENT);
     }
 
-    assertNotEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
-    assertFalse(SpanId.isValid(finished.get(0).getParentSpanId()));
-    assertFalse(SpanId.isValid(finished.get(1).getParentSpanId()));
+    assertThat(finished.get(1).getTraceId()).isNotEqualTo(finished.get(0).getTraceId());
+    assertThat(SpanId.isValid(finished.get(0).getParentSpanId())).isFalse();
+    assertThat(SpanId.isValid(finished.get(1).getParentSpanId())).isFalse();
 
-    assertNull(tracer.scopeManager().activeSpan());
+    assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
 
   /** Active parent is not picked up by child. */
@@ -67,23 +63,23 @@ class HandlerTest {
     Span parentSpan = tracer.buildSpan("parent").start();
     try (Scope parentScope = tracer.activateSpan(parentSpan)) {
       String response = client.send("no_parent").get(15, TimeUnit.SECONDS);
-      assertEquals("no_parent:response", response);
+      assertThat(response).isEqualTo("no_parent:response");
     } finally {
       parentSpan.finish();
     }
 
     List<SpanData> finished = otelTesting.getSpans();
-    assertEquals(2, finished.size());
+    assertThat(finished).hasSize(2);
 
     SpanData child = getOneByName(finished, RequestHandler.OPERATION_NAME);
-    assertNotNull(child);
+    assertThat(child).isNotNull();
 
     SpanData parent = getOneByName(finished, "parent");
-    assertNotNull(parent);
+    assertThat(parent).isNotNull();
 
     // Here check that there is no parent-child relation although it should be because child is
     // created when parent is active
-    assertNotEquals(parent.getSpanId(), child.getParentSpanId());
+    assertThat(child.getParentSpanId()).isNotEqualTo(parent.getSpanId());
   }
 
   /**
@@ -98,27 +94,27 @@ class HandlerTest {
     try (Scope parentScope = tracer.activateSpan(parentSpan)) {
       client = new Client(new RequestHandler(tracer, parentSpan.context()));
       String response = client.send("correct_parent").get(15, TimeUnit.SECONDS);
-      assertEquals("correct_parent:response", response);
+      assertThat(response).isEqualTo("correct_parent:response");
     } finally {
       parentSpan.finish();
     }
 
     // Send second request, now there is no active parent, but it will be set, ups
     String response = client.send("wrong_parent").get(15, TimeUnit.SECONDS);
-    assertEquals("wrong_parent:response", response);
+    assertThat(response).isEqualTo("wrong_parent:response");
 
     List<SpanData> finished = otelTesting.getSpans();
-    assertEquals(3, finished.size());
+    assertThat(finished).hasSize(3);
 
     finished = sortByStartTime(finished);
 
     SpanData parent = getOneByName(finished, "parent");
-    assertNotNull(parent);
+    assertThat(parent).isNotNull();
 
     // now there is parent/child relation between first and second span:
-    assertEquals(parent.getSpanId(), finished.get(1).getParentSpanId());
+    assertThat(finished.get(1).getParentSpanId()).isEqualTo(parent.getSpanId());
 
     // third span should not have parent, but it has, damn it
-    assertEquals(parent.getSpanId(), finished.get(2).getParentSpanId());
+    assertThat(finished.get(2).getParentSpanId()).isEqualTo(parent.getSpanId());
   }
 }

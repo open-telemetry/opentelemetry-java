@@ -5,10 +5,9 @@
 
 package io.opentelemetry.opentracingshim.testbed.listenerperrequest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static io.opentelemetry.api.trace.Span.Kind.CLIENT;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -28,12 +27,12 @@ class ListenerTest {
   void test() throws Exception {
     Client client = new Client(tracer);
     Object response = client.send("message").get();
-    assertEquals("message:response", response);
+    assertThat(response).isEqualTo("message:response");
 
     List<SpanData> finished = otelTesting.getSpans();
-    assertEquals(1, finished.size());
-    assertEquals(finished.get(0).getKind(), Span.Kind.CLIENT);
+    assertThat(finished).hasSize(1);
+    assertThat(CLIENT).isEqualTo(finished.get(0).getKind());
 
-    assertNull(tracer.scopeManager().activeSpan());
+    assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
 }

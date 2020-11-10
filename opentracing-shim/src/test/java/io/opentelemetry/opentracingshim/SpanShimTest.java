@@ -6,11 +6,7 @@
 package io.opentelemetry.opentracingshim;
 
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
@@ -46,11 +42,13 @@ class SpanShimTest {
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
 
     SpanContextShim contextShim = (SpanContextShim) spanShim.context();
-    assertNotNull(contextShim);
-    assertEquals(contextShim.getSpanContext(), span.getSpanContext());
-    assertEquals(contextShim.toTraceId(), span.getSpanContext().getTraceIdAsHexString().toString());
-    assertEquals(contextShim.toSpanId(), span.getSpanContext().getSpanIdAsHexString().toString());
-    assertFalse(contextShim.baggageItems().iterator().hasNext());
+    assertThat(contextShim).isNotNull();
+    assertThat(span.getSpanContext()).isEqualTo(contextShim.getSpanContext());
+    assertThat(span.getSpanContext().getTraceIdAsHexString().toString())
+        .isEqualTo(contextShim.toTraceId());
+    assertThat(span.getSpanContext().getSpanIdAsHexString().toString())
+        .isEqualTo(contextShim.toSpanId());
+    assertThat(contextShim.baggageItems().iterator().hasNext()).isFalse();
   }
 
   @Test
@@ -59,15 +57,15 @@ class SpanShimTest {
 
     spanShim.setBaggageItem("key1", "value1");
     spanShim.setBaggageItem("key2", "value2");
-    assertEquals(spanShim.getBaggageItem("key1"), "value1");
-    assertEquals(spanShim.getBaggageItem("key2"), "value2");
+    assertThat("value1").isEqualTo(spanShim.getBaggageItem("key1"));
+    assertThat("value2").isEqualTo(spanShim.getBaggageItem("key2"));
 
     SpanContextShim contextShim = (SpanContextShim) spanShim.context();
-    assertNotNull(contextShim);
+    assertThat(contextShim).isNotNull();
     Map<String, String> baggageMap = getBaggageMap(contextShim.baggageItems());
-    assertEquals(2, baggageMap.size());
-    assertEquals(baggageMap.get("key1"), "value1");
-    assertEquals(baggageMap.get("key2"), "value2");
+    assertThat(baggageMap.size()).isEqualTo(2);
+    assertThat("value1").isEqualTo(baggageMap.get("key1"));
+    assertThat("value2").isEqualTo(baggageMap.get("key2"));
   }
 
   @Test
@@ -77,9 +75,9 @@ class SpanShimTest {
 
     spanShim.setBaggageItem("key1", "value1");
     SpanContextShim contextShim2 = (SpanContextShim) spanShim.context();
-    assertNotEquals(contextShim1, contextShim2);
-    assertFalse(contextShim1.baggageItems().iterator().hasNext()); /* original, empty */
-    assertTrue(contextShim2.baggageItems().iterator().hasNext()); /* updated, with values */
+    assertThat(contextShim2).isNotEqualTo(contextShim1);
+    assertThat(contextShim1.baggageItems().iterator().hasNext()).isFalse(); /* original, empty */
+    assertThat(contextShim2.baggageItems().iterator()).hasNext(); /* updated, with values */
   }
 
   @Test
@@ -91,10 +89,9 @@ class SpanShimTest {
      * referring to the same Span.*/
     SpanShim spanShim2 = new SpanShim(telemetryInfo, span);
     spanShim2.setBaggageItem("key1", "value2");
-    assertEquals(spanShim1.getBaggageItem("key1"), "value2");
-    assertEquals(spanShim2.getBaggageItem("key1"), "value2");
-    assertEquals(
-        getBaggageMap(spanShim1.context().baggageItems()),
-        getBaggageMap(spanShim2.context().baggageItems()));
+    assertThat(spanShim1.getBaggageItem("key1")).isEqualTo("value2");
+    assertThat(spanShim2.getBaggageItem("key1")).isEqualTo("value2");
+    assertThat(getBaggageMap(spanShim2.context().baggageItems()))
+        .isEqualTo(getBaggageMap(spanShim1.context().baggageItems()));
   }
 }

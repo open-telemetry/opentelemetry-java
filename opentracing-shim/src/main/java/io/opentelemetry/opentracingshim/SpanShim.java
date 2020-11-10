@@ -89,6 +89,9 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public Span setTag(String key, Number value) {
+    if (value == null) {
+      return this;
+    }
     // TODO - Verify only the 'basic' types are supported/used.
     if (value instanceof Integer
         || value instanceof Long
@@ -106,6 +109,9 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public <T> Span setTag(Tag<T> tag, T value) {
+    if (tag == null) {
+      return this;
+    }
     tag.set(this, value);
     return this;
   }
