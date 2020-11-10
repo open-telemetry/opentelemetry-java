@@ -24,25 +24,31 @@ final class ContextStorageWrappers {
   private static final List<Function<? super ContextStorage, ? extends ContextStorage>> wrappers =
       new ArrayList<>();
 
-  static synchronized void addWrapper(
-      Function<? super ContextStorage, ? extends ContextStorage> wrapper) {
-    if (storageInitialized) {
-      log.log(
-          Level.FINE,
-          "ContextStorage has already been initialized, ignoring call to add wrapper.",
-          new Throwable());
-      return;
+  private static final Object mutex = new Object();
+
+  static void addWrapper(Function<? super ContextStorage, ? extends ContextStorage> wrapper) {
+    synchronized (mutex) {
+      if (storageInitialized) {
+        log.log(
+            Level.FINE,
+            "ContextStorage has already been initialized, ignoring call to add wrapper.",
+            new Throwable());
+        return;
+      }
+      wrappers.add(wrapper);
     }
-    wrappers.add(wrapper);
   }
 
-  static synchronized List<Function<? super ContextStorage, ? extends ContextStorage>>
-      getWrappers() {
-    return wrappers;
+  static List<Function<? super ContextStorage, ? extends ContextStorage>> getWrappers() {
+    synchronized (mutex) {
+      return wrappers;
+    }
   }
 
-  static synchronized void setStorageInitialized() {
-    storageInitialized = true;
+  static void setStorageInitialized() {
+    synchronized (mutex) {
+      storageInitialized = true;
+    }
   }
 
   private ContextStorageWrappers() {}
