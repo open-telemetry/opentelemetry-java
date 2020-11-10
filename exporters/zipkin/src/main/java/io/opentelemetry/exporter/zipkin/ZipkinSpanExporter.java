@@ -141,7 +141,9 @@ public final class ZipkinSpanExporter implements SpanExporter {
         });
     SpanData.Status status = spanData.getStatus();
     // for GRPC spans, include status code & description.
-    if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE) != null) {
+    if (status != null
+        && !status.isUnset()
+        && spanAttributes.get(SemanticAttributes.RPC_SERVICE) != null) {
       spanBuilder.putTag(OTEL_STATUS_CODE, status.getCanonicalCode().toString());
       if (status.getDescription() != null) {
         spanBuilder.putTag(OTEL_STATUS_DESCRIPTION, status.getDescription());

@@ -230,6 +230,23 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  void generateSpan_WithRpcUnsetStatus() {
+    Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
+
+    SpanData data =
+        buildStandardSpan()
+            .setStatus(SpanData.Status.create(StatusCode.UNSET, null))
+            .setAttributes(attributeMap)
+            .build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(
+            buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+                .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
+                .build());
+  }
+
+  @Test
   void testExport() {
     ZipkinSpanExporter zipkinSpanExporter =
         new ZipkinSpanExporter(mockEncoder, mockSender, "tweetiebird");
