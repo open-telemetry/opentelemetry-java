@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.testing.junit5;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -55,5 +57,31 @@ class OpenTelemetryExtensionTest {
     // Spans cleared between tests, not when retrieving
     assertThat(otelTesting.getSpans())
         .hasOnlyOneElementSatisfying(span -> assertThat(span.getName()).isEqualTo("test"));
+  }
+
+  @Test
+  public void exportTraces() {
+    Span span = tracer.spanBuilder("testa1").startSpan();
+    try (Scope ignored = span.makeCurrent()) {
+      tracer.spanBuilder("testa2").startSpan().end();
+    } finally {
+      span.end();
+    }
+
+    span = tracer.spanBuilder("testb1").startSpan();
+    try (Scope ignored = span.makeCurrent()) {
+      tracer.spanBuilder("testb2").startSpan().end();
+    } finally {
+      span.end();
+    }
+
+    otelTesting
+        .assertTraces()
+        .hasTracesSatisfyingExactly(
+            trace ->
+                trace.hasSpansSatisfyingExactly(s -> s.hasName("testa1"), s -> s.hasName("testa2")),
+            trace ->
+                trace.hasSpansSatisfyingExactly(
+                    s -> s.hasName("testb1"), s -> s.hasName("testb2")));
   }
 }
