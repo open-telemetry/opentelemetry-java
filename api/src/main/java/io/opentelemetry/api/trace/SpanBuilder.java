@@ -45,7 +45,7 @@ import javax.annotation.Nonnull;
  *
  * <pre>{@code
  * class MyRpcServerInterceptorListener implements RpcServerInterceptor.Listener {
- *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.anyco.rpc");
+ *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.example.rpc");
  *   private Span mySpan;
  *
  *   public MyRpcInterceptor() {}
