@@ -14,7 +14,6 @@ import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -140,10 +139,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
           }
         });
     SpanData.Status status = spanData.getStatus();
-    // for GRPC spans, include status code & description.
-    if (status != null
-        && !status.isUnset()
-        && spanAttributes.get(SemanticAttributes.RPC_SERVICE) != null) {
+    // include status code & description.
+    if (status != null && !status.isUnset()) {
       spanBuilder.putTag(OTEL_STATUS_CODE, status.getCanonicalCode().toString());
       if (status.getDescription() != null) {
         spanBuilder.putTag(OTEL_STATUS_DESCRIPTION, status.getDescription());
