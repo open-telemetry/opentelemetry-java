@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.testing.junit5;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
@@ -104,6 +105,13 @@ class OpenTelemetryExtensionTest {
                     .hasSpansSatisfyingExactly(s -> s.hasName("testb1"), s -> s.hasName("testb2"))
                     .filteredOn(s -> s.getName().endsWith("1"))
                     .hasSize(1));
+
+    assertThatThrownBy(
+            () ->
+                otelTesting
+                    .assertTraces()
+                    .hasTracesSatisfyingExactly(trace -> trace.hasTraceId("foo")))
+        .isInstanceOf(AssertionError.class);
 
     otelTesting
         .assertTraces()
