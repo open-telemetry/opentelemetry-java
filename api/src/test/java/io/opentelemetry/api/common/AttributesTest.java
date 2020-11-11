@@ -116,6 +116,23 @@ class AttributesTest {
   }
 
   @Test
+  void deduplication_oddNumberElements() {
+    Attributes one =
+        Attributes.builder()
+            .put(stringKey("key2"), "valueX")
+            .put(stringKey("key2"), "value2")
+            .put(stringKey("key1"), "value1")
+            .build();
+    Attributes two =
+        Attributes.builder()
+            .put(stringKey("key2"), "value2")
+            .put(stringKey("key1"), "value1")
+            .build();
+
+    assertThat(one).isEqualTo(two);
+  }
+
+  @Test
   void emptyAndNullKey() {
     Attributes noAttributes = Attributes.of(stringKey(""), "empty", null, "null");
 
