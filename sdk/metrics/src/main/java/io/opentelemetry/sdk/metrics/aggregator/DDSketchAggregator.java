@@ -5,21 +5,19 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import com.datadoghq.sketch.ddsketch.DDSketch;
 import com.datadoghq.sketch.ddsketch.SignedDDSketch;
 import com.datadoghq.sketch.ddsketch.mapping.CubicallyInterpolatedMapping;
 import com.datadoghq.sketch.ddsketch.store.UnboundedSizeDenseStore;
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
+import java.util.Arrays;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
-import java.util.Arrays;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.function.Supplier;
 
 @ThreadSafe
 public final class DDSketchAggregator extends AbstractAggregator {

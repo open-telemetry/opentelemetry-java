@@ -5,26 +5,23 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
+
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
-import org.assertj.core.api.AbstractDoubleAssert;
-import org.assertj.core.api.AssertionsForClassTypes;
-import org.assertj.core.api.AssertionsForInterfaceTypes;
-import org.assertj.core.api.ListAssert;
-import org.assertj.core.api.ObjectAssert;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.offset;
+import org.assertj.core.api.AbstractDoubleAssert;
+import org.assertj.core.api.AssertionsForClassTypes;
+import org.assertj.core.api.ListAssert;
+import org.assertj.core.api.ObjectAssert;
+import org.junit.jupiter.api.Test;
 
 class DDSketchAggregatorTest {
 
