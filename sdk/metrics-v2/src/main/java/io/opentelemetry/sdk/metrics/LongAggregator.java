@@ -5,8 +5,12 @@
 
 package io.opentelemetry.sdk.metrics;
 
-interface LongAggregator {
+import io.opentelemetry.sdk.common.Clock;
+
+interface LongAggregator<T extends Accumulation> {
   void record(long recording);
 
-  Accumulation collect();
+  T collect(Clock clock);
+
+  void merge(T accumulation);
 }

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.TestClock;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -22,7 +23,8 @@ class AccumulatorTest {
   @Test
   void collectionCycle() {
     Processor processor = mock(Processor.class);
-    Accumulator accumulator = new Accumulator();
+    TestClock clock = TestClock.create();
+    Accumulator accumulator = new Accumulator(clock);
 
     InstrumentDescriptor instrumentDescriptor =
         InstrumentDescriptor.create(
@@ -47,14 +49,15 @@ class AccumulatorTest {
     AggregatorKey expectedKey2 =
         AggregatorKey.create(
             instrumentationLibraryInfo, instrumentDescriptor, Labels.of("key2", "value2"));
-    verify(processor).process(expectedKey1, LongAccumulation.create(24));
-    verify(processor).process(expectedKey2, LongAccumulation.create(12));
+    verify(processor).process(expectedKey1, LongAccumulation.create(clock.now(), 24));
+    verify(processor).process(expectedKey2, LongAccumulation.create(clock.now(), 12));
   }
 
   @Test
   void collectionCycle_twoRecordingsSameKey() {
     Processor processor = mock(Processor.class);
-    Accumulator accumulator = new Accumulator();
+    TestClock clock = TestClock.create();
+    Accumulator accumulator = new Accumulator(clock);
 
     InstrumentDescriptor instrumentDescriptor =
         InstrumentDescriptor.create(
@@ -74,13 +77,14 @@ class AccumulatorTest {
 
     AggregatorKey expectedKey =
         AggregatorKey.create(instrumentationLibraryInfo, instrumentDescriptor, labels);
-    verify(processor).process(expectedKey, LongAccumulation.create(36));
+    verify(processor).process(expectedKey, LongAccumulation.create(clock.now(), 36));
   }
 
   @Test
   void collectionCycle_twoRecordingsCycles() {
     Processor processor = mock(Processor.class);
-    Accumulator accumulator = new Accumulator();
+    TestClock clock = TestClock.create();
+    Accumulator accumulator = new Accumulator(clock);
 
     InstrumentDescriptor instrumentDescriptor =
         InstrumentDescriptor.create(
@@ -100,13 +104,13 @@ class AccumulatorTest {
     AggregatorKey expectedKey =
         AggregatorKey.create(instrumentationLibraryInfo, instrumentDescriptor, labels);
 
-    verify(processor, only()).process(expectedKey, LongAccumulation.create(24));
+    verify(processor, only()).process(expectedKey, LongAccumulation.create(clock.now(), 24));
 
     // reset here so we don't get confused by the first cycle
     Mockito.reset(processor);
     accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, 12);
     accumulator.collectAndSendTo(processor);
 
-    verify(processor, only()).process(expectedKey, LongAccumulation.create(12));
+    verify(processor, only()).process(expectedKey, LongAccumulation.create(clock.now(), 12));
   }
 }

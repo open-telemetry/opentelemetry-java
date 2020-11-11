@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 
 public class MeterProviderImpl implements MeterProvider {
@@ -16,8 +17,8 @@ public class MeterProviderImpl implements MeterProvider {
     this.accumulator = accumulator;
   }
 
-  public static MeterProvider create() {
-    return new MeterProviderImpl(new Accumulator());
+  public static MeterProvider create(Clock clock) {
+    return new MeterProviderImpl(new Accumulator(clock));
   }
 
   @Override

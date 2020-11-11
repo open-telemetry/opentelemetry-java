@@ -6,15 +6,21 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@SuppressWarnings("rawtypes")
 class Accumulator {
-
+  private final Clock clock;
   private final ConcurrentMap<AggregatorKey, LongAggregator> longAggregators =
       new ConcurrentHashMap<>();
+
+  Accumulator(Clock clock) {
+    this.clock = clock;
+  }
 
   void recordLongAdd(
       InstrumentationLibraryInfo instrumentationLibraryInfo,
@@ -28,13 +34,14 @@ class Accumulator {
     LongAggregator longAggregator =
         longAggregators.computeIfAbsent(
             AggregatorKey.create(instrumentationLibraryInfo, instrumentDescriptor, labels),
-            Accumulator::lookupLongAggregator);
+            aggregatorKey -> lookupLongAggregator(aggregatorKey, clock));
     longAggregator.record(increment);
   }
 
-  private static LongAggregator lookupLongAggregator(AggregatorKey aggregatorKey) {
+  @SuppressWarnings("unused")
+  private static LongAggregator lookupLongAggregator(AggregatorKey aggregatorKey, Clock clock) {
     // todo: look up from a ViewRegistry-like thingee.
-    return new LongSumAggregator(/* keepCumulativeSums=*/ false);
+    return new LongSumAggregator(/* startTime=*/ clock.now(), /* keepCumulativeSums=*/ false);
   }
 
   // called by the Controller, either on an interval, or when a pull-based exporter needs it.
@@ -57,7 +64,7 @@ class Accumulator {
     for (Map.Entry<AggregatorKey, LongAggregator> entry : longAggregators.entrySet()) {
       AggregatorKey key = entry.getKey();
       LongAggregator longAggregator = entry.getValue();
-      processor.process(key, longAggregator.collect());
+      processor.process(key, longAggregator.collect(clock));
     }
   }
 }

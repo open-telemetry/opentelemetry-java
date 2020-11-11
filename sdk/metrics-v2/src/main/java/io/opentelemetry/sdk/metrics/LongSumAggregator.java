@@ -5,13 +5,17 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.common.Clock;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
-class LongSumAggregator implements LongAggregator {
+class LongSumAggregator implements LongAggregator<LongAccumulation> {
   private final LongAdder longAdder = new LongAdder();
   private final boolean keepCumulativeSums;
+  private final AtomicLong startTime = new AtomicLong();
 
-  LongSumAggregator(boolean keepCumulativeSums) {
+  LongSumAggregator(long startTime, boolean keepCumulativeSums) {
+    this.startTime.set(startTime);
     this.keepCumulativeSums = keepCumulativeSums;
   }
 
@@ -21,8 +25,17 @@ class LongSumAggregator implements LongAggregator {
   }
 
   @Override
-  public Accumulation collect() {
+  public LongAccumulation collect(Clock clock) {
+    long now = clock.now();
     long value = keepCumulativeSums ? longAdder.sum() : longAdder.sumThenReset();
-    return LongAccumulation.create(value);
+    if (!keepCumulativeSums) {
+      startTime.set(now);
+    }
+    return LongAccumulation.create(now, value);
+  }
+
+  @Override
+  public void merge(LongAccumulation accumulation) {
+    record(accumulation.value());
   }
 }
