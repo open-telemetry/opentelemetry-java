@@ -172,7 +172,7 @@ class SpanConverterTest {
             SpanId.fromLowerBase16(RANDOM_IDS_GENERATOR.generateSpanId()),
             true,
             TraceParams.DEFAULT,
-            new OpenTelemetryStartEndHandler(),
+            new NoopOpenCensusStartEndHandler(),
             TimestampConverter.now(clock),
             clock);
     span.putAttribute("boolAttributeKey", AttributeValue.booleanAttributeValue(true));

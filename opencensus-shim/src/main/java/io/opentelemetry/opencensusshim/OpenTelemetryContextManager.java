@@ -21,11 +21,8 @@ public class OpenTelemetryContextManager implements ContextManager {
 
   private static final Logger LOGGER =
       Logger.getLogger(OpenTelemetryContextManager.class.getName());
-  private final SpanCache spanCache;
 
-  public OpenTelemetryContextManager() {
-    this.spanCache = SpanCache.getInstance();
-  }
+  public OpenTelemetryContextManager() {}
 
   @Override
   public ContextHandle currentContext() {
@@ -41,12 +38,16 @@ public class OpenTelemetryContextManager implements ContextManager {
               + "other than OpenTelemetryCtx.");
     }
     OpenTelemetryCtx openTelemetryCtx = (OpenTelemetryCtx) ctx;
-    return wrapContext(unwrapContext(openTelemetryCtx).with(spanCache.addToCache(span)));
+    return wrapContext(unwrapContext(openTelemetryCtx).with((OpenTelemetrySpanImpl) span));
   }
 
   @Override
   public Span getValue(ContextHandle ctx) {
-    return spanCache.fromOtelSpan(io.opentelemetry.api.trace.Span.fromContext(unwrapContext(ctx)));
+    io.opentelemetry.api.trace.Span span = io.opentelemetry.api.trace.Span.fromContext(unwrapContext(ctx));
+    if (span instanceof OpenTelemetrySpanImpl) {
+      return (OpenTelemetrySpanImpl) span;
+    }
+    return SpanConverter.fromOtelSpan(span);
   }
 
   private static ContextHandle wrapContext(Context context) {
