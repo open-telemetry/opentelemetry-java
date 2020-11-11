@@ -56,6 +56,10 @@ class Processor {
         (aggregatorKey, longAggregator) -> {
           // note: this `collect()` call resets the aggregator, if it's doing deltas
           Accumulation accumulation = longAggregator.collect(clock);
+          // todo: group by labels so we don't repeat ourselves so badly; this probably
+          // needs to be done up at a higher level. If we have a better data structure for
+          // storing label-set aggregators per aggregation key, this would be solved, I
+          // think.
           MetricData.Point point =
               accumulation.convertToPoint(clock.now(), aggregatorKey.getLabels());
           InstrumentDescriptor instrumentDescriptor = aggregatorKey.getInstrumentDescriptor();
@@ -67,8 +71,6 @@ class Processor {
                   instrumentDescriptor.getDescription(),
                   instrumentDescriptor.getUnit(),
                   accumulation.getMetricDataType(),
-                  // todo: group by labels so we don't repeat ourselves so badly; this probably
-                  // needs to be done up at a higher level.
                   Collections.singleton(point)));
         });
 

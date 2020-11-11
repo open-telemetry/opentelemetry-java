@@ -40,7 +40,12 @@ class Accumulator {
 
   @SuppressWarnings("unused")
   private static LongAggregator lookupLongAggregator(AggregatorKey aggregatorKey, Clock clock) {
-    // todo: look up from a ViewRegistry-like thingee.
+    // todo: look up from a ViewRegistry-like thingee. Note: this lookup needs to be identical
+    // to the one done in the Processor. The difference is that in here, all the aggregators *must*
+    // be configured as delta-aggregators (or we need to remove them from the map and re-create
+    // them at every collection cycle...or maybe manually reset them from the code in here?),
+    // and the ones in the processor are view-like and configurable, depending on your exporter
+    // needs.
     return new LongSumAggregator(/* startTime=*/ clock.now(), /* keepCumulativeSums=*/ false);
   }
 
@@ -58,8 +63,9 @@ class Accumulator {
     // that
     // to this with a method call? like aggregator.hasRecordings() ?
     // - when to remove the keys from the map? maybe if it has no recording in the interval?
+    // - maybe, since the Accumulator can't be long-term stateful, we can just remove them all,
+    // always?
     // - double typed aggregators
-    // - maybe, since the Accumulator can't be stateful, we can just remove them all, always?
 
     for (Map.Entry<AggregatorKey, LongAggregator> entry : longAggregators.entrySet()) {
       AggregatorKey key = entry.getKey();

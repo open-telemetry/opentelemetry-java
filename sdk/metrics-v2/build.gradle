@@ -21,7 +21,7 @@ dependencies {
 
     testCompile project(path: ':opentelemetry-sdk-common', configuration: 'testClasses')
 
-    testImplementation project(':opentelemetry-sdk-testing')
+//    testImplementation project(':opentelemetry-sdk-testing')
     testImplementation libraries.junit_pioneer
 
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"

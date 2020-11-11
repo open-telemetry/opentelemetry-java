@@ -26,12 +26,11 @@ class LongSumAggregator implements LongAggregator<LongAccumulation> {
 
   @Override
   public LongAccumulation collect(Clock clock) {
-    long now = clock.now();
     long value = keepCumulativeSums ? longAdder.sum() : longAdder.sumThenReset();
     if (!keepCumulativeSums) {
-      startTime.set(now);
+      startTime.set(clock.now());
     }
-    return LongAccumulation.create(now, value);
+    return LongAccumulation.create(startTime.get(), value);
   }
 
   @Override
