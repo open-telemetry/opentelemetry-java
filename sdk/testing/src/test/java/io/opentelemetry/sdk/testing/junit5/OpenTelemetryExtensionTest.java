@@ -79,6 +79,25 @@ class OpenTelemetryExtensionTest {
         .assertTraces()
         .hasTracesSatisfyingExactly(
             trace ->
+                trace
+                    .hasSpansSatisfyingExactly(s -> s.hasName("testa1"), s -> s.hasName("testa2"))
+                    .first()
+                    .hasName("testa1"),
+            trace ->
+                trace
+                    .hasSpansSatisfyingExactly(s -> s.hasName("testb1"), s -> s.hasName("testb2"))
+                    .filteredOn(s -> s.getName().endsWith("1"))
+                    .hasSize(1));
+
+    otelTesting
+        .assertTraces()
+        .first()
+        .hasSpansSatisfyingExactly(s -> s.hasName("testa1"), s -> s.hasName("testa2"));
+    otelTesting
+        .assertTraces()
+        .filteredOn(trace -> trace.size() == 2)
+        .hasTracesSatisfyingExactly(
+            trace ->
                 trace.hasSpansSatisfyingExactly(s -> s.hasName("testa1"), s -> s.hasName("testa2")),
             trace ->
                 trace.hasSpansSatisfyingExactly(
