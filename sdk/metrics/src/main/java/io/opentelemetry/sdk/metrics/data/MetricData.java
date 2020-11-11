@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import com.datadoghq.sketch.ddsketch.DDSketch;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;

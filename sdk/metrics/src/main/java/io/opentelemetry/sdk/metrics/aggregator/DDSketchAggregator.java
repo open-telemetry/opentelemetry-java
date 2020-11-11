@@ -6,7 +6,10 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.datadoghq.sketch.ddsketch.DDSketch;
-import io.opentelemetry.common.Labels;
+import com.datadoghq.sketch.ddsketch.SignedDDSketch;
+import com.datadoghq.sketch.ddsketch.mapping.CubicallyInterpolatedMapping;
+import com.datadoghq.sketch.ddsketch.store.UnboundedSizeDenseStore;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
@@ -20,9 +23,14 @@ import java.util.function.Supplier;
 
 @ThreadSafe
 public final class DDSketchAggregator extends AbstractAggregator {
+  static final double PRECISION = 0.001;
 
   private static final AggregatorFactory AGGREGATOR_FACTORY =
-      () -> new DDSketchAggregator(() -> DDSketch.balanced(0.01));
+      () ->
+          new DDSketchAggregator(
+              () ->
+                  new SignedDDSketch(
+                      new CubicallyInterpolatedMapping(PRECISION), UnboundedSizeDenseStore::new));
 
   public static AggregatorFactory getBalancedFactory() {
     return AGGREGATOR_FACTORY;
@@ -32,17 +40,17 @@ public final class DDSketchAggregator extends AbstractAggregator {
   // the need to take a lock for every call. (With the downside of having to box the double.)
   private final ArrayBlockingQueue<Double> pendingValues = new ArrayBlockingQueue<>(64);
 
-  private final Supplier<DDSketch> sketchSupplier;
+  private final Supplier<SignedDDSketch> sketchSupplier;
 
   @GuardedBy("lock")
-  private volatile DDSketch current;
+  private volatile SignedDDSketch current;
 
   @GuardedBy("lock")
   private volatile double sum = 0;
 
   private final Object lock = new Object();
 
-  private DDSketchAggregator(@Nonnull Supplier<DDSketch> sketchSupplier) {
+  private DDSketchAggregator(@Nonnull Supplier<SignedDDSketch> sketchSupplier) {
     this.sketchSupplier = sketchSupplier;
     current = sketchSupplier.get();
     assert current != null;
@@ -50,7 +58,7 @@ public final class DDSketchAggregator extends AbstractAggregator {
 
   @Override
   void doMergeAndReset(Aggregator target) {
-    DDSketch oldSketch;
+    SignedDDSketch oldSketch;
     double oldSum;
     synchronized (lock) {
       drain();
@@ -63,7 +71,7 @@ public final class DDSketchAggregator extends AbstractAggregator {
     ((DDSketchAggregator) target).mergeFrom(oldSketch, oldSum);
   }
 
-  private void mergeFrom(DDSketch other, double oldSum) {
+  private void mergeFrom(SignedDDSketch other, double oldSum) {
     synchronized (lock) {
       current.mergeWith(other);
       sum += oldSum;
@@ -72,7 +80,7 @@ public final class DDSketchAggregator extends AbstractAggregator {
 
   @Nullable
   @Override
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
+  public SummaryPoint toPoint(long startEpochNanos, long epochNanos, Labels labels) {
     synchronized (lock) {
       drain();
       long count = (long) current.getCount();
@@ -98,7 +106,8 @@ public final class DDSketchAggregator extends AbstractAggregator {
       synchronized (lock) {
         // We have a lock, might as well drain the queue.
         drain();
-        add(value);
+        current.accept(value);
+        sum += value;
       }
     }
   }
@@ -106,15 +115,12 @@ public final class DDSketchAggregator extends AbstractAggregator {
   /** Must be called under lock. */
   private void drain() {
     assert Thread.holdsLock(lock);
-    for (Double value = pendingValues.poll(); value != null; value = pendingValues.poll()) {
-      add(value);
+    // Should already be under lock, but errorprone complains without the extra synchronized.
+    synchronized (lock) {
+      for (Double value = pendingValues.poll(); value != null; value = pendingValues.poll()) {
+        current.accept(value);
+        sum += value;
+      }
     }
-  }
-
-  /** Must be called under lock. */
-  private void add(double value) {
-    assert Thread.holdsLock(lock);
-    current.accept(value);
-    sum += value;
   }
 }
