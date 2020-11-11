@@ -468,8 +468,26 @@ class MetricAdapterTest {
         InstrumentationLibrary.newBuilder().setName("name").setVersion("version").build();
     InstrumentationLibrary emptyInstrumentationLibraryProto =
         InstrumentationLibrary.newBuilder().setName("").setVersion("").build();
-    Metric metricNoPoints =
-        Metric.newBuilder().setName("name").setDescription("description").setUnit("1").build();
+    Metric metricDoubleSum =
+        Metric.newBuilder()
+            .setName("name")
+            .setDescription("description")
+            .setUnit("1")
+            .setDoubleSum(
+                DoubleSum.newBuilder()
+                    .setIsMonotonic(true)
+                    .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
+                    .addDataPoints(
+                        DoubleDataPoint.newBuilder()
+                            .setStartTimeUnixNano(123)
+                            .setTimeUnixNano(456)
+                            .addAllLabels(
+                                singletonList(
+                                    StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
+                            .setValue(5.0)
+                            .build())
+                    .build())
+            .build();
 
     assertThat(
             MetricAdapter.toProtoResourceMetrics(
@@ -481,7 +499,8 @@ class MetricAdapterTest {
                         "description",
                         "1",
                         MetricData.Type.MONOTONIC_DOUBLE,
-                        Collections.emptyList()),
+                        Collections.singletonList(
+                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))),
                     MetricData.create(
                         resource,
                         instrumentationLibraryInfo,
@@ -489,7 +508,8 @@ class MetricAdapterTest {
                         "description",
                         "1",
                         MetricData.Type.MONOTONIC_DOUBLE,
-                        Collections.emptyList()),
+                        Collections.singletonList(
+                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))),
                     MetricData.create(
                         Resource.getEmpty(),
                         instrumentationLibraryInfo,
@@ -497,7 +517,8 @@ class MetricAdapterTest {
                         "description",
                         "1",
                         MetricData.Type.MONOTONIC_DOUBLE,
-                        Collections.emptyList()),
+                        Collections.singletonList(
+                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))),
                     MetricData.create(
                         Resource.getEmpty(),
                         InstrumentationLibraryInfo.getEmpty(),
@@ -505,7 +526,8 @@ class MetricAdapterTest {
                         "description",
                         "1",
                         MetricData.Type.MONOTONIC_DOUBLE,
-                        Collections.emptyList()))))
+                        Collections.singletonList(
+                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))))))
         .containsExactlyInAnyOrder(
             ResourceMetrics.newBuilder()
                 .setResource(resourceProto)
@@ -513,7 +535,7 @@ class MetricAdapterTest {
                     singletonList(
                         InstrumentationLibraryMetrics.newBuilder()
                             .setInstrumentationLibrary(instrumentationLibraryProto)
-                            .addAllMetrics(ImmutableList.of(metricNoPoints, metricNoPoints))
+                            .addAllMetrics(ImmutableList.of(metricDoubleSum, metricDoubleSum))
                             .build()))
                 .build(),
             ResourceMetrics.newBuilder()
@@ -522,11 +544,11 @@ class MetricAdapterTest {
                     ImmutableList.of(
                         InstrumentationLibraryMetrics.newBuilder()
                             .setInstrumentationLibrary(emptyInstrumentationLibraryProto)
-                            .addAllMetrics(singletonList(metricNoPoints))
+                            .addAllMetrics(singletonList(metricDoubleSum))
                             .build(),
                         InstrumentationLibraryMetrics.newBuilder()
                             .setInstrumentationLibrary(instrumentationLibraryProto)
-                            .addAllMetrics(singletonList(metricNoPoints))
+                            .addAllMetrics(singletonList(metricDoubleSum))
                             .build()))
                 .build());
   }
