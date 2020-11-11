@@ -166,6 +166,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .localEndpoint(localEndpoint)
         .addAnnotation(RECEIVED_TIMESTAMP_NANOS / 1000, "RECEIVED")
         .addAnnotation(SENT_TIMESTAMP_NANOS / 1000, "SENT")
+        .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
         .build();
   }
 }
