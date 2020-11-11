@@ -173,9 +173,9 @@ final class SpanAdapter {
   static Status toStatusProto(SpanData.Status status) {
     Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
     Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
-    if (status.getCanonicalCode() == StatusCode.OK) {
+    if (status.getStatusCode() == StatusCode.OK) {
       protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
-    } else if (status.getCanonicalCode() == StatusCode.ERROR) {
+    } else if (status.getStatusCode() == StatusCode.ERROR) {
       protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
       deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
     }

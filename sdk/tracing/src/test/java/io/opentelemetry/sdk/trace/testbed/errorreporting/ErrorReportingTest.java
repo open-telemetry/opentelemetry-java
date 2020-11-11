@@ -50,7 +50,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCode.ERROR);
+    assertThat(spans.get(0).getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
   }
 
   /* Error handling in a callback capturing/activating the Span */
@@ -72,7 +72,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCode.ERROR);
+    assertThat(spans.get(0).getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
   }
 
   /* Error handling for a max-retries task (such as url fetching).
@@ -99,7 +99,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
-    assertThat(spans.get(0).getStatus().getCanonicalCode()).isEqualTo(StatusCode.ERROR);
+    assertThat(spans.get(0).getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
 
     List<Event> events = spans.get(0).getEvents();
     assertThat(events).hasSize(maxRetries);
@@ -131,7 +131,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
-    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getStatusCode());
   }
 
   private static class ScopedRunnable implements Runnable {

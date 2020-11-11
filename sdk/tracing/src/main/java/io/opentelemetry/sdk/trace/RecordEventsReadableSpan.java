@@ -379,14 +379,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public ReadWriteSpan setStatus(StatusCode canonicalCode) {
-    setStatus(canonicalCode, null);
+  public ReadWriteSpan setStatus(StatusCode statusCode) {
+    setStatus(statusCode, null);
     return this;
   }
 
   @Override
-  public ReadWriteSpan setStatus(StatusCode canonicalCode, @Nullable String description) {
-    if (canonicalCode == null) {
+  public ReadWriteSpan setStatus(StatusCode statusCode, @Nullable String description) {
+    if (statusCode == null) {
       return this;
     }
     synchronized (lock) {
@@ -394,7 +394,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
       }
-      this.status = SpanData.Status.create(canonicalCode, description);
+      this.status = SpanData.Status.create(statusCode, description);
     }
     return this;
   }

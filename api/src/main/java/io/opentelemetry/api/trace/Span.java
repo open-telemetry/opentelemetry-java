@@ -295,10 +295,10 @@ public interface Span extends ImplicitContextKeyed {
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param canonicalCode the {@link StatusCode} to set.
+   * @param statusCode the {@link StatusCode} to set.
    * @return this.
    */
-  Span setStatus(StatusCode canonicalCode);
+  Span setStatus(StatusCode statusCode);
 
   /**
    * Sets the status to the {@code Span}.
@@ -309,11 +309,11 @@ public interface Span extends ImplicitContextKeyed {
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param canonicalCode the {@link StatusCode} to set.
+   * @param statusCode the {@link StatusCode} to set.
    * @param description the description of the {@code Status}.
    * @return this.
    */
-  Span setStatus(StatusCode canonicalCode, String description);
+  Span setStatus(StatusCode statusCode, String description);
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
