@@ -26,7 +26,7 @@ final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector 
 
     String sampled = spanContext.isSampled() ? Common.TRUE_INT : Common.FALSE_INT;
 
-    if (B3Propagator.MULTI_HEADER_DEBUG.equals(context.get(B3Propagator.DEBUG_CONTEXT_KEY))) {
+    if (Boolean.TRUE.equals(context.get(B3Propagator.DEBUG_CONTEXT_KEY))) {
       setter.set(carrier, B3Propagator.DEBUG_HEADER, Common.TRUE_INT);
       sampled = Common.TRUE_INT;
     }

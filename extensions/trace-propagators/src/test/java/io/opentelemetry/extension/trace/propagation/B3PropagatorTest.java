@@ -7,6 +7,7 @@ package io.opentelemetry.extension.trace.propagation;
 
 import static io.opentelemetry.extension.trace.propagation.B3Propagator.DEBUG_CONTEXT_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -611,7 +612,7 @@ class B3PropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
-    assertThat(context.get(DEBUG_CONTEXT_KEY)).isEqualTo(Common.TRUE_INT);
+    assertTrue(context.get(DEBUG_CONTEXT_KEY));
   }
 
   @Test
@@ -626,7 +627,7 @@ class B3PropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
-    assertThat(context.get(DEBUG_CONTEXT_KEY)).isEqualTo(Common.TRUE_INT);
+    assertTrue(context.get(DEBUG_CONTEXT_KEY));
   }
 
   @Test
@@ -642,7 +643,7 @@ class B3PropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
-    assertThat(context.get(DEBUG_CONTEXT_KEY)).isEqualTo(Common.TRUE_INT);
+    assertTrue(context.get(DEBUG_CONTEXT_KEY));
   }
 
   @Test
@@ -658,13 +659,13 @@ class B3PropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
-    assertThat(context.get(DEBUG_CONTEXT_KEY)).isEqualTo(Common.TRUE_INT);
+    assertTrue(context.get(DEBUG_CONTEXT_KEY));
   }
 
   @Test
   void inject_DebugContext_MultipleHeaders() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    Context context = Context.current().with(DEBUG_CONTEXT_KEY, Common.TRUE_INT);
+    Context context = Context.current().with(DEBUG_CONTEXT_KEY, true);
     b3Propagator.inject(
         withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
@@ -680,7 +681,7 @@ class B3PropagatorTest {
   @Test
   void inject_DebugContext_SingleHeader() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    Context context = Context.current().with(DEBUG_CONTEXT_KEY, Common.TRUE_INT);
+    Context context = Context.current().with(DEBUG_CONTEXT_KEY, true);
     b3PropagatorSingleHeader.inject(
         withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
@@ -688,6 +689,8 @@ class B3PropagatorTest {
         carrier,
         setter);
     assertThat(carrier)
-        .containsEntry(B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + "d");
+        .containsEntry(
+            B3Propagator.COMBINED_HEADER,
+            TRACE_ID + "-" + SPAN_ID + "-" + B3Propagator.SINGLE_HEADER_DEBUG);
   }
 }

@@ -49,12 +49,12 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       return Optional.empty();
     }
 
-    // if debug flag is set, then set sampled flag, and also store the B3 debug flag in the context
+    // if debug flag is set, then set sampled flag, and also set B3 debug to true in the context
     // for onward use by B3 injector
     if (B3Propagator.MULTI_HEADER_DEBUG.equals(getter.get(carrier, DEBUG_HEADER))) {
       return Optional.of(
           context
-              .with(B3Propagator.DEBUG_CONTEXT_KEY, Common.TRUE_INT)
+              .with(B3Propagator.DEBUG_CONTEXT_KEY, true)
               .with(Span.wrap(Common.buildSpanContext(traceId, spanId, Common.TRUE_INT))));
     }
 
