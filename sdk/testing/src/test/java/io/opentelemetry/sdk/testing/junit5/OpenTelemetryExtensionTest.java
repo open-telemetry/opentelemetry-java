@@ -11,6 +11,9 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -75,11 +78,24 @@ class OpenTelemetryExtensionTest {
       span.end();
     }
 
+    String traceId =
+        otelTesting.getSpans().stream()
+            .collect(
+                Collectors.groupingBy(
+                    SpanData::getTraceId, LinkedHashMap::new, Collectors.toList()))
+            .values()
+            .stream()
+            .findFirst()
+            .get()
+            .get(0)
+            .getTraceId();
+
     otelTesting
         .assertTraces()
         .hasTracesSatisfyingExactly(
             trace ->
                 trace
+                    .hasTraceId(traceId)
                     .hasSpansSatisfyingExactly(s -> s.hasName("testa1"), s -> s.hasName("testa2"))
                     .first()
                     .hasName("testa1"),
