@@ -48,7 +48,7 @@ public class TracesAssert
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public final TracesAssert hasTracesSatisfyingInAnyOrder(Consumer<TraceAssert>... assertions) {
+  public final TracesAssert hasTracesSatisfyingExactly(Consumer<TraceAssert>... assertions) {
     hasSize(assertions.length);
     zipSatisfy(
         Arrays.asList(assertions), (trace, assertion) -> assertion.accept(new TraceAssert(trace)));
