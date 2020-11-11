@@ -1,11 +1,11 @@
 package io.opentelemetry.example.zipkin;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.exporters.zipkin.ZipkinSpanExporter;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 
 public class ZipkinExample {
 
@@ -20,7 +20,7 @@ public class ZipkinExample {
   // Name of the service
   private static final String SERVICE_NAME = "myExampleService";
 
-  private Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.ZipkinExample");
+  private Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.example.ZipkinExample");
   private ZipkinSpanExporter zipkinExporter;
 
   public ZipkinExample(String ip, int port) {
@@ -33,14 +33,14 @@ public class ZipkinExample {
   public void setupZipkinExporter() {
     String httpUrl = String.format("http://%s:%s", ip, port);
     this.zipkinExporter =
-        ZipkinSpanExporter.newBuilder()
+        ZipkinSpanExporter.builder()
             .setEndpoint(httpUrl + ENDPOINT_V2_SPANS)
             .setServiceName(SERVICE_NAME)
             .build();
 
     // Set to process the spans by the Zipkin Exporter
-    OpenTelemetrySdk.getTracerManagement()
-        .addSpanProcessor(SimpleSpanProcessor.newBuilder(zipkinExporter).build());
+    OpenTelemetrySdk.getGlobalTracerManagement()
+        .addSpanProcessor(SimpleSpanProcessor.builder(zipkinExporter).build());
   }
 
   // This method instruments doWork() method
@@ -65,7 +65,7 @@ public class ZipkinExample {
 
   // graceful shutdown
   public void shutdown() {
-    OpenTelemetrySdk.getTracerManagement().shutdown();
+    OpenTelemetrySdk.getGlobalTracerManagement().shutdown();
   }
 
   public static void main(String[] args) {

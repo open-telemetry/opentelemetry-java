@@ -6,7 +6,7 @@
 package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.spi.TracerProviderFactory;
+import io.opentelemetry.spi.trace.TracerProviderFactory;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**

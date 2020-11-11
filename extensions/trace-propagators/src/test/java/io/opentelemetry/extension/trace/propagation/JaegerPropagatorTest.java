@@ -5,13 +5,19 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
+import static io.opentelemetry.api.baggage.Baggage.fromContext;
+import static io.opentelemetry.extension.trace.propagation.JaegerPropagator.BAGGAGE_HEADER;
+import static io.opentelemetry.extension.trace.propagation.JaegerPropagator.BAGGAGE_PREFIX;
 import static io.opentelemetry.extension.trace.propagation.JaegerPropagator.DEPRECATED_PARENT_SPAN;
 import static io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER;
 import static io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER_DELIMITER;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.EntryMetadata;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -49,6 +55,11 @@ class JaegerPropagatorTest {
   private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
   private static final TextMapPropagator.Getter<Map<String, String>> getter =
       new TextMapPropagator.Getter<Map<String, String>>() {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
         @Nullable
         @Override
         public String get(Map<String, String> carrier, String key) {
@@ -134,11 +145,48 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void inject_SampledContext_withBaggage() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Context context =
+        Context.current()
+            .with(
+                Span.wrap(
+                    SpanContext.create(
+                        TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT)))
+            .with(Baggage.builder().put("foo", "bar").build());
+
+    jaegerPropagator.inject(context, carrier, setter);
+    assertThat(carrier)
+        .containsEntry(
+            PROPAGATION_HEADER,
+            generateTraceIdHeaderValue(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "1"));
+    assertThat(carrier).containsEntry(BAGGAGE_PREFIX + "foo", "bar");
+  }
+
+  @Test
+  void inject_baggageOnly() {
+    // Metadata won't be propagated, but it MUST NOT cause ay problem.
+    Baggage baggage =
+        Baggage.builder()
+            .put("nometa", "nometa-value")
+            .put("meta", "meta-value", EntryMetadata.create("somemetadata; someother=foo"))
+            .build();
+    Map<String, String> carrier = new LinkedHashMap<>();
+    jaegerPropagator.inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier)
+        .containsExactlyInAnyOrderEntriesOf(
+            ImmutableMap.of(
+                BAGGAGE_PREFIX + "nometa", "nometa-value",
+                BAGGAGE_PREFIX + "meta", "meta-value"));
+  }
+
+  @Test
   void extract_Nothing() {
     // Context remains untouched.
     assertThat(
             jaegerPropagator.extract(
-                Context.current(), Collections.<String, String>emptyMap(), Map::get))
+                Context.current(), Collections.<String, String>emptyMap(), getter))
         .isSameAs(Context.current());
   }
 
@@ -311,6 +359,88 @@ class JaegerPropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+  }
+
+  @Test
+  void extract_SampledContext_withBaggage() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    JaegerSpanContext context =
+        new JaegerSpanContext(
+            TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, (byte) 5);
+    carrier.put(PROPAGATION_HEADER, TextMapCodec.contextAsString(context));
+    carrier.put(BAGGAGE_PREFIX + "foo", "bar");
+
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(Baggage.builder().put("foo", "bar").build());
+  }
+
+  @Test
+  void extract_baggageOnly_withPrefix() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_PREFIX + "nometa", "nometa-value");
+    carrier.put(BAGGAGE_PREFIX + "meta", "meta-value");
+    carrier.put("another", "value");
+
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            Baggage.builder().put("nometa", "nometa-value").put("meta", "meta-value").build());
+  }
+
+  @Test
+  void extract_baggageOnly_withPrefix_emptyKey() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_PREFIX, "value"); // Not really a valid key.
+
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_baggageOnly_withHeader() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, "nometa=nometa-value,meta=meta-value");
+
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            Baggage.builder().put("nometa", "nometa-value").put("meta", "meta-value").build());
+  }
+
+  @Test
+  void extract_baggageOnly_withHeader_andSpaces() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, "nometa = nometa-value , meta = meta-value");
+
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            Baggage.builder().put("nometa", "nometa-value").put("meta", "meta-value").build());
+  }
+
+  @Test
+  void extract_baggageOnly_withHeader_invalid() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, "nometa+novalue");
+
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_baggageOnly_withHeader_andPrefix() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, "nometa=nometa-value,meta=meta-value");
+    carrier.put(BAGGAGE_PREFIX + "foo", "bar");
+
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            Baggage.builder()
+                .put("nometa", "nometa-value")
+                .put("meta", "meta-value")
+                .put("foo", "bar")
+                .build());
   }
 
   private static String generateTraceIdHeaderValue(

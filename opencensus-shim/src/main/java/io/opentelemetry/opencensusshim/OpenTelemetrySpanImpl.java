@@ -23,9 +23,11 @@ import io.opencensus.trace.SpanId;
 import io.opencensus.trace.config.TraceParams;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -92,7 +94,7 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
   @Override
   public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
     ocSpan.addAnnotation(description, attributes);
-    Attributes.Builder attributesBuilder = Attributes.builder();
+    AttributesBuilder attributesBuilder = Attributes.builder();
     attributes.forEach(
         (s, attributeValue) ->
             attributeValue.match(
@@ -107,7 +109,7 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
   @Override
   public void addAnnotation(Annotation annotation) {
     ocSpan.addAnnotation(annotation);
-    Attributes.Builder attributesBuilder = Attributes.builder();
+    AttributesBuilder attributesBuilder = Attributes.builder();
     annotation.getAttributes().forEach(
         (s, attributeValue) ->
             attributeValue.match(
@@ -147,7 +149,7 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
 
   @Override
   @SuppressWarnings("ParameterPackage")
-  public void end(io.opentelemetry.api.trace.EndSpanOptions endOptions) {}
+  public void end(long timestamp, TimeUnit unit) {}
 
   /**
    * Returns the {@code TimestampConverter} used by this {@code Span}.
@@ -190,7 +192,7 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
   }
 
   @Override
-  public io.opentelemetry.api.trace.Span addEvent(String name, long timestamp) {
+  public io.opentelemetry.api.trace.Span addEvent(String name, long timestamp, TimeUnit unit) {
     return null;
   }
 
@@ -200,8 +202,7 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
   }
 
   @Override
-  public io.opentelemetry.api.trace.Span addEvent(
-      String name, Attributes attributes, long timestamp) {
+  public io.opentelemetry.api.trace.Span addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
     return null;
   }
 

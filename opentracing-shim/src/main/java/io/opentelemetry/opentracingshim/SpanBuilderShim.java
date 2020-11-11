@@ -136,6 +136,9 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, Number value) {
+    if (value == null) {
+      return this;
+    }
     // TODO - Verify only the 'basic' types are supported/used.
     if (value instanceof Integer
         || value instanceof Long
@@ -155,6 +158,9 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public <T> SpanBuilder withTag(Tag<T> tag, T value) {
+    if (tag == null) {
+      return this;
+    }
     if (value instanceof String) {
       this.withTag(tag.getKey(), (String) value);
     } else if (value instanceof Boolean) {
@@ -177,7 +183,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @Override
   public Span start() {
     Baggage baggage = null;
-    io.opentelemetry.api.trace.Span.Builder builder = tracer().spanBuilder(spanName);
+    io.opentelemetry.api.trace.SpanBuilder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();

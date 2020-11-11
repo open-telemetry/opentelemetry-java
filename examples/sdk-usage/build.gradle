@@ -7,6 +7,6 @@ ext.moduleName = "io.opentelemetry.examples.sdk.usage"
 
 dependencies {
     compile "io.opentelemetry:opentelemetry-sdk"
-    compile "io.opentelemetry:opentelemetry-exporters-logging"
+    compile "io.opentelemetry:opentelemetry-exporter-logging"
     compile "io.grpc:grpc-context"
 }

@@ -6,11 +6,13 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.baggage.Entry;
+import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentracing.SpanContext;
-import java.util.Iterator;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 final class SpanContextShim extends BaseShimObject implements SpanContext {
@@ -42,7 +44,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   SpanContextShim newWithKeyValue(String key, String value) {
     Context parentContext = Context.current().with(baggage);
 
-    Baggage.Builder builder = Baggage.builder().setParent(parentContext);
+    BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     builder.put(key, value, EntryMetadata.EMPTY);
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());
@@ -68,63 +70,14 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   @Override
   public Iterable<Map.Entry<String, String>> baggageItems() {
-    final Iterator<Entry> iterator = baggage.getEntries().iterator();
-    return new BaggageIterable(iterator);
+    List<Map.Entry<String, String>> items = new ArrayList<>(baggage.size());
+    baggage.forEach(
+        (key, value, metadata) -> items.add(new AbstractMap.SimpleImmutableEntry<>(key, value)));
+    return items;
   }
 
   @SuppressWarnings("ReturnMissingNullable")
   String getBaggageItem(String key) {
     return baggage.getEntryValue(key);
-  }
-
-  static class BaggageIterable implements Iterable<Map.Entry<String, String>> {
-
-    final Iterator<Entry> iterator;
-
-    BaggageIterable(Iterator<Entry> iterator) {
-      this.iterator = iterator;
-    }
-
-    @Override
-    public Iterator<Map.Entry<String, String>> iterator() {
-      return new Iterator<Map.Entry<String, String>>() {
-        @Override
-        public boolean hasNext() {
-          return iterator.hasNext();
-        }
-
-        @Override
-        public Map.Entry<String, String> next() {
-          return new BaggageEntry(iterator.next());
-        }
-
-        @Override
-        public void remove() {}
-      };
-    }
-  }
-
-  static class BaggageEntry implements Map.Entry<String, String> {
-
-    final Entry entry;
-
-    BaggageEntry(Entry entry) {
-      this.entry = entry;
-    }
-
-    @Override
-    public String getKey() {
-      return entry.getKey();
-    }
-
-    @Override
-    public String getValue() {
-      return entry.getValue();
-    }
-
-    @Override
-    public String setValue(String value) {
-      return getValue();
-    }
   }
 }

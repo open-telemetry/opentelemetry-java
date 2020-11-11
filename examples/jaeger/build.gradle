@@ -8,7 +8,7 @@ ext.moduleName = "io.opentelemetry.examples.jaeger"
 dependencies {
     compile("io.opentelemetry:opentelemetry-api")
     compile("io.opentelemetry:opentelemetry-sdk")
-    compile("io.opentelemetry:opentelemetry-exporters-jaeger")
+    compile("io.opentelemetry:opentelemetry-exporter-jaeger")
     compile("io.grpc:grpc-protobuf:1.28.0")
     compile("io.grpc:grpc-netty-shaded:1.28.0")
 }

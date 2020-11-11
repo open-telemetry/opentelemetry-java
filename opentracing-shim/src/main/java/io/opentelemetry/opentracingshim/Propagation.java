@@ -65,6 +65,12 @@ final class Propagation extends BaseShimObject {
 
     public static final TextMapGetter INSTANCE = new TextMapGetter();
 
+    @Nullable
+    @Override
+    public Iterable<String> keys(Map<String, String> carrier) {
+      return carrier.keySet();
+    }
+
     @Override
     public String get(Map<String, String> carrier, String key) {
       return carrier.get(key);

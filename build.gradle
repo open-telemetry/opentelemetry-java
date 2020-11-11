@@ -117,6 +117,10 @@ subprojects {
             }
         }
 
+        artifactoryPublish {
+            enabled = version.toString().endsWith('-SNAPSHOT')
+        }
+
         // Release artifacts publishing.
         bintray {
             user = System.getenv("BINTRAY_USER")
@@ -337,7 +341,10 @@ configure(opentelemetryProjects) {
                 jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
                 zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
                 archunit                : 'com.tngtech.archunit:archunit-junit4:0.13.1', //Architectural constraints
-                jqf                     : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6' // fuzz testing
+                jqf                     : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6', // fuzz testing
+
+                // Tooling
+                android_signature       : 'com.toasttab.android:gummy-bears-api-24:0.2.0:coreLib@signature'
         ]
     }
 
@@ -402,7 +409,6 @@ configure(opentelemetryProjects) {
     }
 
     tasks.withType(Test) {
-        systemProperties project.properties.subMap(["enable.docker.tests"])
         useJUnitPlatform()
 
         // At a test failure, log the stack trace to the console so that we don't

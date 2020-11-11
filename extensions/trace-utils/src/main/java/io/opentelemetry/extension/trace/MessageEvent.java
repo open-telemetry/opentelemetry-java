@@ -10,6 +10,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import javax.annotation.concurrent.Immutable;
 
@@ -51,7 +52,7 @@ public final class MessageEvent {
    */
   public static void record(
       Span span, Type type, long messageId, long uncompressedSize, long compressedSize) {
-    Attributes.Builder attributeBuilder = Attributes.builder();
+    AttributesBuilder attributeBuilder = Attributes.builder();
     attributeBuilder.put(TYPE, type == Type.SENT ? Type.SENT.name() : Type.RECEIVED.name());
     attributeBuilder.put(ID, messageId);
     attributeBuilder.put(UNCOMPRESSED_SIZE, uncompressedSize);

@@ -101,10 +101,8 @@ Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
 
 1. Note: Currently, to run the full suite of tests, you'll need to be running a docker daemon.
-The tests that require docker are disabled by default. If you wish to run them,
-you can enable the docker tests by setting a gradle property of
-``"enable.docker.tests"`` to true. See the gradle.properties file in the root of the project
-for more details.
+The tests that require docker are disabled if docker is not present. If you wish to run them,
+you must run a local docker daemon.
 
 2. Clone the repository recursively
 

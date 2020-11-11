@@ -11,6 +11,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -88,6 +89,9 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public Span setTag(String key, Number value) {
+    if (value == null) {
+      return this;
+    }
     // TODO - Verify only the 'basic' types are supported/used.
     if (value instanceof Integer
         || value instanceof Long
@@ -105,6 +109,9 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public <T> Span setTag(Tag<T> tag, T value) {
+    if (tag == null) {
+      return this;
+    }
     tag.set(this, value);
     return this;
   }
@@ -181,7 +188,7 @@ final class SpanShim extends BaseShimObject implements Span {
   }
 
   static Attributes convertToAttributes(Map<String, ?> fields) {
-    Attributes.Builder attributesBuilder = Attributes.builder();
+    AttributesBuilder attributesBuilder = Attributes.builder();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
       String key = entry.getKey();

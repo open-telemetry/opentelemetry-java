@@ -105,7 +105,8 @@ class SpanConverterTest {
             "First annotation!",
             Attributes.builder().put("Attribute1", false).put("Attribute2", 123).build(),
             TimeUnit.SECONDS.toNanos(annotations.get(0).getTimestamp().getSeconds())
-                + annotations.get(0).getTimestamp().getNanos());
+                + annotations.get(0).getTimestamp().getNanos(),
+            TimeUnit.NANOSECONDS);
     verify(spanSpy, times(1))
         .addEvent(
             "Second annotation!",
@@ -114,7 +115,8 @@ class SpanConverterTest {
                 .put("Attribute2", "attributeValue")
                 .build(),
             TimeUnit.SECONDS.toNanos(annotations.get(1).getTimestamp().getSeconds())
-                + annotations.get(1).getTimestamp().getNanos());
+                + annotations.get(1).getTimestamp().getNanos(),
+            TimeUnit.NANOSECONDS);
   }
 
   @Test
@@ -145,7 +147,8 @@ class SpanConverterTest {
                 .put("message.event.size.compressed", 34)
                 .build(),
             TimeUnit.SECONDS.toNanos(messageEvents.get(0).getTimestamp().getSeconds())
-                + messageEvents.get(0).getTimestamp().getNanos());
+                + messageEvents.get(0).getTimestamp().getNanos(),
+            TimeUnit.NANOSECONDS);
     verify(spanSpy, times(1))
         .addEvent(
             "8",
@@ -155,7 +158,8 @@ class SpanConverterTest {
                 .put("message.event.size.compressed", 180)
                 .build(),
             TimeUnit.SECONDS.toNanos(messageEvents.get(1).getTimestamp().getSeconds())
-                + messageEvents.get(1).getTimestamp().getNanos());
+                + messageEvents.get(1).getTimestamp().getNanos(),
+            TimeUnit.NANOSECONDS);
   }
 
   private static RecordEventsSpanImpl createOpenCensusSpan() {
@@ -172,7 +176,7 @@ class SpanConverterTest {
             SpanId.fromLowerBase16(RANDOM_IDS_GENERATOR.generateSpanId()),
             true,
             TraceParams.DEFAULT,
-            new NoopOpenCensusStartEndHandler(),
+            new OpenTelemetryStartEndHandler(),
             TimestampConverter.now(clock),
             clock);
     span.putAttribute("boolAttributeKey", AttributeValue.booleanAttributeValue(true));

@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.TraceStateBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
@@ -217,7 +218,7 @@ public final class HttpTraceContext implements TextMapPropagator {
   }
 
   private static TraceState extractTraceState(String traceStateHeader) {
-    TraceState.Builder traceStateBuilder = TraceState.builder();
+    TraceStateBuilder traceStateBuilder = TraceState.builder();
     String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceStateHeader);
     checkArgument(
         listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");

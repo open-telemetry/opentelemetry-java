@@ -1,15 +1,14 @@
 package io.opentelemetry.example.metrics;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.common.Labels;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.StatusCanonicalCode;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +21,9 @@ import javax.swing.filechooser.FileSystemView;
 public class DoubleCounterExample {
 
   private static final Tracer tracer =
-      OpenTelemetry.getTracer("io.opentelemetry.example.metrics", "0.5");
+      OpenTelemetry.getGlobalTracer("io.opentelemetry.example.metrics", "0.5");
   private static final Meter sampleMeter =
-      OpenTelemetry.getMeterProvider().get("io.opentelemetry.example.metrics", "0.5");
+      OpenTelemetry.getGlobalMeterProvider().get("io.opentelemetry.example.metrics", "0.5");
   private static final File directoryToCountIn =
       FileSystemView.getFileSystemView().getHomeDirectory();
   private static final DoubleCounter diskSpaceCounter =
@@ -37,14 +36,14 @@ public class DoubleCounterExample {
   public static void main(String[] args) {
     Span span = tracer.spanBuilder("calculate space").setSpanKind(Kind.INTERNAL).startSpan();
     DoubleCounterExample example = new DoubleCounterExample();
-    try (Scope scope = TracingContextUtils.currentContextWith(span)) {
+    try (Scope scope = span.makeCurrent()) {
       List<String> extensionsToFind = new ArrayList<>();
       extensionsToFind.add("dll");
       extensionsToFind.add("png");
       extensionsToFind.add("exe");
       example.calculateSpaceUsedByFilesWithExtension(extensionsToFind, directoryToCountIn);
     } catch (Exception e) {
-      span.setStatus(StatusCanonicalCode.ERROR, "Error while calculating used space");
+      span.setStatus(StatusCode.ERROR, "Error while calculating used space");
     } finally {
       span.end();
     }

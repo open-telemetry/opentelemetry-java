@@ -18,5 +18,5 @@ dependencies {
     annotationProcessor libraries.auto_value
     testImplementation project(':opentelemetry-sdk-testing')
 
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    signature libraries.android_signature
 }

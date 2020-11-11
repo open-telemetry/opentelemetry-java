@@ -6,10 +6,9 @@
 package io.opentelemetry.opentracingshim.testbed.multiplecallbacks;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -54,15 +53,15 @@ class MultipleCallbacksTest {
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(4));
 
     List<SpanData> spans = otelTesting.getSpans();
-    assertEquals(4, spans.size());
-    assertEquals("parent", spans.get(0).getName());
+    assertThat(spans).hasSize(4);
+    assertThat(spans.get(0).getName()).isEqualTo("parent");
 
     SpanData parentSpan = spans.get(0);
     for (int i = 1; i < 4; i++) {
-      assertEquals(parentSpan.getTraceId(), spans.get(i).getTraceId());
-      assertEquals(parentSpan.getSpanId(), spans.get(i).getParentSpanId());
+      assertThat(spans.get(i).getTraceId()).isEqualTo(parentSpan.getTraceId());
+      assertThat(spans.get(i).getParentSpanId()).isEqualTo(parentSpan.getSpanId());
     }
 
-    assertNull(tracer.scopeManager().activeSpan());
+    assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
 }

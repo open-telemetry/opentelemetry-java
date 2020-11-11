@@ -136,18 +136,6 @@ class TracerSdkTest {
     public boolean isEndRequired() {
       return true;
     }
-
-    @Override
-    public CompletableResultCode shutdown() {
-      // no-op
-      return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode forceFlush() {
-      // no-op
-      return CompletableResultCode.ofSuccess();
-    }
   }
 
   private static class SimpleSpanOperation implements OperationUpdater {

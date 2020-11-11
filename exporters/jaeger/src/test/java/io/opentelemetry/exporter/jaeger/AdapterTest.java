@@ -13,10 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
@@ -26,7 +23,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
-import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -62,7 +59,7 @@ class AdapterTest {
     Collection<Model.Span> jaegerSpans = Adapter.toJaeger(spans);
 
     // the span contents are checked somewhere else
-    assertEquals(1, jaegerSpans.size());
+    assertThat(jaegerSpans).hasSize(1);
   }
 
   @Test
@@ -75,34 +72,35 @@ class AdapterTest {
 
     // test
     Model.Span jaegerSpan = Adapter.toJaeger(span);
-    assertEquals(TraceProtoUtils.toProtoTraceId(span.getTraceId()), jaegerSpan.getTraceId());
-    assertEquals(TraceProtoUtils.toProtoSpanId(span.getSpanId()), jaegerSpan.getSpanId());
-    assertEquals("GET /api/endpoint", jaegerSpan.getOperationName());
-    assertEquals(Timestamps.fromMillis(startMs), jaegerSpan.getStartTime());
-    assertEquals(duration, Durations.toMillis(jaegerSpan.getDuration()));
+    assertThat(jaegerSpan.getTraceId())
+        .isEqualTo(TraceProtoUtils.toProtoTraceId(span.getTraceId()));
+    assertThat(jaegerSpan.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(span.getSpanId()));
+    assertThat(jaegerSpan.getOperationName()).isEqualTo("GET /api/endpoint");
+    assertThat(jaegerSpan.getStartTime()).isEqualTo(Timestamps.fromMillis(startMs));
+    assertThat(Durations.toMillis(jaegerSpan.getDuration())).isEqualTo(duration);
 
-    assertEquals(5, jaegerSpan.getTagsCount());
+    assertThat(jaegerSpan.getTagsCount()).isEqualTo(5);
     Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
-    assertNotNull(keyValue);
-    assertEquals("server", keyValue.getVStr());
+    assertThat(keyValue).isNotNull();
+    assertThat(keyValue.getVStr()).isEqualTo("server");
     keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_CODE);
-    assertNotNull(keyValue);
-    assertEquals(0, keyValue.getVInt64());
-    assertEquals(Model.ValueType.INT64, keyValue.getVType());
+    assertThat(keyValue).isNotNull();
+    assertThat(keyValue.getVInt64()).isEqualTo(0);
+    assertThat(keyValue.getVType()).isEqualTo(Model.ValueType.INT64);
     keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_MESSAGE);
-    assertNotNull(keyValue);
-    assertEquals("", keyValue.getVStr());
+    assertThat(keyValue).isNotNull();
+    assertThat(keyValue.getVStr()).isEmpty();
 
-    assertEquals(1, jaegerSpan.getLogsCount());
+    assertThat(jaegerSpan.getLogsCount()).isEqualTo(1);
     Model.Log log = jaegerSpan.getLogs(0);
     keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_EVENT);
-    assertNotNull(keyValue);
-    assertEquals("the log message", keyValue.getVStr());
+    assertThat(keyValue).isNotNull();
+    assertThat(keyValue.getVStr()).isEqualTo("the log message");
     keyValue = getValue(log.getFieldsList(), "foo");
-    assertNotNull(keyValue);
-    assertEquals("bar", keyValue.getVStr());
+    assertThat(keyValue).isNotNull();
+    assertThat(keyValue.getVStr()).isEqualTo("bar");
 
-    assertEquals(2, jaegerSpan.getReferencesCount());
+    assertThat(jaegerSpan.getReferencesCount()).isEqualTo(2);
 
     assertHasFollowsFrom(jaegerSpan);
     assertHasParent(jaegerSpan);
@@ -117,7 +115,7 @@ class AdapterTest {
     Collection<Model.Log> logs = Adapter.toJaegerLogs(Collections.singletonList(eventsData));
 
     // verify
-    assertEquals(1, logs.size());
+    assertThat(logs).hasSize(1);
   }
 
   @Test
@@ -129,23 +127,23 @@ class AdapterTest {
     Model.Log log = Adapter.toJaegerLog(event);
 
     // verify
-    assertEquals(2, log.getFieldsCount());
+    assertThat(log.getFieldsCount()).isEqualTo(2);
 
     Model.KeyValue keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_EVENT);
-    assertNotNull(keyValue);
-    assertEquals("the log message", keyValue.getVStr());
+    assertThat(keyValue).isNotNull();
+    assertThat(keyValue.getVStr()).isEqualTo("the log message");
     keyValue = getValue(log.getFieldsList(), "foo");
-    assertNotNull(keyValue);
-    assertEquals("bar", keyValue.getVStr());
+    assertThat(keyValue).isNotNull();
+    assertThat(keyValue.getVStr()).isEqualTo("bar");
     keyValue = getValue(log.getFieldsList(), Adapter.KEY_EVENT_DROPPED_ATTRIBUTES_COUNT);
-    assertNull(keyValue);
+    assertThat(keyValue).isNull();
 
     // verify dropped_attributes_count
     event = getTimedEvent(3);
     log = Adapter.toJaegerLog(event);
     keyValue = getValue(log.getFieldsList(), Adapter.KEY_EVENT_DROPPED_ATTRIBUTES_COUNT);
-    assertNotNull(keyValue);
-    assertEquals(2, keyValue.getVInt64());
+    assertThat(keyValue).isNotNull();
+    assertThat(keyValue.getVInt64()).isEqualTo(2);
   }
 
   @Test
@@ -165,27 +163,27 @@ class AdapterTest {
         Adapter.toKeyValue(stringArrayKey("valueArrayS"), Arrays.asList("foobar", "barfoo"));
 
     // verify
-    assertTrue(kvB.getVBool());
-    assertEquals(Model.ValueType.BOOL, kvB.getVType());
-    assertEquals(1., kvD.getVFloat64(), 0);
-    assertEquals(Model.ValueType.FLOAT64, kvD.getVType());
-    assertEquals(2, kvI.getVInt64());
-    assertEquals(Model.ValueType.INT64, kvI.getVType());
-    assertEquals("foobar", kvS.getVStr());
-    assertEquals("foobar", kvS.getVStrBytes().toStringUtf8());
-    assertEquals(Model.ValueType.STRING, kvS.getVType());
-    assertEquals("[true,false]", kvArrayB.getVStr());
-    assertEquals("[true,false]", kvArrayB.getVStrBytes().toStringUtf8());
-    assertEquals(Model.ValueType.STRING, kvArrayB.getVType());
-    assertEquals("[1.2345,6.789]", kvArrayD.getVStr());
-    assertEquals("[1.2345,6.789]", kvArrayD.getVStrBytes().toStringUtf8());
-    assertEquals(Model.ValueType.STRING, kvArrayD.getVType());
-    assertEquals("[12345,67890]", kvArrayI.getVStr());
-    assertEquals("[12345,67890]", kvArrayI.getVStrBytes().toStringUtf8());
-    assertEquals(Model.ValueType.STRING, kvArrayI.getVType());
-    assertEquals("[\"foobar\",\"barfoo\"]", kvArrayS.getVStr());
-    assertEquals("[\"foobar\",\"barfoo\"]", kvArrayS.getVStrBytes().toStringUtf8());
-    assertEquals(Model.ValueType.STRING, kvArrayS.getVType());
+    assertThat(kvB.getVBool()).isTrue();
+    assertThat(kvB.getVType()).isEqualTo(Model.ValueType.BOOL);
+    assertThat(kvD.getVFloat64()).isEqualTo(1.);
+    assertThat(kvD.getVType()).isEqualTo(Model.ValueType.FLOAT64);
+    assertThat(kvI.getVInt64()).isEqualTo(2);
+    assertThat(kvI.getVType()).isEqualTo(Model.ValueType.INT64);
+    assertThat(kvS.getVStr()).isEqualTo("foobar");
+    assertThat(kvS.getVStrBytes().toStringUtf8()).isEqualTo("foobar");
+    assertThat(kvS.getVType()).isEqualTo(Model.ValueType.STRING);
+    assertThat(kvArrayB.getVStr()).isEqualTo("[true,false]");
+    assertThat(kvArrayB.getVStrBytes().toStringUtf8()).isEqualTo("[true,false]");
+    assertThat(kvArrayB.getVType()).isEqualTo(Model.ValueType.STRING);
+    assertThat(kvArrayD.getVStr()).isEqualTo("[1.2345,6.789]");
+    assertThat(kvArrayD.getVStrBytes().toStringUtf8()).isEqualTo("[1.2345,6.789]");
+    assertThat(kvArrayD.getVType()).isEqualTo(Model.ValueType.STRING);
+    assertThat(kvArrayI.getVStr()).isEqualTo("[12345,67890]");
+    assertThat(kvArrayI.getVStrBytes().toStringUtf8()).isEqualTo("[12345,67890]");
+    assertThat(kvArrayI.getVType()).isEqualTo(Model.ValueType.STRING);
+    assertThat(kvArrayS.getVStr()).isEqualTo("[\"foobar\",\"barfoo\"]");
+    assertThat(kvArrayS.getVStrBytes().toStringUtf8()).isEqualTo("[\"foobar\",\"barfoo\"]");
+    assertThat(kvArrayS.getVType()).isEqualTo(Model.ValueType.STRING);
   }
 
   @Test
@@ -198,7 +196,7 @@ class AdapterTest {
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
 
     // verify
-    assertEquals(1, spanRefs.size()); // the actual span ref is tested in another test
+    assertThat(spanRefs).hasSize(1); // the actual span ref is tested in another test
   }
 
   @Test
@@ -210,9 +208,9 @@ class AdapterTest {
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
 
     // verify
-    assertEquals(TraceProtoUtils.toProtoSpanId(SPAN_ID), spanRef.getSpanId());
-    assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), spanRef.getTraceId());
-    assertEquals(Model.SpanRefType.FOLLOWS_FROM, spanRef.getRefType());
+    assertThat(spanRef.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(SPAN_ID));
+    assertThat(spanRef.getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(TRACE_ID));
+    assertThat(spanRef.getRefType()).isEqualTo(Model.SpanRefType.FOLLOWS_FROM);
   }
 
   @Test
@@ -233,7 +231,7 @@ class AdapterTest {
             .setTotalRecordedLinks(0)
             .build();
 
-    assertNotNull(Adapter.toJaeger(span));
+    assertThat(Adapter.toJaeger(span)).isNotNull();
   }
 
   @Test
@@ -263,11 +261,11 @@ class AdapterTest {
 
     Model.Span jaegerSpan = Adapter.toJaeger(span);
     Model.KeyValue errorType = getValue(jaegerSpan.getTagsList(), "error.type");
-    assertNotNull(errorType);
-    assertEquals(this.getClass().getName(), errorType.getVStr());
+    assertThat(errorType).isNotNull();
+    assertThat(errorType.getVStr()).isEqualTo(this.getClass().getName());
     Model.KeyValue error = getValue(jaegerSpan.getTagsList(), "error");
-    assertNotNull(error);
-    assertTrue(error.getVBool());
+    assertThat(error).isNotNull();
+    assertThat(error.getVBool()).isTrue();
   }
 
   private static Event getTimedEvent() {
@@ -326,23 +324,23 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
-        assertEquals(TraceProtoUtils.toProtoTraceId(LINK_TRACE_ID), spanRef.getTraceId());
-        assertEquals(TraceProtoUtils.toProtoSpanId(LINK_SPAN_ID), spanRef.getSpanId());
+        assertThat(spanRef.getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(LINK_TRACE_ID));
+        assertThat(spanRef.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(LINK_SPAN_ID));
         found = true;
       }
     }
-    assertTrue(found, "Should have found the follows-from reference");
+    assertThat(found).withFailMessage("Should have found the follows-from reference").isTrue();
   }
 
   private static void assertHasParent(Model.Span jaegerSpan) {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
-        assertEquals(TraceProtoUtils.toProtoTraceId(TRACE_ID), spanRef.getTraceId());
-        assertEquals(TraceProtoUtils.toProtoSpanId(PARENT_SPAN_ID), spanRef.getSpanId());
+        assertThat(spanRef.getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(TRACE_ID));
+        assertThat(spanRef.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(PARENT_SPAN_ID));
         found = true;
       }
     }
-    assertTrue(found, "Should have found the parent reference");
+    assertThat(found).withFailMessage("Should have found the parent reference").isTrue();
   }
 }

@@ -7,7 +7,6 @@ package io.opentelemetry.api.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.Utils;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -94,8 +93,8 @@ public abstract class TraceState {
    *
    * @return a {@code Builder} based on an empty {@code TraceState}.
    */
-  public static Builder builder() {
-    return new Builder(Builder.EMPTY);
+  public static TraceStateBuilder builder() {
+    return new TraceStateBuilder();
   }
 
   /**
@@ -103,87 +102,16 @@ public abstract class TraceState {
    *
    * @return a {@code Builder} based on this {@code TraceState}.
    */
-  public Builder toBuilder() {
-    return new Builder(this);
+  public TraceStateBuilder toBuilder() {
+    return new TraceStateBuilder(this);
   }
 
-  /** Builder class for {@link TraceState}. */
-  public static final class Builder {
-    private final TraceState parent;
-    @Nullable private ArrayList<Entry> entries;
-
-    // Needs to be in this class to avoid initialization deadlock because super class depends on
-    // subclass (the auto-value generate class).
-    private static final TraceState EMPTY = create(Collections.emptyList());
-
-    private Builder(TraceState parent) {
-      Objects.requireNonNull(parent, "parent");
-      this.parent = parent;
-      this.entries = null;
-    }
-
-    /**
-     * Adds or updates the {@code Entry} that has the given {@code key} if it is present. The new
-     * {@code Entry} will always be added in the front of the list of entries.
-     *
-     * @param key the key for the {@code Entry} to be added.
-     * @param value the value for the {@code Entry} to be added.
-     * @return this.
-     */
-    public Builder set(String key, String value) {
-      // Initially create the Entry to validate input.
-      Entry entry = Entry.create(key, value);
-      if (entries == null) {
-        // Copy entries from the parent.
-        entries = new ArrayList<>(parent.getEntries());
-      }
-      for (int i = 0; i < entries.size(); i++) {
-        if (entries.get(i).getKey().equals(entry.getKey())) {
-          entries.remove(i);
-          // Exit now because the entries list cannot contain duplicates.
-          break;
-        }
-      }
-      // Inserts the element at the front of this list.
-      entries.add(0, entry);
-      return this;
-    }
-
-    /**
-     * Removes the {@code Entry} that has the given {@code key} if it is present.
-     *
-     * @param key the key for the {@code Entry} to be removed.
-     * @return this.
-     */
-    public Builder remove(String key) {
-      Objects.requireNonNull(key, "key");
-      if (entries == null) {
-        // Copy entries from the parent.
-        entries = new ArrayList<>(parent.getEntries());
-      }
-      for (int i = 0; i < entries.size(); i++) {
-        if (entries.get(i).getKey().equals(key)) {
-          entries.remove(i);
-          // Exit now because the entries list cannot contain duplicates.
-          break;
-        }
-      }
-      return this;
-    }
-
-    /**
-     * Builds a TraceState by adding the entries to the parent in front of the key-value pairs list
-     * and removing duplicate entries.
-     *
-     * @return a TraceState with the new entries.
-     */
-    public TraceState build() {
-      if (entries == null) {
-        return parent;
-      }
-      return TraceState.create(entries);
-    }
+  static TraceState create(List<Entry> entries) {
+    Utils.checkState(entries.size() <= MAX_KEY_VALUE_PAIRS, "Invalid size");
+    return new AutoValue_TraceState(Collections.unmodifiableList(entries));
   }
+
+  TraceState() {}
 
   /** Immutable key-value pair for {@code TraceState}. */
   @Immutable
@@ -296,11 +224,4 @@ public abstract class TraceState {
     }
     return true;
   }
-
-  private static TraceState create(List<Entry> entries) {
-    Utils.checkState(entries.size() <= MAX_KEY_VALUE_PAIRS, "Invalid size");
-    return new AutoValue_TraceState(Collections.unmodifiableList(entries));
-  }
-
-  TraceState() {}
 }

@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +55,7 @@ class ResourceTest {
 
   @Test
   void create_ignoreNull() {
-    Attributes.Builder attributes = Attributes.builder();
+    AttributesBuilder attributes = Attributes.builder();
 
     attributes.put(stringKey("string"), null);
     Resource resource = Resource.create(attributes.build());
@@ -95,7 +96,7 @@ class ResourceTest {
 
   @Test
   void create_NullEmptyArray() {
-    Attributes.Builder attributes = Attributes.builder();
+    AttributesBuilder attributes = Attributes.builder();
 
     // Empty arrays should be maintained
     attributes.put(stringArrayKey("stringArrayAttribute"), Collections.emptyList());

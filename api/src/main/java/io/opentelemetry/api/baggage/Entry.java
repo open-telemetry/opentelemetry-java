@@ -13,7 +13,7 @@ import javax.annotation.concurrent.Immutable;
 /** String-String key-value pair, along with {@link EntryMetadata}. */
 @Immutable
 @AutoValue
-public abstract class Entry {
+abstract class Entry {
 
   Entry() {}
 
@@ -25,21 +25,10 @@ public abstract class Entry {
    * @param entryMetadata the entry metadata.
    * @return a {@code Entry}.
    */
-  public static Entry create(String key, String value, EntryMetadata entryMetadata) {
+  static Entry create(String key, String value, EntryMetadata entryMetadata) {
     Utils.checkArgument(keyIsValid(key), "Invalid entry key name: %s", key);
     Utils.checkArgument(isValueValid(value), "Invalid entry value: %s", value);
     return new AutoValue_Entry(key, value, entryMetadata);
-  }
-
-  /**
-   * Creates an {@code Entry} from the given key, value, with no metadata.
-   *
-   * @param key the entry key.
-   * @param value the entry value.
-   * @return a {@code Entry}.
-   */
-  public static Entry create(String key, String value) {
-    return create(key, value, EntryMetadata.EMPTY);
   }
 
   /**
@@ -47,21 +36,21 @@ public abstract class Entry {
    *
    * @return the entry's key.
    */
-  public abstract String getKey();
+  abstract String getKey();
 
   /**
    * Returns the entry's value.
    *
    * @return the entry's value.
    */
-  public abstract String getValue();
+  abstract String getValue();
 
   /**
    * Returns the (optional) {@link EntryMetadata} associated with this {@link Entry}.
    *
    * @return the {@code EntryMetadata}.
    */
-  public abstract EntryMetadata getEntryMetadata();
+  abstract EntryMetadata getEntryMetadata();
 
   /**
    * Determines whether the given {@code String} is a valid entry key.
