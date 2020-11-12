@@ -14,8 +14,8 @@ fun Context.asContextElement(): CoroutineContext {
 }
 
 /**
- * Returns a [CoroutineContext] which will make this [Span] current when resuming a coroutine
- * and restores the previous [Context] on suspension.
+ * Returns a [CoroutineContext] which will make this [ImplicitContextKeyed] current when resuming a
+ * coroutine and restores the previous [Context] on suspension.
  */
 fun ImplicitContextKeyed.asContextElement(): CoroutineContext {
     return ContextElement(Context.current().with(this))
