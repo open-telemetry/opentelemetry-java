@@ -849,6 +849,7 @@ class RecordEventsReadableSpanTest {
     }
   }
 
+  @SuppressWarnings("deprecation") // will remove deprecated usages at the next release
   private void verifySpanData(
       SpanData spanData,
       final ReadableAttributes attributes,
@@ -871,7 +872,8 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getLinks()).isEqualTo(links);
     assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
     assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
-    assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
+    assertThat(spanData.getStatus().getStatusCode()).isEqualTo(status.getStatusCode());
+    assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getStatusCode());
     assertThat(spanData.hasEnded()).isEqualTo(hasEnded);
 
     // verify equality manually, since the implementations don't all equals with each other.

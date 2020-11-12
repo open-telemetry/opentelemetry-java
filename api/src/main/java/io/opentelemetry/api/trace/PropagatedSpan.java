@@ -87,12 +87,12 @@ final class PropagatedSpan implements Span {
   }
 
   @Override
-  public Span setStatus(StatusCode canonicalCode) {
+  public Span setStatus(StatusCode statusCode) {
     return this;
   }
 
   @Override
-  public Span setStatus(StatusCode canonicalCode, String description) {
+  public Span setStatus(StatusCode statusCode, String description) {
     return this;
   }
 

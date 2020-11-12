@@ -40,7 +40,7 @@ final class TracezSpanBuckets {
       latencyBuckets.get(LatencyBoundary.getBoundary(span.getLatencyNanos())).add(span);
       return;
     }
-    errorBuckets.get(status.getCanonicalCode()).add(span);
+    errorBuckets.get(status.getStatusCode()).add(span);
   }
 
   Map<LatencyBoundary, Integer> getLatencyBoundaryToCountMap() {

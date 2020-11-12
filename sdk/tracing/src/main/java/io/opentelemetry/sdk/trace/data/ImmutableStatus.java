@@ -59,15 +59,15 @@ abstract class ImmutableStatus implements SpanData.Status {
    * @param description the new description of the {@code Status}.
    * @return The newly created {@code Status} with the given description.
    */
-  public static SpanData.Status create(StatusCode canonicalCode, @Nullable String description) {
+  public static SpanData.Status create(StatusCode statusCode, @Nullable String description) {
     if (description == null) {
-      return codeToStatus.get(canonicalCode);
+      return codeToStatus.get(statusCode);
     }
-    return createInternal(canonicalCode, description);
+    return createInternal(statusCode, description);
   }
 
   private static SpanData.Status createInternal(
-      StatusCode canonicalCode, @Nullable String description) {
-    return new AutoValue_ImmutableStatus(canonicalCode, description);
+      StatusCode statusCode, @Nullable String description) {
+    return new AutoValue_ImmutableStatus(statusCode, description);
   }
 }

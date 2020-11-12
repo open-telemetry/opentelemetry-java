@@ -103,7 +103,7 @@ final class Adapter {
     target.addTags(
         Model.KeyValue.newBuilder()
             .setKey(KEY_SPAN_STATUS_CODE)
-            .setVInt64(span.getStatus().getCanonicalCode().value())
+            .setVInt64(span.getStatus().getStatusCode().value())
             .setVType(Model.ValueType.INT64)
             .build());
 

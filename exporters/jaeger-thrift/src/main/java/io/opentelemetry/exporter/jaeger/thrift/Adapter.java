@@ -106,7 +106,7 @@ final class Adapter {
 
     tags.add(
         new Tag(KEY_SPAN_STATUS_CODE, TagType.LONG)
-            .setVLong(span.getStatus().getCanonicalCode().value()));
+            .setVLong(span.getStatus().getStatusCode().value()));
 
     tags.add(
         new Tag(KEY_INSTRUMENTATION_LIBRARY_NAME, TagType.STRING)
