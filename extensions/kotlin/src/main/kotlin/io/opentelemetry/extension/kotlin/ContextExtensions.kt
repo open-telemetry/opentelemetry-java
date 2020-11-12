@@ -2,6 +2,7 @@ package io.opentelemetry.extension.kotlin
 
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.context.Context
+import io.opentelemetry.context.ImplicitContextKeyed
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -16,7 +17,7 @@ fun Context.asContextElement(): CoroutineContext {
  * Returns a [CoroutineContext] which will make this [Span] current when resuming a coroutine
  * and restores the previous [Context] on suspension.
  */
-fun Span.asContextElement(): CoroutineContext {
+fun ImplicitContextKeyed.asContextElement(): CoroutineContext {
     return ContextElement(Context.current().with(this))
 }
 
