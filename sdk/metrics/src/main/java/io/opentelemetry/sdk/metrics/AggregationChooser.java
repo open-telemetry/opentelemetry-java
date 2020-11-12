@@ -56,10 +56,10 @@ class AggregationChooser {
   }
 
   private static boolean matchesOne(InstrumentDescriptor descriptor, InstrumentSelector selector) {
-    if (selector.hasNameRegex() && !matchesOnName(descriptor, selector)) {
+    if (selector.hasInstrumentNameRegex() && !matchesOnName(descriptor, selector)) {
       return false;
     }
-    if (selector.hasType() && !matchesOnType(descriptor, selector)) {
+    if (selector.hasInstrumentType() && !matchesOnType(descriptor, selector)) {
       return false;
     }
     return true;
