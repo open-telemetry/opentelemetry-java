@@ -5,7 +5,9 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
+import static io.opentelemetry.extension.trace.propagation.B3Propagator.DEBUG_CONTEXT_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -598,5 +600,97 @@ class B3PropagatorTest {
     Map<String, String> emptyHeaders = new HashMap<>();
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), emptyHeaders, getter)))
         .isEqualTo(SpanContext.getInvalid());
+  }
+
+  @Test
+  void extract_DebugContext_SingleHeader() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(B3Propagator.COMBINED_HEADER, TRACE_ID + "-" + SPAN_ID + "-" + "d");
+
+    Context context = b3Propagator.extract(Context.current(), carrier, getter);
+    assertThat(getSpanContext(context))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+    assertTrue(context.get(DEBUG_CONTEXT_KEY));
+  }
+
+  @Test
+  void extract_DebugContext_MultipleHeaders() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(B3Propagator.DEBUG_HEADER, Common.TRUE_INT);
+
+    Context context = b3Propagator.extract(Context.current(), carrier, getter);
+    assertThat(getSpanContext(context))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+    assertTrue(context.get(DEBUG_CONTEXT_KEY));
+  }
+
+  @Test
+  void extract_DebugContext_SampledFalseDebugTrue_MultipleHeaders() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(B3Propagator.SAMPLED_HEADER, Common.FALSE_INT);
+    carrier.put(B3Propagator.DEBUG_HEADER, Common.TRUE_INT);
+
+    Context context = b3Propagator.extract(Context.current(), carrier, getter);
+    assertThat(getSpanContext(context))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+    assertTrue(context.get(DEBUG_CONTEXT_KEY));
+  }
+
+  @Test
+  void extract_DebugContext_SampledTrueDebugTrue_MultipleHeaders() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(B3Propagator.DEBUG_HEADER, Common.TRUE_INT);
+
+    Context context = b3Propagator.extract(Context.current(), carrier, getter);
+    assertThat(getSpanContext(context))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+    assertTrue(context.get(DEBUG_CONTEXT_KEY));
+  }
+
+  @Test
+  void inject_DebugContext_MultipleHeaders() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Context context = Context.current().with(DEBUG_CONTEXT_KEY, true);
+    b3Propagator.inject(
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+            context),
+        carrier,
+        setter);
+    assertThat(carrier).containsEntry(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
+    assertThat(carrier).containsEntry(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
+    assertThat(carrier).containsEntry(B3Propagator.SAMPLED_HEADER, Common.TRUE_INT);
+    assertThat(carrier).containsEntry(B3Propagator.DEBUG_HEADER, Common.TRUE_INT);
+  }
+
+  @Test
+  void inject_DebugContext_SingleHeader() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Context context = Context.current().with(DEBUG_CONTEXT_KEY, true);
+    b3PropagatorSingleHeader.inject(
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+            context),
+        carrier,
+        setter);
+    assertThat(carrier)
+        .containsEntry(
+            B3Propagator.COMBINED_HEADER,
+            TRACE_ID + "-" + SPAN_ID + "-" + B3Propagator.SINGLE_HEADER_DEBUG);
   }
 }
