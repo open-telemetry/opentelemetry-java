@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -29,34 +31,53 @@ class AggregationChooser {
   private final Map<InstrumentSelector, AggregationConfiguration> configuration =
       new ConcurrentHashMap<>();
 
-  private static boolean matchesOnType(
-      InstrumentDescriptor descriptor, InstrumentSelector registeredSelector) {
-    if (registeredSelector.instrumentType() == null) {
-      return true;
-    }
-    return registeredSelector.instrumentType().equals(descriptor.getType());
-  }
-
   AggregationConfiguration chooseAggregation(InstrumentDescriptor descriptor) {
-
+    List<Map.Entry<InstrumentSelector, AggregationConfiguration>> possibleMatches =
+        new ArrayList<>();
     for (Map.Entry<InstrumentSelector, AggregationConfiguration> entry : configuration.entrySet()) {
       InstrumentSelector registeredSelector = entry.getKey();
-
+      // if it matches everything, return it right away...
       if (matchesOnType(descriptor, registeredSelector)
           && matchesOnName(descriptor, registeredSelector)) {
         return entry.getValue();
       }
+      // otherwise throw it into a bucket of possible matches if it matches one of the criteria
+      if (matchesOne(descriptor, registeredSelector)) {
+        possibleMatches.add(entry);
+      }
     }
 
-    // If none found, use the defaults:
-    return getDefaultSpecification(descriptor);
+    if (possibleMatches.isEmpty()) {
+      return getDefaultSpecification(descriptor);
+    }
+
+    // If no exact matches found, pick the first one that matches something:
+    return possibleMatches.get(0).getValue();
+  }
+
+  private boolean matchesOne(InstrumentDescriptor descriptor, InstrumentSelector selector) {
+    if (selector.hasNameRegex() && !matchesOnName(descriptor, selector)) {
+      return false;
+    }
+    if (selector.hasType() && !matchesOnType(descriptor, selector)) {
+      return false;
+    }
+    return true;
+  }
+
+  private static boolean matchesOnType(
+      InstrumentDescriptor descriptor, InstrumentSelector selector) {
+    if (selector.instrumentType() == null) {
+      return false;
+    }
+    return selector.instrumentType().equals(descriptor.getType());
   }
 
   private static boolean matchesOnName(
       InstrumentDescriptor descriptor, InstrumentSelector registeredSelector) {
     Pattern pattern = registeredSelector.instrumentNamePattern();
     if (pattern == null) {
-      return true;
+      return false;
     }
     return pattern.matcher(descriptor.getName()).matches();
   }

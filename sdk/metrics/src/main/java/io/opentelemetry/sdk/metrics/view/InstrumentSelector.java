@@ -15,7 +15,6 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class InstrumentSelector {
-
   public static Builder newBuilder() {
     return new AutoValue_InstrumentSelector.Builder();
   }
@@ -26,10 +25,18 @@ public abstract class InstrumentSelector {
   @Nullable
   public abstract String instrumentNameRegex();
 
-  @Memoized
   @Nullable
+  @Memoized
   public Pattern instrumentNamePattern() {
     return instrumentNameRegex() == null ? null : Pattern.compile(instrumentNameRegex());
+  }
+
+  public boolean hasType() {
+    return instrumentType() != null;
+  }
+
+  public boolean hasNameRegex() {
+    return instrumentNameRegex() != null;
   }
 
   @AutoValue.Builder
