@@ -23,6 +23,7 @@ import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.metrics.batch.BatchObserverContext;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -35,6 +36,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -327,6 +329,9 @@ class OpenTelemetryTest {
     public BatchRecorder newBatchRecorder(String... keyValuePairs) {
       return null;
     }
+
+    @Override
+    public void newBatchObserver(Consumer<BatchObserverContext> context) {}
 
     @Override
     public Meter get(String instrumentationName) {
