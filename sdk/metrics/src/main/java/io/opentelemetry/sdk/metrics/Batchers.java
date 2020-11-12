@@ -183,30 +183,34 @@ final class Batchers {
       if (delta != allLabels.delta) {
         return false;
       }
-      if (descriptor != null ? !descriptor.equals(allLabels.descriptor)
+      if (descriptor != null
+          ? !descriptor.equals(allLabels.descriptor)
           : allLabels.descriptor != null) {
         return false;
       }
-      if (aggregation != null ? !aggregation.equals(allLabels.aggregation)
+      if (aggregation != null
+          ? !aggregation.equals(allLabels.aggregation)
           : allLabels.aggregation != null) {
         return false;
       }
       if (resource != null ? !resource.equals(allLabels.resource) : allLabels.resource != null) {
         return false;
       }
-      if (instrumentationLibraryInfo != null ? !instrumentationLibraryInfo
-          .equals(allLabels.instrumentationLibraryInfo)
+      if (instrumentationLibraryInfo != null
+          ? !instrumentationLibraryInfo.equals(allLabels.instrumentationLibraryInfo)
           : allLabels.instrumentationLibraryInfo != null) {
         return false;
       }
       if (clock != null ? !clock.equals(allLabels.clock) : allLabels.clock != null) {
         return false;
       }
-      if (aggregatorFactory != null ? !aggregatorFactory.equals(allLabels.aggregatorFactory)
+      if (aggregatorFactory != null
+          ? !aggregatorFactory.equals(allLabels.aggregatorFactory)
           : allLabels.aggregatorFactory != null) {
         return false;
       }
-      return aggregatorMap != null ? aggregatorMap.equals(allLabels.aggregatorMap)
+      return aggregatorMap != null
+          ? aggregatorMap.equals(allLabels.aggregatorMap)
           : allLabels.aggregatorMap == null;
     }
 
@@ -216,8 +220,8 @@ final class Batchers {
       result = 31 * result + (aggregation != null ? aggregation.hashCode() : 0);
       result = 31 * result + (resource != null ? resource.hashCode() : 0);
       result =
-          31 * result + (instrumentationLibraryInfo != null ? instrumentationLibraryInfo.hashCode()
-              : 0);
+          31 * result
+              + (instrumentationLibraryInfo != null ? instrumentationLibraryInfo.hashCode() : 0);
       result = 31 * result + (clock != null ? clock.hashCode() : 0);
       result = 31 * result + (aggregatorFactory != null ? aggregatorFactory.hashCode() : 0);
       result = 31 * result + (aggregatorMap != null ? aggregatorMap.hashCode() : 0);

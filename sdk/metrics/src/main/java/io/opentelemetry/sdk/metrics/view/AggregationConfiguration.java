@@ -9,6 +9,13 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.metrics.Instrument;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * An AggregationConfiguration describes how an aggregation should be performed. It includes both an
+ * {@link Aggregation} which implements what shape of aggregation is created (i.e. histogram, sum,
+ * minMaxSumCount, etc), and a {@link AggregationConfiguration.Temporality} which describes whether
+ * aggregations should be reset with every collection interval, or continue to accumulate across
+ * collection intervals.
+ */
 @AutoValue
 @Immutable
 public abstract class AggregationConfiguration {

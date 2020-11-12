@@ -44,20 +44,20 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry = new ViewRegistry(chooser);
 
-    InstrumentDescriptor descriptor = InstrumentDescriptor.create("name", "description", "unit",
-        InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
-    MeterProviderSharedState providerSharedState = MeterProviderSharedState.create(
-        TestClock.create(),
-        Resource.getEmpty());
-    MeterSharedState meterSharedState = MeterSharedState
-        .create(InstrumentationLibraryInfo.create("test", "1.0"));
+    InstrumentDescriptor descriptor =
+        InstrumentDescriptor.create(
+            "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
+    MeterProviderSharedState providerSharedState =
+        MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
+    MeterSharedState meterSharedState =
+        MeterSharedState.create(InstrumentationLibraryInfo.create("test", "1.0"));
 
     AggregationConfiguration specification =
         AggregationConfiguration.create(
             Aggregations.count(), AggregationConfiguration.Temporality.CUMULATIVE);
-    Batcher expectedBatcher = Batchers
-        .getCumulativeAllLabels(descriptor, providerSharedState, meterSharedState,
-            Aggregations.count());
+    Batcher expectedBatcher =
+        Batchers.getCumulativeAllLabels(
+            descriptor, providerSharedState, meterSharedState, Aggregations.count());
 
     when(chooser.chooseAggregation(descriptor)).thenReturn(specification);
 
@@ -75,20 +75,20 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry = new ViewRegistry(chooser);
 
-    InstrumentDescriptor descriptor = InstrumentDescriptor.create("name", "description", "unit",
-        InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
-    MeterProviderSharedState providerSharedState = MeterProviderSharedState.create(
-        TestClock.create(),
-        Resource.getEmpty());
-    MeterSharedState meterSharedState = MeterSharedState
-        .create(InstrumentationLibraryInfo.create("test", "1.0"));
+    InstrumentDescriptor descriptor =
+        InstrumentDescriptor.create(
+            "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
+    MeterProviderSharedState providerSharedState =
+        MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
+    MeterSharedState meterSharedState =
+        MeterSharedState.create(InstrumentationLibraryInfo.create("test", "1.0"));
 
     AggregationConfiguration specification =
         AggregationConfiguration.create(
             Aggregations.count(), AggregationConfiguration.Temporality.DELTA);
-    Batcher expectedBatcher = Batchers
-        .getDeltaAllLabels(descriptor, providerSharedState, meterSharedState,
-            Aggregations.count());
+    Batcher expectedBatcher =
+        Batchers.getDeltaAllLabels(
+            descriptor, providerSharedState, meterSharedState, Aggregations.count());
 
     when(chooser.chooseAggregation(descriptor)).thenReturn(specification);
 
