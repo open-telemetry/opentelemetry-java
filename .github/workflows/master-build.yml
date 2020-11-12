@@ -59,8 +59,7 @@ jobs:
       - uses: burrunan/gradle-cache-action@v1.5
         with:
           remote-build-cache-proxy-enabled: false
-          # TODO(anuraaga): Remove version specifier after next release creates a tag on master.
-          arguments: artifactoryPublish -Prelease.version=0.10.0-SNAPSHOT
+          arguments: artifactoryPublish
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
