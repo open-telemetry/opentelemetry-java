@@ -55,7 +55,7 @@ class AggregationChooser {
     return possibleMatches.get(0).getValue();
   }
 
-  private boolean matchesOne(InstrumentDescriptor descriptor, InstrumentSelector selector) {
+  private static boolean matchesOne(InstrumentDescriptor descriptor, InstrumentSelector selector) {
     if (selector.hasNameRegex() && !matchesOnName(descriptor, selector)) {
       return false;
     }

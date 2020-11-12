@@ -40,6 +40,10 @@ class ViewRegistry {
     this.aggregationChooser = aggregationChooser;
   }
 
+  void registerView(InstrumentSelector selector, AggregationConfiguration specification) {
+    aggregationChooser.addView(selector, specification);
+  }
+
   /**
    * Create a new {@link io.opentelemetry.sdk.metrics.Batcher} for use in metric recording
    * aggregation.
@@ -61,9 +65,5 @@ class ViewRegistry {
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     }
     throw new IllegalStateException("unsupported Temporality: " + specification.temporality());
-  }
-
-  void registerView(InstrumentSelector selector, AggregationConfiguration specification) {
-    aggregationChooser.addView(selector, specification);
   }
 }
