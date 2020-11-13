@@ -25,14 +25,15 @@ class ProcessorTest {
     Processor processor = new Processor(Resource.create(Attributes.empty()), clock);
     processor.start();
 
+    InstrumentDescriptor instrumentDescriptor =
+        InstrumentDescriptor.create(
+            "one", "desc", "1", InstrumentType.COUNTER, InstrumentValueType.LONG);
     AggregatorKey key =
-        AggregatorKey.create(
-            instrumentationLibraryInfo,
-            InstrumentDescriptor.create(
-                "one", "desc", "1", InstrumentType.COUNTER, InstrumentValueType.LONG),
-            Labels.empty());
+        AggregatorKey.create(instrumentationLibraryInfo, instrumentDescriptor, Labels.empty());
 
-    processor.process(key, LongAccumulation.create(clock.now(), 35L));
+    InstrumentKey instrumentKey =
+        InstrumentKey.create(instrumentDescriptor, instrumentationLibraryInfo);
+    processor.process(instrumentKey, key, LongAccumulation.create(clock.now(), 35L));
 
     Collection<MetricData> result = processor.finish();
 

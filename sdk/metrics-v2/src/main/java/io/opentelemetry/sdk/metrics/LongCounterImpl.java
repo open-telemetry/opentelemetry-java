@@ -12,9 +12,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 class LongCounterImpl implements LongCounter {
 
   private final Accumulator accumulator;
-  private final InstrumentDescriptor instrumentDescriptor;
-  // todo: should the library info be folded into the descriptor?
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final InstrumentKey instrumentKey;
 
   LongCounterImpl(
       Accumulator accumulator,
@@ -23,15 +21,15 @@ class LongCounterImpl implements LongCounter {
       String description,
       String unit) {
     this.accumulator = accumulator;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.instrumentDescriptor =
+    InstrumentDescriptor instrumentDescriptor =
         InstrumentDescriptor.create(
             name, description, unit, InstrumentType.COUNTER, InstrumentValueType.LONG);
+    this.instrumentKey = InstrumentKey.create(instrumentDescriptor, instrumentationLibraryInfo);
   }
 
   @Override
   public void add(long increment, Labels labels) {
-    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, increment);
+    accumulator.recordLongAdd(instrumentKey, labels, increment);
   }
 
   @Override
@@ -41,7 +39,6 @@ class LongCounterImpl implements LongCounter {
 
   @Override
   public BoundLongCounter bind(Labels labels) {
-    return new BoundLongCounterImpl(
-        accumulator, instrumentDescriptor, instrumentationLibraryInfo, labels);
+    return new BoundLongCounterImpl(accumulator, instrumentKey, labels);
   }
 }

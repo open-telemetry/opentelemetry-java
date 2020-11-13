@@ -27,13 +27,14 @@ class LongCounterImplTest {
 
   @Test
   void record_passthrough_noLabels() {
-    InstrumentDescriptor expectedInstrumentDescriptor =
+    InstrumentDescriptor descriptor =
         InstrumentDescriptor.create(
             "testCounter",
             "testDescription",
             "ms",
             InstrumentType.COUNTER,
             InstrumentValueType.LONG);
+    InstrumentKey instrumentKey = InstrumentKey.create(descriptor, instrumentationLibraryInfo);
 
     LongCounterImpl longCounter =
         new LongCounterImpl(
@@ -41,20 +42,19 @@ class LongCounterImplTest {
 
     longCounter.add(100);
 
-    verify(accumulator)
-        .recordLongAdd(
-            instrumentationLibraryInfo, expectedInstrumentDescriptor, Labels.empty(), 100);
+    verify(accumulator).recordLongAdd(instrumentKey, Labels.empty(), 100);
   }
 
   @Test
   void record_passthrough_labels() {
-    InstrumentDescriptor expectedInstrumentDescriptor =
+    InstrumentDescriptor descriptor =
         InstrumentDescriptor.create(
             "testCounter",
             "testDescription",
             "ms",
             InstrumentType.COUNTER,
             InstrumentValueType.LONG);
+    InstrumentKey instrumentKey = InstrumentKey.create(descriptor, instrumentationLibraryInfo);
 
     LongCounterImpl longCounter =
         new LongCounterImpl(
@@ -62,23 +62,19 @@ class LongCounterImplTest {
 
     longCounter.add(100, Labels.of("key", "value"));
 
-    verify(accumulator)
-        .recordLongAdd(
-            instrumentationLibraryInfo,
-            expectedInstrumentDescriptor,
-            Labels.of("key", "value"),
-            100);
+    verify(accumulator).recordLongAdd(instrumentKey, Labels.of("key", "value"), 100);
   }
 
   @Test
   void record_passthrough_boundLabels() {
-    InstrumentDescriptor expectedInstrumentDescriptor =
+    InstrumentDescriptor descriptor =
         InstrumentDescriptor.create(
             "testCounter",
             "testDescription",
             "ms",
             InstrumentType.COUNTER,
             InstrumentValueType.LONG);
+    InstrumentKey instrumentKey = InstrumentKey.create(descriptor, instrumentationLibraryInfo);
 
     LongCounter longCounter =
         new LongCounterImpl(
@@ -87,11 +83,6 @@ class LongCounterImplTest {
 
     boundLongCounter.add(100);
 
-    verify(accumulator)
-        .recordLongAdd(
-            instrumentationLibraryInfo,
-            expectedInstrumentDescriptor,
-            Labels.of("key", "value"),
-            100);
+    verify(accumulator).recordLongAdd(instrumentKey, Labels.of("key", "value"), 100);
   }
 }

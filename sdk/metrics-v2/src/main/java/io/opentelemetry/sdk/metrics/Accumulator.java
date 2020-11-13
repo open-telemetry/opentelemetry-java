@@ -7,39 +7,27 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @SuppressWarnings("rawtypes")
 class Accumulator {
   private final Clock clock;
-  private final ConcurrentMap<AggregatorKey, LongAggregator> longAggregators =
-      new ConcurrentHashMap<>();
+  private final AggregatorLookup lookup = new AggregatorLookup();
 
   Accumulator(Clock clock) {
     this.clock = clock;
   }
 
-  void recordLongAdd(
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor,
-      Labels labels,
-      long increment) {
-    // find/create the appropriate aggregator "record" based on iLI, ID and Labels
+  void recordLongAdd(InstrumentKey instrumentKey, Labels labels, long increment) {
+    LongAggregator<?> longAggregator =
+        lookup.getOrCreate(instrumentKey, labels, () -> lookupLongAggregator(instrumentKey));
 
-    // todo: avoid allocating a key with every recording. maybe nested maps? maybe the equivalent
-    //  of an AllLabels implementation from v1 metrics?
-    LongAggregator longAggregator =
-        longAggregators.computeIfAbsent(
-            AggregatorKey.create(instrumentationLibraryInfo, instrumentDescriptor, labels),
-            aggregatorKey -> lookupLongAggregator(aggregatorKey, clock));
     longAggregator.record(increment);
   }
 
   @SuppressWarnings("unused")
-  private static LongAggregator lookupLongAggregator(AggregatorKey aggregatorKey, Clock clock) {
+  private LongAggregator lookupLongAggregator(InstrumentKey instrumentKey) {
     // todo: look up from a ViewRegistry-like thingee. Note: this lookup needs to be identical
     // to the one done in the Processor. The difference is that in here, all the aggregators *must*
     // be configured as delta-aggregators (or we need to remove them from the map and re-create
@@ -67,10 +55,18 @@ class Accumulator {
     // always?
     // - double typed aggregators
 
-    for (Map.Entry<AggregatorKey, LongAggregator> entry : longAggregators.entrySet()) {
-      AggregatorKey key = entry.getKey();
-      LongAggregator longAggregator = entry.getValue();
-      processor.process(key, longAggregator.collect(clock));
+    Collection<InstrumentKey> instrumentKeys = lookup.getActiveInstrumentKeys();
+    for (InstrumentKey instrumentKey : instrumentKeys) {
+      Map<Labels, LongAggregator<?>> aggregators =
+          lookup.getAggregatorsForInstrument(instrumentKey, /* clean=*/ true);
+      // todo: change the processor to also talk InstrumentKeys.
+      for (Map.Entry<Labels, LongAggregator<?>> entry : aggregators.entrySet()) {
+        processor.process(
+            instrumentKey,
+            AggregatorKey.create(
+                instrumentKey.libraryInfo(), instrumentKey.instrumentDescriptor(), entry.getKey()),
+            entry.getValue().collect(clock));
+      }
     }
   }
 }

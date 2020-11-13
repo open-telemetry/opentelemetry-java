@@ -5,22 +5,20 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
 // todo: this probably needs to be an interface eventually, so you can have custom processors, or
-// nested processors, or other fancy features.
-@SuppressWarnings("rawtypes")
+//  nested processors, or other fancy features.
 class Processor {
-  private final ConcurrentMap<AggregatorKey, LongAggregator> longAggregators =
-      new ConcurrentHashMap<>();
+  private final AggregatorLookup aggregatorLookup = new AggregatorLookup();
+
   private final Resource resource;
   private final Clock clock;
 
@@ -31,20 +29,21 @@ class Processor {
 
   void start() {
     // todo: flag that we're within a collection cycle, and should be accumulating values.
-    // is this actually needed... wait for processor specs to see what is required here?
+    //  is this actually needed... wait for processor specs to see what is required here?
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  void process(AggregatorKey key, Accumulation accumulation) {
-    // todo generics aren't working out down here...
-    LongAggregator longAggregator = longAggregators.computeIfAbsent(key, this::createAggregator);
+  void process(InstrumentKey instrumentKey, AggregatorKey key, Accumulation accumulation) {
+    LongAggregator longAggregator =
+        aggregatorLookup.getOrCreate(
+            instrumentKey, key.getLabels(), () -> createAggregator(instrumentKey));
     longAggregator.merge(accumulation);
   }
 
-  @SuppressWarnings("rawtypes")
-  private LongAggregator createAggregator(AggregatorKey aggregatorKey) {
+  @SuppressWarnings({"rawtypes", "unused"})
+  private LongAggregator createAggregator(InstrumentKey key) {
     // todo: look up aggregator creator, based on key. Here, they may be delta-only or cumulative,
-    // as configured.
+    //  as configured.
     return new LongSumAggregator(clock.now(), /* keepCumulativeSums= */ true);
   }
 
@@ -52,28 +51,39 @@ class Processor {
   Collection<MetricData> finish() {
     List<MetricData> exportData = new ArrayList<>();
     // todo: get all the data from the aggregators, transform it into MetricData and return it.
-    longAggregators.forEach(
-        (aggregatorKey, longAggregator) -> {
-          // note: this `collect()` call resets the aggregator, if it's doing deltas
-          Accumulation accumulation = longAggregator.collect(clock);
-          // todo: group by labels so we don't repeat ourselves so badly; this probably
-          // needs to be done up at a higher level. If we have a better data structure for
-          // storing label-set aggregators per aggregation key, this would be solved, I
-          // think.
-          MetricData.Point point =
-              accumulation.convertToPoint(clock.now(), aggregatorKey.getLabels());
-          InstrumentDescriptor instrumentDescriptor = aggregatorKey.getInstrumentDescriptor();
-          exportData.add(
-              MetricData.create(
-                  resource,
-                  aggregatorKey.getInstrumentationLibraryInfo(),
-                  instrumentDescriptor.getName(),
-                  instrumentDescriptor.getDescription(),
-                  instrumentDescriptor.getUnit(),
-                  accumulation.getMetricDataType(),
-                  Collections.singleton(point)));
-        });
+    Collection<InstrumentKey> instrumentKeys = aggregatorLookup.getActiveInstrumentKeys();
+    for (InstrumentKey key : instrumentKeys) {
+      Map<Labels, LongAggregator<?>> aggregators =
+          aggregatorLookup.getAggregatorsForInstrument(key, /* clean=*/ false);
+      List<MetricData.Point> points = new ArrayList<>();
 
+      MetricData.Type metricDataType = null;
+      for (Map.Entry<Labels, LongAggregator<?>> entry : aggregators.entrySet()) {
+        Accumulation accumulation = entry.getValue().collect(clock);
+        MetricData.Point point = accumulation.convertToPoint(clock.now(), entry.getKey());
+        points.add(point);
+        // todo: this is weird. we should only have one type per InstrumentKey. Figure out how to
+        // make that work right. Probably pull the type out of the accumulation and enable looking
+        // it up? It probably should be set via the ViewRegistry in some way or another. A given
+        // InstrumentDescriptor should map to a single type.
+        metricDataType = accumulation.getMetricDataType();
+      }
+
+      if (metricDataType == null) {
+        continue;
+      }
+      InstrumentDescriptor instrumentDescriptor = key.instrumentDescriptor();
+
+      exportData.add(
+          MetricData.create(
+              resource,
+              key.libraryInfo(),
+              instrumentDescriptor.getName(),
+              instrumentDescriptor.getDescription(),
+              instrumentDescriptor.getUnit(),
+              metricDataType,
+              points));
+    }
     return exportData;
   }
 }

@@ -34,10 +34,10 @@ class AccumulatorTest {
             InstrumentType.COUNTER,
             InstrumentValueType.LONG);
 
-    accumulator.recordLongAdd(
-        instrumentationLibraryInfo, instrumentDescriptor, Labels.of("key1", "value1"), 24);
-    accumulator.recordLongAdd(
-        instrumentationLibraryInfo, instrumentDescriptor, Labels.of("key2", "value2"), 12);
+    InstrumentKey instrumentKey =
+        InstrumentKey.create(instrumentDescriptor, instrumentationLibraryInfo);
+    accumulator.recordLongAdd(instrumentKey, Labels.of("key1", "value1"), 24);
+    accumulator.recordLongAdd(instrumentKey, Labels.of("key2", "value2"), 12);
 
     verifyNoInteractions(processor);
 
@@ -49,8 +49,10 @@ class AccumulatorTest {
     AggregatorKey expectedKey2 =
         AggregatorKey.create(
             instrumentationLibraryInfo, instrumentDescriptor, Labels.of("key2", "value2"));
-    verify(processor).process(expectedKey1, LongAccumulation.create(clock.now(), 24));
-    verify(processor).process(expectedKey2, LongAccumulation.create(clock.now(), 12));
+    verify(processor)
+        .process(instrumentKey, expectedKey1, LongAccumulation.create(clock.now(), 24));
+    verify(processor)
+        .process(instrumentKey, expectedKey2, LongAccumulation.create(clock.now(), 12));
   }
 
   @Test
@@ -67,9 +69,13 @@ class AccumulatorTest {
             InstrumentType.COUNTER,
             InstrumentValueType.LONG);
 
+    InstrumentKey instrumentKey =
+        InstrumentKey.create(instrumentDescriptor, instrumentationLibraryInfo);
+
     Labels labels = Labels.of("key", "value");
-    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, 24);
-    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, 12);
+
+    accumulator.recordLongAdd(instrumentKey, labels, 24);
+    accumulator.recordLongAdd(instrumentKey, labels, 12);
 
     verifyNoInteractions(processor);
 
@@ -77,7 +83,7 @@ class AccumulatorTest {
 
     AggregatorKey expectedKey =
         AggregatorKey.create(instrumentationLibraryInfo, instrumentDescriptor, labels);
-    verify(processor).process(expectedKey, LongAccumulation.create(clock.now(), 36));
+    verify(processor).process(instrumentKey, expectedKey, LongAccumulation.create(clock.now(), 36));
   }
 
   @Test
@@ -94,8 +100,11 @@ class AccumulatorTest {
             InstrumentType.COUNTER,
             InstrumentValueType.LONG);
 
+    InstrumentKey instrumentKey =
+        InstrumentKey.create(instrumentDescriptor, instrumentationLibraryInfo);
+
     Labels labels = Labels.of("key", "value");
-    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, 24);
+    accumulator.recordLongAdd(instrumentKey, labels, 24);
 
     verifyNoInteractions(processor);
 
@@ -104,13 +113,15 @@ class AccumulatorTest {
     AggregatorKey expectedKey =
         AggregatorKey.create(instrumentationLibraryInfo, instrumentDescriptor, labels);
 
-    verify(processor, only()).process(expectedKey, LongAccumulation.create(clock.now(), 24));
+    verify(processor, only())
+        .process(instrumentKey, expectedKey, LongAccumulation.create(clock.now(), 24));
 
     // reset here so we don't get confused by the first cycle
     Mockito.reset(processor);
-    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, 12);
+    accumulator.recordLongAdd(instrumentKey, labels, 12);
     accumulator.collectAndSendTo(processor);
 
-    verify(processor, only()).process(expectedKey, LongAccumulation.create(clock.now(), 12));
+    verify(processor, only())
+        .process(instrumentKey, expectedKey, LongAccumulation.create(clock.now(), 12));
   }
 }

@@ -7,29 +7,22 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 
 class BoundLongCounterImpl implements BoundLongCounter {
 
   private final Accumulator accumulator;
-  private final InstrumentDescriptor instrumentDescriptor;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final InstrumentKey instrumentKey;
   private final Labels labels;
 
-  BoundLongCounterImpl(
-      Accumulator accumulator,
-      InstrumentDescriptor instrumentDescriptor,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Labels labels) {
+  BoundLongCounterImpl(Accumulator accumulator, InstrumentKey instrumentKey, Labels labels) {
     this.accumulator = accumulator;
-    this.instrumentDescriptor = instrumentDescriptor;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.instrumentKey = instrumentKey;
     this.labels = labels;
   }
 
   @Override
   public void add(long increment) {
-    accumulator.recordLongAdd(instrumentationLibraryInfo, instrumentDescriptor, labels, increment);
+    accumulator.recordLongAdd(instrumentKey, labels, increment);
   }
 
   @Override
