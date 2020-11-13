@@ -61,7 +61,7 @@ public abstract class InstrumentSelector {
   /** Builder for {@link InstrumentSelector} instances. */
   @AutoValue.Builder
   public interface Builder {
-    /** Provide a specifier for {@link InstrumentType}. */
+    /** Sets a specifier for {@link InstrumentType}. */
     Builder instrumentType(InstrumentType instrumentType);
 
     /** Sets a specifier for selecting Instruments by name. */
