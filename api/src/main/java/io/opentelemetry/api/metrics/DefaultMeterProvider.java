@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.metrics;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
@@ -23,7 +22,7 @@ final class DefaultMeterProvider implements MeterProvider {
   }
 
   @Override
-  public Meter get(String instrumentationName, @Nullable String instrumentationVersion) {
+  public Meter get(String instrumentationName, String instrumentationVersion) {
     return Meter.getDefault();
   }
 

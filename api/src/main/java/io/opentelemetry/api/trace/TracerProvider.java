@@ -7,7 +7,6 @@ package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -46,5 +45,5 @@ public interface TracerProvider {
    *     "semver:1.0.0").
    * @return a tracer instance.
    */
-  Tracer get(String instrumentationName, @Nullable String instrumentationVersion);
+  Tracer get(String instrumentationName, String instrumentationVersion);
 }

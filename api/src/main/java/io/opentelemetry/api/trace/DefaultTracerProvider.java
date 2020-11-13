@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.trace;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
@@ -23,7 +22,7 @@ class DefaultTracerProvider implements TracerProvider {
   }
 
   @Override
-  public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
+  public Tracer get(String instrumentationName, String instrumentationVersion) {
     return Tracer.getDefault();
   }
 
