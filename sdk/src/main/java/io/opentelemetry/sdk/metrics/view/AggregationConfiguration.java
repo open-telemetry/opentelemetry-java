@@ -29,7 +29,7 @@ public abstract class AggregationConfiguration {
     return new AutoValue_AggregationConfiguration(aggregation, temporality);
   }
 
-  /** Which {@link Aggregation} should be used for this View. */
+  /** Returns the {@link Aggregation} that should be used for this View. */
   @Nullable
   public abstract Aggregation aggregation();
 
