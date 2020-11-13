@@ -53,7 +53,7 @@ public abstract class InstrumentSelector {
     return instrumentType() != null;
   }
 
-  /** Whether the instrument name regex been specified. */
+  /** Returns whether the instrument name regex been specified. */
   public boolean hasInstrumentNameRegex() {
     return instrumentNameRegex() != null;
   }
