@@ -28,7 +28,7 @@ public abstract class AggregationConfiguration {
   /** Which {@link Aggregation} should be used for this View. */
   public abstract Aggregation aggregation();
 
-  /** What {@link Temporality} should be used for this View (delta vs. cumulative). */
+  /** Returns the {@link Temporality} that should be used for this View (delta vs. cumulative). */
   public abstract Temporality temporality();
 
   /** An enumeration which describes the time period over which metrics should be aggregated. */
