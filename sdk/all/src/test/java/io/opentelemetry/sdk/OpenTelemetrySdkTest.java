@@ -101,7 +101,8 @@ class OpenTelemetrySdkTest {
         .hasFieldOrPropertyWithValue("resource", resource);
 
     assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
-    // this is not awesome
+    // Since MeterProvider is in a different package, the only alternative to this reflective
+    // approach would be to make the fields public for testing which is worse than this.
     assertThat(openTelemetry.getMeterProvider())
         .extracting("registry")
         .extracting("meterProviderSharedState")
