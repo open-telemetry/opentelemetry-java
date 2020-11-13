@@ -183,9 +183,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
               new ObfuscatedTracerProvider(tracerProvider),
               meterProvider,
               super.propagators,
-              clock== null ? MillisClock.getInstance() : clock,
+              clock == null ? MillisClock.getInstance() : clock== null ? MillisClock.getInstance() : clock,
               resource == null ? Resource.getDefault() :
-              resource);
+              resource == null ? Resource.getDefault() : resource);
       // Automatically initialize global OpenTelemetry with the first SDK we build.
       if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
         OpenTelemetry.set(sdk);
