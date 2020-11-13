@@ -26,7 +26,7 @@ public abstract class InstrumentSelector {
   }
 
   /**
-   * What {@link InstrumentType} should be selected. If null, then this specifier will not be used.
+   * Returns {@link InstrumentType} that should be selected. If null, then this specifier will not be used.
    */
   @Nullable
   public abstract InstrumentType instrumentType();
