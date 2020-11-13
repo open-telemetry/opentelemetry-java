@@ -32,7 +32,7 @@ public abstract class InstrumentSelector {
   public abstract InstrumentType instrumentType();
 
   /**
-   * What instrument names should be selected. This is a regex. If null, then this specifier will
+   * Returns which instrument names should be selected. This is a regex. If null, then this specifier will
    * not be used.
    */
   @Nullable
