@@ -26,6 +26,13 @@ available.
 - The `SpanProcessor` interface now includes default method implementations for the `shutdown()` and `forceFlush()` methods.
 - The BatchRecorder implementation has been updated to actually batch the recordings, rather than simply passing them through.
 
+### Extensions
+
+#### Enhancements:
+
+- A new module has been added to assist with propagating the OTel context in kotlin co-routines. 
+See the `opentelemetry-extension-kotlin` module for details. 
+
 -----
 
 ## Version 0.10.0 - 2010-11-06
