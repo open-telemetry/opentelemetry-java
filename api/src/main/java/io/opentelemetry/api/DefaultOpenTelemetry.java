@@ -23,7 +23,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * back to no-op default implementations.
  */
 @ThreadSafe
-final class DefaultOpenTelemetry implements OpenTelemetry {
+public class DefaultOpenTelemetry implements OpenTelemetry {
   private static final Object mutex = new Object();
 
   static OpenTelemetry getGlobalOpenTelemetry() {
@@ -72,7 +72,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
     return propagators;
   }
 
-  DefaultOpenTelemetry(
+  protected DefaultOpenTelemetry(
       TracerProvider tracerProvider, MeterProvider meterProvider, ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;
     this.meterProvider = meterProvider;
@@ -117,7 +117,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
         .setPropagators(propagators);
   }
 
-  static class Builder implements OpenTelemetryBuilder<Builder> {
+  protected static class Builder implements OpenTelemetryBuilder<Builder> {
     private ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
     private TracerProvider tracerProvider;
@@ -146,16 +146,13 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
 
     @Override
     public OpenTelemetry build() {
-      MeterProvider meterProvider = this.meterProvider;
-      if (meterProvider == null) {
-        MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
-        if (meterProviderFactory != null) {
-          meterProvider = meterProviderFactory.create();
-        } else {
-          meterProvider = MeterProvider.getDefault();
-        }
-      }
+      MeterProvider meterProvider = buildMeterProvider();
+      TracerProvider tracerProvider = buildTracerProvider();
 
+      return new DefaultOpenTelemetry(tracerProvider, meterProvider, propagators);
+    }
+
+    protected TracerProvider buildTracerProvider() {
       TracerProvider tracerProvider = this.tracerProvider;
       if (tracerProvider == null) {
         TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
@@ -165,8 +162,24 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
           tracerProvider = TracerProvider.getDefault();
         }
       }
+      return tracerProvider;
+    }
 
-      return new DefaultOpenTelemetry(tracerProvider, meterProvider, propagators);
+    protected MeterProvider buildMeterProvider() {
+      MeterProvider meterProvider = this.meterProvider;
+      if (meterProvider == null) {
+        MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
+        if (meterProviderFactory != null) {
+          meterProvider = meterProviderFactory.create();
+        } else {
+          meterProvider = MeterProvider.getDefault();
+        }
+      }
+      return meterProvider;
+    }
+
+    protected ContextPropagators buildContextPropagators() {
+      return propagators;
     }
   }
 }

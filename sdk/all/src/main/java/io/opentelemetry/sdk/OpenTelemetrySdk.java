@@ -8,30 +8,25 @@ package io.opentelemetry.sdk;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.OpenTelemetryBuilder;
 import io.opentelemetry.api.internal.Obfuscated;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.spi.metrics.MeterProviderFactory;
-import io.opentelemetry.spi.trace.TracerProviderFactory;
-import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
-public final class OpenTelemetrySdk implements OpenTelemetry {
+public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
   /**
    * Returns a new {@link Builder} for configuring an instance of {@linkplain OpenTelemetrySdk the
@@ -62,14 +57,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return (MeterSdkProvider) OpenTelemetry.get().getMeterProvider();
   }
 
-  private static final boolean HAS_METRICS_SDK = hasClass("io.opentelemetry.sdk.metrics.MeterSdk");
-  private static final boolean HAS_TRACING_SDK = hasClass("io.opentelemetry.sdk.trace.TracerSdk");
-
   private static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
-
-  private final TracerProvider tracerProvider;
-  private final MeterProvider meterProvider;
-  private final ContextPropagators contextPropagators;
 
   private final Clock clock;
   private final Resource resource;
@@ -80,26 +68,9 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
       ContextPropagators contextPropagators,
       Clock clock,
       Resource resource) {
-    this.tracerProvider = tracerProvider;
-    this.meterProvider = meterProvider;
-    this.contextPropagators = contextPropagators;
+    super(tracerProvider, meterProvider, contextPropagators);
     this.clock = clock;
     this.resource = resource;
-  }
-
-  @Override
-  public TracerProvider getTracerProvider() {
-    return tracerProvider;
-  }
-
-  @Override
-  public MeterProvider getMeterProvider() {
-    return meterProvider;
-  }
-
-  @Override
-  public ContextPropagators getPropagators() {
-    return contextPropagators;
   }
 
   /** Returns the {@link Resource} for this {@link OpenTelemetrySdk}. */
@@ -114,68 +85,44 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
 
   /** Returns the {@link TracerSdkManagement} for this {@link OpenTelemetrySdk}. */
   public TracerSdkManagement getTracerManagement() {
-    return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
+    return (TracerSdkProvider) ((ObfuscatedTracerProvider) getTracerProvider()).unobfuscate();
   }
 
   /** Returns a new {@link Builder} initialized with the values of this {@link OpenTelemetrySdk}. */
   @Override
   public Builder toBuilder() {
-    return builder()
-        .setTracerProvider(tracerProvider)
-        .setMeterProvider(meterProvider)
+    return new Builder()
+        .setTracerProvider(getTracerProvider())
+        .setMeterProvider(getMeterProvider())
         .setPropagators(getPropagators())
         .setClock(clock)
         .setResource(resource);
   }
 
   /** A builder for configuring an {@link OpenTelemetrySdk}. */
-  public static class Builder implements OpenTelemetryBuilder<Builder> {
+  public static class Builder extends DefaultOpenTelemetry.Builder {
     private Clock clock = MillisClock.getInstance();
     private Resource resource = Resource.getDefault();
-    private ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
-    private TracerProvider tracerProvider;
-    private MeterProvider meterProvider;
-
-    /**
-     * Sets the {@link TracerProvider} to use. This can be used to configure tracing settings by
-     * returning the instance created by a {@link TracerSdkProvider.Builder}.
-     *
-     * @see TracerSdkProvider#builder()
-     */
     @Override
     public Builder setTracerProvider(TracerProvider tracerProvider) {
-      requireNonNull(tracerProvider, "tracerProvider");
-      this.tracerProvider = tracerProvider;
+      if (!(tracerProvider instanceof TracerSdkProvider)) {
+        throw new IllegalArgumentException(
+            "The OpenTelemetrySdk can only be configured with a TracerSdkProvider");
+      }
+      super.setTracerProvider(tracerProvider);
       return this;
     }
 
-    /**
-     * Sets the {@link MeterProvider} to use.. This can be used to configure tracing settings by
-     * returning the instance created by a {@link MeterSdkProvider.Builder}.
-     *
-     * @see MeterSdkProvider#builder()
-     */
     @Override
     public Builder setMeterProvider(MeterProvider meterProvider) {
-      requireNonNull(meterProvider, "meterProvider");
-      this.meterProvider = meterProvider;
+      super.setMeterProvider(meterProvider);
       return this;
     }
 
-    /**
-     * Sets the {@link ContextPropagators} object, which can be used to access the set of registered
-     * propagators for each supported format.
-     *
-     * @param propagators the {@link ContextPropagators} object to be registered.
-     * @throws IllegalStateException if a specified manager (via system properties) could not be
-     *     found.
-     * @throws NullPointerException if {@code propagators} is {@code null}.
-     */
     @Override
     public Builder setPropagators(ContextPropagators propagators) {
-      requireNonNull(propagators, "propagators");
-      this.propagators = propagators;
+      super.setPropagators(propagators);
       return this;
     }
 
@@ -208,73 +155,26 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
      */
     @Override
     public OpenTelemetrySdk build() {
-      MeterProvider meterProvider = this.meterProvider;
-      if (meterProvider == null) {
-        MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
-        if (meterProviderFactory != null) {
-          meterProvider = meterProviderFactory.create();
-        } else if (HAS_METRICS_SDK) {
-          meterProvider = MeterSdkProvider.builder().setClock(clock).setResource(resource).build();
-        } else {
-          meterProvider = MeterProvider.getDefault();
-        }
+      MeterProvider meterProvider = super.buildMeterProvider();
+      TracerProvider tracerProvider = super.buildTracerProvider();
+      if (!(tracerProvider instanceof TracerSdkProvider)) {
+        throw new IllegalStateException(
+            "The OpenTelemetrySdk can only be configured with a TracerSdkProvider");
       }
-
-      TracerProvider tracerProvider = this.tracerProvider;
-      if (tracerProvider == null) {
-        TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
-        if (tracerProviderFactory != null) {
-          tracerProvider = new ObfuscatedTracerProvider(tracerProviderFactory.create());
-        } else if (HAS_TRACING_SDK) {
-          tracerProvider =
-              new ObfuscatedTracerProvider(
-                  TracerSdkProvider.builder().setClock(clock).setResource(resource).build());
-        } else {
-          tracerProvider = TracerProvider.getDefault();
-        }
-      }
+      ContextPropagators propagators = super.buildContextPropagators();
 
       OpenTelemetrySdk sdk =
-          new OpenTelemetrySdk(tracerProvider, meterProvider, propagators, clock, resource);
+          new OpenTelemetrySdk(
+              new ObfuscatedTracerProvider(tracerProvider),
+              meterProvider,
+              propagators,
+              clock,
+              resource);
       // Automatically initialize global OpenTelemetry with the first SDK we build.
       if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
         OpenTelemetry.set(sdk);
       }
       return sdk;
-    }
-  }
-
-  /**
-   * Load provider class via {@link ServiceLoader}. A specific provider class can be requested via
-   * setting a system property with FQCN.
-   *
-   * @param providerClass a provider class
-   * @param <T> provider type
-   * @return a provider or null if not found
-   * @throws IllegalStateException if a specified provider is not found
-   */
-  @Nullable
-  private static <T> T loadSpi(Class<T> providerClass) {
-    String specifiedProvider = System.getProperty(providerClass.getName());
-    ServiceLoader<T> providers = ServiceLoader.load(providerClass);
-    for (T provider : providers) {
-      if (specifiedProvider == null || specifiedProvider.equals(provider.getClass().getName())) {
-        return provider;
-      }
-    }
-    if (specifiedProvider != null) {
-      throw new IllegalStateException(
-          String.format("Service provider %s not found", specifiedProvider));
-    }
-    return null;
-  }
-
-  private static boolean hasClass(String className) {
-    try {
-      Class.forName(className);
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
     }
   }
 

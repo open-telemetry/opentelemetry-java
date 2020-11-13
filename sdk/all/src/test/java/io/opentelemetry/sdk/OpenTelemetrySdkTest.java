@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
@@ -26,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class OpenTelemetrySdkTest {
 
-  @Mock private TracerProvider tracerProvider;
+  @Mock private TracerSdkProvider tracerProvider;
   @Mock private MeterProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
@@ -76,7 +75,8 @@ class OpenTelemetrySdkTest {
             .setClock(clock)
             .setResource(resource)
             .build();
-    assertThat(openTelemetry.getTracerProvider()).isEqualTo(tracerProvider);
+    assertThat(((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate())
+        .isEqualTo(tracerProvider);
     assertThat(openTelemetry.getMeterProvider()).isEqualTo(meterProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
     assertThat(openTelemetry.getResource()).isEqualTo(resource);
