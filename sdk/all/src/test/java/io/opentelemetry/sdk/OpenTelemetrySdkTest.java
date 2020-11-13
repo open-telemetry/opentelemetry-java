@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
@@ -81,5 +82,32 @@ class OpenTelemetrySdkTest {
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
     assertThat(openTelemetry.getResource()).isEqualTo(resource);
     assertThat(openTelemetry.getClock()).isEqualTo(clock);
+  }
+
+  @Test
+  void testReconfigure_justClockAndResource() {
+    Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder().setClock(clock).setResource(resource).build();
+    TracerProvider unobfuscatedTracerProvider =
+        ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
+
+    assertThat(unobfuscatedTracerProvider).isInstanceOf(TracerSdkProvider.class);
+    // this is not a great way to test this...
+    assertThat(unobfuscatedTracerProvider)
+        .extracting("sharedState")
+        .hasFieldOrPropertyWithValue("clock", clock)
+        .hasFieldOrPropertyWithValue("resource", resource);
+
+    assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
+    // this is not awesome
+    assertThat(openTelemetry.getMeterProvider())
+        .extracting("registry")
+        .extracting("meterProviderSharedState")
+        .hasFieldOrPropertyWithValue("clock", clock)
+        .hasFieldOrPropertyWithValue("resource", resource);
+
+    assertThat(openTelemetry.getResource()).isSameAs(resource);
+    assertThat(openTelemetry.getClock()).isSameAs(clock);
   }
 }
