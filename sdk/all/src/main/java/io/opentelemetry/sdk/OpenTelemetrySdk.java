@@ -101,8 +101,8 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
   /** A builder for configuring an {@link OpenTelemetrySdk}. */
   public static class Builder extends DefaultOpenTelemetry.Builder {
-    private Clock clock = MillisClock.getInstance();
-    private Resource resource = Resource.getDefault();
+    private Clock clock;
+    private Resource resource;
 
     /**
      * Sets the {@link TracerSdkProvider} to use. This can be used to configure tracing settings by
@@ -179,8 +179,8 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
               new ObfuscatedTracerProvider(tracerProvider),
               meterProvider,
               super.propagators,
-              clock,
-              resource);
+              clock == null ? MillisClock.getInstance() : clock,
+              resource == null ? Resource.getDefault() : resource);
       // Automatically initialize global OpenTelemetry with the first SDK we build.
       if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
         OpenTelemetry.set(sdk);

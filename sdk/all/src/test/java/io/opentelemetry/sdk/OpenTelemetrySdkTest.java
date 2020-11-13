@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
@@ -37,6 +38,7 @@ class OpenTelemetrySdkTest {
         .isSameAs(OpenTelemetry.getGlobalTracerProvider().get(""));
     assertThat(OpenTelemetrySdk.getGlobalMeterProvider())
         .isSameAs(OpenTelemetry.getGlobalMeterProvider());
+    assertThat(OpenTelemetrySdk.getGlobalTracerManagement()).isNotNull();
   }
 
   @Test
@@ -111,5 +113,16 @@ class OpenTelemetrySdkTest {
 
     assertThat(openTelemetry.getResource()).isSameAs(resource);
     assertThat(openTelemetry.getClock()).isSameAs(clock);
+  }
+
+  @Test
+  void testTracerProviderAccess() {
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
+    assertThat(openTelemetry.getTracerProvider())
+        .asInstanceOf(type(ObfuscatedTracerProvider.class))
+        .isNotNull()
+        .matches(obfuscated -> obfuscated.unobfuscate() == tracerProvider);
+    assertThat(openTelemetry.getTracerManagement()).isNotNull();
   }
 }
