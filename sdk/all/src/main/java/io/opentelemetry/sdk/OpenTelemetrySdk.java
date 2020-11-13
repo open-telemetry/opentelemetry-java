@@ -123,6 +123,12 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       return this;
     }
 
+    /**
+     * Sets the {@link MeterProvider} to use.. This can be used to configure tracing settings by
+     * returning the instance created by a {@link MeterSdkProvider.Builder}.
+     *
+     * @see MeterSdkProvider#builder()
+     */
     @Override
     public Builder setMeterProvider(MeterProvider meterProvider) {
       if (!(meterProvider instanceof MeterSdkProvider)) {
