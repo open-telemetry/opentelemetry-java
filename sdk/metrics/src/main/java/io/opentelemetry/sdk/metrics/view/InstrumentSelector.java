@@ -67,7 +67,7 @@ public abstract class InstrumentSelector {
     /** Sets a specifier for selecting Instruments by name. */
     Builder instrumentNameRegex(String regex);
 
-    /** Create an InstrumentSelector instance. */
+    /** Returns an InstrumentSelector instance with the content of this builder. */
     InstrumentSelector build();
   }
 }
