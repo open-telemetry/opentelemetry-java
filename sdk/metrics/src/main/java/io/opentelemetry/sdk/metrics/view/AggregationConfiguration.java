@@ -20,7 +20,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class AggregationConfiguration {
 
-  /** Create a new configuration with the provided options. */
+  /** Returns a new configuration with the provided options. */
   public static AggregationConfiguration create(Aggregation aggregation, Temporality temporality) {
     return new AutoValue_AggregationConfiguration(aggregation, temporality);
   }
