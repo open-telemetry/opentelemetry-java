@@ -25,7 +25,7 @@ public abstract class AggregationConfiguration {
     return new AutoValue_AggregationConfiguration(aggregation, temporality);
   }
 
-  /** Which {@link Aggregation} should be used for this View. */
+  /** Returns the {@link Aggregation} that should be used for this View. */
   public abstract Aggregation aggregation();
 
   /** Returns the {@link Temporality} that should be used for this View (delta vs. cumulative). */
