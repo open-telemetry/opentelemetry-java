@@ -17,19 +17,19 @@ import org.jetbrains.annotations.Nullable;
  * resumption. Implemented in Java instead of Kotlin to allow usage in auto-instrumentation where
  * there is an outstanding Kotlin bug preventing it https://youtrack.jetbrains.com/issue/KT-20869.
  */
-class ContextElement implements ThreadContextElement<Scope> {
+class KotlinContextElement implements ThreadContextElement<Scope> {
 
-  static final CoroutineContext.Key<ContextElement> KEY =
-      new CoroutineContext.Key<ContextElement>() {};
+  static final CoroutineContext.Key<KotlinContextElement> KEY =
+      new CoroutineContext.Key<KotlinContextElement>() {};
 
-  private final Context context;
+  private final Context otelContext;
 
-  ContextElement(Context context) {
-    this.context = context;
+  KotlinContextElement(Context otelContext) {
+    this.otelContext = otelContext;
   }
 
   Context getContext() {
-    return context;
+    return otelContext;
   }
 
   @Override
@@ -40,7 +40,7 @@ class ContextElement implements ThreadContextElement<Scope> {
   @Override
   @SuppressWarnings("MustBeClosedChecker")
   public Scope updateThreadContext(CoroutineContext coroutineContext) {
-    return context.makeCurrent();
+    return otelContext.makeCurrent();
   }
 
   @Override
