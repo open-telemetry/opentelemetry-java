@@ -19,7 +19,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * {@code Meter} provider implementation for {@link MeterProvider}.
@@ -29,6 +31,8 @@ import javax.annotation.Nonnull;
  */
 public final class MeterSdkProvider implements MeterProvider {
 
+  private static final Logger LOGGER = Logger.getLogger(MeterSdkProvider.class.getName());
+  static final String DEFAULT_METER_NAME = "unknown";
   private final MeterSdkComponentRegistry registry;
   private final MetricProducer metricProducer;
 
@@ -41,11 +45,16 @@ public final class MeterSdkProvider implements MeterProvider {
 
   @Override
   public MeterSdk get(String instrumentationName) {
-    return registry.get(instrumentationName);
+    return get(instrumentationName, null);
   }
 
   @Override
-  public MeterSdk get(String instrumentationName, String instrumentationVersion) {
+  public MeterSdk get(String instrumentationName, @Nullable String instrumentationVersion) {
+    // Per the spec, both null and empty are "invalid" and a "default" should be used.
+    if (instrumentationName == null || instrumentationName.isEmpty()) {
+      LOGGER.fine("Meter requested without instrumentation name.");
+      instrumentationName = DEFAULT_METER_NAME;
+    }
     return registry.get(instrumentationName, instrumentationVersion);
   }
 
