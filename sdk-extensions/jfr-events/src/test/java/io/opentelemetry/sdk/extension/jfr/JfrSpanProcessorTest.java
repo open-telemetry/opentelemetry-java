@@ -7,12 +7,11 @@ package io.opentelemetry.sdk.extension.jfr;
 
 import static org.junit.Assert.assertEquals;
 
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,8 +28,8 @@ public class JfrSpanProcessorTest {
 
   /** Simple test to validate JFR events for Span and Scope. */
   public JfrSpanProcessorTest() {
+    ContextStorage.addWrapper(JfrContextStorageWrapper::new);
     tracer = OpenTelemetry.getGlobalTracer("JfrSpanProcessorTest");
-    OpenTelemetrySdk.getTracerManagement().addSpanProcessor(new JfrSpanProcessor());
   }
 
   /**
@@ -74,6 +73,7 @@ public class JfrSpanProcessorTest {
    * Test basic single span with a scope.
    *
    * @throws java.io.IOException on io error
+   * @throws java.lang.InterruptedException interrupted sleep
    */
   @Test
   public void basicSpanWithScope() throws IOException, InterruptedException {
@@ -86,7 +86,7 @@ public class JfrSpanProcessorTest {
 
       try (recording) {
         span = tracer.spanBuilder(OPERATION_NAME).setNoParent().startSpan();
-        try (Scope s = TracingContextUtils.currentContextWith(span)) {
+        try (Scope s = span.makeCurrent()) {
           Thread.sleep(10);
         }
         span.end();

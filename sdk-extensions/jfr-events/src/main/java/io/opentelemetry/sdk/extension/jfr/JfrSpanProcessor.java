@@ -7,12 +7,12 @@ package io.opentelemetry.sdk.extension.jfr;
 
 import static java.util.Objects.nonNull;
 
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.trace.SpanContext;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

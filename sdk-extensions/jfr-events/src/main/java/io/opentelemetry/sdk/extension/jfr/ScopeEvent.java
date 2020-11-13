@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.jfr;
 
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanContext;
 import jdk.jfr.Category;
 import jdk.jfr.Description;
 import jdk.jfr.Event;
