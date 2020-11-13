@@ -48,7 +48,7 @@ public abstract class InstrumentSelector {
     return instrumentNameRegex() == null ? null : Pattern.compile(instrumentNameRegex());
   }
 
-  /** Whether the InstrumentType been specified. */
+  /** Returns whether the InstrumentType been specified. */
   public boolean hasInstrumentType() {
     return instrumentType() != null;
   }
