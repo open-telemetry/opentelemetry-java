@@ -93,7 +93,8 @@ class OpenTelemetrySdkTest {
         ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
 
     assertThat(unobfuscatedTracerProvider).isInstanceOf(TracerSdkProvider.class);
-    // this is not a great way to test this...
+    // Since TracerProvider is in a different package, the only alternative to this reflective
+    // approach would be to make the fields public for testing which is worse than this.
     assertThat(unobfuscatedTracerProvider)
         .extracting("sharedState")
         .hasFieldOrPropertyWithValue("clock", clock)
