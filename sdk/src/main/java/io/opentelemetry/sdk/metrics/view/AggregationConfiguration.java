@@ -33,7 +33,7 @@ public abstract class AggregationConfiguration {
   @Nullable
   public abstract Aggregation aggregation();
 
-  /** What {@link Temporality} should be used for this View (delta vs. cumulative). */
+  /** Returns the {@link Temporality} that should be used for this View (delta vs. cumulative). */
   @Nullable
   public abstract Temporality temporality();
 
