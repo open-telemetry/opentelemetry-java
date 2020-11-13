@@ -7,7 +7,7 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-description = 'OpenTelemetry Context (Incubator)'
+description = "OpenTelemetry Context (Incubator)"
 ext.moduleName = "io.opentelemetry.context"
 
 testSets {
