@@ -123,12 +123,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       return this;
     }
 
-    /**
-     * Sets the {@link MeterProvider} to use.. This can be used to configure tracing settings by
-     * returning the instance created by a {@link MeterSdkProvider.Builder}.
-     *
-     * @see MeterSdkProvider#builder()
-     */
     @Override
     public Builder setMeterProvider(MeterProvider meterProvider) {
       if (!(meterProvider instanceof MeterSdkProvider)) {
@@ -183,8 +177,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
               new ObfuscatedTracerProvider(tracerProvider),
               meterProvider,
               super.propagators,
-              clock == null ? MillisClock.getInstance() : clock,
-              resource == null ? Resource.getDefault() : resource);
+              clock== null ? MillisClock.getInstance() : clock,
+              resource == null ? Resource.getDefault() :
+              resource);
       // Automatically initialize global OpenTelemetry with the first SDK we build.
       if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
         OpenTelemetry.set(sdk);

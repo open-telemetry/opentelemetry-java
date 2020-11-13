@@ -146,16 +146,13 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
 
     @Override
     public OpenTelemetry build() {
-      MeterProvider meterProvider = this.meterProvider;
-      if (meterProvider == null) {
-        MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
-        if (meterProviderFactory != null) {
-          meterProvider = meterProviderFactory.create();
-        } else {
-          meterProvider = MeterProvider.getDefault();
-        }
-      }
+      MeterProvider meterProvider = buildMeterProvider();
+      TracerProvider tracerProvider = buildTracerProvider();
 
+      return new DefaultOpenTelemetry(tracerProvider, meterProvider, propagators);
+    }
+
+    protected TracerProvider buildTracerProvider() {
       TracerProvider tracerProvider = this.tracerProvider;
       if (tracerProvider == null) {
         TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
@@ -165,8 +162,24 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
           tracerProvider = TracerProvider.getDefault();
         }
       }
+      return tracerProvider;
+    }
 
-      return new DefaultOpenTelemetry(tracerProvider, meterProvider, propagators);
+    protected MeterProvider buildMeterProvider() {
+      MeterProvider meterProvider = this.meterProvider;
+      if (meterProvider == null) {
+        MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
+        if (meterProviderFactory != null) {
+          meterProvider = meterProviderFactory.create();
+        } else {
+          meterProvider = MeterProvider.getDefault();
+        }
+      }
+      return meterProvider;
+    }
+
+    protected ContextPropagators buildContextPropagators() {
+      return propagators;
     }
   }
 }
