@@ -26,3 +26,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         jvmTarget = "1.8"
     }
 }
+
+// We don't have any public Java classes
+tasks.javadoc.enabled = false
