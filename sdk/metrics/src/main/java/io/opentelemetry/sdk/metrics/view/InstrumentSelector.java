@@ -14,7 +14,7 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Provides means for selecting one ore more {@link io.opentelemetry.api.metrics.Instrument}s. Used
- * for configuring a aggregations for the specified instruments.
+ * for configuring aggregations for the specified instruments.
  *
  * <p>There are two options for selecting instruments: by instrument name and by instrument type.
  */
