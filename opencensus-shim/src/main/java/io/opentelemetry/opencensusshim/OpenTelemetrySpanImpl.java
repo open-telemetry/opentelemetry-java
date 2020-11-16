@@ -1,3 +1,25 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// Includes work from:
+/*
+ * Copyright 2018, OpenCensus Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentelemetry.opencensusshim;
 
 import static io.opentelemetry.opencensusshim.SpanConverter.MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED;
@@ -66,6 +88,23 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
     this.timestampConverter = timestampConverter;
   }
 
+  /**
+   * Creates and starts a span with the given configuration.
+   *
+   * @param context supplies the trace_id and span_id for the newly started span.
+   * @param name the displayed name for the new span.
+   * @param kind the type of the new span.
+   * @param hasRemoteParent {@code true} if the parentContext is remote. {@code null} if this is a
+   *     root span.
+   * @param parentSpanId the span_id of the parent span, or null if the new span is a root span.
+   * @param traceParams trace parameters like sampler and probability.
+   * @param startEndHandler handler called when the span starts and ends.
+   * @param timestampConverter null if the span is a root span or the parent is not sampled. If the
+   *     parent is sampled, we should use the same converter to ensure ordering between tracing
+   *     events.
+   * @param clock the clock used to get the time.
+   * @return a new and started span.
+   */
   public static OpenTelemetrySpanImpl startSpan(
       SpanContext context,
       String name,
@@ -110,14 +149,16 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
   public void addAnnotation(Annotation annotation) {
     ocSpan.addAnnotation(annotation);
     AttributesBuilder attributesBuilder = Attributes.builder();
-    annotation.getAttributes().forEach(
-        (s, attributeValue) ->
-            attributeValue.match(
-                setStringAttribute(attributesBuilder, s),
-                setBooleanAttribute(attributesBuilder, s),
-                setLongAttribute(attributesBuilder, s),
-                setDoubleAttribute(attributesBuilder, s),
-                arg -> null));
+    annotation
+        .getAttributes()
+        .forEach(
+            (s, attributeValue) ->
+                attributeValue.match(
+                    setStringAttribute(attributesBuilder, s),
+                    setBooleanAttribute(attributesBuilder, s),
+                    setLongAttribute(attributesBuilder, s),
+                    setDoubleAttribute(attributesBuilder, s),
+                    arg -> null));
     otSpan.addEvent(annotation.getDescription(), attributesBuilder.build());
   }
 
@@ -202,7 +243,8 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
   }
 
   @Override
-  public io.opentelemetry.api.trace.Span addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
+  public io.opentelemetry.api.trace.Span addEvent(
+      String name, Attributes attributes, long timestamp, TimeUnit unit) {
     return null;
   }
 

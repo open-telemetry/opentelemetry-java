@@ -214,8 +214,7 @@ class SpanConverter {
     };
   }
 
-  static Function<Boolean, Void> setBooleanAttribute(
-      AttributesBuilder builder, String key) {
+  static Function<Boolean, Void> setBooleanAttribute(AttributesBuilder builder, String key) {
     return arg -> {
       builder.put(key, arg);
       return null;

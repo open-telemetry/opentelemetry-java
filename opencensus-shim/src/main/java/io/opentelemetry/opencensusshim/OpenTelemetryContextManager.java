@@ -43,7 +43,8 @@ public class OpenTelemetryContextManager implements ContextManager {
 
   @Override
   public Span getValue(ContextHandle ctx) {
-    io.opentelemetry.api.trace.Span span = io.opentelemetry.api.trace.Span.fromContext(unwrapContext(ctx));
+    io.opentelemetry.api.trace.Span span =
+        io.opentelemetry.api.trace.Span.fromContext(unwrapContext(ctx));
     if (span instanceof OpenTelemetrySpanImpl) {
       return (OpenTelemetrySpanImpl) span;
     }
