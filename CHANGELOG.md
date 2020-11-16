@@ -28,6 +28,11 @@ available.
 
 ### Extensions
 
+#### Bugfixes:
+
+- The memory pool metrics provided by the MemoryPools class in the `opentelemetry-extension-runtime-metrics` module
+have been fixed to properly report the committed memory values.
+ 
 #### Enhancements:
 
 - A new module has been added to assist with propagating the OTel context in kotlin co-routines. 
