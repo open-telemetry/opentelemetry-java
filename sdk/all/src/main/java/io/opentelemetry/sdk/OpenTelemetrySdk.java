@@ -131,6 +131,10 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
      */
     @Override
     public Builder setMeterProvider(MeterProvider meterProvider) {
+      if (!(meterProvider instanceof MeterSdkProvider)) {
+        throw new IllegalArgumentException(
+            "The OpenTelemetrySdk can only be configured with a MeterSdkProvider");
+      }
       super.setMeterProvider(meterProvider);
       return this;
     }

@@ -7,6 +7,8 @@ package io.opentelemetry.sdk;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
@@ -28,7 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class OpenTelemetrySdkTest {
 
   @Mock private TracerSdkProvider tracerProvider;
-  @Mock private MeterProvider meterProvider;
+  @Mock private MeterSdkProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
@@ -124,5 +126,15 @@ class OpenTelemetrySdkTest {
         .isNotNull()
         .matches(obfuscated -> obfuscated.unobfuscate() == tracerProvider);
     assertThat(openTelemetry.getTracerManagement()).isNotNull();
+  }
+
+  @Test
+  void onlySdkInstancesAllowed() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> OpenTelemetrySdk.builder().setMeterProvider(mock(MeterProvider.class)));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> OpenTelemetrySdk.builder().setTracerProvider(mock(TracerProvider.class)));
   }
 }
