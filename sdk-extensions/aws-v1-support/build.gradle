@@ -1,0 +1,26 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry SDK AWS Instrumentation Support'
+ext.moduleName = "io.opentelemetry.sdk.extension.trace.aws"
+
+dependencies {
+    api project(':opentelemetry-api'),
+            project(':opentelemetry-sdk')
+
+    implementation 'com.fasterxml.jackson.core:jackson-core',
+            libraries.guava,
+            platform(boms.guava)
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind',
+            libraries.guava,
+            platform(boms.guava)
+
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
+
+    signature libraries.android_signature
+}

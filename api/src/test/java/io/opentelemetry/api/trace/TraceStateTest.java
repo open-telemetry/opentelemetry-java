@@ -6,10 +6,12 @@
 package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceState}. */
@@ -35,16 +37,32 @@ class TraceStateTest {
   }
 
   @Test
-  void getEntries() {
-    assertThat(firstTraceState.getEntries())
-        .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
-    assertThat(secondTraceState.getEntries())
-        .containsExactly(TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
+  void sizeAndEmpty() {
+    assertThat(EMPTY.size()).isZero();
+    assertThat(EMPTY.isEmpty()).isTrue();
+
+    assertThat(firstTraceState.size()).isOne();
+    assertThat(firstTraceState.isEmpty()).isFalse();
+
+    assertThat(multiValueTraceState.size()).isEqualTo(2);
+    assertThat(multiValueTraceState.isEmpty()).isFalse();
+  }
+
+  @Test
+  void forEach() {
+    LinkedHashMap<String, String> entries = new LinkedHashMap<>();
+    firstTraceState.forEach(entries::put);
+    assertThat(entries).containsExactly(entry(FIRST_KEY, FIRST_VALUE));
+
+    entries.clear();
+    secondTraceState.forEach(entries::put);
+    assertThat(entries).containsExactly(entry(SECOND_KEY, SECOND_VALUE));
+
+    entries.clear();
+    multiValueTraceState.forEach(entries::put);
     // Reverse order of input.
-    assertThat(multiValueTraceState.getEntries())
-        .containsExactly(
-            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE),
-            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
+    assertThat(entries)
+        .containsExactly(entry(SECOND_KEY, SECOND_VALUE), entry(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test

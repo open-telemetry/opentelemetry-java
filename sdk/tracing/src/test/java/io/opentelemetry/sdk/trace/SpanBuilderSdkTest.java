@@ -15,7 +15,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -23,6 +22,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -35,12 +35,15 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 /** Unit tests for {@link SpanBuilderSdk}. */
@@ -80,7 +83,7 @@ class SpanBuilderSdkTest {
   @Test
   void addLink() {
     // Verify methods do not crash.
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(Span.getInvalid().getSpanContext());
     spanBuilder.addLink(Span.getInvalid().getSpanContext(), Attributes.empty());
 
@@ -101,7 +104,7 @@ class SpanBuilderSdkTest {
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     // Verify methods do not crash.
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
       spanBuilder.addLink(sampledSpanContext);
     }
@@ -127,7 +130,7 @@ class SpanBuilderSdkTest {
             .setMaxNumberOfAttributesPerLink(1)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     Attributes attributes =
         Attributes.of(
             stringKey("key0"), "str",
@@ -147,7 +150,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void addLink_NoEffectAfterStartSpan() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(sampledSpanContext);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
@@ -189,7 +192,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute() {
-    Span.Builder spanBuilder =
+    SpanBuilder spanBuilder =
         tracerSdk
             .spanBuilder(SPAN_NAME)
             .setAttribute("string", "value")
@@ -216,7 +219,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_afterEnd() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("string", "value");
     spanBuilder.setAttribute("long", 12345L);
     spanBuilder.setAttribute("double", .12345);
@@ -253,7 +256,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_emptyArrayAttributeValue() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute(stringArrayKey("stringArrayAttribute"), emptyList());
     spanBuilder.setAttribute(booleanArrayKey("boolArrayAttribute"), emptyList());
     spanBuilder.setAttribute(longArrayKey("longArrayAttribute"), emptyList());
@@ -264,7 +267,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_nullStringValue() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", null);
     spanBuilder.setAttribute(stringKey("nullStringAttributeValue"), null);
@@ -275,7 +278,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_onlyNullStringValue() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute(stringKey("nullStringAttributeValue"), null);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
@@ -283,7 +286,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_NoEffectAfterStartSpan() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("key1", "value1");
     spanBuilder.setAttribute("key2", "value2");
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
@@ -303,7 +306,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_nullAttributeValue() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", null);
     spanBuilder.setAttribute(stringKey("nullStringAttributeValue"), null);
@@ -321,7 +324,7 @@ class SpanBuilderSdkTest {
 
   @Test
   void setAttribute_nullAttributeValue_afterEnd() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute(stringKey("emptyStringAttributeValue"), "");
     spanBuilder.setAttribute("longAttribute", 0L);
@@ -354,7 +357,7 @@ class SpanBuilderSdkTest {
             .setMaxNumberOfAttributes(maxNumberOfAttrs)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfAttrs; i++) {
       spanBuilder.setAttribute("key" + i, i);
     }
@@ -378,7 +381,7 @@ class SpanBuilderSdkTest {
             .setMaxLengthOfAttributeValues(10)
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("builderStringNull", null);
     spanBuilder.setAttribute("builderStringSmall", "small");
     spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
@@ -427,7 +430,7 @@ class SpanBuilderSdkTest {
             .setSampler(Sampler.traceIdRatioBased(1))
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
@@ -783,20 +786,46 @@ class SpanBuilderSdkTest {
             tracerSdk.spanBuilder(SPAN_NAME).setParent(parentContext).startSpan();
     try {
       Mockito.verify(mockedSpanProcessor)
-          .onStart(Mockito.same(parentContext), Mockito.same((ReadWriteSpan) span));
+          .onStart(
+              ArgumentMatchers.same(parentContext), ArgumentMatchers.same((ReadWriteSpan) span));
       assertThat(span.getSpanContext().getTraceIdAsHexString())
           .isNotEqualTo(parent.getSpanContext().getTraceIdAsHexString());
-      assertFalse(SpanId.isValid(span.toSpanData().getParentSpanId()));
+      assertThat(SpanId.isValid(span.toSpanData().getParentSpanId())).isFalse();
     } finally {
       span.end();
     }
   }
 
   @Test
+  void startTimestamp_numeric() {
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
+            tracerSdk
+                .spanBuilder(SPAN_NAME)
+                .setStartTimestamp(10, TimeUnit.NANOSECONDS)
+                .startSpan();
+    span.end();
+    assertThat(span.toSpanData().getStartEpochNanos()).isEqualTo(10);
+  }
+
+  @Test
+  void startTimestamp_instant() {
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
+            tracerSdk
+                .spanBuilder(SPAN_NAME)
+                .setStartTimestamp(Instant.ofEpochMilli(100))
+                .startSpan();
+    span.end();
+    assertThat(span.toSpanData().getStartEpochNanos())
+        .isEqualTo(TimeUnit.MILLISECONDS.toNanos(100));
+  }
+
+  @Test
   void startTimestamp_null() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> tracerSdk.spanBuilder(SPAN_NAME).setStartTimestamp(-1),
+        () -> tracerSdk.spanBuilder(SPAN_NAME).setStartTimestamp(-1, TimeUnit.NANOSECONDS),
         "Negative startTimestamp");
   }
 

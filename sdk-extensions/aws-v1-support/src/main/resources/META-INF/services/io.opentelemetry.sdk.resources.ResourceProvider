@@ -1,0 +1,4 @@
+io.opentelemetry.sdk.extension.trace.aws.resource.BeanstalkResource
+io.opentelemetry.sdk.extension.trace.aws.resource.Ec2Resource
+io.opentelemetry.sdk.extension.trace.aws.resource.EcsResource
+io.opentelemetry.sdk.extension.trace.aws.resource.EksResource

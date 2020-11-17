@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry - Zipkin Exporter'
-ext.moduleName = "io.opentelemetry.exporters.zipkin"
+ext.moduleName = "io.opentelemetry.exporter.zipkin"
 
 dependencies {
     compileOnly libraries.auto_value
@@ -18,12 +18,12 @@ dependencies {
     implementation libraries.zipkin_reporter,
             libraries.zipkin_okhttp
 
-    testImplementation project(':opentelemetry-testing-internal')
+    testImplementation project(':opentelemetry-sdk-testing')
     testImplementation libraries.guava,
             libraries.zipkin_junit
 
     signature "org.codehaus.mojo.signature:java18:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    signature libraries.android_signature
 }
 
 configurations {

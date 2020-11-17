@@ -7,7 +7,6 @@ package io.opentelemetry.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.metrics.BatchRecorder;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -24,13 +23,13 @@ import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.api.trace.spi.TracerProviderFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.spi.metrics.MeterProviderFactory;
+import io.opentelemetry.spi.trace.TracerProviderFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -77,10 +76,12 @@ class OpenTelemetryTest {
             FirstTracerProviderFactory.class,
             SecondTracerProviderFactory.class);
     try {
-      assertTrue(
-          (OpenTelemetry.getGlobalTracerProvider().get("") instanceof FirstTracerProviderFactory)
-              || (OpenTelemetry.getGlobalTracerProvider().get("")
-                  instanceof SecondTracerProviderFactory));
+      assertThat(
+              (OpenTelemetry.getGlobalTracerProvider().get("")
+                      instanceof FirstTracerProviderFactory)
+                  || (OpenTelemetry.getGlobalTracerProvider().get("")
+                      instanceof SecondTracerProviderFactory))
+          .isTrue();
     } finally {
       serviceFile.delete();
     }
@@ -117,9 +118,10 @@ class OpenTelemetryTest {
             FirstMeterProviderFactory.class,
             SecondMeterProviderFactory.class);
     try {
-      assertTrue(
-          (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
-              || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory));
+      assertThat(
+              (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
+                  || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory))
+          .isTrue();
       assertThat(OpenTelemetry.getGlobalMeterProvider())
           .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
     } finally {
@@ -212,7 +214,7 @@ class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public Span.Builder spanBuilder(String spanName) {
+    public SpanBuilder spanBuilder(String spanName) {
       return null;
     }
 

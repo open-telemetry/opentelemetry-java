@@ -1,0 +1,20 @@
+plugins {
+    id "java"
+    id "maven-publish"
+}
+
+description = 'OpenTelemetry OpenTracing Bridge'
+ext.moduleName = "io.opentelemetry.opentracingshim"
+
+dependencies {
+    api project(':opentelemetry-api'),
+            libraries.opentracing
+
+    testImplementation project(':opentelemetry-sdk-testing'),
+            libraries.junit,
+            libraries.assertj,
+            libraries.slf4jsimple
+}
+test {
+    testLogging.showStandardStreams = true
+}

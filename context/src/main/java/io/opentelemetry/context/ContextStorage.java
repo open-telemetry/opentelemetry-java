@@ -22,6 +22,9 @@
 
 package io.opentelemetry.context;
 
+import java.util.function.Function;
+import javax.annotation.Nullable;
+
 /**
  * The storage for storing and retrieving the current {@link Context}.
  *
@@ -34,7 +37,7 @@ package io.opentelemetry.context;
  * >
  * >   @Override
  * >   public ContextStorage get() {
- * >     ContextStorage threadLocalStorage = Context.threadLocalStorage();
+ * >     ContextStorage threadLocalStorage = ContextStorage.defaultStorage();
  * >     return new RequestContextStorage() {
  * >       @Override
  * >       public Scope T attach(Context toAttach) {
@@ -70,6 +73,23 @@ public interface ContextStorage {
   }
 
   /**
+   * Returns the default {@link ContextStorage} which stores {@link Context} using a threadlocal.
+   */
+  static ContextStorage defaultStorage() {
+    return ThreadLocalContextStorage.INSTANCE;
+  }
+
+  /**
+   * Adds the {@code wrapper}, which will be executed with the {@link ContextStorage} is first used,
+   * i.e., by calling {@link Context#makeCurrent()}. This must be called as early in your
+   * application as possible to have effect, often as part of a static initialization block in your
+   * main class.
+   */
+  static void addWrapper(Function<? super ContextStorage, ? extends ContextStorage> wrapper) {
+    ContextStorageWrappers.addWrapper(wrapper);
+  }
+
+  /**
    * Sets the specified {@link Context} as the current {@link Context} and returns a {@link Scope}
    * representing the scope of execution. {@link Scope#close()} must be called when the current
    * {@link Context} should be restored to what it was before attaching {@code toAttach}.
@@ -77,8 +97,9 @@ public interface ContextStorage {
   Scope attach(Context toAttach);
 
   /**
-   * Returns the current {@link DefaultContext}. If no {@link DefaultContext} has been attached yet,
-   * this will be the {@linkplain Context#root()} root context}.
+   * Returns the current {@link Context}. If no {@link Context} has been attached yet, this will
+   * return {@code null}.
    */
+  @Nullable
   Context current();
 }

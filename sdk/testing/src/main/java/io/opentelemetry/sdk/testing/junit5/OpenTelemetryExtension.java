@@ -5,16 +5,23 @@
 
 package io.opentelemetry.sdk.testing.junit5;
 
+import static io.opentelemetry.sdk.testing.assertj.TracesAssert.assertThat;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.testing.assertj.TracesAssert;
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -67,7 +74,7 @@ public class OpenTelemetryExtension
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
 
-  private OpenTelemetry previousGlobalOpenTelemetry;
+  private volatile OpenTelemetry previousGlobalOpenTelemetry;
 
   private OpenTelemetryExtension(
       OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
@@ -88,6 +95,22 @@ public class OpenTelemetryExtension
   /** Returns all the exported {@link SpanData} so far. */
   public List<SpanData> getSpans() {
     return spanExporter.getFinishedSpanItems();
+  }
+
+  /**
+   * Returns a {@link TracesAssert} for asserting on the currently exported traces. This method
+   * requires AssertJ to be on the classpath.
+   */
+  public TracesAssert assertTraces() {
+    Map<String, List<SpanData>> traces =
+        getSpans().stream()
+            .collect(
+                Collectors.groupingBy(
+                    SpanData::getTraceId, LinkedHashMap::new, Collectors.toList()));
+    for (List<SpanData> trace : traces.values()) {
+      trace.sort(Comparator.comparing(SpanData::getStartEpochNanos));
+    }
+    return assertThat(traces.values());
   }
 
   /**

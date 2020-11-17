@@ -7,9 +7,9 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.ReadableAttributes;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -19,13 +19,18 @@ import java.util.Map;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 final class AttributesMap implements ReadableAttributes {
-  private final Map<AttributeKey, Object> data = new HashMap<>();
+  private final Map<AttributeKey, Object> data;
 
   private final long capacity;
   private int totalAddedValues = 0;
 
-  AttributesMap(long capacity) {
+  private AttributesMap(long capacity, Map<AttributeKey, Object> data) {
     this.capacity = capacity;
+    this.data = data;
+  }
+
+  AttributesMap(long capacity) {
+    this(capacity, new LinkedHashMap<>());
   }
 
   public <T> void put(AttributeKey<T> key, T value) {
@@ -65,7 +70,7 @@ final class AttributesMap implements ReadableAttributes {
     for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
       AttributeKey key = entry.getKey();
       Object value = entry.getValue();
-      consumer.consume(key, value);
+      consumer.accept(key, value);
     }
   }
 
@@ -81,12 +86,8 @@ final class AttributesMap implements ReadableAttributes {
         + '}';
   }
 
-  @SuppressWarnings("rawtypes")
   ReadableAttributes immutableCopy() {
-    Attributes.Builder builder = Attributes.builder();
-    for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
-      builder.put(entry.getKey(), entry.getValue());
-    }
-    return builder.build();
+    Map<AttributeKey, Object> dataCopy = new LinkedHashMap<>(data);
+    return new AttributesMap(capacity, Collections.unmodifiableMap(dataCopy));
   }
 }

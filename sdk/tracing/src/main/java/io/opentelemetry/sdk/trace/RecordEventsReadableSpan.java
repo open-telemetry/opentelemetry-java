@@ -14,8 +14,8 @@ import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.ReadableAttributes;
-import io.opentelemetry.api.trace.EndSpanOptions;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
@@ -32,6 +32,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
@@ -196,7 +197,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
           getImmutableAttributes(),
           (attributes == null) ? 0 : attributes.getTotalAddedValues(),
           totalRecordedEvents,
-          getStatusWithDefault(),
+          getSpanDataStatus(),
           name,
           endEpochNanos,
           hasEnded);
@@ -318,11 +319,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public ReadWriteSpan addEvent(String name, long timestamp) {
+  public ReadWriteSpan addEvent(String name, long timestamp, TimeUnit unit) {
     if (name == null) {
       return this;
     }
-    addTimedEvent(Event.create(timestamp, name, Attributes.empty(), 0));
+    addTimedEvent(Event.create(unit.toNanos(timestamp), name, Attributes.empty(), 0));
     return this;
   }
 
@@ -342,14 +343,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public ReadWriteSpan addEvent(String name, Attributes attributes, long timestamp) {
+  public ReadWriteSpan addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
     if (name == null) {
       return this;
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         Event.create(
-            timestamp,
+            unit.toNanos(timestamp),
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
@@ -361,7 +362,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return attributes;
     }
 
-    Attributes.Builder result = Attributes.builder();
+    AttributesBuilder result = Attributes.builder();
     attributes.forEach(new LimitingAttributeConsumer(limit, result));
     return result.build();
   }
@@ -378,14 +379,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public ReadWriteSpan setStatus(StatusCode canonicalCode) {
-    setStatus(canonicalCode, null);
+  public ReadWriteSpan setStatus(StatusCode statusCode) {
+    setStatus(statusCode, null);
     return this;
   }
 
   @Override
-  public ReadWriteSpan setStatus(StatusCode canonicalCode, @Nullable String description) {
-    if (canonicalCode == null) {
+  public ReadWriteSpan setStatus(StatusCode statusCode, @Nullable String description) {
+    if (statusCode == null) {
       return this;
     }
     synchronized (lock) {
@@ -393,7 +394,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
       }
-      this.status = SpanData.Status.create(canonicalCode, description);
+      this.status = SpanData.Status.create(statusCode, description);
     }
     return this;
   }
@@ -409,9 +410,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (exception == null) {
       return this;
     }
-    long timestamp = clock.now();
+    long timestampNanos = clock.now();
 
-    Attributes.Builder attributes = Attributes.builder();
+    AttributesBuilder attributes = Attributes.builder();
     attributes.put(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
       attributes.put(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
@@ -424,7 +425,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       attributes.putAll(additionalAttributes);
     }
 
-    addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME, attributes.build(), timestamp);
+    addEvent(
+        SemanticAttributes.EXCEPTION_EVENT_NAME,
+        attributes.build(),
+        timestampNanos,
+        TimeUnit.NANOSECONDS);
     return this;
   }
 
@@ -449,12 +454,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public void end(EndSpanOptions endOptions) {
-    if (endOptions == null) {
-      end();
-      return;
+  public void end(long timestamp, TimeUnit unit) {
+    if (unit == null) {
+      unit = TimeUnit.NANOSECONDS;
     }
-    endInternal(endOptions.getEndTimestamp() == 0 ? clock.now() : endOptions.getEndTimestamp());
+    endInternal(timestamp == 0 ? clock.now() : unit.toNanos(timestamp));
   }
 
   private void endInternal(long endEpochNanos) {
@@ -477,7 +481,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private SpanData.Status getStatusWithDefault() {
+  private SpanData.Status getSpanDataStatus() {
     synchronized (lock) {
       return status;
     }
@@ -574,16 +578,16 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   @SuppressWarnings({"rawtypes", "unchecked"})
   private static class LimitingAttributeConsumer implements AttributeConsumer {
     private final int limit;
-    private final Attributes.Builder builder;
+    private final AttributesBuilder builder;
     private int added;
 
-    public LimitingAttributeConsumer(int limit, Attributes.Builder builder) {
+    public LimitingAttributeConsumer(int limit, AttributesBuilder builder) {
       this.limit = limit;
       this.builder = builder;
     }
 
     @Override
-    public void consume(AttributeKey key, Object value) {
+    public void accept(AttributeKey key, Object value) {
       if (added < limit) {
         builder.put(key, value);
         added++;

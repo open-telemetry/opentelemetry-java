@@ -1,0 +1,58 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "com.google.protobuf"
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry - Jaeger Remote sampler'
+ext.moduleName = "io.opentelemetry.sdk.extension.trace.jaeger"
+
+dependencies {
+    api project(':opentelemetry-sdk')
+
+    implementation project(':opentelemetry-sdk-extension-otproto'),
+            project(':opentelemetry-sdk'),
+            libraries.grpc_api,
+            libraries.grpc_protobuf,
+            libraries.grpc_stub,
+            libraries.protobuf,
+            libraries.protobuf_util
+
+    testImplementation "io.grpc:grpc-testing:${grpcVersion}",
+            libraries.testcontainers
+
+    testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
+
+    signature libraries.android_signature
+}
+
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
+}
+
+protobuf {
+    protoc {
+        // The artifact spec for the Protobuf Compiler
+        artifact = "com.google.protobuf:protoc:${protocVersion}"
+    }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+
+// IntelliJ complains that the generated classes are not found, ask IntelliJ to include the
+// generated Java directories as source folders.
+idea {
+    module {
+        sourceDirs += file("build/generated/source/proto/main/java")
+        // If you have additional sourceSets and/or codegen plugins, add all of them
+    }
+}

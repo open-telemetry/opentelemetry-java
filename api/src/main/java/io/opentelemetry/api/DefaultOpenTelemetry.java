@@ -8,12 +8,12 @@ package io.opentelemetry.api;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
-import io.opentelemetry.api.spi.OpenTelemetryFactory;
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.api.trace.spi.TracerProviderFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.spi.OpenTelemetryFactory;
+import io.opentelemetry.spi.metrics.MeterProviderFactory;
+import io.opentelemetry.spi.trace.TracerProviderFactory;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -23,7 +23,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * back to no-op default implementations.
  */
 @ThreadSafe
-final class DefaultOpenTelemetry implements OpenTelemetry {
+public class DefaultOpenTelemetry implements OpenTelemetry {
   private static final Object mutex = new Object();
 
   static OpenTelemetry getGlobalOpenTelemetry() {
@@ -72,7 +72,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
     return propagators;
   }
 
-  DefaultOpenTelemetry(
+  protected DefaultOpenTelemetry(
       TracerProvider tracerProvider, MeterProvider meterProvider, ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;
     this.meterProvider = meterProvider;
@@ -117,11 +117,11 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
         .setPropagators(propagators);
   }
 
-  static class Builder implements OpenTelemetry.Builder<Builder> {
-    private ContextPropagators propagators = DefaultContextPropagators.builder().build();
+  protected static class Builder implements OpenTelemetryBuilder<Builder> {
+    protected ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
-    private TracerProvider tracerProvider;
-    private MeterProvider meterProvider;
+    protected TracerProvider tracerProvider;
+    protected MeterProvider meterProvider;
 
     @Override
     public Builder setTracerProvider(TracerProvider tracerProvider) {

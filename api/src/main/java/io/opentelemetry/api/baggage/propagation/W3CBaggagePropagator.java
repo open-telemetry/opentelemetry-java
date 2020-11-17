@@ -8,7 +8,7 @@ package io.opentelemetry.api.baggage.propagation;
 import static java.util.Collections.singletonList;
 
 import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.baggage.Entry;
+import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -43,14 +43,15 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
       return;
     }
     StringBuilder headerContent = new StringBuilder();
-    for (Entry entry : baggage.getEntries()) {
-      headerContent.append(entry.getKey()).append("=").append(entry.getValue());
-      String metadataValue = entry.getEntryMetadata().getValue();
-      if (metadataValue != null && !metadataValue.isEmpty()) {
-        headerContent.append(";").append(metadataValue);
-      }
-      headerContent.append(",");
-    }
+    baggage.forEach(
+        (key, value, metadata) -> {
+          headerContent.append(key).append("=").append(value);
+          String metadataValue = metadata.getValue();
+          if (metadataValue != null && !metadataValue.isEmpty()) {
+            headerContent.append(";").append(metadataValue);
+          }
+          headerContent.append(",");
+        });
     if (headerContent.length() > 0) {
       headerContent.setLength(headerContent.length() - 1);
       setter.set(carrier, FIELD, headerContent.toString());
@@ -67,7 +68,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
       return context.with(Baggage.empty());
     }
 
-    Baggage.Builder baggageBuilder = Baggage.builder();
+    BaggageBuilder baggageBuilder = Baggage.builder();
     try {
       extractEntries(baggageHeader, baggageBuilder);
     } catch (Exception e) {
@@ -77,7 +78,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   @SuppressWarnings("StringSplitter")
-  private static void extractEntries(String baggageHeader, Baggage.Builder baggageBuilder) {
+  private static void extractEntries(String baggageHeader, BaggageBuilder baggageBuilder) {
     // todo: optimize this implementation; it can probably done with a single pass through the
     // string.
     String[] entries = baggageHeader.split(",");

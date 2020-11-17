@@ -12,16 +12,17 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.spi.OpenTelemetryFactory;
+import io.opentelemetry.spi.metrics.MeterProviderFactory;
+import io.opentelemetry.spi.trace.TracerProviderFactory;
 
 /**
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
  *
  * <p>A global singleton can be retrieved by {@link #get()}. The default for the returned {@link
  * OpenTelemetry}, if none has been set via {@link #set(OpenTelemetry)}, will be created with any
- * {@link io.opentelemetry.api.spi.OpenTelemetryFactory}, {@link
- * io.opentelemetry.api.trace.spi.TracerProviderFactory} or {@link
- * io.opentelemetry.api.metrics.spi.MeterProviderFactory} found on the classpath, or otherwise will
- * be default, with no-op behavior.
+ * {@link OpenTelemetryFactory}, {@link TracerProviderFactory} or {@link MeterProviderFactory} found
+ * on the classpath, or otherwise will be default, with no-op behavior.
  *
  * <p>If using the OpenTelemetry SDK, you may want to instantiate the {@link OpenTelemetry} to
  * provide configuration, for example of {@code Resource} or {@code Sampler}. See {@code
@@ -36,10 +37,8 @@ public interface OpenTelemetry {
   /**
    * Returns the registered global {@link OpenTelemetry}. If no call to {@link #set(OpenTelemetry)}
    * has been made so far, a default {@link OpenTelemetry} composed of functionality any {@link
-   * io.opentelemetry.api.spi.OpenTelemetryFactory}, {@link
-   * io.opentelemetry.api.trace.spi.TracerProviderFactory} or{@link
-   * io.opentelemetry.api.metrics.spi.MeterProviderFactory}, found on the classpath, or otherwise
-   * will be default, with no-op behavior.
+   * OpenTelemetryFactory}, {@link TracerProviderFactory} or{@link MeterProviderFactory}, found on
+   * the classpath, or otherwise will be default, with no-op behavior.
    *
    * @throws IllegalStateException if a provider has been specified by system property using the
    *     interface FQCN but the specified provider cannot be found.
@@ -204,25 +203,9 @@ public interface OpenTelemetry {
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
   ContextPropagators getPropagators();
 
-  /** Returns a new {@link Builder} with the configuration of this {@link OpenTelemetry}. */
-  Builder<?> toBuilder();
-
   /**
-   * A builder of an implementation of the OpenTelemetry API. Generally used to reconfigure SDK
-   * implementations.
+   * Returns a new {@link OpenTelemetryBuilder} with the configuration of this {@link
+   * OpenTelemetry}.
    */
-  interface Builder<T extends Builder<T>> {
-
-    /** Sets the {@link TracerProvider} to use. */
-    T setTracerProvider(TracerProvider tracerProvider);
-
-    /** Sets the {@link MeterProvider} to use. */
-    T setMeterProvider(MeterProvider meterProvider);
-
-    /** Sets the {@link ContextPropagators} to use. */
-    T setPropagators(ContextPropagators propagators);
-
-    /** Returns a new {@link OpenTelemetry} based on the configuration in this {@link Builder}. */
-    OpenTelemetry build();
-  }
+  OpenTelemetryBuilder<?> toBuilder();
 }

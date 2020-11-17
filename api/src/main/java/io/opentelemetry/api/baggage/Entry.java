@@ -11,7 +11,7 @@ import javax.annotation.concurrent.Immutable;
 /** String-String key-value pair, along with {@link EntryMetadata}. */
 @Immutable
 @AutoValue
-public abstract class Entry {
+abstract class Entry {
 
   Entry() {}
 
@@ -28,34 +28,23 @@ public abstract class Entry {
   }
 
   /**
-   * Creates an {@code Entry} from the given key, value, with no metadata.
-   *
-   * @param key the entry key.
-   * @param value the entry value.
-   * @return a {@code Entry}.
-   */
-  static Entry create(String key, String value) {
-    return create(key, value, EntryMetadata.EMPTY);
-  }
-
-  /**
    * Returns the entry's key.
    *
    * @return the entry's key.
    */
-  public abstract String getKey();
+  abstract String getKey();
 
   /**
    * Returns the entry's value.
    *
    * @return the entry's value.
    */
-  public abstract String getValue();
+  abstract String getValue();
 
   /**
    * Returns the (optional) {@link EntryMetadata} associated with this {@link Entry}.
    *
    * @return the {@code EntryMetadata}.
    */
-  public abstract EntryMetadata getEntryMetadata();
+  abstract EntryMetadata getEntryMetadata();
 }

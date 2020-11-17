@@ -1,0 +1,18 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry SDK Resource Providers'
+ext.moduleName = "io.opentelemetry.sdk.extension.resources"
+
+dependencies {
+    api project(':opentelemetry-sdk-common')
+
+    testImplementation libraries.junit_pioneer
+
+    // TODO(anuraaga): Use reflection for RuntimeMXBean which is not included in Android.
+    // signature libraries.android_signature
+}

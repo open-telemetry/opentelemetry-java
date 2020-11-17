@@ -5,167 +5,145 @@
 
 package io.opentelemetry.api.baggage;
 
+import static java.util.Objects.requireNonNull;
+
+import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.context.Context;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-// TODO: Migrate to AutoValue
-// @AutoValue
-class ImmutableBaggage implements Baggage {
+class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements Baggage {
 
-  static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
+  private static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
 
-  // The types of the EntryKey and Entry must match for each entry.
-  private final Map<String, Entry> entries;
-  @Nullable private final Baggage parent;
-
-  /**
-   * Creates a new {@link ImmutableBaggage} with the given entries.
-   *
-   * @param entries the initial entries for this {@code BaggageSdk}.
-   * @param parent providing a default set of entries
-   */
-  private ImmutableBaggage(Map<String, ? extends Entry> entries, Baggage parent) {
-    this.entries =
-        Collections.unmodifiableMap(new HashMap<>(Objects.requireNonNull(entries, "entries")));
-    this.parent = parent;
+  static Baggage empty() {
+    return EMPTY;
   }
 
-  public static Baggage.Builder builder() {
+  static BaggageBuilder builder() {
     return new Builder();
   }
 
-  @Override
-  public Collection<Entry> getEntries() {
-    Map<String, Entry> combined = new HashMap<>(entries);
-    if (parent != null) {
-      for (Entry entry : parent.getEntries()) {
-        if (!combined.containsKey(entry.getKey())) {
-          combined.put(entry.getKey(), entry);
-        }
-      }
-    }
-    // Clean out any null values that may have been added by Builder.remove.
-    combined.values().removeIf(Objects::isNull);
+  @AutoValue
+  @Immutable
+  abstract static class ArrayBackedBaggage extends ImmutableBaggage {
+    ArrayBackedBaggage() {}
 
-    return Collections.unmodifiableCollection(combined.values());
+    @Override
+    protected abstract List<Object> data();
+
+    @Override
+    public BaggageBuilder toBuilder() {
+      return new ImmutableBaggage.Builder(new ArrayList<>(data()));
+    }
+  }
+
+  @Override
+  public void forEach(BaggageConsumer consumer) {
+    for (int i = 0; i < data().size(); i += 2) {
+      Entry entry = (Entry) data().get(i + 1);
+      consumer.accept((String) data().get(i), entry.getValue(), entry.getEntryMetadata());
+    }
   }
 
   @Nullable
   @Override
   public String getEntryValue(String entryKey) {
-    Entry entry = entries.get(entryKey);
-    if (entry != null) {
-      return entry.getValue();
-    } else {
-      return parent == null ? null : parent.getEntryValue(entryKey);
-    }
+    Entry entry = get(entryKey);
+    return entry != null ? entry.getValue() : null;
   }
 
   @Override
-  public Baggage.Builder toBuilder() {
-    Builder builder = new Builder();
-    builder.entries.putAll(entries);
-    builder.parent = parent;
+  public BaggageBuilder toBuilder() {
+    Builder builder = new Builder(data());
     builder.noImplicitParent = true;
     return builder;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof ImmutableBaggage)) {
-      return false;
-    }
-
-    ImmutableBaggage baggage = (ImmutableBaggage) o;
-
-    if (!entries.equals(baggage.entries)) {
-      return false;
-    }
-    return Objects.equals(parent, baggage.parent);
-  }
-
-  @Override
-  public int hashCode() {
-    int result = entries.hashCode();
-    result = 31 * result + (parent != null ? parent.hashCode() : 0);
-    return result;
-  }
-
-  @Override
-  public String toString() {
-    return "ImmutableBaggage{" + "entries=" + entries + ", parent=" + parent + '}';
+  private static Baggage sortAndFilterToBaggage(Object[] data) {
+    return new AutoValue_ImmutableBaggage_ArrayBackedBaggage(
+        sortAndFilter(data, /* filterNullValues= */ true));
   }
 
   // TODO: Migrate to AutoValue.Builder
   // @AutoValue.Builder
-  static class Builder implements Baggage.Builder {
+  static class Builder implements BaggageBuilder {
 
     @Nullable private Baggage parent;
     private boolean noImplicitParent;
-    private final Map<String, Entry> entries;
+    private final List<Object> data;
 
-    /** Create a new empty Baggage builder. */
     Builder() {
-      this.entries = new HashMap<>();
+      this.data = new ArrayList<>();
+    }
+
+    Builder(List<Object> data) {
+      this.data = new ArrayList<>(data);
     }
 
     @Override
-    public Baggage.Builder setParent(Context context) {
-      Objects.requireNonNull(context, "context");
+    public BaggageBuilder setParent(Context context) {
+      requireNonNull(context, "context");
       parent = Baggage.fromContext(context);
       return this;
     }
 
     @Override
-    public Baggage.Builder setNoParent() {
+    public BaggageBuilder setNoParent() {
       this.parent = null;
       noImplicitParent = true;
       return this;
     }
 
     @Override
-    public Baggage.Builder put(String key, String value, EntryMetadata entryMetadata) {
+    public BaggageBuilder put(String key, String value, EntryMetadata entryMetadata) {
       if (!isKeyValid(key) || !isValueValid(value) || entryMetadata == null) {
         return this;
       }
-      entries.put(key, Entry.create(key, value, entryMetadata));
+      data.add(key);
+      data.add(Entry.create(key, value, entryMetadata));
+
       return this;
     }
 
     @Override
-    public Baggage.Builder put(String key, String value) {
+    public BaggageBuilder put(String key, String value) {
       return put(key, value, EntryMetadata.EMPTY);
     }
 
     @Override
-    public Baggage.Builder remove(String key) {
+    public BaggageBuilder remove(String key) {
       if (key == null) {
         return this;
       }
-      entries.remove(key);
-      if (parent != null && parent.getEntryValue(key) != null) {
-        entries.put(key, null);
-      }
+      data.add(key);
+      data.add(null);
       return this;
     }
 
     @Override
-    public ImmutableBaggage build() {
+    public Baggage build() {
       if (parent == null && !noImplicitParent) {
         parent = Baggage.current();
       }
-      return new ImmutableBaggage(entries, parent);
+
+      List<Object> data = this.data;
+      if (parent != null && !parent.isEmpty()) {
+        List<Object> merged = new ArrayList<>(parent.size() * 2 + data.size());
+        parent.forEach(
+            (key, value, metadata) -> {
+              merged.add(key);
+              merged.add(Entry.create(key, value, metadata));
+            });
+        merged.addAll(data);
+        data = merged;
+      }
+      return sortAndFilterToBaggage(data.toArray());
     }
   }
 

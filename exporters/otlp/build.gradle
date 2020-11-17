@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry Protocol Exporter'
-ext.moduleName = "io.opentelemetry.exporters.otlp"
+ext.moduleName = "io.opentelemetry.exporter.otlp"
 
 dependencies {
     api project(':opentelemetry-sdk')
@@ -18,11 +18,11 @@ dependencies {
             libraries.protobuf,
             libraries.protobuf_util
 
-    testImplementation project(':opentelemetry-testing-internal')
+    testImplementation project(':opentelemetry-sdk-testing')
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     signature "org.codehaus.mojo.signature:java18:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    signature libraries.android_signature
 }

@@ -9,7 +9,7 @@ package jaeger.api_v2;
 
 import "jaeger/api_v2/model.proto";
 
-option java_package = "io.opentelemetry.exporters.jaeger.proto.api_v2";
+option java_package = "io.opentelemetry.exporter.jaeger.proto.api_v2";
 
 message PostSpansRequest {
     Batch batch = 1;

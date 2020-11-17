@@ -41,6 +41,11 @@ public class HttpTraceContextExtractBenchmark {
   private final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
         @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+          return carrier.keySet();
+        }
+
+        @Override
         public String get(Map<String, String> carrier, String key) {
           return carrier.get(key);
         }

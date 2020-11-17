@@ -1,2 +1,0 @@
-io.opentelemetry.sdk.extensions.resources.OsResource
-io.opentelemetry.sdk.extensions.resources.ProcessResource

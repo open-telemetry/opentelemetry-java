@@ -14,17 +14,24 @@ ext {
     opentelemetryProjects = subprojects - project(":opentelemetry-bom")
 }
 
-release {
-    defaultVersionStrategy = Strategies.getSNAPSHOT()
-}
+// Nebula plugin will not configure if .git doesn't exist, let's allow building on it by stubbing it
+// out. This supports building from the zip archive downloaded from GitHub.
+def releaseTask
+if (file('.git').exists()) {
+    release {
+        defaultVersionStrategy = Strategies.getSNAPSHOT()
+    }
 
-nebulaRelease {
-    addReleaseBranchPattern(/v\d+\.\d+\.x/)
-}
+    nebulaRelease {
+        addReleaseBranchPattern(/v\d+\.\d+\.x/)
+    }
 
-def releaseTask = tasks.named("release")
-releaseTask.configure {
-    mustRunAfter("snapshotSetup", "finalSetup")
+    releaseTask = tasks.named("release")
+    releaseTask.configure {
+        mustRunAfter("snapshotSetup", "finalSetup")
+    }
+} else {
+    releaseTask = tasks.register('release')
 }
 
 subprojects {
@@ -115,6 +122,10 @@ subprojects {
             resolve {
                 repoKey = 'libs-release'
             }
+        }
+
+        artifactoryPublish {
+            enabled = version.toString().endsWith('-SNAPSHOT')
         }
 
         // Release artifacts publishing.
@@ -272,6 +283,7 @@ configure(opentelemetryProjects) {
         jmhVersion = '1.19'
         junitVersion = '5.6.2'
         mockitoVersion = '3.3.3'
+        opencensusVersion = '0.28.2'
         opentracingVersion = '0.33.0'
         prometheusVersion = '0.8.1'
         protobufVersion = '3.11.4'
@@ -312,6 +324,9 @@ configure(opentelemetryProjects) {
                 zipkin_okhttp           : "io.zipkin.reporter2:zipkin-sender-okhttp3",
 
                 // Compatibility layer
+                opencensus_api          : "io.opencensus:opencensus-api:${opencensusVersion}",
+                opencensus_impl         : "io.opencensus:opencensus-impl:${opencensusVersion}",
+                opencensus_impl_core    : "io.opencensus:opencensus-impl-core:${opencensusVersion}",
                 opentracing             : "io.opentracing:opentracing-api:${opentracingVersion}",
 
                 // Test dependencies.
@@ -333,7 +348,10 @@ configure(opentelemetryProjects) {
                 jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
                 zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
                 archunit                : 'com.tngtech.archunit:archunit-junit4:0.13.1', //Architectural constraints
-                jqf                     : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6' // fuzz testing
+                jqf                     : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6', // fuzz testing
+
+                // Tooling
+                android_signature       : 'com.toasttab.android:gummy-bears-api-24:0.2.0:coreLib@signature'
         ]
     }
 
@@ -364,7 +382,8 @@ configure(opentelemetryProjects) {
 
     dependencies {
         configurations.all {
-            if (it.name.endsWith('Classpath')) {
+            // Kotlin compiler classpaths don't support BOM nor need it.
+            if (it.name.endsWith('Classpath') && !it.name.startsWith('kotlin')) {
                 add(it.name, enforcedPlatform(boms.grpc))
                 add(it.name, enforcedPlatform(boms.guava))
                 add(it.name, enforcedPlatform(boms.jackson))
@@ -398,7 +417,6 @@ configure(opentelemetryProjects) {
     }
 
     tasks.withType(Test) {
-        systemProperties project.properties.subMap(["enable.docker.tests"])
         useJUnitPlatform()
 
         // At a test failure, log the stack trace to the console so that we don't

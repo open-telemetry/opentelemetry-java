@@ -10,8 +10,9 @@ pluginManagement {
         id "me.champeau.gradle.jmh" version "0.5.0"
         id "nebula.release" version "15.1.0"
         id "net.ltgt.errorprone" version "1.3.0"
+        id "org.jetbrains.kotlin.jvm" version "1.4.10"
         id "org.unbroken-dome.test-sets" version "3.0.1"
-        id "ru.vyarus.animalsniffer" version "1.5.1"
+        id "ru.vyarus.animalsniffer" version "1.5.2"
     }
 
     repositories {
@@ -25,17 +26,19 @@ include ":opentelemetry-all",
         ":opentelemetry-api",
         ":opentelemetry-context",
         ":opentelemetry-extension-auto-annotations",
+        ":opentelemetry-extension-kotlin",
         ":opentelemetry-extension-runtime-metrics",
         ":opentelemetry-extension-trace-propagators",
         ":opentelemetry-extension-trace-utils",
-        ":opentelemetry-exporters-inmemory",
-        ":opentelemetry-exporters-jaeger",
-        ":opentelemetry-exporters-logging",
-        ":opentelemetry-exporters-otlp",
-        ":opentelemetry-exporters-prometheus",
-        ":opentelemetry-exporters-zipkin",
+        ":opentelemetry-exporter-jaeger",
+        ":opentelemetry-exporter-jaeger-thrift",
+        ":opentelemetry-exporter-logging",
+        ":opentelemetry-exporter-otlp",
+        ":opentelemetry-exporter-prometheus",
+        ":opentelemetry-exporter-zipkin",
         ":opentelemetry-integration-tests",
         ":opentelemetry-integration-tests-tracecontext",
+        ":opentelemetry-opencensus-shim",
         ":opentelemetry-opentracing-shim",
         ":opentelemetry-proto",
         ":opentelemetry-sdk-common",
@@ -47,25 +50,22 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-extension-logging",
         ":opentelemetry-sdk-extension-otproto",
         ":opentelemetry-sdk-extension-resources",
-        ":opentelemetry-sdk-extension-testbed",
         ":opentelemetry-sdk-extension-tracing-incubator",
         ":opentelemetry-sdk-extension-jaeger-remote-sampler",
         ":opentelemetry-sdk-extension-zpages",
         ":opentelemetry-sdk-testing",
         ":opentelemetry-bom",
-        ":opentelemetry-testing-internal",
         ":opentelemetry-perf-harness"
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name
-            .replace("opentelemetry-integration-tests-", "integration_tests/")
-            .replace("opentelemetry-exporters-", "exporters/")
+            .replace("opentelemetry-integration-tests-", "integration-tests/")
+            .replace("opentelemetry-exporter-", "exporters/")
             .replace("opentelemetry-extension-", "extensions/")
-            .replace("opentelemetry-sdk-extension-", "sdk_extensions/")
+            .replace("opentelemetry-sdk-extension-", "sdk-extensions/")
             .replace("opentelemetry-sdk-", "sdk/")
             .replace("logging-", "logging/")
-            .replace("opentelemetry-", "")
-            .replace("-", "_") as File
+            .replace("opentelemetry-", "") as File
 }
 
 project(":opentelemetry-sdk").projectDir = "$rootDir/sdk/all" as File

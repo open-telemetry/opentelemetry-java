@@ -61,7 +61,7 @@ class AttributesTest {
     emptyAttributes.forEach(
         new AttributeConsumer() {
           @Override
-          public <T> void consume(AttributeKey<T> key, T value) {
+          public <T> void accept(AttributeKey<T> key, T value) {
             sawSomething.set(true);
           }
         });
@@ -116,6 +116,23 @@ class AttributesTest {
   }
 
   @Test
+  void deduplication_oddNumberElements() {
+    Attributes one =
+        Attributes.builder()
+            .put(stringKey("key2"), "valueX")
+            .put(stringKey("key2"), "value2")
+            .put(stringKey("key1"), "value1")
+            .build();
+    Attributes two =
+        Attributes.builder()
+            .put(stringKey("key2"), "value2")
+            .put(stringKey("key1"), "value1")
+            .build();
+
+    assertThat(one).isEqualTo(two);
+  }
+
+  @Test
   void emptyAndNullKey() {
     Attributes noAttributes = Attributes.of(stringKey(""), "empty", null, "null");
 
@@ -148,7 +165,7 @@ class AttributesTest {
             false);
     assertThat(attributes).isEqualTo(wantAttributes);
 
-    Attributes.Builder newAttributes = Attributes.builder(attributes);
+    AttributesBuilder newAttributes = Attributes.builder(attributes);
     newAttributes.put("newKey", "newValue");
     assertThat(newAttributes.build())
         .isEqualTo(
@@ -246,7 +263,7 @@ class AttributesTest {
 
   @Test
   void nullsAreNoOps() {
-    Attributes.Builder builder = Attributes.builder();
+    AttributesBuilder builder = Attributes.builder();
     builder.put(stringKey("attrValue"), "attrValue");
     builder.put("string", "string");
     builder.put("long", 10);

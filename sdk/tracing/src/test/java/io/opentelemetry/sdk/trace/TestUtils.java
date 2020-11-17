@@ -8,11 +8,12 @@ package io.opentelemetry.sdk.trace;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
@@ -63,7 +64,7 @@ public final class TestUtils {
    *
    * @return A SpanData instance.
    */
-  public static Span.Builder startSpanWithSampler(
+  public static SpanBuilder startSpanWithSampler(
       TracerSdkManagement tracerSdkManagement, Tracer tracer, String spanName, Sampler sampler) {
     return startSpanWithSampler(
         tracerSdkManagement, tracer, spanName, sampler, Collections.emptyMap());
@@ -75,7 +76,7 @@ public final class TestUtils {
    *
    * @return A SpanData instance.
    */
-  public static Span.Builder startSpanWithSampler(
+  public static SpanBuilder startSpanWithSampler(
       TracerSdkManagement tracerSdkManagement,
       Tracer tracer,
       String spanName,
@@ -85,7 +86,7 @@ public final class TestUtils {
     tracerSdkManagement.updateActiveTraceConfig(
         originalConfig.toBuilder().setSampler(sampler).build());
     try {
-      Span.Builder builder = tracer.spanBuilder(spanName);
+      SpanBuilder builder = tracer.spanBuilder(spanName);
       attributes.forEach(builder::setAttribute);
 
       return builder;

@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.metrics.spi;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.spi.metrics.MeterProviderFactory;
 
 /**
  * {@code MeterProvider} provider implementation for {@link MeterProviderFactory}.
