@@ -137,5 +137,4 @@ public abstract class TraceState {
 
     Entry() {}
   }
-
 }
