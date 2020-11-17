@@ -14,17 +14,24 @@ ext {
     opentelemetryProjects = subprojects - project(":opentelemetry-bom")
 }
 
-release {
-    defaultVersionStrategy = Strategies.getSNAPSHOT()
-}
+// Nebula plugin will not configure if .git doesn't exist, let's allow building on it by stubbing it
+// out. This supports building from the zip archive downloaded from GitHub.
+def releaseTask
+if (file('.git').exists()) {
+    release {
+        defaultVersionStrategy = Strategies.getSNAPSHOT()
+    }
 
-nebulaRelease {
-    addReleaseBranchPattern(/v\d+\.\d+\.x/)
-}
+    nebulaRelease {
+        addReleaseBranchPattern(/v\d+\.\d+\.x/)
+    }
 
-def releaseTask = tasks.named("release")
-releaseTask.configure {
-    mustRunAfter("snapshotSetup", "finalSetup")
+    releaseTask = tasks.named("release")
+    releaseTask.configure {
+        mustRunAfter("snapshotSetup", "finalSetup")
+    }
+} else {
+    releaseTask = tasks.register('release')
 }
 
 subprojects {
