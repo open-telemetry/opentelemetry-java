@@ -11,6 +11,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
+import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -156,10 +157,17 @@ public final class BatchSpanProcessor implements SpanProcessor {
                   BatchSpanProcessor.class.getSimpleName(),
                   "dropped",
                   "false"));
+      spansInQueue =
+          meter
+              .longValueObserverBuilder("queueSize")
+              .setDescription("The number of spans queued")
+              .setUnit("1")
+              .build();
     }
 
     private static final BoundLongCounter droppedSpans;
     private static final BoundLongCounter exportedSpans;
+    private static final LongValueObserver spansInQueue;
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;
@@ -187,6 +195,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.exporterTimeoutMillis = exporterTimeoutMillis;
       this.queue = queue;
       this.batch = new ArrayList<>(this.maxExportBatchSize);
+      spansInQueue.setCallback(
+          result ->
+              result.observe(
+                  queue.size(),
+                  Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName())));
     }
 
     private void addSpan(ReadableSpan span) {
