@@ -67,14 +67,12 @@ class TraceStateTest {
 
   @Test
   void disallowsNullKey() {
-    assertThrows(
-        NullPointerException.class, () -> EMPTY.toBuilder().set(null, FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set(null, FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
   void invalidFirstKeyCharacter() {
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set("$_key", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("$_key", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -92,8 +90,7 @@ class TraceStateTest {
 
   @Test
   void invalidKeyCharacters() {
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set("kEy_1", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("kEy_1", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -111,9 +108,8 @@ class TraceStateTest {
 
   @Test
   void testVendorIdLongerThan13Characters_longTenantId() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set("12345678901234567890@nrabcdefghijkl", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("12345678901234567890@nrabcdefghijkl", FIRST_VALUE).build())
+        .isEqualTo(EMPTY);
   }
 
   @Test
@@ -121,22 +117,17 @@ class TraceStateTest {
     char[] chars = new char[241];
     Arrays.fill(chars, 'a');
     String tenantId = new String(chars);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set(tenantId + "@nr", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set(tenantId + "@nr", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
   void testNonVendorFormatFirstKeyCharacter() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set("1acdfrgs", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("1acdfrgs", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
   void testMultipleAtSignNotAllowed() {
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set("1@n@r@", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("1@n@r@", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -144,8 +135,7 @@ class TraceStateTest {
     char[] chars = new char[257];
     Arrays.fill(chars, 'a');
     String longKey = new String(chars);
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set(longKey, FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set(longKey, FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -168,27 +158,22 @@ class TraceStateTest {
 
   @Test
   void disallowsNullValue() {
-    assertThrows(NullPointerException.class, () -> EMPTY.toBuilder().set(FIRST_KEY, null).build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, null).build()).isEqualTo(EMPTY);
   }
 
   @Test
   void valueCannotContainEqual() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set(FIRST_KEY, "my_vakue=5").build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, "my_vakue=5").build()).isEqualTo(EMPTY);
   }
 
   @Test
   void valueCannotContainComma() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set(FIRST_KEY, "first,second").build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, "first,second").build()).isEqualTo(EMPTY);
   }
 
   @Test
   void valueCannotContainTrailingSpaces() {
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set(FIRST_KEY, "first ").build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, "first ").build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -196,8 +181,7 @@ class TraceStateTest {
     char[] chars = new char[257];
     Arrays.fill(chars, 'a');
     String longValue = new String(chars);
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set(FIRST_KEY, longValue).build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, longValue).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -272,8 +256,8 @@ class TraceStateTest {
 
   @Test
   void remove_NullNotAllowed() {
-    assertThrows(
-        NullPointerException.class, () -> multiValueTraceState.toBuilder().remove(null).build());
+    assertThat(multiValueTraceState.toBuilder().remove(null).build())
+        .isEqualTo(multiValueTraceState);
   }
 
   @Test
