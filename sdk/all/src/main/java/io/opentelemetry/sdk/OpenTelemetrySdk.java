@@ -19,8 +19,11 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -49,7 +52,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
           "Trying to access global TracerSdkManagement but global TracerProvider is not an "
               + "instance created by this SDK.");
     }
-    return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
+    return (TracerSdkManagement) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
   /** Returns the global {@link MeterSdkProvider}. */
@@ -103,6 +106,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   public static class Builder extends DefaultOpenTelemetry.Builder {
     private Clock clock;
     private Resource resource;
+    private final List<SpanProcessor> spanProcessors = new ArrayList<>();
 
     /**
      * Sets the {@link TracerSdkProvider} to use. This can be used to configure tracing settings by
@@ -115,11 +119,23 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
      */
     @Override
     public Builder setTracerProvider(TracerProvider tracerProvider) {
+      if (tracerProvider instanceof ObfuscatedTracerProvider) {
+        tracerProvider = ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
+      }
       if (!(tracerProvider instanceof TracerSdkProvider)) {
         throw new IllegalArgumentException(
             "The OpenTelemetrySdk can only be configured with a TracerSdkProvider");
       }
       super.setTracerProvider(tracerProvider);
+      return this;
+    }
+
+    /**
+     * Adds a {@link SpanProcessor} to the list of span processors that will be configured into the
+     * SDK.
+     */
+    public Builder addSpanProcessor(SpanProcessor spanProcessor) {
+      spanProcessors.add(spanProcessor);
       return this;
     }
 
@@ -176,7 +192,11 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     @Override
     public OpenTelemetrySdk build() {
       MeterProvider meterProvider = buildMeterProvider();
-      TracerProvider tracerProvider = buildTracerProvider();
+      TracerSdkProvider tracerProvider = buildTracerProvider();
+
+      for (SpanProcessor spanProcessor : spanProcessors) {
+        tracerProvider.addSpanProcessor(spanProcessor);
+      }
 
       OpenTelemetrySdk sdk =
           new OpenTelemetrySdk(
@@ -193,14 +213,14 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       return sdk;
     }
 
-    private TracerProvider buildTracerProvider() {
+    private TracerSdkProvider buildTracerProvider() {
       TracerProvider tracerProvider = super.tracerProvider;
       if (tracerProvider != null) {
         if (!(tracerProvider instanceof TracerSdkProvider)) {
           throw new IllegalStateException(
               "The OpenTelemetrySdk can only be configured with a TracerSdkProvider");
         }
-        return tracerProvider;
+        return (TracerSdkProvider) tracerProvider;
       }
       TracerSdkProvider.Builder tracerProviderBuilder = TracerSdkProvider.builder();
       if (clock != null) {

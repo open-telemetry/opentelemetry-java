@@ -21,6 +21,8 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.MultiSpanProcessor;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -137,5 +139,47 @@ class OpenTelemetrySdkTest {
     assertThrows(
         IllegalArgumentException.class,
         () -> OpenTelemetrySdk.builder().setTracerProvider(mock(TracerProvider.class)));
+  }
+
+  @Test
+  void addSpanProcessors() {
+    SpanProcessor spanProcessor1 = mock(SpanProcessor.class);
+    SpanProcessor spanProcessor2 = mock(SpanProcessor.class);
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .addSpanProcessor(spanProcessor1)
+            .addSpanProcessor(spanProcessor2)
+            .build();
+
+    TracerProvider tracerProvider = openTelemetrySdk.getTracerProvider();
+    assertThat(tracerProvider)
+        .extracting("delegate")
+        .extracting("sharedState")
+        .extracting("activeSpanProcessor")
+        .isInstanceOf(MultiSpanProcessor.class)
+        .extracting("spanProcessorsAll")
+        .asList()
+        .containsExactlyInAnyOrder(spanProcessor1, spanProcessor2);
+  }
+
+  @Test
+  void toBuilder_addSpanProcessor() {
+    SpanProcessor spanProcessor1 = mock(SpanProcessor.class);
+    SpanProcessor spanProcessor2 = mock(SpanProcessor.class);
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder().addSpanProcessor(spanProcessor1).build();
+
+    OpenTelemetrySdk openTelemetrySdk1 =
+        openTelemetrySdk.toBuilder().addSpanProcessor(spanProcessor2).build();
+
+    TracerProvider tracerProvider = openTelemetrySdk1.getTracerProvider();
+    assertThat(tracerProvider)
+        .extracting("delegate")
+        .extracting("sharedState")
+        .extracting("activeSpanProcessor")
+        .isInstanceOf(MultiSpanProcessor.class)
+        .extracting("spanProcessorsAll")
+        .asList()
+        .containsExactlyInAnyOrder(spanProcessor1, spanProcessor2);
   }
 }
