@@ -15,7 +15,7 @@ ext {
 }
 
 // Nebula plugin will not configure if .git doesn't exist, let's allow building on it by stubbing it
-// out.
+// out. This supports building from the zip archive downloaded from GitHub.
 def releaseTask
 if (file('.git').exists()) {
     release {
