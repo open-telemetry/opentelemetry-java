@@ -7,7 +7,6 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import java.util.Arrays;
@@ -101,9 +100,7 @@ class TraceStateTest {
 
   @Test
   void testVendorIdLongerThan13Characters() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set("1@nrabcdefghijkl", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("1@nrabcdefghijkl", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
