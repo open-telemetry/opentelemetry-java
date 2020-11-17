@@ -26,6 +26,9 @@ public abstract class EntryMetadata {
    * @return an {@code EntryMetadata}.
    */
   public static EntryMetadata create(String metadata) {
+    if (metadata == null) {
+      return EMPTY;
+    }
     return new AutoValue_EntryMetadata(metadata);
   }
 

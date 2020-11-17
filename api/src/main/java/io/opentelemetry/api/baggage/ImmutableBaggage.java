@@ -9,6 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,25 +102,25 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
 
     @Override
     public BaggageBuilder put(String key, String value, EntryMetadata entryMetadata) {
-      requireNonNull(key, "key");
-      requireNonNull(value, "value");
-      requireNonNull(entryMetadata, "entryMetadata");
-
+      if (!isKeyValid(key) || !isValueValid(value) || entryMetadata == null) {
+        return this;
+      }
       data.add(key);
       data.add(Entry.create(key, value, entryMetadata));
+
       return this;
     }
 
     @Override
     public BaggageBuilder put(String key, String value) {
-      requireNonNull(key, "key");
-      requireNonNull(value, "value");
       return put(key, value, EntryMetadata.EMPTY);
     }
 
     @Override
     public BaggageBuilder remove(String key) {
-      requireNonNull(key, "key");
+      if (key == null) {
+        return this;
+      }
       data.add(key);
       data.add(null);
       return this;
@@ -144,5 +145,25 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
       }
       return sortAndFilterToBaggage(data.toArray());
     }
+  }
+
+  /**
+   * Determines whether the given {@code String} is a valid entry key.
+   *
+   * @param name the entry key name to be validated.
+   * @return whether the name is valid.
+   */
+  private static boolean isKeyValid(String name) {
+    return name != null && !name.isEmpty() && StringUtils.isPrintableString(name);
+  }
+
+  /**
+   * Determines whether the given {@code String} is a valid entry value.
+   *
+   * @param value the entry value to be validated.
+   * @return whether the value is valid.
+   */
+  private static boolean isValueValid(String value) {
+    return value != null && StringUtils.isPrintableString(value);
   }
 }
