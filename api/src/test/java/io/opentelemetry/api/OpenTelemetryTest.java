@@ -155,10 +155,18 @@ class OpenTelemetryTest {
   }
 
   @Test
-  void testPropagatorsSet() {
+  void testGlobalPropagatorsSet() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
     OpenTelemetry.setGlobalPropagators(propagators);
     assertThat(OpenTelemetry.getGlobalPropagators()).isEqualTo(propagators);
+  }
+
+  @Test
+  void testPropagatorsSet() {
+    ContextPropagators propagators = DefaultContextPropagators.builder().build();
+    OpenTelemetry instance = DefaultOpenTelemetry.builder().build();
+    instance.setPropagators(propagators);
+    assertThat(instance.getPropagators()).isEqualTo(propagators);
   }
 
   @Test
