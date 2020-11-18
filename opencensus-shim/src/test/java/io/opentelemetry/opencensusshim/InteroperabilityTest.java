@@ -149,10 +149,7 @@ public class InteroperabilityTest {
   public void testNoSampleDoesNotExport() {
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     try (io.opencensus.common.Scope scope =
-        tracer
-            .spanBuilder("OpenCensusSpan")
-            .setSampler(Samplers.neverSample())
-            .startScopedSpan()) {
+        tracer.spanBuilder("OpenCensusSpan").setSampler(Samplers.neverSample()).startScopedSpan()) {
       io.opencensus.trace.Span span = tracer.getCurrentSpan();
       span.addAnnotation("OpenCensus: Event 1");
       span.addAnnotation("OpenCensus: Event 2");

@@ -41,7 +41,8 @@ public class OpenTelemetryContextManager implements ContextManager {
     if (span instanceof OpenTelemetrySpanImpl) {
       return wrapContext(unwrapContext(openTelemetryCtx).with((OpenTelemetrySpanImpl) span));
     }
-    return wrapContext(unwrapContext(openTelemetryCtx).with((OpenTelemetryNoRecordEventsSpanImpl) span));
+    return wrapContext(
+        unwrapContext(openTelemetryCtx).with((OpenTelemetryNoRecordEventsSpanImpl) span));
   }
 
   @Override
