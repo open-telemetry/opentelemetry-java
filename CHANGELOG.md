@@ -30,6 +30,12 @@ available.
 - The builder class for the `OpenTelemetrySdk` now strictly requires its components to be SDK implementations. 
 You can only build an `OpenTelemetrySdk` with `TracerSdkProvider` and `MeterSdkProvider` instances.
 
+#### Enhancements:
+
+- An API has been added to the SDK's MeterProvider implementation (`MeterSdkProvider`) that allows the end-user to configure
+how various metrics will be aggregated. This API should be considered a precursor to a full "Views" API, and will most likely
+evolve over the coming months before the metrics implementation is complete. See the javadoc for `MeterSdkProvider.registerView()` for details.
+
 #### Miscellaneous:
 
 - The `SpanProcessor` interface now includes default method implementations for the `shutdown()` and `forceFlush()` methods.
