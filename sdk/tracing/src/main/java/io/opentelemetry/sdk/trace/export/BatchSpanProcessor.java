@@ -72,6 +72,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   private static final String WORKER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
+  private static final String SPAN_PROCESSOR_TYPE_LABEL = "spanProcessorType";
+  private static final String SPAN_PROCESSOR_TYPE_VALUE = BatchSpanProcessor.class.getSimpleName();
+
   private final Worker worker;
   private final boolean sampled;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
@@ -145,18 +148,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
               .build();
       droppedSpans =
           processedSpansCounter.bind(
-              Labels.of(
-                  "spanProcessorType",
-                  BatchSpanProcessor.class.getSimpleName(),
-                  "dropped",
-                  "true"));
+              Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE, "dropped", "true"));
       exportedSpans =
           processedSpansCounter.bind(
-              Labels.of(
-                  "spanProcessorType",
-                  BatchSpanProcessor.class.getSimpleName(),
-                  "dropped",
-                  "false"));
+              Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE, "dropped", "false"));
       spansInQueue =
           meter
               .longValueObserverBuilder("queueSize")
@@ -198,8 +193,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       spansInQueue.setCallback(
           result ->
               result.observe(
-                  queue.size(),
-                  Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName())));
+                  queue.size(), Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE)));
     }
 
     private void addSpan(ReadableSpan span) {
