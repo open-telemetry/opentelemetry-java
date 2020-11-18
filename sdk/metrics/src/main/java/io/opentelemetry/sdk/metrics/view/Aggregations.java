@@ -99,6 +99,11 @@ public class Aggregations {
       return instrumentType == InstrumentType.VALUE_OBSERVER
           || instrumentType == InstrumentType.VALUE_RECORDER;
     }
+
+    @Override
+    public String toString() {
+      return getClass().getSimpleName();
+    }
   }
 
   @Immutable
@@ -142,6 +147,11 @@ public class Aggregations {
       // Available for all instruments.
       return true;
     }
+
+    @Override
+    public String toString() {
+      return getClass().getSimpleName();
+    }
   }
 
   @Immutable
@@ -169,6 +179,11 @@ public class Aggregations {
     public boolean availableForInstrument(InstrumentType instrumentType) {
       // Available for all instruments.
       return true;
+    }
+
+    @Override
+    public String toString() {
+      return getClass().getSimpleName();
     }
   }
 
@@ -200,6 +215,11 @@ public class Aggregations {
     @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
       throw new UnsupportedOperationException("Implement this");
+    }
+
+    @Override
+    public String toString() {
+      return getClass().getSimpleName();
     }
   }
 
@@ -247,6 +267,11 @@ public class Aggregations {
       // Do not change this unless the limitations of the current LastValueAggregator are fixed.
       return instrumentType == InstrumentType.SUM_OBSERVER
           || instrumentType == InstrumentType.UP_DOWN_SUM_OBSERVER;
+    }
+
+    @Override
+    public String toString() {
+      return getClass().getSimpleName();
     }
   }
 

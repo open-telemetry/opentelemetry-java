@@ -6,26 +6,43 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.view.Aggregation;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration.Temporality;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 
 // notes:
 //  specify by pieces of the descriptor.
-//    instrument type
-//    instrument value type
-//    instrument name  (wildcards allowed?)
+//    instrument type √
+//    instrument name  (regex) √
+//    instrument value type (?)
 //    constant labels (?)
 //    units (?)
 
 // what you can choose:
-//   aggregation
+//   aggregation √
+//   delta vs. cumulative √
 //   all labels vs. a list of labels
-//   delta vs. cumulative
 
 /**
  * Central location for Views to be registered. Registration of a view should eventually be done via
  * the {@link io.opentelemetry.sdk.metrics.MeterSdkProvider}.
  */
 class ViewRegistry {
+
+  private final AggregationChooser aggregationChooser;
+
+  ViewRegistry() {
+    this(new AggregationChooser());
+  }
+
+  // VisibleForTesting
+  ViewRegistry(AggregationChooser aggregationChooser) {
+    this.aggregationChooser = aggregationChooser;
+  }
+
+  void registerView(InstrumentSelector selector, AggregationConfiguration specification) {
+    aggregationChooser.addView(selector, specification);
+  }
 
   /**
    * Create a new {@link io.opentelemetry.sdk.metrics.Batcher} for use in metric recording
@@ -36,39 +53,17 @@ class ViewRegistry {
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
 
-    Aggregation aggregation = getRegisteredAggregation(descriptor);
+    AggregationConfiguration specification = aggregationChooser.chooseAggregation(descriptor);
 
-    // todo: don't just use the defaults!
-    switch (descriptor.getType()) {
-      case COUNTER:
-      case UP_DOWN_COUNTER:
-      case SUM_OBSERVER:
-      case UP_DOWN_SUM_OBSERVER:
-        return Batchers.getCumulativeAllLabels(
-            descriptor, meterProviderSharedState, meterSharedState, aggregation);
-      case VALUE_RECORDER:
-        // TODO: Revisit the batcher used here for value observers,
-        // currently this does not remove duplicate records in the same cycle.
-      case VALUE_OBSERVER:
-        return Batchers.getDeltaAllLabels(
-            descriptor, meterProviderSharedState, meterSharedState, aggregation);
-    }
-    throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());
-  }
+    Aggregation aggregation = specification.aggregation();
 
-  private static Aggregation getRegisteredAggregation(InstrumentDescriptor descriptor) {
-    // todo look up based on fields of the descriptor.
-    switch (descriptor.getType()) {
-      case COUNTER:
-      case UP_DOWN_COUNTER:
-        return Aggregations.sum();
-      case VALUE_RECORDER:
-        return Aggregations.minMaxSumCount();
-      case VALUE_OBSERVER:
-      case SUM_OBSERVER:
-      case UP_DOWN_SUM_OBSERVER:
-        return Aggregations.lastValue();
+    if (Temporality.CUMULATIVE == specification.temporality()) {
+      return Batchers.getCumulativeAllLabels(
+          descriptor, meterProviderSharedState, meterSharedState, aggregation);
+    } else if (Temporality.DELTA == specification.temporality()) {
+      return Batchers.getDeltaAllLabels(
+          descriptor, meterProviderSharedState, meterSharedState, aggregation);
     }
-    throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());
+    throw new IllegalStateException("unsupported Temporality: " + specification.temporality());
   }
 }
