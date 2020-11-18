@@ -19,6 +19,10 @@ Methods to create the builders remain in the same place as they were before.
 the default (thread local) ContextStorage will be used for the Context implementation, regardless of what SPI implementations are
 available.
 
+#### Miscellaneous:
+
+- Invalid W3C `TraceState` entries will now be silently dropped, rather than causing the invalidation of the entire `TraceState`.
+
 ### SDK
 
 #### Breaking Changes:
