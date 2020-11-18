@@ -21,12 +21,21 @@ available.
 
 ### SDK
 
+#### Breaking Changes:
+
+- The builder class for the `OpenTelemetrySdk` now strictly requires its components to be SDK implementations. 
+You can only build an `OpenTelemetrySdk` with `TracerSdkProvider` and `MeterSdkProvider` instances.
+
 #### Miscellaneous:
 
 - The `SpanProcessor` interface now includes default method implementations for the `shutdown()` and `forceFlush()` methods.
 - The BatchRecorder implementation has been updated to actually batch the recordings, rather than simply passing them through.
 
 ### Extensions
+
+#### Breaking Changes:
+
+- The `@WithSpan` annotation has been moved to the `io.opentelemetry.extension.annotations` package in the `opentelemetry-extension-annotations` module 
 
 #### Bugfixes:
 
@@ -48,6 +57,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 
 - The W3C Baggage Propagator is now available.
 - The B3 Propagator now handles both single and multi-header formats.
+- The B3 Propagator defaults to injecting the single B3 header, rather than the multi-header format.
 - Mutating a method on `Span` now returns the `Span` to enable call-chaining.
 
 #### Bug fixes
