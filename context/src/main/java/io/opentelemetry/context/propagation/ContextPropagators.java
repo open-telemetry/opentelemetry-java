@@ -87,6 +87,7 @@ public interface ContextPropagators {
    *     .build();
    * }</pre>
    */
+  @SuppressWarnings("deprecation")
   static ContextPropagatorsBuilder builder() {
     return DefaultContextPropagators.builder();
   }

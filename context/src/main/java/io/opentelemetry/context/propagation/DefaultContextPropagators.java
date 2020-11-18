@@ -21,8 +21,11 @@ import javax.annotation.Nullable;
  * synchronically upon injection and extraction.
  *
  * <p>The propagation fields retrieved from all registered propagators are de-duplicated.
+ *
+ * @deprecated Use {@link ContextPropagators#builder()}
  */
-final class DefaultContextPropagators implements ContextPropagators {
+@Deprecated
+public final class DefaultContextPropagators implements ContextPropagators {
   private final TextMapPropagator textMapPropagator;
 
   @Override
@@ -35,8 +38,10 @@ final class DefaultContextPropagators implements ContextPropagators {
    * object.
    *
    * @return a {@link DefaultContextPropagators.Builder}.
+   * @deprecated Use {@link ContextPropagators#builder()}
    */
-  static ContextPropagatorsBuilder builder() {
+  @Deprecated
+  public static ContextPropagatorsBuilder builder() {
     return new Builder();
   }
 
@@ -44,7 +49,13 @@ final class DefaultContextPropagators implements ContextPropagators {
     this.textMapPropagator = textMapPropagator;
   }
 
-  private static final class Builder implements ContextPropagatorsBuilder {
+  /**
+   * A builder of {@link DefaultContextPropagators}.
+   *
+   * @deprecated Use {@link ContextPropagators#builder()}
+   */
+  @Deprecated
+  public static final class Builder implements ContextPropagatorsBuilder {
     List<TextMapPropagator> textPropagators = new ArrayList<>();
 
     @Override
