@@ -14,6 +14,6 @@
  * You cannot guarantee that users of your library will use that in their production system.
  */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.extension.auto.annotations;
+package io.opentelemetry.extension.annotations;
 
 import javax.annotation.ParametersAreNonnullByDefault;
