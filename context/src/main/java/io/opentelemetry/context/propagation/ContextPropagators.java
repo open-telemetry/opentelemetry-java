@@ -71,6 +71,27 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface ContextPropagators {
 
   /**
+   * Returns a {@link ContextPropagatorsBuilder} used to construct a new {@code ContextPropagators}
+   * object with the specified propagators.
+   *
+   * <p>Invocation order of {@code TextMapPropagator#inject()} and {@code
+   * TextMapPropagator#extract()} for registered trace propagators is undefined.
+   *
+   * <p>This is a example of a {@code ContextPropagators} object being created:
+   *
+   * <pre>{@code
+   * ContextPropagators propagators = DefaultContextPropagators.builder()
+   *     .addTextMapPropagator(new HttpTraceContext())
+   *     .addTextMapPropagator(new HttpBaggage())
+   *     .addTextMapPropagator(new MyCustomContextPropagator())
+   *     .build();
+   * }</pre>
+   */
+  static ContextPropagatorsBuilder builder() {
+    return DefaultContextPropagators.builder();
+  }
+
+  /**
    * Returns a {@link TextMapPropagator} propagator.
    *
    * <p>The returned value will be a composite instance containing all the registered {@link

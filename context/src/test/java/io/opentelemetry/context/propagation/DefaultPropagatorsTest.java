@@ -22,8 +22,7 @@ class DefaultPropagatorsTest {
   @Test
   void addTextMapPropagatorNull() {
     assertThrows(
-        NullPointerException.class,
-        () -> DefaultContextPropagators.builder().addTextMapPropagator(null));
+        NullPointerException.class, () -> ContextPropagators.builder().addTextMapPropagator(null));
   }
 
   @Test
@@ -31,7 +30,7 @@ class DefaultPropagatorsTest {
     CustomTextMapPropagator propagator1 = new CustomTextMapPropagator("prop1");
     CustomTextMapPropagator propagator2 = new CustomTextMapPropagator("prop2");
     ContextPropagators propagators =
-        DefaultContextPropagators.builder()
+        ContextPropagators.builder()
             .addTextMapPropagator(propagator1)
             .addTextMapPropagator(propagator2)
             .build();
@@ -52,7 +51,7 @@ class DefaultPropagatorsTest {
     CustomTextMapPropagator propagator2 = new CustomTextMapPropagator("prop2");
     CustomTextMapPropagator propagator3 = new CustomTextMapPropagator("prop3");
     ContextPropagators propagators =
-        DefaultContextPropagators.builder()
+        ContextPropagators.builder()
             .addTextMapPropagator(propagator1)
             .addTextMapPropagator(propagator2)
             .build();
@@ -76,7 +75,7 @@ class DefaultPropagatorsTest {
     CustomTextMapPropagator propagator3 = new CustomTextMapPropagator("prop1");
     CustomTextMapPropagator propagator4 = new CustomTextMapPropagator("prop2");
     ContextPropagators propagators =
-        DefaultContextPropagators.builder()
+        ContextPropagators.builder()
             .addTextMapPropagator(propagator1)
             .addTextMapPropagator(propagator2)
             .addTextMapPropagator(propagator3)
@@ -89,7 +88,7 @@ class DefaultPropagatorsTest {
 
   @Test
   void noopPropagator() {
-    ContextPropagators propagators = DefaultContextPropagators.builder().build();
+    ContextPropagators propagators = ContextPropagators.builder().build();
 
     Context context = Context.current();
     Map<String, String> map = new HashMap<>();

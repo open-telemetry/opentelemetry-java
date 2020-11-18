@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.TracesAssert.assertThat;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.HttpTraceContext;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.assertj.TracesAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
@@ -62,7 +62,7 @@ public class OpenTelemetryExtension
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setPropagators(
-                DefaultContextPropagators.builder()
+                ContextPropagators.builder()
                     .addTextMapPropagator(HttpTraceContext.getInstance())
                     .build())
             .setTracerProvider(tracerProvider)
