@@ -7,6 +7,8 @@ package io.opentelemetry.opencensusshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -141,6 +143,22 @@ public class InteroperabilityTest {
     assertThat(spanData1.getParentSpanId()).isEqualTo(spanData2.getSpanId());
     assertThat(spanData2.getParentSpanId()).isEqualTo(spanData3.getSpanId());
     assertThat(spanData3.getParentSpanId()).isEqualTo(NULL_SPAN_ID);
+  }
+
+  @Test
+  public void testNoSampleDoesNotExport() {
+    io.opencensus.trace.Tracer tracer = Tracing.getTracer();
+    try (io.opencensus.common.Scope scope =
+        tracer
+            .spanBuilder("OpenCensusSpan")
+            .setSampler(Samplers.neverSample())
+            .startScopedSpan()) {
+      io.opencensus.trace.Span span = tracer.getCurrentSpan();
+      span.addAnnotation("OpenCensus: Event 1");
+      span.addAnnotation("OpenCensus: Event 2");
+    }
+    Tracing.getExportComponent().shutdown();
+    verify(spanExporter, never()).export(anyCollection());
   }
 
   private static void createOpenCensusScopedSpanWithChildSpan(

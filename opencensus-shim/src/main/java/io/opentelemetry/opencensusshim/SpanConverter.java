@@ -6,33 +6,22 @@
 package io.opentelemetry.opencensusshim;
 
 import io.opencensus.common.Function;
-import io.opencensus.implcore.trace.RecordEventsSpanImpl;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Link;
-import io.opencensus.trace.MessageEvent;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanContext;
+import io.opencensus.trace.SpanId;
+import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
-import io.opencensus.trace.export.SpanData;
-import io.opencensus.trace.export.SpanData.TimedEvent;
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.api.trace.Tracer;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 class SpanConverter {
 
@@ -49,6 +38,12 @@ class SpanConverter {
     protected FakeSpan(SpanContext context) {
       super(context, RECORD_EVENTS_SPAN_OPTIONS);
     }
+
+    @Override
+    public void putAttribute(String key, AttributeValue value) {}
+
+    @Override
+    public void putAttributes(Map<String, AttributeValue> attributes) {}
 
     @Override
     public void addAnnotation(String description, Map<String, AttributeValue> attributes) {}
@@ -69,64 +64,9 @@ class SpanConverter {
   public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED =
       "message.event.size.compressed";
 
-  private static final Tracer TRACER =
-      OpenTelemetry.getGlobalTracer("io.opencensus.opentelemetry.migration");
-
   private SpanConverter() {}
 
-  static io.opentelemetry.api.trace.Span toOtelSpan(Span span) {
-    if (span == null) {
-      return io.opentelemetry.api.trace.Span.getInvalid();
-    }
-    SpanData ocSpanData = ((RecordEventsSpanImpl) span).toSpanData();
-    SpanBuilder builder =
-        TRACER
-            .spanBuilder(ocSpanData.getName())
-            .setStartTimestamp(
-                TimeUnit.SECONDS.toNanos(ocSpanData.getStartTimestamp().getSeconds())
-                    + ocSpanData.getStartTimestamp().getNanos(),
-                TimeUnit.NANOSECONDS);
-    if (ocSpanData.getKind() != null) {
-      builder.setSpanKind(mapKind(ocSpanData.getKind()));
-    }
-    if (ocSpanData.getAttributes() != null) {
-      for (Map.Entry<String, AttributeValue> attribute :
-          ocSpanData.getAttributes().getAttributeMap().entrySet()) {
-        attribute
-            .getValue()
-            .match(
-                setStringAttribute(builder, attribute),
-                setBooleanAttribute(builder, attribute),
-                setLongAttribute(builder, attribute),
-                setDoubleAttribute(builder, attribute),
-                arg -> null);
-      }
-    }
-    if (ocSpanData.getLinks() != null) {
-      for (Link link : ocSpanData.getLinks().getLinks()) {
-        AttributesBuilder attributesBuilder = Attributes.builder();
-        link.getAttributes()
-            .forEach(
-                (s, attributeValue) ->
-                    attributeValue.match(
-                        setStringAttribute(attributesBuilder, s),
-                        setBooleanAttribute(attributesBuilder, s),
-                        setLongAttribute(attributesBuilder, s),
-                        setDoubleAttribute(attributesBuilder, s),
-                        arg -> null));
-        builder.addLink(
-            io.opentelemetry.api.trace.SpanContext.create(
-                TraceId.bytesToHex(link.getTraceId().getBytes()),
-                SpanId.bytesToHex(link.getSpanId().getBytes()),
-                TraceFlags.getDefault(),
-                TraceState.getDefault()),
-            attributesBuilder.build());
-      }
-    }
-    return builder.startSpan();
-  }
-
-  private static Kind mapKind(Span.Kind kind) {
+  static Kind mapKind(Span.Kind kind) {
     switch (kind) {
       case CLIENT:
         return Kind.CLIENT;
@@ -142,10 +82,8 @@ class SpanConverter {
     }
     SpanContext spanContext =
         SpanContext.create(
-            io.opencensus.trace.TraceId.fromLowerBase16(
-                otSpan.getSpanContext().getTraceIdAsHexString()),
-            io.opencensus.trace.SpanId.fromLowerBase16(
-                otSpan.getSpanContext().getSpanIdAsHexString()),
+            TraceId.fromLowerBase16(otSpan.getSpanContext().getTraceIdAsHexString()),
+            SpanId.fromLowerBase16(otSpan.getSpanContext().getSpanIdAsHexString()),
             TraceOptions.builder().setIsSampled(otSpan.getSpanContext().isSampled()).build(),
             mapTracestate(otSpan.getSpanContext().getTraceState()));
     return new FakeSpan(spanContext);
@@ -155,48 +93,6 @@ class SpanConverter {
     Tracestate.Builder tracestateBuilder = Tracestate.builder();
     traceState.forEach(tracestateBuilder::set);
     return tracestateBuilder.build();
-  }
-
-  static void mapAndAddTimedEvents(
-      io.opentelemetry.api.trace.Span span, List<TimedEvent<MessageEvent>> events) {
-    for (TimedEvent<MessageEvent> event : events) {
-      span.addEvent(
-          String.valueOf(event.getEvent().getMessageId()),
-          Attributes.of(
-              AttributeKey.stringKey(MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE),
-              event.getEvent().getType().toString(),
-              AttributeKey.longKey(MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_UNCOMPRESSED),
-              event.getEvent().getUncompressedMessageSize(),
-              AttributeKey.longKey(MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED),
-              event.getEvent().getCompressedMessageSize()),
-          TimeUnit.SECONDS.toNanos(event.getTimestamp().getSeconds())
-              + event.getTimestamp().getNanos(),
-          TimeUnit.NANOSECONDS);
-    }
-  }
-
-  static void mapAndAddAnnotations(
-      io.opentelemetry.api.trace.Span span, List<TimedEvent<Annotation>> annotations) {
-    for (TimedEvent<Annotation> annotation : annotations) {
-      AttributesBuilder attributesBuilder = Attributes.builder();
-      annotation
-          .getEvent()
-          .getAttributes()
-          .forEach(
-              (s, attributeValue) ->
-                  attributeValue.match(
-                      setStringAttribute(attributesBuilder, s),
-                      setBooleanAttribute(attributesBuilder, s),
-                      setLongAttribute(attributesBuilder, s),
-                      setDoubleAttribute(attributesBuilder, s),
-                      arg -> null));
-      span.addEvent(
-          annotation.getEvent().getDescription(),
-          attributesBuilder.build(),
-          TimeUnit.SECONDS.toNanos(annotation.getTimestamp().getSeconds())
-              + annotation.getTimestamp().getNanos(),
-          TimeUnit.NANOSECONDS);
-    }
   }
 
   static Function<String, Void> setStringAttribute(AttributesBuilder builder, String key) {

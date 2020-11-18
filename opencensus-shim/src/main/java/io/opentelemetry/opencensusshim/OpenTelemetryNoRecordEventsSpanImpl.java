@@ -31,10 +31,16 @@ import io.opencensus.trace.MessageEvent;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Status;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 
-public class OpenTelemetryNoRecordEventsSpanImpl extends Span {
+public class OpenTelemetryNoRecordEventsSpanImpl extends Span
+    implements io.opentelemetry.api.trace.Span {
   private static final EnumSet<Options> NOT_RECORD_EVENTS_SPAN_OPTIONS =
       EnumSet.noneOf(Options.class);
 
@@ -80,11 +86,98 @@ public class OpenTelemetryNoRecordEventsSpanImpl extends Span {
   }
 
   @Override
+  public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode, String description) {
+    return null;
+  }
+
+  @Override
   public void end(EndSpanOptions options) {
     Preconditions.checkNotNull(options, "options");
   }
 
+  @Override
+  public void end(long timestamp, TimeUnit unit) {
+    // do nothing
+  }
+
   private OpenTelemetryNoRecordEventsSpanImpl(SpanContext context) {
     super(context, NOT_RECORD_EVENTS_SPAN_OPTIONS);
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span setAttribute(String key, @Nonnull String value) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span setAttribute(String key, long value) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span setAttribute(String key, double value) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span setAttribute(String key, boolean value) {
+    return null;
+  }
+
+  @Override
+  public <T> io.opentelemetry.api.trace.Span setAttribute(AttributeKey<T> key, @Nonnull T value) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span addEvent(String name) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span addEvent(String name, long timestamp, TimeUnit unit) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span addEvent(String name, Attributes attributes) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span addEvent(
+      String name, Attributes attributes, long timestamp, TimeUnit unit) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span recordException(Throwable exception) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span recordException(
+      Throwable exception, Attributes additionalAttributes) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span updateName(String name) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.SpanContext getSpanContext() {
+    return io.opentelemetry.api.trace.SpanContext.getInvalid();
+  }
+
+  @Override
+  public boolean isRecording() {
+    return false;
   }
 }

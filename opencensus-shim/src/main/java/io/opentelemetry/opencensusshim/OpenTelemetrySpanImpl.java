@@ -30,10 +30,7 @@ import static io.opentelemetry.opencensusshim.SpanConverter.setDoubleAttribute;
 import static io.opentelemetry.opencensusshim.SpanConverter.setLongAttribute;
 import static io.opentelemetry.opencensusshim.SpanConverter.setStringAttribute;
 
-import io.opencensus.common.Clock;
-import io.opencensus.implcore.internal.TimestampConverter;
-import io.opencensus.implcore.trace.RecordEventsSpanImpl;
-import io.opencensus.implcore.trace.RecordEventsSpanImpl.StartEndHandler;
+import com.google.common.base.Preconditions;
 import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.EndSpanOptions;
@@ -42,7 +39,10 @@ import io.opencensus.trace.MessageEvent;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
-import io.opencensus.trace.config.TraceParams;
+import io.opencensus.trace.Status;
+import io.opencensus.trace.TraceId;
+import io.opencensus.trace.TraceOptions;
+import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -50,89 +50,49 @@ import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.Span {
-
+  private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySpanImpl.class.getName());
   private static final EnumSet<Span.Options> RECORD_EVENTS_SPAN_OPTIONS =
       EnumSet.of(Span.Options.RECORD_EVENTS);
 
-  // The time converter used to convert nano time to Timestamp. This is needed because Java has
-  // millisecond granularity for Timestamp and tracing events are recorded more often.
-  private final TimestampConverter timestampConverter;
-
-  private final RecordEventsSpanImpl ocSpan;
   private final io.opentelemetry.api.trace.Span otSpan;
 
-  /**
-   * Creates a new {@code Span}.
-   *
-   * @param context the context associated with this {@code Span}.
-   * @param options the options associated with this {@code Span}. If {@code null} then default
-   *     options will be set.
-   * @param timestampConverter time stamp converter
-   * @throws NullPointerException if context is {@code null}.
-   * @throws IllegalArgumentException if the {@code SpanContext} is sampled but no RECORD_EVENTS
-   *     options.
-   * @since 0.5
-   */
-  protected OpenTelemetrySpanImpl(
-      SpanContext context,
-      @Nullable EnumSet<Options> options,
-      RecordEventsSpanImpl ocSpan,
-      TimestampConverter timestampConverter) {
-    super(context, options);
-    this.ocSpan = ocSpan;
-    this.otSpan = SpanConverter.toOtelSpan(ocSpan);
-    this.timestampConverter = timestampConverter;
+  OpenTelemetrySpanImpl(io.opentelemetry.api.trace.Span otSpan) {
+    super(
+        SpanContext.create(
+            TraceId.fromBytes(otSpan.getSpanContext().getTraceIdBytes()),
+            SpanId.fromBytes(otSpan.getSpanContext().getSpanIdBytes()),
+            TraceOptions.builder().setIsSampled(true).build(),
+            Tracestate.builder().build()),
+        RECORD_EVENTS_SPAN_OPTIONS);
+    this.otSpan = otSpan;
   }
 
-  /**
-   * Creates and starts a span with the given configuration.
-   *
-   * @param context supplies the trace_id and span_id for the newly started span.
-   * @param name the displayed name for the new span.
-   * @param kind the type of the new span.
-   * @param hasRemoteParent {@code true} if the parentContext is remote. {@code null} if this is a
-   *     root span.
-   * @param parentSpanId the span_id of the parent span, or null if the new span is a root span.
-   * @param traceParams trace parameters like sampler and probability.
-   * @param startEndHandler handler called when the span starts and ends.
-   * @param timestampConverter null if the span is a root span or the parent is not sampled. If the
-   *     parent is sampled, we should use the same converter to ensure ordering between tracing
-   *     events.
-   * @param clock the clock used to get the time.
-   * @return a new and started span.
-   */
-  public static OpenTelemetrySpanImpl startSpan(
-      SpanContext context,
-      String name,
-      @Nullable Span.Kind kind,
-      @Nullable SpanId parentSpanId,
-      @Nullable Boolean hasRemoteParent,
-      TraceParams traceParams,
-      StartEndHandler startEndHandler,
-      @Nullable TimestampConverter timestampConverter,
-      Clock clock) {
-    RecordEventsSpanImpl ocSpan =
-        RecordEventsSpanImpl.startSpan(
-            context,
-            name,
-            kind,
-            parentSpanId,
-            hasRemoteParent,
-            traceParams,
-            startEndHandler,
-            timestampConverter,
-            clock);
-    return new OpenTelemetrySpanImpl(
-        context, RECORD_EVENTS_SPAN_OPTIONS, ocSpan, timestampConverter);
+  @Override
+  public void putAttribute(String key, AttributeValue value) {
+    Preconditions.checkNotNull(key, "key");
+    Preconditions.checkNotNull(value, "value");
+    value.match(
+        arg -> otSpan.setAttribute(key, arg),
+        arg -> otSpan.setAttribute(key, arg),
+        arg -> otSpan.setAttribute(key, arg),
+        arg -> otSpan.setAttribute(key, arg),
+        arg -> null);
+  }
+
+  @Override
+  public void putAttributes(Map<String, AttributeValue> attributes) {
+    Preconditions.checkNotNull(attributes, "attributes");
+    for (Map.Entry<String, AttributeValue> attribute : attributes.entrySet()) {
+      putAttribute(attribute.getKey(), attribute.getValue());
+    }
   }
 
   @Override
   public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
-    ocSpan.addAnnotation(description, attributes);
     AttributesBuilder attributesBuilder = Attributes.builder();
     attributes.forEach(
         (s, attributeValue) ->
@@ -147,7 +107,6 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
 
   @Override
   public void addAnnotation(Annotation annotation) {
-    ocSpan.addAnnotation(annotation);
     AttributesBuilder attributesBuilder = Attributes.builder();
     annotation
         .getAttributes()
@@ -164,13 +123,11 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
 
   @Override
   public void addLink(Link link) {
-    // TODO(@zoercai): log not supported
-    ocSpan.addLink(link);
+    LOGGER.warning("OpenTelemetry does not support links added after a span is created.");
   }
 
   @Override
   public void addMessageEvent(MessageEvent messageEvent) {
-    ocSpan.addMessageEvent(messageEvent);
     otSpan.addEvent(
         String.valueOf(messageEvent.getMessageId()),
         Attributes.of(
@@ -183,24 +140,29 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
   }
 
   @Override
+  public void setStatus(Status status) {
+    Preconditions.checkNotNull(status, "status");
+    otSpan.setStatus(status.isOk() ? StatusCode.OK : StatusCode.ERROR);
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode, String description) {
+    return null;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode) {
+    return null;
+  }
+
+  @Override
   public void end(EndSpanOptions options) {
-    ocSpan.end(options);
     otSpan.end();
   }
 
   @Override
   @SuppressWarnings("ParameterPackage")
   public void end(long timestamp, TimeUnit unit) {}
-
-  /**
-   * Returns the {@code TimestampConverter} used by this {@code Span}.
-   *
-   * @return the {@code TimestampConverter} used by this {@code Span}.
-   */
-  @Nullable
-  TimestampConverter getTimestampConverter() {
-    return timestampConverter;
-  }
 
   @Override
   public io.opentelemetry.api.trace.Span setAttribute(String key, @Nonnull String value) {
@@ -245,16 +207,6 @@ public class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.
   @Override
   public io.opentelemetry.api.trace.Span addEvent(
       String name, Attributes attributes, long timestamp, TimeUnit unit) {
-    return null;
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode) {
-    return null;
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode, String description) {
     return null;
   }
 

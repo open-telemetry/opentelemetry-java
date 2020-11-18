@@ -38,7 +38,10 @@ public class OpenTelemetryContextManager implements ContextManager {
               + "other than OpenTelemetryCtx.");
     }
     OpenTelemetryCtx openTelemetryCtx = (OpenTelemetryCtx) ctx;
-    return wrapContext(unwrapContext(openTelemetryCtx).with((OpenTelemetrySpanImpl) span));
+    if (span instanceof OpenTelemetrySpanImpl) {
+      return wrapContext(unwrapContext(openTelemetryCtx).with((OpenTelemetrySpanImpl) span));
+    }
+    return wrapContext(unwrapContext(openTelemetryCtx).with((OpenTelemetryNoRecordEventsSpanImpl) span));
   }
 
   @Override

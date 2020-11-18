@@ -23,12 +23,10 @@
 package io.opentelemetry.opencensusshim;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.opentelemetry.opencensusshim.SpanConverter.mapKind;
 
 import io.opencensus.common.Clock;
-import io.opencensus.implcore.internal.TimestampConverter;
-import io.opencensus.implcore.trace.RecordEventsSpanImpl;
 import io.opencensus.implcore.trace.internal.RandomHandler;
-import io.opencensus.trace.Link;
 import io.opencensus.trace.Sampler;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Span.Kind;
@@ -40,28 +38,33 @@ import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opencensus.trace.config.TraceConfig;
 import io.opencensus.trace.config.TraceParams;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
+  private static final Tracer TRACER =
+      OpenTelemetry.getGlobalTracer("io.opencensus.opentelemetry.migration");
   private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
-
   private static final TraceOptions SAMPLED_TRACE_OPTIONS =
       TraceOptions.builder().setIsSampled(true).build();
   private static final TraceOptions NOT_SAMPLED_TRACE_OPTIONS =
       TraceOptions.builder().setIsSampled(false).build();
 
-  private final Options options;
   private final String name;
+  private final Options options;
+  private List<Span> parentLinks = Collections.emptyList();
   @Nullable private final Span parent;
   @Nullable private final SpanContext remoteParentSpanContext;
-
   @Nullable private Sampler sampler;
-  private List<Span> parentLinks = Collections.<Span>emptyList();
   @Nullable private Boolean recordEvents;
-
   @Nullable private Kind kind;
 
   @Override
@@ -90,28 +93,78 @@ public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
 
   @Override
   public Span startSpan() {
-    if (remoteParentSpanContext != null) {
-      return startSpanInternal(
-          remoteParentSpanContext,
-          Boolean.TRUE,
-          name,
-          sampler,
-          parentLinks,
-          recordEvents,
-          kind,
-          null);
+    // To determine whether to sample this span
+    TraceParams activeTraceParams = options.traceConfig.getActiveTraceParams();
+    Random random = options.randomHandler.current();
+    TraceId traceId;
+    SpanId spanId = SpanId.generateRandomId(random);
+    Tracestate tracestate = TRACESTATE_DEFAULT;
+    SpanContext parentContext = null;
+    Boolean hasRemoteParent = null;
+    if (remoteParentSpanContext != null && remoteParentSpanContext.isValid()) {
+      parentContext = remoteParentSpanContext;
+      hasRemoteParent = Boolean.TRUE;
+      traceId = parentContext.getTraceId();
+      tracestate = parentContext.getTracestate();
+    } else if (parent != null && parent.getContext().isValid()) {
+      parentContext = parent.getContext();
+      hasRemoteParent = Boolean.FALSE;
+      traceId = parentContext.getTraceId();
+      tracestate = parentContext.getTracestate();
     } else {
-      // This is not a child of a remote Span. Get the parent SpanContext from the parent Span if
-      // any.
-      SpanContext parentContext = null;
-      Boolean hasRemoteParent = null;
-      if (parent != null) {
-        parentContext = parent.getContext();
-        hasRemoteParent = Boolean.FALSE;
-      }
-      return startSpanInternal(
-          parentContext, hasRemoteParent, name, sampler, parentLinks, recordEvents, kind, parent);
+      // New root span.
+      traceId = TraceId.generateRandomId(random);
     }
+    TraceOptions traceOptions =
+        makeSamplingDecision(
+                parentContext,
+                hasRemoteParent,
+                name,
+                sampler,
+                parentLinks,
+                traceId,
+                spanId,
+                activeTraceParams)
+            ? SAMPLED_TRACE_OPTIONS
+            : NOT_SAMPLED_TRACE_OPTIONS;
+    if (!traceOptions.isSampled() && !Boolean.TRUE.equals(recordEvents)) {
+      return OpenTelemetryNoRecordEventsSpanImpl.create(
+          SpanContext.create(traceId, spanId, traceOptions, tracestate));
+    }
+
+    // If sampled
+    io.opentelemetry.api.trace.SpanBuilder otSpanBuidler =
+        TRACER.spanBuilder(name).setStartTimestamp(options.clock.nowNanos(), TimeUnit.NANOSECONDS);
+    if (parent != null && parent instanceof OpenTelemetrySpanImpl) {
+      otSpanBuidler.setParent(Context.root().with((OpenTelemetrySpanImpl) parent));
+    }
+    if (remoteParentSpanContext != null) {
+      otSpanBuidler.addLink(
+          io.opentelemetry.api.trace.SpanContext.create(
+              io.opentelemetry.api.trace.TraceId.bytesToHex(
+                  remoteParentSpanContext.getTraceId().getBytes()),
+              io.opentelemetry.api.trace.SpanId.bytesToHex(
+                  remoteParentSpanContext.getSpanId().getBytes()),
+              TraceFlags.getDefault(),
+              TraceState.getDefault()));
+    }
+    if (kind != null) {
+      otSpanBuidler.setSpanKind(mapKind(kind));
+    }
+    if (!parentLinks.isEmpty()) {
+      for (Span parent : parentLinks) {
+        otSpanBuidler.addLink(
+            io.opentelemetry.api.trace.SpanContext.create(
+                io.opentelemetry.api.trace.TraceId.bytesToHex(
+                    parent.getContext().getTraceId().getBytes()),
+                io.opentelemetry.api.trace.SpanId.bytesToHex(
+                    parent.getContext().getSpanId().getBytes()),
+                TraceFlags.getDefault(),
+                TraceState.getDefault()));
+      }
+    }
+    io.opentelemetry.api.trace.Span otSpan = otSpanBuidler.startSpan();
+    return new OpenTelemetrySpanImpl(otSpan);
   }
 
   private OpenTelemetrySpanBuilderImpl(
@@ -135,73 +188,6 @@ public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
       @Nullable SpanContext remoteParentSpanContext,
       OpenTelemetrySpanBuilderImpl.Options options) {
     return new OpenTelemetrySpanBuilderImpl(spanName, remoteParentSpanContext, null, options);
-  }
-
-  private Span startSpanInternal(
-      @Nullable SpanContext parentContext,
-      @Nullable Boolean hasRemoteParent,
-      String name,
-      @Nullable Sampler sampler,
-      List<Span> parentLinks,
-      @Nullable Boolean recordEvents,
-      @Nullable Kind kind,
-      @Nullable Span parentSpan) {
-    TraceParams activeTraceParams = options.traceConfig.getActiveTraceParams();
-    Random random = options.randomHandler.current();
-    TraceId traceId;
-    SpanId spanId = SpanId.generateRandomId(random);
-    SpanId parentSpanId = null;
-    // TODO(bdrutu): Handle tracestate correctly not just propagate.
-    Tracestate tracestate = TRACESTATE_DEFAULT;
-    if (parentContext == null || !parentContext.isValid()) {
-      // New root span.
-      traceId = TraceId.generateRandomId(random);
-      // This is a root span so no remote or local parent.
-      hasRemoteParent = null;
-    } else {
-      // New child span.
-      traceId = parentContext.getTraceId();
-      parentSpanId = parentContext.getSpanId();
-      tracestate = parentContext.getTracestate();
-    }
-    TraceOptions traceOptions =
-        makeSamplingDecision(
-                parentContext,
-                hasRemoteParent,
-                name,
-                sampler,
-                parentLinks,
-                traceId,
-                spanId,
-                activeTraceParams)
-            ? SAMPLED_TRACE_OPTIONS
-            : NOT_SAMPLED_TRACE_OPTIONS;
-
-    if (traceOptions.isSampled() || Boolean.TRUE.equals(recordEvents)) {
-      // Pass the timestamp converter from the parent to ensure that the recorded events are in
-      // the right order. Implementation uses System.nanoTime() which is monotonically increasing.
-      TimestampConverter timestampConverter = null;
-      if (parentSpan instanceof OpenTelemetrySpanImpl) {
-        OpenTelemetrySpanImpl parentRecordEventsSpan = (OpenTelemetrySpanImpl) parentSpan;
-        timestampConverter = parentRecordEventsSpan.getTimestampConverter();
-      }
-      Span span =
-          OpenTelemetrySpanImpl.startSpan(
-              SpanContext.create(traceId, spanId, traceOptions, tracestate),
-              name,
-              kind,
-              parentSpanId,
-              hasRemoteParent,
-              activeTraceParams,
-              options.startEndHandler,
-              timestampConverter,
-              options.clock);
-      linkSpans(span, parentLinks);
-      return span;
-    } else {
-      return OpenTelemetryNoRecordEventsSpanImpl.create(
-          SpanContext.create(traceId, spanId, traceOptions, tracestate));
-    }
   }
 
   private static boolean makeSamplingDecision(
@@ -237,29 +223,13 @@ public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
     return false;
   }
 
-  private static void linkSpans(Span span, List<Span> parentLinks) {
-    if (!parentLinks.isEmpty()) {
-      Link childLink = Link.fromSpanContext(span.getContext(), Link.Type.CHILD_LINKED_SPAN);
-      for (Span linkedSpan : parentLinks) {
-        linkedSpan.addLink(childLink);
-        span.addLink(Link.fromSpanContext(linkedSpan.getContext(), Link.Type.PARENT_LINKED_SPAN));
-      }
-    }
-  }
-
   static final class Options {
     private final RandomHandler randomHandler;
-    private final RecordEventsSpanImpl.StartEndHandler startEndHandler;
     private final Clock clock;
     private final TraceConfig traceConfig;
 
-    Options(
-        RandomHandler randomHandler,
-        RecordEventsSpanImpl.StartEndHandler startEndHandler,
-        Clock clock,
-        TraceConfig traceConfig) {
+    Options(RandomHandler randomHandler, Clock clock, TraceConfig traceConfig) {
       this.randomHandler = checkNotNull(randomHandler, "randomHandler");
-      this.startEndHandler = checkNotNull(startEndHandler, "startEndHandler");
       this.clock = checkNotNull(clock, "clock");
       this.traceConfig = checkNotNull(traceConfig, "traceConfig");
     }

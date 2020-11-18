@@ -7,7 +7,6 @@ package io.opentelemetry.opencensusshim;
 
 import io.opencensus.common.Clock;
 import io.opencensus.implcore.common.MillisClock;
-import io.opencensus.implcore.trace.RecordEventsSpanImpl.StartEndHandler;
 import io.opencensus.implcore.trace.config.TraceConfigImpl;
 import io.opencensus.implcore.trace.internal.RandomHandler;
 import io.opencensus.implcore.trace.propagation.PropagationComponentImpl;
@@ -33,8 +32,7 @@ public final class OpenTelemetryTraceComponentImpl extends TraceComponent {
   public OpenTelemetryTraceComponentImpl() {
     clock = MillisClock.getInstance();
     RandomHandler randomHandler = new ThreadLocalRandomHandler();
-    StartEndHandler startEndHandler = new NoopOpenCensusStartEndHandler();
-    tracer = new OpenTelemetryTracerImpl(randomHandler, startEndHandler, clock, traceConfig);
+    tracer = new OpenTelemetryTracerImpl(randomHandler, clock, traceConfig);
   }
 
   @Override
