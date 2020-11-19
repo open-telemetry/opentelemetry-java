@@ -19,7 +19,22 @@ Methods to create the builders remain in the same place as they were before.
 the default (thread local) ContextStorage will be used for the Context implementation, regardless of what SPI implementations are
 available.
 
+#### Miscellaneous:
+
+- Invalid W3C `TraceState` entries will now be silently dropped, rather than causing the invalidation of the entire `TraceState`.
+
 ### SDK
+
+#### Breaking Changes:
+
+- The builder class for the `OpenTelemetrySdk` now strictly requires its components to be SDK implementations. 
+You can only build an `OpenTelemetrySdk` with `TracerSdkProvider` and `MeterSdkProvider` instances.
+
+#### Enhancements:
+
+- An API has been added to the SDK's MeterProvider implementation (`MeterSdkProvider`) that allows the end-user to configure
+how various metrics will be aggregated. This API should be considered a precursor to a full "Views" API, and will most likely
+evolve over the coming months before the metrics implementation is complete. See the javadoc for `MeterSdkProvider.registerView()` for details.
 
 #### Miscellaneous:
 
@@ -28,6 +43,15 @@ available.
 
 ### Extensions
 
+#### Breaking Changes:
+
+- The `@WithSpan` annotation has been moved to the `io.opentelemetry.extension.annotations` package in the `opentelemetry-extension-annotations` module 
+
+#### Bugfixes:
+
+- The memory pool metrics provided by the MemoryPools class in the `opentelemetry-extension-runtime-metrics` module
+have been fixed to properly report the committed memory values.
+ 
 #### Enhancements:
 
 - A new module has been added to assist with propagating the OTel context in kotlin co-routines. 
@@ -43,6 +67,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 
 - The W3C Baggage Propagator is now available.
 - The B3 Propagator now handles both single and multi-header formats.
+- The B3 Propagator defaults to injecting the single B3 header, rather than the multi-header format.
 - Mutating a method on `Span` now returns the `Span` to enable call-chaining.
 
 #### Bug fixes
