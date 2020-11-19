@@ -344,17 +344,6 @@ public interface SpanData {
     StatusCode getStatusCode();
 
     /**
-     * Returns the status code.
-     *
-     * @deprecated Please use {@link #getStatusCode()}. This method will be removed in the next
-     *     release.
-     */
-    @Deprecated
-    default StatusCode getCanonicalCode() {
-      return getStatusCode();
-    }
-
-    /**
      * Returns the description of this {@code Status} for human consumption.
      *
      * @return the description of this {@code Status}.
