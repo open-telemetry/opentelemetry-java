@@ -54,7 +54,12 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
 
-  private final ContextPropagators propagators;
+  private volatile ContextPropagators propagators;
+
+  @Override
+  public void setPropagators(ContextPropagators propagators) {
+    this.propagators = propagators;
+  }
 
   @Override
   public TracerProvider getTracerProvider() {
@@ -109,6 +114,7 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   @Override
+  @Deprecated
   public Builder toBuilder() {
     return new Builder()
         .setTracerProvider(tracerProvider)

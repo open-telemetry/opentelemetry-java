@@ -5,8 +5,8 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-description = 'OpenTelemetry Extension : Auto Annotations'
-ext.moduleName = "io.opentelemetry.extension.auto.annotations"
+description = 'OpenTelemetry Extension Annotations'
+ext.moduleName = "io.opentelemetry.extension.annotations"
 
 dependencies {
     implementation project(':opentelemetry-api')

@@ -25,7 +25,7 @@ rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all",
         ":opentelemetry-api",
         ":opentelemetry-context",
-        ":opentelemetry-extension-auto-annotations",
+        ":opentelemetry-extension-annotations",
         ":opentelemetry-extension-kotlin",
         ":opentelemetry-extension-runtime-metrics",
         ":opentelemetry-extension-trace-propagators",
