@@ -61,7 +61,7 @@ public class MultiSpanExporterBenchmark {
   public final void setup() {
     SpanExporter[] exporter = new SpanExporter[exporterCount];
     Arrays.fill(exporter, new NoopSpanExporter());
-    this.exporter = SpanExporter.delegating(Arrays.asList(exporter));
+    this.exporter = SpanExporter.composite(Arrays.asList(exporter));
 
     TestSpanData[] spans = new TestSpanData[spanCount];
     for (int i = 0; i < spans.length; i++) {

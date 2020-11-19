@@ -32,7 +32,7 @@ class MultiSpanExporterTest {
 
   @Test
   void empty() {
-    SpanExporter multiSpanExporter = SpanExporter.delegating(Collections.emptyList());
+    SpanExporter multiSpanExporter = SpanExporter.composite(Collections.emptyList());
     multiSpanExporter.export(SPAN_LIST);
     multiSpanExporter.shutdown();
   }
@@ -40,7 +40,7 @@ class MultiSpanExporterTest {
   @Test
   void oneSpanExporter() {
     SpanExporter multiSpanExporter =
-        SpanExporter.delegating(Collections.singletonList(spanExporter1));
+        SpanExporter.composite(Collections.singletonList(spanExporter1));
 
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(CompletableResultCode.ofSuccess());
     assertThat(multiSpanExporter.export(SPAN_LIST).isSuccess()).isTrue();
@@ -58,7 +58,7 @@ class MultiSpanExporterTest {
   @Test
   void twoSpanExporter() {
     SpanExporter multiSpanExporter =
-        SpanExporter.delegating(Arrays.asList(spanExporter1, spanExporter2));
+        SpanExporter.composite(Arrays.asList(spanExporter1, spanExporter2));
 
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(CompletableResultCode.ofSuccess());
     when(spanExporter2.export(same(SPAN_LIST))).thenReturn(CompletableResultCode.ofSuccess());
@@ -82,7 +82,7 @@ class MultiSpanExporterTest {
   @Test
   void twoSpanExporter_OneReturnFailure() {
     SpanExporter multiSpanExporter =
-        SpanExporter.delegating(Arrays.asList(spanExporter1, spanExporter2));
+        SpanExporter.composite(Arrays.asList(spanExporter1, spanExporter2));
 
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(CompletableResultCode.ofSuccess());
     when(spanExporter2.export(same(SPAN_LIST))).thenReturn(CompletableResultCode.ofFailure());
@@ -106,7 +106,7 @@ class MultiSpanExporterTest {
   @Test
   void twoSpanExporter_FirstThrows() {
     SpanExporter multiSpanExporter =
-        SpanExporter.delegating(Arrays.asList(spanExporter1, spanExporter2));
+        SpanExporter.composite(Arrays.asList(spanExporter1, spanExporter2));
 
     Mockito.doThrow(new IllegalArgumentException("No export for you."))
         .when(spanExporter1)

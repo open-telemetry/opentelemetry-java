@@ -224,7 +224,7 @@ class DisruptorAsyncSpanProcessorTest {
     IncrementSpanProcessor incrementSpanProcessor2 = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.builder(
-                SpanProcessor.delegating(
+                SpanProcessor.composite(
                     Arrays.asList(incrementSpanProcessor1, incrementSpanProcessor2)))
             .build();
     disruptorAsyncSpanProcessor.onStart(Context.root(), readWriteSpan);

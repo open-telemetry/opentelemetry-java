@@ -43,7 +43,7 @@ class MultiSpanProcessorTest {
 
   @Test
   void empty() {
-    SpanProcessor multiSpanProcessor = SpanProcessor.delegating(Collections.emptyList());
+    SpanProcessor multiSpanProcessor = SpanProcessor.composite(Collections.emptyList());
     multiSpanProcessor.onStart(Context.root(), readWriteSpan);
     multiSpanProcessor.onEnd(readableSpan);
     multiSpanProcessor.shutdown();
@@ -52,7 +52,7 @@ class MultiSpanProcessorTest {
   @Test
   void oneSpanProcessor() {
     SpanProcessor multiSpanProcessor =
-        SpanProcessor.delegating(Collections.singletonList(spanProcessor1));
+        SpanProcessor.composite(Collections.singletonList(spanProcessor1));
     multiSpanProcessor.onStart(Context.root(), readWriteSpan);
     verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
 
@@ -71,7 +71,7 @@ class MultiSpanProcessorTest {
     when(spanProcessor1.isStartRequired()).thenReturn(false);
     when(spanProcessor1.isEndRequired()).thenReturn(false);
     SpanProcessor multiSpanProcessor =
-        SpanProcessor.delegating(Collections.singletonList(spanProcessor1));
+        SpanProcessor.composite(Collections.singletonList(spanProcessor1));
 
     verify(spanProcessor1).isStartRequired();
     verify(spanProcessor1).isEndRequired();
@@ -95,7 +95,7 @@ class MultiSpanProcessorTest {
   @Test
   void twoSpanProcessor() {
     SpanProcessor multiSpanProcessor =
-        SpanProcessor.delegating(Arrays.asList(spanProcessor1, spanProcessor2));
+        SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
     multiSpanProcessor.onStart(Context.root(), readWriteSpan);
     verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
     verify(spanProcessor2).onStart(same(Context.root()), same(readWriteSpan));
@@ -118,7 +118,7 @@ class MultiSpanProcessorTest {
     when(spanProcessor1.isEndRequired()).thenReturn(false);
     when(spanProcessor2.isStartRequired()).thenReturn(false);
     SpanProcessor multiSpanProcessor =
-        SpanProcessor.delegating(Arrays.asList(spanProcessor1, spanProcessor2));
+        SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
 
     assertThat(multiSpanProcessor.isStartRequired()).isTrue();
     assertThat(multiSpanProcessor.isEndRequired()).isTrue();
