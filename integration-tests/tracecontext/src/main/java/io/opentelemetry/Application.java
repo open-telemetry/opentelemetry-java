@@ -35,10 +35,7 @@ public class Application {
   static {
     openTelemetry =
         OpenTelemetry.get().toBuilder()
-            .setPropagators(
-                ContextPropagators.builder()
-                    .addTextMapPropagator(HttpTraceContext.getInstance())
-                    .build())
+            .setPropagators(ContextPropagators.create(HttpTraceContext.getInstance()))
             .build();
     // set the updated instance as the global instance, just to make sure.
     OpenTelemetry.set(openTelemetry);

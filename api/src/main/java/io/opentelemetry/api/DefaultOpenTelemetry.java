@@ -117,7 +117,7 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   protected static class Builder implements OpenTelemetryBuilder<Builder> {
-    protected ContextPropagators propagators = ContextPropagators.builder().build();
+    protected ContextPropagators propagators = ContextPropagators.noop();
 
     protected TracerProvider tracerProvider;
     protected MeterProvider meterProvider;

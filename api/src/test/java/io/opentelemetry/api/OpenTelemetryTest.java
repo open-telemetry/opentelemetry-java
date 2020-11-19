@@ -154,7 +154,7 @@ class OpenTelemetryTest {
 
   @Test
   void testPropagatorsSet() {
-    ContextPropagators propagators = ContextPropagators.builder().build();
+    ContextPropagators propagators = ContextPropagators.noop();
     OpenTelemetry.setGlobalPropagators(propagators);
     assertThat(OpenTelemetry.getGlobalPropagators()).isEqualTo(propagators);
   }

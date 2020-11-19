@@ -55,10 +55,7 @@ public class OpenTelemetryRule extends ExternalResource {
 
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
-            .setPropagators(
-                ContextPropagators.builder()
-                    .addTextMapPropagator(HttpTraceContext.getInstance())
-                    .build())
+            .setPropagators(ContextPropagators.create(HttpTraceContext.getInstance()))
             .setTracerProvider(tracerProvider)
             .build();
 

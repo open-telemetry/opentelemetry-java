@@ -5,6 +5,8 @@
 
 package io.opentelemetry.context.propagation;
 
+import static java.util.Objects.requireNonNull;
+
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -71,25 +73,29 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface ContextPropagators {
 
   /**
-   * Returns a {@link ContextPropagatorsBuilder} used to construct a new {@code ContextPropagators}
-   * object with the specified propagators.
-   *
-   * <p>Invocation order of {@code TextMapPropagator#inject()} and {@code
-   * TextMapPropagator#extract()} for registered trace propagators is undefined.
-   *
-   * <p>This is a example of a {@code ContextPropagators} object being created:
+   * Returns a {@link ContextPropagators} which can be used to extract and inject context in text
+   * payloads with the given {@link TextMapPropagator}. Use {@link
+   * TextMapPropagator#composite(TextMapPropagator...)} to register multiple propagators, which will
+   * all be executed when extracting or injecting.
    *
    * <pre>{@code
-   * ContextPropagators propagators = DefaultContextPropagators.builder()
-   *     .addTextMapPropagator(new HttpTraceContext())
-   *     .addTextMapPropagator(new HttpBaggage())
-   *     .addTextMapPropagator(new MyCustomContextPropagator())
-   *     .build();
+   * ContextPropagators propagators = ContextPropagators.create(
+   *   TextMapPropagator.composite(
+   *     HttpTraceContext.getInstance(),
+   *     W3CBaggagePropagator.getInstance(),
+   *     new MyCustomContextPropagator()));
    * }</pre>
    */
   @SuppressWarnings("deprecation")
-  static ContextPropagatorsBuilder builder() {
-    return DefaultContextPropagators.builder();
+  static ContextPropagators create(TextMapPropagator textPropagator) {
+    requireNonNull(textPropagator, "textPropagator");
+    return new DefaultContextPropagators(textPropagator);
+  }
+
+  /** Returns a {@link ContextPropagators} which performs no injection or extraction. */
+  @SuppressWarnings("deprecation")
+  static ContextPropagators noop() {
+    return DefaultContextPropagators.noop();
   }
 
   /**
