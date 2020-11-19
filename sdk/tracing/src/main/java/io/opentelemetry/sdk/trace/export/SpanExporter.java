@@ -46,6 +46,12 @@ public interface SpanExporter {
     for (SpanExporter exporter : exporters) {
       exportersList.add(exporter);
     }
+    if (exportersList.isEmpty()) {
+      return NoopSpanExporter.getInstance();
+    }
+    if (exportersList.size() == 1) {
+      return exportersList.get(0);
+    }
     return MultiSpanExporter.create(exportersList);
   }
 

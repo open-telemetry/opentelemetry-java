@@ -36,6 +36,12 @@ public interface SpanProcessor {
     for (SpanProcessor processor : processors) {
       processorsList.add(processor);
     }
+    if (processorsList.isEmpty()) {
+      return NoopSpanProcessor.getInstance();
+    }
+    if (processorsList.size() == 1) {
+      return processorsList.get(0);
+    }
     return MultiSpanProcessor.create(processorsList);
   }
 
