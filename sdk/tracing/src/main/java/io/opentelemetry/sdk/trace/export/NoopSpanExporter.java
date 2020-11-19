@@ -1,8 +1,13 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.trace.export;
 
-import java.util.Collection;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.Collection;
 
 final class NoopSpanExporter implements SpanExporter {
 
