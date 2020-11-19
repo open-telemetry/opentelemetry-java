@@ -182,6 +182,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
     /**
      * Add a SpanProcessor to the span pipeline that will be built.
+     *
      * @return this
      */
     public Builder addSpanProcessor(SpanProcessor spanProcessor) {

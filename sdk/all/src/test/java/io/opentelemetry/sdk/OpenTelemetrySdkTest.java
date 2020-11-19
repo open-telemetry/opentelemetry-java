@@ -139,6 +139,7 @@ class OpenTelemetrySdkTest {
         .asList()
         .containsExactlyInAnyOrder(spanProcessor1, spanProcessor2);
   }
+
   @Test
   void testTracerProviderAccess() {
     OpenTelemetrySdk openTelemetry =
