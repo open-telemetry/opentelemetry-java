@@ -418,6 +418,8 @@ configure(opentelemetryProjects) {
         // build if error prone releases a new version with a new check
         errorprone libraries.errorprone_core
 
+        annotationProcessor "com.google.guava:guava-beta-checker:1.0"
+
         // Workaround for @javax.annotation.Generated
         // see: https://github.com/grpc/grpc-java/issues/3633
         compileOnly libraries.javax_annotations

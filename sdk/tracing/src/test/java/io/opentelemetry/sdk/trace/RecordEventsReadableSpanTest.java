@@ -631,11 +631,7 @@ class RecordEventsReadableSpanTest {
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
         Event expectedEvent =
-            Event.create(
-                START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
-                "event2",
-                Attributes.empty(),
-                0);
+            Event.create(START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
         assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
         assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
@@ -646,11 +642,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
       Event expectedEvent =
-          Event.create(
-              START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
-              "event2",
-              Attributes.empty(),
-              0);
+          Event.create(START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
       assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
     }
   }

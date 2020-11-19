@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.common;
 
-import com.google.common.util.concurrent.MoreExecutors;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -23,7 +23,7 @@ public class DaemonThreadFactory implements ThreadFactory {
 
   @Override
   public Thread newThread(Runnable runnable) {
-    Thread t = MoreExecutors.platformThreadFactory().newThread(runnable);
+    Thread t = Executors.defaultThreadFactory().newThread(runnable);
     try {
       t.setDaemon(true);
       t.setName(namePrefix + "_" + counter.incrementAndGet());

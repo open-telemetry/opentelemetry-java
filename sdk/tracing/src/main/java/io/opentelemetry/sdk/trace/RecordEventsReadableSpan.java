@@ -10,7 +10,6 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -82,7 +81,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
-  private final EvictingQueue<Event> events;
+  private final List<Event> events;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
@@ -126,7 +125,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
-    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
+    this.events = new ArrayList<>();
     this.traceConfig = traceConfig;
   }
 
@@ -373,7 +372,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
-      events.add(timedEvent);
+      if (events.size() < traceConfig.getMaxNumberOfEvents()) {
+        events.add(timedEvent);
+      }
       totalRecordedEvents++;
     }
   }
