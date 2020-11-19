@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import com.google.common.primitives.UnsignedInts;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,7 +27,7 @@ final class SpanBucket {
   }
 
   void add(ReadableSpan span) {
-    spans.set(UnsignedInts.remainder(index.getAndIncrement(), bucketSize), span);
+    spans.set(remainder(index.getAndIncrement(), bucketSize), span);
   }
 
   int size() {
@@ -49,5 +48,9 @@ final class SpanBucket {
         break;
       }
     }
+  }
+
+  private static int remainder(int dividend, int divisor) {
+    return (int) (Integer.toUnsignedLong(dividend) % Integer.toUnsignedLong(divisor));
   }
 }

@@ -30,10 +30,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
@@ -126,21 +127,37 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     }
 
     final CompletableResultCode result = new CompletableResultCode();
-    Futures.addCallback(
-        Futures.allAsList(listenableFutures),
-        new FutureCallback<List<PostSpansResponse>>() {
-          @Override
-          public void onSuccess(@Nullable List<Collector.PostSpansResponse> response) {
-            result.succeed();
-          }
+    AtomicInteger pending = new AtomicInteger(listenableFutures.size());
+    AtomicReference<Throwable> error = new AtomicReference<>();
+    for (ListenableFuture<Collector.PostSpansResponse> future : listenableFutures) {
+      Futures.addCallback(
+          future,
+          new FutureCallback<PostSpansResponse>() {
+            @Override
+            public void onSuccess(Collector.PostSpansResponse result) {
+              fulfill();
+            }
 
-          @Override
-          public void onFailure(Throwable t) {
-            logger.log(Level.WARNING, "Failed to export spans", t);
-            result.fail();
-          }
-        },
-        MoreExecutors.directExecutor());
+            @Override
+            public void onFailure(Throwable t) {
+              error.set(t);
+              fulfill();
+            }
+
+            private void fulfill() {
+              if (pending.decrementAndGet() == 0) {
+                Throwable t = error.get();
+                if (t != null) {
+                  logger.log(Level.WARNING, "Failed to export spans", t);
+                  result.fail();
+                } else {
+                  result.succeed();
+                }
+              }
+            }
+          },
+          MoreExecutors.directExecutor());
+    }
     return result;
   }
 
