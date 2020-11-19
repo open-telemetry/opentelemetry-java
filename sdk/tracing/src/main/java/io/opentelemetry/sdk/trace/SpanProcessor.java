@@ -22,8 +22,8 @@ public interface SpanProcessor {
    * Returns a {@link SpanProcessor} which simply delegates all processing to the {@code processors}
    * in order.
    */
-  static SpanProcessor delegating(SpanProcessor... processors) {
-    return delegating(Arrays.asList(processors));
+  static SpanProcessor composite(SpanProcessor... processors) {
+    return composite(Arrays.asList(processors));
   }
 
   /**
@@ -31,7 +31,7 @@ public interface SpanProcessor {
    * in order.
    */
   @SuppressWarnings("deprecation")
-  static SpanProcessor delegating(Iterable<SpanProcessor> processors) {
+  static SpanProcessor composite(Iterable<SpanProcessor> processors) {
     List<SpanProcessor> processorsList = new ArrayList<>();
     for (SpanProcessor processor : processors) {
       processorsList.add(processor);

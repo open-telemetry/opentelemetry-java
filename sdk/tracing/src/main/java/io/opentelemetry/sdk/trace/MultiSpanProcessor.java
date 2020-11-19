@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Implementation of the {@code SpanProcessor} that simply forwards all received events to a list of
  * {@code SpanProcessor}s.
  *
- * @deprecated Use {@link SpanProcessor#delegating(SpanProcessor...)}
+ * @deprecated Use {@link SpanProcessor#composite(SpanProcessor...)}
  */
 @Deprecated
 public final class MultiSpanProcessor implements SpanProcessor {
@@ -31,7 +31,7 @@ public final class MultiSpanProcessor implements SpanProcessor {
    * @param spanProcessorList the {@code List} of {@code SpanProcessor}s.
    * @return a new {@code MultiSpanProcessor}.
    * @throws NullPointerException if the {@code spanProcessorList} is {@code null}.
-   * @deprecated Use {@link SpanProcessor#delegating(SpanProcessor...)}
+   * @deprecated Use {@link SpanProcessor#composite(SpanProcessor...)}
    */
   @Deprecated
   public static SpanProcessor create(List<SpanProcessor> spanProcessorList) {
