@@ -98,7 +98,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   @Deprecated
   public Builder toBuilder() {
     return new Builder()
-        .setTracerProvider(getTracerProvider())
+        .setTracerProvider(((ObfuscatedTracerProvider) getTracerProvider()).unobfuscate())
         .setMeterProvider(getMeterProvider())
         .setPropagators(getPropagators())
         .setClock(clock)

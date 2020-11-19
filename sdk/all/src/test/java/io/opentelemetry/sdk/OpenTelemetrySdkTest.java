@@ -70,7 +70,7 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void testReconfigure() {
+  void testConfigure() {
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
@@ -89,7 +89,29 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void testReconfigure_justClockAndResource() {
+  @SuppressWarnings("deprecation") // Testing deprecated behavior
+  void testPartialReconfigure() {
+    Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setMeterProvider(meterProvider)
+            .setPropagators(propagators)
+            .setClock(clock)
+            .build()
+            .toBuilder()
+            .setResource(resource)
+            .build();
+    assertThat(((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate())
+        .isEqualTo(tracerProvider);
+    assertThat(openTelemetry.getMeterProvider()).isEqualTo(meterProvider);
+    assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
+    assertThat(openTelemetry.getResource()).isEqualTo(resource);
+    assertThat(openTelemetry.getClock()).isEqualTo(clock);
+  }
+
+  @Test
+  void testConfigure_justClockAndResource() {
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder().setClock(clock).setResource(resource).build();
