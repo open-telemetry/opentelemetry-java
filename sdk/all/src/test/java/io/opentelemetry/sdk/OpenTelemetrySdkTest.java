@@ -20,6 +20,8 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.MultiSpanProcessor;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,7 +72,7 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void testReconfigure() {
+  void building() {
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
@@ -117,6 +119,26 @@ class OpenTelemetrySdkTest {
     assertThat(openTelemetry.getClock()).isSameAs(clock);
   }
 
+  @Test
+  void addSpanProcessors() {
+    SpanProcessor spanProcessor1 = mock(SpanProcessor.class);
+    SpanProcessor spanProcessor2 = mock(SpanProcessor.class);
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .addSpanProcessor(spanProcessor1)
+            .addSpanProcessor(spanProcessor2)
+            .build();
+
+    TracerProvider tracerProvider = openTelemetrySdk.getTracerProvider();
+    assertThat(tracerProvider)
+        .extracting("delegate")
+        .extracting("sharedState")
+        .extracting("activeSpanProcessor")
+        .isInstanceOf(MultiSpanProcessor.class)
+        .extracting("spanProcessorsAll")
+        .asList()
+        .containsExactlyInAnyOrder(spanProcessor1, spanProcessor2);
+  }
   @Test
   void testTracerProviderAccess() {
     OpenTelemetrySdk openTelemetry =

@@ -19,8 +19,11 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -109,6 +112,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   public static class Builder extends DefaultOpenTelemetry.Builder {
     private Clock clock;
     private Resource resource;
+    private final List<SpanProcessor> spanProcessors = new ArrayList<>();
 
     /**
      * Sets the {@link TracerSdkProvider} to use. This can be used to configure tracing settings by
@@ -177,12 +181,25 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     }
 
     /**
+     * Add a SpanProcessor to the span pipeline that will be built.
+     * @return this
+     */
+    public Builder addSpanProcessor(SpanProcessor spanProcessor) {
+      spanProcessors.add(spanProcessor);
+      return this;
+    }
+
+    /**
      * Returns a new {@link OpenTelemetrySdk} built with the configuration of this {@link Builder}.
      */
     @Override
     public OpenTelemetrySdk build() {
       MeterProvider meterProvider = buildMeterProvider();
-      TracerProvider tracerProvider = buildTracerProvider();
+      TracerSdkProvider tracerProvider = buildTracerProvider();
+
+      for (SpanProcessor spanProcessor : spanProcessors) {
+        tracerProvider.addSpanProcessor(spanProcessor);
+      }
 
       OpenTelemetrySdk sdk =
           new OpenTelemetrySdk(
@@ -198,14 +215,14 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       return sdk;
     }
 
-    private TracerProvider buildTracerProvider() {
+    private TracerSdkProvider buildTracerProvider() {
       TracerProvider tracerProvider = super.tracerProvider;
       if (tracerProvider != null) {
         if (!(tracerProvider instanceof TracerSdkProvider)) {
           throw new IllegalStateException(
               "The OpenTelemetrySdk can only be configured with a TracerSdkProvider");
         }
-        return tracerProvider;
+        return (TracerSdkProvider) tracerProvider;
       }
       TracerSdkProvider.Builder tracerProviderBuilder = TracerSdkProvider.builder();
       if (clock != null) {
