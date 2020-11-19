@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opencensusshim;
 
+import io.opencensus.common.Duration;
 import io.opencensus.exporter.metrics.util.IntervalMetricReader;
 import io.opencensus.exporter.metrics.util.MetricExporter;
 import io.opencensus.exporter.metrics.util.MetricReader;
@@ -42,11 +43,16 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
 
   public static OpenTelemetryMetricsExporter createAndRegister(
       io.opentelemetry.sdk.metrics.export.MetricExporter otelExporter) {
-    return new OpenTelemetryMetricsExporter(otelExporter);
+    return new OpenTelemetryMetricsExporter(otelExporter, Duration.create(60, 0));
+  }
+
+  public static OpenTelemetryMetricsExporter createAndRegister(
+      io.opentelemetry.sdk.metrics.export.MetricExporter otelExporter, Duration exportInterval) {
+    return new OpenTelemetryMetricsExporter(otelExporter, exportInterval);
   }
 
   private OpenTelemetryMetricsExporter(
-      io.opentelemetry.sdk.metrics.export.MetricExporter otelExporter) {
+      io.opentelemetry.sdk.metrics.export.MetricExporter otelExporter, Duration exportInterval) {
     this.otelExporter = otelExporter;
     IntervalMetricReader.Options.Builder options = IntervalMetricReader.Options.builder();
     MetricReader reader =
@@ -55,12 +61,13 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
                 .setMetricProducerManager(Metrics.getExportComponent().getMetricProducerManager())
                 .setSpanName(EXPORTER_NAME)
                 .build());
-    intervalMetricReader = IntervalMetricReader.create(this, reader, options.build());
+    intervalMetricReader =
+        IntervalMetricReader.create(
+            this, reader, options.setExportInterval(exportInterval).build());
   }
 
   @Override
   public void export(Collection<Metric> metrics) {
-    LOGGER.info("Exporting metrics");
     ArrayList<MetricData> metricData = new ArrayList<>();
     for (Metric metric : metrics) {
       for (TimeSeries timeSeries : metric.getTimeSeriesList()) {
@@ -146,12 +153,10 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
         }
         MetricData.Type metricDataType = mapType(type);
         if (metricDataType != null) {
-          // TODO(@zoercai): resource, attributes, instrumentationLibraryInfo need to be
-          // added/mapped properly
           metricData.add(
               MetricData.create(
                   Resource.getDefault(),
-                  InstrumentationLibraryInfo.create("das", "1"),
+                  InstrumentationLibraryInfo.getEmpty(),
                   metric.getMetricDescriptor().getName(),
                   metric.getMetricDescriptor().getDescription(),
                   metric.getMetricDescriptor().getUnit(),
@@ -160,7 +165,9 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
         }
       }
     }
-    otelExporter.export(metricData);
+    if (!metricData.isEmpty()) {
+      otelExporter.export(metricData);
+    }
   }
 
   private static MetricData.Type mapType(MetricDescriptor.Type type) {
