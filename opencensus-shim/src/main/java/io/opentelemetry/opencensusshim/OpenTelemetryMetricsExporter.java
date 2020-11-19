@@ -31,12 +31,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 
 public class OpenTelemetryMetricsExporter extends MetricExporter {
-  private static final String EXPORTER_NAME = "OpenTelemetryMetricExporter";
   private static final Logger LOGGER =
       Logger.getLogger(OpenTelemetryMetricsExporter.class.getName());
+
+  private static final String EXPORTER_NAME = "OpenTelemetryMetricExporter";
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create("io.opentelemetry.opencensusshim", null);
 
   private final IntervalMetricReader intervalMetricReader;
   private final io.opentelemetry.sdk.metrics.export.MetricExporter otelExporter;
@@ -72,17 +74,16 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
     for (Metric metric : metrics) {
       for (TimeSeries timeSeries : metric.getTimeSeriesList()) {
         LabelsBuilder labelsBuilder = Labels.builder();
-        IntStream.range(0, metric.getMetricDescriptor().getLabelKeys().size())
-            .forEach(
-                i ->
-                    labelsBuilder.put(
-                        metric.getMetricDescriptor().getLabelKeys().get(i).getKey(),
-                        Objects.requireNonNull(timeSeries.getLabelValues().get(i).getValue())));
+        for (int i = 0; i < metric.getMetricDescriptor().getLabelKeys().size(); i++) {
+          labelsBuilder.put(
+              metric.getMetricDescriptor().getLabelKeys().get(i).getKey(),
+              Objects.requireNonNull(timeSeries.getLabelValues().get(i).getValue()));
+        }
         Labels labels = labelsBuilder.build();
         ArrayList<MetricData.Point> points = new ArrayList<>();
         MetricDescriptor.Type type = null;
         for (Point point : timeSeries.getPoints()) {
-          long epochNanos =
+          long timestampNanos =
               TimeUnit.SECONDS.toNanos(point.getTimestamp().getSeconds())
                   + point.getTimestamp().getNanos();
           type = metric.getMetricDescriptor().getType();
@@ -91,8 +92,8 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             case CUMULATIVE_INT64:
               points.add(
                   LongPoint.create(
-                      epochNanos,
-                      epochNanos,
+                      timestampNanos,
+                      timestampNanos,
                       labels,
                       point
                           .getValue()
@@ -107,8 +108,8 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             case CUMULATIVE_DOUBLE:
               points.add(
                   DoublePoint.create(
-                      epochNanos,
-                      epochNanos,
+                      timestampNanos,
+                      timestampNanos,
                       labels,
                       point
                           .getValue()
@@ -122,8 +123,8 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             case SUMMARY:
               points.add(
                   SummaryPoint.create(
-                      epochNanos,
-                      epochNanos,
+                      timestampNanos,
+                      timestampNanos,
                       labels,
                       point
                           .getValue()
@@ -156,7 +157,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
           metricData.add(
               MetricData.create(
                   Resource.getDefault(),
-                  InstrumentationLibraryInfo.getEmpty(),
+                  INSTRUMENTATION_LIBRARY_INFO,
                   metric.getMetricDescriptor().getName(),
                   metric.getMetricDescriptor().getDescription(),
                   metric.getMetricDescriptor().getUnit(),
