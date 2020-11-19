@@ -29,8 +29,8 @@ public interface SpanExporter {
    * <p>Can be used to export to multiple backends using the same {@code SpanProcessor} like a
    * {@code SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
    */
-  static SpanExporter delegating(SpanExporter... exporters) {
-    return delegating(Arrays.asList(exporters));
+  static SpanExporter composite(SpanExporter... exporters) {
+    return composite(Arrays.asList(exporters));
   }
 
   /**
@@ -41,7 +41,7 @@ public interface SpanExporter {
    * {@code SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
    */
   @SuppressWarnings("deprecation")
-  static SpanExporter delegating(Iterable<SpanExporter> exporters) {
+  static SpanExporter composite(Iterable<SpanExporter> exporters) {
     List<SpanExporter> exportersList = new ArrayList<>();
     for (SpanExporter exporter : exporters) {
       exportersList.add(exporter);
