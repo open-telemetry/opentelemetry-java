@@ -4,6 +4,22 @@
 
 ### API
 
+#### Miscellaneous
+
+- The `toBuilder()` method on the OpenTelemetry class has been deprecated and will be removed in 0.12.0.
+ 
+### SDK
+
+#### Miscellaneous
+
+- The `toBuilder()` method on the OpenTelemetrySdk class has been deprecated and will be removed in 0.12.0.
+
+-----
+
+## Version 0.11.0 - 2010-11-18
+
+### API
+
 #### Breaking changes:
 
 - The SPI interfaces have moved to a package (not a module) separate from the API packages, and now live in `io.opentelemetry.spi.*` package namespace.
