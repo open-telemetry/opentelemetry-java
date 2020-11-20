@@ -74,9 +74,7 @@ public interface TextMapPropagator {
     return new MultiTextMapPropagator(propagatorsList);
   }
 
-  /**
-   * Returns a {@link TextMapPropagator} which does no injection or extraction.
-   */
+  /** Returns a {@link TextMapPropagator} which does no injection or extraction. */
   static TextMapPropagator noop() {
     return NoopTextMapPropagator.getInstance();
   }
