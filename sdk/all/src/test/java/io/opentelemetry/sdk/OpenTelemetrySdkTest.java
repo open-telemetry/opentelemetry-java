@@ -8,11 +8,15 @@ package io.opentelemetry.sdk;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
@@ -20,7 +24,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.MultiSpanProcessor;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import org.junit.jupiter.api.Test;
@@ -130,14 +134,13 @@ class OpenTelemetrySdkTest {
             .build();
 
     TracerProvider tracerProvider = openTelemetrySdk.getTracerProvider();
-    assertThat(tracerProvider)
-        .extracting("delegate")
-        .extracting("sharedState")
-        .extracting("activeSpanProcessor")
-        .isInstanceOf(MultiSpanProcessor.class)
-        .extracting("spanProcessorsAll")
-        .asList()
-        .containsExactlyInAnyOrder(spanProcessor1, spanProcessor2);
+    Span span = tracerProvider.get("test").spanBuilder("test").startSpan();
+    span.end();
+
+    verify(spanProcessor1).onStart(any(), eq((ReadWriteSpan) span));
+    verify(spanProcessor1).onEnd(eq((ReadWriteSpan) span));
+    verify(spanProcessor2).onStart(any(), eq((ReadWriteSpan) span));
+    verify(spanProcessor2).onEnd(eq((ReadWriteSpan) span));
   }
 
   @Test
