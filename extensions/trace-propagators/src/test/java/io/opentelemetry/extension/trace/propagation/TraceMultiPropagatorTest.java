@@ -65,16 +65,14 @@ class TraceMultiPropagatorTest {
   @Test
   void addPropagator_null() {
     assertThrows(
-        NullPointerException.class, () -> TraceMultiPropagator.builder().addPropagator(null));
+        NullPointerException.class, () -> TraceMultiPropagator.create((TextMapPropagator) null));
   }
 
   @Test
   void fields() {
     TextMapPropagator prop =
-        TraceMultiPropagator.builder()
-            .addPropagator(new EmptyPropagator("foo", "bar"))
-            .addPropagator(new EmptyPropagator("hello", "world"))
-            .build();
+        TraceMultiPropagator.create(
+            new EmptyPropagator("foo", "bar"), new EmptyPropagator("hello", "world"));
 
     List<String> fields = prop.fields();
     assertThat(fields).containsExactly("foo", "bar", "hello", "world");
@@ -83,10 +81,9 @@ class TraceMultiPropagatorTest {
   @Test
   void fields_duplicates() {
     TextMapPropagator prop =
-        TraceMultiPropagator.builder()
-            .addPropagator(new EmptyPropagator("foo", "bar", "foo"))
-            .addPropagator(new EmptyPropagator("hello", "world", "world", "bar"))
-            .build();
+        TraceMultiPropagator.create(
+            new EmptyPropagator("foo", "bar", "foo"),
+            new EmptyPropagator("hello", "world", "world", "bar"));
 
     List<String> fields = prop.fields();
     assertThat(fields).containsExactly("foo", "bar", "hello", "world");
@@ -95,10 +92,8 @@ class TraceMultiPropagatorTest {
   @Test
   void fields_readOnly() {
     TextMapPropagator prop =
-        TraceMultiPropagator.builder()
-            .addPropagator(new EmptyPropagator("foo", "bar"))
-            .addPropagator(new EmptyPropagator("hello", "world"))
-            .build();
+        TraceMultiPropagator.create(
+            new EmptyPropagator("foo", "bar"), new EmptyPropagator("hello", "world"));
 
     List<String> fields = prop.fields();
     assertThrows(UnsupportedOperationException.class, () -> fields.add("hi"));
@@ -106,7 +101,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void inject_noPropagators() {
-    TextMapPropagator prop = TraceMultiPropagator.builder().build();
+    TextMapPropagator prop = TraceMultiPropagator.create();
     Map<String, String> carrier = new HashMap<>();
 
     Context context = Context.current();
@@ -116,12 +111,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void inject_allFormats() {
-    TextMapPropagator prop =
-        TraceMultiPropagator.builder()
-            .addPropagator(PROPAGATOR1)
-            .addPropagator(PROPAGATOR2)
-            .addPropagator(PROPAGATOR3)
-            .build();
+    TextMapPropagator prop = TraceMultiPropagator.create(PROPAGATOR1, PROPAGATOR2, PROPAGATOR3);
 
     Map<String, String> carrier = new HashMap<>();
     prop.inject(Context.current().with(SPAN), carrier, Map::put);
@@ -142,7 +132,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void extract_noPropagators() {
-    TextMapPropagator prop = TraceMultiPropagator.builder().build();
+    TextMapPropagator prop = TraceMultiPropagator.create();
     Map<String, String> carrier = new HashMap<>();
 
     Context context = Context.current();
@@ -152,12 +142,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void extract_found() {
-    TextMapPropagator prop =
-        TraceMultiPropagator.builder()
-            .addPropagator(PROPAGATOR1)
-            .addPropagator(PROPAGATOR2)
-            .addPropagator(PROPAGATOR3)
-            .build();
+    TextMapPropagator prop = TraceMultiPropagator.create(PROPAGATOR1, PROPAGATOR2, PROPAGATOR3);
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR2.inject(Context.current().with(SPAN), carrier, Map::put);
@@ -167,7 +152,7 @@ class TraceMultiPropagatorTest {
 
   @Test
   void extract_notFound() {
-    TextMapPropagator prop = TraceMultiPropagator.builder().addPropagator(PROPAGATOR1).build();
+    TextMapPropagator prop = TraceMultiPropagator.create(PROPAGATOR1);
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR3.inject(Context.current().with(SPAN), carrier, Map::put);
@@ -177,11 +162,7 @@ class TraceMultiPropagatorTest {
   @Test
   void extract_stopWhenFound() {
     TextMapPropagator mockPropagator = Mockito.mock(TextMapPropagator.class);
-    TextMapPropagator prop =
-        TraceMultiPropagator.builder()
-            .addPropagator(mockPropagator)
-            .addPropagator(PROPAGATOR3)
-            .build();
+    TextMapPropagator prop = TraceMultiPropagator.create(mockPropagator, PROPAGATOR3);
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR3.inject(Context.current().with(SPAN), carrier, Map::put);

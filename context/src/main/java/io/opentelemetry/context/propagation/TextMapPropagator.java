@@ -75,6 +75,13 @@ public interface TextMapPropagator {
   }
 
   /**
+   * Returns a {@link TextMapPropagator} which does no injection or extraction.
+   */
+  static TextMapPropagator noop() {
+    return NoopTextMapPropagator.getInstance();
+  }
+
+  /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
    * before calling {@link #inject(Context, Object, Setter)} )}.
    *
