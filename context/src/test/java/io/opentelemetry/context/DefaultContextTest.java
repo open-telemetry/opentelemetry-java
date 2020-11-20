@@ -12,6 +12,11 @@ import org.junit.jupiter.api.Test;
 class DefaultContextTest {
 
   @Test
+  void emptyContext() {
+    assertThat(new DefaultContext().get(new HashCollidingKey())).isEqualTo(null);
+  }
+
+  @Test
   void hashcodeCollidingKeys() {
     DefaultContext context = new DefaultContext();
     HashCollidingKey cheese = new HashCollidingKey();
