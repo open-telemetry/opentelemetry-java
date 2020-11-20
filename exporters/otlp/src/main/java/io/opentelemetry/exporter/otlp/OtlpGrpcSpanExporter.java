@@ -70,11 +70,12 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
 
-  public static final String DEFAULT_ENDPOINT = "localhost:55680";
+  public static final String DEFAULT_ENDPOINT = "localhost:4317";
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
   private static final boolean DEFAULT_USE_TLS = false;
+  private static final String EXPORTER_NAME = OtlpGrpcSpanExporter.class.getSimpleName();
 
   private final TraceServiceFutureStub traceService;
   private final ManagedChannel managedChannel;
@@ -111,8 +112,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    spansSeen.add(
-        spans.size(), Labels.of("exporter", OtlpGrpcMetricExporter.class.getSimpleName()));
+    spansSeen.add(spans.size(), Labels.of("exporter", OtlpGrpcSpanExporter.class.getSimpleName()));
     ExportTraceServiceRequest exportTraceServiceRequest =
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
@@ -135,16 +135,14 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
             spansExported.add(
                 spans.size(),
                 Labels.of(
-                    "exporter", OtlpGrpcMetricExporter.class.getSimpleName(), "success", "true"));
+                    "exporter", OtlpGrpcSpanExporter.class.getSimpleName(), "success", "true"));
             result.succeed();
           }
 
           @Override
           public void onFailure(Throwable t) {
             spansExported.add(
-                spans.size(),
-                Labels.of(
-                    "exporter", OtlpGrpcMetricExporter.class.getSimpleName(), "success", "false"));
+                spans.size(), Labels.of("exporter", EXPORTER_NAME, "success", "false"));
             logger.log(Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
             logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
             result.fail();
@@ -240,7 +238,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the OTLP endpoint to connect to. Optional, defaults to "localhost:55680".
+     * Sets the OTLP endpoint to connect to. Optional, defaults to "localhost:4317".
      *
      * @param endpoint endpoint to connect to
      * @return this builder's instance
