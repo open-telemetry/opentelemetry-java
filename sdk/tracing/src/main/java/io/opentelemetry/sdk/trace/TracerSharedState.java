@@ -82,7 +82,7 @@ final class TracerSharedState {
   void addSpanProcessor(SpanProcessor spanProcessor) {
     synchronized (lock) {
       registeredSpanProcessors.add(spanProcessor);
-      activeSpanProcessor = MultiSpanProcessor.create(registeredSpanProcessors);
+      activeSpanProcessor = SpanProcessor.composite(registeredSpanProcessors);
     }
   }
 

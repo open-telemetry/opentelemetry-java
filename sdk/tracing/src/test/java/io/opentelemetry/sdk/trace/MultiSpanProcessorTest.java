@@ -10,7 +10,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Context;
@@ -43,7 +42,7 @@ class MultiSpanProcessorTest {
 
   @Test
   void empty() {
-    SpanProcessor multiSpanProcessor = MultiSpanProcessor.create(Collections.emptyList());
+    SpanProcessor multiSpanProcessor = SpanProcessor.composite(Collections.emptyList());
     multiSpanProcessor.onStart(Context.root(), readWriteSpan);
     multiSpanProcessor.onEnd(readableSpan);
     multiSpanProcessor.shutdown();
@@ -52,50 +51,14 @@ class MultiSpanProcessorTest {
   @Test
   void oneSpanProcessor() {
     SpanProcessor multiSpanProcessor =
-        MultiSpanProcessor.create(Collections.singletonList(spanProcessor1));
-    multiSpanProcessor.onStart(Context.root(), readWriteSpan);
-    verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
-
-    multiSpanProcessor.onEnd(readableSpan);
-    verify(spanProcessor1).onEnd(same(readableSpan));
-
-    multiSpanProcessor.forceFlush();
-    verify(spanProcessor1).forceFlush();
-
-    multiSpanProcessor.shutdown();
-    verify(spanProcessor1).shutdown();
-  }
-
-  @Test
-  void oneSpanProcessor_NoRequirements() {
-    when(spanProcessor1.isStartRequired()).thenReturn(false);
-    when(spanProcessor1.isEndRequired()).thenReturn(false);
-    SpanProcessor multiSpanProcessor =
-        MultiSpanProcessor.create(Collections.singletonList(spanProcessor1));
-
-    verify(spanProcessor1).isStartRequired();
-    verify(spanProcessor1).isEndRequired();
-
-    assertThat(multiSpanProcessor.isStartRequired()).isFalse();
-    assertThat(multiSpanProcessor.isEndRequired()).isFalse();
-
-    multiSpanProcessor.onStart(Context.root(), readWriteSpan);
-    verifyNoMoreInteractions(spanProcessor1);
-
-    multiSpanProcessor.onEnd(readableSpan);
-    verifyNoMoreInteractions(spanProcessor1);
-
-    multiSpanProcessor.forceFlush();
-    verify(spanProcessor1).forceFlush();
-
-    multiSpanProcessor.shutdown();
-    verify(spanProcessor1).shutdown();
+        SpanProcessor.composite(Collections.singletonList(spanProcessor1));
+    assertThat(multiSpanProcessor).isSameAs(spanProcessor1);
   }
 
   @Test
   void twoSpanProcessor() {
     SpanProcessor multiSpanProcessor =
-        MultiSpanProcessor.create(Arrays.asList(spanProcessor1, spanProcessor2));
+        SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
     multiSpanProcessor.onStart(Context.root(), readWriteSpan);
     verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
     verify(spanProcessor2).onStart(same(Context.root()), same(readWriteSpan));
@@ -118,7 +81,7 @@ class MultiSpanProcessorTest {
     when(spanProcessor1.isEndRequired()).thenReturn(false);
     when(spanProcessor2.isStartRequired()).thenReturn(false);
     SpanProcessor multiSpanProcessor =
-        MultiSpanProcessor.create(Arrays.asList(spanProcessor1, spanProcessor2));
+        SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
 
     assertThat(multiSpanProcessor.isStartRequired()).isTrue();
     assertThat(multiSpanProcessor.isEndRequired()).isTrue();

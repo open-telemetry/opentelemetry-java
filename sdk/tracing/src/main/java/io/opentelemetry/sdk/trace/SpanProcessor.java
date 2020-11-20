@@ -8,12 +8,43 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * SpanProcessor is the interface {@code TracerSdk} uses to allow synchronous hooks for when a
  * {@code Span} is started or when a {@code Span} is ended.
  */
 public interface SpanProcessor {
+
+  /**
+   * Returns a {@link SpanProcessor} which simply delegates all processing to the {@code processors}
+   * in order.
+   */
+  static SpanProcessor composite(SpanProcessor... processors) {
+    return composite(Arrays.asList(processors));
+  }
+
+  /**
+   * Returns a {@link SpanProcessor} which simply delegates all processing to the {@code processors}
+   * in order.
+   */
+  @SuppressWarnings("deprecation")
+  static SpanProcessor composite(Iterable<SpanProcessor> processors) {
+    List<SpanProcessor> processorsList = new ArrayList<>();
+    for (SpanProcessor processor : processors) {
+      processorsList.add(processor);
+    }
+    if (processorsList.isEmpty()) {
+      return NoopSpanProcessor.getInstance();
+    }
+    if (processorsList.size() == 1) {
+      return processorsList.get(0);
+    }
+    return MultiSpanProcessor.create(processorsList);
+  }
+
   /**
    * Called when a {@link io.opentelemetry.api.trace.Span} is started, if the {@link
    * Span#isRecording()} returns true.

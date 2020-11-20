@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
-import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -225,7 +224,7 @@ class DisruptorAsyncSpanProcessorTest {
     IncrementSpanProcessor incrementSpanProcessor2 = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.builder(
-                MultiSpanProcessor.create(
+                SpanProcessor.composite(
                     Arrays.asList(incrementSpanProcessor1, incrementSpanProcessor2)))
             .build();
     disruptorAsyncSpanProcessor.onStart(Context.root(), readWriteSpan);
