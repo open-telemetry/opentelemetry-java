@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link ImmutableStatus}. */
-@SuppressWarnings("deprecation")
 class ImmutableStatusTest {
   @Test
   void defaultConstants() {
@@ -23,7 +22,6 @@ class ImmutableStatusTest {
     assertThat(Status.ok().getStatusCode()).isEqualTo(StatusCode.OK);
     assertThat(Status.ok().getDescription()).isNull();
     assertThat(Status.error().getStatusCode()).isEqualTo(StatusCode.ERROR);
-    assertThat(Status.error().getCanonicalCode()).isEqualTo(StatusCode.ERROR);
     assertThat(Status.error().getDescription()).isNull();
   }
 
@@ -34,7 +32,6 @@ class ImmutableStatusTest {
     for (StatusCode code : codes) {
       assertThat(ImmutableStatus.codeToStatus.get(code)).isNotNull();
       assertThat(ImmutableStatus.codeToStatus.get(code).getStatusCode()).isEqualTo(code);
-      assertThat(ImmutableStatus.codeToStatus.get(code).getCanonicalCode()).isEqualTo(code);
       assertThat(ImmutableStatus.codeToStatus.get(code).getDescription()).isNull();
     }
   }
