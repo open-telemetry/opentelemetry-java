@@ -147,7 +147,7 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 - [Pavol Loffay](https://github.com/pavolloffay), Traceable.ai
 - [Tyler Benson](https://github.com/tylerbenson), DataDog
 - [Giovanni Liva](https://github.com/thisthat), Dynatrace
-- [Christian Neumueller](https://github.com/Oberon00), Dynatrace
+- [Christian Neumüller](https://github.com/Oberon00), Dynatrace
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 
