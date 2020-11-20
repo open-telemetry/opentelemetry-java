@@ -6,13 +6,25 @@
 
 #### Miscellaneous
 
-- The `toBuilder()` method on the OpenTelemetry class has been deprecated and will be removed in 0.12.0.
+- The `toBuilder()` method on the OpenTelemetry class has been deprecated and will be removed in 0.13.0.
+- The `DefaultContextPropagators` class has been deprecated. Access to it will be removed in 0.13.0.
+You can access the same functionality via static methods on the `ContextPropagators` interface. 
  
 ### SDK
 
+#### Breaking Changes
+
+- The deprecated `SpanData.getCanonicalCode()` method has been removed, along with the implementations.
+
+#### Enhancements
+
+- The OpenTelemetrySdk builder now supports the addition of SpanProcessors to the resulting SDK.
+
 #### Miscellaneous
 
-- The `toBuilder()` method on the OpenTelemetrySdk class has been deprecated and will be removed in 0.12.0.
+- The `toBuilder()` method on the OpenTelemetrySdk class has been deprecated and will be removed in 0.13.0.
+- The MultiSpanProcessor and MultiSpanExporter have been deprecated. You can access the same functionality via
+the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes will be made non-public in the 0.13.0 release.
 
 -----
 
