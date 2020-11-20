@@ -27,7 +27,6 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.spi.metrics.MeterProviderFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
 import java.io.File;
@@ -64,7 +63,6 @@ class OpenTelemetryTest {
         .isEqualTo("DefaultMeterProvider");
     assertThat(OpenTelemetry.getGlobalMeterProvider())
         .isSameAs(OpenTelemetry.getGlobalMeterProvider());
-    assertThat(OpenTelemetry.getGlobalPropagators()).isInstanceOf(DefaultContextPropagators.class);
     assertThat(OpenTelemetry.getGlobalPropagators()).isSameAs(OpenTelemetry.getGlobalPropagators());
   }
 
@@ -156,14 +154,14 @@ class OpenTelemetryTest {
 
   @Test
   void testGlobalPropagatorsSet() {
-    ContextPropagators propagators = DefaultContextPropagators.builder().build();
+    ContextPropagators propagators = ContextPropagators.noop();
     OpenTelemetry.setGlobalPropagators(propagators);
     assertThat(OpenTelemetry.getGlobalPropagators()).isEqualTo(propagators);
   }
 
   @Test
   void testPropagatorsSet() {
-    ContextPropagators propagators = DefaultContextPropagators.builder().build();
+    ContextPropagators propagators = ContextPropagators.noop();
     OpenTelemetry instance = DefaultOpenTelemetry.builder().build();
     instance.setPropagators(propagators);
     assertThat(instance.getPropagators()).isEqualTo(propagators);

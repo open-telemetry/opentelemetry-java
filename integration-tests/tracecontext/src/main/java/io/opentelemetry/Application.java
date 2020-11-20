@@ -11,7 +11,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import java.util.ArrayList;
@@ -34,11 +33,7 @@ public class Application {
   private static final OpenTelemetry openTelemetry;
 
   static {
-    ContextPropagators propagators =
-        DefaultContextPropagators.builder()
-            .addTextMapPropagator(HttpTraceContext.getInstance())
-            .build();
-    OpenTelemetry.setGlobalPropagators(propagators);
+    OpenTelemetry.setGlobalPropagators(ContextPropagators.create(HttpTraceContext.getInstance()));
     openTelemetry = OpenTelemetry.get();
   }
 
