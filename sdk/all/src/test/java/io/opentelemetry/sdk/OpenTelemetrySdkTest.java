@@ -8,8 +8,6 @@ package io.opentelemetry.sdk;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -24,7 +22,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import org.junit.jupiter.api.Test;
@@ -137,10 +134,10 @@ class OpenTelemetrySdkTest {
     Span span = tracerProvider.get("test").spanBuilder("test").startSpan();
     span.end();
 
-    verify(spanProcessor1).onStart(any(), eq((ReadWriteSpan) span));
-    verify(spanProcessor1).onEnd(eq((ReadWriteSpan) span));
-    verify(spanProcessor2).onStart(any(), eq((ReadWriteSpan) span));
-    verify(spanProcessor2).onEnd(eq((ReadWriteSpan) span));
+    verify(spanProcessor1).isStartRequired();
+    verify(spanProcessor1).isEndRequired();
+    verify(spanProcessor2).isStartRequired();
+    verify(spanProcessor2).isEndRequired();
   }
 
   @Test
