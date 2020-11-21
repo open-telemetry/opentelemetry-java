@@ -14,5 +14,7 @@ dependencies {
     compileOnly libraries.junit
     compileOnly libraries.junit_jupiter_api
 
+    testImplementation libraries.junit
+
     annotationProcessor libraries.auto_value
 }

@@ -18,9 +18,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class MultiSpanProcessorTest {
   @Mock private SpanProcessor spanProcessor1;
   @Mock private SpanProcessor spanProcessor2;
@@ -29,7 +34,6 @@ class MultiSpanProcessorTest {
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.initMocks(this);
     when(spanProcessor1.isStartRequired()).thenReturn(true);
     when(spanProcessor1.isEndRequired()).thenReturn(true);
     when(spanProcessor1.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());

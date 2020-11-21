@@ -12,7 +12,7 @@ dependencies {
     api project(':opentelemetry-sdk')
 
     implementation project(':opentelemetry-sdk'),
-            "io.jaegertracing:jaeger-client:0.33.1"
+            libraries.jaeger_client
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}",
             'com.fasterxml.jackson.core:jackson-databind',

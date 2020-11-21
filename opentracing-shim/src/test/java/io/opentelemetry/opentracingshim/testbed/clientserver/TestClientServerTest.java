@@ -16,9 +16,9 @@ import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Tracer;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ class TestClientServerTest {
     Client client = new Client(queue, tracer);
     client.send();
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(2));
+    await().atMost(Duration.ofSeconds(15)).until(finishedSpansSize(otelTesting), equalTo(2));
 
     List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished).hasSize(2);

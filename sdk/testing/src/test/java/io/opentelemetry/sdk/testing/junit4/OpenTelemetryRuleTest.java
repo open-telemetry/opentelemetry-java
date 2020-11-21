@@ -44,10 +44,12 @@ public class OpenTelemetryRuleTest {
     tracer.spanBuilder("test").startSpan().end();
 
     assertThat(otelTesting.getSpans())
-        .hasOnlyOneElementSatisfying(span -> assertThat(span.getName()).isEqualTo("test"));
+        .singleElement()
+        .satisfies(span -> assertThat(span.getName()).isEqualTo("test"));
     // Spans cleared between tests, not when retrieving
     assertThat(otelTesting.getSpans())
-        .hasOnlyOneElementSatisfying(span -> assertThat(span.getName()).isEqualTo("test"));
+        .singleElement()
+        .satisfies(span -> assertThat(span.getName()).isEqualTo("test"));
   }
 
   // We have two tests to verify spans get cleared up between tests.
@@ -56,9 +58,11 @@ public class OpenTelemetryRuleTest {
     tracer.spanBuilder("test").startSpan().end();
 
     assertThat(otelTesting.getSpans())
-        .hasOnlyOneElementSatisfying(span -> assertThat(span.getName()).isEqualTo("test"));
+        .singleElement()
+        .satisfies(span -> assertThat(span.getName()).isEqualTo("test"));
     // Spans cleared between tests, not when retrieving
     assertThat(otelTesting.getSpans())
-        .hasOnlyOneElementSatisfying(span -> assertThat(span.getName()).isEqualTo("test"));
+        .singleElement()
+        .satisfies(span -> assertThat(span.getName()).isEqualTo("test"));
   }
 }

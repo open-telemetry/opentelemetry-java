@@ -23,16 +23,17 @@ import java.io.StringWriter;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class PrometheusCollectorTest {
   @Mock MetricProducer metricProducer;
   PrometheusCollector prometheusCollector;
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.initMocks(this);
     prometheusCollector =
         PrometheusCollector.builder().setMetricProducer(metricProducer).buildAndRegister();
   }

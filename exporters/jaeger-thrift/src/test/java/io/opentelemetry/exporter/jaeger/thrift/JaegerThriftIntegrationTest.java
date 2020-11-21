@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -50,7 +50,7 @@ class JaegerThriftIntegrationTest {
     setupJaegerExporter();
     imitateWork();
     Awaitility.await()
-        .atMost(30, TimeUnit.MINUTES)
+        .atMost(Duration.ofSeconds(30))
         .until(JaegerThriftIntegrationTest::assertJaegerHasATrace);
   }
 

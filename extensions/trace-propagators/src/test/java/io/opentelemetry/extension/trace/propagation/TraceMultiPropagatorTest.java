@@ -24,11 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TraceMultiPropagatorTest {
   private static final TextMapPropagator PROPAGATOR1 = B3Propagator.getInstance();
   private static final TextMapPropagator PROPAGATOR2 =
@@ -56,11 +57,6 @@ class TraceMultiPropagatorTest {
               SpanId.fromLong(12345),
               TraceFlags.getDefault(),
               TraceState.getDefault()));
-
-  @BeforeEach
-  void init() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @Test
   void addPropagator_null() {
