@@ -17,10 +17,10 @@ import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.testbed.TestUtils;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -68,7 +68,9 @@ public final class ErrorReportingTest {
           }
         });
 
-    await().atMost(5, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(otelTesting), equalTo(1));
+    await()
+        .atMost(Duration.ofSeconds(5))
+        .until(TestUtils.finishedSpansSize(otelTesting), equalTo(1));
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
@@ -127,7 +129,9 @@ public final class ErrorReportingTest {
               tracer));
     }
 
-    await().atMost(5, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(otelTesting), equalTo(1));
+    await()
+        .atMost(Duration.ofSeconds(5))
+        .until(TestUtils.finishedSpansSize(otelTesting), equalTo(1));
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);

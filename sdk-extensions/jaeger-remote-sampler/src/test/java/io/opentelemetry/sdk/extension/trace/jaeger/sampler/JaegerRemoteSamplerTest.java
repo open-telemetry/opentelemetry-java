@@ -24,8 +24,8 @@ import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.Samplin
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,7 +95,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .build();
 
-    await().atMost(10, TimeUnit.SECONDS).until(samplerIsType(sampler, RateLimitingSampler.class));
+    await().atMost(Duration.ofSeconds(10)).until(samplerIsType(sampler, RateLimitingSampler.class));
 
     // verify
     verify(service).getSamplingStrategy(requestCaptor.capture(), ArgumentMatchers.any());
@@ -116,7 +116,7 @@ class JaegerRemoteSamplerTest {
         .isEqualTo("JaegerRemoteSampler{TraceIdRatioBased{0.001000}}");
 
     // wait until the sampling strategy is retrieved before exiting test method
-    await().atMost(10, TimeUnit.SECONDS).until(samplerIsType(sampler, RateLimitingSampler.class));
+    await().atMost(Duration.ofSeconds(10)).until(samplerIsType(sampler, RateLimitingSampler.class));
   }
 
   static Callable<Boolean> samplerIsType(

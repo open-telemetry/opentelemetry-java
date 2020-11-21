@@ -16,9 +16,9 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -50,7 +50,7 @@ class MultipleCallbacksTest {
       parentDoneLatch.countDown();
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(4));
+    await().atMost(Duration.ofSeconds(15)).until(finishedSpansSize(otelTesting), equalTo(4));
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(4);

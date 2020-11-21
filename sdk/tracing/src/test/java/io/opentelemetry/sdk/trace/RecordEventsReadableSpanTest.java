@@ -53,11 +53,13 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
+@ExtendWith(MockitoExtension.class)
 class RecordEventsReadableSpanTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
@@ -84,7 +86,6 @@ class RecordEventsReadableSpanTest {
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.initMocks(this);
     attributes.put(stringKey("MyStringAttributeKey"), "MyStringAttributeValue");
     attributes.put(longKey("MyLongAttributeKey"), 123L);
     attributes.put(booleanKey("MyBooleanAttributeKey"), false);

@@ -32,14 +32,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-/** Unit tests for {@link BatchSpanProcessor}. */
+@ExtendWith(MockitoExtension.class)
 class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
@@ -49,11 +49,6 @@ class BatchSpanProcessorTest {
   private final Tracer tracer = tracerSdkFactory.get("BatchSpanProcessorTest");
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
-
-  @BeforeEach
-  void setup() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @AfterEach
   void cleanup() {

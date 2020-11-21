@@ -16,7 +16,8 @@ dependencies {
 
 
     annotationProcessor libraries.auto_value
-    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation project(':opentelemetry-sdk-testing'),
+            libraries.guava_testlib
 
     signature libraries.android_signature
 }

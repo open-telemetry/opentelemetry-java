@@ -16,7 +16,8 @@ dependencies {
 
     signature libraries.android_signature
 
-    testImplementation libraries.jqf
+    testImplementation libraries.jqf,
+            libraries.guava_testlib
 }
 
 javadoc {

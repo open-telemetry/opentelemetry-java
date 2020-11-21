@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleUpDownCounterSdk}. */
@@ -103,7 +104,9 @@ class DoubleUpDownCounterSdkTest {
     doubleUpDownCounter1.add(12.1d);
 
     assertThat(doubleUpDownCounter.collectAll().get(0))
-        .isEqualToIgnoringGivenFields(doubleUpDownCounter1.collectAll().get(0), "name");
+        .usingRecursiveComparison(
+            RecursiveComparisonConfiguration.builder().withIgnoredFields("name").build())
+        .isEqualTo(doubleUpDownCounter1.collectAll().get(0));
   }
 
   @Test

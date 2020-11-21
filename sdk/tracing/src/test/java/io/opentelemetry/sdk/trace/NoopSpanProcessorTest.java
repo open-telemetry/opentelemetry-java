@@ -8,20 +8,15 @@ package io.opentelemetry.sdk.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.context.Context;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-/** Unit tests for {@link NoopSpanProcessorTest}. */
+@ExtendWith(MockitoExtension.class)
 class NoopSpanProcessorTest {
   @Mock private ReadableSpan readableSpan;
   @Mock private ReadWriteSpan readWriteSpan;
-
-  @BeforeEach
-  void setUp() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @Test
   void noCrash() {

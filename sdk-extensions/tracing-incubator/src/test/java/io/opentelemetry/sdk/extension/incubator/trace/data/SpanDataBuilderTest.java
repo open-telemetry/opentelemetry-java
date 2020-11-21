@@ -39,7 +39,8 @@ class SpanDataBuilderTest {
   @Test
   void noOp() {
     assertThat(SpanDataBuilder.builder(TEST_SPAN_DATA).build())
-        .isEqualToComparingFieldByField(TEST_SPAN_DATA);
+        .usingRecursiveComparison()
+        .isEqualTo(TEST_SPAN_DATA);
   }
 
   @Test

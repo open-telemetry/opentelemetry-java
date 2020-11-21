@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.logging.data.LogRecord.Severity;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import io.opentelemetry.sdk.logging.util.TestLogProcessor;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -57,7 +58,7 @@ class LogSinkSdkProviderTest {
       sink.offer(createLog(Severity.WARN, "test #" + i));
     }
     // Ensure that more than batch size kicks off a flush
-    await().atMost(5, TimeUnit.SECONDS).until(() -> exporter.getRecords().size() > 0);
+    await().atMost(Duration.ofSeconds(5)).until(() -> exporter.getRecords().size() > 0);
     // Ensure that everything gets through
     CompletableResultCode result = provider.forceFlush();
     result.join(1, TimeUnit.SECONDS);
