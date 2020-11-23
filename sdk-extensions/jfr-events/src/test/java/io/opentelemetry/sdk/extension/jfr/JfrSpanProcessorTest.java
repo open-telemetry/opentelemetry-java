@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.jfr;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
@@ -20,7 +20,7 @@ import java.util.List;
 import jdk.jfr.Recording;
 import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordingFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class JfrSpanProcessorTest {
 
