@@ -43,6 +43,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -62,8 +63,7 @@ public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
   private final Options options;
 
   private List<Span> parentLinks = Collections.emptyList();
-  private final List<io.opentelemetry.api.trace.SpanContext> otelParentLinks =
-      Collections.emptyList();
+  private final List<io.opentelemetry.api.trace.SpanContext> otelParentLinks = new ArrayList<>();
   @Nullable private final Span parent;
   @Nullable private final SpanContext remoteParentSpanContext;
   @Nullable private Sampler sampler;
