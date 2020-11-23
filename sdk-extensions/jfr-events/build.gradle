@@ -14,9 +14,11 @@ tasks.withType(JavaCompile) {
     it.options.release = 11
 }
 
-// Running tests with JDK 15 due to https://bugs.openjdk.java.net/browse/JDK-8245283
+testJava8 {
+    enabled = false
+}
+
 test {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(15)
-    }
+    // Disabled due to https://bugs.openjdk.java.net/browse/JDK-8245283
+    jacoco.enabled = false
 }
