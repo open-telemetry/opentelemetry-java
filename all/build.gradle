@@ -22,7 +22,7 @@ def subprojects = [
         project(':opentelemetry-sdk-common'),
         project(':opentelemetry-sdk-metrics'),
         project(':opentelemetry-sdk-testing'),
-        project(':opentelemetry-sdk-tracing'),
+        project(':opentelemetry-sdk-trace'),
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-extension-async-processor'),
         project(':opentelemetry-sdk-extension-aws-v1-support'),
