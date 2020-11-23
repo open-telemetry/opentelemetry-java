@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.TraceState;
 import java.util.EnumSet;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 class SpanConverter {
 
@@ -66,7 +67,10 @@ class SpanConverter {
 
   private SpanConverter() {}
 
-  static Kind mapKind(Span.Kind kind) {
+  static Kind mapKind(@Nullable Span.Kind kind) {
+    if (kind == null) {
+      return null;
+    }
     switch (kind) {
       case CLIENT:
         return Kind.CLIENT;

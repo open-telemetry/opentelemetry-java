@@ -60,12 +60,15 @@ public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
 
   private final String name;
   private final Options options;
+
   private List<Span> parentLinks = Collections.emptyList();
+  private final List<io.opentelemetry.api.trace.SpanContext> otelParentLinks =
+      Collections.emptyList();
   @Nullable private final Span parent;
   @Nullable private final SpanContext remoteParentSpanContext;
   @Nullable private Sampler sampler;
   @Nullable private Boolean recordEvents;
-  @Nullable private Kind kind;
+  @Nullable private io.opentelemetry.api.trace.Span.Kind kind;
 
   @Override
   public SpanBuilder setSampler(Sampler sampler) {
@@ -76,6 +79,16 @@ public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
   @Override
   public SpanBuilder setParentLinks(List<Span> parentLinks) {
     this.parentLinks = checkNotNull(parentLinks, "parentLinks");
+    for (Span parent : parentLinks) {
+      this.otelParentLinks.add(
+          io.opentelemetry.api.trace.SpanContext.create(
+              io.opentelemetry.api.trace.TraceId.bytesToHex(
+                  parent.getContext().getTraceId().getBytes()),
+              io.opentelemetry.api.trace.SpanId.bytesToHex(
+                  parent.getContext().getSpanId().getBytes()),
+              TraceFlags.getDefault(),
+              TraceState.getDefault()));
+    }
     return this;
   }
 
@@ -87,7 +100,7 @@ public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
 
   @Override
   public SpanBuilder setSpanKind(@Nullable Kind kind) {
-    this.kind = kind;
+    this.kind = mapKind(kind);
     return this;
   }
 
@@ -149,18 +162,11 @@ public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
               TraceState.getDefault()));
     }
     if (kind != null) {
-      otSpanBuidler.setSpanKind(mapKind(kind));
+      otSpanBuidler.setSpanKind(kind);
     }
-    if (!parentLinks.isEmpty()) {
-      for (Span parent : parentLinks) {
-        otSpanBuidler.addLink(
-            io.opentelemetry.api.trace.SpanContext.create(
-                io.opentelemetry.api.trace.TraceId.bytesToHex(
-                    parent.getContext().getTraceId().getBytes()),
-                io.opentelemetry.api.trace.SpanId.bytesToHex(
-                    parent.getContext().getSpanId().getBytes()),
-                TraceFlags.getDefault(),
-                TraceState.getDefault()));
+    if (!otelParentLinks.isEmpty()) {
+      for (io.opentelemetry.api.trace.SpanContext spanContext : otelParentLinks) {
+        otSpanBuidler.addLink(spanContext);
       }
     }
     io.opentelemetry.api.trace.Span otSpan = otSpanBuidler.startSpan();
