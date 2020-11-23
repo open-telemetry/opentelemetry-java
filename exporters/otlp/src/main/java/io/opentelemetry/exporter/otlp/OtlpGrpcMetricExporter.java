@@ -65,7 +65,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
-  public static final String DEFAULT_ENDPOINT = "localhost:55680";
+  public static final String DEFAULT_ENDPOINT = "localhost:4317";
   public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
   private static final boolean DEFAULT_USE_TLS = false;
 
@@ -206,7 +206,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     }
 
     /**
-     * Sets the OTLP endpoint to connect to. Optional, defaults to "localhost:55680".
+     * Sets the OTLP endpoint to connect to. Optional, defaults to "localhost:4317".
      *
      * @param endpoint endpoint to connect to
      * @return this builder's instance
