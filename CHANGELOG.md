@@ -19,6 +19,7 @@ You can access the same functionality via static methods on the `ContextPropagat
 #### Breaking Changes
 
 - The `opentelemetry-sdk-tracing` module has been renamed to `opentelemetry-sdk-trace`.
+- The default port the OTLP exporters use has been changed to `4317`.
 - The deprecated `SpanData.getCanonicalCode()` method has been removed, along with the implementations.
 
 #### Enhancements
