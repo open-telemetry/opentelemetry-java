@@ -1,6 +1,10 @@
 OpenTelemetry Contrib Runtime Metrics
 ======================================================
 
+# DEPRECATED
+The capabilities in this module have been moved to the OpenTelemetry Java Instrumentation project.
+It will be removed in the `0.13.0` release.
+
 [![Javadocs][javadoc-image]][javadoc-url]
 
 * Java 8 compatible.
