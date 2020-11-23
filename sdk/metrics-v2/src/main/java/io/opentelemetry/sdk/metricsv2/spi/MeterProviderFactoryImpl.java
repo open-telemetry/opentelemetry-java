@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.spi;
+package io.opentelemetry.sdk.metricsv2.spi;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.internal.MillisClock;
-import io.opentelemetry.sdk.metrics.MeterProviderImpl;
+import io.opentelemetry.sdk.metricsv2.MeterProviderImpl;
 import io.opentelemetry.spi.metrics.MeterProviderFactory;
 
 public class MeterProviderFactoryImpl implements MeterProviderFactory {

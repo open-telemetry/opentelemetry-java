@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.data;
+package io.opentelemetry.sdk.metricsv2.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;

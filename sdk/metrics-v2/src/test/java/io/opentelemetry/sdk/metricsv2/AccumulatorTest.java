@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metricsv2;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;

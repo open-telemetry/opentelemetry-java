@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metricsv2;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metricsv2.data.MetricData;
 import javax.annotation.concurrent.Immutable;
 
 @AutoValue
