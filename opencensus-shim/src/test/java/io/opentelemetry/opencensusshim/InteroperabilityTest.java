@@ -6,12 +6,10 @@
 package io.opentelemetry.opencensusshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
@@ -21,7 +19,6 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -48,7 +45,6 @@ public class InteroperabilityTest {
   @Before
   public void init() {
     MockitoAnnotations.initMocks(this);
-    when(spanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
     SpanProcessor spanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
     OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
   }
