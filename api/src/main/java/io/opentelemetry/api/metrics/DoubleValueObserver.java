@@ -44,16 +44,17 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface DoubleValueObserver extends AsynchronousInstrument<DoubleResult> {
-  @Override
-  void setCallback(Callback<DoubleResult> callback);
 
   /** Builder class for {@link DoubleValueObserver}. */
-  interface Builder extends AsynchronousInstrument.Builder {
+  interface Builder extends AsynchronousInstrument.Builder<DoubleResult> {
     @Override
     Builder setDescription(String description);
 
     @Override
     Builder setUnit(String unit);
+
+    @Override
+    Builder setCallback(Callback<DoubleResult> callback);
 
     @Override
     DoubleValueObserver build();
