@@ -10,20 +10,16 @@ import static org.mockito.Mockito.verify;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class LongCounterImplTest {
   private final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create("test", "1.0");
   @Mock private Accumulator accumulator;
-
-  @BeforeEach
-  void setUp() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @Test
   void record_passthrough_noLabels() {

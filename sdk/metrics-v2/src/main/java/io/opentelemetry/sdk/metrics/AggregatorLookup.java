@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 // todo: there is a race condition here that needs to be fixed. `getOrCreate` will be being called
 // for every recording. However, when a collection happens, we need to coordinate the cleaning of
 // the map (if it's requested in the `getAggregatorsForInstrument` call). Otherwise, recordings
-// made on the resulting aggregator could never be missed by the accumulator.
+// made on the resulting aggregator could be missed by the accumulator.
 class AggregatorLookup {
   private final Map<InstrumentKey, Map<Labels, LongAggregator<?>>> data = new ConcurrentHashMap<>();
 
