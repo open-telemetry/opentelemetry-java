@@ -45,6 +45,18 @@ public final class MemoryPools {
   private static final String HEAP = "heap";
   private static final String NON_HEAP = "non_heap";
 
+  private static final Labels COMMITTED_HEAP =
+      Labels.of(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP);
+  private static final Labels USED_HEAP = Labels.of(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP);
+  private static final Labels MAX_HEAP = Labels.of(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP);
+
+  private static final Labels COMMITTED_NON_HEAP =
+      Labels.of(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP);
+  private static final Labels USED_NON_HEAP =
+      Labels.of(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP);
+  private static final Labels MAX_NON_HEAP =
+      Labels.of(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP);
+
   private final MemoryMXBean memoryBean;
   private final List<MemoryPoolMXBean> poolBeans;
   private final Meter meter;
@@ -64,25 +76,12 @@ public final class MemoryPools {
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .build();
-    final Labels usedHeap = Labels.of(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP);
-    final Labels usedNonHeap = Labels.of(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP);
-    final Labels committedHeap = Labels.of(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP);
-    final Labels committedNonHeap = Labels.of(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP);
-    // TODO: Decide if max is needed or not. May be derived with some approximation from max(used).
-    final Labels maxHeap = Labels.of(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP);
-    final Labels maxNonHeap = Labels.of(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP);
     areaMetric.setCallback(
         new AsynchronousInstrument.Callback<LongResult>() {
           @Override
           public void update(LongResult resultLongObserver) {
-            MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
-            MemoryUsage nonHeapUsage = memoryBean.getNonHeapMemoryUsage();
-            resultLongObserver.observe(heapUsage.getUsed(), usedHeap);
-            resultLongObserver.observe(nonHeapUsage.getUsed(), usedNonHeap);
-            resultLongObserver.observe(heapUsage.getUsed(), committedHeap);
-            resultLongObserver.observe(nonHeapUsage.getUsed(), committedNonHeap);
-            resultLongObserver.observe(heapUsage.getUsed(), maxHeap);
-            resultLongObserver.observe(nonHeapUsage.getUsed(), maxNonHeap);
+            observeHeap(resultLongObserver, memoryBean.getHeapMemoryUsage());
+            observeNonHeap(resultLongObserver, memoryBean.getNonHeapMemoryUsage());
           }
         });
   }
@@ -109,11 +108,14 @@ public final class MemoryPools {
           public void update(LongResult resultLongObserver) {
             for (int i = 0; i < poolBeans.size(); i++) {
               MemoryUsage poolUsage = poolBeans.get(i).getUsage();
-              resultLongObserver.observe(poolUsage.getUsed(), usedLabelSets.get(i));
-              resultLongObserver.observe(poolUsage.getCommitted(), committedLabelSets.get(i));
-              // TODO: Decide if max is needed or not. May be derived with some approximation from
-              //  max(used).
-              resultLongObserver.observe(poolUsage.getMax(), maxLabelSets.get(i));
+              if (poolUsage != null) {
+                observe(
+                    resultLongObserver,
+                    poolUsage,
+                    usedLabelSets.get(i),
+                    committedLabelSets.get(i),
+                    maxLabelSets.get(i));
+              }
             }
           }
         });
@@ -123,5 +125,31 @@ public final class MemoryPools {
   public void exportAll() {
     exportMemoryAreaMetric();
     exportMemoryPoolMetric();
+  }
+
+  static void observeHeap(LongResult observer, MemoryUsage usage) {
+    observe(observer, usage, USED_HEAP, COMMITTED_HEAP, MAX_HEAP);
+  }
+
+  static void observeNonHeap(LongResult observer, MemoryUsage usage) {
+    observe(observer, usage, USED_NON_HEAP, COMMITTED_NON_HEAP, MAX_NON_HEAP);
+  }
+
+  private static void observe(
+      LongResult observer,
+      MemoryUsage usage,
+      Labels usedLabels,
+      Labels committedLabels,
+      Labels maxLabels) {
+    // TODO: Decide if init is needed or not. It is a constant that can be queried once on startup.
+    // if (usage.getInit() != -1) {
+    //  observer.observe(usage.getInit(), ...);
+    // }
+    observer.observe(usage.getUsed(), usedLabels);
+    observer.observe(usage.getCommitted(), committedLabels);
+    // TODO: Decide if max is needed or not. It is a constant that can be queried once on startup.
+    if (usage.getMax() != -1) {
+      observer.observe(usage.getMax(), maxLabels);
+    }
   }
 }

@@ -8,7 +8,6 @@ package io.opentelemetry.opentracingshim.testbed.activespanreplacement;
 import static io.opentelemetry.api.trace.SpanId.isValid;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -19,6 +18,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,7 +42,7 @@ class ActiveSpanReplacementTest {
       submitAnotherTask(span);
     }
 
-    await().atMost(15, SECONDS).until(finishedSpansSize(otelTesting), equalTo(3));
+    await().atMost(Duration.ofSeconds(15)).until(finishedSpansSize(otelTesting), equalTo(3));
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(3);

@@ -4,16 +4,74 @@
 
 ### API
 
+#### Miscellaneous
+
+- The `toBuilder()` method on the OpenTelemetry class has been deprecated and will be removed in 0.12.0.
+ 
+### SDK
+
+#### Miscellaneous
+
+- The `toBuilder()` method on the OpenTelemetrySdk class has been deprecated and will be removed in 0.12.0.
+
+-----
+
+## Version 0.11.0 - 2010-11-18
+
+### API
+
 #### Breaking changes:
 
 - The SPI interfaces have moved to a package (not a module) separate from the API packages, and now live in `io.opentelemetry.spi.*` package namespace.
+- Builder classes have been moved to the top level, rather than being inner classes. 
+For example, rather than `io.opentelemetry.api.trace.Span.Builder`, the builder is now in its own top-level class: `io.opentelemetry.api.trace.SpanBuilder`.
+Methods to create the builders remain in the same place as they were before.
+- SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent methods which accept a timestamp now accept a timestamp with a TimeUnit instead of requiring a nanos timestamp
+   
+#### Enhancements:
+
+- Versions of SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent added which accept Instant timestamps
+- Setting the value of the `io.opentelemetry.context.contextStorageProvider` System property to `default` will enforce that
+the default (thread local) ContextStorage will be used for the Context implementation, regardless of what SPI implementations are
+available.
+
+#### Miscellaneous:
+
+- Invalid W3C `TraceState` entries will now be silently dropped, rather than causing the invalidation of the entire `TraceState`.
 
 ### SDK
+
+#### Breaking Changes:
+
+- The builder class for the `OpenTelemetrySdk` now strictly requires its components to be SDK implementations. 
+You can only build an `OpenTelemetrySdk` with `TracerSdkProvider` and `MeterSdkProvider` instances.
+
+#### Enhancements:
+
+- An API has been added to the SDK's MeterProvider implementation (`MeterSdkProvider`) that allows the end-user to configure
+how various metrics will be aggregated. This API should be considered a precursor to a full "Views" API, and will most likely
+evolve over the coming months before the metrics implementation is complete. See the javadoc for `MeterSdkProvider.registerView()` for details.
 
 #### Miscellaneous:
 
 - The `SpanProcessor` interface now includes default method implementations for the `shutdown()` and `forceFlush()` methods.
+- The BatchRecorder implementation has been updated to actually batch the recordings, rather than simply passing them through.
 
+### Extensions
+
+#### Breaking Changes:
+
+- The `@WithSpan` annotation has been moved to the `io.opentelemetry.extension.annotations` package in the `opentelemetry-extension-annotations` module 
+
+#### Bugfixes:
+
+- The memory pool metrics provided by the MemoryPools class in the `opentelemetry-extension-runtime-metrics` module
+have been fixed to properly report the committed memory values.
+ 
+#### Enhancements:
+
+- A new module has been added to assist with propagating the OTel context in kotlin co-routines. 
+See the `opentelemetry-extension-kotlin` module for details. 
 
 -----
 
@@ -25,6 +83,7 @@
 
 - The W3C Baggage Propagator is now available.
 - The B3 Propagator now handles both single and multi-header formats.
+- The B3 Propagator defaults to injecting the single B3 header, rather than the multi-header format.
 - Mutating a method on `Span` now returns the `Span` to enable call-chaining.
 
 #### Bug fixes

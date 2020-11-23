@@ -22,6 +22,7 @@
 
 package io.opentelemetry.context;
 
+import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /**
@@ -76,6 +77,16 @@ public interface ContextStorage {
    */
   static ContextStorage defaultStorage() {
     return ThreadLocalContextStorage.INSTANCE;
+  }
+
+  /**
+   * Adds the {@code wrapper}, which will be executed with the {@link ContextStorage} is first used,
+   * i.e., by calling {@link Context#makeCurrent()}. This must be called as early in your
+   * application as possible to have effect, often as part of a static initialization block in your
+   * main class.
+   */
+  static void addWrapper(Function<? super ContextStorage, ? extends ContextStorage> wrapper) {
+    ContextStorageWrappers.addWrapper(wrapper);
   }
 
   /**

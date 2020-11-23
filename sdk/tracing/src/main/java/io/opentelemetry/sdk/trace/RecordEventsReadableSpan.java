@@ -10,7 +10,6 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -82,7 +81,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
-  private final EvictingQueue<Event> events;
+  private final List<Event> events;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
@@ -126,7 +125,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
-    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
+    this.events = new ArrayList<>();
     this.traceConfig = traceConfig;
   }
 
@@ -197,7 +196,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
           getImmutableAttributes(),
           (attributes == null) ? 0 : attributes.getTotalAddedValues(),
           totalRecordedEvents,
-          getStatusWithDefault(),
+          getSpanDataStatus(),
           name,
           endEpochNanos,
           hasEnded);
@@ -373,20 +372,22 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
-      events.add(timedEvent);
+      if (events.size() < traceConfig.getMaxNumberOfEvents()) {
+        events.add(timedEvent);
+      }
       totalRecordedEvents++;
     }
   }
 
   @Override
-  public ReadWriteSpan setStatus(StatusCode canonicalCode) {
-    setStatus(canonicalCode, null);
+  public ReadWriteSpan setStatus(StatusCode statusCode) {
+    setStatus(statusCode, null);
     return this;
   }
 
   @Override
-  public ReadWriteSpan setStatus(StatusCode canonicalCode, @Nullable String description) {
-    if (canonicalCode == null) {
+  public ReadWriteSpan setStatus(StatusCode statusCode, @Nullable String description) {
+    if (statusCode == null) {
       return this;
     }
     synchronized (lock) {
@@ -394,7 +395,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
       }
-      this.status = SpanData.Status.create(canonicalCode, description);
+      this.status = SpanData.Status.create(statusCode, description);
     }
     return this;
   }
@@ -481,7 +482,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private SpanData.Status getStatusWithDefault() {
+  private SpanData.Status getSpanDataStatus() {
     synchronized (lock) {
       return status;
     }

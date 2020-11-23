@@ -5,6 +5,8 @@
 
 package io.opentelemetry.context.propagation;
 
+import static java.util.Objects.requireNonNull;
+
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -69,6 +71,32 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface ContextPropagators {
+
+  /**
+   * Returns a {@link ContextPropagators} which can be used to extract and inject context in text
+   * payloads with the given {@link TextMapPropagator}. Use {@link
+   * TextMapPropagator#composite(TextMapPropagator...)} to register multiple propagators, which will
+   * all be executed when extracting or injecting.
+   *
+   * <pre>{@code
+   * ContextPropagators propagators = ContextPropagators.create(
+   *   TextMapPropagator.composite(
+   *     HttpTraceContext.getInstance(),
+   *     W3CBaggagePropagator.getInstance(),
+   *     new MyCustomContextPropagator()));
+   * }</pre>
+   */
+  @SuppressWarnings("deprecation")
+  static ContextPropagators create(TextMapPropagator textPropagator) {
+    requireNonNull(textPropagator, "textPropagator");
+    return new DefaultContextPropagators(textPropagator);
+  }
+
+  /** Returns a {@link ContextPropagators} which performs no injection or extraction. */
+  @SuppressWarnings("deprecation")
+  static ContextPropagators noop() {
+    return DefaultContextPropagators.noop();
+  }
 
   /**
    * Returns a {@link TextMapPropagator} propagator.

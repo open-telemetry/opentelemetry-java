@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.spi.OpenTelemetryFactory;
 import io.opentelemetry.spi.metrics.MeterProviderFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
@@ -23,7 +22,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * back to no-op default implementations.
  */
 @ThreadSafe
-final class DefaultOpenTelemetry implements OpenTelemetry {
+public class DefaultOpenTelemetry implements OpenTelemetry {
   private static final Object mutex = new Object();
 
   static OpenTelemetry getGlobalOpenTelemetry() {
@@ -55,7 +54,12 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
 
-  private final ContextPropagators propagators;
+  private volatile ContextPropagators propagators;
+
+  @Override
+  public void setPropagators(ContextPropagators propagators) {
+    this.propagators = propagators;
+  }
 
   @Override
   public TracerProvider getTracerProvider() {
@@ -72,7 +76,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
     return propagators;
   }
 
-  DefaultOpenTelemetry(
+  protected DefaultOpenTelemetry(
       TracerProvider tracerProvider, MeterProvider meterProvider, ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;
     this.meterProvider = meterProvider;
@@ -110,6 +114,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   @Override
+  @Deprecated
   public Builder toBuilder() {
     return new Builder()
         .setTracerProvider(tracerProvider)
@@ -117,11 +122,11 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
         .setPropagators(propagators);
   }
 
-  static class Builder implements OpenTelemetryBuilder<Builder> {
-    private ContextPropagators propagators = DefaultContextPropagators.builder().build();
+  protected static class Builder implements OpenTelemetryBuilder<Builder> {
+    protected ContextPropagators propagators = ContextPropagators.noop();
 
-    private TracerProvider tracerProvider;
-    private MeterProvider meterProvider;
+    protected TracerProvider tracerProvider;
+    protected MeterProvider meterProvider;
 
     @Override
     public Builder setTracerProvider(TracerProvider tracerProvider) {

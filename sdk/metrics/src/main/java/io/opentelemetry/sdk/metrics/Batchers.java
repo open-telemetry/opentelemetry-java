@@ -80,6 +80,11 @@ final class Batchers {
     public List<MetricData> completeCollectionCycle() {
       return Collections.emptyList();
     }
+
+    @Override
+    public boolean generatesDeltas() {
+      return false;
+    }
   }
 
   private static final class AllLabels implements Batcher {
@@ -154,6 +159,75 @@ final class Batchers {
               aggregation.getUnit(descriptor.getUnit()),
               aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
               points));
+    }
+
+    @Override
+    public boolean generatesDeltas() {
+      return delta;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      AllLabels allLabels = (AllLabels) o;
+
+      if (startEpochNanos != allLabels.startEpochNanos) {
+        return false;
+      }
+      if (delta != allLabels.delta) {
+        return false;
+      }
+      if (descriptor != null
+          ? !descriptor.equals(allLabels.descriptor)
+          : allLabels.descriptor != null) {
+        return false;
+      }
+      if (aggregation != null
+          ? !aggregation.equals(allLabels.aggregation)
+          : allLabels.aggregation != null) {
+        return false;
+      }
+      if (resource != null ? !resource.equals(allLabels.resource) : allLabels.resource != null) {
+        return false;
+      }
+      if (instrumentationLibraryInfo != null
+          ? !instrumentationLibraryInfo.equals(allLabels.instrumentationLibraryInfo)
+          : allLabels.instrumentationLibraryInfo != null) {
+        return false;
+      }
+      if (clock != null ? !clock.equals(allLabels.clock) : allLabels.clock != null) {
+        return false;
+      }
+      if (aggregatorFactory != null
+          ? !aggregatorFactory.equals(allLabels.aggregatorFactory)
+          : allLabels.aggregatorFactory != null) {
+        return false;
+      }
+      return aggregatorMap != null
+          ? aggregatorMap.equals(allLabels.aggregatorMap)
+          : allLabels.aggregatorMap == null;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = descriptor != null ? descriptor.hashCode() : 0;
+      result = 31 * result + (aggregation != null ? aggregation.hashCode() : 0);
+      result = 31 * result + (resource != null ? resource.hashCode() : 0);
+      result =
+          31 * result
+              + (instrumentationLibraryInfo != null ? instrumentationLibraryInfo.hashCode() : 0);
+      result = 31 * result + (clock != null ? clock.hashCode() : 0);
+      result = 31 * result + (aggregatorFactory != null ? aggregatorFactory.hashCode() : 0);
+      result = 31 * result + (aggregatorMap != null ? aggregatorMap.hashCode() : 0);
+      result = 31 * result + (int) (startEpochNanos ^ (startEpochNanos >>> 32));
+      result = 31 * result + (delta ? 1 : 0);
+      return result;
     }
   }
 

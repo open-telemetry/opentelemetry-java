@@ -82,7 +82,9 @@ class ImmutableBaggageTest {
     Baggage parent = listToBaggage(T1);
     Context parentContext = Context.root().with(parent);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
-    assertThrows(NullPointerException.class, () -> builder.put(null, V2, TMD), "key");
+    Baggage built = builder.build();
+    builder.put(null, V2, TMD);
+    assertThat(builder.build()).isEqualTo(built);
   }
 
   @Test
@@ -90,7 +92,49 @@ class ImmutableBaggageTest {
     Baggage parent = listToBaggage(T1);
     Context parentContext = Context.root().with(parent);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
-    assertThrows(NullPointerException.class, () -> builder.put(K2, null, TMD), "value");
+    Baggage built = builder.build();
+    builder.put(K2, null, TMD);
+    assertThat(builder.build()).isEqualTo(built);
+  }
+
+  @Test
+  void put_nullMetadata() {
+    Baggage parent = listToBaggage(T1);
+    Context parentContext = Context.root().with(parent);
+    BaggageBuilder builder = Baggage.builder().setParent(parentContext);
+    Baggage built = builder.build();
+    builder.put(K2, V2, null);
+    assertThat(builder.build()).isEqualTo(built);
+  }
+
+  @Test
+  void put_keyUnprintableChars() {
+    Baggage parent = listToBaggage(T1);
+    Context parentContext = Context.root().with(parent);
+    BaggageBuilder builder = Baggage.builder().setParent(parentContext);
+    Baggage built = builder.build();
+    builder.put("\2ab\3cd", "value");
+    assertThat(builder.build()).isEqualTo(built);
+  }
+
+  @Test
+  void put_keyEmpty() {
+    Baggage parent = listToBaggage(T1);
+    Context parentContext = Context.root().with(parent);
+    BaggageBuilder builder = Baggage.builder().setParent(parentContext);
+    Baggage built = builder.build();
+    builder.put("", "value");
+    assertThat(builder.build()).isEqualTo(built);
+  }
+
+  @Test
+  void put_valueUnprintableChars() {
+    Baggage parent = listToBaggage(T1);
+    Context parentContext = Context.root().with(parent);
+    BaggageBuilder builder = Baggage.builder().setParent(parentContext);
+    Baggage built = builder.build();
+    builder.put(K2, "\2ab\3cd");
+    assertThat(builder.build()).isEqualTo(built);
   }
 
   @Test
@@ -152,7 +196,10 @@ class ImmutableBaggageTest {
   @Test
   void remove_nullKey() {
     BaggageBuilder builder = Baggage.builder();
-    assertThrows(NullPointerException.class, () -> builder.remove(null), "key");
+    builder.put(K2, V2);
+    Baggage built = builder.build();
+    builder.remove(null);
+    assertThat(builder.build()).isEqualTo(built);
   }
 
   @Test

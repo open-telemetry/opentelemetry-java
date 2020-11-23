@@ -15,9 +15,9 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.testbed.TestUtils;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ class TestClientServerTest {
     client.send();
 
     await()
-        .atMost(15, TimeUnit.SECONDS)
+        .atMost(Duration.ofSeconds(15))
         .until(TestUtils.finishedSpansSize(otelTesting), equalTo(2));
 
     List<SpanData> finished = otelTesting.getSpans();

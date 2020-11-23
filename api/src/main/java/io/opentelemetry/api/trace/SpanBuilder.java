@@ -24,12 +24,13 @@ import javax.annotation.Nonnull;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = OpenTelemetry.getTracer();
+ *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.anyco.rpc");
+ *
  *   void doWork {
  *     // Create a Span as a child of the current Span.
  *     Span span = tracer.spanBuilder("MyChildSpan").startSpan();
- *     try (Scope ss = TracingContextUtils.currentContextWith(span)) {
- *       TracingContextUtils.getCurrentSpan().addEvent("my event");
+ *     try (Scope ss = span.makeCurrent()) {
+ *       span.addEvent("my event");
  *       doSomeWork();  // Here the new span is in the current Context, so it can be used
  *                      // implicitly anywhere down the stack.
  *     } finally {
@@ -44,7 +45,7 @@ import javax.annotation.Nonnull;
  *
  * <pre>{@code
  * class MyRpcServerInterceptorListener implements RpcServerInterceptor.Listener {
- *   private static final Tracer tracer = OpenTelemetry.getTracer();
+ *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.example.rpc");
  *   private Span mySpan;
  *
  *   public MyRpcInterceptor() {}
@@ -52,12 +53,12 @@ import javax.annotation.Nonnull;
  *   public void onRequest(String rpcName, Metadata metadata) {
  *     // Create a Span as a child of the remote Span.
  *     mySpan = tracer.spanBuilder(rpcName)
- *         .setParent(getTraceContextFromMetadata(metadata)).startSpan();
+ *         .setParent(extractContextFromMetadata(metadata)).startSpan();
  *   }
  *
  *   public void onExecuteHandler(ServerCallHandler serverCallHandler) {
- *     try (Scope ws = TracingContextUtils.currentContextWith(mySpan)) {
- *       TracingContextUtils.getCurrentSpan().addEvent("Start rpc execution.");
+ *     try (Scope ws = mySpan.makeCurrent()) {
+ *       Span.current().addEvent("Start rpc execution.");
  *       serverCallHandler.run();  // Here the new span is in the current Context, so it can be
  *                                 // used implicitly anywhere down the stack.
  *     }
@@ -66,7 +67,7 @@ import javax.annotation.Nonnull;
  *   // Called when the RPC is canceled and guaranteed onComplete will not be called.
  *   public void onCancel() {
  *     // IMPORTANT: DO NOT forget to ended the Span here as the work is done.
- *     mySpan.setStatus(Status.CANCELLED);
+ *     mySpan.setStatus(StatusCode.ERROR);
  *     mySpan.end();
  *   }
  *
@@ -84,10 +85,12 @@ import javax.annotation.Nonnull;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = OpenTelemetry.getTracer();
- *   void DoWork(Span parent) {
+ *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.example.rpc");
+ *
+ *   void doWork(Span parent) {
  *     Span childSpan = tracer.spanBuilder("MyChildSpan")
- *         .setParent(parent).startSpan();
+ *         .setParent(Context.current().with(parent))
+ *         .startSpan();
  *     childSpan.addEvent("my event");
  *     try {
  *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
@@ -99,8 +102,7 @@ import javax.annotation.Nonnull;
  * }
  * }</pre>
  *
- * <p>If your Java version is less than Java SE 7, see {@link SpanBuilder#startSpan} for usage
- * examples.
+ * <p>see {@link SpanBuilder#startSpan} for usage examples.
  */
 public interface SpanBuilder {
 
@@ -290,10 +292,11 @@ public interface SpanBuilder {
    *
    * <pre>{@code
    * class MyClass {
-   *   private static final Tracer tracer = OpenTelemetry.getTracer();
-   *   void DoWork(Span parent) {
+   *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.example.rpc");
+   *
+   *   void doWork(Span parent) {
    *     Span childSpan = tracer.spanBuilder("MyChildSpan")
-   *          .setParent(parent)
+   *          .setParent(Context.current().with(parent))
    *          .startSpan();
    *     childSpan.addEvent("my event");
    *     try {

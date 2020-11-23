@@ -340,12 +340,8 @@ public interface SpanData {
       return ImmutableStatus.create(code, description);
     }
 
-    /**
-     * Returns the canonical status code.
-     *
-     * @return the canonical status code.
-     */
-    StatusCode getCanonicalCode();
+    /** Returns the status code. */
+    StatusCode getStatusCode();
 
     /**
      * Returns the description of this {@code Status} for human consumption.
@@ -362,7 +358,7 @@ public interface SpanData {
      */
     // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
     default boolean isUnset() {
-      return StatusCode.UNSET == getCanonicalCode();
+      return StatusCode.UNSET == getStatusCode();
     }
 
     /**
@@ -373,7 +369,7 @@ public interface SpanData {
      */
     // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
     default boolean isOk() {
-      return isUnset() || StatusCode.OK == getCanonicalCode();
+      return isUnset() || StatusCode.OK == getStatusCode();
     }
   }
 }

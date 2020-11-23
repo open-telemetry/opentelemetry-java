@@ -116,6 +116,23 @@ class AttributesTest {
   }
 
   @Test
+  void deduplication_oddNumberElements() {
+    Attributes one =
+        Attributes.builder()
+            .put(stringKey("key2"), "valueX")
+            .put(stringKey("key2"), "value2")
+            .put(stringKey("key1"), "value1")
+            .build();
+    Attributes two =
+        Attributes.builder()
+            .put(stringKey("key2"), "value2")
+            .put(stringKey("key1"), "value1")
+            .build();
+
+    assertThat(one).isEqualTo(two);
+  }
+
+  @Test
   void emptyAndNullKey() {
     Attributes noAttributes = Attributes.of(stringKey(""), "empty", null, "null");
 
@@ -174,20 +191,20 @@ class AttributesTest {
     Attributes attributes =
         Attributes.builder()
             .put("string", "value1", "value2", null)
-            .put("long", null, 100L, 200L)
-            .put("double", 33.44, null, -44.33)
+            .put("long", 100L, 200L)
+            .put("double", 33.44, -44.33)
             .put("boolean", "duplicateShouldBeRemoved")
             .put(stringKey("boolean"), "true")
-            .put("boolean", false, null, true)
+            .put("boolean", false, true)
             .build();
 
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
                 stringArrayKey("string"), Arrays.asList("value1", "value2", null),
-                longArrayKey("long"), Arrays.asList(null, 100L, 200L),
-                doubleArrayKey("double"), Arrays.asList(33.44, null, -44.33),
-                booleanArrayKey("boolean"), Arrays.asList(false, null, true)));
+                longArrayKey("long"), Arrays.asList(100L, 200L),
+                doubleArrayKey("double"), Arrays.asList(33.44, -44.33),
+                booleanArrayKey("boolean"), Arrays.asList(false, true)));
   }
 
   @Test
@@ -253,9 +270,9 @@ class AttributesTest {
     builder.put("double", 1.0);
     builder.put("bool", true);
     builder.put("arrayString", new String[] {"string"});
-    builder.put("arrayLong", new Long[] {10L});
-    builder.put("arrayDouble", new Double[] {1.0});
-    builder.put("arrayBool", new Boolean[] {true});
+    builder.put("arrayLong", new long[] {10L});
+    builder.put("arrayDouble", new double[] {1.0});
+    builder.put("arrayBool", new boolean[] {true});
     assertThat(builder.build().size()).isEqualTo(9);
 
     // note: currently these are no-op calls; that behavior is not required, so if it needs to
@@ -263,9 +280,9 @@ class AttributesTest {
     builder.put(stringKey("attrValue"), null);
     builder.put("string", (String) null);
     builder.put("arrayString", (String[]) null);
-    builder.put("arrayLong", (Long[]) null);
-    builder.put("arrayDouble", (Double[]) null);
-    builder.put("arrayBool", (Boolean[]) null);
+    builder.put("arrayLong", (long[]) null);
+    builder.put("arrayDouble", (double[]) null);
+    builder.put("arrayBool", (boolean[]) null);
 
     Attributes attributes = builder.build();
     assertThat(attributes.size()).isEqualTo(9);

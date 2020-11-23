@@ -73,7 +73,10 @@ class ZipkinSpanExporterTest {
     SpanData data = buildStandardSpan().build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(Span.Kind.SERVER));
+        .isEqualTo(
+            standardZipkinSpanBuilder(Span.Kind.SERVER)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .build());
   }
 
   @Test
@@ -84,7 +87,11 @@ class ZipkinSpanExporterTest {
             .setEndEpochNanos(1505855794_194009999L)
             .build();
 
-    Span expected = standardZipkinSpanBuilder(Span.Kind.SERVER).duration(1).build();
+    Span expected =
+        standardZipkinSpanBuilder(Span.Kind.SERVER)
+            .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+            .duration(1)
+            .build();
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint)).isEqualTo(expected);
   }
 
@@ -93,7 +100,10 @@ class ZipkinSpanExporterTest {
     SpanData data = buildStandardSpan().setKind(Kind.SERVER).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(Span.Kind.SERVER));
+        .isEqualTo(
+            standardZipkinSpanBuilder(Span.Kind.SERVER)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .build());
   }
 
   @Test
@@ -101,7 +111,10 @@ class ZipkinSpanExporterTest {
     SpanData data = buildStandardSpan().setKind(Kind.CLIENT).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(Span.Kind.CLIENT));
+        .isEqualTo(
+            standardZipkinSpanBuilder(Span.Kind.CLIENT)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .build());
   }
 
   @Test
@@ -109,7 +122,10 @@ class ZipkinSpanExporterTest {
     SpanData data = buildStandardSpan().setKind(Kind.INTERNAL).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(null));
+        .isEqualTo(
+            standardZipkinSpanBuilder(null)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .build());
   }
 
   @Test
@@ -117,7 +133,10 @@ class ZipkinSpanExporterTest {
     SpanData data = buildStandardSpan().setKind(Kind.CONSUMER).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(Span.Kind.CONSUMER));
+        .isEqualTo(
+            standardZipkinSpanBuilder(Span.Kind.CONSUMER)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .build());
   }
 
   @Test
@@ -125,7 +144,10 @@ class ZipkinSpanExporterTest {
     SpanData data = buildStandardSpan().setKind(Kind.PRODUCER).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(Span.Kind.PRODUCER));
+        .isEqualTo(
+            standardZipkinSpanBuilder(Span.Kind.PRODUCER)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .build());
   }
 
   @Test
@@ -136,7 +158,10 @@ class ZipkinSpanExporterTest {
 
     Endpoint expectedEndpoint = Endpoint.newBuilder().serviceName("super-zipkin-service").build();
     Span expectedZipkinSpan =
-        buildZipkinSpan(Span.Kind.SERVER).toBuilder().localEndpoint(expectedEndpoint).build();
+        buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+            .localEndpoint(expectedEndpoint)
+            .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+            .build();
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint)).isEqualTo(expectedZipkinSpan);
   }
 
@@ -166,6 +191,7 @@ class ZipkinSpanExporterTest {
                 .putTag("stringArray", "Hello")
                 .putTag("doubleArray", "32.33,-98.3")
                 .putTag("longArray", "33,999")
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
                 .build());
   }
 
@@ -183,6 +209,7 @@ class ZipkinSpanExporterTest {
             buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .putTag("otel.library.name", "io.opentelemetry.auto")
                 .putTag("otel.library.version", "1.0.0")
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
                 .build());
   }
 
@@ -203,6 +230,7 @@ class ZipkinSpanExporterTest {
             buildZipkinSpan(Span.Kind.CLIENT).toBuilder()
                 .clearTags()
                 .putTag(SemanticAttributes.HTTP_STATUS_CODE.getKey(), "404")
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "ERROR")
                 .putTag("error", "A user provided error")
                 .build());
   }
@@ -230,12 +258,33 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  void generateSpan_WithRpcUnsetStatus() {
+    Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
+
+    SpanData data =
+        buildStandardSpan()
+            .setStatus(SpanData.Status.create(StatusCode.UNSET, null))
+            .setAttributes(attributeMap)
+            .build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(
+            buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+                .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
+                .build());
+  }
+
+  @Test
   void testExport() {
     ZipkinSpanExporter zipkinSpanExporter =
         new ZipkinSpanExporter(mockEncoder, mockSender, "tweetiebird");
 
     byte[] someBytes = new byte[0];
-    when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
+    when(mockEncoder.encode(
+            standardZipkinSpanBuilder(Span.Kind.SERVER)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .build()))
+        .thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
     doAnswer(
             invocation -> {
@@ -258,7 +307,11 @@ class ZipkinSpanExporterTest {
         new ZipkinSpanExporter(mockEncoder, mockSender, "tweetiebird");
 
     byte[] someBytes = new byte[0];
-    when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
+    when(mockEncoder.encode(
+            standardZipkinSpanBuilder(Span.Kind.SERVER)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .build()))
+        .thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
     doAnswer(
             invocation -> {

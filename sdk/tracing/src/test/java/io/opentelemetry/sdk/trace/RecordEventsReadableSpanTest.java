@@ -53,11 +53,13 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
+@ExtendWith(MockitoExtension.class)
 class RecordEventsReadableSpanTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
@@ -84,7 +86,6 @@ class RecordEventsReadableSpanTest {
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.initMocks(this);
     attributes.put(stringKey("MyStringAttributeKey"), "MyStringAttributeValue");
     attributes.put(longKey("MyLongAttributeKey"), 123L);
     attributes.put(booleanKey("MyBooleanAttributeKey"), false);
@@ -631,11 +632,7 @@ class RecordEventsReadableSpanTest {
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
         Event expectedEvent =
-            Event.create(
-                START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
-                "event2",
-                Attributes.empty(),
-                0);
+            Event.create(START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
         assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
         assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
@@ -646,11 +643,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
       Event expectedEvent =
-          Event.create(
-              START_EPOCH_NANOS + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
-              "event2",
-              Attributes.empty(),
-              0);
+          Event.create(START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
       assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
     }
   }
@@ -871,7 +864,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getLinks()).isEqualTo(links);
     assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
     assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
-    assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
+    assertThat(spanData.getStatus().getStatusCode()).isEqualTo(status.getStatusCode());
     assertThat(spanData.hasEnded()).isEqualTo(hasEnded);
 
     // verify equality manually, since the implementations don't all equals with each other.

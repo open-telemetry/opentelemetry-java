@@ -10,7 +10,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import java.util.ArrayList;
@@ -33,15 +33,8 @@ public class Application {
   private static final OpenTelemetry openTelemetry;
 
   static {
-    openTelemetry =
-        OpenTelemetry.get().toBuilder()
-            .setPropagators(
-                DefaultContextPropagators.builder()
-                    .addTextMapPropagator(HttpTraceContext.getInstance())
-                    .build())
-            .build();
-    // set the updated instance as the global instance, just to make sure.
-    OpenTelemetry.set(openTelemetry);
+    OpenTelemetry.setGlobalPropagators(ContextPropagators.create(HttpTraceContext.getInstance()));
+    openTelemetry = OpenTelemetry.get();
   }
 
   private Application() {}

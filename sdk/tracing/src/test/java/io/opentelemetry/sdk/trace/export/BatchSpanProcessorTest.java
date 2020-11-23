@@ -32,14 +32,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-/** Unit tests for {@link BatchSpanProcessor}. */
+@ExtendWith(MockitoExtension.class)
 class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
@@ -49,11 +49,6 @@ class BatchSpanProcessorTest {
   private final Tracer tracer = tracerSdkFactory.get("BatchSpanProcessorTest");
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
-
-  @BeforeEach
-  void setup() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @AfterEach
   void cleanup() {
@@ -212,7 +207,7 @@ class BatchSpanProcessorTest {
         new WaitingSpanExporter(2, CompletableResultCode.ofSuccess());
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.builder(
-                MultiSpanExporter.create(Arrays.asList(waitingSpanExporter, waitingSpanExporter2)))
+                SpanExporter.composite(Arrays.asList(waitingSpanExporter, waitingSpanExporter2)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
@@ -231,7 +226,7 @@ class BatchSpanProcessorTest {
         new WaitingSpanExporter(maxQueuedSpans, CompletableResultCode.ofSuccess());
     BatchSpanProcessor batchSpanProcessor =
         BatchSpanProcessor.builder(
-                MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
+                SpanExporter.composite(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .setMaxQueueSize(maxQueuedSpans)
             .setMaxExportBatchSize(maxQueuedSpans / 2)
@@ -296,7 +291,7 @@ class BatchSpanProcessorTest {
         .export(ArgumentMatchers.anyList());
     tracerSdkFactory.addSpanProcessor(
         BatchSpanProcessor.builder(
-                MultiSpanExporter.create(Arrays.asList(mockServiceHandler, waitingSpanExporter)))
+                SpanExporter.composite(Arrays.asList(mockServiceHandler, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);

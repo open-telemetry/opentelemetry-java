@@ -7,7 +7,7 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-description = 'OpenTelemetry Context (Incubator)'
+description = "OpenTelemetry Context (Incubator)"
 ext.moduleName = "io.opentelemetry.context"
 
 testSets {
@@ -17,17 +17,20 @@ testSets {
     braveInOtelTest
     otelInBraveTest
     otelAsBraveTest
+
+    storageWrappersTest
 }
 
 dependencies {
     grpcInOtelTestImplementation libraries.grpc_context
     otelInGrpcTestImplementation libraries.grpc_context
 
-    braveInOtelTestImplementation "io.zipkin.brave:brave:5.12.6"
-    otelAsBraveTestImplementation "io.zipkin.brave:brave:5.12.6"
-    otelInBraveTestImplementation "io.zipkin.brave:brave:5.12.6"
+    braveInOtelTestImplementation "io.zipkin.brave:brave:5.13.1"
+    otelAsBraveTestImplementation "io.zipkin.brave:brave:5.13.1"
+    otelInBraveTestImplementation "io.zipkin.brave:brave:5.13.1"
 
     testImplementation libraries.awaitility
+    testImplementation libraries.guava
     testImplementation libraries.junit_pioneer
 
     signature libraries.android_signature

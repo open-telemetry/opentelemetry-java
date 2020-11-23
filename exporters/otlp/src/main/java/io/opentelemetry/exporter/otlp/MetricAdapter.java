@@ -69,6 +69,11 @@ final class MetricAdapter {
       groupByResourceAndLibrary(Collection<MetricData> metricDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Metric>>> result = new HashMap<>();
     for (MetricData metricData : metricDataList) {
+      if (metricData.getPoints().isEmpty()) {
+        // If no points available then ignore.
+        continue;
+      }
+
       Resource resource = metricData.getResource();
       Map<InstrumentationLibraryInfo, List<Metric>> libraryInfoListMap =
           result.get(metricData.getResource());
@@ -92,10 +97,6 @@ final class MetricAdapter {
             .setName(metricData.getName())
             .setDescription(metricData.getDescription())
             .setUnit(metricData.getUnit());
-    // If no points available then return.
-    if (metricData.getPoints().isEmpty()) {
-      return builder.build();
-    }
 
     boolean monotonic = false;
 

@@ -14,7 +14,6 @@ import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -140,16 +139,16 @@ public final class ZipkinSpanExporter implements SpanExporter {
           }
         });
     SpanData.Status status = spanData.getStatus();
-    // for GRPC spans, include status code & description.
-    if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE) != null) {
-      spanBuilder.putTag(OTEL_STATUS_CODE, status.getCanonicalCode().toString());
+    // include status code & description.
+    if (!status.isUnset()) {
+      spanBuilder.putTag(OTEL_STATUS_CODE, status.getStatusCode().toString());
       if (status.getDescription() != null) {
         spanBuilder.putTag(OTEL_STATUS_DESCRIPTION, status.getDescription());
       }
     }
     // add the error tag, if it isn't already in the source span.
-    if (status != null && !status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
-      spanBuilder.putTag(STATUS_ERROR.getKey(), status.getCanonicalCode().toString());
+    if (!status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
+      spanBuilder.putTag(STATUS_ERROR.getKey(), status.getStatusCode().toString());
     }
 
     InstrumentationLibraryInfo instrumentationLibraryInfo =

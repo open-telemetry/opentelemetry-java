@@ -36,10 +36,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class JaegerThriftSpanExporterTest {
 
   private static final String TRACE_ID = "a0000000000000000000000000abc123";
@@ -51,7 +53,6 @@ class JaegerThriftSpanExporterTest {
 
   @BeforeEach
   void beforeEach() {
-    MockitoAnnotations.initMocks(this);
     exporter =
         JaegerThriftSpanExporter.builder()
             .setThriftSender(thriftSender)

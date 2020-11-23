@@ -6,10 +6,12 @@
 package io.opentelemetry.opencensusshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
@@ -19,22 +21,22 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class InteroperabilityTest {
+class InteroperabilityTest {
 
   private static final String NULL_SPAN_ID = "0000000000000000";
 
@@ -42,15 +44,15 @@ public class InteroperabilityTest {
 
   @Spy private SpanExporter spanExporter;
 
-  @Before
+  @BeforeEach
   public void init() {
-    MockitoAnnotations.initMocks(this);
     SpanProcessor spanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
     OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
   }
 
   @Test
-  public void testParentChildRelationshipsAreExportedCorrectly() {
+  void testParentChildRelationshipsAreExportedCorrectly() {
+    when(spanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
     Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.test.scoped.span.1");
     Span span = tracer.spanBuilder("OpenTelemetrySpan").startSpan();
     try (Scope scope = Context.current().with(span).makeCurrent()) {
@@ -94,7 +96,8 @@ public class InteroperabilityTest {
   }
 
   @Test
-  public void testParentChildRelationshipsAreExportedCorrectlyForOpenCensusOnly() {
+  void testParentChildRelationshipsAreExportedCorrectlyForOpenCensusOnly() {
+    when(spanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     try (io.opencensus.common.Scope scope =
         tracer

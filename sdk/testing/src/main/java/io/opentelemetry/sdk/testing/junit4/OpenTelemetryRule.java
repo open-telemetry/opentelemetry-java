@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.testing.junit4;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.HttpTraceContext;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
@@ -55,10 +55,7 @@ public class OpenTelemetryRule extends ExternalResource {
 
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
-            .setPropagators(
-                DefaultContextPropagators.builder()
-                    .addTextMapPropagator(HttpTraceContext.getInstance())
-                    .build())
+            .setPropagators(ContextPropagators.create(HttpTraceContext.getInstance()))
             .setTracerProvider(tracerProvider)
             .build();
 

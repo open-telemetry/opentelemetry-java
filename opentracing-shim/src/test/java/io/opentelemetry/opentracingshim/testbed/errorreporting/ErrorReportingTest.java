@@ -20,12 +20,12 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -53,7 +53,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
-    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getStatusCode());
   }
 
   /* Error handling in a callback capturing/activating the Span */
@@ -71,11 +71,11 @@ public final class ErrorReportingTest {
           }
         });
 
-    await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(1));
+    await().atMost(Duration.ofSeconds(5)).until(finishedSpansSize(otelTesting), equalTo(1));
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
-    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getStatusCode());
   }
 
   /* Error handling for a max-retries task (such as url fetching).
@@ -106,7 +106,7 @@ public final class ErrorReportingTest {
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
-    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getStatusCode());
 
     List<Event> events = spans.get(0).getEvents();
     assertThat(events).hasSize(maxRetries);
@@ -137,11 +137,11 @@ public final class ErrorReportingTest {
               tracer));
     }
 
-    await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(1));
+    await().atMost(Duration.ofSeconds(5)).until(finishedSpansSize(otelTesting), equalTo(1));
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);
-    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getCanonicalCode());
+    assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getStatusCode());
   }
 
   static class ScopedRunnable implements Runnable {
