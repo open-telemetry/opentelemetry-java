@@ -4,6 +4,10 @@
 
 ### API
 
+#### Breaking Changes
+
+- The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types. 
+
 #### Miscellaneous
 
 - The `toBuilder()` method on the OpenTelemetry class has been deprecated and will be removed in 0.13.0.
@@ -14,6 +18,7 @@ You can access the same functionality via static methods on the `ContextPropagat
 
 #### Breaking Changes
 
+- The `opentelemetry-sdk-tracing` module has been renamed to `opentelemetry-sdk-trace`.
 - The deprecated `SpanData.getCanonicalCode()` method has been removed, along with the implementations.
 
 #### Enhancements
