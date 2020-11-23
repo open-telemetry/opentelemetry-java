@@ -13,3 +13,10 @@ dependencies {
 tasks.withType(JavaCompile) {
     it.options.release = 11
 }
+
+// Running tests with JDK 15 due to https://bugs.openjdk.java.net/browse/JDK-8245283
+test {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(15)
+    }
+}
