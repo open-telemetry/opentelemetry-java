@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.JQF;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -18,13 +19,14 @@ import org.junit.runner.RunWith;
 
 @RunWith(JQF.class)
 @SuppressWarnings("JavadocMethod")
-public class HttpTraceContextFuzzTest {
-  private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
+public class W3CTraceContextPropagatorFuzzTest {
+  private final TextMapPropagator w3cTraceContextPropagator =
+      W3CTraceContextPropagator.getInstance();
 
   @Fuzz
   public void safeForRandomInputs(String traceParentHeader, String traceStateHeader) {
     Context context =
-        httpTraceContext.extract(
+        w3cTraceContextPropagator.extract(
             Context.root(),
             ImmutableMap.of("traceparent", traceParentHeader, "tracestate", traceStateHeader),
             new Getter<Map<String, String>>() {

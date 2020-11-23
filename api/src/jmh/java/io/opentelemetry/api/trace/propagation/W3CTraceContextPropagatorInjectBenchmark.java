@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +30,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
-public class HttpTraceContextInjectBenchmark {
+public class W3CTraceContextPropagatorInjectBenchmark {
 
   private static final List<SpanContext> spanContexts =
       Arrays.asList(
@@ -39,7 +40,8 @@ public class HttpTraceContextInjectBenchmark {
           createTestSpanContext("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
           createTestSpanContext("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
   private static final int COUNT = 5; // spanContexts.size()
-  private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
+  private final TextMapPropagator w3cTraceContextPropagator =
+      W3CTraceContextPropagator.getInstance();
   private final Map<String, String> carrier = new HashMap<>();
   private final Setter<Map<String, String>> setter =
       new Setter<Map<String, String>>() {
@@ -60,7 +62,7 @@ public class HttpTraceContextInjectBenchmark {
   @OperationsPerInvocation(COUNT)
   public Map<String, String> measureInject() {
     for (int i = 0; i < COUNT; i++) {
-      httpTraceContext.inject(contexts.get(i), carrier, setter);
+      w3cTraceContextPropagator.inject(contexts.get(i), carrier, setter);
     }
     return carrier;
   }

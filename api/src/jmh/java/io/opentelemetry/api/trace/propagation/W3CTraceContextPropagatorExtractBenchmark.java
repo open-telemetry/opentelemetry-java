@@ -6,6 +6,7 @@
 package io.opentelemetry.api.trace.propagation;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +27,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
-public class HttpTraceContextExtractBenchmark {
+public class W3CTraceContextPropagatorExtractBenchmark {
 
   private static final String TRACEPARENT = "traceparent";
   private static final int COUNT = 5;
@@ -37,7 +38,8 @@ public class HttpTraceContextExtractBenchmark {
           "00-2e7d0ad2390617702e7d0ad239061770-d49582a2de984b86-01",
           "00-905734c59b913b4a905734c59b913b4a-776ff807b787538a-00",
           "00-68ec932c33b3f2ee68ec932c33b3f2ee-68ec932c33b3f2ee-00");
-  private final HttpTraceContext httpTraceContext = HttpTraceContext.getInstance();
+  private final TextMapPropagator w3cTraceContextPropagator =
+      W3CTraceContextPropagator.getInstance();
   private final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
         @Override
@@ -65,7 +67,7 @@ public class HttpTraceContextExtractBenchmark {
   public Context measureExtract() {
     Context result = null;
     for (int i = 0; i < COUNT; i++) {
-      result = httpTraceContext.extract(Context.root(), carriers.get(i), getter);
+      result = w3cTraceContextPropagator.extract(Context.root(), carriers.get(i), getter);
     }
     return result;
   }
