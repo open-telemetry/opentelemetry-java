@@ -77,6 +77,12 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private static final boolean DEFAULT_USE_TLS = false;
   private static final String EXPORTER_NAME = OtlpGrpcSpanExporter.class.getSimpleName();
 
+  private static final Labels EXPORTER_NAME_LABELS = Labels.of("exporter", EXPORTER_NAME);
+  private static final Labels EXPORT_SUCCESS_LABELS =
+      Labels.of("exporter", EXPORTER_NAME, "success", "true");
+  private static final Labels EXPORT_FAILURE_LABELS =
+      Labels.of("exporter", EXPORTER_NAME, "success", "false");
+
   private final TraceServiceFutureStub traceService;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
@@ -112,7 +118,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    spansSeen.add(spans.size(), Labels.of("exporter", OtlpGrpcSpanExporter.class.getSimpleName()));
+    spansSeen.add(spans.size(), EXPORTER_NAME_LABELS);
     ExportTraceServiceRequest exportTraceServiceRequest =
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
@@ -132,17 +138,13 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
         new FutureCallback<ExportTraceServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportTraceServiceResponse response) {
-            spansExported.add(
-                spans.size(),
-                Labels.of(
-                    "exporter", OtlpGrpcSpanExporter.class.getSimpleName(), "success", "true"));
+            spansExported.add(spans.size(), EXPORT_SUCCESS_LABELS);
             result.succeed();
           }
 
           @Override
           public void onFailure(Throwable t) {
-            spansExported.add(
-                spans.size(), Labels.of("exporter", EXPORTER_NAME, "success", "false"));
+            spansExported.add(spans.size(), EXPORT_FAILURE_LABELS);
             logger.log(Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
             logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
             result.fail();
