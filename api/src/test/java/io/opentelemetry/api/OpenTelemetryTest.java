@@ -7,6 +7,7 @@ package io.opentelemetry.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.metrics.BatchRecorder;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -64,6 +65,24 @@ class OpenTelemetryTest {
     assertThat(OpenTelemetry.getGlobalMeterProvider())
         .isSameAs(OpenTelemetry.getGlobalMeterProvider());
     assertThat(OpenTelemetry.getGlobalPropagators()).isSameAs(OpenTelemetry.getGlobalPropagators());
+  }
+
+  @Test
+  void builder() {
+    MeterProvider meterProvider = mock(MeterProvider.class);
+    TracerProvider tracerProvider = mock(TracerProvider.class);
+    ContextPropagators contextPropagators = mock(ContextPropagators.class);
+    OpenTelemetry openTelemetry =
+        OpenTelemetry.builder()
+            .setMeterProvider(meterProvider)
+            .setTracerProvider(tracerProvider)
+            .setPropagators(contextPropagators)
+            .build();
+
+    assertThat(openTelemetry).isNotNull();
+    assertThat(openTelemetry.getMeterProvider()).isSameAs(meterProvider);
+    assertThat(openTelemetry.getTracerProvider()).isSameAs(tracerProvider);
+    assertThat(openTelemetry.getPropagators()).isSameAs(contextPropagators);
   }
 
   @Test
