@@ -10,9 +10,15 @@
 
 #### Miscellaneous
 
-- The `toBuilder()` method on the OpenTelemetry class has been deprecated and will be removed in 0.13.0.
+- The `toBuilder()` method on the OpenTelemetry interface has been deprecated and will be removed in 0.13.0.
 - The `DefaultContextPropagators` class has been deprecated. Access to it will be removed in 0.13.0.
 You can access the same functionality via static methods on the `ContextPropagators` interface. 
+- A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
+
+### Extensions
+
+- The `opentelemetry-extension-runtime-metrics` module has been deprecated. The functionality is available in the 
+opentelemetry-java-instrumentation project under a different module name. The module here will be removed in 0.13.0.
  
 ### SDK
 
