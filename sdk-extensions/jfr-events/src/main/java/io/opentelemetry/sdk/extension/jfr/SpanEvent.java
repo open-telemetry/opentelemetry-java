@@ -18,16 +18,9 @@ import jdk.jfr.Name;
 @Description("Open Telemetry trace event corresponding to a span.")
 class SpanEvent extends Event {
 
-  @Label("Operation Name")
   private final String operationName;
-
-  @Label("Trace Id")
   private final String traceId;
-
-  @Label("Span Id")
   private final String spanId;
-
-  @Label("Parent Id")
   private final String parentId;
 
   SpanEvent(SpanData spanData) {
@@ -37,18 +30,22 @@ class SpanEvent extends Event {
     this.parentId = spanData.getParentSpanId();
   }
 
+  @Label("Operation Name")
   public String getOperationName() {
     return operationName;
   }
 
+  @Label("Trace Id")
   public String getTraceId() {
     return traceId;
   }
 
+  @Label("Span Id")
   public String getSpanId() {
     return spanId;
   }
 
+  @Label("Parent Id")
   public String getParentId() {
     return parentId;
   }

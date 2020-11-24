@@ -24,7 +24,9 @@ public class JfrContextStorageWrapper implements ContextStorage {
     ScopeEvent event = new ScopeEvent(Span.fromContext(toAttach).getSpanContext());
     event.begin();
     return () -> {
-      event.commit();
+      if (event.shouldCommit()) {
+        event.commit();
+      }
       scope.close();
     };
   }

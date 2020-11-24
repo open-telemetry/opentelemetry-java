@@ -20,10 +20,7 @@ import jdk.jfr.Name;
         + "in scope/active on this thread.")
 class ScopeEvent extends Event {
 
-  @Label("Trace Id")
   private final String traceId;
-
-  @Label("Span Id")
   private final String spanId;
 
   ScopeEvent(SpanContext spanContext) {
@@ -31,10 +28,12 @@ class ScopeEvent extends Event {
     this.spanId = spanContext.getSpanIdAsHexString();
   }
 
+  @Label("Trace Id")
   public String getTraceId() {
     return traceId;
   }
 
+  @Label("Span Id")
   public String getSpanId() {
     return spanId;
   }

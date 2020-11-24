@@ -8,6 +8,7 @@ ext.moduleName = 'io.opentelemetry.sdk.extension.jfr'
 dependencies {
     implementation project(':opentelemetry-api'),
             project(':opentelemetry-sdk')
+    implementation libraries.guava
 }
 
 tasks.withType(JavaCompile) {

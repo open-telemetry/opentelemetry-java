@@ -22,7 +22,7 @@ import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordingFile;
 import org.junit.jupiter.api.Test;
 
-public class JfrSpanProcessorTest {
+class JfrSpanProcessorTest {
 
   private static final String OPERATION_NAME = "Test Span";
   private final Tracer tracer;
