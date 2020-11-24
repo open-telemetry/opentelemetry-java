@@ -20,8 +20,9 @@ import java.util.Set;
 /**
  * Span processor to create new JFR events for the Span as they are started, and commit on end.
  *
- * <p>NOTE: JfrSpanProcessor must be running synchronously to ensure that duration is correctly
- * captured.
+ * <p>NOTE: The JfrSpanProcessor measures the timing of spans, avoid if possible to wrap it with any
+ * other SpanProcessor which may affect timings. When possible, register it first before any other
+ * processors to allow the most accurate measurements.
  */
 public class JfrSpanProcessor implements SpanProcessor {
 
