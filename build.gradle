@@ -370,7 +370,7 @@ configure(opentelemetryProjects) {
         configProperties["rootDir"] = rootDir
     }
 
-    jacoco { toolVersion = "0.8.5" }
+    jacoco { toolVersion = "0.8.6" }
 
     spotless {
         java {
