@@ -30,7 +30,11 @@ import java.util.List;
  * <pre>
  *   runtime.jvm.gc.collection{gc="PS1"} 6.7
  * </pre>
+ *
+ * @deprecated This module and classes have been moved to the OpenTelemetry Java Instrumentation
+ *     project. It will be removed in release 0.13.0.
  */
+@Deprecated
 public final class GarbageCollector {
   private static final String GC_LABEL_KEY = "gc";
 
