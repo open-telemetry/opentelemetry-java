@@ -25,6 +25,11 @@ This project contains the following top level components:
 
 We would love to hear from the larger community: please provide feedback proactively.
 
+## Requirements
+
+Unless otherwise noted, all published artifacts support Java 8 or higher. See [CONTRIBUTING.md](./CONTRIBUTING.md)
+for additional instructions for building this project for development.
+
 ### Note about extensions
 
 Both API and SDK extensions consist of various additional components which are excluded from the core artifacts
