@@ -150,6 +150,10 @@ public final class W3CTraceContextPropagator {
     // singleton
   }
 
+  /**
+   * Returns a singleton instance of a {@link TextMapPropagator} implementing the W3C TraceContext
+   * propagation.
+   */
   public static TextMapPropagator getInstance() {
     return INSTANCE;
   }

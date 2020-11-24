@@ -11,6 +11,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Deprecated alias of an implementation of the W3C TraceContext propagation protocol. Use {@link
+ * W3CTraceContextPropagator} instead.
+ */
 @Immutable
 @Deprecated
 public final class HttpTraceContext implements TextMapPropagator {
@@ -20,6 +24,10 @@ public final class HttpTraceContext implements TextMapPropagator {
     // singleton
   }
 
+  /**
+   * Returns a singleton instance of a {@link TextMapPropagator} implementing the W3C TraceContext
+   * propagation. Deprecated: use {@link W3CTraceContextPropagator#getInstance()} instead.
+   */
   public static HttpTraceContext getInstance() {
     return INSTANCE;
   }
