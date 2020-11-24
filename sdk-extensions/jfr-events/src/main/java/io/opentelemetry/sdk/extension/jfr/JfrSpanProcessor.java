@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.extension.jfr;
 
-import static java.util.Objects.nonNull;
-
 import com.google.common.collect.MapMaker;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
