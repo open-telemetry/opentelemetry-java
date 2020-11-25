@@ -8,6 +8,7 @@ package io.opentelemetry.opentracingshim.testbed.clientserver;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -66,8 +67,14 @@ class TestClientServerTest {
 
     finished = sortByStartTime(finished);
     assertThat(finished.get(1).getTraceId()).isEqualTo(finished.get(0).getTraceId());
-    assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
-    assertThat(finished.get(1).getKind()).isEqualTo(Kind.SERVER);
+    Kind firstSpanKind = finished.get(0).getKind();
+    if (firstSpanKind == Kind.CLIENT) {
+      assertThat(finished.get(1).getKind()).isEqualTo(Kind.SERVER);
+    } else if (firstSpanKind == Kind.SERVER) {
+      assertThat(finished.get(1).getKind()).isEqualTo(Kind.CLIENT);
+    } else {
+      fail("Unexpected first span kind: " + firstSpanKind);
+    }
 
     assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
