@@ -47,8 +47,18 @@ class TestClientServerTest {
   @Test
   void test() throws Exception {
     Client client = new Client(queue, tracer);
-    client.send();
+    client.send(false);
+    verify();
+  }
 
+  @Test
+  public void testUpperCaseKeys() throws Exception {
+    Client client = new Client(queue, tracer);
+    client.send(true);
+    verify();
+  }
+
+  private void verify() {
     await().atMost(Duration.ofSeconds(15)).until(finishedSpansSize(otelTesting), equalTo(2));
 
     List<SpanData> finished = otelTesting.getSpans();

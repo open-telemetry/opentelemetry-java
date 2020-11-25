@@ -11,6 +11,7 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.propagation.TextMapInjectAdapter;
 import io.opentracing.tag.Tags;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 final class Client {
@@ -23,7 +24,7 @@ final class Client {
     this.tracer = tracer;
   }
 
-  public void send() throws InterruptedException {
+  public void send(boolean convertKeysToUpperCase) throws InterruptedException {
     Message message = new Message();
 
     Span span =
@@ -34,6 +35,13 @@ final class Client {
             .start();
     try (Scope scope = tracer.activateSpan(span)) {
       tracer.inject(span.context(), Builtin.TEXT_MAP_INJECT, new TextMapInjectAdapter(message));
+      if (convertKeysToUpperCase) {
+        Message newMessage = new Message();
+        for (Map.Entry<String, String> entry : message.entrySet()) {
+          newMessage.put(entry.getKey().toUpperCase(), entry.getValue());
+        }
+        message = newMessage;
+      }
       queue.put(message);
     } finally {
       span.finish();
