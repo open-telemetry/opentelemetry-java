@@ -23,6 +23,13 @@ import javax.annotation.concurrent.Immutable;
  * <p>Null keys will be silently dropped.
  *
  * <p>Note: The behavior of null-valued attributes is undefined, and hence strongly discouraged.
+ *
+ * <p>Implementations of this interface *must* be immutable and have well-defined value-based
+ * equals/hashCode implementations. If an implementation does not strictly conform to these
+ * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
+ *
+ * <p>For this reason, it is strongly suggested that you use the implementation that is provided
+ * here via the factory methods and the {@link AttributesBuilder}.
  */
 @SuppressWarnings("rawtypes")
 @Immutable
