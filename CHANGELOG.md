@@ -40,6 +40,13 @@ opentelemetry-java-instrumentation project under a different module name. The mo
 - The MultiSpanProcessor and MultiSpanExporter have been deprecated. You can access the same functionality via
 the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes will be made non-public in the 0.13.0 release.
 
+### Extensions
+
+#### Breaking Changes
+
+- The `opentelemetry-sdk-extension-aws-v1-support` module has been renamed to `opentelemetry-sdk-extension-aws` 
+and the classes in it have been repackaged into the `io.opentelemetry.sdk.extension.aws.*` packages.
+
 -----
 
 ## Version 0.11.0 - 2010-11-18
