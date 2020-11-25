@@ -32,7 +32,7 @@ public class AttributesBuilder {
 
   /** Create the {@link Attributes} from this. */
   public Attributes build() {
-    return Attributes.sortAndFilterToAttributes(data.toArray());
+    return Attributes.ArrayBackedAttributes.sortAndFilterToAttributes(data.toArray());
   }
 
   /** Puts a {@link AttributeKey} with associated value into this. */
