@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
@@ -25,7 +26,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link io.opentelemetry.api.trace.propagation.HttpTraceContext}. */
+/** Unit tests for {@link W3CTraceContextPropagator}. */
 class B3PropagatorTest {
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();

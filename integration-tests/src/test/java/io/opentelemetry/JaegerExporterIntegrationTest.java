@@ -8,7 +8,6 @@ package io.opentelemetry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -83,7 +82,7 @@ class JaegerExporterIntegrationTest {
   @Test
   void testJaegerExampleAppIntegration() {
     Awaitility.await()
-        .atMost(30, TimeUnit.SECONDS)
+        .atMost(Duration.ofSeconds(30))
         .until(JaegerExporterIntegrationTest::assertJaegerHaveTrace);
   }
 

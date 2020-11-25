@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongValueRecorderSdk}. */
@@ -136,7 +137,9 @@ class LongValueRecorderSdkTest {
     longMeasure1.record(12);
 
     assertThat(longMeasure.collectAll().get(0))
-        .isEqualToIgnoringGivenFields(longMeasure1.collectAll().get(0), "name");
+        .usingRecursiveComparison(
+            RecursiveComparisonConfiguration.builder().withIgnoredFields("name").build())
+        .isEqualTo(longMeasure1.collectAll().get(0));
   }
 
   @Test

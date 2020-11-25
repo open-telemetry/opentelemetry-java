@@ -18,10 +18,10 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -39,7 +39,7 @@ public final class NestedCallbacksTest {
     Span span = tracer.buildSpan("one").start();
     submitCallbacks(span);
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(otelTesting), equalTo(1));
+    await().atMost(Duration.ofSeconds(15)).until(finishedSpansSize(otelTesting), equalTo(1));
 
     List<SpanData> spans = otelTesting.getSpans();
     assertThat(spans).hasSize(1);

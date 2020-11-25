@@ -34,7 +34,11 @@ import java.util.List;
  *   runtime.jvm.memory.area{type="committed",area="nonheap"} 200000
  *   runtime.jvm.memory.area{type="used",pool="PS Eden Space"} 2000
  * </pre>
+ *
+ * @deprecated This module and classes have been moved to the OpenTelemetry Java Instrumentation
+ *     project. It will be removed in release 0.13.0.
  */
+@Deprecated
 public final class MemoryPools {
   private static final String TYPE_LABEL_KEY = "type";
   private static final String AREA_LABEL_KEY = "area";

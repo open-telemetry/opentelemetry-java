@@ -14,7 +14,7 @@ dependencies {
     api project(':opentelemetry-api'),
             project(':opentelemetry-sdk-common'),
             project(':opentelemetry-sdk-metrics'),
-            project(':opentelemetry-sdk-tracing')
+            project(':opentelemetry-sdk-trace')
 
     implementation libraries.guava
 

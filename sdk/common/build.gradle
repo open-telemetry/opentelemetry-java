@@ -20,7 +20,8 @@ dependencies {
     testCompileOnly libraries.auto_value_annotation
 
     testImplementation project(':opentelemetry-sdk-testing')
-    testImplementation libraries.junit_pioneer
+    testImplementation libraries.junit_pioneer,
+            libraries.guava_testlib
 
     signature libraries.android_signature
 }

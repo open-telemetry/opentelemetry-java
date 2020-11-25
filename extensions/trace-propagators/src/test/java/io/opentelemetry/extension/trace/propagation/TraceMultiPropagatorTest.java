@@ -16,7 +16,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.api.trace.propagation.HttpTraceContext;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
@@ -24,16 +24,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TraceMultiPropagatorTest {
   private static final TextMapPropagator PROPAGATOR1 = B3Propagator.getInstance();
   private static final TextMapPropagator PROPAGATOR2 =
       B3Propagator.builder().injectMultipleHeaders().build();
-  private static final TextMapPropagator PROPAGATOR3 = HttpTraceContext.getInstance();
+  private static final TextMapPropagator PROPAGATOR3 = W3CTraceContextPropagator.getInstance();
 
   private static final TextMapPropagator.Getter<Map<String, String>> getter =
       new TextMapPropagator.Getter<Map<String, String>>() {
@@ -56,11 +57,6 @@ class TraceMultiPropagatorTest {
               SpanId.fromLong(12345),
               TraceFlags.getDefault(),
               TraceState.getDefault()));
-
-  @BeforeEach
-  void init() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @Test
   void addPropagator_null() {

@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import io.grpc.ManagedChannelBuilder;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -46,7 +46,7 @@ class JaegerRemoteSamplerIntegrationTest {
             .build();
 
     await()
-        .atMost(10, TimeUnit.SECONDS)
+        .atMost(Duration.ofSeconds(10))
         .until(samplerIsType(remoteSampler, PerOperationSampler.class));
     assertThat(remoteSampler.getSampler()).isInstanceOf(PerOperationSampler.class);
     assertThat(remoteSampler.getDescription()).contains("0.33").doesNotContain("150");
@@ -63,7 +63,7 @@ class JaegerRemoteSamplerIntegrationTest {
             .build();
 
     await()
-        .atMost(10, TimeUnit.SECONDS)
+        .atMost(Duration.ofSeconds(10))
         .until(samplerIsType(remoteSampler, RateLimitingSampler.class));
     assertThat(remoteSampler.getSampler()).isInstanceOf(RateLimitingSampler.class);
     assertThat(((RateLimitingSampler) remoteSampler.getSampler()).getMaxTracesPerSecond())

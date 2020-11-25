@@ -14,6 +14,7 @@ import io.opentelemetry.api.metrics.AsynchronousInstrument;
 import java.lang.management.MemoryUsage;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // still should test it, even though it's deprecated
 class MemoryPoolsTest {
 
   @Test
