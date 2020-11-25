@@ -14,7 +14,7 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-public abstract class ArrayBasedTraceState implements TraceState {
+abstract class ArrayBasedTraceState implements TraceState {
 
   @Override
   @Nullable
