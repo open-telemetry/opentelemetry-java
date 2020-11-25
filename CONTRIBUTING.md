@@ -19,6 +19,29 @@ automatic check once you submit a PR, but you can also sign it after opening you
 Java 11 or higher is required to build the projects in this repository. The built artifacts can be
 used on Java 8 or higher.
 
+## Building opentelemetry-java
+
+Continuous integration builds the project, runs the tests, and runs multiple
+types of static analysis.
+
+1. Note: Currently, to run the full suite of tests, you'll need to be running a docker daemon.
+The tests that require docker are disabled if docker is not present. If you wish to run them,
+you must run a local docker daemon.
+
+2. Clone the repository recursively
+
+    `git clone https://github.com/open-telemetry/opentelemetry-java.git --recursive`
+
+or alternatively initialize submodules for an existing clone.
+
+   `git submodule init`
+   `git submodule update`   
+
+3. Run the following commands to build, run tests and most static analysis, and
+check formatting:
+
+    `./gradlew build`
+
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
@@ -93,27 +116,3 @@ It does not support all required rules, so you still have to run `spotlessApply`
 ### Unit Tests
 
 * Unit tests target Java 8, so language features such as lambda and streams can be used in tests.
-
-
-## Building opentelemetry-java
-
-Continuous integration builds the project, runs the tests, and runs multiple
-types of static analysis.
-
-1. Note: Currently, to run the full suite of tests, you'll need to be running a docker daemon.
-The tests that require docker are disabled if docker is not present. If you wish to run them,
-you must run a local docker daemon.
-
-2. Clone the repository recursively
-
-    `git clone https://github.com/open-telemetry/opentelemetry-java.git --recursive`
-
-or alternatively initialize submodules for an existing clone.
-
-   `git submodule init`
-   `git submodule update`   
-
-3. Run the following commands to build, run tests and most static analysis, and
-check formatting:
-
-    `./gradlew check`
