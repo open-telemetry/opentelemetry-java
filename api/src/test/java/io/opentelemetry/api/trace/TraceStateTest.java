@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link ArrayBasedTraceState}. */
 class TraceStateTest {
   private static final String FIRST_KEY = "key_1";
   private static final String SECOND_KEY = "key_2";
