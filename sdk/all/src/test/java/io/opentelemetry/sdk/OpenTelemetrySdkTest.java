@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -36,6 +37,24 @@ class OpenTelemetrySdkTest {
   @Mock private MeterSdkProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
+
+  @Test
+  void testGetGlobal() {
+    assertThat(OpenTelemetrySdk.get()).isSameAs(OpenTelemetry.get());
+  }
+
+  @Test
+  void testGetTracerManagementWhenNotTracerSdk() {
+    OpenTelemetry previous = OpenTelemetry.get();
+    assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement).doesNotThrowAnyException();
+    try {
+      OpenTelemetry.set(OpenTelemetry.builder().setTracerProvider(tracerProvider).build());
+      assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement)
+          .isInstanceOf(IllegalStateException.class);
+    } finally {
+      OpenTelemetry.set(previous);
+    }
+  }
 
   @Test
   void testGlobalDefault() {
