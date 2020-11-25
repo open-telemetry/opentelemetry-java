@@ -10,27 +10,28 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-/** A builder of {@link TraceStateImpl}. */
+/** A builder of {@link TraceState}. */
 public final class TraceStateBuilder {
   public static final int MAX_VENDOR_ID_SIZE = 13;
 
   // Needs to be in this class to avoid initialization deadlock because super class depends on
   // subclass (the auto-value generate class).
-  private static final TraceStateImpl EMPTY = TraceStateImpl.create(Collections.emptyList());
+  private static final ArrayBasedTraceState EMPTY =
+      ArrayBasedTraceState.create(Collections.emptyList());
 
   private static final int MAX_KEY_VALUE_PAIRS = 32;
   private static final int KEY_MAX_SIZE = 256;
   private static final int VALUE_MAX_SIZE = 256;
   private static final int MAX_TENANT_ID_SIZE = 240;
 
-  private final TraceStateImpl parent;
-  @Nullable private ArrayList<TraceStateImpl.Entry> entries;
+  private final ArrayBasedTraceState parent;
+  @Nullable private ArrayList<String> entries;
 
   TraceStateBuilder() {
     parent = EMPTY;
   }
 
-  TraceStateBuilder(TraceStateImpl parent) {
+  TraceStateBuilder(ArrayBasedTraceState parent) {
     Objects.requireNonNull(parent, "parent");
     this.parent = parent;
   }
@@ -50,20 +51,21 @@ public final class TraceStateBuilder {
       return this;
     }
     // Initially create the Entry to validate input.
-    TraceStateImpl.Entry entry = TraceStateImpl.Entry.create(key, value);
     if (entries == null) {
       // Copy entries from the parent.
       entries = new ArrayList<>(parent.getEntries());
     }
-    for (int i = 0; i < entries.size(); i++) {
-      if (entries.get(i).getKey().equals(entry.getKey())) {
+    for (int i = 0; i < entries.size(); i += 2) {
+      if (entries.get(i).equals(key)) {
+        entries.remove(i);
         entries.remove(i);
         // Exit now because the entries list cannot contain duplicates.
         break;
       }
     }
     // Inserts the element at the front of this list.
-    entries.add(0, entry);
+    entries.add(0, key);
+    entries.add(1, value);
     return this;
   }
 
@@ -81,8 +83,9 @@ public final class TraceStateBuilder {
       // Copy entries from the parent.
       entries = new ArrayList<>(parent.getEntries());
     }
-    for (int i = 0; i < entries.size(); i++) {
-      if (entries.get(i).getKey().equals(key)) {
+    for (int i = 0; i < entries.size(); i += 2) {
+      if (entries.get(i).equals(key)) {
+        entries.remove(i);
         entries.remove(i);
         // Exit now because the entries list cannot contain duplicates.
         break;
@@ -101,7 +104,7 @@ public final class TraceStateBuilder {
     if (entries == null) {
       return parent;
     }
-    return TraceStateImpl.create(entries);
+    return ArrayBasedTraceState.create(entries);
   }
 
   // Key is opaque string up to 256 characters printable. It MUST begin with a lowercase letter, and

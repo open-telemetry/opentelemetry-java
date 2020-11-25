@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link TraceStateImpl}. */
+/** Unit tests for {@link ArrayBasedTraceState}. */
 class TraceStateTest {
   private static final String FIRST_KEY = "key_1";
   private static final String SECOND_KEY = "key_2";
@@ -219,12 +219,10 @@ class TraceStateTest {
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .set(SECOND_KEY, FIRST_VALUE) // add a new entry
                 .build())
-        .asInstanceOf(type(TraceStateImpl.class))
-        .extracting(TraceStateImpl::getEntries)
+        .asInstanceOf(type(ArrayBasedTraceState.class))
+        .extracting(ArrayBasedTraceState::getEntries)
         .asList()
-        .containsExactly(
-            TraceStateImpl.Entry.create(SECOND_KEY, FIRST_VALUE),
-            TraceStateImpl.Entry.create(FIRST_KEY, SECOND_VALUE));
+        .containsExactly(SECOND_KEY, FIRST_VALUE, FIRST_KEY, SECOND_VALUE);
   }
 
   @Test
@@ -234,10 +232,10 @@ class TraceStateTest {
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .set(FIRST_KEY, FIRST_VALUE) // add a new entry
                 .build())
-        .asInstanceOf(type(TraceStateImpl.class))
-        .extracting(TraceStateImpl::getEntries)
+        .asInstanceOf(type(ArrayBasedTraceState.class))
+        .extracting(ArrayBasedTraceState::getEntries)
         .asList()
-        .containsExactly(TraceStateImpl.Entry.create(FIRST_KEY, FIRST_VALUE));
+        .containsExactly(FIRST_KEY, FIRST_VALUE);
   }
 
   @Test
@@ -274,6 +272,6 @@ class TraceStateTest {
 
   @Test
   void traceState_ToString() {
-    assertThat(EMPTY.toString()).isEqualTo("TraceStateImpl{entries=[]}");
+    assertThat(EMPTY.toString()).isEqualTo("ArrayBasedTraceState{entries=[]}");
   }
 }
