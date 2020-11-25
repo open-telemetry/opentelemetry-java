@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Carries tracing-system specific context in a list of key-value pairs. TraceState allows different
@@ -20,7 +21,18 @@ import javax.annotation.Nullable;
  *
  * <p>Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the
  * range 0x20 to 0x7E) except comma , and =.
+ *
+ * <p>Implementations of this interface *must* be immutable and have well-defined value-based
+ * equals/hashCode implementations. If an implementation does not strictly conform to these
+ * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
+ *
+ * <p>Implementations of this interface that do not conform to the W3C specification risk
+ * incompatibility with W3C-compatible implementations.
+ *
+ * <p>For these reasons, it is strongly suggested that you use the implementation that is provided
+ * here via the {@link TraceStateBuilder}.
  */
+@Immutable
 public interface TraceState {
 
   TraceState DEFAULT = new TraceStateBuilder().build();

@@ -10,7 +10,10 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-/** A builder of {@link TraceState}. */
+/**
+ * A builder of {@link TraceState}. This implementation does full validation of the keys and values
+ * in the entries, and will ignore any entries that do not conform to the W3C specification.
+ */
 public final class TraceStateBuilder {
   public static final int MAX_VENDOR_ID_SIZE = 13;
 
