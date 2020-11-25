@@ -6,12 +6,14 @@
 
 #### Breaking Changes
 
-- The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types. 
+- The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types.
 
 #### Miscellaneous
 
+- The `HttpTraceContext` class has been deprecated in favor of `W3CTraceContextPropagator`. `HttpTraceContext` will be removed in 0.13.0.
 - The `toBuilder()` method on the OpenTelemetry interface has been deprecated and will be removed in 0.13.0.
 - The `DefaultContextPropagators` class has been deprecated. Access to it will be removed in 0.13.0.
+- The `TraceMultiPropagator` builder has been deprecated in favor of a simple factory method. The builder will be removed in 0.13.0.
 You can access the same functionality via static methods on the `ContextPropagators` interface. 
 - A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
 
