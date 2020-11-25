@@ -97,7 +97,7 @@ public final class TraceStateBuilder {
    *
    * @return a TraceState with the new entries.
    */
-  public TraceStateImpl build() {
+  public TraceState build() {
     if (entries == null) {
       return parent;
     }

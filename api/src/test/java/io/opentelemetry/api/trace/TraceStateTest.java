@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 import com.google.common.testing.EqualsTester;
 import java.util.Arrays;
@@ -20,7 +21,7 @@ class TraceStateTest {
   private static final String FIRST_VALUE = "value.1";
   private static final String SECOND_VALUE = "value.2";
 
-  private static final TraceStateImpl EMPTY = TraceState.builder().build();
+  private static final TraceState EMPTY = TraceState.builder().build();
   private final TraceState firstTraceState = EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).build();
   private final TraceState secondTraceState =
       EMPTY.toBuilder().set(SECOND_KEY, SECOND_VALUE).build();
@@ -217,8 +218,10 @@ class TraceStateTest {
             firstTraceState.toBuilder()
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .set(SECOND_KEY, FIRST_VALUE) // add a new entry
-                .build()
-                .getEntries())
+                .build())
+        .asInstanceOf(type(TraceStateImpl.class))
+        .extracting(TraceStateImpl::getEntries)
+        .asList()
         .containsExactly(
             TraceStateImpl.Entry.create(SECOND_KEY, FIRST_VALUE),
             TraceStateImpl.Entry.create(FIRST_KEY, SECOND_VALUE));
@@ -230,8 +233,10 @@ class TraceStateTest {
             EMPTY.toBuilder()
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .set(FIRST_KEY, FIRST_VALUE) // add a new entry
-                .build()
-                .getEntries())
+                .build())
+        .asInstanceOf(type(TraceStateImpl.class))
+        .extracting(TraceStateImpl::getEntries)
+        .asList()
         .containsExactly(TraceStateImpl.Entry.create(FIRST_KEY, FIRST_VALUE));
   }
 
