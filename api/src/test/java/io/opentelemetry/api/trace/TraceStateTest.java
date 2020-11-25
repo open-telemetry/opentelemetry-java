@@ -13,14 +13,14 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link TraceState}. */
+/** Unit tests for {@link TraceStateImpl}. */
 class TraceStateTest {
   private static final String FIRST_KEY = "key_1";
   private static final String SECOND_KEY = "key_2";
   private static final String FIRST_VALUE = "value.1";
   private static final String SECOND_VALUE = "value.2";
 
-  private static final TraceState EMPTY = TraceState.builder().build();
+  private static final TraceStateImpl EMPTY = TraceState.builder().build();
   private final TraceState firstTraceState = EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).build();
   private final TraceState secondTraceState =
       EMPTY.toBuilder().set(SECOND_KEY, SECOND_VALUE).build();
@@ -220,8 +220,8 @@ class TraceStateTest {
                 .build()
                 .getEntries())
         .containsExactly(
-            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE),
-            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE));
+            TraceStateImpl.Entry.create(SECOND_KEY, FIRST_VALUE),
+            TraceStateImpl.Entry.create(FIRST_KEY, SECOND_VALUE));
   }
 
   @Test
@@ -232,7 +232,7 @@ class TraceStateTest {
                 .set(FIRST_KEY, FIRST_VALUE) // add a new entry
                 .build()
                 .getEntries())
-        .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
+        .containsExactly(TraceStateImpl.Entry.create(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test
@@ -269,6 +269,6 @@ class TraceStateTest {
 
   @Test
   void traceState_ToString() {
-    assertThat(EMPTY.toString()).isEqualTo("TraceState{entries=[]}");
+    assertThat(EMPTY.toString()).isEqualTo("TraceStateImpl{entries=[]}");
   }
 }

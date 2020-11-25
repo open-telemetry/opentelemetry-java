@@ -10,27 +10,27 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-/** A builder of {@link TraceState}. */
+/** A builder of {@link TraceStateImpl}. */
 public final class TraceStateBuilder {
   public static final int MAX_VENDOR_ID_SIZE = 13;
 
   // Needs to be in this class to avoid initialization deadlock because super class depends on
   // subclass (the auto-value generate class).
-  private static final TraceState EMPTY = TraceState.create(Collections.emptyList());
+  private static final TraceStateImpl EMPTY = TraceStateImpl.create(Collections.emptyList());
 
   private static final int MAX_KEY_VALUE_PAIRS = 32;
   private static final int KEY_MAX_SIZE = 256;
   private static final int VALUE_MAX_SIZE = 256;
   private static final int MAX_TENANT_ID_SIZE = 240;
 
-  private final TraceState parent;
-  @Nullable private ArrayList<TraceState.Entry> entries;
+  private final TraceStateImpl parent;
+  @Nullable private ArrayList<TraceStateImpl.Entry> entries;
 
   TraceStateBuilder() {
     parent = EMPTY;
   }
 
-  TraceStateBuilder(TraceState parent) {
+  TraceStateBuilder(TraceStateImpl parent) {
     Objects.requireNonNull(parent, "parent");
     this.parent = parent;
   }
@@ -50,7 +50,7 @@ public final class TraceStateBuilder {
       return this;
     }
     // Initially create the Entry to validate input.
-    TraceState.Entry entry = TraceState.Entry.create(key, value);
+    TraceStateImpl.Entry entry = TraceStateImpl.Entry.create(key, value);
     if (entries == null) {
       // Copy entries from the parent.
       entries = new ArrayList<>(parent.getEntries());
@@ -97,11 +97,11 @@ public final class TraceStateBuilder {
    *
    * @return a TraceState with the new entries.
    */
-  public TraceState build() {
+  public TraceStateImpl build() {
     if (entries == null) {
       return parent;
     }
-    return TraceState.create(entries);
+    return TraceStateImpl.create(entries);
   }
 
   // Key is opaque string up to 256 characters printable. It MUST begin with a lowercase letter, and
