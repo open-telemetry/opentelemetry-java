@@ -10,8 +10,10 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
+import javax.annotation.Generated;
 
 // DO NOT EDIT, this is an Auto-generated file from /templates/SemanticAttributes.java.j2
+@Generated("io.opentelemetry.java.SemanticAttributesGenerator")
 public final class SemanticAttributes {
 
   /** Name of the cloud provider. */

@@ -32,8 +32,10 @@ import static io.opentelemetry.common.AttributeKey.longKey;
 import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import io.opentelemetry.common.AttributeKey;
+import javax.annotation.Generated;
 
 // DO NOT EDIT, this is an Auto-generated file from {{template}}
+@Generated("io.opentelemetry.java.SemanticAttributesGenerator")
 public final class {{class}} {
   {%- for attribute in attributes | unique(attribute="fqn") %}
 
