@@ -4,15 +4,39 @@
 
 ### API
 
+#### Breaking Changes
+
+- The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types. 
+
 #### Miscellaneous
 
-- The `toBuilder()` method on the OpenTelemetry class has been deprecated and will be removed in 0.12.0.
+- The `toBuilder()` method on the OpenTelemetry interface has been deprecated and will be removed in 0.13.0.
+- The `DefaultContextPropagators` class has been deprecated. Access to it will be removed in 0.13.0.
+You can access the same functionality via static methods on the `ContextPropagators` interface. 
+- A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
+
+### Extensions
+
+- The `opentelemetry-extension-runtime-metrics` module has been deprecated. The functionality is available in the 
+opentelemetry-java-instrumentation project under a different module name. The module here will be removed in 0.13.0.
  
 ### SDK
 
+#### Breaking Changes
+
+- The `opentelemetry-sdk-tracing` module has been renamed to `opentelemetry-sdk-trace`.
+- The default port the OTLP exporters use has been changed to `4317`.
+- The deprecated `SpanData.getCanonicalCode()` method has been removed, along with the implementations.
+
+#### Enhancements
+
+- The OpenTelemetrySdk builder now supports the addition of SpanProcessors to the resulting SDK.
+
 #### Miscellaneous
 
-- The `toBuilder()` method on the OpenTelemetrySdk class has been deprecated and will be removed in 0.12.0.
+- The `toBuilder()` method on the OpenTelemetrySdk class has been deprecated and will be removed in 0.13.0.
+- The MultiSpanProcessor and MultiSpanExporter have been deprecated. You can access the same functionality via
+the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes will be made non-public in the 0.13.0 release.
 
 -----
 
