@@ -22,7 +22,7 @@ public class LabelsBuilder {
 
   /** Create the {@link Labels} from this. */
   public Labels build() {
-    return Labels.sortAndFilterToLabels(data.toArray());
+    return Labels.ArrayBackedLabels.sortAndFilterToLabels(data.toArray());
   }
 
   /**

@@ -5,23 +5,47 @@
 
 package io.opentelemetry.api.common;
 
+import static io.opentelemetry.api.common.Labels.ArrayBackedLabels.sortAndFilterToLabels;
+
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.List;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** An immutable container for labels, which are pairs of {@link String}. */
+/**
+ * An immutable container for labels, which are key-value pairs of {@link String}s.
+ *
+ * <p>Implementations of this interface *must* be immutable and have well-defined value-based
+ * equals/hashCode implementations. If an implementation does not strictly conform to these
+ * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
+ *
+ * <p>For this reason, it is strongly suggested that you use the implementation that is provided
+ * here via the factory methods and the {@link LabelsBuilder}.
+ */
 @Immutable
-public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
+public interface Labels {
 
-  private static final Labels EMPTY = Labels.builder().build();
+  /** Iterates over all the key-value pairs of labels contained by this instance. */
+  void forEach(BiConsumer<String, String> consumer);
 
-  public abstract void forEach(BiConsumer<String, String> consumer);
+  /** The number of key-value pairs of labels in this instance. */
+  int size();
+
+  /** Returns the value for the given {@code key}, or {@code null} if the key is not present. */
+  @Nullable
+  String get(String key);
+
+  /** Returns whether this instance is empty (contains no labels). */
+  boolean isEmpty();
 
   @AutoValue
   @Immutable
-  abstract static class ArrayBackedLabels extends Labels {
+  abstract class ArrayBackedLabels extends ImmutableKeyValuePairs<String, String>
+      implements Labels {
+    private static final Labels EMPTY = Labels.builder().build();
+
     ArrayBackedLabels() {}
 
     @Override
@@ -34,15 +58,25 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
         consumer.accept((String) data.get(i), (String) data.get(i + 1));
       }
     }
+
+    static Labels sortAndFilterToLabels(Object... data) {
+      return new AutoValue_Labels_ArrayBackedLabels(
+          sortAndFilter(data, /* filterNullValues= */ false));
+    }
+
+    @Override
+    public LabelsBuilder toBuilder() {
+      return new LabelsBuilder(data());
+    }
   }
 
   /** Returns a {@link Labels} instance with no attributes. */
-  public static Labels empty() {
-    return EMPTY;
+  static Labels empty() {
+    return ArrayBackedLabels.EMPTY;
   }
 
   /** Returns a {@link Labels} instance with a single key-value pair. */
-  public static Labels of(String key, String value) {
+  static Labels of(String key, String value) {
     return sortAndFilterToLabels(key, value);
   }
 
@@ -50,7 +84,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
    * Returns a {@link Labels} instance with two key-value pairs. Order of the keys is not preserved.
    * Duplicate keys will be removed.
    */
-  public static Labels of(String key1, String value1, String key2, String value2) {
+  static Labels of(String key1, String value1, String key2, String value2) {
     return sortAndFilterToLabels(key1, value1, key2, value2);
   }
 
@@ -58,7 +92,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
    * Returns a {@link Labels} instance with three key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Labels of(
+  static Labels of(
       String key1, String value1, String key2, String value2, String key3, String value3) {
     return sortAndFilterToLabels(key1, value1, key2, value2, key3, value3);
   }
@@ -67,7 +101,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
    * Returns a {@link Labels} instance with four key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Labels of(
+  static Labels of(
       String key1,
       String value1,
       String key2,
@@ -83,7 +117,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
    * Returns a {@link Labels} instance with five key-value pairs. Order of the keys is not
    * preserved. Duplicate keys will be removed.
    */
-  public static Labels of(
+  static Labels of(
       String key1,
       String value1,
       String key2,
@@ -102,22 +136,15 @@ public abstract class Labels extends ImmutableKeyValuePairs<String, String> {
         key5, value5);
   }
 
-  public static Labels of(String[] keyValueLabelPairs) {
+  static Labels of(String[] keyValueLabelPairs) {
     return sortAndFilterToLabels((Object[]) keyValueLabelPairs);
   }
 
-  static Labels sortAndFilterToLabels(Object... data) {
-    return new AutoValue_Labels_ArrayBackedLabels(
-        sortAndFilter(data, /* filterNullValues= */ false));
-  }
-
   /** Create a {@link LabelsBuilder} pre-populated with the contents of this Labels instance. */
-  public LabelsBuilder toBuilder() {
-    return new LabelsBuilder(data());
-  }
+  LabelsBuilder toBuilder();
 
   /** Creates a new {@link LabelsBuilder} instance for creating arbitrary {@link Labels}. */
-  public static LabelsBuilder builder() {
+  static LabelsBuilder builder() {
     return new LabelsBuilder();
   }
 }
