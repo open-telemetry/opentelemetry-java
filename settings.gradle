@@ -4,6 +4,7 @@ pluginManagement {
         id "com.github.ben-manes.versions" version "0.36.0"
         id "com.github.kt3k.coveralls" version "2.0.1"
         id "com.google.protobuf" version "0.8.14"
+        id 'com.gradle.enterprise' version "3.5"
         id "com.jfrog.artifactory" version "4.18.0"
         id "com.jfrog.bintray" version "1.8.5"
         id "io.morethan.jmhreport" version "0.9.0"
@@ -70,3 +71,16 @@ rootProject.children.each {
 }
 
 project(":opentelemetry-sdk").projectDir = "$rootDir/sdk/all" as File
+
+def isCI = System.getenv("CI") != null
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+        termsOfServiceAgree = 'yes'
+
+        if (isCI) {
+            publishAlways()
+            tag 'CI'
+        }
+    }
+}
