@@ -5,14 +5,16 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -51,6 +53,28 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public class TraceMultiPropagator implements TextMapPropagator {
+
+  /** Returns a {@link TraceMultiPropagator} for the given {@code propagators}. */
+  public static TextMapPropagator create(TextMapPropagator... propagators) {
+    return create(Arrays.asList(propagators));
+  }
+
+  /** Returns a {@link TraceMultiPropagator} for the given {@code propagators}. */
+  public static TextMapPropagator create(Iterable<TextMapPropagator> propagators) {
+    List<TextMapPropagator> propagatorsList = new ArrayList<>();
+    for (TextMapPropagator propagator : propagators) {
+      requireNonNull(propagator, "propagator");
+      propagatorsList.add(propagator);
+    }
+    if (propagatorsList.isEmpty()) {
+      return TextMapPropagator.noop();
+    }
+    if (propagatorsList.size() == 1) {
+      return propagatorsList.get(0);
+    }
+    return new TraceMultiPropagator(propagatorsList);
+  }
+
   private final TextMapPropagator[] propagators;
   private final List<String> propagatorsFields;
 
@@ -70,7 +94,9 @@ public class TraceMultiPropagator implements TextMapPropagator {
    * object.
    *
    * @return a {@link TraceMultiPropagator.Builder}.
+   * @deprecated Use {@link TraceMultiPropagator#create(TextMapPropagator...)}.
    */
+  @Deprecated
   public static Builder builder() {
     return new Builder();
   }
@@ -132,7 +158,10 @@ public class TraceMultiPropagator implements TextMapPropagator {
   /**
    * {@link Builder} is used to construct a new {@code TraceMultiPropagator} object with the
    * specified propagators.
+   *
+   * @deprecated Use {@link TraceMultiPropagator#create(TextMapPropagator...)}
    */
+  @Deprecated
   public static class Builder {
     private final List<TextMapPropagator> propagators;
 
@@ -149,9 +178,11 @@ public class TraceMultiPropagator implements TextMapPropagator {
      * @param propagator the propagator to be added.
      * @return this.
      * @throws NullPointerException if {@code propagator} is {@code null}.
+     * @deprecated Use {@link TraceMultiPropagator#create(TextMapPropagator...)}
      */
+    @Deprecated
     public Builder addPropagator(TextMapPropagator propagator) {
-      Objects.requireNonNull(propagator, "propagator");
+      requireNonNull(propagator, "propagator");
 
       propagators.add(propagator);
       return this;
@@ -161,7 +192,9 @@ public class TraceMultiPropagator implements TextMapPropagator {
      * Builds a new {@code TraceMultiPropagator} with the specified propagators.
      *
      * @return the newly created {@code TraceMultiPropagator} instance.
+     * @deprecated Use {@link TraceMultiPropagator#create(TextMapPropagator...)}
      */
+    @Deprecated
     public TraceMultiPropagator build() {
       return new TraceMultiPropagator(propagators);
     }
