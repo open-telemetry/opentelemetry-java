@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opencensusshim;
 
+import com.google.common.base.Joiner;
 import io.opencensus.common.Duration;
 import io.opencensus.exporter.metrics.util.IntervalMetricReader;
 import io.opencensus.exporter.metrics.util.MetricExporter;
@@ -71,6 +72,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
   @Override
   public void export(Collection<Metric> metrics) {
     ArrayList<MetricData> metricData = new ArrayList<>();
+    ArrayList<MetricDescriptor.Type> unsupportedTypes = new ArrayList<>();
     for (Metric metric : metrics) {
       for (TimeSeries timeSeries : metric.getTimeSeriesList()) {
         LabelsBuilder labelsBuilder = Labels.builder();
@@ -148,7 +150,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
                               arg -> null)));
               break;
             default:
-              LOGGER.warning(type + " not supported by OpenCensus to OpenTelemetry migrator.");
+              unsupportedTypes.add(type);
               break;
           }
         }
@@ -165,6 +167,11 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
                   points));
         }
       }
+    }
+    if (!unsupportedTypes.isEmpty()) {
+      LOGGER.warning(
+          Joiner.on(",").join(unsupportedTypes)
+              + " not supported by OpenCensus to OpenTelemetry migrator.");
     }
     if (!metricData.isEmpty()) {
       otelExporter.export(metricData);
@@ -187,7 +194,6 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
       case SUMMARY:
         return MetricData.Type.SUMMARY;
       default:
-        LOGGER.warning(type + " not supported by OpenCensus to OpenTelemetry migrator.");
         return null;
     }
   }
