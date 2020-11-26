@@ -21,6 +21,10 @@ pluginManagement {
     }
 }
 
+plugins {
+    id "com.gradle.enterprise" version "3.5"
+}
+
 rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all",
         ":opentelemetry-api",
@@ -43,15 +47,16 @@ include ":opentelemetry-all",
         ":opentelemetry-proto",
         ":opentelemetry-sdk-common",
         ":opentelemetry-sdk-metrics",
-        ":opentelemetry-sdk-tracing",
+        ":opentelemetry-sdk-trace",
         ":opentelemetry-sdk",
         ":opentelemetry-sdk-extension-async-processor",
-        ":opentelemetry-sdk-extension-aws-v1-support",
+        ":opentelemetry-sdk-extension-aws",
         ":opentelemetry-sdk-extension-logging",
         ":opentelemetry-sdk-extension-otproto",
         ":opentelemetry-sdk-extension-resources",
         ":opentelemetry-sdk-extension-tracing-incubator",
         ":opentelemetry-sdk-extension-jaeger-remote-sampler",
+        ":opentelemetry-sdk-extension-jfr-events",
         ":opentelemetry-sdk-extension-zpages",
         ":opentelemetry-sdk-testing",
         ":opentelemetry-bom",
@@ -69,3 +74,16 @@ rootProject.children.each {
 }
 
 project(":opentelemetry-sdk").projectDir = "$rootDir/sdk/all" as File
+
+def isCI = System.getenv("CI") != null
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+        termsOfServiceAgree = 'yes'
+
+        if (isCI) {
+            publishAlways()
+            tag 'CI'
+        }
+    }
+}

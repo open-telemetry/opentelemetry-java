@@ -216,4 +216,9 @@ public interface OpenTelemetry {
    */
   @Deprecated
   OpenTelemetryBuilder<?> toBuilder();
+
+  /** Returns a new {@link OpenTelemetryBuilder}. */
+  static OpenTelemetryBuilder<?> builder() {
+    return new DefaultOpenTelemetry.Builder();
+  }
 }

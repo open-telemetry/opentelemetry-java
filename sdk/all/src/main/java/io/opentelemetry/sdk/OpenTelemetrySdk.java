@@ -219,10 +219,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     private TracerSdkProvider buildTracerProvider() {
       TracerProvider tracerProvider = super.tracerProvider;
       if (tracerProvider != null) {
-        if (!(tracerProvider instanceof TracerSdkProvider)) {
-          throw new IllegalStateException(
-              "The OpenTelemetrySdk can only be configured with a TracerSdkProvider");
-        }
         return (TracerSdkProvider) tracerProvider;
       }
       TracerSdkProvider.Builder tracerProviderBuilder = TracerSdkProvider.builder();

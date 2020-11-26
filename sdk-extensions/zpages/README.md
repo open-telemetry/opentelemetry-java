@@ -5,8 +5,6 @@
 This module contains code for the OpenTelemetry Java zPages, which are a collection of dynamic HTML
 web pages embedded in your app that display stats and trace data. Learn more in [this blog post][zPages blog];
 
-* Java 8 compatible.
-
 <!--- TODO: Update javadoc -->
 [javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-contrib-auto-config.svg
 [javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-contrib-auto-config

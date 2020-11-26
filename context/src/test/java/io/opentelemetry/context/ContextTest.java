@@ -7,6 +7,11 @@ package io.opentelemetry.context;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -33,8 +38,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("ClassCanBeStatic")
+@ExtendWith(MockitoExtension.class)
 class ContextTest {
 
   private static final ContextKey<String> ANIMAL = ContextKey.named("animal");
@@ -353,6 +362,54 @@ class ContextTest {
           .isEqualTo("bar");
       assertThat(value1).hasValue("cat");
       assertThat(value2).hasValue("cat");
+    }
+  }
+
+  @Test
+  void keyToString() {
+    assertThat(ANIMAL.toString()).isEqualTo("animal");
+  }
+
+  @Test
+  void attachSameContext() {
+    Context context = Context.current().with(ANIMAL, "cat");
+    try (Scope scope1 = context.makeCurrent()) {
+      assertThat(scope1).isNotSameAs(Scope.noop());
+      try (Scope scope2 = context.makeCurrent()) {
+        assertThat(scope2).isSameAs(Scope.noop());
+      }
+    }
+  }
+
+  // We test real context-related above but should test cleanup gets delegated, which is best with
+  // a mock.
+  @Nested
+  @TestInstance(Lifecycle.PER_CLASS)
+  class DelegatesToExecutorService {
+
+    @Mock private ExecutorService executor;
+
+    @Test
+    void delegatesCleanupMethods() throws Exception {
+      ExecutorService wrapped = CAT.wrap(executor);
+      wrapped.shutdown();
+      verify(executor).shutdown();
+      verifyNoMoreInteractions(executor);
+      wrapped.shutdownNow();
+      verify(executor).shutdownNow();
+      verifyNoMoreInteractions(executor);
+      when(executor.isShutdown()).thenReturn(true);
+      assertThat(wrapped.isShutdown()).isTrue();
+      verify(executor).isShutdown();
+      verifyNoMoreInteractions(executor);
+      when(wrapped.isTerminated()).thenReturn(true);
+      assertThat(wrapped.isTerminated()).isTrue();
+      verify(executor).isTerminated();
+      verifyNoMoreInteractions(executor);
+      when(executor.awaitTermination(anyLong(), any())).thenReturn(true);
+      assertThat(wrapped.awaitTermination(1, TimeUnit.SECONDS)).isTrue();
+      verify(executor).awaitTermination(1, TimeUnit.SECONDS);
+      verifyNoMoreInteractions(executor);
     }
   }
 
