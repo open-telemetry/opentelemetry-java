@@ -6,7 +6,6 @@
 package io.opentelemetry.opentracingshim.testbed.clientserver;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
@@ -65,7 +64,6 @@ class TestClientServerTest {
     List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished).hasSize(2);
 
-    finished = sortByStartTime(finished);
     assertThat(finished.get(1).getTraceId()).isEqualTo(finished.get(0).getTraceId());
     Kind firstSpanKind = finished.get(0).getKind();
     if (firstSpanKind == Kind.CLIENT) {
