@@ -51,6 +51,24 @@ public final class ResourceAttributes {
   /** The username of the user that owns the process. */
   public static final AttributeKey<String> PROCESS_OWNER = stringKey("process.owner");
 
+  // TODO: these should be removed once SemanticAttributes contain process.runtime.*
+  /**
+   * The name of the runtime of this process. For compiled native binaries, this SHOULD be the name
+   * of the compiler.
+   */
+  public static final AttributeKey<String> PROCESS_RUNTIME_NAME = stringKey("process.runtime.name");
+  /**
+   * The version of the runtime of this process, as returned by the runtime without modification.
+   */
+  public static final AttributeKey<String> PROCESS_RUNTIME_VERSION =
+      stringKey("process.runtime.version");
+  /**
+   * An additional description about the runtime of the process, for example a specific vendor
+   * customization of the runtime environment.
+   */
+  public static final AttributeKey<String> PROCESS_RUNTIME_DESCRIPTION =
+      stringKey("process.runtime.description");
+
   /**
    * Logical name of the service. MUST be the same for all instances of horizontally scaled
    * services.
