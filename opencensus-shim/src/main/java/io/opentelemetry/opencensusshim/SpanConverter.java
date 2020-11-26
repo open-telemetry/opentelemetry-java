@@ -19,6 +19,7 @@ import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import java.util.EnumSet;
 import java.util.Map;
@@ -91,6 +92,24 @@ class SpanConverter {
             TraceOptions.builder().setIsSampled(otSpan.getSpanContext().isSampled()).build(),
             mapTracestate(otSpan.getSpanContext().getTraceState()));
     return new FakeSpan(spanContext);
+  }
+
+  static SpanContext mapSpanContext(io.opentelemetry.api.trace.SpanContext otelSpanContext) {
+    return SpanContext.create(
+        TraceId.fromLowerBase16(otelSpanContext.getTraceIdAsHexString()),
+        SpanId.fromLowerBase16(otelSpanContext.getSpanIdAsHexString()),
+        TraceOptions.builder().setIsSampled(otelSpanContext.isSampled()).build(),
+        Tracestate.builder().build());
+  }
+
+  static io.opentelemetry.api.trace.SpanContext mapSpanContext(SpanContext ocSpanContext) {
+    return io.opentelemetry.api.trace.SpanContext.create(
+        ocSpanContext.getTraceId().toLowerBase16(),
+        ocSpanContext.getSpanId().toLowerBase16(),
+        ocSpanContext.getTraceOptions().isSampled()
+            ? TraceFlags.getSampled()
+            : TraceFlags.getDefault(),
+        TraceState.getDefault());
   }
 
   static Tracestate mapTracestate(TraceState traceState) {
