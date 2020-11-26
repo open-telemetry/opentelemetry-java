@@ -30,7 +30,7 @@ import javax.annotation.concurrent.Immutable;
  * incompatibility with W3C-compatible implementations.
  *
  * <p>For these reasons, it is strongly suggested that you use the implementation that is provided
- * here via the {@link TraceStateBuilder}.
+ * here via the {@link TraceState#builder}.
  */
 @Immutable
 public interface TraceState {
