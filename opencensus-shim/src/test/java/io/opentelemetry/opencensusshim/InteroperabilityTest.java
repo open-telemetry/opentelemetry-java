@@ -6,8 +6,8 @@
 package io.opentelemetry.opencensusshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,8 +34,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class InteroperabilityTest {
 
   private static final String NULL_SPAN_ID = "0000000000000000";
@@ -46,13 +49,13 @@ class InteroperabilityTest {
 
   @BeforeEach
   public void init() {
+    when(spanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
     SpanProcessor spanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
     OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
   }
 
   @Test
   void testParentChildRelationshipsAreExportedCorrectly() {
-    when(spanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
     Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.test.scoped.span.1");
     Span span = tracer.spanBuilder("OpenTelemetrySpan").startSpan();
     try (Scope scope = Context.current().with(span).makeCurrent()) {
@@ -97,7 +100,6 @@ class InteroperabilityTest {
 
   @Test
   void testParentChildRelationshipsAreExportedCorrectlyForOpenCensusOnly() {
-    when(spanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     try (io.opencensus.common.Scope scope =
         tracer
@@ -176,7 +178,7 @@ class InteroperabilityTest {
       }
       span.addAnnotation("OpenCensus1: Event 2");
     }
-    Tracing.getExportComponent().shutdown();
+    //    Tracing.getExportComponent().shutdown();
   }
 
   private static void createOpenCensusScopedSpan() {
@@ -191,7 +193,7 @@ class InteroperabilityTest {
       span.addAnnotation("OpenCensus2: Event 1");
       span.addAnnotation("OpenCensus2: Event 2");
     }
-    Tracing.getExportComponent().shutdown();
+    //    Tracing.getExportComponent().shutdown();
   }
 
   private static void createOpenTelemetryScopedSpan() {
