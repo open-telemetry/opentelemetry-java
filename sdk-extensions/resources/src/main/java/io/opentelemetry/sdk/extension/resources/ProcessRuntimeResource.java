@@ -20,11 +20,11 @@ public final class ProcessRuntimeResource extends ResourceProvider {
       String name = System.getProperty("java.runtime.name");
       String version = System.getProperty("java.runtime.version");
       String description =
-          String.join(
-              " ",
-              System.getProperty("java.vm.vendor"),
-              System.getProperty("java.vm.name"),
-              System.getProperty("java.vm.version"));
+          System.getProperty("java.vm.vendor")
+              + " "
+              + System.getProperty("java.vm.name")
+              + " "
+              + System.getProperty("java.vm.version");
 
       return Attributes.of(
           PROCESS_RUNTIME_NAME,
