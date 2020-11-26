@@ -2,12 +2,20 @@ import nebula.plugin.release.git.opinion.Strategies
 
 plugins {
     id "com.diffplug.spotless"
+    id "com.github.ben-manes.versions"
     id "com.jfrog.artifactory" apply false
     id "com.jfrog.bintray" apply false
     id "nebula.release"
     id "net.ltgt.errorprone" apply false
     id "ru.vyarus.animalsniffer" apply false
     id "io.morethan.jmhreport" apply false
+}
+
+if (!JavaVersion.current().isJava11Compatible()) {
+    throw new GradleException("JDK 11 or higher is required to build. " +
+            "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
+            "have it, please check that the JAVA_HOME environment variable is pointing at the " +
+            "JDK 11 installation.")
 }
 
 ext {
@@ -277,17 +285,17 @@ configure(opentelemetryProjects) {
         errorProneVersion = '2.4.0'
         errorProneJavacVersion = '9+181-r4173-1'
         findBugsJsr305Version = '3.0.2'
-        grpcVersion = '1.30.2'
-        guavaVersion = '28.2-android'
+        grpcVersion = '1.33.1'
+        guavaVersion = '30.0-android'
         jacksonVersion = '2.11.3'
-        jmhVersion = '1.19'
-        junitVersion = '5.6.2'
-        mockitoVersion = '3.3.3'
+        jmhVersion = '1.26'
+        junitVersion = '5.7.0'
+        mockitoVersion = '3.6.0'
         opencensusVersion = '0.28.2'
         opentracingVersion = '0.33.0'
-        prometheusVersion = '0.8.1'
-        protobufVersion = '3.11.4'
-        protocVersion = '3.11.4'
+        prometheusVersion = '0.9.0'
+        protobufVersion = '3.14.0'
+        protocVersion = '3.14.0'
         zipkinReporterVersion = '2.12.2'
         zipkinVersion = '2.18.3'
 
@@ -331,10 +339,10 @@ configure(opentelemetryProjects) {
                 opentracing                 : "io.opentracing:opentracing-api:${opentracingVersion}",
 
                 // Test dependencies.
-                assertj                     : "org.assertj:assertj-core:3.16.1",
+                assertj                     : "org.assertj:assertj-core:3.18.1",
                 guava_testlib               : "com.google.guava:guava-testlib",
-                junit                       : 'junit:junit:4.12',
-                junit_pioneer               : 'org.junit-pioneer:junit-pioneer:0.7.0',
+                junit                       : 'junit:junit:4.13.1',
+                junit_pioneer               : 'org.junit-pioneer:junit-pioneer:1.0.0',
                 junit_jupiter_api           : 'org.junit.jupiter:junit-jupiter-api',
                 junit_jupiter_engine        : 'org.junit.jupiter:junit-jupiter-engine',
                 junit_vintage_engine        : 'org.junit.vintage:junit-vintage-engine',
@@ -342,17 +350,17 @@ configure(opentelemetryProjects) {
                 mockito_junit_jupiter       : "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
                 okhttp                      : 'com.squareup.okhttp3:okhttp:3.14.9',
                 system_rules                : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
-                slf4jsimple                 : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
-                awaitility                  : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
-                testcontainers              : 'org.testcontainers:junit-jupiter:1.15.0-rc2',
+                slf4jsimple                 : 'org.slf4j:slf4j-simple:1.7.30', // Compatibility layer
+                awaitility                  : 'org.awaitility:awaitility:4.0.3',
+                testcontainers              : 'org.testcontainers:junit-jupiter:1.15.0',
                 rest_assured                : 'io.rest-assured:rest-assured:4.2.0',
-                jaeger_client               : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
+                jaeger_client               : 'io.jaegertracing:jaeger-client:1.5.0', // Jaeger Client
                 zipkin_junit                : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
-                archunit                    : 'com.tngtech.archunit:archunit-junit4:0.13.1', //Architectural constraints
+                archunit                    : 'com.tngtech.archunit:archunit-junit4:0.14.1', //Architectural constraints
                 jqf                         : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6', // fuzz testing
 
                 // Tooling
-                android_signature       : 'com.toasttab.android:gummy-bears-api-24:0.2.0:coreLib@signature'
+                android_signature       : 'com.toasttab.android:gummy-bears-api-24:0.3.0:coreLib@signature'
         ]
     }
 
@@ -363,7 +371,7 @@ configure(opentelemetryProjects) {
         configProperties["rootDir"] = rootDir
     }
 
-    jacoco { toolVersion = "0.8.5" }
+    jacoco { toolVersion = "0.8.6" }
 
     spotless {
         java {
@@ -398,12 +406,15 @@ configure(opentelemetryProjects) {
                 libraries.errorprone_annotation,
                 libraries.jsr305
 
+        testCompileOnly libraries.auto_value_annotation,
+                libraries.errorprone_annotation,
+                libraries.jsr305
+
         testImplementation libraries.junit_jupiter_api,
                 libraries.mockito,
                 libraries.mockito_junit_jupiter,
                 libraries.assertj,
-                libraries.awaitility,
-                libraries.guava_testlib
+                libraries.awaitility
 
         testRuntimeOnly libraries.junit_jupiter_engine,
                 libraries.junit_vintage_engine
@@ -411,6 +422,8 @@ configure(opentelemetryProjects) {
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check
         errorprone libraries.errorprone_core
+
+        annotationProcessor "com.google.guava:guava-beta-checker:1.0"
 
         // Workaround for @javax.annotation.Generated
         // see: https://github.com/grpc/grpc-java/issues/3633

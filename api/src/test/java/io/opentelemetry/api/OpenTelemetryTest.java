@@ -7,6 +7,7 @@ package io.opentelemetry.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.metrics.BatchRecorder;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -27,7 +28,6 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.spi.metrics.MeterProviderFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
 import java.io.File;
@@ -64,8 +64,25 @@ class OpenTelemetryTest {
         .isEqualTo("DefaultMeterProvider");
     assertThat(OpenTelemetry.getGlobalMeterProvider())
         .isSameAs(OpenTelemetry.getGlobalMeterProvider());
-    assertThat(OpenTelemetry.getGlobalPropagators()).isInstanceOf(DefaultContextPropagators.class);
     assertThat(OpenTelemetry.getGlobalPropagators()).isSameAs(OpenTelemetry.getGlobalPropagators());
+  }
+
+  @Test
+  void builder() {
+    MeterProvider meterProvider = mock(MeterProvider.class);
+    TracerProvider tracerProvider = mock(TracerProvider.class);
+    ContextPropagators contextPropagators = mock(ContextPropagators.class);
+    OpenTelemetry openTelemetry =
+        OpenTelemetry.builder()
+            .setMeterProvider(meterProvider)
+            .setTracerProvider(tracerProvider)
+            .setPropagators(contextPropagators)
+            .build();
+
+    assertThat(openTelemetry).isNotNull();
+    assertThat(openTelemetry.getMeterProvider()).isSameAs(meterProvider);
+    assertThat(openTelemetry.getTracerProvider()).isSameAs(tracerProvider);
+    assertThat(openTelemetry.getPropagators()).isSameAs(contextPropagators);
   }
 
   @Test
@@ -155,10 +172,18 @@ class OpenTelemetryTest {
   }
 
   @Test
-  void testPropagatorsSet() {
-    ContextPropagators propagators = DefaultContextPropagators.builder().build();
+  void testGlobalPropagatorsSet() {
+    ContextPropagators propagators = ContextPropagators.noop();
     OpenTelemetry.setGlobalPropagators(propagators);
     assertThat(OpenTelemetry.getGlobalPropagators()).isEqualTo(propagators);
+  }
+
+  @Test
+  void testPropagatorsSet() {
+    ContextPropagators propagators = ContextPropagators.noop();
+    OpenTelemetry instance = DefaultOpenTelemetry.builder().build();
+    instance.setPropagators(propagators);
+    assertThat(instance.getPropagators()).isEqualTo(propagators);
   }
 
   @Test

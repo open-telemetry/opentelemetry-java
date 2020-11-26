@@ -31,6 +31,7 @@ import io.opentelemetry.spi.trace.TracerProviderFactory;
  *
  * @see TracerProvider
  * @see MeterProvider
+ * @see ContextPropagators
  */
 public interface OpenTelemetry {
 
@@ -140,8 +141,11 @@ public interface OpenTelemetry {
    */
   static void setGlobalPropagators(ContextPropagators propagators) {
     requireNonNull(propagators, "propagators");
-    set(get().toBuilder().setPropagators(propagators).build());
+    get().setPropagators(propagators);
   }
+
+  /** Sets the propagators that this instance should contain. */
+  void setPropagators(ContextPropagators propagators);
 
   /** Returns the {@link TracerProvider} for this {@link OpenTelemetry}. */
   TracerProvider getTracerProvider();
@@ -206,6 +210,15 @@ public interface OpenTelemetry {
   /**
    * Returns a new {@link OpenTelemetryBuilder} with the configuration of this {@link
    * OpenTelemetry}.
+   *
+   * @deprecated This method should not be used, as it allows unexpected sharing of state across
+   *     instances. It will be removed in the next release.
    */
+  @Deprecated
   OpenTelemetryBuilder<?> toBuilder();
+
+  /** Returns a new {@link OpenTelemetryBuilder}. */
+  static OpenTelemetryBuilder<?> builder() {
+    return new DefaultOpenTelemetry.Builder();
+  }
 }

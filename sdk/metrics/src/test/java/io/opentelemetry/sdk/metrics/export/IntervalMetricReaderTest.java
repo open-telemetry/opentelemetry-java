@@ -28,11 +28,15 @@ import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-/** Unit tests for {@link IntervalMetricReader}. */
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class IntervalMetricReaderTest {
   private static final List<Point> LONG_POINT_LIST =
       Collections.singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));
@@ -51,7 +55,6 @@ class IntervalMetricReaderTest {
 
   @BeforeEach
   void setup() {
-    MockitoAnnotations.initMocks(this);
     when(metricProducer.collectAllMetrics()).thenReturn(Collections.singletonList(METRIC_DATA));
   }
 

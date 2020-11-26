@@ -6,13 +6,17 @@
 package io.opentelemetry.sdk;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
@@ -20,6 +24,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +38,24 @@ class OpenTelemetrySdkTest {
   @Mock private MeterSdkProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
+
+  @Test
+  void testGetGlobal() {
+    assertThat(OpenTelemetrySdk.get()).isSameAs(OpenTelemetry.get());
+  }
+
+  @Test
+  void testGetTracerManagementWhenNotTracerSdk() {
+    OpenTelemetry previous = OpenTelemetry.get();
+    assertThatCode(OpenTelemetrySdk::getGlobalTracerManagement).doesNotThrowAnyException();
+    try {
+      OpenTelemetry.set(OpenTelemetry.builder().setTracerProvider(tracerProvider).build());
+      assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement)
+          .isInstanceOf(IllegalStateException.class);
+    } finally {
+      OpenTelemetry.set(previous);
+    }
+  }
 
   @Test
   void testGlobalDefault() {
@@ -70,7 +93,7 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void testReconfigure() {
+  void building() {
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
@@ -115,6 +138,26 @@ class OpenTelemetrySdkTest {
 
     assertThat(openTelemetry.getResource()).isSameAs(resource);
     assertThat(openTelemetry.getClock()).isSameAs(clock);
+  }
+
+  @Test
+  void addSpanProcessors() {
+    SpanProcessor spanProcessor1 = mock(SpanProcessor.class);
+    SpanProcessor spanProcessor2 = mock(SpanProcessor.class);
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .addSpanProcessor(spanProcessor1)
+            .addSpanProcessor(spanProcessor2)
+            .build();
+
+    TracerProvider tracerProvider = openTelemetrySdk.getTracerProvider();
+    Span span = tracerProvider.get("test").spanBuilder("test").startSpan();
+    span.end();
+
+    verify(spanProcessor1).isStartRequired();
+    verify(spanProcessor1).isEndRequired();
+    verify(spanProcessor2).isStartRequired();
+    verify(spanProcessor2).isEndRequired();
   }
 
   @Test

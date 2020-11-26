@@ -20,6 +20,7 @@ import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.Test;
 
 class DelegatingSpanDataTest {
@@ -72,7 +73,10 @@ class DelegatingSpanDataTest {
     SpanData noopWrapper = new NoOpDelegatingSpanData(spanData);
     // Test should always verify delegation is working even when methods are added since it calls
     // each method individually.
-    assertThat(noopWrapper).isEqualToIgnoringGivenFields(spanData, "delegate");
+    assertThat(noopWrapper)
+        .usingRecursiveComparison(
+            RecursiveComparisonConfiguration.builder().withIgnoredFields("delegate").build())
+        .isEqualTo(spanData);
   }
 
   @Test

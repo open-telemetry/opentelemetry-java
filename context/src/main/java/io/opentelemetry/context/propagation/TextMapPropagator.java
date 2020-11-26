@@ -6,6 +6,8 @@
 package io.opentelemetry.context.propagation;
 
 import io.opentelemetry.context.Context;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -39,6 +41,44 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface TextMapPropagator {
+
+  /**
+   * Returns a {@link TextMapPropagator} which simply delegates injection and extraction to the
+   * provided propagators.
+   *
+   * <p>Invocation order of {@code TextMapPropagator#inject()} and {@code
+   * TextMapPropagator#extract()} for registered trace propagators is undefined.
+   */
+  static TextMapPropagator composite(TextMapPropagator... propagators) {
+    return composite(Arrays.asList(propagators));
+  }
+
+  /**
+   * Returns a {@link TextMapPropagator} which simply delegates injection and extraction to the
+   * provided propagators.
+   *
+   * <p>Invocation order of {@code TextMapPropagator#inject()} and {@code
+   * TextMapPropagator#extract()} for registered trace propagators is undefined.
+   */
+  static TextMapPropagator composite(Iterable<TextMapPropagator> propagators) {
+    List<TextMapPropagator> propagatorsList = new ArrayList<>();
+    for (TextMapPropagator propagator : propagators) {
+      propagatorsList.add(propagator);
+    }
+    if (propagatorsList.isEmpty()) {
+      return NoopTextMapPropagator.getInstance();
+    }
+    if (propagatorsList.size() == 1) {
+      return propagatorsList.get(0);
+    }
+    return new MultiTextMapPropagator(propagatorsList);
+  }
+
+  /** Returns a {@link TextMapPropagator} which does no injection or extraction. */
+  static TextMapPropagator noop() {
+    return NoopTextMapPropagator.getInstance();
+  }
+
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
    * before calling {@link #inject(Context, Object, Setter)} )}.

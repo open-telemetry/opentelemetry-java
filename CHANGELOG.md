@@ -4,6 +4,46 @@
 
 ### API
 
+#### Breaking Changes
+
+- The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types. 
+
+#### Miscellaneous
+
+- The `toBuilder()` method on the OpenTelemetry interface has been deprecated and will be removed in 0.13.0.
+- The `DefaultContextPropagators` class has been deprecated. Access to it will be removed in 0.13.0.
+You can access the same functionality via static methods on the `ContextPropagators` interface. 
+- A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
+
+### Extensions
+
+- The `opentelemetry-extension-runtime-metrics` module has been deprecated. The functionality is available in the 
+opentelemetry-java-instrumentation project under a different module name. The module here will be removed in 0.13.0.
+ 
+### SDK
+
+#### Breaking Changes
+
+- The `opentelemetry-sdk-tracing` module has been renamed to `opentelemetry-sdk-trace`.
+- The default port the OTLP exporters use has been changed to `4317`.
+- The deprecated `SpanData.getCanonicalCode()` method has been removed, along with the implementations.
+
+#### Enhancements
+
+- The OpenTelemetrySdk builder now supports the addition of SpanProcessors to the resulting SDK.
+
+#### Miscellaneous
+
+- The `toBuilder()` method on the OpenTelemetrySdk class has been deprecated and will be removed in 0.13.0.
+- The MultiSpanProcessor and MultiSpanExporter have been deprecated. You can access the same functionality via
+the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes will be made non-public in the 0.13.0 release.
+
+-----
+
+## Version 0.11.0 - 2010-11-18
+
+### API
+
 #### Breaking changes:
 
 - The SPI interfaces have moved to a package (not a module) separate from the API packages, and now live in `io.opentelemetry.spi.*` package namespace.
@@ -19,7 +59,22 @@ Methods to create the builders remain in the same place as they were before.
 the default (thread local) ContextStorage will be used for the Context implementation, regardless of what SPI implementations are
 available.
 
+#### Miscellaneous:
+
+- Invalid W3C `TraceState` entries will now be silently dropped, rather than causing the invalidation of the entire `TraceState`.
+
 ### SDK
+
+#### Breaking Changes:
+
+- The builder class for the `OpenTelemetrySdk` now strictly requires its components to be SDK implementations. 
+You can only build an `OpenTelemetrySdk` with `TracerSdkProvider` and `MeterSdkProvider` instances.
+
+#### Enhancements:
+
+- An API has been added to the SDK's MeterProvider implementation (`MeterSdkProvider`) that allows the end-user to configure
+how various metrics will be aggregated. This API should be considered a precursor to a full "Views" API, and will most likely
+evolve over the coming months before the metrics implementation is complete. See the javadoc for `MeterSdkProvider.registerView()` for details.
 
 #### Miscellaneous:
 
@@ -28,6 +83,15 @@ available.
 
 ### Extensions
 
+#### Breaking Changes:
+
+- The `@WithSpan` annotation has been moved to the `io.opentelemetry.extension.annotations` package in the `opentelemetry-extension-annotations` module 
+
+#### Bugfixes:
+
+- The memory pool metrics provided by the MemoryPools class in the `opentelemetry-extension-runtime-metrics` module
+have been fixed to properly report the committed memory values.
+ 
 #### Enhancements:
 
 - A new module has been added to assist with propagating the OTel context in kotlin co-routines. 
@@ -43,6 +107,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 
 - The W3C Baggage Propagator is now available.
 - The B3 Propagator now handles both single and multi-header formats.
+- The B3 Propagator defaults to injecting the single B3 header, rather than the multi-header format.
 - Mutating a method on `Span` now returns the `Span` to enable call-chaining.
 
 #### Bug fixes

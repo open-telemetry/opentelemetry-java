@@ -118,8 +118,8 @@ public class AttributesBuilder {
    *
    * @return this Builder
    */
-  public AttributesBuilder put(String key, Long... value) {
-    return put(longArrayKey(key), value == null ? null : Arrays.asList(value));
+  public AttributesBuilder put(String key, long... value) {
+    return put(longArrayKey(key), value == null ? null : toList(value));
   }
 
   /**
@@ -130,8 +130,8 @@ public class AttributesBuilder {
    *
    * @return this Builder
    */
-  public AttributesBuilder put(String key, Double... value) {
-    return put(doubleArrayKey(key), value == null ? null : Arrays.asList(value));
+  public AttributesBuilder put(String key, double... value) {
+    return put(doubleArrayKey(key), value == null ? null : toList(value));
   }
 
   /**
@@ -142,8 +142,8 @@ public class AttributesBuilder {
    *
    * @return this Builder
    */
-  public AttributesBuilder put(String key, Boolean... value) {
-    return put(booleanArrayKey(key), value == null ? null : Arrays.asList(value));
+  public AttributesBuilder put(String key, boolean... value) {
+    return put(booleanArrayKey(key), value == null ? null : toList(value));
   }
 
   /**
@@ -154,5 +154,29 @@ public class AttributesBuilder {
   public AttributesBuilder putAll(Attributes attributes) {
     attributes.forEach(this::put);
     return this;
+  }
+
+  private static List<Double> toList(double... values) {
+    Double[] boxed = new Double[values.length];
+    for (int i = 0; i < values.length; i++) {
+      boxed[i] = values[i];
+    }
+    return Arrays.asList(boxed);
+  }
+
+  private static List<Long> toList(long... values) {
+    Long[] boxed = new Long[values.length];
+    for (int i = 0; i < values.length; i++) {
+      boxed[i] = values[i];
+    }
+    return Arrays.asList(boxed);
+  }
+
+  private static List<Boolean> toList(boolean... values) {
+    Boolean[] boxed = new Boolean[values.length];
+    for (int i = 0; i < values.length; i++) {
+      boxed[i] = values[i];
+    }
+    return Arrays.asList(boxed);
   }
 }
