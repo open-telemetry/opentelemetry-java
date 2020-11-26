@@ -10,7 +10,7 @@ import static io.opentelemetry.opencensusshim.SpanConverter.mapSpanContext;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.propagation.TextFormat;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.propagation.HttpTraceContext;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.ArrayList;
@@ -18,8 +18,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 public class OpenTelemetryTraceContextFormatImpl extends TextFormat {
-  private static final HttpTraceContext OTEL_TRACE_CONTEXT_FORMAT_IMPL =
-      HttpTraceContext.getInstance();
+  private static final TextMapPropagator OTEL_TRACE_CONTEXT_FORMAT_IMPL =
+      W3CTraceContextPropagator.getInstance();
 
   @Override
   public List<String> fields() {
