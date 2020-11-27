@@ -84,7 +84,6 @@ class OpenTelemetryAssertionsTest {
             .setLinks(LINKS)
             .setStatus(SpanData.Status.ok())
             .setEndEpochNanos(200)
-            .setHasRemoteParent(true)
             .setHasEnded(true)
             .setTotalRecordedEvents(300)
             .setTotalRecordedLinks(400)
@@ -92,7 +91,7 @@ class OpenTelemetryAssertionsTest {
 
     SPAN1 = spanDataBuilder.build();
 
-    SPAN2 = spanDataBuilder.setSampled(false).setHasEnded(false).setHasRemoteParent(false).build();
+    SPAN2 = spanDataBuilder.setSampled(false).setHasEnded(false).build();
   }
 
   @Test
@@ -137,13 +136,10 @@ class OpenTelemetryAssertionsTest {
         .endsAt(200)
         .endsAt(200, TimeUnit.NANOSECONDS)
         .endsAt(Instant.ofEpochSecond(0, 200))
-        .hasRemoteParent()
         .hasEnded()
         .hasTotalRecordedEvents(300)
         .hasTotalRecordedLinks(400)
         .hasTotalAttributeCount(500);
-
-    assertThat(SPAN2).isNotSampled().hasNotEnded().doesNotHaveRemoteParent();
   }
 
   @Test
@@ -198,8 +194,6 @@ class OpenTelemetryAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(Instant.EPOCH))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN1).doesNotHaveRemoteParent())
-        .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasNotEnded()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasTotalRecordedEvents(1))
         .isInstanceOf(AssertionError.class);
@@ -210,7 +204,5 @@ class OpenTelemetryAssertionsTest {
 
     assertThatThrownBy(() -> assertThat(SPAN2).isSampled()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN2).hasEnded()).isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN2).hasRemoteParent())
-        .isInstanceOf(AssertionError.class);
   }
 }

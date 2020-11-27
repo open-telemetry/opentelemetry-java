@@ -300,24 +300,6 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
     return endsAt(toNanos(timestamp));
   }
 
-  /** Asserts the span has a remote parent. */
-  public SpanDataAssert hasRemoteParent() {
-    isNotNull();
-    if (!actual.hasRemoteParent()) {
-      failWithMessage("Expected span [%s] to have remote parent but did not", actual.getName());
-    }
-    return this;
-  }
-
-  /** Asserts the span does not have a remote parent. */
-  public SpanDataAssert doesNotHaveRemoteParent() {
-    isNotNull();
-    if (actual.hasRemoteParent()) {
-      failWithMessage("Expected span [%s] to have remote parent but did not", actual.getName());
-    }
-    return this;
-  }
-
   /** Asserts the span has ended. */
   public SpanDataAssert hasEnded() {
     isNotNull();

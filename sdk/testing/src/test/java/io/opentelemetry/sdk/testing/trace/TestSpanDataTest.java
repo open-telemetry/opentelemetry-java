@@ -38,7 +38,6 @@ class TestSpanDataTest {
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
     assertThat(spanData.getInstrumentationLibraryInfo())
         .isSameAs(InstrumentationLibraryInfo.getEmpty());
-    assertThat(spanData.hasRemoteParent()).isFalse();
   }
 
   @Test
@@ -114,7 +113,6 @@ class TestSpanDataTest {
         .setEndEpochNanos(END_EPOCH_NANOS)
         .setKind(Kind.SERVER)
         .setStatus(Status.ok())
-        .setHasRemoteParent(false)
         .setTotalRecordedEvents(0)
         .setTotalRecordedLinks(0);
   }

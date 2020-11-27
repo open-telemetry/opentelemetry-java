@@ -234,7 +234,6 @@ final class SpanBuilderSdk implements SpanBuilder {
         instrumentationLibraryInfo,
         spanKind,
         parentSpanContext.getSpanIdAsHexString(),
-        parentSpanContext.isRemote(),
         parentContext,
         traceConfig,
         spanProcessor,

@@ -152,11 +152,6 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public boolean hasRemoteParent() {
-    return delegate().hasRemoteParent();
-  }
-
-  @Override
   public boolean hasEnded() {
     return internalHasEnded();
   }

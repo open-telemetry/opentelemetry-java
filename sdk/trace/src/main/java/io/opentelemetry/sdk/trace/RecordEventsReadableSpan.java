@@ -51,8 +51,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
   private final String parentSpanId;
-  // True if the parent is on a different process.
-  private final boolean hasRemoteParent;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
@@ -102,7 +100,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       String parentSpanId,
-      boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
@@ -114,7 +111,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     this.context = context;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.parentSpanId = parentSpanId;
-    this.hasRemoteParent = hasRemoteParent;
     this.links = links;
     this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
@@ -137,8 +133,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param kind the span kind.
    * @param parentSpanId the span_id of the parent span, or {@code Span.INVALID} if the new span is
    *     a root span.
-   * @param hasRemoteParent {@code true} if the parentContext is remote. {@code false} if this is a
-   *     root span.
    * @param traceConfig trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
    * @param clock the clock used to get the time.
@@ -153,7 +147,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       @Nullable String parentSpanId,
-      boolean hasRemoteParent,
       @Nonnull Context parentContext,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -170,7 +163,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             instrumentationLibraryInfo,
             kind,
             parentSpanId,
-            hasRemoteParent,
             traceConfig,
             spanProcessor,
             clock,
@@ -502,10 +494,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   long getStartEpochNanos() {
     return startEpochNanos;
-  }
-
-  boolean hasRemoteParent() {
-    return hasRemoteParent;
   }
 
   int getTotalRecordedLinks() {

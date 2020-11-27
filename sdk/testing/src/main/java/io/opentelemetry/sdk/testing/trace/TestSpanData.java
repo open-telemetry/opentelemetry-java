@@ -44,22 +44,14 @@ public abstract class TestSpanData implements SpanData {
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
         .setSampled(false)
-        .setHasRemoteParent(false)
         .setTotalAttributeCount(0);
   }
 
   abstract boolean getInternalHasEnded();
 
-  abstract boolean getInternalHasRemoteParent();
-
   @Override
   public final boolean hasEnded() {
     return getInternalHasEnded();
-  }
-
-  @Override
-  public final boolean hasRemoteParent() {
-    return getInternalHasRemoteParent();
   }
 
   /** A {@code Builder} class for {@link TestSpanData}. */
@@ -202,18 +194,6 @@ public abstract class TestSpanData implements SpanData {
      * @return this
      */
     public abstract Builder setLinks(List<SpanData.Link> links);
-
-    abstract Builder setInternalHasRemoteParent(boolean hasRemoteParent);
-
-    /**
-     * Sets to true if the span has a parent on a different process.
-     *
-     * @param hasRemoteParent A boolean indicating if the span has a remote parent.
-     * @return this
-     */
-    public final Builder setHasRemoteParent(boolean hasRemoteParent) {
-      return setInternalHasRemoteParent(hasRemoteParent);
-    }
 
     abstract Builder setInternalHasEnded(boolean hasEnded);
 

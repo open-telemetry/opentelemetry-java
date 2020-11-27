@@ -130,15 +130,6 @@ public interface SpanData {
   long getEndEpochNanos();
 
   /**
-   * Returns {@code true} if the parent is on a different process. {@code false} if this is a root
-   * span.
-   *
-   * @return {@code true} if the parent is on a different process. {@code false} if this is a root
-   *     span.
-   */
-  boolean hasRemoteParent();
-
-  /**
    * Returns whether this Span has already been ended.
    *
    * @return {@code true} if the span has already been ended, {@code false} if not.

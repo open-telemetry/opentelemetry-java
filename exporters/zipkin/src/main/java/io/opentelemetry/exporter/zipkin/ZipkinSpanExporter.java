@@ -183,8 +183,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   @Nullable
   private static Span.Kind toSpanKind(SpanData spanData) {
     // This is a hack because the Span API did not have SpanKind.
-    if (spanData.getKind() == Kind.SERVER
-        || (spanData.getKind() == null && Boolean.TRUE.equals(spanData.hasRemoteParent()))) {
+    if (spanData.getKind() == Kind.SERVER) {
       return Span.Kind.SERVER;
     }
 

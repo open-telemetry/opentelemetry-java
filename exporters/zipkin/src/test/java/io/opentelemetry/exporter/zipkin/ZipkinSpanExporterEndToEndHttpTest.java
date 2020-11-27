@@ -143,7 +143,6 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setSampled(true)
         .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)
-        .setHasRemoteParent(true)
         .setName(SPAN_NAME)
         .setStartEpochNanos(START_EPOCH_NANOS)
         .setAttributes(attributes)

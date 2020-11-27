@@ -59,7 +59,6 @@ public abstract class SpanDataBuilder implements SpanData {
         .setLinks(spanData.getLinks())
         .setStatus(spanData.getStatus())
         .setEndEpochNanos(spanData.getEndEpochNanos())
-        .setHasRemoteParent(spanData.hasRemoteParent())
         .setHasEnded(spanData.hasEnded())
         .setTotalRecordedEvents(spanData.getTotalRecordedEvents())
         .setTotalRecordedLinks(spanData.getTotalRecordedLinks())
@@ -74,16 +73,9 @@ public abstract class SpanDataBuilder implements SpanData {
 
   abstract boolean getInternalHasEnded();
 
-  abstract boolean getInternalHasRemoteParent();
-
   @Override
   public final boolean hasEnded() {
     return getInternalHasEnded();
-  }
-
-  @Override
-  public final boolean hasRemoteParent() {
-    return getInternalHasRemoteParent();
   }
 
   // AutoValue won't generate equals that compares with SpanData interface but generates hash code
@@ -112,7 +104,6 @@ public abstract class SpanDataBuilder implements SpanData {
           && getLinks().equals(that.getLinks())
           && getStatus().equals(that.getStatus())
           && getEndEpochNanos() == that.getEndEpochNanos()
-          && hasRemoteParent() == that.hasRemoteParent()
           && hasEnded() == that.hasEnded()
           && getTotalRecordedEvents() == that.getTotalRecordedEvents()
           && getTotalRecordedLinks() == that.getTotalRecordedLinks()
@@ -161,12 +152,6 @@ public abstract class SpanDataBuilder implements SpanData {
     public abstract Builder setKind(Kind kind);
 
     public abstract Builder setLinks(List<Link> links);
-
-    abstract Builder setInternalHasRemoteParent(boolean hasRemoteParent);
-
-    public final Builder setHasRemoteParent(boolean hasRemoteParent) {
-      return setInternalHasRemoteParent(hasRemoteParent);
-    }
 
     abstract Builder setInternalHasEnded(boolean hasEnded);
 

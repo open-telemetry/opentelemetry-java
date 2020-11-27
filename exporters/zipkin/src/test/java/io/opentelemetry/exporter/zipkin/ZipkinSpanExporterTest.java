@@ -353,7 +353,6 @@ class ZipkinSpanExporterTest {
         .setSampled(true)
         .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)
-        .setHasRemoteParent(true)
         .setName("Recv.helloworld.Greeter.SayHello")
         .setStartEpochNanos(1505855794_194009601L)
         .setEndEpochNanos(1505855799_465726528L)
