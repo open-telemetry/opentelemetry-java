@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opencensusshim;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.opencensus.internal.Utils;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.propagation.BinaryFormat;
@@ -22,17 +23,17 @@ public class OpenTelemetryBinaryFormatImpl extends BinaryFormat {
   private static final byte TRACE_ID_FIELD_ID = 0;
   private static final int TRACE_FLAGS_SIZE = 1;
 
-  static final int TRACE_ID_FIELD_ID_OFFSET = VERSION_ID_OFFSET + ID_SIZE;
+  @VisibleForTesting static final int TRACE_ID_FIELD_ID_OFFSET = VERSION_ID_OFFSET + ID_SIZE;
 
   private static final int TRACE_ID_OFFSET = TRACE_ID_FIELD_ID_OFFSET + ID_SIZE;
   private static final byte SPAN_ID_FIELD_ID = 1;
 
-  static final int SPAN_ID_FIELD_ID_OFFSET = TRACE_ID_OFFSET + TraceId.getSize();
+  @VisibleForTesting static final int SPAN_ID_FIELD_ID_OFFSET = TRACE_ID_OFFSET + TraceId.getSize();
 
   private static final int SPAN_ID_OFFSET = SPAN_ID_FIELD_ID_OFFSET + ID_SIZE;
   private static final byte TRACE_OPTION_FIELD_ID = 2;
 
-  static final int TRACE_OPTION_FIELD_ID_OFFSET = SPAN_ID_OFFSET + SpanId.getSize();
+  private static final int TRACE_OPTION_FIELD_ID_OFFSET = SPAN_ID_OFFSET + SpanId.getSize();
 
   private static final int TRACE_OPTIONS_OFFSET = TRACE_OPTION_FIELD_ID_OFFSET + ID_SIZE;
   /** Version, Trace and Span IDs are required fields. */
