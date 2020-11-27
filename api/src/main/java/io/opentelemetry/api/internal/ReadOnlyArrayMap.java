@@ -55,21 +55,27 @@ final class ReadOnlyArrayMap<K, V> implements Map<K, V> {
 
   @Override
   public boolean containsKey(Object o) {
-    if (o == null) return false; // null keys are not allowed
+    if (o == null) {
+      return false; // null keys are not allowed
+    }
     return arrayIndexOfKey(o) != -1;
   }
 
   @Override
   public boolean containsValue(Object o) {
     for (int i = 0; i < array.size(); i += 2) {
-      if (value(i + 1).equals(o)) return true;
+      if (value(i + 1).equals(o)) {
+        return true;
+      }
     }
     return false;
   }
 
   @Override
   public V get(Object o) {
-    if (o == null) return null; // null keys are not allowed
+    if (o == null) {
+      return null; // null keys are not allowed
+    }
     int i = arrayIndexOfKey(o);
     return i != -1 ? value(i + 1) : null;
   }
@@ -164,10 +170,14 @@ final class ReadOnlyArrayMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean contains(Object o) {
-      if (!(o instanceof Map.Entry) || ((Map.Entry<?, ?>) o).getKey() == null) return false;
+      if (!(o instanceof Map.Entry) || ((Map.Entry<?, ?>) o).getKey() == null) {
+        return false;
+      }
       Map.Entry<?, ?> that = (Map.Entry<?, ?>) o;
       int i = arrayIndexOfKey(that.getKey());
-      if (i == -1) return false;
+      if (i == -1) {
+        return false;
+      }
       return value(i + 1).equals(that.getValue());
     }
   }
@@ -178,11 +188,9 @@ final class ReadOnlyArrayMap<K, V> implements Map<K, V> {
       return size;
     }
 
-    /**
-     * By abstracting this, {@link #keySet()} {@link #values()} and {@link #entrySet()} only
-     * implement need implement two methods based on {@link #<E>}: this method and and {@link
-     * #contains(Object)}.
-     */
+    // By abstracting this, {@link #keySet()} {@link #values()} and {@link #entrySet()} only
+    // implement need implement two methods based on {@link #<E>}: this method and and {@link
+    // #contains(Object)}.
     abstract E elementAtArrayIndex(int i);
 
     @Override
@@ -210,18 +218,20 @@ final class ReadOnlyArrayMap<K, V> implements Map<K, V> {
     }
 
     final class ReadOnlyIterator implements Iterator<E> {
-      int i = 0;
+      int current = 0;
 
       @Override
       public boolean hasNext() {
-        return i < array.size();
+        return current < array.size();
       }
 
       @Override
       public E next() {
-        if (!hasNext()) throw new NoSuchElementException();
-        E result = elementAtArrayIndex(i);
-        i += 2;
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
+        E result = elementAtArrayIndex(current);
+        current += 2;
         return result;
       }
 
@@ -233,11 +243,17 @@ final class ReadOnlyArrayMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsAll(Collection<?> c) {
-      if (c == null) return false;
-      if (c.isEmpty()) return true;
+      if (c == null) {
+        return false;
+      }
+      if (c.isEmpty()) {
+        return true;
+      }
 
       for (Object element : c) {
-        if (!contains(element)) return false;
+        if (!contains(element)) {
+          return false;
+        }
       }
       return true;
     }
