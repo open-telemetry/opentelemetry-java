@@ -28,10 +28,12 @@ import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 public class OpenTelemetryMetricsExporter extends MetricExporter {
   private static final Logger LOGGER =
@@ -71,18 +73,20 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
 
   @Override
   public void export(Collection<Metric> metrics) {
-    ArrayList<MetricData> metricData = new ArrayList<>();
-    ArrayList<MetricDescriptor.Type> unsupportedTypes = new ArrayList<>();
+    List<MetricData> metricData = new ArrayList<>();
+    Set<MetricDescriptor.Type> unsupportedTypes = new HashSet<>();
     for (Metric metric : metrics) {
       for (TimeSeries timeSeries : metric.getTimeSeriesList()) {
         LabelsBuilder labelsBuilder = Labels.builder();
         for (int i = 0; i < metric.getMetricDescriptor().getLabelKeys().size(); i++) {
-          labelsBuilder.put(
-              metric.getMetricDescriptor().getLabelKeys().get(i).getKey(),
-              Objects.requireNonNull(timeSeries.getLabelValues().get(i).getValue()));
+          if (timeSeries.getLabelValues().get(i).getValue() != null) {
+            labelsBuilder.put(
+                metric.getMetricDescriptor().getLabelKeys().get(i).getKey(),
+                timeSeries.getLabelValues().get(i).getValue());
+          }
         }
         Labels labels = labelsBuilder.build();
-        ArrayList<MetricData.Point> points = new ArrayList<>();
+        List<MetricData.Point> points = new ArrayList<>();
         MetricDescriptor.Type type = null;
         for (Point point : timeSeries.getPoints()) {
           long timestampNanos =
@@ -92,62 +96,14 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
           switch (type) {
             case GAUGE_INT64:
             case CUMULATIVE_INT64:
-              points.add(
-                  LongPoint.create(
-                      timestampNanos,
-                      timestampNanos,
-                      labels,
-                      point
-                          .getValue()
-                          .match(
-                              Double::longValue,
-                              arg -> arg,
-                              arg -> null,
-                              arg -> null,
-                              arg -> null)));
+              points.add(mapLongPoint(labels, point, timestampNanos));
               break;
             case GAUGE_DOUBLE:
             case CUMULATIVE_DOUBLE:
-              points.add(
-                  DoublePoint.create(
-                      timestampNanos,
-                      timestampNanos,
-                      labels,
-                      point
-                          .getValue()
-                          .match(
-                              arg -> arg,
-                              Long::doubleValue,
-                              arg -> null,
-                              arg -> null,
-                              arg -> null)));
+              points.add(mapDoublePoint(labels, point, timestampNanos));
               break;
             case SUMMARY:
-              points.add(
-                  SummaryPoint.create(
-                      timestampNanos,
-                      timestampNanos,
-                      labels,
-                      point
-                          .getValue()
-                          .match(
-                              arg -> null,
-                              arg -> null,
-                              arg -> null,
-                              Summary::getCount,
-                              arg -> null),
-                      point
-                          .getValue()
-                          .match(
-                              arg -> null, arg -> null, arg -> null, Summary::getSum, arg -> null),
-                      point
-                          .getValue()
-                          .match(
-                              arg -> null,
-                              arg -> null,
-                              arg -> null,
-                              OpenTelemetryMetricsExporter::mapPercentiles,
-                              arg -> null)));
+              points.add(mapSummaryPoint(labels, point, timestampNanos));
               break;
             default:
               unsupportedTypes.add(type);
@@ -178,6 +134,60 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
     }
   }
 
+  public void stop() {
+    intervalMetricReader.stop();
+  }
+
+  @Nonnull
+  private static SummaryPoint mapSummaryPoint(Labels labels, Point point, long timestampNanos) {
+    return SummaryPoint.create(
+        timestampNanos,
+        timestampNanos,
+        labels,
+        point
+            .getValue()
+            .match(arg -> null, arg -> null, arg -> null, Summary::getCount, arg -> null),
+        point.getValue().match(arg -> null, arg -> null, arg -> null, Summary::getSum, arg -> null),
+        point
+            .getValue()
+            .match(
+                arg -> null,
+                arg -> null,
+                arg -> null,
+                OpenTelemetryMetricsExporter::mapPercentiles,
+                arg -> null));
+  }
+
+  private static List<ValueAtPercentile> mapPercentiles(Summary arg) {
+    List<ValueAtPercentile> percentiles = new ArrayList<>();
+    for (Snapshot.ValueAtPercentile percentile : arg.getSnapshot().getValueAtPercentiles()) {
+      percentiles.add(ValueAtPercentile.create(percentile.getPercentile(), percentile.getValue()));
+    }
+    return percentiles;
+  }
+
+  @Nonnull
+  private static DoublePoint mapDoublePoint(Labels labels, Point point, long timestampNanos) {
+    return DoublePoint.create(
+        timestampNanos,
+        timestampNanos,
+        labels,
+        point
+            .getValue()
+            .match(arg -> arg, Long::doubleValue, arg -> null, arg -> null, arg -> null));
+  }
+
+  @Nonnull
+  private static LongPoint mapLongPoint(Labels labels, Point point, long timestampNanos) {
+    return LongPoint.create(
+        timestampNanos,
+        timestampNanos,
+        labels,
+        point
+            .getValue()
+            .match(Double::longValue, arg -> arg, arg -> null, arg -> null, arg -> null));
+  }
+
   private static MetricData.Type mapType(MetricDescriptor.Type type) {
     if (type == null) {
       return null;
@@ -196,17 +206,5 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
       default:
         return null;
     }
-  }
-
-  private static List<ValueAtPercentile> mapPercentiles(Summary arg) {
-    ArrayList<ValueAtPercentile> percentiles = new ArrayList<>();
-    for (Snapshot.ValueAtPercentile percentile : arg.getSnapshot().getValueAtPercentiles()) {
-      percentiles.add(ValueAtPercentile.create(percentile.getPercentile(), percentile.getValue()));
-    }
-    return percentiles;
-  }
-
-  public void stop() {
-    intervalMetricReader.stop();
   }
 }

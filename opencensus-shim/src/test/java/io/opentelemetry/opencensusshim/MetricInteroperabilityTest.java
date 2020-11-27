@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import io.opencensus.common.Duration;
 import io.opencensus.common.Scope;
 import io.opencensus.stats.Aggregation;
+import io.opencensus.stats.BucketBoundaries;
 import io.opencensus.stats.Measure.MeasureLong;
 import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
@@ -54,7 +55,7 @@ public class MetricInteroperabilityTest {
     viewManager.registerView(view);
     FakeMetricExporter metricExporter = new FakeMetricExporter();
     OpenTelemetryMetricsExporter exporter =
-        OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 100));
+        OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 500));
 
     TagContext tagContext =
         tagger
@@ -77,5 +78,49 @@ public class MetricInteroperabilityTest {
     assertThat(((LongPoint) point).getValue()).isEqualTo(50);
     assertThat(point.getLabels().size()).isEqualTo(1);
     assertThat(point.getLabels().get(tagKey.getName())).isEqualTo(tagValue.asString());
+  }
+
+  @Test
+  public void testUnsupportedMetricsDoesNotGetExported() throws InterruptedException {
+    Tagger tagger = Tags.getTagger();
+    MeasureLong latency =
+        MeasureLong.create("task_latency_distribution", "The task latency in milliseconds", "ms");
+    StatsRecorder statsRecorder = Stats.getStatsRecorder();
+    TagKey tagKey = TagKey.create("tagKey");
+    TagValue tagValue = TagValue.create("tagValue");
+    View view =
+        View.create(
+            Name.create("task_latency_distribution"),
+            "The distribution of the task latencies.",
+            latency,
+            Aggregation.Distribution.create(
+                BucketBoundaries.create(ImmutableList.of(100.0, 150.0, 200.0))),
+            ImmutableList.of(tagKey));
+    ViewManager viewManager = Stats.getViewManager();
+    viewManager.registerView(view);
+    FakeMetricExporter metricExporter = new FakeMetricExporter();
+    OpenTelemetryMetricsExporter exporter =
+        OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 500));
+
+    TagContext tagContext =
+        tagger
+            .emptyBuilder()
+            .put(tagKey, tagValue, TagMetadata.create(TagTtl.UNLIMITED_PROPAGATION))
+            .build();
+    try (Scope ss = tagger.withTagContext(tagContext)) {
+      statsRecorder.newMeasureMap().put(latency, 50).record();
+    }
+    // Sleep so that there is time for export() to be called.
+    Thread.sleep(2);
+    exporter.stop();
+    // This is 0 in case this test gets run first, or by itself.
+    // If other views have already been registered in other tests, they will produce metric data, so
+    // we are testing for the absence of this particular view's metric data.
+    List<List<MetricData>> allExports = metricExporter.waitForNumberOfExports(0);
+    if (!allExports.isEmpty()) {
+      for (MetricData metricData : allExports.get(allExports.size() - 1)) {
+        assertThat(metricData.getName()).isNotEqualTo("task_latency_distribution");
+      }
+    }
   }
 }
