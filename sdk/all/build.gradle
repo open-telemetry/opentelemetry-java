@@ -16,8 +16,6 @@ dependencies {
             project(':opentelemetry-sdk-metrics'),
             project(':opentelemetry-sdk-trace')
 
-    implementation libraries.guava
-
     annotationProcessor libraries.auto_value
 
     testAnnotationProcessor libraries.auto_value
@@ -32,6 +30,7 @@ dependencies {
         // dependencies.
         transitive = false
     }
+    jmh libraries.guava
 
     signature libraries.android_signature
 }

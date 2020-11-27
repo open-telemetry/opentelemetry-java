@@ -7,7 +7,6 @@ package io.opentelemetry.sdk;
 
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.internal.Obfuscated;
@@ -253,7 +252,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
    * @see Obfuscated
    */
   @ThreadSafe
-  @VisibleForTesting
   static class ObfuscatedTracerProvider implements TracerProvider, Obfuscated<TracerProvider> {
 
     private final TracerProvider delegate;

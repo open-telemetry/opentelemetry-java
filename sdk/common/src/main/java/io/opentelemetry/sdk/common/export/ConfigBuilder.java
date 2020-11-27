@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.common.export;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +24,7 @@ import javax.annotation.Nullable;
  */
 public abstract class ConfigBuilder<T> {
 
-  @VisibleForTesting
+  // Visible for testing
   protected enum NamingConvention {
     DOT {
       @Override
@@ -65,7 +63,9 @@ public abstract class ConfigBuilder<T> {
 
   /** Sets the configuration values from the given {@link Properties} object. */
   public T readProperties(Properties properties) {
-    return fromConfigMap(Maps.fromProperties(properties), NamingConvention.DOT);
+    Map<String, String> map = new HashMap<>(properties.size());
+    properties.forEach((key, value) -> map.put((String) key, (String) value));
+    return fromConfigMap(map, NamingConvention.DOT);
   }
 
   /** Sets the configuration values from environment variables. */

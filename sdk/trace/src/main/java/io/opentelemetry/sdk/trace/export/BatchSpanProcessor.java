@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.Utils;
@@ -316,11 +315,16 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout.millis";
     private static final String KEY_SAMPLED = "otel.bsp.export.sampled";
 
-    @VisibleForTesting static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
-    @VisibleForTesting static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
-    @VisibleForTesting static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
-    @VisibleForTesting static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
-    @VisibleForTesting static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
+    // Visible for testing
+    static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
+    // Visible for testing
+    static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
+    // Visible for testing
+    static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
+    // Visible for testing
+    static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+    // Visible for testing
+    static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
 
     private final SpanExporter spanExporter;
     private long scheduleDelayMillis = DEFAULT_SCHEDULE_DELAY_MILLIS;
@@ -382,7 +386,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
-    @VisibleForTesting
+    // Visible for testing
     boolean getExportOnlySampled() {
       return exportOnlySampled;
     }
@@ -402,7 +406,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
-    @VisibleForTesting
+    // Visible for testing
     long getScheduleDelayMillis() {
       return scheduleDelayMillis;
     }
@@ -421,7 +425,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
-    @VisibleForTesting
+    // Visible for testing
     int getExporterTimeoutMillis() {
       return exporterTimeoutMillis;
     }
@@ -444,7 +448,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
-    @VisibleForTesting
+    // Visible for testing
     int getMaxQueueSize() {
       return maxQueueSize;
     }
@@ -465,7 +469,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
-    @VisibleForTesting
+    // Visible for testing
     int getMaxExportBatchSize() {
       return maxExportBatchSize;
     }
