@@ -93,14 +93,15 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span has the given parent span ID. */
   public SpanDataAssert hasParentSpanId(String parentSpanId) {
     isNotNull();
-    if (!actual.getParentSpanId().equals(parentSpanId)) {
+    String actualParentSpanId = actual.getParentSpanContext().getSpanIdAsHexString();
+    if (!actualParentSpanId.equals(parentSpanId)) {
       failWithActualExpectedAndMessage(
-          actual.getParentSpanId(),
+          actualParentSpanId,
           parentSpanId,
           "Expected span [%s] to have parent span ID <%s> but was <%s>",
           actual.getName(),
           parentSpanId,
-          actual.getParentSpanId());
+          actualParentSpanId);
     }
     return this;
   }

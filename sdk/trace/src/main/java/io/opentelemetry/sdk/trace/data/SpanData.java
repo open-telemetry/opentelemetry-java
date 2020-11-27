@@ -51,12 +51,35 @@ public interface SpanData {
   TraceState getTraceState();
 
   /**
+   * Returns the parent {@link SpanContext}. If the span is a root span, the {@link SpanContext}
+   * returned will be invalid.
+   */
+  SpanContext getParentSpanContext();
+
+  /**
    * Returns the parent {@code SpanId}. If the {@code Span} is a root {@code Span}, the SpanId
    * returned will be invalid..
    *
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
+   * @deprecated Use {@link #getParentSpanContext()}
    */
-  String getParentSpanId();
+  @Deprecated
+  default String getParentSpanId() {
+    return getParentSpanContext().getSpanIdAsHexString();
+  }
+
+  /**
+   * Returns {@code true} if the parent is on a different process. {@code false} if this is a root
+   * span.
+   *
+   * @return {@code true} if the parent is on a different process. {@code false} if this is a root
+   *     span.
+   * @deprecated Use {@link #getParentSpanContext()}
+   */
+  @Deprecated
+  default boolean hasRemoteParent() {
+    return getParentSpanContext().isRemote();
+  }
 
   /**
    * Returns the resource of this {@code Span}.

@@ -73,7 +73,9 @@ class OpenTelemetryAssertionsTest {
             .setSpanId(SPAN_ID1)
             .setSampled(true)
             .setTraceState(TRACE_STATE)
-            .setParentSpanId(SPAN_ID2)
+            .setParentSpanContext(
+                SpanContext.create(
+                    TRACE_ID, SPAN_ID2, TraceFlags.getDefault(), TraceState.getDefault()))
             .setResource(RESOURCE)
             .setInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
             .setName("span")

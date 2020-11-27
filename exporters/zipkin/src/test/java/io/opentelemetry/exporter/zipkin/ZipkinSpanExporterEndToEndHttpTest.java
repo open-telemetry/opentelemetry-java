@@ -10,6 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -139,7 +142,9 @@ public class ZipkinSpanExporterEndToEndHttpTest {
     return TestSpanData.builder()
         .setTraceId(TRACE_ID)
         .setSpanId(SPAN_ID)
-        .setParentSpanId(PARENT_SPAN_ID)
+        .setParentSpanContext(
+            SpanContext.create(
+                TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .setSampled(true)
         .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)

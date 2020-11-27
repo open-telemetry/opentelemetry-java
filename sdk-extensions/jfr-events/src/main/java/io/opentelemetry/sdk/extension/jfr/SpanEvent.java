@@ -27,7 +27,7 @@ class SpanEvent extends Event {
     this.operationName = spanData.getName();
     this.traceId = spanData.getTraceId();
     this.spanId = spanData.getSpanId();
-    this.parentId = spanData.getParentSpanId();
+    this.parentId = spanData.getParentSpanContext().getSpanIdAsHexString();
   }
 
   @Label("Operation Name")

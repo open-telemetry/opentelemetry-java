@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.trace.data;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -48,7 +49,7 @@ public abstract class SpanDataBuilder implements SpanData {
         .setSpanId(spanData.getSpanId())
         .setSampled(spanData.isSampled())
         .setTraceState(spanData.getTraceState())
-        .setParentSpanId(spanData.getParentSpanId())
+        .setParentSpanContext(spanData.getParentSpanContext())
         .setResource(spanData.getResource())
         .setInstrumentationLibraryInfo(spanData.getInstrumentationLibraryInfo())
         .setName(spanData.getName())
@@ -93,7 +94,7 @@ public abstract class SpanDataBuilder implements SpanData {
           && getSpanId().equals(that.getSpanId())
           && isSampled() == that.isSampled()
           && getTraceState().equals(that.getTraceState())
-          && getParentSpanId().equals(that.getParentSpanId())
+          && getParentSpanContext().equals(that.getParentSpanContext())
           && getResource().equals(that.getResource())
           && getInstrumentationLibraryInfo().equals(that.getInstrumentationLibraryInfo())
           && getName().equals(that.getName())
@@ -130,7 +131,7 @@ public abstract class SpanDataBuilder implements SpanData {
 
     public abstract Builder setTraceState(TraceState traceState);
 
-    public abstract Builder setParentSpanId(String parentSpanId);
+    public abstract Builder setParentSpanContext(SpanContext parentSpanContext);
 
     public abstract Builder setResource(Resource resource);
 

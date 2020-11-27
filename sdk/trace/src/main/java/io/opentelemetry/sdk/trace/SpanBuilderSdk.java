@@ -233,7 +233,7 @@ final class SpanBuilderSdk implements SpanBuilder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentSpanContext.getSpanIdAsHexString(),
+        parentSpanContext,
         parentContext,
         traceConfig,
         spanProcessor,

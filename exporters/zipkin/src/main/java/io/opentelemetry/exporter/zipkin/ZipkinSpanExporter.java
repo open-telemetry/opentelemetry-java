@@ -13,7 +13,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -126,8 +125,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
             .duration(Math.max(1, endTimestamp - startTimestamp))
             .localEndpoint(endpoint);
 
-    if (SpanId.isValid(spanData.getParentSpanId())) {
-      spanBuilder.parentId(spanData.getParentSpanId());
+    if (spanData.getParentSpanContext().isValid()) {
+      spanBuilder.parentId(spanData.getParentSpanContext().getSpanIdAsHexString());
     }
 
     ReadableAttributes spanAttributes = spanData.getAttributes();

@@ -17,7 +17,6 @@ import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
@@ -88,8 +87,9 @@ final class SpanAdapter {
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(spanData.getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(spanData.getSpanId()));
     // TODO: Set TraceState;
-    if (SpanId.isValid(spanData.getParentSpanId())) {
-      builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(spanData.getParentSpanId()));
+    if (spanData.getParentSpanContext().isValid()) {
+      builder.setParentSpanId(
+          TraceProtoUtils.toProtoSpanId(spanData.getParentSpanContext().getSpanIdAsHexString()));
     }
     builder.setName(spanData.getName());
     builder.setKind(toProtoSpanKind(spanData.getKind()));
