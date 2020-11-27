@@ -16,5 +16,6 @@ dependencies {
             libraries.junit,
             libraries.assertj,
             libraries.slf4jsimple,
+            libraries.opencensus_api,
             libraries.opencensus_impl
 }

@@ -178,7 +178,6 @@ class InteroperabilityTest {
       }
       span.addAnnotation("OpenCensus1: Event 2");
     }
-    //    Tracing.getExportComponent().shutdown();
   }
 
   private static void createOpenCensusScopedSpan() {
@@ -193,7 +192,6 @@ class InteroperabilityTest {
       span.addAnnotation("OpenCensus2: Event 1");
       span.addAnnotation("OpenCensus2: Event 2");
     }
-    //    Tracing.getExportComponent().shutdown();
   }
 
   private static void createOpenTelemetryScopedSpan() {
