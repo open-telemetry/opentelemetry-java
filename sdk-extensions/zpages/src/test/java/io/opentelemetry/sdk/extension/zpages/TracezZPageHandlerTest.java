@@ -343,9 +343,8 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).doesNotContain("<b> Span Name: Span</b>");
   }
 
-  private static ImmutableMap<String, String> generateQueryMap(
-      String spanName, String type, String subtype)
-      throws UnsupportedEncodingException, URISyntaxException {
+  private static Map<String, String> generateQueryMap(String spanName, String type, String subtype)
+      throws URISyntaxException {
     return ZPageHttpHandler.parseQueryString(
         new URI(
                 "tracez?zspanname="

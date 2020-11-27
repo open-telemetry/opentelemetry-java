@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import com.google.common.io.BaseEncoding;
-import com.google.common.io.ByteStreams;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,14 +23,17 @@ final class ZPageLogo {
    * @return OpenTelemetry logo in base64 encoding.
    */
   public static String getLogoBase64() {
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
     try {
-      InputStream in = ZPageLogo.class.getClassLoader().getResourceAsStream("logo.png");
-      byte[] bytes = ByteStreams.toByteArray(in);
-      return BaseEncoding.base64().encode(bytes);
+      try (InputStream is = ZPageLogo.class.getClassLoader().getResourceAsStream("logo.png")) {
+        readTo(is, os);
+      }
     } catch (Throwable t) {
       logger.log(Level.WARNING, "error while getting OpenTelemetry Logo", t);
       return "";
     }
+    byte[] bytes = os.toByteArray();
+    return Base64.getEncoder().encodeToString(bytes);
   }
 
   /**
@@ -38,14 +42,21 @@ final class ZPageLogo {
    * @return OpenTelemetry favicon in base64 encoding.
    */
   public static String getFaviconBase64() {
-    try {
-
-      InputStream in = ZPageLogo.class.getClassLoader().getResourceAsStream("favicon.png");
-      byte[] bytes = ByteStreams.toByteArray(in);
-      return BaseEncoding.base64().encode(bytes);
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    try (InputStream is = ZPageLogo.class.getClassLoader().getResourceAsStream("favicon.png")) {
+      readTo(is, os);
     } catch (Throwable t) {
       logger.log(Level.WARNING, "error while getting OpenTelemetry Logo", t);
       return "";
+    }
+    byte[] bytes = os.toByteArray();
+    return Base64.getEncoder().encodeToString(bytes);
+  }
+
+  private static void readTo(InputStream is, ByteArrayOutputStream os) throws IOException {
+    int b;
+    while ((b = is.read()) != -1) {
+      os.write(b);
     }
   }
 }

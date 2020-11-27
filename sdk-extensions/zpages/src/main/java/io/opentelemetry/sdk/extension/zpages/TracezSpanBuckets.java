@@ -5,33 +5,30 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 final class TracezSpanBuckets {
-  private final ImmutableMap<LatencyBoundary, SpanBucket> latencyBuckets;
-  private final ImmutableMap<StatusCode, SpanBucket> errorBuckets;
+  private final Map<LatencyBoundary, SpanBucket> latencyBuckets;
+  private final Map<StatusCode, SpanBucket> errorBuckets;
 
   TracezSpanBuckets() {
-    ImmutableMap.Builder<LatencyBoundary, SpanBucket> latencyBucketsBuilder =
-        ImmutableMap.builder();
+    latencyBuckets = new HashMap<>();
     for (LatencyBoundary bucket : LatencyBoundary.values()) {
-      latencyBucketsBuilder.put(bucket, new SpanBucket(/* isLatencyBucket= */ true));
+      latencyBuckets.put(bucket, new SpanBucket(/* isLatencyBucket= */ true));
     }
-    latencyBuckets = latencyBucketsBuilder.build();
-    ImmutableMap.Builder<StatusCode, SpanBucket> errorBucketsBuilder = ImmutableMap.builder();
+    errorBuckets = new HashMap<>();
     for (StatusCode code : StatusCode.values()) {
       if (code == StatusCode.ERROR) {
-        errorBucketsBuilder.put(code, new SpanBucket(/* isLatencyBucket= */ false));
+        errorBuckets.put(code, new SpanBucket(/* isLatencyBucket= */ false));
       }
     }
-    errorBuckets = errorBucketsBuilder.build();
   }
 
   void addToBucket(ReadableSpan span) {
