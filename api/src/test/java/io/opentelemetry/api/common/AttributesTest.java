@@ -122,6 +122,8 @@ class AttributesTest {
         .isEqualTo(
             "ReadOnlyArrayMap{AttributeKeyImpl{getType=STRING, key=key1}=value1,"
                 + "AttributeKeyImpl{getType=LONG, key=key2}=333}");
+
+    assertThat(Attributes.builder().build().asMap()).isEmpty();
   }
 
   @Test
