@@ -19,12 +19,12 @@ import java.util.Map;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 final class AttributesMap implements ReadableAttributes {
-  private final Map<AttributeKey, Object> data;
+  private final Map<AttributeKey<?>, Object> data;
 
   private final long capacity;
   private int totalAddedValues = 0;
 
-  private AttributesMap(long capacity, Map<AttributeKey, Object> data) {
+  private AttributesMap(long capacity, Map<AttributeKey<?>, Object> data) {
     this.capacity = capacity;
     this.data = data;
   }
@@ -67,11 +67,16 @@ final class AttributesMap implements ReadableAttributes {
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public void forEach(AttributeConsumer consumer) {
-    for (Map.Entry<AttributeKey, Object> entry : data.entrySet()) {
+    for (Map.Entry<AttributeKey<?>, Object> entry : data.entrySet()) {
       AttributeKey key = entry.getKey();
       Object value = entry.getValue();
       consumer.accept(key, value);
     }
+  }
+
+  @Override
+  public Map<AttributeKey<?>, Object> asMap() {
+    return Collections.unmodifiableMap(data);
   }
 
   @Override
@@ -87,7 +92,7 @@ final class AttributesMap implements ReadableAttributes {
   }
 
   ReadableAttributes immutableCopy() {
-    Map<AttributeKey, Object> dataCopy = new LinkedHashMap<>(data);
+    Map<AttributeKey<?>, Object> dataCopy = new LinkedHashMap<>(data);
     return new AttributesMap(capacity, Collections.unmodifiableMap(dataCopy));
   }
 }
