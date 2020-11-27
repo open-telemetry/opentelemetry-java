@@ -8,7 +8,6 @@ package io.opentelemetry.opencensusshim;
 import static io.opentelemetry.opencensusshim.SpanConverter.mapSpanContext;
 
 import io.opencensus.trace.SpanContext;
-import io.opencensus.trace.propagation.SpanContextParseException;
 import io.opencensus.trace.propagation.TextFormat;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
@@ -36,7 +35,7 @@ public class OpenTelemetryB3FormatImpl extends TextFormat {
   }
 
   @Override
-  public <C> SpanContext extract(C carrier, Getter<C> getter) throws SpanContextParseException {
+  public <C> SpanContext extract(C carrier, Getter<C> getter) {
     Context context =
         OTEL_B3_PROPAGATOR.extract(
             Context.current(),

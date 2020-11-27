@@ -21,7 +21,7 @@ import org.junit.runners.JUnit4;
 
 /** Tests for {@link OpenTelemetryBinaryFormatImpl}. */
 @RunWith(JUnit4.class)
-public class BinaryTraceContextTest {
+public class OpenTelemetryB3FormatImplTest {
 
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79};
