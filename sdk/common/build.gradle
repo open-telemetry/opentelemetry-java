@@ -63,3 +63,39 @@ task generateVersionResource {
         propertiesFile.write("sdk.version=${project.version}")
     }
 }
+
+def mrJarVersions = [9]
+
+mrJarVersions.each { version->
+    sourceSets {
+        "java${version}" {
+            java {
+                srcDirs = ["src/main/java${version}"]
+            }
+        }
+    }
+
+    "compileJava${version}Java" {
+        sourceCompatibility = version
+        targetCompatibility = version
+        options.release = version
+    }
+
+    configurations."java${version}Implementation".extendsFrom configurations.implementation
+
+    dependencies {
+        // Common to reference classes in main sourceset from Java 9 one (e.g., to return a common interface)
+        "java${version}Implementation" files(sourceSets.main.output.classesDirs) { builtBy compileJava }
+    }
+}
+
+tasks.withType(Jar) {
+    mrJarVersions.each { version->
+        into("META-INF/versions/${version}") {
+            from sourceSets."java${version}".output
+        }
+    }
+    manifest.attributes(
+            'Multi-Release': 'true'
+    )
+}

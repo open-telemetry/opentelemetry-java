@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
-import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.Objects;
@@ -97,7 +97,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
    */
   public static class Builder {
 
-    private Clock clock = MillisClock.getInstance();
+    private Clock clock = SystemClock.getInstance();
     private IdGenerator idsGenerator = IdGenerator.random();
     private Resource resource = Resource.getDefault();
 
