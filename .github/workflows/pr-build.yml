@@ -42,3 +42,10 @@ jobs:
             org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }}
       - uses: codecov/codecov-action@v1
         if: ${{ matrix.coverage }}
+        with:
+          path_to_write_report: ./build/codecov.txt
+          verbose: true
+      - uses: actions/upload-artifact@v2
+        with:
+          name: codecov-report
+          path: ./build/codecov.txt
