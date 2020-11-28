@@ -214,7 +214,7 @@ public class Ec2Resource extends ResourceProvider {
     }
     byte[] buf = new byte[8192];
     int read;
-    while ((read = is.read(buf)) != -1) {
+    while ((read = is.read(buf)) > 0) {
       os.write(buf, 0, read);
     }
   }
