@@ -63,8 +63,9 @@ public abstract class ConfigBuilder<T> {
 
   /** Sets the configuration values from the given {@link Properties} object. */
   public T readProperties(Properties properties) {
-    Map<String, String> map = new HashMap<>(properties.size());
-    properties.forEach((key, value) -> map.put((String) key, (String) value));
+    // Properties incorrectly implements Map<Object, Object> but we know it only has Strings.
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    Map<String, String> map = (Map) properties;
     return fromConfigMap(map, NamingConvention.DOT);
   }
 

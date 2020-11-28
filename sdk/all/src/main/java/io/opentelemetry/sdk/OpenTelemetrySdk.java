@@ -252,6 +252,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
    * @see Obfuscated
    */
   @ThreadSafe
+  // Visible for testing
   static class ObfuscatedTracerProvider implements TracerProvider, Obfuscated<TracerProvider> {
 
     private final TracerProvider delegate;
