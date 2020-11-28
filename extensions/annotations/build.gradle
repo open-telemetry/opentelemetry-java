@@ -11,5 +11,4 @@ ext.moduleName = "io.opentelemetry.extension.annotations"
 dependencies {
     implementation project(':opentelemetry-api')
 
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
-}
+    }
