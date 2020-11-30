@@ -50,7 +50,8 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
       entries = new ArrayList<>(parent.getEntries());
     }
     removeEntry(key);
-    // Inserts the element at the front of this list.
+    // Inserts the element at the front of this list. (note: probably pretty inefficient with an
+    // ArrayList as the underlying implementation!)
     entries.add(0, key);
     entries.add(1, value);
     return this;
