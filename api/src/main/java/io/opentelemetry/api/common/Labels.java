@@ -22,7 +22,7 @@ import javax.annotation.concurrent.Immutable;
  * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
  *
  * <p>For this reason, it is strongly suggested that you use the implementation that is provided
- * here via the factory methods and the {@link LabelsBuilder}.
+ * here via the factory methods and the {@link ArrayBackedLabelsBuilder}.
  */
 @Immutable
 public interface Labels {
@@ -66,7 +66,7 @@ public interface Labels {
 
     @Override
     public LabelsBuilder toBuilder() {
-      return new LabelsBuilder(data());
+      return new ArrayBackedLabelsBuilder(data());
     }
   }
 
@@ -140,11 +140,16 @@ public interface Labels {
     return sortAndFilterToLabels((Object[]) keyValueLabelPairs);
   }
 
-  /** Create a {@link LabelsBuilder} pre-populated with the contents of this Labels instance. */
+  /**
+   * Create a {@link ArrayBackedLabelsBuilder} pre-populated with the contents of this Labels
+   * instance.
+   */
   LabelsBuilder toBuilder();
 
-  /** Creates a new {@link LabelsBuilder} instance for creating arbitrary {@link Labels}. */
+  /**
+   * Creates a new {@link ArrayBackedLabelsBuilder} instance for creating arbitrary {@link Labels}.
+   */
   static LabelsBuilder builder() {
-    return new LabelsBuilder();
+    return new ArrayBackedLabelsBuilder();
   }
 }
