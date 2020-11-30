@@ -59,8 +59,8 @@ and the classes in it have been repackaged into the `io.opentelemetry.sdk.extens
 - Builder classes have been moved to the top level, rather than being inner classes. 
 For example, rather than `io.opentelemetry.api.trace.Span.Builder`, the builder is now in its own top-level class: `io.opentelemetry.api.trace.SpanBuilder`.
 Methods to create the builders remain in the same place as they were before.
-- SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent methods which accept a timestamp now accept a timestamp with a TimeUnit instead of requiring a nanos timestamp
-   
+- SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent methods which accept a timestamp now accept a timestamp with a TimeUnit instead of requiring a nanos timestamp.
+
 #### Enhancements:
 
 - Versions of SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent added which accept Instant timestamps
@@ -84,6 +84,7 @@ You can only build an `OpenTelemetrySdk` with `TracerSdkProvider` and `MeterSdkP
 - An API has been added to the SDK's MeterProvider implementation (`MeterSdkProvider`) that allows the end-user to configure
 how various metrics will be aggregated. This API should be considered a precursor to a full "Views" API, and will most likely
 evolve over the coming months before the metrics implementation is complete. See the javadoc for `MeterSdkProvider.registerView()` for details.
+- The `ReadableSpan` interface now exposes the `Span.Kind` of the span.
 
 #### Miscellaneous:
 
@@ -105,6 +106,8 @@ have been fixed to properly report the committed memory values.
 
 - A new module has been added to assist with propagating the OTel context in kotlin co-routines. 
 See the `opentelemetry-extension-kotlin` module for details. 
+- The `opentelemetry-sdk-extension-resources` now includes resource attributes for the process runtime via the `ProcessRuntimeResource` class.
+This is included in the Resource SPI implementation that the module provides.
 
 -----
 
