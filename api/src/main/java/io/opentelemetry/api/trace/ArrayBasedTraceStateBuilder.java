@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -25,7 +26,7 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   private static final int MAX_TENANT_ID_SIZE = 240;
 
   private final ArrayBasedTraceState parent;
-  @Nullable private ArrayList<String> entries;
+  @Nullable private List<String> entries;
 
   ArrayBasedTraceStateBuilder() {
     parent = EMPTY;
@@ -48,14 +49,7 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
       // Copy entries from the parent.
       entries = new ArrayList<>(parent.getEntries());
     }
-    for (int i = 0; i < entries.size(); i += 2) {
-      if (entries.get(i).equals(key)) {
-        entries.remove(i);
-        entries.remove(i);
-        // Exit now because the entries list cannot contain duplicates.
-        break;
-      }
-    }
+    removeEntry(key);
     // Inserts the element at the front of this list.
     entries.add(0, key);
     entries.add(1, value);
@@ -71,15 +65,21 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
       // Copy entries from the parent.
       entries = new ArrayList<>(parent.getEntries());
     }
-    for (int i = 0; i < entries.size(); i += 2) {
+    removeEntry(key);
+    return this;
+  }
+
+  private void removeEntry(String key) {
+    int currentSize = entries.size();
+    for (int i = 0; i < currentSize; i += 2) {
       if (entries.get(i).equals(key)) {
+        // remove twice at i to get the key & the value (yes, this is pretty ugly).
         entries.remove(i);
         entries.remove(i);
         // Exit now because the entries list cannot contain duplicates.
         break;
       }
     }
-    return this;
   }
 
   @Override
