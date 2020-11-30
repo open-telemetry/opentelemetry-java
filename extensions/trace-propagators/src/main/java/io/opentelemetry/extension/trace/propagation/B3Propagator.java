@@ -9,8 +9,8 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -62,7 +62,7 @@ public class B3Propagator implements TextMapPropagator {
   static final char NOT_SAMPLED = '0';
   static final char DEBUG_SAMPLED = 'd';
 
-  private static final List<String> FIELDS =
+  private static final Collection<String> FIELDS =
       Collections.unmodifiableList(
           Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER, COMBINED_HEADER));
 
@@ -117,7 +117,7 @@ public class B3Propagator implements TextMapPropagator {
   }
 
   @Override
-  public List<String> fields() {
+  public Collection<String> fields() {
     return FIELDS;
   }
 

@@ -13,8 +13,8 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -31,7 +31,7 @@ public class OtTracerPropagator implements TextMapPropagator {
   static final String TRACE_ID_HEADER = "ot-tracer-traceid";
   static final String SPAN_ID_HEADER = "ot-tracer-spanid";
   static final String SAMPLED_HEADER = "ot-tracer-sampled";
-  private static final List<String> FIELDS =
+  private static final Collection<String> FIELDS =
       Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));
 
   private static final OtTracerPropagator INSTANCE = new OtTracerPropagator();
@@ -45,7 +45,7 @@ public class OtTracerPropagator implements TextMapPropagator {
   }
 
   @Override
-  public List<String> fields() {
+  public Collection<String> fields() {
     return FIELDS;
   }
 
