@@ -46,9 +46,7 @@ public interface TraceState {
     return DEFAULT;
   }
 
-  /**
-   * Returns an empty {@code TraceStateBuilder}.
-   */
+  /** Returns an empty {@code TraceStateBuilder}. */
   static TraceStateBuilder builder() {
     return new TraceStateBuilder();
   }
