@@ -306,8 +306,7 @@ class AdapterTest {
   }
 
   private static SpanContext createSpanContext(String traceId, String spanId) {
-    return SpanContext.create(
-        traceId, spanId, TraceFlags.getDefault(), TraceState.builder().build());
+    return SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   }
 
   @Nullable

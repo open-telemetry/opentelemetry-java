@@ -35,7 +35,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface TraceState {
 
-  TraceState DEFAULT = new TraceStateBuilder().build();
+  TraceState DEFAULT = new ArrayBasedTraceStateBuilder().build();
 
   /**
    * Returns the default {@code TraceState} with no entries.
@@ -48,7 +48,7 @@ public interface TraceState {
 
   /** Returns an empty {@code TraceStateBuilder}. */
   static TraceStateBuilder builder() {
-    return new TraceStateBuilder();
+    return new ArrayBasedTraceStateBuilder();
   }
 
   /**

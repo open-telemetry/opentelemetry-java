@@ -50,7 +50,7 @@ abstract class ArrayBasedTraceState implements TraceState {
 
   @Override
   public TraceStateBuilder toBuilder() {
-    return new TraceStateBuilder(this);
+    return new ArrayBasedTraceStateBuilder(this);
   }
 
   static ArrayBasedTraceState create(List<String> entries) {
