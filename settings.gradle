@@ -2,6 +2,7 @@ pluginManagement {
     plugins {
         id "com.diffplug.spotless" version "5.8.2"
         id "com.github.ben-manes.versions" version "0.36.0"
+        id "com.github.johnrengelman.shadow" version "6.1.0"
         id "com.github.kt3k.coveralls" version "2.0.1"
         id "com.google.protobuf" version "0.8.14"
         id "com.jfrog.artifactory" version "4.18.0"

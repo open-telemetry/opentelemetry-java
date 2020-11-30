@@ -10,7 +10,7 @@ description = 'OpenTelemetry API'
 ext.moduleName = "io.opentelemetry.api"
 
 dependencies {
-    api project(':opentelemetry-context')
+    api project(path: ':opentelemetry-context', configuration: 'shadow')
 
     annotationProcessor libraries.auto_value
 
@@ -18,8 +18,4 @@ dependencies {
 
     testImplementation libraries.jqf,
             libraries.guava_testlib
-}
-
-javadoc {
-    exclude 'io/opentelemetry/internal/**'
 }
