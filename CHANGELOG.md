@@ -7,6 +7,7 @@
 #### Breaking Changes
 
 - The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types.
+- The `TextMapPropagator.fields()` method now returns a `Collection` rather than a `List`.
 
 #### Miscellaneous
 
@@ -15,6 +16,8 @@
 - The `DefaultContextPropagators` class has been deprecated. Access to it will be removed in 0.13.0.
 - The `TraceMultiPropagator` builder has been deprecated in favor of a simple factory method. The builder will be removed in 0.13.0.
 You can access the same functionality via static methods on the `ContextPropagators` interface. 
+- The `setCallback()` method on the asynchronous metric instruments has been deprecated and will be removed in 0.13.0. 
+Instead, use the `setCallback()` method on the builder for the instruments.
 - A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
 
 ### Extensions
