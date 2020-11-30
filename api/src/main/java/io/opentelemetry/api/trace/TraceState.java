@@ -35,15 +35,13 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface TraceState {
 
-  TraceState DEFAULT = new ArrayBasedTraceStateBuilder().build();
-
   /**
    * Returns the default {@code TraceState} with no entries.
    *
    * @return the default {@code TraceState}.
    */
   static TraceState getDefault() {
-    return DEFAULT;
+    return DefaultTraceState.get();
   }
 
   /** Returns an empty {@code TraceStateBuilder}. */
