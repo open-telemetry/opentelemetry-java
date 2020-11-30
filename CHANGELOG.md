@@ -36,6 +36,7 @@ opentelemetry-java-instrumentation project under a different module name. The mo
 #### Enhancements
 
 - The OpenTelemetrySdk builder now supports the addition of SpanProcessors to the resulting SDK.
+- The `ReadableSpan` interface now exposes the `Span.Kind` of the span.
 
 #### Miscellaneous
 
@@ -49,6 +50,11 @@ the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes 
 
 - The `opentelemetry-sdk-extension-aws-v1-support` module has been renamed to `opentelemetry-sdk-extension-aws` 
 and the classes in it have been repackaged into the `io.opentelemetry.sdk.extension.aws.*` packages.
+
+#### Enhancements
+
+- The `opentelemetry-sdk-extension-resources` now includes resource attributes for the process runtime via the `ProcessRuntimeResource` class.
+This is included in the Resource SPI implementation that the module provides.
 
 -----
 
@@ -87,7 +93,6 @@ You can only build an `OpenTelemetrySdk` with `TracerSdkProvider` and `MeterSdkP
 - An API has been added to the SDK's MeterProvider implementation (`MeterSdkProvider`) that allows the end-user to configure
 how various metrics will be aggregated. This API should be considered a precursor to a full "Views" API, and will most likely
 evolve over the coming months before the metrics implementation is complete. See the javadoc for `MeterSdkProvider.registerView()` for details.
-- The `ReadableSpan` interface now exposes the `Span.Kind` of the span.
 
 #### Miscellaneous:
 
@@ -108,9 +113,7 @@ have been fixed to properly report the committed memory values.
 #### Enhancements:
 
 - A new module has been added to assist with propagating the OTel context in kotlin co-routines. 
-See the `opentelemetry-extension-kotlin` module for details. 
-- The `opentelemetry-sdk-extension-resources` now includes resource attributes for the process runtime via the `ProcessRuntimeResource` class.
-This is included in the Resource SPI implementation that the module provides.
+See the `opentelemetry-extension-kotlin` module for details.
 
 -----
 
