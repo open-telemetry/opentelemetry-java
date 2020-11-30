@@ -64,7 +64,7 @@ $ ./gradlew spotlessApply
 To verify code style manually run the following command, 
 which uses [google-java-format](https://github.com/google/google-java-format) library:
 
-`./gradlew spotless`
+`./gradlew spotlessCheck`
 
 ### Best practices that we follow
 
