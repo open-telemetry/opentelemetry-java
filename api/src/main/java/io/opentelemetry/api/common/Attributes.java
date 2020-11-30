@@ -6,7 +6,6 @@
 package io.opentelemetry.api.common;
 
 import static io.opentelemetry.api.common.Attributes.ArrayBackedAttributes.sortAndFilterToAttributes;
-import static io.opentelemetry.api.internal.ImmutableKeyValuePairs.sortAndFilter;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
@@ -29,7 +28,7 @@ import javax.annotation.concurrent.Immutable;
  * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
  *
  * <p>For this reason, it is strongly suggested that you use the implementation that is provided
- * here via the factory methods and the {@link AttributesBuilder}.
+ * here via the factory methods and the {@link ArrayBackedAttributesBuilder}.
  */
 @SuppressWarnings("rawtypes")
 @Immutable
@@ -49,7 +48,7 @@ public interface Attributes extends ReadableAttributes {
 
     @Override
     public AttributesBuilder toBuilder() {
-      return new AttributesBuilder(new ArrayList<>(data()));
+      return new ArrayBackedAttributesBuilder(new ArrayList<>(data()));
     }
 
     @SuppressWarnings("unchecked")
@@ -184,21 +183,24 @@ public interface Attributes extends ReadableAttributes {
         key6, value6);
   }
 
-  /** Returns a new {@link AttributesBuilder} instance for creating arbitrary {@link Attributes}. */
+  /**
+   * Returns a new {@link ArrayBackedAttributesBuilder} instance for creating arbitrary {@link
+   * Attributes}.
+   */
   static AttributesBuilder builder() {
-    return new AttributesBuilder();
+    return new ArrayBackedAttributesBuilder();
   }
 
-  /** Returns a new {@link AttributesBuilder} instance from ReadableAttributes. */
+  /** Returns a new {@link ArrayBackedAttributesBuilder} instance from ReadableAttributes. */
   static AttributesBuilder builder(ReadableAttributes attributes) {
-    final AttributesBuilder builder = new AttributesBuilder();
+    final AttributesBuilder builder = new ArrayBackedAttributesBuilder();
     attributes.forEach(builder::put);
     return builder;
   }
 
   /**
-   * Returns a new {@link AttributesBuilder} instance populated with the data of this {@link
-   * Attributes}.
+   * Returns a new {@link ArrayBackedAttributesBuilder} instance populated with the data of this
+   * {@link Attributes}.
    */
   AttributesBuilder toBuilder();
 }
