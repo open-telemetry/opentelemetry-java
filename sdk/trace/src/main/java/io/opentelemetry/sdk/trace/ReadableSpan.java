@@ -62,4 +62,11 @@ public interface ReadableSpan {
    * @return the latency of the {@code Span} in nanos.
    */
   long getLatencyNanos();
+
+  /**
+   * Returns the kind of the span.
+   *
+   * @return the kind of the span.
+   */
+  Span.Kind getKind();
 }
