@@ -45,6 +45,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
   }
 
   @Override
+  @Deprecated
   public void setCallback(Callback<T> callback) {
     this.metricUpdater = Objects.requireNonNull(callback, "callback");
   }

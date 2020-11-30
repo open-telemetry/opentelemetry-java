@@ -51,11 +51,8 @@ class DoubleValueObserverSdkTest {
             .doubleValueObserverBuilder("testObserver")
             .setDescription("My own DoubleValueObserver")
             .setUnit("ms")
+            .setCallback(result -> {})
             .build();
-    doubleValueObserver.setCallback(
-        result -> {
-          // Do nothing.
-        });
     assertThat(doubleValueObserver.collectAll())
         .containsExactly(
             MetricData.create(
@@ -71,8 +68,10 @@ class DoubleValueObserverSdkTest {
   @Test
   void collectMetrics_WithOneRecord() {
     DoubleValueObserverSdk doubleValueObserver =
-        testSdk.doubleValueObserverBuilder("testObserver").build();
-    doubleValueObserver.setCallback(result -> result.observe(12.1d, Labels.of("k", "v")));
+        testSdk
+            .doubleValueObserverBuilder("testObserver")
+            .setCallback(result -> result.observe(12.1d, Labels.of("k", "v")))
+            .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleValueObserver.collectAll())
         .containsExactly(

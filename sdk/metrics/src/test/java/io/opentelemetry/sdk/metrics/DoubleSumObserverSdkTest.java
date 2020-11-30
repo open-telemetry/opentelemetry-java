@@ -50,11 +50,8 @@ class DoubleSumObserverSdkTest {
             .doubleSumObserverBuilder("testObserver")
             .setDescription("My own DoubleSumObserver")
             .setUnit("ms")
+            .setCallback(result -> {})
             .build();
-    doubleSumObserver.setCallback(
-        result -> {
-          // Do nothing.
-        });
     assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
@@ -70,8 +67,10 @@ class DoubleSumObserverSdkTest {
   @Test
   void collectMetrics_WithOneRecord() {
     DoubleSumObserverSdk doubleSumObserver =
-        testSdk.doubleSumObserverBuilder("testObserver").build();
-    doubleSumObserver.setCallback(result -> result.observe(12.1d, Labels.of("k", "v")));
+        testSdk
+            .doubleSumObserverBuilder("testObserver")
+            .setCallback(result -> result.observe(12.1d, Labels.of("k", "v")))
+            .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleSumObserver.collectAll())
         .containsExactly(

@@ -50,11 +50,8 @@ class LongValueObserverSdkTest {
             .longValueObserverBuilder("testObserver")
             .setDescription("My own LongValueObserver")
             .setUnit("ms")
+            .setCallback(result -> {})
             .build();
-    longValueObserver.setCallback(
-        result -> {
-          // Do nothing.
-        });
     assertThat(longValueObserver.collectAll())
         .containsExactly(
             MetricData.create(
@@ -70,8 +67,10 @@ class LongValueObserverSdkTest {
   @Test
   void collectMetrics_WithOneRecord() {
     LongValueObserverSdk longValueObserver =
-        testSdk.longValueObserverBuilder("testObserver").build();
-    longValueObserver.setCallback(result -> result.observe(12, Labels.of("k", "v")));
+        testSdk
+            .longValueObserverBuilder("testObserver")
+            .setCallback(result -> result.observe(12, Labels.of("k", "v")))
+            .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longValueObserver.collectAll())
         .containsExactly(

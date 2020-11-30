@@ -421,6 +421,7 @@ final class DefaultMeter implements Meter {
     private NoopDoubleSumObserver() {}
 
     @Override
+    @Deprecated
     public void setCallback(Callback<DoubleResult> callback) {
       Objects.requireNonNull(callback, "callback");
     }
@@ -430,6 +431,12 @@ final class DefaultMeter implements Meter {
 
       @Override
       protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public Builder setCallback(Callback<DoubleResult> callback) {
+        Objects.requireNonNull(callback, "callback");
         return this;
       }
 
@@ -447,6 +454,7 @@ final class DefaultMeter implements Meter {
     private NoopLongSumObserver() {}
 
     @Override
+    @Deprecated
     public void setCallback(Callback<LongResult> callback) {
       Objects.requireNonNull(callback, "callback");
     }
@@ -456,6 +464,12 @@ final class DefaultMeter implements Meter {
 
       @Override
       protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public NoopBuilder setCallback(Callback<LongResult> callback) {
+        Objects.requireNonNull(callback, "callback");
         return this;
       }
 
@@ -473,6 +487,7 @@ final class DefaultMeter implements Meter {
     private NoopDoubleUpDownSumObserver() {}
 
     @Override
+    @Deprecated
     public void setCallback(Callback<DoubleResult> callback) {
       Objects.requireNonNull(callback, "callback");
     }
@@ -482,6 +497,12 @@ final class DefaultMeter implements Meter {
 
       @Override
       protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public Builder setCallback(Callback<DoubleResult> callback) {
+        Objects.requireNonNull(callback, "callback");
         return this;
       }
 
@@ -499,6 +520,7 @@ final class DefaultMeter implements Meter {
     private NoopLongUpDownSumObserver() {}
 
     @Override
+    @Deprecated
     public void setCallback(Callback<LongResult> callback) {
       Objects.requireNonNull(callback, "callback");
     }
@@ -508,6 +530,12 @@ final class DefaultMeter implements Meter {
 
       @Override
       protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public Builder setCallback(Callback<LongResult> callback) {
+        Objects.requireNonNull(callback, "callback");
         return this;
       }
 
@@ -525,6 +553,7 @@ final class DefaultMeter implements Meter {
     private NoopDoubleValueObserver() {}
 
     @Override
+    @Deprecated
     public void setCallback(Callback<DoubleResult> callback) {
       Objects.requireNonNull(callback, "callback");
     }
@@ -534,6 +563,12 @@ final class DefaultMeter implements Meter {
 
       @Override
       protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public Builder setCallback(Callback<DoubleResult> callback) {
+        Objects.requireNonNull(callback, "callback");
         return this;
       }
 
@@ -551,6 +586,7 @@ final class DefaultMeter implements Meter {
     private NoopLongValueObserver() {}
 
     @Override
+    @Deprecated
     public void setCallback(Callback<LongResult> callback) {
       Objects.requireNonNull(callback, "callback");
     }
@@ -560,6 +596,12 @@ final class DefaultMeter implements Meter {
 
       @Override
       protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public Builder setCallback(Callback<LongResult> callback) {
+        Objects.requireNonNull(callback, "callback");
         return this;
       }
 
