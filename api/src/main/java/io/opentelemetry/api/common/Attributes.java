@@ -36,7 +36,7 @@ public interface Attributes extends ReadableAttributes {
 
   @AutoValue
   @Immutable
-  abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey, Object>
+  abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
       implements Attributes {
 
     private static final Attributes EMPTY = Attributes.builder().build();
