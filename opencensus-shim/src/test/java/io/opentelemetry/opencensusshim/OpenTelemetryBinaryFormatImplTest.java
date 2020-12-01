@@ -17,8 +17,7 @@ import io.opencensus.trace.propagation.BinaryFormat;
 import io.opencensus.trace.propagation.SpanContextParseException;
 import org.junit.jupiter.api.Test;
 
-/** Tests for {@link OpenTelemetryBinaryFormatImpl}. */
-public class OpenTelemetryBinaryFormatImplTest {
+class OpenTelemetryBinaryFormatImplTest {
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79};
   private static final TraceId TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);

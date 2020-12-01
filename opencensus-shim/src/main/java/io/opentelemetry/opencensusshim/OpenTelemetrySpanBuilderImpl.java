@@ -39,8 +39,6 @@ import io.opencensus.trace.Tracestate;
 import io.opencensus.trace.config.TraceConfig;
 import io.opencensus.trace.config.TraceParams;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import java.util.ArrayList;
@@ -80,14 +78,7 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
   public SpanBuilder setParentLinks(List<Span> parentLinks) {
     this.ocParentLinks = checkNotNull(parentLinks, "parentLinks");
     for (Span parent : parentLinks) {
-      this.otelParentLinks.add(
-          io.opentelemetry.api.trace.SpanContext.create(
-              io.opentelemetry.api.trace.TraceId.bytesToHex(
-                  parent.getContext().getTraceId().getBytes()),
-              io.opentelemetry.api.trace.SpanId.bytesToHex(
-                  parent.getContext().getSpanId().getBytes()),
-              TraceFlags.getDefault(),
-              TraceState.getDefault()));
+      this.otelParentLinks.add(SpanConverter.mapSpanContext(parent.getContext()));
     }
     return this;
   }
@@ -154,14 +145,7 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
       otelSpanBuilder.setParent(Context.root().with((OpenTelemetrySpanImpl) ocParent));
     }
     if (ocRemoteParentSpanContext != null) {
-      otelSpanBuilder.addLink(
-          io.opentelemetry.api.trace.SpanContext.create(
-              io.opentelemetry.api.trace.TraceId.bytesToHex(
-                  ocRemoteParentSpanContext.getTraceId().getBytes()),
-              io.opentelemetry.api.trace.SpanId.bytesToHex(
-                  ocRemoteParentSpanContext.getSpanId().getBytes()),
-              TraceFlags.getDefault(),
-              TraceState.getDefault()));
+      otelSpanBuilder.addLink(SpanConverter.mapSpanContext(ocRemoteParentSpanContext));
     }
     if (otelKind != null) {
       otelSpanBuilder.setSpanKind(otelKind);
