@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
@@ -111,7 +110,7 @@ public class JaegerRemoteSampler implements Sampler {
     return getDescription();
   }
 
-  @VisibleForTesting
+  // Visible for testing
   Sampler getSampler() {
     return this.sampler;
   }

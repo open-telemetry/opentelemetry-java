@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
-import com.google.common.io.ByteStreams;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,6 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -80,13 +80,13 @@ class JdkHttpClient {
   private static String readResponseString(HttpURLConnection connection) {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     try (InputStream is = connection.getInputStream()) {
-      ByteStreams.copy(is, os);
+      readTo(is, os);
     } catch (IOException e) {
       // Only best effort read if we can.
     }
     try (InputStream is = connection.getErrorStream()) {
       if (is != null) {
-        ByteStreams.copy(is, os);
+        readTo(is, os);
       }
     } catch (IOException e) {
       // Only best effort read if we can.
@@ -132,6 +132,18 @@ class JdkHttpClient {
     } catch (Exception e) {
       logger.log(Level.WARNING, "Cannot load KeyStore from " + certPath);
       return null;
+    }
+  }
+
+  private static void readTo(@Nullable InputStream is, ByteArrayOutputStream os)
+      throws IOException {
+    if (is == null) {
+      return;
+    }
+    byte[] buf = new byte[8192];
+    int read;
+    while ((read = is.read(buf)) > 0) {
+      os.write(buf, 0, read);
     }
   }
 }

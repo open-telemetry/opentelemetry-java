@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.ReadableAttributes;
@@ -84,7 +83,7 @@ class RateLimitingSampler implements Sampler {
     return getDescription();
   }
 
-  @VisibleForTesting
+  // Visible for testing
   double getMaxTracesPerSecond() {
     return maxTracesPerSecond;
   }

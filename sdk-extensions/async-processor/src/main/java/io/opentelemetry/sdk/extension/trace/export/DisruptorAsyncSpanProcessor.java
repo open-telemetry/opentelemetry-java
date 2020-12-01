@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.trace.export;
 
-import com.google.common.base.Preconditions;
 import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
 import io.opentelemetry.context.Context;
@@ -149,7 +148,9 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
      * @return this.
      */
     public Builder setBufferSize(int bufferSize) {
-      Preconditions.checkArgument(bufferSize > 0, "bufferSize must be positive");
+      if (bufferSize <= 0) {
+        throw new IllegalArgumentException("bufferSize must be positive");
+      }
       this.bufferSize = bufferSize;
       return this;
     }
