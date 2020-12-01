@@ -7,9 +7,11 @@ package io.opentelemetry.api.trace.attributes;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
+import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from /templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
@@ -29,6 +31,68 @@ public final class SemanticAttributes {
    * <p>Note: In AWS, this is called availability-zone.
    */
   public static final AttributeKey<String> CLOUD_ZONE = stringKey("cloud.zone");
+
+  /**
+   * The Amazon Resource Name (ARN) of an [ECS container
+   * instance](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_instances.html).
+   */
+  public static final AttributeKey<String> AWS_ECS_CONTAINER_ARN =
+      stringKey("aws.ecs.container.arn");
+
+  /**
+   * The ARN of an [ECS
+   * cluster](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/clusters.html).
+   */
+  public static final AttributeKey<String> AWS_ECS_CLUSTER_ARN = stringKey("aws.ecs.cluster.arn");
+
+  /**
+   * The [launch
+   * type](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html) for an ECS
+   * task.
+   */
+  public static final AttributeKey<String> AWS_ECS_LAUNCHTYPE = stringKey("aws.ecs.launchtype");
+
+  /**
+   * The ARN of an [ECS task
+   * definition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html).
+   */
+  public static final AttributeKey<String> AWS_ECS_TASK_ARN = stringKey("aws.ecs.task.arn");
+
+  /** The task definition family this task definition is a member of. */
+  public static final AttributeKey<String> AWS_ECS_TASK_FAMILY = stringKey("aws.ecs.task.family");
+
+  /**
+   * The name(s) of the AWS log group(s) an application is writing to.
+   *
+   * <p>Note: Multiple log groups must be supported for cases like multi-container applications,
+   * where a single application has sidecar containers, and each write to their own log group.
+   */
+  public static final AttributeKey<List<String>> AWS_LOG_GROUP_NAMES =
+      stringArrayKey("aws.log.group.names");
+
+  /**
+   * The Amazon Resource Name(s) (ARN) of the AWS log group(s).
+   *
+   * <p>Note: See the [log group ARN format
+   * documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format).
+   */
+  public static final AttributeKey<List<String>> AWS_LOG_GROUP_ARNS =
+      stringArrayKey("aws.log.group.arns");
+
+  /** The name(s) of the AWS log stream(s) an application is writing to. */
+  public static final AttributeKey<List<String>> AWS_LOG_STREAM_NAMES =
+      stringArrayKey("aws.log.stream.names");
+
+  /**
+   * The ARN(s) of the AWS log stream(s).
+   *
+   * <p>Note: See the [log stream ARN format
+   * documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format).
+   * One log group can contain several log streams, so these ARNs necessarily identify both a log
+   * group and a log stream.
+   */
+  public static final AttributeKey<List<String>> AWS_LOG_STREAM_ARNS =
+      stringArrayKey("aws.log.stream.arns");
 
   /** Container name. */
   public static final AttributeKey<String> CONTAINER_NAME = stringKey("container.name");
@@ -69,7 +133,7 @@ public final class SemanticAttributes {
 
   /**
    * The version string of the function being executed as defined in [Version
-   * Attributes](https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/resource/semantic_conventions#version-attributes).
+   * Attributes](../../resource/semantic_conventions/README.md#version-attributes).
    */
   public static final AttributeKey<String> FAAS_VERSION = stringKey("faas.version");
 
@@ -96,7 +160,7 @@ public final class SemanticAttributes {
 
   /**
    * The version string of the VM image as defined in [Version
-   * Attributes](https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/resource/semantic_conventions#version-attributes).
+   * Attributes](README.md#version-attributes).
    */
   public static final AttributeKey<String> HOST_IMAGE_VERSION = stringKey("host.image.version");
 
@@ -159,6 +223,68 @@ public final class SemanticAttributes {
    * or `lsb_release -a` commands.
    */
   public static final AttributeKey<String> OS_DESCRIPTION = stringKey("os.description");
+
+  /** Process identifier (PID). */
+  public static final AttributeKey<Long> PROCESS_PID = longKey("process.pid");
+
+  /**
+   * The name of the process executable. On Linux based systems, can be set to the `Name` in
+   * `proc/[pid]/status`. On Windows, can be set to the base name of `GetProcessImageFileNameW`.
+   */
+  public static final AttributeKey<String> PROCESS_EXECUTABLE_NAME =
+      stringKey("process.executable.name");
+
+  /**
+   * The full path to the process executable. On Linux based systems, can be set to the target of
+   * `proc/[pid]/exe`. On Windows, can be set to the result of `GetProcessImageFileNameW`.
+   */
+  public static final AttributeKey<String> PROCESS_EXECUTABLE_PATH =
+      stringKey("process.executable.path");
+
+  /**
+   * The command used to launch the process (i.e. the command name). On Linux based systems, can be
+   * set to the zeroth string in `proc/[pid]/cmdline`. On Windows, can be set to the first parameter
+   * extracted from `GetCommandLineW`.
+   */
+  public static final AttributeKey<String> PROCESS_COMMAND = stringKey("process.command");
+
+  /**
+   * The full command used to launch the process as a single string representing the full command.
+   * On Windows, can be set to the result of `GetCommandLineW`. Do not set this if you have to
+   * assemble it just for monitoring; use `process.command_args` instead.
+   */
+  public static final AttributeKey<String> PROCESS_COMMAND_LINE = stringKey("process.command_line");
+
+  /**
+   * All the command arguments (including the command/executable itself) as received by the process.
+   * On Linux-based systems (and some other Unixoid systems supporting procfs), can be set according
+   * to the list of null-delimited strings extracted from `proc/[pid]/cmdline`. For libc-based
+   * executables, this would be the full argv vector passed to `main`.
+   */
+  public static final AttributeKey<List<String>> PROCESS_COMMAND_ARGS =
+      stringArrayKey("process.command_args");
+
+  /** The username of the user that owns the process. */
+  public static final AttributeKey<String> PROCESS_OWNER = stringKey("process.owner");
+
+  /**
+   * The name of the runtime of this process. For compiled native binaries, this SHOULD be the name
+   * of the compiler.
+   */
+  public static final AttributeKey<String> PROCESS_RUNTIME_NAME = stringKey("process.runtime.name");
+
+  /**
+   * The version of the runtime of this process, as returned by the runtime without modification.
+   */
+  public static final AttributeKey<String> PROCESS_RUNTIME_VERSION =
+      stringKey("process.runtime.version");
+
+  /**
+   * An additional description about the runtime of the process, for example a specific vendor
+   * customization of the runtime environment.
+   */
+  public static final AttributeKey<String> PROCESS_RUNTIME_DESCRIPTION =
+      stringKey("process.runtime.description");
 
   /**
    * Logical name of the service.
@@ -253,11 +379,12 @@ public final class SemanticAttributes {
   /**
    * The name of the operation being executed, e.g. the [MongoDB command
    * name](https://docs.mongodb.com/manual/reference/command/#database-operations) such as
-   * `findAndModify`.
+   * `findAndModify`, or the SQL keyword.
    *
-   * <p>Note: While it would semantically make sense to set this, e.g., to a SQL keyword like
-   * `SELECT` or `INSERT`, it is not recommended to attempt any client-side parsing of
-   * `db.statement` just to get this property (the back end can do that if required).
+   * <p>Note: When setting this to an SQL keyword, it is not recommended to attempt any client-side
+   * parsing of `db.statement` just to get this property, but it should be set if the operation name
+   * is provided by the library being instrumented. If the SQL statement has an ambiguous operation,
+   * or performs more than one operation, this value may be omitted.
    */
   public static final AttributeKey<String> DB_OPERATION = stringKey("db.operation");
 
@@ -310,6 +437,17 @@ public final class SemanticAttributes {
   /** The collection being accessed within the database stated in `db.name`. */
   public static final AttributeKey<String> DB_MONGODB_COLLECTION =
       stringKey("db.mongodb.collection");
+
+  /**
+   * The name of the primary table that the operation is acting upon, including the schema name (if
+   * applicable).
+   *
+   * <p>Note: It is not recommended to attempt any client-side parsing of `db.statement` just to get
+   * this property, but it should be set if it is provided by the library being instrumented. If the
+   * operation is acting upon an anonymous table, or more than one table, this value MUST NOT be
+   * set.
+   */
+  public static final AttributeKey<String> DB_SQL_TABLE = stringKey("db.sql.table");
 
   /**
    * The type of the exception (its fully-qualified class name, if applicable). The dynamic type of
@@ -601,6 +739,37 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> ENDUSER_SCOPE = stringKey("enduser.scope");
 
+  /** Current &#34;managed&#34; thread ID (as opposed to OS thread ID). */
+  public static final AttributeKey<Long> THREAD_ID = longKey("thread.id");
+
+  /** Current thread name. */
+  public static final AttributeKey<String> THREAD_NAME = stringKey("thread.name");
+
+  /**
+   * The method or function name, or equivalent (usually rightmost part of the code unit&#39;s
+   * name).
+   */
+  public static final AttributeKey<String> CODE_FUNCTION = stringKey("code.function");
+
+  /**
+   * The &#34;namespace&#34; within which `code.function` is defined. Usually the qualified class or
+   * module name, such that `code.namespace` + some separator + `code.function` form a unique
+   * identifier for the code unit.
+   */
+  public static final AttributeKey<String> CODE_NAMESPACE = stringKey("code.namespace");
+
+  /**
+   * The source code file name that identifies the code unit as uniquely as possible (preferably an
+   * absolute file path).
+   */
+  public static final AttributeKey<String> CODE_FILEPATH = stringKey("code.filepath");
+
+  /**
+   * The line number in `code.filepath` best representing the operation. It SHOULD point within the
+   * code unit named in `code.function`.
+   */
+  public static final AttributeKey<Long> CODE_LINENO = longKey("code.lineno");
+
   /**
    * A string identifying the kind of message consumption as defined in the [Operation
    * names](#operation-names) section above. If the operation is &#34;send&#34;, this attribute MUST
@@ -648,6 +817,12 @@ public final class SemanticAttributes {
   /** The name of the method being called, must be equal to the $method part in the span name. */
   public static final AttributeKey<String> RPC_METHOD = stringKey("rpc.method");
 
+  /**
+   * The [numeric status code](https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md) of the
+   * gRPC request.
+   */
+  public static final AttributeKey<Long> RPC_GRPC_STATUS_CODE = longKey("rpc.grpc.status_code");
+
   // Enum definitions
   public static final class CloudProviderValues {
     /** Amazon Web Services. */
@@ -658,6 +833,24 @@ public final class SemanticAttributes {
     public static final String GCP = "gcp";
 
     private CloudProviderValues() {}
+  }
+
+  public enum AwsEcsLaunchtypeValues {
+    /** ec2. */
+    EC2("EC2"),
+    /** fargate. */
+    FARGATE("Fargate"),
+    ;
+
+    private final String value;
+
+    AwsEcsLaunchtypeValues(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
   }
 
   public static final class OsTypeValues {
@@ -924,6 +1117,54 @@ public final class SemanticAttributes {
     }
 
     public String getValue() {
+      return value;
+    }
+  }
+
+  public enum RpcGrpcStatusCodeValues {
+    /** OK. */
+    OK(0),
+    /** CANCELLED. */
+    CANCELLED(1),
+    /** UNKNOWN. */
+    UNKNOWN(2),
+    /** INVALID_ARGUMENT. */
+    INVALID_ARGUMENT(3),
+    /** DEADLINE_EXCEEDED. */
+    DEADLINE_EXCEEDED(4),
+    /** NOT_FOUND. */
+    NOT_FOUND(5),
+    /** ALREADY_EXISTS. */
+    ALREADY_EXISTS(6),
+    /** PERMISSION_DENIED. */
+    PERMISSION_DENIED(7),
+    /** RESOURCE_EXHAUSTED. */
+    RESOURCE_EXHAUSTED(8),
+    /** FAILED_PRECONDITION. */
+    FAILED_PRECONDITION(9),
+    /** ABORTED. */
+    ABORTED(10),
+    /** OUT_OF_RANGE. */
+    OUT_OF_RANGE(11),
+    /** UNIMPLEMENTED. */
+    UNIMPLEMENTED(12),
+    /** INTERNAL. */
+    INTERNAL(13),
+    /** UNAVAILABLE. */
+    UNAVAILABLE(14),
+    /** DATA_LOSS. */
+    DATA_LOSS(15),
+    /** UNAUTHENTICATED. */
+    UNAUTHENTICATED(16),
+    ;
+
+    private final long value;
+
+    RpcGrpcStatusCodeValues(long value) {
+      this.value = value;
+    }
+
+    public long getValue() {
       return value;
     }
   }
