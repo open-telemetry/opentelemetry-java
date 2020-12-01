@@ -45,12 +45,15 @@ opentelemetry-java-instrumentation project under a different module name. The mo
 - The OpenTelemetrySdk builder now supports the addition of SpanProcessors to the resulting SDK.
 - The `ReadableSpan` interface now exposes the `Span.Kind` of the span.
 - The SDK no longer depends on the guava library.
+- The parent SpanContext is now exposed on the `SpanData` interface.
 
 #### Miscellaneous
 
 - The `toBuilder()` method on the OpenTelemetrySdk class has been deprecated and will be removed in 0.13.0.
 - The MultiSpanProcessor and MultiSpanExporter have been deprecated. You can access the same functionality via
-the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes will be made non-public in the 0.13.0 release.
+the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes will be made non-public in 0.13.0.
+- The `SpanData.hasRemoteParent()` method has been deprecated and will be removed in 0.13.0. If you need this information,
+you can now call `SpanData.getParentSpanContext().isRemote()`.
 
 ### Extensions
 
@@ -58,6 +61,10 @@ the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes 
 
 - The `opentelemetry-sdk-extension-aws-v1-support` module has been renamed to `opentelemetry-sdk-extension-aws` 
 and the classes in it have been repackaged into the `io.opentelemetry.sdk.extension.aws.*` packages.
+
+#### Bugfixes:
+
+- The OpenTracing `TracerShim` now properly handles keys for context extraction in a case-insensitive manner.
 
 #### Enhancements
 
