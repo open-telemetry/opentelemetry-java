@@ -24,7 +24,7 @@ import javax.annotation.concurrent.Immutable;
  * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
  *
  * <p>For this reason, it is strongly suggested that you use the implementation that is provided
- * here via the factory methods and the {@link ArrayBackedAttributesBuilder}.
+ * here via the factory methods and the {@link AttributesBuilder}.
  */
 @SuppressWarnings("rawtypes")
 @Immutable
@@ -133,15 +133,12 @@ public interface Attributes extends ReadableAttributes {
         key6, value6);
   }
 
-  /**
-   * Returns a new {@link ArrayBackedAttributesBuilder} instance for creating arbitrary {@link
-   * Attributes}.
-   */
+  /** Returns a new {@link AttributesBuilder} instance for creating arbitrary {@link Attributes}. */
   static AttributesBuilder builder() {
     return new ArrayBackedAttributesBuilder();
   }
 
-  /** Returns a new {@link ArrayBackedAttributesBuilder} instance from ReadableAttributes. */
+  /** Returns a new {@link AttributesBuilder} instance from ReadableAttributes. */
   static AttributesBuilder builder(ReadableAttributes attributes) {
     final AttributesBuilder builder = new ArrayBackedAttributesBuilder();
     attributes.forEach(builder::put);
@@ -149,8 +146,8 @@ public interface Attributes extends ReadableAttributes {
   }
 
   /**
-   * Returns a new {@link ArrayBackedAttributesBuilder} instance populated with the data of this
-   * {@link Attributes}.
+   * Returns a new {@link AttributesBuilder} instance populated with the data of this {@link
+   * Attributes}.
    */
   AttributesBuilder toBuilder();
 }
