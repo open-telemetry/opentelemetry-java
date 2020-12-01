@@ -16,7 +16,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -207,7 +207,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
               new ObfuscatedTracerProvider(tracerProvider),
               meterProvider,
               super.propagators,
-              clock == null ? MillisClock.getInstance() : clock,
+              clock == null ? SystemClock.getInstance() : clock,
               resource == null ? Resource.getDefault() : resource);
       // Automatically initialize global OpenTelemetry with the first SDK we build.
       if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {

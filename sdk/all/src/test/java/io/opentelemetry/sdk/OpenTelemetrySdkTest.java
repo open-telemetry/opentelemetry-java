@@ -21,7 +21,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -89,7 +89,7 @@ class OpenTelemetrySdkTest {
                     .isInstanceOf(TracerSdkProvider.class));
     assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
     assertThat(openTelemetry.getResource()).isEqualTo(Resource.getDefault());
-    assertThat(openTelemetry.getClock()).isEqualTo(MillisClock.getInstance());
+    assertThat(openTelemetry.getClock()).isEqualTo(SystemClock.getInstance());
   }
 
   @Test

@@ -19,12 +19,23 @@ Implemented attributes:
 
 Implementation: `io.opentelemetry.sdk.extension.resources.ProcessResource`
 
-Specification: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/semantic_conventions/process.md
+Specification: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/semantic_conventions/process.md#process
 
 Implemented attributes:
 - `process.pid`
 - `process.executable.path` (note, we assume the `java` binary is located in the `bin` subfolder of `JAVA_HOME`)
 - `process.command_line` (note this includes all system properties and arguments when running)
+
+### Java Runtime
+
+Implementation: `io.opentelemetry.sdk.extension.resources.ProcessRuntimeResource`
+
+Specification: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/semantic_conventions/process.md#process-runtimes
+
+Implemented attributes:
+- `process.runtime.name`
+- `process.runtime.version`
+- `process.runtime.description`
 
 ## Platforms
 

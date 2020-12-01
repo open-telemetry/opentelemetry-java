@@ -7,7 +7,7 @@ package io.opentelemetry.api.trace.propagation;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import java.util.List;
+import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -33,7 +33,7 @@ public final class HttpTraceContext implements TextMapPropagator {
   }
 
   @Override
-  public List<String> fields() {
+  public Collection<String> fields() {
     return W3CTraceContextPropagator.getInstance().fields();
   }
 

@@ -24,6 +24,8 @@ final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
       extends AbstractAsynchronousInstrument.Builder<LongUpDownSumObserverSdk.Builder>
       implements LongUpDownSumObserver.Builder {
 
+    private Callback<LongResult> callback;
+
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
@@ -38,15 +40,26 @@ final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
     }
 
     @Override
+    public Builder setCallback(Callback<LongResult> callback) {
+      this.callback = callback;
+      return this;
+    }
+
+    @SuppressWarnings("deprecation") // need to call the deprecated method for now
+    @Override
     public LongUpDownSumObserverSdk build() {
       InstrumentDescriptor instrumentDescriptor =
           getInstrumentDescriptor(InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG);
-      return register(
+      LongUpDownSumObserverSdk instrument =
           new LongUpDownSumObserverSdk(
               instrumentDescriptor,
               getMeterProviderSharedState(),
               getMeterSharedState(),
-              getBatcher(instrumentDescriptor)));
+              getBatcher(instrumentDescriptor));
+      if (callback != null) {
+        instrument.setCallback(callback);
+      }
+      return register(instrument);
     }
   }
 }

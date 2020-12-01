@@ -10,9 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +71,7 @@ class DefaultPropagatorsTest {
         ContextPropagators.create(
             TextMapPropagator.composite(propagator1, propagator2, propagator3, propagator4));
 
-    List<String> fields = propagators.getTextMapPropagator().fields();
+    Collection<String> fields = propagators.getTextMapPropagator().fields();
     assertThat(fields).containsExactly("prop1", "prop2");
   }
 
@@ -106,7 +106,7 @@ class DefaultPropagatorsTest {
     }
 
     @Override
-    public List<String> fields() {
+    public Collection<String> fields() {
       return Collections.singletonList(name);
     }
 

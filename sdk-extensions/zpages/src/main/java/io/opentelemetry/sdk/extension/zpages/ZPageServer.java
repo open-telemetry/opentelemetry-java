@@ -5,15 +5,12 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import static com.google.common.base.Preconditions.checkState;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -68,7 +65,7 @@ public final class ZPageServer {
       new TraceConfigzZPageHandler(TRACER_SDK_MANAGEMENT);
   // Handler for index page, **please include all available ZPageHandlers in the constructor**
   private static final ZPageHandler indexZPageHandler =
-      new IndexZPageHandler(ImmutableList.of(tracezZPageHandler, traceConfigzZPageHandler));
+      new IndexZPageHandler(Arrays.asList(tracezZPageHandler, traceConfigzZPageHandler));
 
   private static final Object mutex = new Object();
   private static final AtomicBoolean isTracezSpanProcesserAdded = new AtomicBoolean(false);
@@ -166,7 +163,9 @@ public final class ZPageServer {
    */
   public static void startHttpServerAndRegisterAllPages(int port) throws IOException {
     synchronized (mutex) {
-      checkState(server == null, "The HttpServer is already started.");
+      if (server != null) {
+        throw new IllegalStateException("The HttpServer is already started.");
+      }
       server = HttpServer.create(new InetSocketAddress(port), HTTPSERVER_BACKLOG);
       ZPageServer.registerAllPagesToHttpServer(server);
       server.start();
@@ -187,7 +186,7 @@ public final class ZPageServer {
    *
    * @return the boolean indicating if TracezSpanProcessor is added.
    */
-  @VisibleForTesting
+  // Visible for testing
   static boolean getIsTracezSpanProcesserAdded() {
     return isTracezSpanProcesserAdded.get();
   }

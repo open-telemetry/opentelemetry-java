@@ -23,11 +23,11 @@ jobs:
       - name: Docker login
         uses: docker/login-action@v1
         with:
-          registry: open-telemetry-docker-dev.bintray.io
-          username: ${{ secrets.BINTRAY_USER }}
-          password: ${{ secrets.BINTRAY_KEY }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN }}
       - name: Pull and push
         run: |
           docker pull ${{ matrix.source }}
-          docker tag ${{ matrix.source }} open-telemetry-docker-dev.bintray.io/java-test-containers:${{ matrix.target_tag }}
-          docker push open-telemetry-docker-dev.bintray.io/java-test-containers:${{ matrix.target_tag }}
+          docker tag ${{ matrix.source }} ghcr.io/open-telemetry/java-test-containers:${{ matrix.target_tag }}
+          docker push ghcr.io/open-telemetry/java-test-containers:${{ matrix.target_tag }}
