@@ -200,11 +200,10 @@ class StrictContextStorageTest {
     try {
       Context.current().with(ANIMAL, "cat").makeCurrent();
 
-      System.gc();
-
       await()
           .untilAsserted(
               () -> {
+                System.gc();
                 assertThat(logged).doesNotHaveValue(null);
                 LogRecord record = logged.get();
                 assertThat(record.getLevel()).isEqualTo(Level.SEVERE);
