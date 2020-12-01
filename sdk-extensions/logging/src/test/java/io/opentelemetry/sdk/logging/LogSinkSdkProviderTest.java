@@ -9,6 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import io.opentelemetry.sdk.logging.data.LogRecord.Severity;
@@ -16,6 +20,7 @@ import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import io.opentelemetry.sdk.logging.util.TestLogProcessor;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -24,8 +29,14 @@ class LogSinkSdkProviderTest {
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
     return new LogRecord.Builder()
         .setUnixTimeMillis(System.currentTimeMillis())
+        .setTraceId(TraceId.getInvalid())
+        .setSpanId(SpanId.getInvalid())
+        .setFlags(TraceFlags.getDefault())
         .setSeverity(severity)
+        .setSeverityText("really severe")
+        .setName("log1")
         .setBody(message)
+        .setAttributes(Attributes.builder().put("animal", "cat").build())
         .build();
   }
 
@@ -36,9 +47,12 @@ class LogSinkSdkProviderTest {
     LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
-    sink.offer(createLog(Severity.ERROR, "test"));
+    LogRecord log = createLog(Severity.ERROR, "test");
+    sink.offer(log);
     provider.forceFlush().join(500, TimeUnit.MILLISECONDS);
-    assertThat(exporter.getRecords().size()).isEqualTo(1);
+    List<LogRecord> records = exporter.getRecords();
+    assertThat(records).singleElement().isEqualTo(log);
+    assertThat(log.getSeverity().getSeverityNumber()).isEqualTo(Severity.ERROR.getSeverityNumber());
   }
 
   @Test

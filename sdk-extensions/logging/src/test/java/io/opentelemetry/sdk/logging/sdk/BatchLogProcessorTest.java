@@ -72,5 +72,6 @@ class BatchLogProcessorTest {
     assertThat(exporter.getRecords().size()).isEqualTo(batchSize);
     processor.forceFlush().join(1, TimeUnit.SECONDS);
     assertThat(exporter.getRecords().size()).isEqualTo(testRecordsToSend);
+    processor.shutdown().join(1, TimeUnit.SECONDS);
   }
 }

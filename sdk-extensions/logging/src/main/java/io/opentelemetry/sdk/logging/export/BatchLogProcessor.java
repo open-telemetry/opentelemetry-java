@@ -236,12 +236,8 @@ public class BatchLogProcessor implements LogProcessor {
     private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
     private long exporterTimeoutMillis = DEFAULT_EXPORT_TIMEOUT_MILLIS;
 
-    public Builder(LogExporter logExporter) {
+    private Builder(LogExporter logExporter) {
       this.logExporter = Objects.requireNonNull(logExporter, "Exporter argument can not be null");
-    }
-
-    public Builder builder(LogExporter logExporter) {
-      return new Builder(logExporter);
     }
 
     /**
