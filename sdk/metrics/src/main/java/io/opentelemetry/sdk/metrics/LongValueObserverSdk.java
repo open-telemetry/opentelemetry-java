@@ -25,6 +25,8 @@ final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
       extends AbstractAsynchronousInstrument.Builder<LongValueObserverSdk.Builder>
       implements LongValueObserver.Builder {
 
+    private Callback<LongResult> callback;
+
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
@@ -39,15 +41,26 @@ final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
     }
 
     @Override
+    public Builder setCallback(Callback<LongResult> callback) {
+      this.callback = callback;
+      return this;
+    }
+
+    @SuppressWarnings("deprecation") // need to call the deprecated method for now
+    @Override
     public LongValueObserverSdk build() {
       InstrumentDescriptor instrumentDescriptor =
           getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG);
-      return register(
+      LongValueObserverSdk instrument =
           new LongValueObserverSdk(
               instrumentDescriptor,
               getMeterProviderSharedState(),
               getMeterSharedState(),
-              getBatcher(instrumentDescriptor)));
+              getBatcher(instrumentDescriptor));
+      if (callback != null) {
+        instrument.setCallback(callback);
+      }
+      return register(instrument);
     }
   }
 }

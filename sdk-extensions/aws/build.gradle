@@ -12,16 +12,10 @@ dependencies {
     api project(':opentelemetry-api'),
             project(':opentelemetry-sdk')
 
-    implementation 'com.fasterxml.jackson.core:jackson-core',
-            libraries.guava,
-            platform(boms.guava)
-
-    implementation 'com.fasterxml.jackson.core:jackson-databind',
-            libraries.guava,
-            platform(boms.guava)
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.27.2',
+            libraries.guava,
             libraries.junit
-
-    signature libraries.android_signature
 }

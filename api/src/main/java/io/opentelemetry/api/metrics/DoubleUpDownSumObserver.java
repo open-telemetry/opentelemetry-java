@@ -48,16 +48,17 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface DoubleUpDownSumObserver extends AsynchronousInstrument<DoubleResult> {
-  @Override
-  void setCallback(Callback<DoubleResult> callback);
 
   /** Builder class for {@link DoubleUpDownSumObserver}. */
-  interface Builder extends AsynchronousInstrument.Builder {
+  interface Builder extends AsynchronousInstrument.Builder<DoubleResult> {
     @Override
     Builder setDescription(String description);
 
     @Override
     Builder setUnit(String unit);
+
+    @Override
+    Builder setCallback(Callback<DoubleResult> callback);
 
     @Override
     DoubleUpDownSumObserver build();

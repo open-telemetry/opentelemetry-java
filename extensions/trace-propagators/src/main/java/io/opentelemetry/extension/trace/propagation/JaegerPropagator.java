@@ -17,8 +17,8 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +65,7 @@ public class JaegerPropagator implements TextMapPropagator {
   private static final byte SAMPLED = TraceFlags.getSampled();
   private static final byte NOT_SAMPLED = TraceFlags.getDefault();
 
-  private static final List<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
+  private static final Collection<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
 
   private static final JaegerPropagator INSTANCE = new JaegerPropagator();
 
@@ -78,7 +78,7 @@ public class JaegerPropagator implements TextMapPropagator {
   }
 
   @Override
-  public List<String> fields() {
+  public Collection<String> fields() {
     return FIELDS;
   }
 

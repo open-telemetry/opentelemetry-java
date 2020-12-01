@@ -8,8 +8,6 @@ package io.opentelemetry.sdk.extension.aws.resource;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.ByteStreams;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
@@ -25,6 +23,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * A {@link ResourceProvider} which provides information about the current EC2 instance if running
@@ -54,7 +53,7 @@ public class Ec2Resource extends ResourceProvider {
     this(System.getProperty("otel.aws.imds.endpointOverride", DEFAULT_IMDS_ENDPOINT));
   }
 
-  @VisibleForTesting
+  // Visible for testing
   Ec2Resource(String endpoint) {
     String urlBase = "http://" + endpoint;
     try {
@@ -68,6 +67,7 @@ public class Ec2Resource extends ResourceProvider {
   }
 
   // Generic HTTP fetch function for IMDS.
+  // TODO(anuraaga): Migrate to JdkHttpClient
   private static String fetchString(String httpMethod, URL url, String token, boolean includeTtl) {
     final HttpURLConnection connection;
     try {
@@ -117,13 +117,13 @@ public class Ec2Resource extends ResourceProvider {
   private static String readResponseString(HttpURLConnection connection) {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     try (InputStream is = connection.getInputStream()) {
-      ByteStreams.copy(is, os);
+      readTo(is, os);
     } catch (IOException e) {
       // Only best effort read if we can.
     }
     try (InputStream is = connection.getErrorStream()) {
       if (is != null) {
-        ByteStreams.copy(is, os);
+        readTo(is, os);
       }
     } catch (IOException e) {
       // Only best effort read if we can.
@@ -205,5 +205,17 @@ public class Ec2Resource extends ResourceProvider {
 
   private String fetchHostname(String token) {
     return fetchString("GET", hostnameUrl, token, /* includeTtl= */ false);
+  }
+
+  private static void readTo(@Nullable InputStream is, ByteArrayOutputStream os)
+      throws IOException {
+    if (is == null) {
+      return;
+    }
+    byte[] buf = new byte[8192];
+    int read;
+    while ((read = is.read(buf)) > 0) {
+      os.write(buf, 0, read);
+    }
   }
 }

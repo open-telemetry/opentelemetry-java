@@ -20,8 +20,8 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ class TraceMultiPropagatorTest {
         TraceMultiPropagator.create(
             new EmptyPropagator("foo", "bar"), new EmptyPropagator("hello", "world"));
 
-    List<String> fields = prop.fields();
+    Collection<String> fields = prop.fields();
     assertThat(fields).containsExactly("foo", "bar", "hello", "world");
   }
 
@@ -81,7 +81,7 @@ class TraceMultiPropagatorTest {
             new EmptyPropagator("foo", "bar", "foo"),
             new EmptyPropagator("hello", "world", "world", "bar"));
 
-    List<String> fields = prop.fields();
+    Collection<String> fields = prop.fields();
     assertThat(fields).containsExactly("foo", "bar", "hello", "world");
   }
 
@@ -91,7 +91,7 @@ class TraceMultiPropagatorTest {
         TraceMultiPropagator.create(
             new EmptyPropagator("foo", "bar"), new EmptyPropagator("hello", "world"));
 
-    List<String> fields = prop.fields();
+    Collection<String> fields = prop.fields();
     assertThrows(UnsupportedOperationException.class, () -> fields.add("hi"));
   }
 
@@ -169,14 +169,14 @@ class TraceMultiPropagatorTest {
   }
 
   private static class EmptyPropagator implements TextMapPropagator {
-    List<String> fields;
+    Collection<String> fields;
 
     public EmptyPropagator(String... fields) {
       this.fields = Arrays.asList(fields);
     }
 
     @Override
-    public List<String> fields() {
+    public Collection<String> fields() {
       return fields;
     }
 
