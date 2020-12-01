@@ -264,4 +264,51 @@ public class PropagatorContextExtractBenchmark {
       return traceHeaders;
     }
   }
+
+  /** Benchmark for extracting context from AWS X-Ray trace header. */
+  public static class AwsXrayHeaderContextExtractBenchmark extends AbstractContextExtractBenchmark {
+
+    private static final List<Map<String, String>> traceHeaders =
+        Arrays.asList(
+            Collections.singletonMap(
+                AwsXRayPropagator.TRACE_HEADER_KEY,
+                "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1"),
+            Collections.singletonMap(
+                AwsXRayPropagator.TRACE_HEADER_KEY,
+                "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0"),
+            Collections.singletonMap(
+                AwsXRayPropagator.TRACE_HEADER_KEY,
+                "Parent=53995c3f42cd8ad8;Sampled=1;Root=1-8a3c60f7-d188f8fa79d48a391a778fa6"),
+            Collections.singletonMap(
+                AwsXRayPropagator.TRACE_HEADER_KEY,
+                "Root=1-57ff426a-80c11c39b0c928905eb0828d;Parent=53995c3f42cd8ad8;Sampled=1"),
+            Collections.singletonMap(
+                AwsXRayPropagator.TRACE_HEADER_KEY,
+                "Root=1-57ff426a-80c11c39b0c928905eb0828d;Parent=12345c3f42cd8ad8;Sampled=0"));
+
+    private final TextMapPropagator.Getter<Map<String, String>> getter =
+        new TextMapPropagator.Getter<Map<String, String>>() {
+          @Override
+          public Iterable<String> keys(Map<String, String> carrier) {
+            return carrier.keySet();
+          }
+
+          @Override
+          public String get(Map<String, String> carrier, String key) {
+            return carrier.get(key);
+          }
+        };
+
+    private final AwsXRayPropagator xrayPropagator = AwsXRayPropagator.getInstance();
+
+    @Override
+    protected Context doExtract() {
+      return xrayPropagator.extract(Context.current(), getCarrier(), getter);
+    }
+
+    @Override
+    protected List<Map<String, String>> getHeaders() {
+      return traceHeaders;
+    }
+  }
 }
