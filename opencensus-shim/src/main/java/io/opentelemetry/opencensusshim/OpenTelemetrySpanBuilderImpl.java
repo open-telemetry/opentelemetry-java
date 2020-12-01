@@ -50,35 +50,35 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
-  private static final Tracer TRACER =
-      OpenTelemetry.getGlobalTracer("io.opencensus.opentelemetry.migration");
-  private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
-  private static final TraceOptions SAMPLED_TRACE_OPTIONS =
+class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
+  private static final Tracer OTEL_TRACER =
+      OpenTelemetry.getGlobalTracer("io.opentelemetry.opencensusshim");
+  private static final Tracestate OC_TRACESTATE_DEFAULT = Tracestate.builder().build();
+  private static final TraceOptions OC_SAMPLED_TRACE_OPTIONS =
       TraceOptions.builder().setIsSampled(true).build();
-  private static final TraceOptions NOT_SAMPLED_TRACE_OPTIONS =
+  private static final TraceOptions OC_NOT_SAMPLED_TRACE_OPTIONS =
       TraceOptions.builder().setIsSampled(false).build();
 
   private final String name;
   private final Options options;
 
-  private List<Span> parentLinks = Collections.emptyList();
+  private List<Span> ocParentLinks = Collections.emptyList();
   private final List<io.opentelemetry.api.trace.SpanContext> otelParentLinks = new ArrayList<>();
-  @Nullable private final Span parent;
-  @Nullable private final SpanContext remoteParentSpanContext;
-  @Nullable private Sampler sampler;
+  @Nullable private final Span ocParent;
+  @Nullable private final SpanContext ocRemoteParentSpanContext;
+  @Nullable private Sampler ocSampler;
   @Nullable private Boolean recordEvents;
-  @Nullable private io.opentelemetry.api.trace.Span.Kind kind;
+  @Nullable private io.opentelemetry.api.trace.Span.Kind otelKind;
 
   @Override
   public SpanBuilder setSampler(Sampler sampler) {
-    this.sampler = checkNotNull(sampler, "sampler");
+    this.ocSampler = checkNotNull(sampler, "sampler");
     return this;
   }
 
   @Override
   public SpanBuilder setParentLinks(List<Span> parentLinks) {
-    this.parentLinks = checkNotNull(parentLinks, "parentLinks");
+    this.ocParentLinks = checkNotNull(parentLinks, "parentLinks");
     for (Span parent : parentLinks) {
       this.otelParentLinks.add(
           io.opentelemetry.api.trace.SpanContext.create(
@@ -100,87 +100,89 @@ public class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
 
   @Override
   public SpanBuilder setSpanKind(@Nullable Kind kind) {
-    this.kind = mapKind(kind);
+    this.otelKind = mapKind(kind);
     return this;
   }
 
   @Override
   public Span startSpan() {
     // To determine whether to sample this span
-    TraceParams activeTraceParams = options.traceConfig.getActiveTraceParams();
+    TraceParams ocActiveTraceParams = options.traceConfig.getActiveTraceParams();
     Random random = options.randomHandler.current();
-    TraceId traceId;
-    SpanId spanId = SpanId.generateRandomId(random);
-    Tracestate tracestate = TRACESTATE_DEFAULT;
-    SpanContext parentContext = null;
+    TraceId ocTraceId;
+    SpanId ocSpanId = SpanId.generateRandomId(random);
+    Tracestate ocTracestate = OC_TRACESTATE_DEFAULT;
+    SpanContext ocParentContext = null;
     Boolean hasRemoteParent = null;
-    if (remoteParentSpanContext != null && remoteParentSpanContext.isValid()) {
-      parentContext = remoteParentSpanContext;
+    if (ocRemoteParentSpanContext != null && ocRemoteParentSpanContext.isValid()) {
+      ocParentContext = ocRemoteParentSpanContext;
       hasRemoteParent = Boolean.TRUE;
-      traceId = parentContext.getTraceId();
-      tracestate = parentContext.getTracestate();
-    } else if (parent != null && parent.getContext().isValid()) {
-      parentContext = parent.getContext();
+      ocTraceId = ocParentContext.getTraceId();
+      ocTracestate = ocParentContext.getTracestate();
+    } else if (ocParent != null && ocParent.getContext().isValid()) {
+      ocParentContext = ocParent.getContext();
       hasRemoteParent = Boolean.FALSE;
-      traceId = parentContext.getTraceId();
-      tracestate = parentContext.getTracestate();
+      ocTraceId = ocParentContext.getTraceId();
+      ocTracestate = ocParentContext.getTracestate();
     } else {
       // New root span.
-      traceId = TraceId.generateRandomId(random);
+      ocTraceId = TraceId.generateRandomId(random);
     }
-    TraceOptions traceOptions =
+    TraceOptions ocTraceOptions =
         makeSamplingDecision(
-                parentContext,
+                ocParentContext,
                 hasRemoteParent,
                 name,
-                sampler,
-                parentLinks,
-                traceId,
-                spanId,
-                activeTraceParams)
-            ? SAMPLED_TRACE_OPTIONS
-            : NOT_SAMPLED_TRACE_OPTIONS;
-    if (!traceOptions.isSampled() && !Boolean.TRUE.equals(recordEvents)) {
+                ocSampler,
+                ocParentLinks,
+                ocTraceId,
+                ocSpanId,
+                ocActiveTraceParams)
+            ? OC_SAMPLED_TRACE_OPTIONS
+            : OC_NOT_SAMPLED_TRACE_OPTIONS;
+    if (!ocTraceOptions.isSampled() && !Boolean.TRUE.equals(recordEvents)) {
       return OpenTelemetryNoRecordEventsSpanImpl.create(
-          SpanContext.create(traceId, spanId, traceOptions, tracestate));
+          SpanContext.create(ocTraceId, ocSpanId, ocTraceOptions, ocTracestate));
     }
 
     // If sampled
-    io.opentelemetry.api.trace.SpanBuilder otSpanBuidler =
-        TRACER.spanBuilder(name).setStartTimestamp(options.clock.nowNanos(), TimeUnit.NANOSECONDS);
-    if (parent != null && parent instanceof OpenTelemetrySpanImpl) {
-      otSpanBuidler.setParent(Context.root().with((OpenTelemetrySpanImpl) parent));
+    io.opentelemetry.api.trace.SpanBuilder otelSpanBuilder =
+        OTEL_TRACER
+            .spanBuilder(name)
+            .setStartTimestamp(options.clock.nowNanos(), TimeUnit.NANOSECONDS);
+    if (ocParent != null && ocParent instanceof OpenTelemetrySpanImpl) {
+      otelSpanBuilder.setParent(Context.root().with((OpenTelemetrySpanImpl) ocParent));
     }
-    if (remoteParentSpanContext != null) {
-      otSpanBuidler.addLink(
+    if (ocRemoteParentSpanContext != null) {
+      otelSpanBuilder.addLink(
           io.opentelemetry.api.trace.SpanContext.create(
               io.opentelemetry.api.trace.TraceId.bytesToHex(
-                  remoteParentSpanContext.getTraceId().getBytes()),
+                  ocRemoteParentSpanContext.getTraceId().getBytes()),
               io.opentelemetry.api.trace.SpanId.bytesToHex(
-                  remoteParentSpanContext.getSpanId().getBytes()),
+                  ocRemoteParentSpanContext.getSpanId().getBytes()),
               TraceFlags.getDefault(),
               TraceState.getDefault()));
     }
-    if (kind != null) {
-      otSpanBuidler.setSpanKind(kind);
+    if (otelKind != null) {
+      otelSpanBuilder.setSpanKind(otelKind);
     }
     if (!otelParentLinks.isEmpty()) {
       for (io.opentelemetry.api.trace.SpanContext spanContext : otelParentLinks) {
-        otSpanBuidler.addLink(spanContext);
+        otelSpanBuilder.addLink(spanContext);
       }
     }
-    io.opentelemetry.api.trace.Span otSpan = otSpanBuidler.startSpan();
+    io.opentelemetry.api.trace.Span otSpan = otelSpanBuilder.startSpan();
     return new OpenTelemetrySpanImpl(otSpan);
   }
 
   private OpenTelemetrySpanBuilderImpl(
       String name,
-      @Nullable SpanContext remoteParentSpanContext,
-      @Nullable Span parent,
+      @Nullable SpanContext ocRemoteParentSpanContext,
+      @Nullable Span ocParent,
       OpenTelemetrySpanBuilderImpl.Options options) {
     this.name = checkNotNull(name, "name");
-    this.parent = parent;
-    this.remoteParentSpanContext = remoteParentSpanContext;
+    this.ocParent = ocParent;
+    this.ocRemoteParentSpanContext = ocRemoteParentSpanContext;
     this.options = options;
   }
 

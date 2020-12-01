@@ -6,10 +6,7 @@
 package io.opentelemetry.opencensusshim;
 
 import io.opencensus.common.Function;
-import io.opencensus.trace.Annotation;
 import io.opencensus.trace.AttributeValue;
-import io.opencensus.trace.EndSpanOptions;
-import io.opencensus.trace.Link;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
@@ -21,45 +18,11 @@ import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import java.util.EnumSet;
+import io.opentelemetry.api.trace.TraceStateBuilder;
 import java.util.Map;
 import javax.annotation.Nullable;
 
 class SpanConverter {
-
-  /**
-   * FakeSpan is used to represent OpenTelemetry spans in the OpenCensus context. Only the trace ID,
-   * span ID, trace options, and trace state are mapped, so that the correct context information can
-   * be picked up by the child spans. FakeSpan does not record events or links.
-   */
-  static class FakeSpan extends Span {
-
-    private static final EnumSet<Options> RECORD_EVENTS_SPAN_OPTIONS =
-        EnumSet.of(Options.RECORD_EVENTS);
-
-    protected FakeSpan(SpanContext context) {
-      super(context, RECORD_EVENTS_SPAN_OPTIONS);
-    }
-
-    @Override
-    public void putAttribute(String key, AttributeValue value) {}
-
-    @Override
-    public void putAttributes(Map<String, AttributeValue> attributes) {}
-
-    @Override
-    public void addAnnotation(String description, Map<String, AttributeValue> attributes) {}
-
-    @Override
-    public void addAnnotation(Annotation annotation) {}
-
-    @Override
-    public void addLink(Link link) {}
-
-    @Override
-    public void end(EndSpanOptions options) {}
-  }
-
   public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE = "message.event.type";
   public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_UNCOMPRESSED =
       "message.event.size.uncompressed";
@@ -68,11 +31,11 @@ class SpanConverter {
 
   private SpanConverter() {}
 
-  static Kind mapKind(@Nullable Span.Kind kind) {
-    if (kind == null) {
-      return null;
+  static Kind mapKind(@Nullable io.opencensus.trace.Span.Kind ocKind) {
+    if (ocKind == null) {
+      return Kind.INTERNAL;
     }
-    switch (kind) {
+    switch (ocKind) {
       case CLIENT:
         return Kind.CLIENT;
       case SERVER:
@@ -85,13 +48,7 @@ class SpanConverter {
     if (otSpan == null) {
       return null;
     }
-    SpanContext spanContext =
-        SpanContext.create(
-            TraceId.fromLowerBase16(otSpan.getSpanContext().getTraceIdAsHexString()),
-            SpanId.fromLowerBase16(otSpan.getSpanContext().getSpanIdAsHexString()),
-            TraceOptions.builder().setIsSampled(otSpan.getSpanContext().isSampled()).build(),
-            mapTracestate(otSpan.getSpanContext().getTraceState()));
-    return new FakeSpan(spanContext);
+    return new OpenTelemetrySpanImpl(otSpan);
   }
 
   static SpanContext mapSpanContext(io.opentelemetry.api.trace.SpanContext otelSpanContext) {
@@ -99,7 +56,7 @@ class SpanConverter {
         TraceId.fromLowerBase16(otelSpanContext.getTraceIdAsHexString()),
         SpanId.fromLowerBase16(otelSpanContext.getSpanIdAsHexString()),
         TraceOptions.builder().setIsSampled(otelSpanContext.isSampled()).build(),
-        Tracestate.builder().build());
+        mapTracestate(otelSpanContext.getTraceState()));
   }
 
   static io.opentelemetry.api.trace.SpanContext mapSpanContext(SpanContext ocSpanContext) {
@@ -109,7 +66,13 @@ class SpanConverter {
         ocSpanContext.getTraceOptions().isSampled()
             ? TraceFlags.getSampled()
             : TraceFlags.getDefault(),
-        TraceState.getDefault());
+        mapTracestate(ocSpanContext.getTracestate()));
+  }
+
+  private static TraceState mapTracestate(Tracestate tracestate) {
+    TraceStateBuilder builder = TraceState.builder();
+    tracestate.getEntries().forEach(entry -> builder.set(entry.getKey(), entry.getValue()));
+    return builder.build();
   }
 
   static Tracestate mapTracestate(TraceState traceState) {

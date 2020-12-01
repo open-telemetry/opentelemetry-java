@@ -8,12 +8,16 @@ package io.opentelemetry.opencensusshim;
 import io.opencensus.trace.propagation.BinaryFormat;
 import io.opencensus.trace.propagation.PropagationComponent;
 import io.opencensus.trace.propagation.TextFormat;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.extension.trace.propagation.B3Propagator;
 
-public class OpenTelemetryPropagationComponentImpl extends PropagationComponent {
+class OpenTelemetryPropagationComponentImpl extends PropagationComponent {
 
   private final BinaryFormat binaryFormat = new OpenTelemetryBinaryFormatImpl();
-  private final TextFormat b3Format = new OpenTelemetryB3FormatImpl();
-  private final TextFormat traceContextFormat = new OpenTelemetryTraceContextFormatImpl();
+  private final TextFormat b3Format =
+      new OpenTelemetryTextFormatImpl(B3Propagator.builder().injectMultipleHeaders().build());
+  private final TextFormat traceContextFormat =
+      new OpenTelemetryTextFormatImpl(W3CTraceContextPropagator.getInstance());
 
   @Override
   public BinaryFormat getBinaryFormat() {

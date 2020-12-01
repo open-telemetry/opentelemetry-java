@@ -12,38 +12,41 @@ import io.opencensus.trace.propagation.TextFormat;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.extension.trace.propagation.B3Propagator;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
-public class OpenTelemetryB3FormatImpl extends TextFormat {
+class OpenTelemetryTextFormatImpl extends TextFormat {
 
-  private static final B3Propagator OTEL_B3_PROPAGATOR =
-      B3Propagator.builder().injectMultipleHeaders().build();
+  private final TextMapPropagator propagator;
+
+  OpenTelemetryTextFormatImpl(TextMapPropagator propagator) {
+    this.propagator = propagator;
+  }
 
   @Override
   public List<String> fields() {
-    return OTEL_B3_PROPAGATOR.fields();
+    return propagator.fields();
   }
 
   @Override
   public <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter) {
     io.opentelemetry.api.trace.SpanContext otelSpanContext = mapSpanContext(spanContext);
     Context otelContext = Context.current().with(Span.wrap(otelSpanContext));
-    OTEL_B3_PROPAGATOR.inject(otelContext, carrier, setter::put);
+    propagator.inject(otelContext, carrier, setter::put);
   }
 
   @Override
   public <C> SpanContext extract(C carrier, Getter<C> getter) {
     Context context =
-        OTEL_B3_PROPAGATOR.extract(
+        propagator.extract(
             Context.current(),
             carrier,
             new TextMapPropagator.Getter<C>() {
+              // OC Getter cannot return keys for an object, but users should not need it either.
               @Override
               public Iterable<String> keys(C carrier) {
-                return new ArrayList<>();
+                return Collections.emptyList();
               }
 
               @Nullable
