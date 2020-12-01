@@ -12,6 +12,7 @@ import io.opencensus.trace.propagation.TextFormat;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -26,7 +27,7 @@ class OpenTelemetryTextFormatImpl extends TextFormat {
 
   @Override
   public List<String> fields() {
-    return propagator.fields();
+    return new ArrayList<>(propagator.fields());
   }
 
   @Override
