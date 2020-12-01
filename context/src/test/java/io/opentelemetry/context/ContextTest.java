@@ -460,4 +460,28 @@ class ContextTest {
       future.cancel(true);
     }
   }
+
+  @Test
+  void emptyContext() {
+    assertThat(Context.root().get(new HashCollidingKey())).isEqualTo(null);
+  }
+
+  @Test
+  void hashcodeCollidingKeys() {
+    Context context = Context.root();
+    HashCollidingKey cheese = new HashCollidingKey();
+    HashCollidingKey wine = new HashCollidingKey();
+
+    Context twoKeys = context.with(cheese, "whiz").with(wine, "boone's farm");
+
+    assertThat(twoKeys.get(wine)).isEqualTo("boone's farm");
+    assertThat(twoKeys.get(cheese)).isEqualTo("whiz");
+  }
+
+  private static class HashCollidingKey implements ContextKey<String> {
+    @Override
+    public int hashCode() {
+      return 1;
+    }
+  }
 }
