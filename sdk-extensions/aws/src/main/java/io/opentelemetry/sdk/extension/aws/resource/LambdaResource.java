@@ -5,9 +5,6 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.attributes.SemanticAttributes;
@@ -22,7 +19,7 @@ public final class LambdaResource extends ResourceProvider {
     this(System.getenv());
   }
 
-  @VisibleForTesting
+  // Visible for testing
   LambdaResource(Map<String, String> environmentVariables) {
     this.environmentVariables = environmentVariables;
   }
@@ -32,19 +29,19 @@ public final class LambdaResource extends ResourceProvider {
     if (!isLambda()) {
       return Attributes.empty();
     }
-    String region = environmentVariables.get("AWS_REGION");
+    String region = environmentVariables.getOrDefault("AWS_REGION", "");
     String functionName = environmentVariables.get("AWS_LAMBDA_FUNCTION_NAME");
-    String functionVersion = environmentVariables.get("AWS_LAMBDA_FUNCTION_VERSION");
+    String functionVersion = environmentVariables.getOrDefault("AWS_LAMBDA_FUNCTION_VERSION", "");
 
     AttributesBuilder builder =
         Attributes.builder()
             .put(SemanticAttributes.CLOUD_PROVIDER, SemanticAttributes.CloudProviderValues.AWS)
             .put(SemanticAttributes.FAAS_NAME, functionName);
 
-    if (!isNullOrEmpty(region)) {
+    if (!region.isEmpty()) {
       builder.put(SemanticAttributes.CLOUD_REGION, region);
     }
-    if (!isNullOrEmpty(functionVersion)) {
+    if (!functionVersion.isEmpty()) {
       builder.put(SemanticAttributes.FAAS_VERSION, functionVersion);
     }
 
@@ -52,6 +49,6 @@ public final class LambdaResource extends ResourceProvider {
   }
 
   private boolean isLambda() {
-    return !isNullOrEmpty(environmentVariables.get("AWS_LAMBDA_FUNCTION_NAME"));
+    return !environmentVariables.getOrDefault("AWS_LAMBDA_FUNCTION_NAME", "").isEmpty();
   }
 }
