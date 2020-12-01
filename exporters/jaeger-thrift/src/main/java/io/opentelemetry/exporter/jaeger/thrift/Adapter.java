@@ -18,6 +18,7 @@ import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -38,8 +39,8 @@ final class Adapter {
   static final String KEY_LOG_EVENT = "event";
   static final String KEY_EVENT_DROPPED_ATTRIBUTES_COUNT = "otel.event.dropped_attributes_count";
   static final String KEY_SPAN_KIND = "span.kind";
-  static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
-  static final String KEY_SPAN_STATUS_CODE = "span.status.code";
+  static final String KEY_SPAN_STATUS_MESSAGE = "otel.status_message";
+  static final String KEY_SPAN_STATUS_CODE = "otel.status_code";
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
   public static final Gson GSON = new Gson();
@@ -104,9 +105,11 @@ final class Adapter {
               .setVStr(span.getStatus().getDescription()));
     }
 
-    tags.add(
-        new Tag(KEY_SPAN_STATUS_CODE, TagType.LONG)
-            .setVLong(span.getStatus().getStatusCode().value()));
+    if (!span.getStatus().isUnset()) {
+      tags.add(
+          new Tag(KEY_SPAN_STATUS_CODE, TagType.STRING)
+              .setVStr(span.getStatus().getStatusCode().name()));
+    }
 
     tags.add(
         new Tag(KEY_INSTRUMENTATION_LIBRARY_NAME, TagType.STRING)
@@ -118,7 +121,7 @@ final class Adapter {
               .setVStr(span.getInstrumentationLibraryInfo().getVersion()));
     }
 
-    if (!span.getStatus().isOk()) {
+    if (span.getStatus().getStatusCode() == StatusCode.ERROR) {
       tags.add(toTag(KEY_ERROR, true));
     }
     target.setTags(tags);

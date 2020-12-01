@@ -79,17 +79,10 @@ class AdapterTest {
     assertThat(jaegerSpan.getStartTime()).isEqualTo(Timestamps.fromMillis(startMs));
     assertThat(Durations.toMillis(jaegerSpan.getDuration())).isEqualTo(duration);
 
-    assertThat(jaegerSpan.getTagsCount()).isEqualTo(5);
+    assertThat(jaegerSpan.getTagsCount()).isEqualTo(4);
     Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
     assertThat(keyValue).isNotNull();
     assertThat(keyValue.getVStr()).isEqualTo("server");
-    keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_CODE);
-    assertThat(keyValue).isNotNull();
-    assertThat(keyValue.getVInt64()).isEqualTo(0);
-    assertThat(keyValue.getVType()).isEqualTo(Model.ValueType.INT64);
-    keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_MESSAGE);
-    assertThat(keyValue).isNotNull();
-    assertThat(keyValue.getVStr()).isEmpty();
 
     assertThat(jaegerSpan.getLogsCount()).isEqualTo(1);
     Model.Log log = jaegerSpan.getLogs(0);

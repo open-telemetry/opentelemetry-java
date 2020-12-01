@@ -5,11 +5,6 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import static com.google.common.html.HtmlEscapers.htmlEscaper;
-import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.ReadableAttributes;
@@ -18,11 +13,11 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -33,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 final class TracezZPageHandler extends ZPageHandler {
@@ -89,7 +85,7 @@ final class TracezZPageHandler extends ZPageHandler {
   // * for error based sampled spans [0, 15], 0 means all, otherwise the error code
   private static final String PARAM_SAMPLE_SUB_TYPE = "zsubtype";
   // Map from LatencyBoundary to human readable string on the UI
-  private static final ImmutableMap<LatencyBoundary, String> LATENCY_BOUNDARIES_STRING_MAP =
+  private static final Map<LatencyBoundary, String> LATENCY_BOUNDARIES_STRING_MAP =
       buildLatencyBoundaryStringMap();
   private static final Logger logger = Logger.getLogger(TracezZPageHandler.class.getName());
   @Nullable private final TracezDataAggregator dataAggregator;
@@ -171,7 +167,14 @@ final class TracezZPageHandler extends ZPageHandler {
     // If numOfSamples is smaller than 0, print the text "N/A", otherwise print the text "0"
     if (numOfSamples > 0) {
       out.print("<td class=\"align-center border-left-dark\"><a href=\"?");
-      out.print(PARAM_SPAN_NAME + "=" + urlFormParameterEscaper().escape(spanName));
+      try {
+        out.print(
+            PARAM_SPAN_NAME
+                + "="
+                + URLEncoder.encode(spanName, StandardCharsets.UTF_8.toString()).replace(' ', '+'));
+      } catch (UnsupportedEncodingException e) {
+        // Can't happen
+      }
       out.print("&" + PARAM_SAMPLE_TYPE + "=" + type.getValue());
       out.print("&" + PARAM_SAMPLE_SUB_TYPE + "=" + subtype);
       out.print("\">" + numOfSamples + "</a></td>");
@@ -209,7 +212,7 @@ final class TracezZPageHandler extends ZPageHandler {
         out.print("<tr>");
       }
       zebraStripe = !zebraStripe;
-      out.print("<td>" + htmlEscaper().escape(spanName) + "</td>");
+      out.print("<td>" + escapeHtml(spanName) + "</td>");
 
       // Running spans column
       int numOfRunningSpans =
@@ -240,8 +243,7 @@ final class TracezZPageHandler extends ZPageHandler {
 
   private static void emitSpanNameAndCount(
       PrintStream out, String spanName, int count, SampleType type) {
-    out.print(
-        "<p class=\"align-center\"><b> Span Name: " + htmlEscaper().escape(spanName) + "</b></p>");
+    out.print("<p class=\"align-center\"><b> Span Name: " + escapeHtml(spanName) + "</b></p>");
     String typeString =
         type == SampleType.RUNNING
             ? "running"
@@ -305,8 +307,10 @@ final class TracezZPageHandler extends ZPageHandler {
     int lastEntryDayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
 
     long lastEpochNanos = span.getStartEpochNanos();
-    List<Event> timedEvents = new ArrayList<>(span.getEvents());
-    Collections.sort(timedEvents, new EventComparator());
+    List<Event> timedEvents =
+        span.getEvents().stream()
+            .sorted(Comparator.comparingLong(Event::getEpochNanos))
+            .collect(Collectors.toList());
     for (Event event : timedEvents) {
       calendar.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(event.getEpochNanos()));
       formatter.format(
@@ -325,9 +329,9 @@ final class TracezZPageHandler extends ZPageHandler {
         zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
     SpanData.Status status = span.getStatus();
     if (status != null) {
-      formatter.format("%s | ", htmlEscaper().escape(status.toString()));
+      formatter.format("%s | ", escapeHtml(status.toString()));
     }
-    formatter.format("%s</pre></td>", htmlEscaper().escape(renderAttributes(span.getAttributes())));
+    formatter.format("%s</pre></td>", escapeHtml(renderAttributes(span.getAttributes())));
     zebraStripe = !zebraStripe;
     return zebraStripe;
   }
@@ -374,7 +378,7 @@ final class TracezZPageHandler extends ZPageHandler {
         calendar.get(Calendar.SECOND),
         microsField,
         deltaString,
-        htmlEscaper().escape(renderEvent(event)));
+        escapeHtml(renderEvent(event)));
   }
 
   private static String renderAttributes(ReadableAttributes attributes) {
@@ -474,7 +478,9 @@ final class TracezZPageHandler extends ZPageHandler {
         if (spans != null) {
           Formatter formatter = new Formatter(out, Locale.US);
           spans =
-              ImmutableList.sortedCopyOf(new SpanDataComparator(/* incremental= */ true), spans);
+              spans.stream()
+                  .sorted(Comparator.comparingLong(SpanData::getStartEpochNanos))
+                  .collect(Collectors.toList());
           emitSpanDetails(out, formatter, spans);
         }
       }
@@ -539,41 +545,55 @@ final class TracezZPageHandler extends ZPageHandler {
     throw new IllegalArgumentException("No value string available for: " + latencyBoundary);
   }
 
-  private static ImmutableMap<LatencyBoundary, String> buildLatencyBoundaryStringMap() {
+  private static Map<LatencyBoundary, String> buildLatencyBoundaryStringMap() {
     Map<LatencyBoundary, String> latencyBoundaryMap = new HashMap<>();
     for (LatencyBoundary latencyBoundary : LatencyBoundary.values()) {
       latencyBoundaryMap.put(latencyBoundary, latencyBoundaryToString(latencyBoundary));
     }
-    return ImmutableMap.copyOf(latencyBoundaryMap);
+    return latencyBoundaryMap;
   }
 
-  private static final class EventComparator implements Comparator<Event>, Serializable {
-    private static final long serialVersionUID = 0;
-
-    @Override
-    public int compare(Event e1, Event e2) {
-      return Long.compare(e1.getEpochNanos(), e2.getEpochNanos());
+  private static String escapeHtml(String html) {
+    StringBuilder escaped = null;
+    for (int i = 0; i < html.length(); i++) {
+      char c = html.charAt(i);
+      switch (c) {
+        case '"':
+          escaped = lazyStringBuilder(escaped, html, i);
+          escaped.append("&quot;");
+          break;
+        case '\'':
+          escaped = lazyStringBuilder(escaped, html, i);
+          escaped.append("&#39;");
+          break;
+        case '&':
+          escaped = lazyStringBuilder(escaped, html, i);
+          escaped.append("&amp;");
+          break;
+        case '<':
+          escaped = lazyStringBuilder(escaped, html, i);
+          escaped.append("&lt;");
+          break;
+        case '>':
+          escaped = lazyStringBuilder(escaped, html, i);
+          escaped.append("&gt;");
+          break;
+        default:
+          if (escaped != null) {
+            escaped.append(c);
+          }
+      }
     }
+    return escaped != null ? escaped.toString() : html;
   }
 
-  private static final class SpanDataComparator implements Comparator<SpanData>, Serializable {
-    private static final long serialVersionUID = 0;
-    private final boolean incremental;
-
-    /**
-     * Returns a new {@code SpanDataComparator}.
-     *
-     * @param incremental {@code true} if sorting spans incrementally
-     */
-    private SpanDataComparator(boolean incremental) {
-      this.incremental = incremental;
+  private static StringBuilder lazyStringBuilder(
+      @Nullable StringBuilder sb, String str, int currentCharIdx) {
+    if (sb != null) {
+      return sb;
     }
-
-    @Override
-    public int compare(SpanData s1, SpanData s2) {
-      return incremental
-          ? Long.compare(s1.getStartEpochNanos(), s2.getStartEpochNanos())
-          : Long.compare(s2.getStartEpochNanos(), s1.getEndEpochNanos());
-    }
+    sb = new StringBuilder(str.length());
+    sb.append(str.substring(0, currentCharIdx - 1));
+    return sb;
   }
 }
