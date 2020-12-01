@@ -15,9 +15,7 @@ import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opencensus.trace.propagation.BinaryFormat;
 import io.opencensus.trace.propagation.SpanContextParseException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 /** Tests for {@link OpenTelemetryBinaryFormatImpl}. */
 public class OpenTelemetryBinaryFormatImplTest {
@@ -36,7 +34,6 @@ public class OpenTelemetryBinaryFormatImplTest {
       };
   private static final SpanContext EXAMPLE_SPAN_CONTEXT =
       SpanContext.create(TRACE_ID, SPAN_ID, TRACE_OPTIONS, TRACESTATE);
-  @Rule public ExpectedException expectedException = ExpectedException.none();
   private final BinaryFormat binaryFormat = new OpenTelemetryBinaryFormatImpl();
 
   private void testSpanContextConversion(SpanContext spanContext) throws SpanContextParseException {
