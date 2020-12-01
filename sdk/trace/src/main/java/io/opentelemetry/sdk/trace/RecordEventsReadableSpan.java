@@ -488,7 +488,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return resource;
   }
 
-  Kind getKind() {
+  @Override
+  public Kind getKind() {
     return kind;
   }
 

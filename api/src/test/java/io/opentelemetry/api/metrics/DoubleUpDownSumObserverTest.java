@@ -68,20 +68,19 @@ class DoubleUpDownSumObserverTest {
 
   @Test
   void preventNull_Callback() {
-    DoubleUpDownSumObserver doubleUpDownSumObserver =
-        meter.doubleUpDownSumObserverBuilder("metric").build();
     assertThrows(
-        NullPointerException.class, () -> doubleUpDownSumObserver.setCallback(null), "callback");
+        NullPointerException.class,
+        () -> meter.doubleUpDownSumObserverBuilder("metric").setCallback(null).build(),
+        "callback");
   }
 
   @Test
   void doesNotThrow() {
-    DoubleUpDownSumObserver doubleUpDownSumObserver =
-        meter
-            .doubleUpDownSumObserverBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .build();
-    doubleUpDownSumObserver.setCallback(result -> {});
+    meter
+        .doubleUpDownSumObserverBuilder(NAME)
+        .setDescription(DESCRIPTION)
+        .setUnit(UNIT)
+        .setCallback(result -> {})
+        .build();
   }
 }

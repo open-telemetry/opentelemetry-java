@@ -48,16 +48,17 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface LongSumObserver extends AsynchronousInstrument<LongResult> {
-  @Override
-  void setCallback(Callback<LongResult> callback);
 
   /** Builder class for {@link LongSumObserver}. */
-  interface Builder extends AsynchronousInstrument.Builder {
+  interface Builder extends AsynchronousInstrument.Builder<LongResult> {
     @Override
     Builder setDescription(String description);
 
     @Override
     Builder setUnit(String unit);
+
+    @Override
+    Builder setCallback(Callback<LongResult> callback);
 
     @Override
     LongSumObserver build();

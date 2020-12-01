@@ -18,6 +18,7 @@ import io.opentelemetry.api.trace.TraceStateBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -69,7 +70,7 @@ public final class W3CTraceContextPropagator {
   private static final TextMapPropagator INSTANCE =
       new TextMapPropagator() {
         @Override
-        public List<String> fields() {
+        public Collection<String> fields() {
           return FIELDS;
         }
 

@@ -13,6 +13,5 @@ dependencies {
 
     annotationProcessor libraries.auto_value
 
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
     signature libraries.android_signature
 }

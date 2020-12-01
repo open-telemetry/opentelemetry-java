@@ -8,6 +8,7 @@ package io.opentelemetry.context.propagation;
 import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -87,12 +88,12 @@ public interface TextMapPropagator {
    * clear fields as they couldn't have been set before. If it is a mutable, retryable object,
    * successive calls should clear these fields first.
    *
-   * @return list of fields that will be used by this formatter.
+   * @return the fields that will be used by this formatter.
    */
   // The use cases of this are:
   // * allow pre-allocation of fields, especially in systems like gRPC Metadata
   // * allow a single-pass over an iterator
-  List<String> fields();
+  Collection<String> fields();
 
   /**
    * Injects the value downstream, for example as HTTP headers. The carrier may be null to
