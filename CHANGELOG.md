@@ -8,8 +8,9 @@
 
 - The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types.
 - The `TextMapPropagator.fields()` method now returns a `Collection` rather than a `List`.
-- `TraceState` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - `Labels` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- `TraceState` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- `Attributes` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - `SpanContext` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 
 #### Enhancements
@@ -56,6 +57,7 @@ opentelemetry-java-instrumentation project under a different module name. The mo
 the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes will be made non-public in 0.13.0.
 - The `SpanData.hasRemoteParent()` method has been deprecated and will be removed in 0.13.0. If you need this information,
 you can now call `SpanData.getParentSpanContext().isRemote()`.
+- The default timeouts for the 2 OTLP exporters and the Jaeger exporter have been changed to 10s from 1s.
 
 ### Extensions
 
