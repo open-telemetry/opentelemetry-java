@@ -8,6 +8,13 @@
 
 - The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types.
 - The `TextMapPropagator.fields()` method now returns a `Collection` rather than a `List`.
+- `TraceState` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- `Labels` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+
+#### Enhancements
+
+- A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
+- An `asMap()` method has been added to the `Attributes` interface to enable conversion to a standard `java.util.Map`.
 
 #### Miscellaneous
 
@@ -18,7 +25,7 @@
 You can access the same functionality via static methods on the `ContextPropagators` interface. 
 - The `setCallback()` method on the asynchronous metric instruments has been deprecated and will be removed in 0.13.0. 
 Instead, use the `setCallback()` method on the builder for the instruments.
-- A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
+- The `value()` method on the `StatusCode` enum has been deprecated and will be removed in 0.13.0.
 
 ### Extensions
 
@@ -37,6 +44,7 @@ opentelemetry-java-instrumentation project under a different module name. The mo
 
 - The OpenTelemetrySdk builder now supports the addition of SpanProcessors to the resulting SDK.
 - The `ReadableSpan` interface now exposes the `Span.Kind` of the span.
+- The SDK no longer depends on the guava library.
 
 #### Miscellaneous
 
