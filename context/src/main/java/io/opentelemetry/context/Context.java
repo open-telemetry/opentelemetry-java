@@ -128,6 +128,12 @@ public interface Context {
    * context will not work correctly. It is recommended to use try-with-resources to call {@link
    * Scope#close()} automatically.
    *
+   * <p>The default implementation of this method will store the {@link Context} in a {@link
+   * ThreadLocal}. Kotlin coroutine users SHOULD NOT use this method as the {@link ThreadLocal} will
+   * not be properly synced across coroutine suspension and resumption. Instead, use {@code
+   * withContext(context.asContextElement())} provided by the {@code opentelemetry-extension-kotlin}
+   * library.
+   *
    * <pre>{@code
    * Context prevCtx = Context.current();
    * try (Scope ignored = ctx.makeCurrent()) {

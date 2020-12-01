@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import com.google.errorprone.annotations.Immutable;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 
 public enum TestSdk {
@@ -24,7 +24,7 @@ public enum TestSdk {
         @Override
         Meter build() {
           MeterProviderSharedState meterProviderSharedState =
-              MeterProviderSharedState.create(MillisClock.getInstance(), Resource.getEmpty());
+              MeterProviderSharedState.create(SystemClock.getInstance(), Resource.getEmpty());
           InstrumentationLibraryInfo instrumentationLibraryInfo =
               InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics", null);
 

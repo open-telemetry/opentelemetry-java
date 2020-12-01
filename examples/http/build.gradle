@@ -6,9 +6,9 @@ description = 'OpenTelemetry Examples for HTTP'
 ext.moduleName = "io.opentelemetry.examples.http"
 
 dependencies {
-    compile("io.opentelemetry:opentelemetry-api:${opentelemetryVersion}")
-    compile("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
-    compile("io.opentelemetry:opentelemetry-exporters-logging:${opentelemetryVersion}")
-    compile "io.grpc:grpc-context:${grpcVersion}"
+    compile("io.opentelemetry:opentelemetry-api")
+    compile("io.opentelemetry:opentelemetry-sdk")
+    compile("io.opentelemetry:opentelemetry-exporter-logging")
+    compile "io.grpc:grpc-context"
 
 }

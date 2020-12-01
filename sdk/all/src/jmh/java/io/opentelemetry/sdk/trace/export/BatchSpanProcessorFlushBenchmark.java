@@ -26,6 +26,7 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
@@ -83,6 +84,11 @@ public class BatchSpanProcessorFlushBenchmark {
       spans.add(tracer.spanBuilder("span").startSpan());
     }
     this.spans = spans.build();
+  }
+
+  @TearDown(Level.Trial)
+  public final void tearDown() {
+    processor.shutdown().join(10, TimeUnit.SECONDS);
   }
 
   /** Export spans through {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor}. */

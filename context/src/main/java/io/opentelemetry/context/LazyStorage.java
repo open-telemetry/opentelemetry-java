@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,12 +53,20 @@ final class LazyStorage {
 
   // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
   // this method.
+  //
+  // Ideally auto-instrumentation would hijack the public ContextStorage.get() instead of this
+  // method, but auto-instrumentation also needs to inject its own implementation of ContextStorage
+  // into the class loader at the same time, which causes a problem because injecting a class into
+  // the class loader automatically resolves its super classes (interfaces), which in this case is
+  // ContextStorage, which would be the same class (interface) being instrumented at that time,
+  // which would lead to the JVM throwing a LinkageError "attempted duplicate interface definition"
   static ContextStorage get() {
     return storage;
   }
 
   private static final String CONTEXT_STORAGE_PROVIDER_PROPERTY =
       "io.opentelemetry.context.contextStorageProvider";
+  private static final String ENFORCE_DEFAULT_STORAGE_VALUE = "default";
 
   private static final Logger logger = Logger.getLogger(LazyStorage.class.getName());
 
@@ -65,7 +74,13 @@ final class LazyStorage {
 
   static {
     AtomicReference<Throwable> deferredStorageFailure = new AtomicReference<>();
-    storage = createStorage(deferredStorageFailure);
+    ContextStorage created = createStorage(deferredStorageFailure);
+    for (Function<? super ContextStorage, ? extends ContextStorage> wrapper :
+        ContextStorageWrappers.getWrappers()) {
+      created = wrapper.apply(created);
+    }
+    storage = created;
+    ContextStorageWrappers.setStorageInitialized();
     Throwable failure = deferredStorageFailure.get();
     // Logging must happen after storage has been set, as loggers may use Context.
     if (failure != null) {
@@ -75,15 +90,27 @@ final class LazyStorage {
   }
 
   static ContextStorage createStorage(AtomicReference<Throwable> deferredStorageFailure) {
-    String providerClassName = System.getProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY, "");
+    // Get the specified SPI implementation first here
+    final String providerClassName = System.getProperty(CONTEXT_STORAGE_PROVIDER_PROPERTY, "");
+    // Allow user to enforce default ThreadLocalContextStorage
+    if (ENFORCE_DEFAULT_STORAGE_VALUE.equals(providerClassName)) {
+      return ContextStorage.defaultStorage();
+    }
 
     List<ContextStorageProvider> providers = new ArrayList<>();
     for (ContextStorageProvider provider : ServiceLoader.load(ContextStorageProvider.class)) {
+      if (provider
+          .getClass()
+          .getName()
+          .equals("io.opentelemetry.sdk.testing.context.SettableContextStorageProvider")) {
+        // Always use our testing helper context storage provider if it is on the classpath.
+        return provider.get();
+      }
       providers.add(provider);
     }
 
     if (providers.isEmpty()) {
-      return DefaultContext.threadLocalStorage();
+      return ContextStorage.defaultStorage();
     }
 
     if (providerClassName.isEmpty()) {
@@ -98,7 +125,7 @@ final class LazyStorage {
                   + "qualified class name of the provider to use. Falling back to default "
                   + "ContextStorage. Found providers: "
                   + providers));
-      return DefaultContext.threadLocalStorage();
+      return ContextStorage.defaultStorage();
     }
 
     for (ContextStorageProvider provider : providers) {
@@ -114,7 +141,7 @@ final class LazyStorage {
                 + providerClassName
                 + " but found providers: "
                 + providers));
-    return DefaultContext.threadLocalStorage();
+    return ContextStorage.defaultStorage();
   }
 
   private LazyStorage() {}

@@ -13,8 +13,8 @@ subprojects {
     version = "0.1.0-SNAPSHOT"
 
     ext {
-        opentelemetryVersion = "0.9.1"
-        grpcVersion = '1.28.0'
+        opentelemetryVersion = "0.11.0"
+        grpcVersion = '1.30.2'
         protobufVersion = '3.11.4'
         protocVersion = protobufVersion
     }
@@ -28,15 +28,20 @@ subprojects {
         }
     }
 
+    dependencies {
+        compile platform("io.opentelemetry:opentelemetry-bom:${opentelemetryVersion}")
+        compile platform("io.grpc:grpc-bom:${grpcVersion}")
+    }
+
     spotless {
         java {
-            googleJavaFormat("1.7")
+            googleJavaFormat("1.9")
         }
     }
 
     //create a single Jar with all dependencies
     task fatJar(type: Jar) {
-        baseName = project.name + '-all'
+        archiveBaseName = project.name + '-all'
         from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
         with jar
     }

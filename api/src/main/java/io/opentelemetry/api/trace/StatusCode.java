@@ -33,7 +33,9 @@ public enum StatusCode {
    * Returns the numerical value of the code.
    *
    * @return the numerical value of the code.
+   * @deprecated The value is not a part of the OpenTelemetry specification and will be remmoved.
    */
+  @Deprecated
   public int value() {
     return value;
   }

@@ -7,7 +7,7 @@ package io.opentelemetry.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.metrics.BatchRecorder;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -24,13 +24,12 @@ import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.api.metrics.spi.MeterProviderFactory;
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.api.trace.spi.TracerProviderFactory;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.spi.metrics.MeterProviderFactory;
+import io.opentelemetry.spi.trace.TracerProviderFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -65,8 +64,25 @@ class OpenTelemetryTest {
         .isEqualTo("DefaultMeterProvider");
     assertThat(OpenTelemetry.getGlobalMeterProvider())
         .isSameAs(OpenTelemetry.getGlobalMeterProvider());
-    assertThat(OpenTelemetry.getGlobalPropagators()).isInstanceOf(DefaultContextPropagators.class);
     assertThat(OpenTelemetry.getGlobalPropagators()).isSameAs(OpenTelemetry.getGlobalPropagators());
+  }
+
+  @Test
+  void builder() {
+    MeterProvider meterProvider = mock(MeterProvider.class);
+    TracerProvider tracerProvider = mock(TracerProvider.class);
+    ContextPropagators contextPropagators = mock(ContextPropagators.class);
+    OpenTelemetry openTelemetry =
+        OpenTelemetry.builder()
+            .setMeterProvider(meterProvider)
+            .setTracerProvider(tracerProvider)
+            .setPropagators(contextPropagators)
+            .build();
+
+    assertThat(openTelemetry).isNotNull();
+    assertThat(openTelemetry.getMeterProvider()).isSameAs(meterProvider);
+    assertThat(openTelemetry.getTracerProvider()).isSameAs(tracerProvider);
+    assertThat(openTelemetry.getPropagators()).isSameAs(contextPropagators);
   }
 
   @Test
@@ -77,10 +93,12 @@ class OpenTelemetryTest {
             FirstTracerProviderFactory.class,
             SecondTracerProviderFactory.class);
     try {
-      assertTrue(
-          (OpenTelemetry.getGlobalTracerProvider().get("") instanceof FirstTracerProviderFactory)
-              || (OpenTelemetry.getGlobalTracerProvider().get("")
-                  instanceof SecondTracerProviderFactory));
+      assertThat(
+              (OpenTelemetry.getGlobalTracerProvider().get("")
+                      instanceof FirstTracerProviderFactory)
+                  || (OpenTelemetry.getGlobalTracerProvider().get("")
+                      instanceof SecondTracerProviderFactory))
+          .isTrue();
     } finally {
       serviceFile.delete();
     }
@@ -117,9 +135,10 @@ class OpenTelemetryTest {
             FirstMeterProviderFactory.class,
             SecondMeterProviderFactory.class);
     try {
-      assertTrue(
-          (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
-              || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory));
+      assertThat(
+              (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
+                  || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory))
+          .isTrue();
       assertThat(OpenTelemetry.getGlobalMeterProvider())
           .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
     } finally {
@@ -153,10 +172,18 @@ class OpenTelemetryTest {
   }
 
   @Test
-  void testPropagatorsSet() {
-    ContextPropagators propagators = DefaultContextPropagators.builder().build();
+  void testGlobalPropagatorsSet() {
+    ContextPropagators propagators = ContextPropagators.noop();
     OpenTelemetry.setGlobalPropagators(propagators);
     assertThat(OpenTelemetry.getGlobalPropagators()).isEqualTo(propagators);
+  }
+
+  @Test
+  void testPropagatorsSet() {
+    ContextPropagators propagators = ContextPropagators.noop();
+    OpenTelemetry instance = DefaultOpenTelemetry.builder().build();
+    instance.setPropagators(propagators);
+    assertThat(instance.getPropagators()).isEqualTo(propagators);
   }
 
   @Test
@@ -212,7 +239,7 @@ class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public Span.Builder spanBuilder(String spanName) {
+    public SpanBuilder spanBuilder(String spanName) {
       return null;
     }
 

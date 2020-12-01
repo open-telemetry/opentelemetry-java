@@ -6,10 +6,11 @@
 package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.entry;
 
 import com.google.common.testing.EqualsTester;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceState}. */
@@ -35,28 +36,42 @@ class TraceStateTest {
   }
 
   @Test
-  void getEntries() {
-    assertThat(firstTraceState.getEntries())
-        .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
-    assertThat(secondTraceState.getEntries())
-        .containsExactly(TraceState.Entry.create(SECOND_KEY, SECOND_VALUE));
+  void sizeAndEmpty() {
+    assertThat(EMPTY.size()).isZero();
+    assertThat(EMPTY.isEmpty()).isTrue();
+
+    assertThat(firstTraceState.size()).isOne();
+    assertThat(firstTraceState.isEmpty()).isFalse();
+
+    assertThat(multiValueTraceState.size()).isEqualTo(2);
+    assertThat(multiValueTraceState.isEmpty()).isFalse();
+  }
+
+  @Test
+  void forEach() {
+    LinkedHashMap<String, String> entries = new LinkedHashMap<>();
+    firstTraceState.forEach(entries::put);
+    assertThat(entries).containsExactly(entry(FIRST_KEY, FIRST_VALUE));
+
+    entries.clear();
+    secondTraceState.forEach(entries::put);
+    assertThat(entries).containsExactly(entry(SECOND_KEY, SECOND_VALUE));
+
+    entries.clear();
+    multiValueTraceState.forEach(entries::put);
     // Reverse order of input.
-    assertThat(multiValueTraceState.getEntries())
-        .containsExactly(
-            TraceState.Entry.create(SECOND_KEY, SECOND_VALUE),
-            TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
+    assertThat(entries)
+        .containsExactly(entry(SECOND_KEY, SECOND_VALUE), entry(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test
   void disallowsNullKey() {
-    assertThrows(
-        NullPointerException.class, () -> EMPTY.toBuilder().set(null, FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set(null, FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
   void invalidFirstKeyCharacter() {
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set("$_key", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("$_key", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -74,8 +89,7 @@ class TraceStateTest {
 
   @Test
   void invalidKeyCharacters() {
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set("kEy_1", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("kEy_1", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -86,16 +100,13 @@ class TraceStateTest {
 
   @Test
   void testVendorIdLongerThan13Characters() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set("1@nrabcdefghijkl", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("1@nrabcdefghijkl", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
   void testVendorIdLongerThan13Characters_longTenantId() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set("12345678901234567890@nrabcdefghijkl", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("12345678901234567890@nrabcdefghijkl", FIRST_VALUE).build())
+        .isEqualTo(EMPTY);
   }
 
   @Test
@@ -103,22 +114,17 @@ class TraceStateTest {
     char[] chars = new char[241];
     Arrays.fill(chars, 'a');
     String tenantId = new String(chars);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set(tenantId + "@nr", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set(tenantId + "@nr", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
   void testNonVendorFormatFirstKeyCharacter() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set("1acdfrgs", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("1acdfrgs", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
   void testMultipleAtSignNotAllowed() {
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set("1@n@r@", FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set("1@n@r@", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -126,8 +132,7 @@ class TraceStateTest {
     char[] chars = new char[257];
     Arrays.fill(chars, 'a');
     String longKey = new String(chars);
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set(longKey, FIRST_VALUE).build());
+    assertThat(EMPTY.toBuilder().set(longKey, FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -150,27 +155,22 @@ class TraceStateTest {
 
   @Test
   void disallowsNullValue() {
-    assertThrows(NullPointerException.class, () -> EMPTY.toBuilder().set(FIRST_KEY, null).build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, null).build()).isEqualTo(EMPTY);
   }
 
   @Test
   void valueCannotContainEqual() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set(FIRST_KEY, "my_vakue=5").build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, "my_vakue=5").build()).isEqualTo(EMPTY);
   }
 
   @Test
   void valueCannotContainComma() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> EMPTY.toBuilder().set(FIRST_KEY, "first,second").build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, "first,second").build()).isEqualTo(EMPTY);
   }
 
   @Test
   void valueCannotContainTrailingSpaces() {
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set(FIRST_KEY, "first ").build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, "first ").build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -178,8 +178,7 @@ class TraceStateTest {
     char[] chars = new char[257];
     Arrays.fill(chars, 'a');
     String longValue = new String(chars);
-    assertThrows(
-        IllegalArgumentException.class, () -> EMPTY.toBuilder().set(FIRST_KEY, longValue).build());
+    assertThat(EMPTY.toBuilder().set(FIRST_KEY, longValue).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -254,8 +253,8 @@ class TraceStateTest {
 
   @Test
   void remove_NullNotAllowed() {
-    assertThrows(
-        NullPointerException.class, () -> multiValueTraceState.toBuilder().remove(null).build());
+    assertThat(multiValueTraceState.toBuilder().remove(null).build())
+        .isEqualTo(multiValueTraceState);
   }
 
   @Test

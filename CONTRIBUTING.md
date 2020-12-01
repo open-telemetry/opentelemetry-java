@@ -19,6 +19,24 @@ automatic check once you submit a PR, but you can also sign it after opening you
 Java 11 or higher is required to build the projects in this repository. The built artifacts can be
 used on Java 8 or higher.
 
+## Building opentelemetry-java
+
+Continuous integration builds the project, runs the tests, and runs multiple
+types of static analysis.
+
+1. Note: Currently, to run the full suite of tests, you'll need to be running a docker daemon.
+The tests that require docker are disabled if docker is not present. If you wish to run them,
+you must run a local docker daemon.
+
+2. Clone the repository
+
+    `git clone https://github.com/open-telemetry/opentelemetry-java.git`
+
+3. Run the following commands to build, run tests and most static analysis, and
+check formatting:
+
+    `./gradlew build`
+
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
@@ -32,7 +50,7 @@ $ ./gradlew check
 
 We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). 
 Our build will fail if source code is not formatted according to that style. To fix any
-style failures the above [checks](#checks) show, automatically apply the formatting with
+style failures the above [checks](#checks) show, automatically apply the formatting with:
 
 ```bash
 $ ./gradlew spotlessApply
@@ -41,7 +59,16 @@ $ ./gradlew spotlessApply
 To verify code style manually run the following command, 
 which uses [google-java-format](https://github.com/google/google-java-format) library:
 
-`./gradlew spotless`
+`./gradlew spotlessCheck`
+
+### Best practices that we follow
+
+* Avoid exposing publicly any class/method/variable that don't need to be public.
+* By default, all arguments/members are treated as non-null. Every argument/member that can be `null` must be annotated with `@Nullable`.
+* The project aims to provide a consistent experience across all the public APIs. It is important to ensure consistency (same look and feel) across different public packages.
+* Use `final` for public classes everywhere it is possible, this ensures that these classes cannot be extended when the API does not intend to offer that functionality.
+
+If you notice any practice being applied in the project consistently that isn't listed here, please consider a pull request to add it.
 
 ### Pre-commit hook
 To completely delegate code style formatting to the machine, 
@@ -85,28 +112,13 @@ It does not support all required rules, so you still have to run `spotlessApply`
 
 * Unit tests target Java 8, so language features such as lambda and streams can be used in tests.
 
+## Common tasks
 
-## Building opentelemetry-java
+### Updating OTLP proto dependency version
 
-Continuous integration builds the project, runs the tests, and runs multiple
-types of static analysis.
+The OTLP proto dependency version is defined [here](proto/build.gradle). To bump the version,
 
-1. Note: Currently, to run the full suite of tests, you'll need to be running a docker daemon.
-The tests that require docker are disabled by default. If you wish to run them,
-you can enable the docker tests by setting a gradle property of
-``"enable.docker.tests"`` to true. See the gradle.properties file in the root of the project
-for more details.
-
-2. Clone the repository recursively
-
-    `git clone https://github.com/open-telemetry/opentelemetry-java.git --recursive`
-
-or alternatively initialize submodules for an existing clone.
-
-   `git submodule init`
-   `git submodule update`   
-
-3. Run the following commands to build, run tests and most static analysis, and
-check formatting:
-
-    `./gradlew check`
+1. Find the latest release version [here](https://github.com/open-telemetry/opentelemetry-proto/releases/latest)
+2. Download the zip source code archive
+3. Run `shasum -a 256 ~/path/to/downloaded.zip` to compute its checksum
+4. Update `protoVersion` and `protoChecksum` in the build file with the new version and checksum

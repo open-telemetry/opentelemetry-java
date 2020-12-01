@@ -6,7 +6,7 @@ description = 'OpenTelemetry Examples for Zipkin Exporter'
 ext.moduleName = "io.opentelemetry.examples.zipkin"
 
 dependencies {
-    compile("io.opentelemetry:opentelemetry-api:${opentelemetryVersion}")
-    compile("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
-    compile("io.opentelemetry:opentelemetry-exporters-zipkin:${opentelemetryVersion}")
+    compile("io.opentelemetry:opentelemetry-api")
+    compile("io.opentelemetry:opentelemetry-sdk")
+    compile("io.opentelemetry:opentelemetry-exporter-zipkin")
 }

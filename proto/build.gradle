@@ -3,6 +3,7 @@ plugins {
     id "maven-publish"
 
     id "com.google.protobuf"
+    id "de.undercouch.download"
     id "ru.vyarus.animalsniffer"
 }
 
@@ -10,12 +11,17 @@ description = 'OpenTelemetry Proto'
 ext.moduleName = 'io.opentelemetry.proto'
 
 dependencies {
+    // Protobuf plugin seems to erroneously use the non-classpath configurations for resolving
+    // dependencies.
+    implementation enforcedPlatform(boms.grpc)
+    implementation enforcedPlatform(boms.protobuf)
+
     api libraries.protobuf,
             libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub
 
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    signature libraries.android_signature
 }
 
 animalsniffer {
@@ -35,6 +41,44 @@ protobuf {
     }
     generateProtoTasks {
         all()*.plugins { grpc {} }
+    }
+}
+
+def protoVersion = "0.6.0"
+// To generate checksum, download the file and run "shasum -a 256 ~/path/to/vfoo.zip"
+def protoChecksum = "a40003d50a565c989283d6b5b93b6189c28378387b715bdd54bf4600bb9c17c1"
+def protoArchivePath = "$buildDir/archives/opentelemetry-proto-${protoVersion}.zip"
+
+def downloadProtoArchive = tasks.register("downloadProtoArchive", Download) {
+    onlyIf { !file(protoArchivePath).exists() }
+    src "https://github.com/open-telemetry/opentelemetry-proto/archive/v${protoVersion}.zip"
+    dest protoArchivePath
+}
+
+def verifyProtoArchive = tasks.register("verifyProtoArchive", Verify) {
+    dependsOn(downloadProtoArchive)
+    src protoArchivePath
+    algorithm "SHA-256"
+    checksum protoChecksum
+}
+
+def unzipProtoArchive = tasks.register("unzipProtoArchive", Copy) {
+    dependsOn(verifyProtoArchive)
+    from zipTree(protoArchivePath)
+    into "$buildDir/protos"
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir "$buildDir/protos/opentelemetry-proto-${protoVersion}"
+        }
+    }
+}
+
+afterEvaluate {
+    tasks.named("generateProto") {
+        dependsOn(unzipProtoArchive)
     }
 }
 

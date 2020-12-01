@@ -1,0 +1,19 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+    id "me.champeau.gradle.jmh"
+}
+
+description = 'OpenTelemetry Extension : Trace Propagators'
+ext.moduleName = "io.opentelemetry.extension.trace.propagation"
+
+dependencies {
+    api project(':opentelemetry-api')
+
+    testImplementation libraries.jaeger_client,
+            libraries.guava
+
+    signature libraries.android_signature
+}

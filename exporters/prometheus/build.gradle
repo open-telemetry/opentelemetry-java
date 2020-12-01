@@ -6,15 +6,15 @@ plugins {
 }
 
 description = 'OpenTelemetry Prometheus Exporter'
-ext.moduleName = "io.opentelemetry.exporters.prometheus"
+ext.moduleName = "io.opentelemetry.exporter.prometheus"
 
 dependencies {
     api project(':opentelemetry-sdk')
 
     implementation libraries.prometheus_client
 
-    testImplementation libraries.prometheus_client_common
+    testImplementation libraries.prometheus_client_common,
+            libraries.guava
 
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    signature libraries.android_signature
 }

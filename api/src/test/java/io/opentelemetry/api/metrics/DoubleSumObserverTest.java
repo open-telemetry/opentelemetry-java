@@ -66,14 +66,19 @@ class DoubleSumObserverTest {
 
   @Test
   void preventNull_Callback() {
-    DoubleSumObserver doubleSumObserver = meter.doubleSumObserverBuilder("metric").build();
-    assertThrows(NullPointerException.class, () -> doubleSumObserver.setCallback(null), "callback");
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.doubleSumObserverBuilder("metric").setCallback(null).build(),
+        "callback");
   }
 
   @Test
   void doesNotThrow() {
-    DoubleSumObserver doubleSumObserver =
-        meter.doubleSumObserverBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    doubleSumObserver.setCallback(result -> {});
+    meter
+        .doubleSumObserverBuilder(NAME)
+        .setDescription(DESCRIPTION)
+        .setUnit(UNIT)
+        .setCallback(result -> {})
+        .build();
   }
 }

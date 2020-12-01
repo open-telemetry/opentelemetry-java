@@ -6,15 +6,14 @@ plugins {
 }
 
 description = 'OpenTelemetry - Logging Exporter'
-ext.moduleName = "io.opentelemetry.exporters.logging"
+ext.moduleName = "io.opentelemetry.exporter.logging"
 
 dependencies {
     api project(':opentelemetry-sdk')
 
-    testImplementation project(':opentelemetry-testing-internal')
-    
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+    testImplementation project(':opentelemetry-sdk-testing')
+
+    signature libraries.android_signature
 }
 
 animalsniffer {

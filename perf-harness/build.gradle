@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+description = 'Performance Testing Harness'
+ext.moduleName = "io.opentelemetry.perf-harness"
+
+dependencies {
+    compile project(':opentelemetry-api'),
+            project(":opentelemetry-sdk"),
+            project(":opentelemetry-sdk-testing"),
+            project(":opentelemetry-exporter-otlp"),
+            project(":opentelemetry-exporter-logging")
+
+    compile("io.grpc:grpc-netty-shaded")
+    compile("eu.rekawek.toxiproxy:toxiproxy-java:2.1.4")
+
+    implementation libraries.testcontainers
+}

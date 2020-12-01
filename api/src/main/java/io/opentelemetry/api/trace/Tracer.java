@@ -67,13 +67,13 @@ public interface Tracer {
   }
 
   /**
-   * Returns a {@link Span.Builder} to create and start a new {@link Span}.
+   * Returns a {@link SpanBuilder} to create and start a new {@link Span}.
    *
-   * <p>See {@link Span.Builder} for usage examples.
+   * <p>See {@link SpanBuilder} for usage examples.
    *
    * @param spanName The name of the returned Span.
    * @return a {@code Span.Builder} to create and start a new {@code Span}.
    * @throws NullPointerException if {@code spanName} is {@code null}.
    */
-  Span.Builder spanBuilder(String spanName);
+  SpanBuilder spanBuilder(String spanName);
 }
