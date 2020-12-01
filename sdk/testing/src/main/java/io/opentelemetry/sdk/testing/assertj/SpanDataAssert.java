@@ -93,14 +93,15 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span has the given parent span ID. */
   public SpanDataAssert hasParentSpanId(String parentSpanId) {
     isNotNull();
-    if (!actual.getParentSpanId().equals(parentSpanId)) {
+    String actualParentSpanId = actual.getParentSpanId();
+    if (!actualParentSpanId.equals(parentSpanId)) {
       failWithActualExpectedAndMessage(
-          actual.getParentSpanId(),
+          actualParentSpanId,
           parentSpanId,
           "Expected span [%s] to have parent span ID <%s> but was <%s>",
           actual.getName(),
           parentSpanId,
-          actual.getParentSpanId());
+          actualParentSpanId);
     }
     return this;
   }
@@ -298,24 +299,6 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span ends at the given epoch timestamp. */
   public SpanDataAssert endsAt(Instant timestamp) {
     return endsAt(toNanos(timestamp));
-  }
-
-  /** Asserts the span has a remote parent. */
-  public SpanDataAssert hasRemoteParent() {
-    isNotNull();
-    if (!actual.hasRemoteParent()) {
-      failWithMessage("Expected span [%s] to have remote parent but did not", actual.getName());
-    }
-    return this;
-  }
-
-  /** Asserts the span does not have a remote parent. */
-  public SpanDataAssert doesNotHaveRemoteParent() {
-    isNotNull();
-    if (actual.hasRemoteParent()) {
-      failWithMessage("Expected span [%s] to have remote parent but did not", actual.getName());
-    }
-    return this;
   }
 
   /** Asserts the span has ended. */

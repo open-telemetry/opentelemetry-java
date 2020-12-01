@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.zpages;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.ReadableAttributes;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -301,7 +300,7 @@ final class TracezZPageHandler extends ZPageHandler {
         span.isSampled() ? SAMPLED_TRACE_ID_COLOR : NOT_SAMPLED_TRACE_ID_COLOR,
         span.getTraceId(),
         span.getSpanId(),
-        (span.getParentSpanId() == null ? SpanId.getInvalid() : span.getParentSpanId()));
+        span.getParentSpanId());
     out.print("</tr>");
     zebraStripe = !zebraStripe;
 

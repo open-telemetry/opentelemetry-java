@@ -14,7 +14,6 @@ import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.ReadableAttributes;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
@@ -78,7 +77,7 @@ final class Adapter {
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
     // add the parent span
-    if (SpanId.isValid(span.getParentSpanId())) {
+    if (span.getParentSpanContext().isValid()) {
       target.addReferences(
           Model.SpanRef.newBuilder()
               .setTraceId(TraceProtoUtils.toProtoTraceId(span.getTraceId()))

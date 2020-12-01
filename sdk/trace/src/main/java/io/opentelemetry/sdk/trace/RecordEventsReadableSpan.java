@@ -49,10 +49,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final TraceConfig traceConfig;
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
-  // The parent SpanId of this span. Invalid if this is a root span.
-  private final String parentSpanId;
-  // True if the parent is on a different process.
-  private final boolean hasRemoteParent;
+  // The parent SpanContext of this span. Invalid if this is a root span.
+  private final SpanContext parentSpanContext;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
@@ -101,8 +99,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      String parentSpanId,
-      boolean hasRemoteParent,
+      SpanContext parentSpanContext,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
@@ -113,8 +110,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       long startEpochNanos) {
     this.context = context;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.parentSpanId = parentSpanId;
-    this.hasRemoteParent = hasRemoteParent;
+    this.parentSpanContext = parentSpanContext;
     this.links = links;
     this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
@@ -135,10 +131,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
    * @param kind the span kind.
-   * @param parentSpanId the span_id of the parent span, or {@code Span.INVALID} if the new span is
-   *     a root span.
-   * @param hasRemoteParent {@code true} if the parentContext is remote. {@code false} if this is a
-   *     root span.
+   * @param parentSpanContext the parent span context, or {@link SpanContext#getInvalid()} if this
+   *     span is a root span.
    * @param traceConfig trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
    * @param clock the clock used to get the time.
@@ -152,8 +146,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      @Nullable String parentSpanId,
-      boolean hasRemoteParent,
+      @Nullable SpanContext parentSpanContext,
       @Nonnull Context parentContext,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -169,8 +162,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             name,
             instrumentationLibraryInfo,
             kind,
-            parentSpanId,
-            hasRemoteParent,
+            parentSpanContext,
             traceConfig,
             spanProcessor,
             clock,
@@ -488,8 +480,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
   }
 
-  String getParentSpanId() {
-    return parentSpanId;
+  SpanContext getParentSpanContext() {
+    return parentSpanContext;
   }
 
   Resource getResource() {
@@ -503,10 +495,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   long getStartEpochNanos() {
     return startEpochNanos;
-  }
-
-  boolean hasRemoteParent() {
-    return hasRemoteParent;
   }
 
   int getTotalRecordedLinks() {
@@ -555,8 +543,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     sb.append(context.getTraceIdAsHexString());
     sb.append(", spanId=");
     sb.append(context.getSpanIdAsHexString());
-    sb.append(", parentSpanId=");
-    sb.append(parentSpanId);
+    sb.append(", parentSpanContext=");
+    sb.append(parentSpanContext);
     sb.append(", name=");
     sb.append(name);
     sb.append(", kind=");

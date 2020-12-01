@@ -85,7 +85,7 @@ final class Adapter {
     List<SpanRef> references = toSpanRefs(span.getLinks());
 
     // add the parent span
-    if (SpanId.isValid(span.getParentSpanId())) {
+    if (span.getParentSpanContext().isValid()) {
       references.add(
           new SpanRef(
               SpanRefType.CHILD_OF,
