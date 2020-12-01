@@ -45,6 +45,8 @@ protobuf {
 }
 
 def protoVersion = "0.6.0"
+// To generate checksum, download the file and run "shasum -a 256 ~/path/to/vfoo.zip"
+def protoChecksum = "a40003d50a565c989283d6b5b93b6189c28378387b715bdd54bf4600bb9c17c1"
 def protoArchivePath = "$buildDir/archives/opentelemetry-proto-${protoVersion}.zip"
 
 def downloadProtoArchive = tasks.register("downloadProtoArchive", Download) {
@@ -57,8 +59,7 @@ def verifyProtoArchive = tasks.register("verifyProtoArchive", Verify) {
     dependsOn(downloadProtoArchive)
     src protoArchivePath
     algorithm "SHA-256"
-    // To generate checksum, download the file and run "shasum -a 256 ~/path/to/vfoo.zip"
-    checksum "a40003d50a565c989283d6b5b93b6189c28378387b715bdd54bf4600bb9c17c1"
+    checksum protoChecksum
 }
 
 def unzipProtoArchive = tasks.register("unzipProtoArchive", Copy) {
