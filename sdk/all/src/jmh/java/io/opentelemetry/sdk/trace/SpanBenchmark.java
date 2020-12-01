@@ -5,10 +5,12 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -23,19 +25,30 @@ import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
 public class SpanBenchmark {
-
-  private final Tracer tracerSdk = OpenTelemetry.getGlobalTracer("benchmarkTracer");
-  private RecordEventsReadableSpan span;
+  private static SpanBuilderSdk spanBuilderSdk;
+  private final Resource serviceResource = Resource.create(Attributes.builder()
+      .put("service.name", "benchmark1")
+      .put("service.version", "123.456.89")
+      .put("service.instance.id", "123ab456-a123-12ab-12ab-12340a1abc12")
+      .build()
+  );
 
   @Setup(Level.Trial)
   public final void setup() {
-    SpanBuilderSdk spanBuilderSdk =
-        (SpanBuilderSdk)
-            tracerSdk
-                .spanBuilder("benchmarkSpan")
-                .setSpanKind(Kind.CLIENT)
-                .setAttribute("key", "value");
-    span = (RecordEventsReadableSpan) spanBuilderSdk.startSpan();
+    TracerSdkProvider tracerProvider = TracerSdkProvider.builder()
+        .setResource(serviceResource)
+        .build();
+
+    TraceConfig alwaysOn =
+        tracerProvider.getActiveTraceConfig().toBuilder()
+            .setSampler(Sampler.alwaysOn())
+            .build();
+    tracerProvider.updateActiveTraceConfig(alwaysOn);
+
+    Tracer tracerSdk = tracerProvider.get("benchmarkTracer");
+    spanBuilderSdk = (SpanBuilderSdk) tracerSdk
+        .spanBuilder("benchmarkSpanBuilder")
+        .setAttribute("longAttribute", 33L);
   }
 
   @Benchmark
@@ -44,8 +57,8 @@ public class SpanBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public void addAttributesEventsStatusEnd_01Thread() {
-    doSpanWork(span);
+  public void simpleSpanStartAddEventEnd_01Thread() {
+    doSpanWork();
   }
 
   @Benchmark
@@ -54,8 +67,8 @@ public class SpanBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public void addAttributesEventsStatusEnd_05Threads() {
-    doSpanWork(span);
+  public void simpleSpanStartAddEventEnd_05Threads() {
+    doSpanWork();
   }
 
   @Benchmark
@@ -64,8 +77,8 @@ public class SpanBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public void addAttributesEventsStatusEnd_02Threads() {
-    doSpanWork(span);
+  public void simpleSpanStartAddEventEnd_02Threads() {
+    doSpanWork();
   }
 
   @Benchmark
@@ -74,15 +87,12 @@ public class SpanBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public void addAttributesEventsStatusEnd_10Threads() {
-    doSpanWork(span);
+  public void simpleSpanStartAddEventEnd_10Threads() {
+    doSpanWork();
   }
 
-  private static void doSpanWork(RecordEventsReadableSpan span) {
-    span.setAttribute("longAttribute", 33L);
-    span.setAttribute("stringAttribute", "test_value");
-    span.setStatus(StatusCode.OK);
-
+  private static void doSpanWork() {
+    Span span = spanBuilderSdk.startSpan();
     span.addEvent("testEvent");
     span.end();
   }
