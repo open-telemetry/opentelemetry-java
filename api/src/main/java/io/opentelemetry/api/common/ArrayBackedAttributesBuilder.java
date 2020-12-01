@@ -31,7 +31,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   public Attributes build() {
-    return Attributes.ArrayBackedAttributes.sortAndFilterToAttributes(data.toArray());
+    return ArrayBackedAttributes.sortAndFilterToAttributes(data.toArray());
   }
 
   @Override

@@ -5,12 +5,8 @@
 
 package io.opentelemetry.api.common;
 
-import static io.opentelemetry.api.common.Attributes.ArrayBackedAttributes.sortAndFilterToAttributes;
+import static io.opentelemetry.api.common.ArrayBackedAttributes.sortAndFilterToAttributes;
 
-import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
-import java.util.ArrayList;
-import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -33,52 +29,6 @@ import javax.annotation.concurrent.Immutable;
 @SuppressWarnings("rawtypes")
 @Immutable
 public interface Attributes extends ReadableAttributes {
-
-  @AutoValue
-  @Immutable
-  abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
-      implements Attributes {
-
-    private static final Attributes EMPTY = Attributes.builder().build();
-
-    ArrayBackedAttributes() {}
-
-    @Override
-    protected abstract List<Object> data();
-
-    @Override
-    public AttributesBuilder toBuilder() {
-      return new ArrayBackedAttributesBuilder(new ArrayList<>(data()));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void forEach(AttributeConsumer consumer) {
-      List<Object> data = data();
-      for (int i = 0; i < data.size(); i += 2) {
-        consumer.accept((AttributeKey) data.get(i), data.get(i + 1));
-      }
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T> T get(AttributeKey<T> key) {
-      return (T) super.get(key);
-    }
-
-    static Attributes sortAndFilterToAttributes(Object... data) {
-      // null out any empty keys or keys with null values
-      // so they will then be removed by the sortAndFilter method.
-      for (int i = 0; i < data.length; i += 2) {
-        AttributeKey<?> key = (AttributeKey<?>) data[i];
-        if (key != null && (key.getKey() == null || "".equals(key.getKey()))) {
-          data[i] = null;
-        }
-      }
-      return new AutoValue_Attributes_ArrayBackedAttributes(
-          sortAndFilter(data, /* filterNullValues= */ true));
-    }
-  }
 
   @Override
   <T> T get(AttributeKey<T> key);
