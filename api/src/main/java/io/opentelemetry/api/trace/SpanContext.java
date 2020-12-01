@@ -13,6 +13,10 @@ import javax.annotation.concurrent.Immutable;
  * trace_id} and {@link SpanId span_id}) associated with the {@link Span} and a set of options
  * (currently only whether the context is sampled or not), as well as the {@link TraceState
  * traceState} and the {@link boolean remote} flag.
+ *
+ * <p>Implementations of this interface *must* be immutable and have well-defined value-based
+ * equals/hashCode implementations. If an implementation does not strictly conform to these
+ * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
  */
 @Immutable
 public interface SpanContext {
