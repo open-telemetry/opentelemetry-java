@@ -16,7 +16,10 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>Implementations of this interface *must* be immutable and have well-defined value-based
  * equals/hashCode implementations. If an implementation does not strictly conform to these
- * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
+ * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed. It is
+ * strongly suggested that you use the implementation that is provided here via {@link
+ * #create(String, String, byte, TraceState)} or {@link #createFromRemoteParent(String, String,
+ * byte, TraceState)}.
  */
 @Immutable
 public interface SpanContext {
