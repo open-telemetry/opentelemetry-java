@@ -31,7 +31,7 @@ public final class LambdaResource extends ResourceProvider {
     String functionName = environmentVariables.getOrDefault("AWS_LAMBDA_FUNCTION_NAME", "");
     String functionVersion = environmentVariables.getOrDefault("AWS_LAMBDA_FUNCTION_VERSION", "");
 
-    if (!isLambda(region, functionName, functionVersion)) {
+    if (!isLambda(functionName, functionVersion)) {
       return Attributes.empty();
     }
 
