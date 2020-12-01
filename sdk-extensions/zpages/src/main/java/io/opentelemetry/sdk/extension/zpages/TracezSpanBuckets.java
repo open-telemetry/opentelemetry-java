@@ -15,15 +15,13 @@ import java.util.List;
 import java.util.Map;
 
 final class TracezSpanBuckets {
-  private final Map<LatencyBoundary, SpanBucket> latencyBuckets;
-  private final Map<StatusCode, SpanBucket> errorBuckets;
+  private final Map<LatencyBoundary, SpanBucket> latencyBuckets = new HashMap<>();
+  private final Map<StatusCode, SpanBucket> errorBuckets = new HashMap<>();
 
   TracezSpanBuckets() {
-    latencyBuckets = new HashMap<>();
     for (LatencyBoundary bucket : LatencyBoundary.values()) {
       latencyBuckets.put(bucket, new SpanBucket(/* isLatencyBucket= */ true));
     }
-    errorBuckets = new HashMap<>();
     for (StatusCode code : StatusCode.values()) {
       if (code == StatusCode.ERROR) {
         errorBuckets.put(code, new SpanBucket(/* isLatencyBucket= */ false));
