@@ -3,6 +3,7 @@ plugins {
     id "maven-publish"
 
     id "ru.vyarus.animalsniffer"
+    id "me.champeau.gradle.jmh"
 }
 
 description = 'OpenTelemetry SDK AWS Instrumentation Support'
