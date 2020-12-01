@@ -131,7 +131,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
    * @param kind the span kind.
-   * @param parentSpanContext the span_id of the parent span, or {@code Span.INVALID} if the new
+   * @param parentSpanContext the parent span context, or {@link SpanContext#getInvalid()} if this
    *     span is a root span.
    * @param traceConfig trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
