@@ -739,6 +739,12 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> ENDUSER_SCOPE = stringKey("enduser.scope");
 
+  /** Current &#34;managed&#34; thread ID (as opposed to OS thread ID). */
+  public static final AttributeKey<Long> THREAD_ID = longKey("thread.id");
+
+  /** Current thread name. */
+  public static final AttributeKey<String> THREAD_NAME = stringKey("thread.name");
+
   /**
    * The method or function name, or equivalent (usually rightmost part of the code unit&#39;s
    * name).
