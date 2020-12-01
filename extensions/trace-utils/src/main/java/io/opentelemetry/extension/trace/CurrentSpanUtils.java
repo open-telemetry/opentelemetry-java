@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 /**
  * Util methods/functionality to interact with the {@link Span} in the {@link Context}.
  *
- * @deprecated Span should never be propagated by itself. Instead of this class, use {@code
+ * @deprecated A Span should never be propagated by itself. Instead of this class, use {@code
  *     Context.with(span).wrap(...)}. This class will be removed in SDK 0.13.0.
  */
 @Deprecated
