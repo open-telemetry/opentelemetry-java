@@ -5,34 +5,15 @@
 
 package io.opentelemetry.api.common;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /** A builder of {@link Labels} supporting an arbitrary number of key-value pairs. */
-public class LabelsBuilder {
-  private final List<Object> data;
-
-  LabelsBuilder() {
-    data = new ArrayList<>();
-  }
-
-  LabelsBuilder(List<Object> data) {
-    this.data = new ArrayList<>(data);
-  }
-
+public interface LabelsBuilder {
   /** Create the {@link Labels} from this. */
-  public Labels build() {
-    return Labels.sortAndFilterToLabels(data.toArray());
-  }
+  Labels build();
 
   /**
    * Puts a single label into this Builder.
    *
    * @return this Builder
    */
-  public LabelsBuilder put(String key, String value) {
-    data.add(key);
-    data.add(value);
-    return this;
-  }
+  LabelsBuilder put(String key, String value);
 }
