@@ -135,8 +135,7 @@ public final class TestUtils {
       assertThat(spans.get(i).getEndEpochNanos())
           .isLessThanOrEqualTo(spans.get(spans.size() - 1).getEndEpochNanos());
       assertThat(spans.get(i).getTraceId()).isEqualTo(spans.get(spans.size() - 1).getTraceId());
-      assertThat(spans.get(i).getParentSpanContext().getSpanIdAsHexString())
-          .isEqualTo(spans.get(spans.size() - 1).getSpanId());
+      assertThat(spans.get(i).getParentSpanId()).isEqualTo(spans.get(spans.size() - 1).getSpanId());
     }
   }
 }

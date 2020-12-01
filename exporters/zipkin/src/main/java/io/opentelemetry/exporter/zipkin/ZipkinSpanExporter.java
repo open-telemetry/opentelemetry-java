@@ -126,7 +126,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
             .localEndpoint(endpoint);
 
     if (spanData.getParentSpanContext().isValid()) {
-      spanBuilder.parentId(spanData.getParentSpanContext().getSpanIdAsHexString());
+      spanBuilder.parentId(spanData.getParentSpanId());
     }
 
     ReadableAttributes spanAttributes = spanData.getAttributes();

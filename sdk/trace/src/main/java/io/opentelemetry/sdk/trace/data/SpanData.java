@@ -58,12 +58,10 @@ public interface SpanData {
 
   /**
    * Returns the parent {@code SpanId}. If the {@code Span} is a root {@code Span}, the SpanId
-   * returned will be invalid..
+   * returned will be invalid.
    *
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
-   * @deprecated Use {@link #getParentSpanContext()}
    */
-  @Deprecated
   default String getParentSpanId() {
     return getParentSpanContext().getSpanIdAsHexString();
   }

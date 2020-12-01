@@ -88,11 +88,9 @@ class InteroperabilityTest {
     assertThat(spanData3.getEvents().get(0).getName()).isEqualTo("OpenTelemetry: Event 1");
     assertThat(spanData3.getEvents().get(1).getName()).isEqualTo("OpenTelemetry: Event 2");
 
-    assertThat(spanData1.getParentSpanContext().getSpanIdAsHexString())
-        .isEqualTo(spanData2.getSpanId());
-    assertThat(spanData2.getParentSpanContext().getSpanIdAsHexString())
-        .isEqualTo(spanData3.getSpanId());
-    assertThat(spanData3.getParentSpanContext().getSpanIdAsHexString()).isEqualTo(NULL_SPAN_ID);
+    assertThat(spanData1.getParentSpanId()).isEqualTo(spanData2.getSpanId());
+    assertThat(spanData2.getParentSpanId()).isEqualTo(spanData3.getSpanId());
+    assertThat(spanData3.getParentSpanId()).isEqualTo(NULL_SPAN_ID);
   }
 
   @Test
@@ -138,11 +136,9 @@ class InteroperabilityTest {
     assertThat(spanData3.getEvents().get(0).getName()).isEqualTo("OpenCensus: Event 1");
     assertThat(spanData3.getEvents().get(1).getName()).isEqualTo("OpenCensus: Event 2");
 
-    assertThat(spanData1.getParentSpanContext().getSpanIdAsHexString())
-        .isEqualTo(spanData2.getSpanId());
-    assertThat(spanData2.getParentSpanContext().getSpanIdAsHexString())
-        .isEqualTo(spanData3.getSpanId());
-    assertThat(spanData3.getParentSpanContext().getSpanIdAsHexString()).isEqualTo(NULL_SPAN_ID);
+    assertThat(spanData1.getParentSpanId()).isEqualTo(spanData2.getSpanId());
+    assertThat(spanData2.getParentSpanId()).isEqualTo(spanData3.getSpanId());
+    assertThat(spanData3.getParentSpanId()).isEqualTo(NULL_SPAN_ID);
   }
 
   private static void createOpenCensusScopedSpanWithChildSpan(

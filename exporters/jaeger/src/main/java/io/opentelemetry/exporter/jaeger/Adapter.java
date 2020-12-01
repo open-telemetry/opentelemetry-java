@@ -80,8 +80,7 @@ final class Adapter {
       target.addReferences(
           Model.SpanRef.newBuilder()
               .setTraceId(TraceProtoUtils.toProtoTraceId(span.getTraceId()))
-              .setSpanId(
-                  TraceProtoUtils.toProtoSpanId(span.getParentSpanContext().getSpanIdAsHexString()))
+              .setSpanId(TraceProtoUtils.toProtoSpanId(span.getParentSpanId()))
               .setRefType(Model.SpanRefType.CHILD_OF));
     }
 

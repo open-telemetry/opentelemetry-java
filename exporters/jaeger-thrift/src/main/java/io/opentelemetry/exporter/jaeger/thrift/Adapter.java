@@ -90,7 +90,7 @@ final class Adapter {
               SpanRefType.CHILD_OF,
               traceIdLow,
               traceIdHigh,
-              SpanId.asLong(span.getParentSpanContext().getSpanIdAsHexString())));
+              SpanId.asLong(span.getParentSpanId())));
     }
     target.setReferences(references);
 

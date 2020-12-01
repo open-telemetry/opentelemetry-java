@@ -208,7 +208,7 @@ class RecordEventsReadableSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(SpanId.isValid(spanData.getParentSpanContext().getSpanIdAsHexString())).isFalse();
+    assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
   }
 
   @Test
@@ -845,7 +845,7 @@ class RecordEventsReadableSpanTest {
       boolean hasEnded) {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
-    assertThat(spanData.getParentSpanContext().getSpanIdAsHexString()).isEqualTo(parentSpanId);
+    assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
     assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
