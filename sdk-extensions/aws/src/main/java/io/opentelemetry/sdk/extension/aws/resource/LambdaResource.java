@@ -37,8 +37,7 @@ public final class LambdaResource extends ResourceProvider {
 
     AttributesBuilder builder =
         Attributes.builder()
-            .put(SemanticAttributes.CLOUD_PROVIDER, SemanticAttributes.CloudProviderValues.AWS)
-            .put(SemanticAttributes.FAAS_NAME, functionName);
+            .put(SemanticAttributes.CLOUD_PROVIDER, SemanticAttributes.CloudProviderValues.AWS);
 
     if (!region.isEmpty()) {
       builder.put(SemanticAttributes.CLOUD_REGION, region);
