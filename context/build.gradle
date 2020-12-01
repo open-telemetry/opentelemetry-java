@@ -2,7 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
 
-    id "com.github.johnrengelman.shadow"
+    // id "com.github.johnrengelman.shadow"
     id "me.champeau.gradle.jmh"
     id "org.unbroken-dome.test-sets"
     id "ru.vyarus.animalsniffer"
@@ -23,7 +23,7 @@ testSets {
 }
 
 dependencies {
-    implementation "com.blogspot.mydailyjava:weak-lock-free:0.18"
+    implementation libraries.weak_lock_free
 
     grpcInOtelTestImplementation libraries.grpc_context
     otelInGrpcTestImplementation libraries.grpc_context
@@ -37,24 +37,4 @@ dependencies {
     testImplementation libraries.junit_pioneer
 
     signature libraries.android_signature
-}
-
-shadowJar {
-    archiveClassifier = ""
-    relocate "com.blogspot.mydailyjava.weaklockfree", "io.opentelemetry.internal.shaded"
-}
-
-tasks {
-    jar {
-        enabled = false
-        dependsOn("shadowJar")
-    }
-}
-
-publishing {
-    publications {
-        named("mavenPublication") {
-            artifact(tasks.shadowJar.archiveFile)
-        }
-    }
 }

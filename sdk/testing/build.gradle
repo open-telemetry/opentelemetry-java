@@ -1,6 +1,8 @@
 plugins {
     id "java-library"
     id "maven-publish"
+
+    id "com.github.johnrengelman.shadow"
 }
 
 description = 'OpenTelemetry SDK Testing utilities'
@@ -10,11 +12,14 @@ dependencies {
     api project(':opentelemetry-api')
     api project(':opentelemetry-sdk')
 
+    compileOnly libraries.weak_lock_free
+
     compileOnly libraries.assertj
     compileOnly libraries.junit
     compileOnly libraries.junit_jupiter_api
 
-    testImplementation libraries.junit
+    testImplementation libraries.junit,
+            libraries.weak_lock_free
 
     annotationProcessor libraries.auto_value
 }
