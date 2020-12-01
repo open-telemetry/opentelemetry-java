@@ -26,29 +26,27 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanBenchmark {
   private static SpanBuilderSdk spanBuilderSdk;
-  private final Resource serviceResource = Resource.create(Attributes.builder()
-      .put("service.name", "benchmark1")
-      .put("service.version", "123.456.89")
-      .put("service.instance.id", "123ab456-a123-12ab-12ab-12340a1abc12")
-      .build()
-  );
+  private final Resource serviceResource =
+      Resource.create(
+          Attributes.builder()
+              .put("service.name", "benchmark1")
+              .put("service.version", "123.456.89")
+              .put("service.instance.id", "123ab456-a123-12ab-12ab-12340a1abc12")
+              .build());
 
   @Setup(Level.Trial)
   public final void setup() {
-    TracerSdkProvider tracerProvider = TracerSdkProvider.builder()
-        .setResource(serviceResource)
-        .build();
+    TracerSdkProvider tracerProvider =
+        TracerSdkProvider.builder().setResource(serviceResource).build();
 
     TraceConfig alwaysOn =
-        tracerProvider.getActiveTraceConfig().toBuilder()
-            .setSampler(Sampler.alwaysOn())
-            .build();
+        tracerProvider.getActiveTraceConfig().toBuilder().setSampler(Sampler.alwaysOn()).build();
     tracerProvider.updateActiveTraceConfig(alwaysOn);
 
     Tracer tracerSdk = tracerProvider.get("benchmarkTracer");
-    spanBuilderSdk = (SpanBuilderSdk) tracerSdk
-        .spanBuilder("benchmarkSpanBuilder")
-        .setAttribute("longAttribute", 33L);
+    spanBuilderSdk =
+        (SpanBuilderSdk)
+            tracerSdk.spanBuilder("benchmarkSpanBuilder").setAttribute("longAttribute", 33L);
   }
 
   @Benchmark
