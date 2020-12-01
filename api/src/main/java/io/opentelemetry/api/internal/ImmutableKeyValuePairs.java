@@ -12,6 +12,7 @@ import io.opentelemetry.api.common.Labels;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -42,6 +43,10 @@ public abstract class ImmutableKeyValuePairs<K, V> {
 
   public boolean isEmpty() {
     return data().isEmpty();
+  }
+
+  public Map<K, V> asMap() {
+    return ReadOnlyArrayMap.wrap(data());
   }
 
   /** Returns the value for the given {@code key}, or {@code null} if the key is not present. */

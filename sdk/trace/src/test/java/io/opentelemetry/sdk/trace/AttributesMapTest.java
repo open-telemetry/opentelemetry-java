@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
@@ -30,6 +31,16 @@ class AttributesMapTest {
 
     assertOrdering(attributesMap, expectedKeyOrder, expectedValueOrder);
     assertOrdering(attributesMap.immutableCopy(), expectedKeyOrder, expectedValueOrder);
+  }
+
+  @Test
+  void asMap() {
+    AttributesMap attributesMap = new AttributesMap(2);
+    attributesMap.put(longKey("one"), 1L);
+    attributesMap.put(longKey("two"), 2L);
+
+    assertThat(attributesMap.asMap())
+        .containsExactly(entry(longKey("one"), 1L), entry(longKey("two"), 2L));
   }
 
   private void assertOrdering(
