@@ -43,7 +43,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   public static final String DEFAULT_HOST_NAME = "unknown";
   public static final String DEFAULT_ENDPOINT = "localhost:14250";
   public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(1);
+  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(10);
 
   private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
@@ -220,7 +220,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     private String serviceName = DEFAULT_SERVICE_NAME;
     private String endpoint = DEFAULT_ENDPOINT;
     private ManagedChannel channel;
-    private long deadlineMs = DEFAULT_DEADLINE_MS; // 1 second
+    private long deadlineMs = DEFAULT_DEADLINE_MS; // 10 seconds
 
     /**
      * Sets the service name to be used by this exporter. Required.
