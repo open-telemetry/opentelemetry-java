@@ -138,8 +138,7 @@ public abstract class LogRecord {
     }
 
     public Builder setBody(String body) {
-      this.body = AnyValue.stringAnyValue(body);
-      return this;
+      return setBody(AnyValue.stringAnyValue(body));
     }
 
     public Builder setAttributes(Attributes attributes) {

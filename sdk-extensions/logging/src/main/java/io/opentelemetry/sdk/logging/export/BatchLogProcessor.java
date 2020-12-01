@@ -240,10 +240,6 @@ public class BatchLogProcessor implements LogProcessor {
       this.logExporter = Objects.requireNonNull(logExporter, "Exporter argument can not be null");
     }
 
-    public Builder builder(LogExporter logExporter) {
-      return new Builder(logExporter);
-    }
-
     /**
      * Build a BatchLogProcessor.
      *
