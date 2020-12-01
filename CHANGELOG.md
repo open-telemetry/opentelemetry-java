@@ -10,11 +10,13 @@
 - The `TextMapPropagator.fields()` method now returns a `Collection` rather than a `List`.
 - `TraceState` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - `Labels` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- `SpanContext` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 
 #### Enhancements
 
 - A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
 - An `asMap()` method has been added to the `Attributes` interface to enable conversion to a standard `java.util.Map`.
+- The Semantic Attributes constants have been updated to the version in the yaml spec as of Dec 1, 2020.
 
 #### Miscellaneous
 
