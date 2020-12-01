@@ -10,7 +10,6 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -260,13 +259,13 @@ final class SpanBuilderSdk implements SpanBuilder {
     }
   }
 
-  @VisibleForTesting
+  // Visible for testing
   static boolean isRecording(SamplingResult.Decision decision) {
     return SamplingResult.Decision.RECORD_ONLY.equals(decision)
         || SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
   }
 
-  @VisibleForTesting
+  // Visible for testing
   static boolean isSampled(SamplingResult.Decision decision) {
     return SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
   }
