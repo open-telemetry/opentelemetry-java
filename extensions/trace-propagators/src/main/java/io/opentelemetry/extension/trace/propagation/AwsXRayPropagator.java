@@ -13,8 +13,8 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -61,7 +61,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
   private static final char IS_SAMPLED = '1';
   private static final char NOT_SAMPLED = '0';
 
-  private static final List<String> FIELDS = Collections.singletonList(TRACE_HEADER_KEY);
+  private static final Collection<String> FIELDS = Collections.singletonList(TRACE_HEADER_KEY);
 
   private static final AwsXRayPropagator INSTANCE = new AwsXRayPropagator();
 
@@ -74,7 +74,7 @@ public class AwsXRayPropagator implements TextMapPropagator {
   }
 
   @Override
-  public List<String> fields() {
+  public Collection<String> fields() {
     return FIELDS;
   }
 

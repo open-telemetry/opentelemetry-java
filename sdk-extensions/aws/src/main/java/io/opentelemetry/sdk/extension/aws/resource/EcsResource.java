@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
@@ -39,7 +37,7 @@ public class EcsResource extends ResourceProvider {
     this(System.getenv(), new DockerHelper());
   }
 
-  @VisibleForTesting
+  // Visible for testing
   EcsResource(Map<String, String> sysEnv, DockerHelper dockerHelper) {
     this.sysEnv = sysEnv;
     this.dockerHelper = dockerHelper;
@@ -61,7 +59,7 @@ public class EcsResource extends ResourceProvider {
     }
 
     String containerId = dockerHelper.getContainerId();
-    if (!Strings.isNullOrEmpty(containerId)) {
+    if (containerId != null && !containerId.isEmpty()) {
       attrBuilders.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
@@ -69,7 +67,7 @@ public class EcsResource extends ResourceProvider {
   }
 
   private boolean isOnEcs() {
-    return (!Strings.isNullOrEmpty(sysEnv.get(ECS_METADATA_KEY_V3))
-        || !Strings.isNullOrEmpty(sysEnv.get(ECS_METADATA_KEY_V4)));
+    return !sysEnv.getOrDefault(ECS_METADATA_KEY_V3, "").isEmpty()
+        || !sysEnv.getOrDefault(ECS_METADATA_KEY_V4, "").isEmpty();
   }
 }

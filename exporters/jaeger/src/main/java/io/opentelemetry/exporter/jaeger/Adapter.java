@@ -15,6 +15,7 @@ import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -33,8 +34,8 @@ final class Adapter {
   static final String KEY_LOG_EVENT = "event";
   static final String KEY_EVENT_DROPPED_ATTRIBUTES_COUNT = "otel.event.dropped_attributes_count";
   static final String KEY_SPAN_KIND = "span.kind";
-  static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
-  static final String KEY_SPAN_STATUS_CODE = "span.status.code";
+  static final String KEY_SPAN_STATUS_MESSAGE = "otel.status_description";
+  static final String KEY_SPAN_STATUS_CODE = "otel.status_code";
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
 
@@ -93,19 +94,21 @@ final class Adapter {
               .build());
     }
 
-    target.addTags(
-        Model.KeyValue.newBuilder()
-            .setKey(KEY_SPAN_STATUS_MESSAGE)
-            .setVStr(
-                span.getStatus().getDescription() == null ? "" : span.getStatus().getDescription())
-            .build());
+    if (span.getStatus().getDescription() != null) {
+      target.addTags(
+          Model.KeyValue.newBuilder()
+              .setKey(KEY_SPAN_STATUS_MESSAGE)
+              .setVStr(span.getStatus().getDescription())
+              .build());
+    }
 
-    target.addTags(
-        Model.KeyValue.newBuilder()
-            .setKey(KEY_SPAN_STATUS_CODE)
-            .setVInt64(span.getStatus().getStatusCode().value())
-            .setVType(Model.ValueType.INT64)
-            .build());
+    if (!span.getStatus().isUnset()) {
+      target.addTags(
+          Model.KeyValue.newBuilder()
+              .setKey(KEY_SPAN_STATUS_CODE)
+              .setVStr(span.getStatus().getStatusCode().name())
+              .build());
+    }
 
     target.addTags(
         Model.KeyValue.newBuilder()
@@ -121,7 +124,7 @@ final class Adapter {
               .build());
     }
 
-    if (!span.getStatus().isOk()) {
+    if (span.getStatus().getStatusCode() == StatusCode.ERROR) {
       target.addTags(toKeyValue(KEY_ERROR, true));
     }
 

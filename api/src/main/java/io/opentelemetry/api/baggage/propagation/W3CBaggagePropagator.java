@@ -12,6 +12,7 @@ import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.EntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -32,7 +33,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   private W3CBaggagePropagator() {}
 
   @Override
-  public List<String> fields() {
+  public Collection<String> fields() {
     return FIELDS;
   }
 

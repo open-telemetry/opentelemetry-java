@@ -25,6 +25,8 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
       extends AbstractAsynchronousInstrument.Builder<DoubleValueObserverSdk.Builder>
       implements DoubleValueObserver.Builder {
 
+    private Callback<DoubleResult> callback;
+
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
@@ -39,15 +41,26 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
     }
 
     @Override
+    public Builder setCallback(Callback<DoubleResult> callback) {
+      this.callback = callback;
+      return this;
+    }
+
+    @SuppressWarnings("deprecation") // need to call the deprecated method for now
+    @Override
     public DoubleValueObserverSdk build() {
       InstrumentDescriptor instrumentDescriptor =
           getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.DOUBLE);
-      return register(
+      DoubleValueObserverSdk instrument =
           new DoubleValueObserverSdk(
               instrumentDescriptor,
               getMeterProviderSharedState(),
               getMeterSharedState(),
-              getBatcher(instrumentDescriptor)));
+              getBatcher(instrumentDescriptor));
+      if (callback != null) {
+        instrument.setCallback(callback);
+      }
+      return register(instrument);
     }
   }
 }

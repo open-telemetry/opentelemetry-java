@@ -11,7 +11,6 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
-import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -136,33 +135,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
   // the data.
   private static final class Worker implements Runnable {
 
-    static {
-      Meter meter = OpenTelemetry.getGlobalMeter("io.opentelemetry.sdk.trace");
-      LongCounter processedSpansCounter =
-          meter
-              .longCounterBuilder("processedSpans")
-              .setUnit("1")
-              .setDescription(
-                  "The number of spans processed by the BatchSpanProcessor. "
-                      + "[dropped=true if they were dropped due to high throughput]")
-              .build();
-      droppedSpans =
-          processedSpansCounter.bind(
-              Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE, "dropped", "true"));
-      exportedSpans =
-          processedSpansCounter.bind(
-              Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE, "dropped", "false"));
-      spansInQueue =
-          meter
-              .longValueObserverBuilder("queueSize")
-              .setDescription("The number of spans queued")
-              .setUnit("1")
-              .build();
-    }
-
-    private static final BoundLongCounter droppedSpans;
-    private static final BoundLongCounter exportedSpans;
-    private static final LongValueObserver spansInQueue;
+    private final BoundLongCounter droppedSpans;
+    private final BoundLongCounter exportedSpans;
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;
@@ -189,11 +163,33 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutMillis = exporterTimeoutMillis;
       this.queue = queue;
+      Meter meter = OpenTelemetry.getGlobalMeter("io.opentelemetry.sdk.trace");
+      meter
+          .longValueObserverBuilder("queueSize")
+          .setDescription("The number of spans queued")
+          .setUnit("1")
+          .setCallback(
+              result ->
+                  result.observe(
+                      queue.size(),
+                      Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE)))
+          .build();
+      LongCounter processedSpansCounter =
+          meter
+              .longCounterBuilder("processedSpans")
+              .setUnit("1")
+              .setDescription(
+                  "The number of spans processed by the BatchSpanProcessor. "
+                      + "[dropped=true if they were dropped due to high throughput]")
+              .build();
+      droppedSpans =
+          processedSpansCounter.bind(
+              Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE, "dropped", "true"));
+      exportedSpans =
+          processedSpansCounter.bind(
+              Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE, "dropped", "false"));
+
       this.batch = new ArrayList<>(this.maxExportBatchSize);
-      spansInQueue.setCallback(
-          result ->
-              result.observe(
-                  queue.size(), Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE)));
     }
 
     private void addSpan(ReadableSpan span) {
