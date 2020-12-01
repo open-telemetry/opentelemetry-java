@@ -25,6 +25,8 @@ final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
       extends AbstractAsynchronousInstrument.Builder<DoubleSumObserverSdk.Builder>
       implements DoubleSumObserver.Builder {
 
+    private Callback<DoubleResult> callback;
+
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
@@ -39,15 +41,26 @@ final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
     }
 
     @Override
+    public Builder setCallback(Callback<DoubleResult> callback) {
+      this.callback = callback;
+      return this;
+    }
+
+    @SuppressWarnings("deprecation") // need to call the deprecated method for now
+    @Override
     public DoubleSumObserverSdk build() {
       InstrumentDescriptor instrumentDescriptor =
           getInstrumentDescriptor(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE);
-      return register(
+      DoubleSumObserverSdk instrument =
           new DoubleSumObserverSdk(
               instrumentDescriptor,
               getMeterProviderSharedState(),
               getMeterSharedState(),
-              getBatcher(instrumentDescriptor)));
+              getBatcher(instrumentDescriptor));
+      if (callback != null) {
+        instrument.setCallback(callback);
+      }
+      return register(instrument);
     }
   }
 }

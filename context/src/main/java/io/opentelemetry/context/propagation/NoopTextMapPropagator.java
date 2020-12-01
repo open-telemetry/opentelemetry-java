@@ -6,8 +6,8 @@
 package io.opentelemetry.context.propagation;
 
 import io.opentelemetry.context.Context;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import javax.annotation.Nullable;
 
 final class NoopTextMapPropagator implements TextMapPropagator {
@@ -18,7 +18,7 @@ final class NoopTextMapPropagator implements TextMapPropagator {
   }
 
   @Override
-  public List<String> fields() {
+  public Collection<String> fields() {
     return Collections.emptyList();
   }
 

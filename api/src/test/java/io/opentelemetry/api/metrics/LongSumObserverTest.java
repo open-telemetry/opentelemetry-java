@@ -69,14 +69,19 @@ class LongSumObserverTest {
 
   @Test
   void preventNull_Callback() {
-    LongSumObserver longSumObserver = meter.longSumObserverBuilder("metric").build();
-    assertThrows(NullPointerException.class, () -> longSumObserver.setCallback(null), "callback");
+    assertThrows(
+        NullPointerException.class,
+        () -> meter.longSumObserverBuilder("metric").setCallback(null).build(),
+        "callback");
   }
 
   @Test
   void doesNotThrow() {
-    LongSumObserver longSumObserver =
-        meter.longSumObserverBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    longSumObserver.setCallback(result -> {});
+    meter
+        .longSumObserverBuilder(NAME)
+        .setDescription(DESCRIPTION)
+        .setUnit(UNIT)
+        .setCallback(result -> {})
+        .build();
   }
 }

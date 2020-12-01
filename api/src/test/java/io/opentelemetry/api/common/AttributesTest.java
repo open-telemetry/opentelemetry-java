@@ -15,9 +15,11 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,6 +48,82 @@ class AttributesTest {
     Attributes attributes = Attributes.of(stringKey("key"), "value");
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(stringKey("key"), "value"));
+  }
+
+  @SuppressWarnings("CollectionIncompatibleType")
+  @Test
+  void asMap() {
+    Attributes attributes = Attributes.of(stringKey("key1"), "value1", longKey("key2"), 333L);
+
+    Map<AttributeKey<?>, Object> map = attributes.asMap();
+    assertThat(map)
+        .containsExactly(entry(stringKey("key1"), "value1"), entry(longKey("key2"), 333L));
+
+    assertThat(map.get(stringKey("key1"))).isEqualTo("value1");
+    assertThat(map.get(longKey("key2"))).isEqualTo(333L);
+    // Map of AttributeKey, not String
+    assertThat(map.get("key1")).isNull();
+    assertThat(map.get(null)).isNull();
+    assertThat(map.keySet()).containsExactlyInAnyOrder(stringKey("key1"), longKey("key2"));
+    assertThat(map.values()).containsExactlyInAnyOrder("value1", 333L);
+    assertThat(map.entrySet())
+        .containsExactlyInAnyOrder(
+            entry(stringKey("key1"), "value1"), entry(longKey("key2"), 333L));
+    assertThat(map.isEmpty()).isFalse();
+    assertThat(map.containsKey(stringKey("key1"))).isTrue();
+    assertThat(map.containsKey(longKey("key2"))).isTrue();
+    assertThat(map.containsKey(stringKey("key3"))).isFalse();
+    assertThat(map.containsValue("value1")).isTrue();
+    assertThat(map.containsValue(333L)).isTrue();
+    assertThat(map.containsValue("cat")).isFalse();
+    assertThatThrownBy(() -> map.put(stringKey("animal"), "cat"))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> map.remove(stringKey("key1")))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> map.putAll(Collections.emptyMap()))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(map::clear).isInstanceOf(UnsupportedOperationException.class);
+
+    assertThat(map.keySet().contains(stringKey("key1"))).isTrue();
+    assertThat(map.keySet().contains(stringKey("key3"))).isFalse();
+    assertThat(map.keySet().size()).isEqualTo(2);
+    assertThat(map.keySet().toArray())
+        .containsExactlyInAnyOrder(stringKey("key1"), longKey("key2"));
+    AttributeKey<?>[] keys = new AttributeKey[2];
+    map.keySet().toArray(keys);
+    assertThat(keys).containsExactlyInAnyOrder(stringKey("key1"), longKey("key2"));
+    keys = new AttributeKey[0];
+    assertThat(map.keySet().toArray(keys))
+        .containsExactlyInAnyOrder(stringKey("key1"), longKey("key2"));
+    assertThat(keys).isEmpty(); // Didn't use input array.
+    assertThatThrownBy(() -> map.keySet().iterator().remove())
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThat(map.keySet().containsAll(singletonList(stringKey("key1")))).isTrue();
+    assertThat(map.keySet().containsAll(Arrays.asList(stringKey("key1"), stringKey("key3"))))
+        .isFalse();
+    assertThat(map.keySet().isEmpty()).isFalse();
+    assertThatThrownBy(() -> map.keySet().add(stringKey("key3")))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> map.keySet().remove(stringKey("key1")))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> map.keySet().addAll(Collections.singletonList(stringKey("key3"))))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> map.keySet().retainAll(Collections.singletonList(stringKey("key3"))))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> map.keySet().removeAll(Collections.singletonList(stringKey("key3"))))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> map.keySet().clear())
+        .isInstanceOf(UnsupportedOperationException.class);
+
+    assertThat(map.values().contains("value1")).isTrue();
+    assertThat(map.values().contains("value3")).isFalse();
+
+    assertThat(map.toString())
+        .isEqualTo(
+            "ReadOnlyArrayMap{AttributeKeyImpl{getType=STRING, key=key1}=value1,"
+                + "AttributeKeyImpl{getType=LONG, key=key2}=333}");
+
+    assertThat(Attributes.builder().build().asMap()).isEmpty();
   }
 
   @Test

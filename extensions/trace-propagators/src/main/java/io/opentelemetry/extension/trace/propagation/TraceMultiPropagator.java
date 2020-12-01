@@ -12,6 +12,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -76,7 +77,7 @@ public class TraceMultiPropagator implements TextMapPropagator {
   }
 
   private final TextMapPropagator[] propagators;
-  private final List<String> propagatorsFields;
+  private final Collection<String> propagatorsFields;
 
   private TraceMultiPropagator(List<TextMapPropagator> propagatorList) {
     this.propagators = new TextMapPropagator[propagatorList.size()];
@@ -108,7 +109,7 @@ public class TraceMultiPropagator implements TextMapPropagator {
    * @return list of fields defined in all the registered propagators.
    */
   @Override
-  public List<String> fields() {
+  public Collection<String> fields() {
     return propagatorsFields;
   }
 

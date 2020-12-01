@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.aws.resource;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
@@ -42,7 +41,7 @@ public class BeanstalkResource extends ResourceProvider {
     this(BEANSTALK_CONF_PATH);
   }
 
-  @VisibleForTesting
+  // Visible for testing
   BeanstalkResource(String configPath) {
     this.configPath = configPath;
   }

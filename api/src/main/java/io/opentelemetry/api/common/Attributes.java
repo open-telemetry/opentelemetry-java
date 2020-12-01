@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @SuppressWarnings("rawtypes")
 @Immutable
-public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey, Object>
+public abstract class Attributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
     implements ReadableAttributes {
   private static final Attributes EMPTY = Attributes.builder().build();
 

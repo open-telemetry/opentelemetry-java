@@ -28,14 +28,9 @@ types of static analysis.
 The tests that require docker are disabled if docker is not present. If you wish to run them,
 you must run a local docker daemon.
 
-2. Clone the repository recursively
+2. Clone the repository
 
-    `git clone https://github.com/open-telemetry/opentelemetry-java.git --recursive`
-
-or alternatively initialize submodules for an existing clone.
-
-   `git submodule init`
-   `git submodule update`   
+    `git clone https://github.com/open-telemetry/opentelemetry-java.git`
 
 3. Run the following commands to build, run tests and most static analysis, and
 check formatting:
@@ -116,3 +111,14 @@ It does not support all required rules, so you still have to run `spotlessApply`
 ### Unit Tests
 
 * Unit tests target Java 8, so language features such as lambda and streams can be used in tests.
+
+## Common tasks
+
+### Updating OTLP proto dependency version
+
+The OTLP proto dependency version is defined [here](proto/build.gradle). To bump the version,
+
+1. Find the latest release version [here](https://github.com/open-telemetry/opentelemetry-proto/releases/latest)
+2. Download the zip source code archive
+3. Run `shasum -a 256 ~/path/to/downloaded.zip` to compute its checksum
+4. Update `protoVersion` and `protoChecksum` in the build file with the new version and checksum

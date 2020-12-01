@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -25,7 +24,7 @@ class DockerHelper {
     this(DEFAULT_CGROUP_PATH);
   }
 
-  @VisibleForTesting
+  // Visible for testing
   DockerHelper(String cgroupPath) {
     this.cgroupPath = cgroupPath;
   }

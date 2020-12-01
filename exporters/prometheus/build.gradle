@@ -16,6 +16,5 @@ dependencies {
     testImplementation libraries.prometheus_client_common,
             libraries.guava
 
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
     signature libraries.android_signature
 }

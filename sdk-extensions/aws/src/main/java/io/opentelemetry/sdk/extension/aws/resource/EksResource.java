@@ -7,16 +7,15 @@ package io.opentelemetry.sdk.extension.aws.resource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -43,7 +42,7 @@ public class EksResource extends ResourceProvider {
     this(new JdkHttpClient(), new DockerHelper(), K8S_TOKEN_PATH, K8S_CERT_PATH);
   }
 
-  @VisibleForTesting
+  // Visible for testing
   EksResource(
       JdkHttpClient jdkHttpClient,
       DockerHelper dockerHelper,
@@ -64,12 +63,12 @@ public class EksResource extends ResourceProvider {
     AttributesBuilder attrBuilders = Attributes.builder();
 
     String clusterName = getClusterName();
-    if (!Strings.isNullOrEmpty(clusterName)) {
+    if (clusterName != null && !clusterName.isEmpty()) {
       attrBuilders.put(ResourceAttributes.K8S_CLUSTER, clusterName);
     }
 
     String containerId = dockerHelper.getContainerId();
-    if (!Strings.isNullOrEmpty(containerId)) {
+    if (containerId != null && !containerId.isEmpty()) {
       attrBuilders.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
@@ -88,7 +87,7 @@ public class EksResource extends ResourceProvider {
         jdkHttpClient.fetchString(
             "GET", K8S_SVC_URL + AUTH_CONFIGMAP_PATH, requestProperties, K8S_CERT_PATH);
 
-    return !Strings.isNullOrEmpty(awsAuth);
+    return awsAuth != null && !awsAuth.isEmpty();
   }
 
   private boolean isK8s() {
@@ -115,8 +114,8 @@ public class EksResource extends ResourceProvider {
 
   private static String getK8sCredHeader() {
     try {
-      File file = new File(K8S_TOKEN_PATH);
-      String content = Files.asCharSource(file, Charsets.UTF_8).read();
+      String content =
+          new String(Files.readAllBytes(Paths.get(K8S_TOKEN_PATH)), StandardCharsets.UTF_8);
       return "Bearer " + content;
     } catch (IOException e) {
       logger.log(Level.WARNING, "Unable to load K8s client token.", e);
