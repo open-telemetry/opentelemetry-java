@@ -520,6 +520,7 @@ configure(opentelemetryProjects) {
     // dependency of all the modules we publish.
     plugins.withId("com.github.johnrengelman.shadow") {
         shadowJar {
+            configurations = []
             archiveClassifier = ""
             relocate "com.blogspot.mydailyjava.weaklockfree", "io.opentelemetry.internal.shaded"
         }

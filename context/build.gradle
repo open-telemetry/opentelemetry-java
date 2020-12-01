@@ -2,7 +2,7 @@ plugins {
     id "java"
     id "maven-publish"
 
-    // id "com.github.johnrengelman.shadow"
+    id "com.github.johnrengelman.shadow"
     id "me.champeau.gradle.jmh"
     id "org.unbroken-dome.test-sets"
     id "ru.vyarus.animalsniffer"
@@ -37,4 +37,8 @@ dependencies {
     testImplementation libraries.junit_pioneer
 
     signature libraries.android_signature
+}
+
+shadowJar {
+    configurations = [project.configurations.runtimeClasspath]
 }
