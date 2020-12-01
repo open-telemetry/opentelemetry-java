@@ -110,7 +110,7 @@ class OsResourceTest {
   @SetSystemProperty(key = "os.name", value = "RagOS 10")
   void unknown() {
     Attributes attributes = RESOURCE.getAttributes();
-    assertThat(attributes.get(ResourceAttributes.OS_NAME)).isEqualTo("WINDOWS");
+    assertThat(attributes.get(ResourceAttributes.OS_NAME)).isNull();
     assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotEmpty();
   }
 
