@@ -1,7 +1,5 @@
 plugins {
     id "java-library"
-
-    id "com.github.johnrengelman.shadow"
 }
 
 description = 'OpenTelemetry SDK Extension JFR'
@@ -10,9 +8,6 @@ ext.moduleName = 'io.opentelemetry.sdk.extension.jfr'
 dependencies {
     implementation project(':opentelemetry-api'),
             project(':opentelemetry-sdk')
-
-    compileOnly libraries.weak_lock_free
-    testImplementation libraries.weak_lock_free
 }
 
 tasks.withType(JavaCompile) {

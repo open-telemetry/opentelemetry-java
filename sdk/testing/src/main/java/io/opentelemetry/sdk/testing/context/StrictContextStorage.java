@@ -22,10 +22,10 @@ package io.opentelemetry.sdk.testing.context;
 
 import static java.lang.Thread.currentThread;
 
-import com.blogspot.mydailyjava.weaklockfree.WeakConcurrentMap;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;

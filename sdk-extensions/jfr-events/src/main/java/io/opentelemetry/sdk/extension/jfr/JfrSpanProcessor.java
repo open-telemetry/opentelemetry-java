@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extension.jfr;
 
-import com.blogspot.mydailyjava.weaklockfree.WeakConcurrentMap;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
