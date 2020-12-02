@@ -159,7 +159,7 @@ public interface OpenTelemetry {
    * @return a tracer instance.
    */
   default Tracer getTracer(String instrumentationName) {
-    return getGlobalTracerProvider().get(instrumentationName);
+    return getTracerProvider().get(instrumentationName);
   }
 
   /**
@@ -168,12 +168,11 @@ public interface OpenTelemetry {
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
-   * @param instrumentationVersion The version of the instrumentation library (e.g.,
-   *     "semver:1.0.0").
+   * @param instrumentationVersion The version of the instrumentation library (e.g., "1.0.0").
    * @return a tracer instance.
    */
   default Tracer getTracer(String instrumentationName, String instrumentationVersion) {
-    return getGlobalTracerProvider().get(instrumentationName, instrumentationVersion);
+    return getTracerProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /** Returns the {@link MeterProvider} for this {@link OpenTelemetry}. */
@@ -188,7 +187,7 @@ public interface OpenTelemetry {
    * @return a tracer instance.
    */
   default Meter getMeter(String instrumentationName) {
-    return getGlobalMeterProvider().get(instrumentationName);
+    return getMeterProvider().get(instrumentationName);
   }
 
   /**
@@ -201,7 +200,7 @@ public interface OpenTelemetry {
    * @return a tracer instance.
    */
   default Meter getMeter(String instrumentationName, String instrumentationVersion) {
-    return getGlobalMeterProvider().get(instrumentationName, instrumentationVersion);
+    return getMeterProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
