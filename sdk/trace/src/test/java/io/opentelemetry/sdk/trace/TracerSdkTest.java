@@ -33,7 +33,7 @@ class TracerSdkTest {
   private static final String SPAN_NAME = "span_name";
   private static final String INSTRUMENTATION_LIBRARY_NAME =
       "io.opentelemetry.sdk.trace.TracerSdkTest";
-  private static final String INSTRUMENTATION_LIBRARY_VERSION = "semver:0.2.0";
+  private static final String INSTRUMENTATION_LIBRARY_VERSION = "0.2.0";
   private static final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create(
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
