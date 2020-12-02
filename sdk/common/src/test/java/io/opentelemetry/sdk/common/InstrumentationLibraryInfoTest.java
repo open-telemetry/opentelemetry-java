@@ -22,8 +22,6 @@ class InstrumentationLibraryInfoTest {
   @Test
   void nullName() {
     assertThrows(
-        NullPointerException.class,
-        () -> InstrumentationLibraryInfo.create(null, "semver:1.0.0"),
-        "name");
+        NullPointerException.class, () -> InstrumentationLibraryInfo.create(null, "1.0.0"), "name");
   }
 }
