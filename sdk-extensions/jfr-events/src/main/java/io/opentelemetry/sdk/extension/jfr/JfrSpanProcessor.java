@@ -46,11 +46,8 @@ public class JfrSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan rs) {
-    if (closed) {
-      return;
-    }
     SpanEvent event = spanEvents.remove(rs.getSpanContext());
-    if (event != null && event.shouldCommit()) {
+    if (!closed && event != null && event.shouldCommit()) {
       event.commit();
     }
   }

@@ -22,8 +22,12 @@ testSets {
     storageWrappersTest
 }
 
+configurations {
+    shadowInclude
+}
+
 dependencies {
-    implementation libraries.weak_lock_free
+    shadowInclude libraries.weak_lock_free
 
     grpcInOtelTestImplementation libraries.grpc_context
     otelInGrpcTestImplementation libraries.grpc_context
@@ -35,10 +39,11 @@ dependencies {
     testImplementation libraries.awaitility
     testImplementation libraries.guava
     testImplementation libraries.junit_pioneer
+    testImplementation libraries.weak_lock_free
 
     signature libraries.android_signature
 }
 
 shadowJar {
-    configurations = [project.configurations.runtimeClasspath]
+    configurations = [project.configurations.shadowInclude]
 }
