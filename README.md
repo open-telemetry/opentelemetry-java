@@ -153,13 +153,13 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 - [Tyler Benson](https://github.com/tylerbenson), DataDog
 - [Giovanni Liva](https://github.com/thisthat), Dynatrace
 - [Christian Neumüller](https://github.com/Oberon00), Dynatrace
+- [Carlos Alberto](https://github.com/carlosalberto), LightStep
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 
 Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-telemetry/teams/java-maintainers)):
 
 - [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
-- [Carlos Alberto](https://github.com/carlosalberto), LightStep
 - [John Watson](https://github.com/jkwatson), Splunk
 - [Anuraag Agrawal](https://github.com/anuraaga), AWS
 
