@@ -73,7 +73,12 @@ final class Propagation extends BaseShimObject {
 
     @Override
     public String get(Map<String, String> carrier, String key) {
-      return carrier.get(key);
+      for (Map.Entry<String, String> entry : carrier.entrySet()) {
+        if (key.equalsIgnoreCase(entry.getKey())) {
+          return entry.getValue();
+        }
+      }
+      return null;
     }
   }
 }

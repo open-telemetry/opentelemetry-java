@@ -22,11 +22,9 @@
 
 package io.opentelemetry.context;
 
-import javax.annotation.Nullable;
+final class DefaultContext {
 
-final class DefaultContext implements Context {
-
-  private static final Context ROOT = new DefaultContext();
+  private static final Context ROOT = new PersistentHashArrayMappedTrie.RootNode();
 
   // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
   // this method.
@@ -44,29 +42,5 @@ final class DefaultContext implements Context {
     return ROOT;
   }
 
-  @Nullable private final PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries;
-
-  private DefaultContext(PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> entries) {
-    this.entries = entries;
-  }
-
-  DefaultContext() {
-    entries = null;
-  }
-
-  @Override
-  @Nullable
-  public <V> V get(ContextKey<V> key) {
-    // Because withValue enforces the value for a key is its type, this is always safe.
-    @SuppressWarnings("unchecked")
-    V value = (V) PersistentHashArrayMappedTrie.get(entries, key);
-    return value;
-  }
-
-  @Override
-  public <V> Context with(ContextKey<V> k1, V v1) {
-    PersistentHashArrayMappedTrie.Node<ContextKey<?>, Object> newEntries =
-        PersistentHashArrayMappedTrie.put(entries, k1, v1);
-    return new DefaultContext(newEntries);
-  }
+  private DefaultContext() {}
 }

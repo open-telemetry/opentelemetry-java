@@ -115,7 +115,6 @@ class DelegatingSpanDataTest {
         .setEndEpochNanos(200)
         .setKind(Kind.SERVER)
         .setStatus(Status.ok())
-        .setHasRemoteParent(false)
         .setTotalRecordedEvents(0)
         .setTotalRecordedLinks(0);
   }

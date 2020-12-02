@@ -7,13 +7,13 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 import com.google.common.testing.EqualsTester;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link TraceState}. */
 class TraceStateTest {
   private static final String FIRST_KEY = "key_1";
   private static final String SECOND_KEY = "key_2";
@@ -217,11 +217,11 @@ class TraceStateTest {
             firstTraceState.toBuilder()
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .set(SECOND_KEY, FIRST_VALUE) // add a new entry
-                .build()
-                .getEntries())
-        .containsExactly(
-            TraceState.Entry.create(SECOND_KEY, FIRST_VALUE),
-            TraceState.Entry.create(FIRST_KEY, SECOND_VALUE));
+                .build())
+        .asInstanceOf(type(ArrayBasedTraceState.class))
+        .extracting(ArrayBasedTraceState::getEntries)
+        .asList()
+        .containsExactly(SECOND_KEY, FIRST_VALUE, FIRST_KEY, SECOND_VALUE);
   }
 
   @Test
@@ -230,9 +230,11 @@ class TraceStateTest {
             EMPTY.toBuilder()
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .set(FIRST_KEY, FIRST_VALUE) // add a new entry
-                .build()
-                .getEntries())
-        .containsExactly(TraceState.Entry.create(FIRST_KEY, FIRST_VALUE));
+                .build())
+        .asInstanceOf(type(ArrayBasedTraceState.class))
+        .extracting(ArrayBasedTraceState::getEntries)
+        .asList()
+        .containsExactly(FIRST_KEY, FIRST_VALUE);
   }
 
   @Test
@@ -269,6 +271,6 @@ class TraceStateTest {
 
   @Test
   void traceState_ToString() {
-    assertThat(EMPTY.toString()).isEqualTo("TraceState{entries=[]}");
+    assertThat(EMPTY.toString()).isEqualTo("ArrayBasedTraceState{entries=[]}");
   }
 }

@@ -15,17 +15,17 @@ class PersistentHashArrayMappedTrieTest {
   void hashCollisions() {
     HashCollidingKey cheese = new HashCollidingKey();
     HashCollidingKey wine = new HashCollidingKey();
-    PersistentHashArrayMappedTrie.Node<HashCollidingKey, String> root =
+    PersistentHashArrayMappedTrie.Node root =
         PersistentHashArrayMappedTrie.put(null, cheese, "cheddar");
 
-    PersistentHashArrayMappedTrie.Node<HashCollidingKey, String> child =
+    PersistentHashArrayMappedTrie.Node child =
         PersistentHashArrayMappedTrie.put(root, wine, "Pinot Noir");
 
     assertThat(PersistentHashArrayMappedTrie.get(child, cheese)).isEqualTo("cheddar");
     assertThat(PersistentHashArrayMappedTrie.get(child, wine)).isEqualTo("Pinot Noir");
   }
 
-  private static class HashCollidingKey {
+  private static class HashCollidingKey implements ContextKey<String> {
     @Override
     public int hashCode() {
       return 1;

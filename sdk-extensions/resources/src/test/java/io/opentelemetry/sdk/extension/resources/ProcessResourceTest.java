@@ -12,17 +12,34 @@ import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 class ProcessResourceTest {
 
   private static final ProcessResource RESOURCE = new ProcessResource();
 
   @Test
-  void normal() {
+  @SetSystemProperty(key = "os.name", value = "Linux 4.12")
+  void notWindows() {
     Attributes attributes = RESOURCE.getAttributes();
 
     assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isGreaterThan(1);
-    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH)).contains("java");
+    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH))
+        .contains("java")
+        .doesNotEndWith(".exe");
+    assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE))
+        .contains(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH));
+  }
+
+  @Test
+  @SetSystemProperty(key = "os.name", value = "Windows 10")
+  void windows() {
+    Attributes attributes = RESOURCE.getAttributes();
+
+    assertThat(attributes.get(ResourceAttributes.PROCESS_PID)).isGreaterThan(1);
+    assertThat(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH))
+        .contains("java")
+        .endsWith(".exe");
     assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE))
         .contains(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH));
   }

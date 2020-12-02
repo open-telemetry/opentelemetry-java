@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -114,7 +113,8 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
     private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
 
-    @VisibleForTesting static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
+    // Visible for testing
+    static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
     private final SpanExporter spanExporter;
     private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
@@ -157,7 +157,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
       return this;
     }
 
-    @VisibleForTesting
+    // Visible for testing
     boolean getExportOnlySampled() {
       return exportOnlySampled;
     }

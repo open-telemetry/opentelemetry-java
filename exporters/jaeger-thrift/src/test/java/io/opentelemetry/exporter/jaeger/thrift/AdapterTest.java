@@ -270,7 +270,9 @@ class AdapterTest {
         .setHasEnded(true)
         .setTraceId(TRACE_ID)
         .setSpanId(SPAN_ID)
-        .setParentSpanId(PARENT_SPAN_ID)
+        .setParentSpanContext(
+            SpanContext.create(
+                TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .setName("GET /api/endpoint")
         .setStartEpochNanos(MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(MILLISECONDS.toNanos(endMs))

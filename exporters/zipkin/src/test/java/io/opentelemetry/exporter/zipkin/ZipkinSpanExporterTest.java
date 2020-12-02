@@ -22,7 +22,10 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -349,11 +352,12 @@ class ZipkinSpanExporterTest {
     return TestSpanData.builder()
         .setTraceId(TRACE_ID)
         .setSpanId(SPAN_ID)
-        .setParentSpanId(PARENT_SPAN_ID)
+        .setParentSpanContext(
+            SpanContext.create(
+                TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .setSampled(true)
         .setStatus(SpanData.Status.ok())
         .setKind(Kind.SERVER)
-        .setHasRemoteParent(true)
         .setName("Recv.helloworld.Greeter.SayHello")
         .setStartEpochNanos(1505855794_194009601L)
         .setEndEpochNanos(1505855799_465726528L)

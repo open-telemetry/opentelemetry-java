@@ -26,6 +26,6 @@ import java.util.concurrent.Executor;
  */
 public interface ContextStorageProvider {
 
-  /** Returns the {@link ContextStorage} to use to store {@link DefaultContext}. */
+  /** Returns the {@link ContextStorage} to use to store {@link Context}. */
   ContextStorage get();
 }

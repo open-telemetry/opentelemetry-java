@@ -6,8 +6,6 @@
 package io.opentelemetry.sdk.trace.config;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -191,7 +189,7 @@ public abstract class TraceConfig {
      * @param configMap {@link Map} holding the configuration values.
      * @return this
      */
-    @VisibleForTesting
+    // Visible for testing
     @Override
     protected Builder fromConfigMap(
         Map<String, String> configMap, Builder.NamingConvention namingConvention) {
@@ -352,16 +350,26 @@ public abstract class TraceConfig {
      */
     public TraceConfig build() {
       TraceConfig traceConfig = autoBuild();
-      Preconditions.checkArgument(
-          traceConfig.getMaxNumberOfAttributes() > 0, "maxNumberOfAttributes");
-      Preconditions.checkArgument(traceConfig.getMaxNumberOfEvents() > 0, "maxNumberOfEvents");
-      Preconditions.checkArgument(traceConfig.getMaxNumberOfLinks() > 0, "maxNumberOfLinks");
-      Preconditions.checkArgument(
-          traceConfig.getMaxNumberOfAttributesPerEvent() > 0, "maxNumberOfAttributesPerEvent");
-      Preconditions.checkArgument(
-          traceConfig.getMaxNumberOfAttributesPerLink() > 0, "maxNumberOfAttributesPerLink");
-      Preconditions.checkArgument(
-          traceConfig.getMaxLengthOfAttributeValues() >= -1, "maxLengthOfAttributeValues");
+      if (traceConfig.getMaxNumberOfAttributes() <= 0) {
+        throw new IllegalArgumentException("maxNumberOfAttributes must be greater than 0");
+      }
+      if (traceConfig.getMaxNumberOfEvents() <= 0) {
+        throw new IllegalArgumentException("maxNumberOfEvents must be greater than 0");
+      }
+      if (traceConfig.getMaxNumberOfLinks() <= 0) {
+        throw new IllegalArgumentException("maxNumberOfLinks must be greater than 0");
+      }
+      if (traceConfig.getMaxNumberOfAttributesPerEvent() <= 0) {
+        throw new IllegalArgumentException("maxNumberOfAttributesPerEvent must be greater than 0");
+      }
+      if (traceConfig.getMaxNumberOfAttributesPerLink() <= 0) {
+        throw new IllegalArgumentException("maxNumberOfAttributesPerLink must be greater than 0");
+      }
+      if (traceConfig.getMaxLengthOfAttributeValues() < -1) {
+        throw new IllegalArgumentException(
+            "maxLengthOfAttributeValues must be -1 to "
+                + "disable length restriction, or 0 or higher to enable length restriction");
+      }
       return traceConfig;
     }
   }

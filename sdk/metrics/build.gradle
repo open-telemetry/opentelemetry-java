@@ -14,8 +14,6 @@ dependencies {
     api project(':opentelemetry-api'),
             project(':opentelemetry-sdk-common')
 
-    implementation libraries.guava
-
     annotationProcessor libraries.auto_value
 
     testAnnotationProcessor libraries.auto_value
@@ -23,6 +21,7 @@ dependencies {
 
     testCompile project(path: ':opentelemetry-sdk-common', configuration: 'testClasses')
 
+    testImplementation libraries.guava
     testImplementation project(':opentelemetry-sdk-testing')
     testImplementation libraries.junit_pioneer
 

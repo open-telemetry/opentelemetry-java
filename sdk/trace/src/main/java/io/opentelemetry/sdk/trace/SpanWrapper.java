@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -97,8 +98,8 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public String getParentSpanId() {
-    return delegate().getParentSpanId();
+  public SpanContext getParentSpanContext() {
+    return delegate().getParentSpanContext();
   }
 
   @Override
@@ -149,11 +150,6 @@ abstract class SpanWrapper implements SpanData {
   @Override
   public long getEndEpochNanos() {
     return endEpochNanos();
-  }
-
-  @Override
-  public boolean hasRemoteParent() {
-    return delegate().hasRemoteParent();
   }
 
   @Override

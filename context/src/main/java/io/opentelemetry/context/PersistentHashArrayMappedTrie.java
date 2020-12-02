@@ -23,6 +23,7 @@
 package io.opentelemetry.context;
 
 import java.util.Arrays;
+import javax.annotation.Nullable;
 
 /**
  * A persistent (copy-on-write) hash tree/trie. Collisions are handled linearly. Delete is not
@@ -38,7 +39,7 @@ final class PersistentHashArrayMappedTrie {
   private PersistentHashArrayMappedTrie() {}
 
   /** Returns the value with the specified key, or {@code null} if it does not exist. */
-  static <K, V> V get(Node<K, V> root, K key) {
+  static Object get(@Nullable Node root, ContextKey<?> key) {
     if (root == null) {
       return null;
     }
@@ -46,20 +47,20 @@ final class PersistentHashArrayMappedTrie {
   }
 
   /** Returns a new trie where the key is set to the specified value. */
-  static <K, V> Node<K, V> put(Node<K, V> root, K key, V value) {
+  static Node put(@Nullable Node root, ContextKey<?> key, Object value) {
     if (root == null) {
-      return new Leaf<>(key, value);
+      return new Leaf(key, value);
     }
     return root.put(key, value, System.identityHashCode(key), 0);
   }
 
   // Not actually annotated to avoid depending on guava
   // @VisibleForTesting
-  static final class Leaf<K, V> implements Node<K, V> {
-    private final K key;
-    private final V value;
+  static final class Leaf implements Node {
+    private final ContextKey<?> key;
+    private final Object value;
 
-    public Leaf(K key, V value) {
+    public Leaf(ContextKey<?> key, Object value) {
       this.key = key;
       this.value = value;
     }
@@ -70,7 +71,7 @@ final class PersistentHashArrayMappedTrie {
     }
 
     @Override
-    public V get(K key, int hash, int bitsConsumed) {
+    public Object get(ContextKey<?> key, int hash, int bitsConsumed) {
       if (this.key == key) {
         return value;
       } else {
@@ -79,17 +80,17 @@ final class PersistentHashArrayMappedTrie {
     }
 
     @Override
-    public Node<K, V> put(K key, V value, int hash, int bitsConsumed) {
+    public Node put(ContextKey<?> key, Object value, int hash, int bitsConsumed) {
       int thisHash = System.identityHashCode(this.key);
       if (thisHash != hash) {
         // Insert
-        return CompressedIndex.combine(new Leaf<>(key, value), hash, this, thisHash, bitsConsumed);
+        return CompressedIndex.combine(new Leaf(key, value), hash, this, thisHash, bitsConsumed);
       } else if (this.key == key) {
         // Replace
-        return new Leaf<>(key, value);
+        return new Leaf(key, value);
       } else {
         // Hash collision
-        return new CollisionLeaf<>(this.key, this.value, key, value);
+        return new CollisionLeaf(this.key, this.value, key, value);
       }
     }
 
@@ -101,21 +102,21 @@ final class PersistentHashArrayMappedTrie {
 
   // Not actually annotated to avoid depending on guava
   // @VisibleForTesting
-  static final class CollisionLeaf<K, V> implements Node<K, V> {
+  static final class CollisionLeaf implements Node {
     // All keys must have same hash, but not have the same reference
-    private final K[] keys;
-    private final V[] values;
+    private final ContextKey<?>[] keys;
+    private final Object[] values;
 
     // Not actually annotated to avoid depending on guava
     // @VisibleForTesting
     @SuppressWarnings("unchecked")
-    CollisionLeaf(K key1, V value1, K key2, V value2) {
-      this((K[]) new Object[] {key1, key2}, (V[]) new Object[] {value1, value2});
+    CollisionLeaf(ContextKey<?> key1, Object value1, ContextKey<?> key2, Object value2) {
+      this((ContextKey<?>[]) new Object[] {key1, key2}, new Object[] {value1, value2});
       assert key1 != key2;
       assert System.identityHashCode(key1) == System.identityHashCode(key2);
     }
 
-    private CollisionLeaf(K[] keys, V[] values) {
+    private CollisionLeaf(ContextKey<?>[] keys, Object[] values) {
       this.keys = keys;
       this.values = values;
     }
@@ -126,7 +127,7 @@ final class PersistentHashArrayMappedTrie {
     }
 
     @Override
-    public V get(K key, int hash, int bitsConsumed) {
+    public Object get(ContextKey<?> key, int hash, int bitsConsumed) {
       for (int i = 0; i < keys.length; i++) {
         if (keys[i] == key) {
           return values[i];
@@ -136,31 +137,31 @@ final class PersistentHashArrayMappedTrie {
     }
 
     @Override
-    public Node<K, V> put(K key, V value, int hash, int bitsConsumed) {
+    public Node put(ContextKey<?> key, Object value, int hash, int bitsConsumed) {
       int thisHash = System.identityHashCode(keys[0]);
       int keyIndex;
       if (thisHash != hash) {
         // Insert
-        return CompressedIndex.combine(new Leaf<>(key, value), hash, this, thisHash, bitsConsumed);
+        return CompressedIndex.combine(new Leaf(key, value), hash, this, thisHash, bitsConsumed);
       } else if ((keyIndex = indexOfKey(key)) != -1) {
         // Replace
-        K[] newKeys = Arrays.copyOf(keys, keys.length);
-        V[] newValues = Arrays.copyOf(values, keys.length);
+        ContextKey<?>[] newKeys = Arrays.copyOf(keys, keys.length);
+        Object[] newValues = Arrays.copyOf(values, keys.length);
         newKeys[keyIndex] = key;
         newValues[keyIndex] = value;
-        return new CollisionLeaf<>(newKeys, newValues);
+        return new CollisionLeaf(newKeys, newValues);
       } else {
         // Yet another hash collision
-        K[] newKeys = Arrays.copyOf(keys, keys.length + 1);
-        V[] newValues = Arrays.copyOf(values, keys.length + 1);
+        ContextKey<?>[] newKeys = Arrays.copyOf(keys, keys.length + 1);
+        Object[] newValues = Arrays.copyOf(values, keys.length + 1);
         newKeys[keys.length] = key;
         newValues[keys.length] = value;
-        return new CollisionLeaf<>(newKeys, newValues);
+        return new CollisionLeaf(newKeys, newValues);
       }
     }
 
     // -1 if not found
-    private int indexOfKey(K key) {
+    private int indexOfKey(ContextKey<?> key) {
       for (int i = 0; i < keys.length; i++) {
         if (keys[i] == key) {
           return i;
@@ -182,15 +183,15 @@ final class PersistentHashArrayMappedTrie {
 
   // Not actually annotated to avoid depending on guava
   // @VisibleForTesting
-  static final class CompressedIndex<K, V> implements Node<K, V> {
+  static final class CompressedIndex implements Node {
     private static final int BITS = 5;
     private static final int BITS_MASK = 0x1F;
 
     final int bitmap;
-    final Node<K, V>[] values;
+    final Node[] values;
     private final int size;
 
-    private CompressedIndex(int bitmap, Node<K, V>[] values, int size) {
+    private CompressedIndex(int bitmap, Node[] values, int size) {
       this.bitmap = bitmap;
       this.values = values;
       this.size = size;
@@ -202,7 +203,7 @@ final class PersistentHashArrayMappedTrie {
     }
 
     @Override
-    public V get(K key, int hash, int bitsConsumed) {
+    public Object get(ContextKey<?> key, int hash, int bitsConsumed) {
       int indexBit = indexBit(hash, bitsConsumed);
       if ((bitmap & indexBit) == 0) {
         return null;
@@ -212,55 +213,54 @@ final class PersistentHashArrayMappedTrie {
     }
 
     @Override
-    public Node<K, V> put(K key, V value, int hash, int bitsConsumed) {
+    public Node put(ContextKey<?> key, Object value, int hash, int bitsConsumed) {
       int indexBit = indexBit(hash, bitsConsumed);
       int compressedIndex = compressedIndex(indexBit);
       if ((bitmap & indexBit) == 0) {
         // Insert
         int newBitmap = bitmap | indexBit;
         @SuppressWarnings("unchecked")
-        Node<K, V>[] newValues = (Node<K, V>[]) new Node<?, ?>[values.length + 1];
+        Node[] newValues = new Node[values.length + 1];
         System.arraycopy(values, 0, newValues, 0, compressedIndex);
-        newValues[compressedIndex] = new Leaf<>(key, value);
+        newValues[compressedIndex] = new Leaf(key, value);
         System.arraycopy(
             values,
             compressedIndex,
             newValues,
             compressedIndex + 1,
             values.length - compressedIndex);
-        return new CompressedIndex<>(newBitmap, newValues, size() + 1);
+        return new CompressedIndex(newBitmap, newValues, size() + 1);
       } else {
         // Replace
-        Node<K, V>[] newValues = Arrays.copyOf(values, values.length);
+        Node[] newValues = Arrays.copyOf(values, values.length);
         newValues[compressedIndex] =
             values[compressedIndex].put(key, value, hash, bitsConsumed + BITS);
         int newSize = size();
         newSize += newValues[compressedIndex].size();
         newSize -= values[compressedIndex].size();
-        return new CompressedIndex<>(bitmap, newValues, newSize);
+        return new CompressedIndex(bitmap, newValues, newSize);
       }
     }
 
-    static <K, V> Node<K, V> combine(
-        Node<K, V> node1, int hash1, Node<K, V> node2, int hash2, int bitsConsumed) {
+    static Node combine(Node node1, int hash1, Node node2, int hash2, int bitsConsumed) {
       assert hash1 != hash2;
       int indexBit1 = indexBit(hash1, bitsConsumed);
       int indexBit2 = indexBit(hash2, bitsConsumed);
       if (indexBit1 == indexBit2) {
-        Node<K, V> node = combine(node1, hash1, node2, hash2, bitsConsumed + BITS);
+        Node node = combine(node1, hash1, node2, hash2, bitsConsumed + BITS);
         @SuppressWarnings("unchecked")
-        Node<K, V>[] values = (Node<K, V>[]) new Node<?, ?>[] {node};
-        return new CompressedIndex<>(indexBit1, values, node.size());
+        Node[] values = new Node[] {node};
+        return new CompressedIndex(indexBit1, values, node.size());
       } else {
         // Make node1 the smallest
         if (uncompressedIndex(hash1, bitsConsumed) > uncompressedIndex(hash2, bitsConsumed)) {
-          Node<K, V> nodeCopy = node1;
+          Node nodeCopy = node1;
           node1 = node2;
           node2 = nodeCopy;
         }
         @SuppressWarnings("unchecked")
-        Node<K, V>[] values = (Node<K, V>[]) new Node<?, ?>[] {node1, node2};
-        return new CompressedIndex<>(indexBit1 | indexBit2, values, node1.size() + node2.size());
+        Node[] values = new Node[] {node1, node2};
+        return new CompressedIndex(indexBit1 | indexBit2, values, node1.size() + node2.size());
       }
     }
 
@@ -270,7 +270,7 @@ final class PersistentHashArrayMappedTrie {
       valuesSb
           .append("CompressedIndex(")
           .append(String.format("bitmap=%s ", Integer.toBinaryString(bitmap)));
-      for (Node<K, V> value : values) {
+      for (Node value : values) {
         valuesSb.append(value).append(" ");
       }
       return valuesSb.append(")").toString();
@@ -290,11 +290,41 @@ final class PersistentHashArrayMappedTrie {
     }
   }
 
-  interface Node<K, V> {
-    V get(K key, int hash, int bitsConsumed);
+  static final class RootNode implements Node {
 
-    Node<K, V> put(K key, V value, int hash, int bitsConsumed);
+    @Override
+    public Object get(ContextKey<?> key, int hash, int bitsConsumed) {
+      return null;
+    }
 
+    @Override
+    public Node put(ContextKey<?> key, Object value, int hash, int bitsConsumed) {
+      return PersistentHashArrayMappedTrie.put(null, key, value);
+    }
+
+    @Override
+    public int size() {
+      return 0;
+    }
+  }
+
+  interface Node extends Context {
     int size();
+
+    Object get(ContextKey<?> key, int hash, int bitsConsumed);
+
+    @Override
+    @Nullable
+    @SuppressWarnings("unchecked")
+    default <V> V get(ContextKey<V> key) {
+      return (V) get(key, System.identityHashCode(key), 0);
+    }
+
+    Node put(ContextKey<?> key, Object value, int hash, int bitsConsumed);
+
+    @Override
+    default <V> Context with(ContextKey<V> k1, V v1) {
+      return put(k1, v1, System.identityHashCode(k1), 0);
+    }
   }
 }

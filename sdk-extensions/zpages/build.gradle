@@ -13,7 +13,7 @@ dependencies {
     implementation project(':opentelemetry-api'),
             project(':opentelemetry-sdk')
 
-    implementation libraries.guava
+    testImplementation libraries.guava
     
     compileOnly 'com.sun.net.httpserver:http:20070405'
 }

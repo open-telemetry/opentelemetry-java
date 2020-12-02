@@ -59,7 +59,7 @@ class SpanAdapterTest {
                 .setHasEnded(true)
                 .setTraceId(TRACE_ID)
                 .setSpanId(SPAN_ID)
-                .setParentSpanId(SpanId.getInvalid())
+                .setParentSpanContext(SpanContext.getInvalid())
                 .setName("GET /api/endpoint")
                 .setKind(Kind.SERVER)
                 .setStartEpochNanos(12345)
