@@ -10,24 +10,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.testing.EqualsTester;
 import org.junit.jupiter.api.Test;
 
-class EntryMetadataTest {
+class BaggageEntryMetadataTest {
 
   @Test
   void getValue() {
-    EntryMetadata entryMetadata = EntryMetadata.create("metadata;value=foo");
+    BaggageEntryMetadata entryMetadata = BaggageEntryMetadata.create("metadata;value=foo");
     assertThat(entryMetadata.getValue()).isEqualTo("metadata;value=foo");
   }
 
   @Test
   void nullValue() {
-    assertThat(EntryMetadata.create(null)).isEqualTo(EntryMetadata.EMPTY);
+    assertThat(BaggageEntryMetadata.create(null)).isEqualTo(BaggageEntryMetadata.empty());
   }
 
   @Test
   void testEquals() {
     new EqualsTester()
-        .addEqualityGroup(EntryMetadata.create("value"), EntryMetadata.create("value"))
-        .addEqualityGroup(EntryMetadata.create("other value"))
+        .addEqualityGroup(
+            BaggageEntryMetadata.create("value"), BaggageEntryMetadata.create("value"))
+        .addEqualityGroup(BaggageEntryMetadata.create("other value"))
         .testEquals();
   }
 }

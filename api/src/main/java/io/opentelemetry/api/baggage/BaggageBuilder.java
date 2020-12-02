@@ -51,7 +51,7 @@ public interface BaggageBuilder {
    * @param entryMetadata the {@code EntryMetadata} associated with this {@link Entry}.
    * @return this
    */
-  BaggageBuilder put(String key, String value, EntryMetadata entryMetadata);
+  BaggageBuilder put(String key, String value, BaggageEntryMetadata entryMetadata);
 
   /**
    * Adds the key/value pair with empty metadata regardless of whether the key is present.

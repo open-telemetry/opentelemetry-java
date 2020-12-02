@@ -9,7 +9,7 @@ import static java.util.Collections.singletonList;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
-import io.opentelemetry.api.baggage.EntryMetadata;
+import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Collection;
@@ -94,7 +94,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
       for (int i = 0; i < keyAndValue.length; i += 2) {
         String key = keyAndValue[i].trim();
         String value = keyAndValue[i + 1].trim();
-        baggageBuilder.put(key, value, EntryMetadata.create(metadata.trim()));
+        baggageBuilder.put(key, value, BaggageEntryMetadata.create(metadata.trim()));
       }
     }
   }

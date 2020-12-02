@@ -5,9 +5,8 @@
 
 package io.opentelemetry.api.baggage;
 
-import static io.opentelemetry.api.baggage.BaggageTestUtil.baggageToList;
-import static io.opentelemetry.api.baggage.BaggageTestUtil.listToBaggage;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
@@ -22,7 +21,7 @@ import org.junit.jupiter.api.Test;
  */
 class ImmutableBaggageTest {
 
-  private static final EntryMetadata TMD = EntryMetadata.create("tmd");
+  private static final BaggageEntryMetadata TMD = BaggageEntryMetadata.create("tmd");
 
   private static final String K1 = "k1";
   private static final String K2 = "k2";
@@ -30,8 +29,9 @@ class ImmutableBaggageTest {
   private static final String V1 = "v1";
   private static final String V2 = "v2";
 
-  private static final Entry T1 = Entry.create(K1, V1, TMD);
-  private static final Entry T2 = Entry.create(K2, V2, TMD);
+  private static final Baggage ONE_ENTRY = Baggage.builder().put(K1, V1, TMD).build();
+  private static final Baggage TWO_ENTRIES =
+      Baggage.builder().put(K1, V1, TMD).put(K2, V2, TMD).build();
 
   @Test
   void getEntries_empty() {
@@ -42,44 +42,41 @@ class ImmutableBaggageTest {
 
   @Test
   void getEntries_nonEmpty() {
-    Baggage baggage = listToBaggage(T1, T2);
-    assertThat(baggageToList(baggage)).containsExactly(T1, T2);
+    Baggage baggage = TWO_ENTRIES;
+    assertThat(baggage.asMap())
+        .containsOnly(entry(K1, Entry.create(V1, TMD)), entry(K2, Entry.create(V2, TMD)));
     assertThat(baggage.size()).isEqualTo(2);
     assertThat(baggage.isEmpty()).isFalse();
   }
 
   @Test
   void getEntries_chain() {
-    Entry t1alt = Entry.create(K1, V2, TMD);
-    Baggage parent = listToBaggage(T1, T2);
+    Baggage parent = TWO_ENTRIES;
     Context parentContext = Context.root().with(parent);
-    Baggage baggage =
-        Baggage.builder()
-            .setParent(parentContext)
-            .put(t1alt.getKey(), t1alt.getValue(), t1alt.getEntryMetadata())
-            .build();
-    assertThat(baggageToList(baggage)).containsExactly(t1alt, T2);
+    Baggage baggage = Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build();
+    assertThat(baggage.asMap())
+        .containsOnly(entry(K1, Entry.create(V2, TMD)), entry(K2, Entry.create(V2, TMD)));
   }
 
   @Test
   void put_newKey() {
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     Context parentContext = Context.root().with(parent);
-    assertThat(baggageToList(Baggage.builder().setParent(parentContext).put(K2, V2, TMD).build()))
-        .containsExactlyInAnyOrder(T1, T2);
+    assertThat(Baggage.builder().setParent(parentContext).put(K2, V2, TMD).build().asMap())
+        .containsOnly(entry(K1, Entry.create(V1, TMD)), entry(K2, Entry.create(V2, TMD)));
   }
 
   @Test
   void put_existingKey() {
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     Context parentContext = Context.root().with(parent);
-    assertThat(baggageToList(Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build()))
-        .containsExactly(Entry.create(K1, V2, TMD));
+    assertThat(Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build().asMap())
+        .containsOnly(entry(K1, Entry.create(V2, TMD)));
   }
 
   @Test
   void put_nullKey() {
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     Context parentContext = Context.root().with(parent);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
@@ -89,7 +86,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_nullValue() {
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     Context parentContext = Context.root().with(parent);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
@@ -99,7 +96,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_nullMetadata() {
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     Context parentContext = Context.root().with(parent);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
@@ -109,7 +106,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_keyUnprintableChars() {
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     Context parentContext = Context.root().with(parent);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
@@ -119,7 +116,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_keyEmpty() {
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     Context parentContext = Context.root().with(parent);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
@@ -129,7 +126,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_valueUnprintableChars() {
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     Context parentContext = Context.root().with(parent);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
@@ -144,53 +141,54 @@ class ImmutableBaggageTest {
 
   @Test
   void setParent_fromContext() {
-    Context context = Context.root().with(listToBaggage(T2));
-    Baggage baggage = Baggage.builder().setParent(context).build();
-    assertThat(baggageToList(baggage)).containsExactly(T2);
+    Baggage baggage = Baggage.builder().put(K2, V2, TMD).build();
+    Context context = Context.root().with(baggage);
+    baggage = Baggage.builder().setParent(context).build();
+    assertThat(baggage.asMap()).containsOnly(entry(K2, Entry.create(V2, TMD)));
   }
 
   @Test
   void setParent_fromEmptyContext() {
     Context emptyContext = Context.root();
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     try (Scope scope = parent.makeCurrent()) {
       Baggage baggage = Baggage.builder().setParent(emptyContext).build();
-      assertThat(baggageToList(baggage)).isEmpty();
+      assertThat(baggage.isEmpty()).isTrue();
     }
   }
 
   @Test
   void setParent_setNoParent() {
-    Baggage parent = listToBaggage(T1);
+    Baggage parent = ONE_ENTRY;
     Context parentContext = Context.root().with(parent);
     Baggage baggage = Baggage.builder().setParent(parentContext).setNoParent().build();
-    assertThat(baggageToList(baggage)).isEmpty();
+    assertThat(baggage.isEmpty()).isTrue();
   }
 
   @Test
   void remove_existingKey() {
     BaggageBuilder builder = Baggage.builder();
-    builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
-    builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
+    builder.put(K1, V1, TMD);
+    builder.put(K2, V2, TMD);
 
-    assertThat(baggageToList(builder.remove(K1).build())).containsExactly(T2);
+    assertThat(builder.remove(K1).build().asMap()).containsOnly(entry(K2, Entry.create(V2, TMD)));
   }
 
   @Test
   void remove_differentKey() {
     BaggageBuilder builder = Baggage.builder();
-    builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
-    builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
+    builder.put(K1, V1, TMD);
+    builder.put(K2, V2, TMD);
 
-    assertThat(baggageToList(builder.remove(K2).build())).containsExactly(T1);
+    assertThat(builder.remove(K2).build().asMap()).containsOnly(entry(K1, Entry.create(V1, TMD)));
   }
 
   @Test
   void remove_keyFromParent() {
-    Baggage parent = listToBaggage(T1, T2);
+    Baggage parent = TWO_ENTRIES;
     Context parentContext = Context.root().with(parent);
-    assertThat(baggageToList(Baggage.builder().setParent(parentContext).remove(K1).build()))
-        .containsExactly(T2);
+    assertThat(Baggage.builder().setParent(parentContext).remove(K1).build().asMap())
+        .containsOnly(entry(K2, Entry.create(V2, TMD)));
   }
 
   @Test

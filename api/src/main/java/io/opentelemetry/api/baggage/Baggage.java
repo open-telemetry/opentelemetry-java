@@ -7,6 +7,7 @@ package io.opentelemetry.api.baggage;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
+import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -71,6 +72,9 @@ public interface Baggage extends ImplicitContextKeyed {
 
   /** Iterates over all the entries in this {@link Baggage}. */
   void forEach(BaggageConsumer consumer);
+
+  /** Returns a read-only view of this {@link Baggage} as a {@link Map}. */
+  Map<String, BaggageEntry> asMap();
 
   /**
    * Returns the {@code String} value associated with the given key, without metadata.

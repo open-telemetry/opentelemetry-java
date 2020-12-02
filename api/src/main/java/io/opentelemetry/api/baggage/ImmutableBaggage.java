@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements Baggage {
+class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry> implements Baggage {
 
   private static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
 
@@ -54,7 +54,7 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
   @Nullable
   @Override
   public String getEntryValue(String entryKey) {
-    Entry entry = get(entryKey);
+    BaggageEntry entry = get(entryKey);
     return entry != null ? entry.getValue() : null;
   }
 
@@ -101,19 +101,19 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
     }
 
     @Override
-    public BaggageBuilder put(String key, String value, EntryMetadata entryMetadata) {
+    public BaggageBuilder put(String key, String value, BaggageEntryMetadata entryMetadata) {
       if (!isKeyValid(key) || !isValueValid(value) || entryMetadata == null) {
         return this;
       }
       data.add(key);
-      data.add(Entry.create(key, value, entryMetadata));
+      data.add(Entry.create(value, entryMetadata));
 
       return this;
     }
 
     @Override
     public BaggageBuilder put(String key, String value) {
-      return put(key, value, EntryMetadata.EMPTY);
+      return put(key, value, BaggageEntryMetadata.empty());
     }
 
     @Override
@@ -138,7 +138,7 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, Entry> implements 
         parent.forEach(
             (key, value, metadata) -> {
               merged.add(key);
-              merged.add(Entry.create(key, value, metadata));
+              merged.add(Entry.create(value, metadata));
             });
         merged.addAll(data);
         data = merged;
