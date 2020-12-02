@@ -4,6 +4,11 @@
 
 ### API
 
+#### Bugfixes
+
+- Usages of tracers and meters on all `OpenTelemetry` instances were being delegated to the global Meter and Tracer.
+This has been corrected, and all instances should have independent Tracer and Meter instances.
+
 #### Breaking Changes
 
 - The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types.
@@ -12,11 +17,15 @@
 - `TraceState` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - `Attributes` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - `SpanContext` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- The functional `AttributeConsumer` interface has been removed and replaced with a standard `java.util.function.BiConsumer`.
+- The signature of the `BaggageBuilder.put(String, String, EntryMetadata entryMetadata)` 
+method has been changed to `put(String, String, BaggageEntryMetadata)`
 
 #### Enhancements
 
 - A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
 - An `asMap()` method has been added to the `Attributes` interface to enable conversion to a standard `java.util.Map`.
+- An `asMap()` method has been added to the `Baggage` interface to enable conversion to a standard `java.util.Map`.
 - The Semantic Attributes constants have been updated to the version in the yaml spec as of Dec 1, 2020.
 
 #### Miscellaneous
@@ -29,6 +38,7 @@ You can access the same functionality via static methods on the `ContextPropagat
 - The `setCallback()` method on the asynchronous metric instruments has been deprecated and will be removed in 0.13.0. 
 Instead, use the `setCallback()` method on the builder for the instruments.
 - The `value()` method on the `StatusCode` enum has been deprecated and will be removed in 0.13.0.
+- The Baggage `EntryMetadata` class has been deprecated in favor of the `BaggageEntryMetadata` interface. The class will be made non-public in 0.13.0.
 
 ### Extensions
 
@@ -74,6 +84,7 @@ and the classes in it have been repackaged into the `io.opentelemetry.sdk.extens
 
 - The `opentelemetry-sdk-extension-resources` now includes resource attributes for the process runtime via the `ProcessRuntimeResource` class.
 This is included in the Resource SPI implementation that the module provides.
+- The `opentelemetry-sdk-extension-aws` extension now will auto-detect AWS Lambda resource attributes.
 
 -----
 
