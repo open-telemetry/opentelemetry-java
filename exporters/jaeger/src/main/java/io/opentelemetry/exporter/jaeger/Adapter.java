@@ -11,7 +11,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.StatusCode;
@@ -184,13 +183,7 @@ final class Adapter {
   @VisibleForTesting
   static Collection<Model.KeyValue> toKeyValues(ReadableAttributes attributes) {
     final List<Model.KeyValue> tags = new ArrayList<>(attributes.size());
-    attributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            tags.add(toKeyValue(key, value));
-          }
-        });
+    attributes.forEach((key, value) -> tags.add(toKeyValue(key, value)));
     return tags;
   }
 
@@ -202,7 +195,7 @@ final class Adapter {
    * @return a Jaeger key value
    */
   @VisibleForTesting
-  static <T> Model.KeyValue toKeyValue(AttributeKey<T> key, T value) {
+  static Model.KeyValue toKeyValue(AttributeKey<?> key, Object value) {
     Model.KeyValue.Builder builder = Model.KeyValue.newBuilder();
     builder.setKey(key.getKey());
 

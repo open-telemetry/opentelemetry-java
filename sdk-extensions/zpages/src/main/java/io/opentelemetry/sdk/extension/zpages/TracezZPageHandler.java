@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.StatusCode;
@@ -26,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -385,11 +385,11 @@ final class TracezZPageHandler extends ZPageHandler {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
     attributes.forEach(
-        new AttributeConsumer() {
+        new BiConsumer<AttributeKey<?>, Object>() {
           private boolean first = true;
 
           @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
+          public void accept(AttributeKey<?> key, Object value) {
             if (first) {
               first = false;
             } else {

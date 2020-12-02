@@ -7,6 +7,7 @@ package io.opentelemetry.api.common;
 
 import static io.opentelemetry.api.common.ArrayBackedAttributes.sortAndFilterToAttributes;
 
+import java.util.function.BiConsumer;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -34,7 +35,7 @@ public interface Attributes extends ReadableAttributes {
   <T> T get(AttributeKey<T> key);
 
   @Override
-  void forEach(AttributeConsumer consumer);
+  void forEach(BiConsumer<AttributeKey<?>, Object> consumer);
 
   /** Returns a {@link Attributes} instance with no attributes. */
   static Attributes empty() {
@@ -141,7 +142,7 @@ public interface Attributes extends ReadableAttributes {
   /** Returns a new {@link AttributesBuilder} instance from ReadableAttributes. */
   static AttributesBuilder builder(ReadableAttributes attributes) {
     final AttributesBuilder builder = new ArrayBackedAttributesBuilder();
-    attributes.forEach(builder::put);
+    builder.putAll(attributes);
     return builder;
   }
 

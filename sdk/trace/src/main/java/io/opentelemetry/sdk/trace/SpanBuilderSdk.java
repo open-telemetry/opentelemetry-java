@@ -10,7 +10,6 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.ReadableAttributes;
@@ -173,6 +172,7 @@ final class SpanBuilderSdk implements SpanBuilder {
   }
 
   @Override
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public Span startSpan() {
     final Context parentContext =
         isRootSpan ? Context.root() : parent == null ? Context.current() : parent;
@@ -213,13 +213,7 @@ final class SpanBuilderSdk implements SpanBuilder {
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
-      samplingAttributes.forEach(
-          new AttributeConsumer() {
-            @Override
-            public <T> void accept(AttributeKey<T> key, T value) {
-              attributes.put(key, value);
-            }
-          });
+      samplingAttributes.forEach((key, value) -> attributes.put((AttributeKey) key, value));
     }
 
     // Avoid any possibility to modify the attributes by adding attributes to the Builder after the
