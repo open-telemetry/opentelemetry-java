@@ -11,11 +11,20 @@ import javax.annotation.concurrent.Immutable;
 /**
  * {@link EntryMetadata} contains properties associated with an {@link Entry}. This is an opaque
  * wrapper for a String metadata value.
+ *
+ * <p>Deprecated, use {@link BaggageEntryMetadata}
  */
 @Immutable
 @AutoValue
-public abstract class EntryMetadata {
-  public static final EntryMetadata EMPTY = create("");
+// NB: Deprecated for public consumption! But AutoValue doesn't like implementing a deprecated
+// class so we can only add text comments.
+public abstract class EntryMetadata implements BaggageEntryMetadata {
+  /**
+   * Returns an empty metadata.
+   *
+   * @deprecated Use {@link BaggageEntryMetadata#empty()}
+   */
+  @Deprecated public static final EntryMetadata EMPTY = create("");
 
   EntryMetadata() {}
 
@@ -24,7 +33,9 @@ public abstract class EntryMetadata {
    *
    * @param metadata TTL of an {@code Entry}.
    * @return an {@code EntryMetadata}.
+   * @deprecated Use {@link BaggageEntryMetadata#create(String)}
    */
+  @Deprecated
   public static EntryMetadata create(String metadata) {
     if (metadata == null) {
       return EMPTY;
@@ -37,5 +48,6 @@ public abstract class EntryMetadata {
    *
    * @return the raw metadata value.
    */
+  @Override
   public abstract String getValue();
 }
