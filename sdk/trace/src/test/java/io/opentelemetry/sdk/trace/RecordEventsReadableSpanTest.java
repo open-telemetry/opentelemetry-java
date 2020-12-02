@@ -16,7 +16,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -860,13 +859,7 @@ class RecordEventsReadableSpanTest {
     // verify equality manually, since the implementations don't all equals with each other.
     ReadableAttributes spanDataAttributes = spanData.getAttributes();
     assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
-    spanDataAttributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            assertThat(attributes.get(key)).isEqualTo(value);
-          }
-        });
+    spanDataAttributes.forEach((key, value) -> assertThat(attributes.get(key)).isEqualTo(value));
   }
 
   @Test
@@ -882,7 +875,7 @@ class RecordEventsReadableSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     final AttributesMap attributesWithCapacity = new AttributesMap(32);
-    attributes.forEach(attributesWithCapacity::put);
+    attributes.forEach((key, value) -> attributesWithCapacity.put((AttributeKey) key, value));
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =

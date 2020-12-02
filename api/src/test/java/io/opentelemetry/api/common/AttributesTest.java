@@ -136,13 +136,7 @@ class AttributesTest {
   void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();
-    emptyAttributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            sawSomething.set(true);
-          }
-        });
+    emptyAttributes.forEach((key, value) -> sawSomething.set(true));
     assertThat(sawSomething.get()).isFalse();
   }
 

@@ -6,6 +6,7 @@
 package io.opentelemetry.api.common;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * A read-only container for String-keyed attributes.
@@ -22,7 +23,7 @@ public interface ReadableAttributes {
   boolean isEmpty();
 
   /** Iterates over all the key-value pairs of attributes contained by this instance. */
-  void forEach(AttributeConsumer consumer);
+  void forEach(BiConsumer<AttributeKey<?>, Object> consumer);
 
   /**
    * Returns a read-only view of this {@link io.opentelemetry.api.common.ReadableAttributes} as a
