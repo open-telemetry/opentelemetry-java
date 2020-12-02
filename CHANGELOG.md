@@ -6,14 +6,29 @@
 
 #### Breaking Changes
 
-- The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types. 
+- The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types.
+- The `TextMapPropagator.fields()` method now returns a `Collection` rather than a `List`.
+- `Labels` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- `TraceState` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- `Attributes` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- `SpanContext` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+
+#### Enhancements
+
+- A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
+- An `asMap()` method has been added to the `Attributes` interface to enable conversion to a standard `java.util.Map`.
+- The Semantic Attributes constants have been updated to the version in the yaml spec as of Dec 1, 2020.
 
 #### Miscellaneous
 
+- The `HttpTraceContext` class has been deprecated in favor of `W3CTraceContextPropagator`. `HttpTraceContext` will be removed in 0.13.0.
 - The `toBuilder()` method on the OpenTelemetry interface has been deprecated and will be removed in 0.13.0.
 - The `DefaultContextPropagators` class has been deprecated. Access to it will be removed in 0.13.0.
+- The `TraceMultiPropagator` builder has been deprecated in favor of a simple factory method. The builder will be removed in 0.13.0.
 You can access the same functionality via static methods on the `ContextPropagators` interface. 
-- A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
+- The `setCallback()` method on the asynchronous metric instruments has been deprecated and will be removed in 0.13.0. 
+Instead, use the `setCallback()` method on the builder for the instruments.
+- The `value()` method on the `StatusCode` enum has been deprecated and will be removed in 0.13.0.
 
 ### Extensions
 
@@ -31,12 +46,34 @@ opentelemetry-java-instrumentation project under a different module name. The mo
 #### Enhancements
 
 - The OpenTelemetrySdk builder now supports the addition of SpanProcessors to the resulting SDK.
+- The `ReadableSpan` interface now exposes the `Span.Kind` of the span.
+- The SDK no longer depends on the guava library.
+- The parent SpanContext is now exposed on the `SpanData` interface.
 
 #### Miscellaneous
 
 - The `toBuilder()` method on the OpenTelemetrySdk class has been deprecated and will be removed in 0.13.0.
 - The MultiSpanProcessor and MultiSpanExporter have been deprecated. You can access the same functionality via
-the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes will be made non-public in the 0.13.0 release.
+the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes will be made non-public in 0.13.0.
+- The `SpanData.hasRemoteParent()` method has been deprecated and will be removed in 0.13.0. If you need this information,
+you can now call `SpanData.getParentSpanContext().isRemote()`.
+- The default timeouts for the 2 OTLP exporters and the Jaeger exporter have been changed to 10s from 1s.
+
+### Extensions
+
+#### Breaking Changes
+
+- The `opentelemetry-sdk-extension-aws-v1-support` module has been renamed to `opentelemetry-sdk-extension-aws` 
+and the classes in it have been repackaged into the `io.opentelemetry.sdk.extension.aws.*` packages.
+
+#### Bugfixes:
+
+- The OpenTracing `TracerShim` now properly handles keys for context extraction in a case-insensitive manner.
+
+#### Enhancements
+
+- The `opentelemetry-sdk-extension-resources` now includes resource attributes for the process runtime via the `ProcessRuntimeResource` class.
+This is included in the Resource SPI implementation that the module provides.
 
 -----
 
@@ -50,8 +87,8 @@ the `SpanProcessor.composite` and `SpanExporter.composite` methods. The classes 
 - Builder classes have been moved to the top level, rather than being inner classes. 
 For example, rather than `io.opentelemetry.api.trace.Span.Builder`, the builder is now in its own top-level class: `io.opentelemetry.api.trace.SpanBuilder`.
 Methods to create the builders remain in the same place as they were before.
-- SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent methods which accept a timestamp now accept a timestamp with a TimeUnit instead of requiring a nanos timestamp
-   
+- SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent methods which accept a timestamp now accept a timestamp with a TimeUnit instead of requiring a nanos timestamp.
+
 #### Enhancements:
 
 - Versions of SpanBuilder.setStartTimestamp, Span.end, and Span.addEvent added which accept Instant timestamps
@@ -95,7 +132,7 @@ have been fixed to properly report the committed memory values.
 #### Enhancements:
 
 - A new module has been added to assist with propagating the OTel context in kotlin co-routines. 
-See the `opentelemetry-extension-kotlin` module for details. 
+See the `opentelemetry-extension-kotlin` module for details.
 
 -----
 
