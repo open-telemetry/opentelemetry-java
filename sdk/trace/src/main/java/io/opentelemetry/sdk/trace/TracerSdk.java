@@ -30,7 +30,7 @@ final class TracerSdk implements Tracer {
         sharedState.getActiveSpanProcessor(),
         sharedState.getActiveTraceConfig(),
         sharedState.getResource(),
-        sharedState.getIdsGenerator(),
+        sharedState.getIdGenerator(),
         sharedState.getClock());
   }
 

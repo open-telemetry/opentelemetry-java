@@ -17,7 +17,7 @@ import javax.annotation.concurrent.GuardedBy;
 final class TracerSharedState {
   private final Object lock = new Object();
   private final Clock clock;
-  private final IdGenerator idsGenerator;
+  private final IdGenerator idGenerator;
   private final Resource resource;
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
@@ -29,9 +29,9 @@ final class TracerSharedState {
   @GuardedBy("lock")
   private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
 
-  TracerSharedState(Clock clock, IdGenerator idsGenerator, Resource resource) {
+  TracerSharedState(Clock clock, IdGenerator idGenerator, Resource resource) {
     this.clock = clock;
-    this.idsGenerator = idsGenerator;
+    this.idGenerator = idGenerator;
     this.resource = resource;
   }
 
@@ -39,8 +39,8 @@ final class TracerSharedState {
     return clock;
   }
 
-  IdGenerator getIdsGenerator() {
-    return idsGenerator;
+  IdGenerator getIdGenerator() {
+    return idGenerator;
   }
 
   Resource getResource() {

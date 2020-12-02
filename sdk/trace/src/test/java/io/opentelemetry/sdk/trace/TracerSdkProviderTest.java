@@ -47,7 +47,7 @@ class TracerSdkProviderTest {
             TracerSdkProvider.builder()
                 .setClock(mock(Clock.class))
                 .setResource(mock(Resource.class))
-                .setIdsGenerator(mock(IdGenerator.class))
+                .setIdGenerator(mock(IdGenerator.class))
                 .build())
         .isNotNull();
   }
@@ -70,7 +70,7 @@ class TracerSdkProviderTest {
   void builder_NullIdsGenerator() {
     assertThrows(
         NullPointerException.class,
-        () -> TracerSdkProvider.builder().setIdsGenerator(null),
+        () -> TracerSdkProvider.builder().setIdGenerator(null),
         "idsGenerator");
   }
 
