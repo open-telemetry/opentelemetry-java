@@ -44,6 +44,7 @@ Instead, use the `setCallback()` method on the builder for the instruments.
 
 - The `opentelemetry-extension-runtime-metrics` module has been deprecated. The functionality is available in the 
 opentelemetry-java-instrumentation project under a different module name. The module here will be removed in 0.13.0.
+- The `trace-utils` module has been deprecated. If you need this module, please let us know! The module will be removed in 0.13.0.
  
 ### SDK
 
