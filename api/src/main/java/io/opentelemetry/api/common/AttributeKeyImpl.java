@@ -24,6 +24,11 @@ abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   @Nullable
   abstract String key();
 
+  @Override
+  public final String toString() {
+    return getKey();
+  }
+
   //////////////////////////////////
   // IMPORTANT: the equals/hashcode/compareTo *only* include the key, and not the type,
   // so that de-duping of attributes is based on the key, and not also based on the type.
