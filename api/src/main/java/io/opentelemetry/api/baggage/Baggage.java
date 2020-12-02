@@ -17,6 +17,13 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>For example, {@code Baggage}s can be used to label stats, log messages, or debugging
  * information.
+ *
+ * <p>Implementations of this interface *must* be immutable and have well-defined value-based
+ * equals/hashCode implementations. If an implementation does not strictly conform to these
+ * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
+ *
+ * <p>For this reason, it is strongly suggested that you use the implementation that is provided
+ * here via the factory methods and the {@link BaggageBuilder}.
  */
 @Immutable
 public interface Baggage extends ImplicitContextKeyed {
