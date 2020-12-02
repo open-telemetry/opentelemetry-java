@@ -101,5 +101,5 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  AttributesBuilder putAll(Attributes attributes);
+  AttributesBuilder putAll(ReadableAttributes attributes);
 }

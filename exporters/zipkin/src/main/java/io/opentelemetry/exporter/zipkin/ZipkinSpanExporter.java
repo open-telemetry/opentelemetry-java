@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.zipkin;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.ReadableAttributes;
@@ -131,12 +130,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     ReadableAttributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            spanBuilder.putTag(key.getKey(), valueToString(key, value));
-          }
-        });
+        (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
     SpanData.Status status = spanData.getStatus();
     // include status code & description.
     if (!status.isUnset()) {
@@ -205,7 +199,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     return NANOSECONDS.toMicros(epochNanos);
   }
 
-  private static <T> String valueToString(AttributeKey<T> key, T attributeValue) {
+  private static <T> String valueToString(AttributeKey<?> key, Object attributeValue) {
     AttributeType type = key.getType();
     switch (type) {
       case STRING:

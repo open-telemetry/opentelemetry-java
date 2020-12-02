@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.ReadableAttributes;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * A map with a fixed capacity that drops attributes when the map gets full.
@@ -66,7 +66,7 @@ final class AttributesMap implements ReadableAttributes {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  public void forEach(AttributeConsumer consumer) {
+  public void forEach(BiConsumer<AttributeKey<?>, Object> consumer) {
     for (Map.Entry<AttributeKey<?>, Object> entry : data.entrySet()) {
       AttributeKey key = entry.getKey();
       Object value = entry.getValue();

@@ -47,7 +47,7 @@ class DelegatingSpanDataTest {
         clientType = "unknown";
       }
       AttributesBuilder newAttributes = Attributes.builder();
-      delegate.getAttributes().forEach(newAttributes::put);
+      newAttributes.putAll(delegate.getAttributes());
       newAttributes.put("client_type", clientType);
       attributes = newAttributes.build();
     }

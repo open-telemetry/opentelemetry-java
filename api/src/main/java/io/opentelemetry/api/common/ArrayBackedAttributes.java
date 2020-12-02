@@ -9,6 +9,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import javax.annotation.concurrent.Immutable;
 
 @AutoValue
@@ -30,10 +31,10 @@ abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey
 
   @SuppressWarnings("unchecked")
   @Override
-  public void forEach(AttributeConsumer consumer) {
+  public void forEach(BiConsumer<AttributeKey<?>, Object> consumer) {
     List<Object> data = data();
     for (int i = 0; i < data.size(); i += 2) {
-      consumer.accept((AttributeKey) data.get(i), data.get(i + 1));
+      consumer.accept((AttributeKey<?>) data.get(i), data.get(i + 1));
     }
   }
 
