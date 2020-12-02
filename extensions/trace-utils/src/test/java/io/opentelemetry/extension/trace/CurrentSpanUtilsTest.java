@@ -18,7 +18,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("deprecation")  // CurrentSpanUtils is going to be removed.
+@SuppressWarnings("deprecation") // CurrentSpanUtils is going to be removed.
 class CurrentSpanUtilsTest {
   @Spy private Span span;
 
