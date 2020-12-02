@@ -6,7 +6,6 @@
 package io.opentelemetry.opencensusshim;
 
 import io.opencensus.common.Function;
-import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
@@ -15,11 +14,9 @@ import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TraceStateBuilder;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 class SpanConverter {
@@ -88,25 +85,9 @@ class SpanConverter {
     };
   }
 
-  static Function<String, Void> setStringAttribute(
-      SpanBuilder builder, Map.Entry<String, AttributeValue> attribute) {
-    return arg -> {
-      builder.setAttribute(attribute.getKey(), arg);
-      return null;
-    };
-  }
-
   static Function<Boolean, Void> setBooleanAttribute(AttributesBuilder builder, String key) {
     return arg -> {
       builder.put(key, arg);
-      return null;
-    };
-  }
-
-  static Function<Boolean, Void> setBooleanAttribute(
-      SpanBuilder builder, Map.Entry<String, AttributeValue> attribute) {
-    return arg -> {
-      builder.setAttribute(attribute.getKey(), arg);
       return null;
     };
   }
@@ -118,25 +99,9 @@ class SpanConverter {
     };
   }
 
-  static Function<Long, Void> setLongAttribute(
-      SpanBuilder builder, Map.Entry<String, AttributeValue> attribute) {
-    return arg -> {
-      builder.setAttribute(attribute.getKey(), arg);
-      return null;
-    };
-  }
-
   static Function<Double, Void> setDoubleAttribute(AttributesBuilder builder, String key) {
     return arg -> {
       builder.put(key, arg);
-      return null;
-    };
-  }
-
-  static Function<Double, Void> setDoubleAttribute(
-      SpanBuilder builder, Map.Entry<String, AttributeValue> attribute) {
-    return arg -> {
-      builder.setAttribute(attribute.getKey(), arg);
       return null;
     };
   }

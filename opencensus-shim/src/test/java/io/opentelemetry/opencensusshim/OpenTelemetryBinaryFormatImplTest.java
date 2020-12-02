@@ -43,25 +43,25 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void propagate_SpanContextTracingEnabled() throws SpanContextParseException {
+  void propagate_SpanContextTracingEnabled() throws SpanContextParseException {
     testSpanContextConversion(
         SpanContext.create(
             TRACE_ID, SPAN_ID, TraceOptions.builder().setIsSampled(true).build(), TRACESTATE));
   }
 
   @Test
-  public void propagate_SpanContextNoTracing() throws SpanContextParseException {
+  void propagate_SpanContextNoTracing() throws SpanContextParseException {
     testSpanContextConversion(
         SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.DEFAULT, TRACESTATE));
   }
 
   @Test
-  public void toBinaryValue_NullSpanContext() {
+  void toBinaryValue_NullSpanContext() {
     assertThrows(NullPointerException.class, () -> binaryFormat.toByteArray(null), "spanContext");
   }
 
   @Test
-  public void toBinaryValue_InvalidSpanContext() {
+  void toBinaryValue_InvalidSpanContext() {
     assertThat(binaryFormat.toByteArray(SpanContext.INVALID))
         .isEqualTo(
             new byte[] {
@@ -70,17 +70,17 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void fromBinaryValue_BinaryExampleValue() throws SpanContextParseException {
+  void fromBinaryValue_BinaryExampleValue() throws SpanContextParseException {
     assertThat(binaryFormat.fromByteArray(EXAMPLE_BYTES)).isEqualTo(EXAMPLE_SPAN_CONTEXT);
   }
 
   @Test
-  public void fromBinaryValue_NullInput() {
+  void fromBinaryValue_NullInput() {
     assertThrows(NullPointerException.class, () -> binaryFormat.toByteArray(null), "spanContext");
   }
 
   @Test
-  public void fromBinaryValue_EmptyInput() {
+  void fromBinaryValue_EmptyInput() {
     assertThrows(
         SpanContextParseException.class,
         () -> binaryFormat.fromByteArray(new byte[0]),
@@ -88,7 +88,7 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void fromBinaryValue_UnsupportedVersionId() {
+  void fromBinaryValue_UnsupportedVersionId() {
     assertThrows(
         SpanContextParseException.class,
         () ->
@@ -101,7 +101,7 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void fromBinaryValue_UnsupportedFieldIdFirst() {
+  void fromBinaryValue_UnsupportedFieldIdFirst() {
     assertThrows(
         SpanContextParseException.class,
         () ->
@@ -115,7 +115,7 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void fromBinaryValue_UnsupportedFieldIdSecond() {
+  void fromBinaryValue_UnsupportedFieldIdSecond() {
     assertThrows(
         SpanContextParseException.class,
         () ->
@@ -129,7 +129,7 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void fromBinaryValue_UnsupportedFieldIdThird_skipped() throws SpanContextParseException {
+  void fromBinaryValue_UnsupportedFieldIdThird_skipped() throws SpanContextParseException {
     assertThat(
             binaryFormat
                 .fromByteArray(
@@ -142,7 +142,7 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void fromBinaryValue_ShorterTraceId() {
+  void fromBinaryValue_ShorterTraceId() {
     assertThrows(
         SpanContextParseException.class,
         () ->
@@ -152,7 +152,7 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void fromBinaryValue_ShorterSpanId() {
+  void fromBinaryValue_ShorterSpanId() {
     assertThrows(
         SpanContextParseException.class,
         () -> binaryFormat.fromByteArray(new byte[] {0, 1, 97, 98, 99, 100, 101, 102, 103}),
@@ -160,7 +160,7 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void fromBinaryValue_ShorterTraceOptions() {
+  void fromBinaryValue_ShorterTraceOptions() {
     assertThrows(
         SpanContextParseException.class,
         () ->
@@ -173,7 +173,7 @@ class OpenTelemetryBinaryFormatImplTest {
   }
 
   @Test
-  public void fromBinaryValue_MissingTraceOptionsOk() throws SpanContextParseException {
+  void fromBinaryValue_MissingTraceOptionsOk() throws SpanContextParseException {
     SpanContext extracted =
         binaryFormat.fromByteArray(
             new byte[] {

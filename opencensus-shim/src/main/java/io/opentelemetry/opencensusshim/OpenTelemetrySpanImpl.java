@@ -77,38 +77,20 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   @Override
   public void putAttributes(Map<String, AttributeValue> attributes) {
     Preconditions.checkNotNull(attributes, "attributes");
-    for (Map.Entry<String, AttributeValue> attribute : attributes.entrySet()) {
-      putAttribute(attribute.getKey(), attribute.getValue());
-    }
+    attributes.forEach(this::putAttribute);
   }
 
   @Override
   public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
     AttributesBuilder attributesBuilder = Attributes.builder();
-    attributes.forEach(
-        (s, attributeValue) ->
-            attributeValue.match(
-                setStringAttribute(attributesBuilder, s),
-                setBooleanAttribute(attributesBuilder, s),
-                setLongAttribute(attributesBuilder, s),
-                setDoubleAttribute(attributesBuilder, s),
-                arg -> null));
+    mapAttributes(attributes, attributesBuilder);
     otelSpan.addEvent(description, attributesBuilder.build());
   }
 
   @Override
   public void addAnnotation(Annotation annotation) {
     AttributesBuilder attributesBuilder = Attributes.builder();
-    annotation
-        .getAttributes()
-        .forEach(
-            (s, attributeValue) ->
-                attributeValue.match(
-                    setStringAttribute(attributesBuilder, s),
-                    setBooleanAttribute(attributesBuilder, s),
-                    setLongAttribute(attributesBuilder, s),
-                    setDoubleAttribute(attributesBuilder, s),
-                    arg -> null));
+    mapAttributes(annotation.getAttributes(), attributesBuilder);
     otelSpan.addEvent(annotation.getDescription(), attributesBuilder.build());
   }
 
@@ -227,5 +209,17 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   @Override
   public boolean isRecording() {
     return true;
+  }
+
+  private static void mapAttributes(
+      Map<String, AttributeValue> attributes, AttributesBuilder attributesBuilder) {
+    attributes.forEach(
+        (s, attributeValue) ->
+            attributeValue.match(
+                setStringAttribute(attributesBuilder, s),
+                setBooleanAttribute(attributesBuilder, s),
+                setLongAttribute(attributesBuilder, s),
+                setDoubleAttribute(attributesBuilder, s),
+                arg -> null));
   }
 }

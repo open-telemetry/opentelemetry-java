@@ -56,7 +56,7 @@ class OpenTelemetryTextFormatImplTest {
           Tracestate.builder().set("key", "value").build());
 
   @Test
-  public void testInject() {
+  void testInject() {
     TextMapPropagator propagator = spy(TextMapPropagator.class);
     OpenTelemetryTextFormatImpl textFormatImpl = new OpenTelemetryTextFormatImpl(propagator);
     Map<String, String> carrier = new LinkedHashMap<>();
@@ -70,7 +70,7 @@ class OpenTelemetryTextFormatImplTest {
   }
 
   @Test
-  public void testInjectWithNotSampledContext() {
+  void testInjectWithNotSampledContext() {
     TextMapPropagator propagator = spy(TextMapPropagator.class);
     OpenTelemetryTextFormatImpl textFormatImpl = new OpenTelemetryTextFormatImpl(propagator);
     SpanContext spanContext =
@@ -90,7 +90,7 @@ class OpenTelemetryTextFormatImplTest {
   }
 
   @Test
-  public void testInjectWithDefaultOptions() {
+  void testInjectWithDefaultOptions() {
     TextMapPropagator propagator = spy(TextMapPropagator.class);
     OpenTelemetryTextFormatImpl textFormatImpl = new OpenTelemetryTextFormatImpl(propagator);
     SpanContext spanContext =
@@ -110,7 +110,7 @@ class OpenTelemetryTextFormatImplTest {
   }
 
   @Test
-  public void testInjectAndExtractWithB3() {
+  void testInjectAndExtractWithB3() {
     OpenTelemetryTextFormatImpl textFormatImpl =
         new OpenTelemetryTextFormatImpl(B3Propagator.builder().injectMultipleHeaders().build());
     Map<String, String> carrier = new LinkedHashMap<>();
@@ -122,7 +122,7 @@ class OpenTelemetryTextFormatImplTest {
   }
 
   @Test
-  public void testInjectAndExtractWithW3c() {
+  void testInjectAndExtractWithW3c() {
     OpenTelemetryTextFormatImpl textFormatImpl =
         new OpenTelemetryTextFormatImpl(W3CTraceContextPropagator.getInstance());
     Map<String, String> carrier = new LinkedHashMap<>();
