@@ -56,7 +56,7 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
  * <p>For environment variables, {@link ZipkinSpanExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the service name.
+ *   <li>{@code OTEL_EXPORTER_ZIPKIN_SERVICE_NAME}: to set the service name.
  *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the endpoint URL.
  * </ul>
  */
