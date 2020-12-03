@@ -13,7 +13,7 @@ import javax.annotation.concurrent.Immutable;
 
 @AutoValue
 @Immutable
-public abstract class ArrayBackedLabels extends ImmutableKeyValuePairs<String, String>
+abstract class ArrayBackedLabels extends ImmutableKeyValuePairs<String, String>
     implements Labels {
   private static final Labels EMPTY = Labels.builder().build();
 
