@@ -13,10 +13,18 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
+import io.opencensus.trace.Annotation;
+import io.opencensus.trace.AttributeValue;
+import io.opencensus.trace.MessageEvent;
+import io.opencensus.trace.Span.Kind;
+import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -104,14 +112,27 @@ class InteroperabilityTest {
     try (io.opencensus.common.Scope scope =
         tracer
             .spanBuilder("OpenCensusSpan")
+            .setSpanKind(Kind.SERVER)
             .setRecordEvents(true)
             .setSampler(Samplers.alwaysSample())
             .startScopedSpan()) {
       io.opencensus.trace.Span span = tracer.getCurrentSpan();
+      span.putAttributes(
+          ImmutableMap.of(
+              "testKey",
+              AttributeValue.stringAttributeValue("testValue"),
+              "testKey2",
+              AttributeValue.booleanAttributeValue(false)));
+      span.addMessageEvent(
+          MessageEvent.builder(MessageEvent.Type.SENT, 12345)
+              .setUncompressedMessageSize(10)
+              .setCompressedMessageSize(8)
+              .build());
       span.addAnnotation("OpenCensus: Event 1");
       createOpenCensusScopedSpanWithChildSpan(
           /* withInnerOpenTelemetrySpan= */ false, /* withInnerOpenCensusSpan= */ true);
-      span.addAnnotation("OpenCensus: Event 2");
+      span.addAnnotation(Annotation.fromDescription("OpenCensus: Event 2"));
+      span.setStatus(Status.OK);
     }
     Tracing.getExportComponent().shutdown();
 
@@ -137,13 +158,69 @@ class InteroperabilityTest {
     assertThat(export3.size()).isEqualTo(1);
     SpanData spanData3 = export3.iterator().next();
     assertThat(spanData3.getName()).isEqualTo("OpenCensusSpan");
-    assertThat(spanData3.getTotalRecordedEvents()).isEqualTo(2);
-    assertThat(spanData3.getEvents().get(0).getName()).isEqualTo("OpenCensus: Event 1");
-    assertThat(spanData3.getEvents().get(1).getName()).isEqualTo("OpenCensus: Event 2");
+    assertThat(spanData3.getKind()).isEqualTo(Span.Kind.SERVER);
+    assertThat(spanData3.getStatus()).isEqualTo(SpanData.Status.ok());
+    assertThat(spanData3.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("testValue");
+    assertThat(spanData3.getAttributes().get(AttributeKey.booleanKey("testKey2"))).isEqualTo(false);
+    assertThat(spanData3.getTotalRecordedEvents()).isEqualTo(3);
+    assertThat(spanData3.getEvents().get(0).getName()).isEqualTo("12345");
+    assertThat(
+            spanData3
+                .getEvents()
+                .get(0)
+                .getAttributes()
+                .get(AttributeKey.longKey("message.event.size.compressed")))
+        .isEqualTo(8);
+    assertThat(
+            spanData3
+                .getEvents()
+                .get(0)
+                .getAttributes()
+                .get(AttributeKey.longKey("message.event.size.uncompressed")))
+        .isEqualTo(10);
+    assertThat(
+            spanData3
+                .getEvents()
+                .get(0)
+                .getAttributes()
+                .get(AttributeKey.stringKey("message.event.type")))
+        .isEqualTo("SENT");
+    assertThat(spanData3.getEvents().get(1).getName()).isEqualTo("OpenCensus: Event 1");
+    assertThat(spanData3.getEvents().get(2).getName()).isEqualTo("OpenCensus: Event 2");
 
     assertThat(spanData1.getParentSpanId()).isEqualTo(spanData2.getSpanId());
     assertThat(spanData2.getParentSpanId()).isEqualTo(spanData3.getSpanId());
     assertThat(spanData3.getParentSpanId()).isEqualTo(NULL_SPAN_ID);
+  }
+
+  @Test
+  void testOpenTelemetryMethodsOnOpenCensusSpans() {
+    io.opencensus.trace.Tracer tracer = Tracing.getTracer();
+    try (io.opencensus.common.Scope scope =
+        tracer
+            .spanBuilder("OpenCensusSpan")
+            .setRecordEvents(true)
+            .setSampler(Samplers.alwaysSample())
+            .startScopedSpan()) {
+      OpenTelemetrySpanImpl span = (OpenTelemetrySpanImpl) tracer.getCurrentSpan();
+      span.setStatus(StatusCode.ERROR);
+      span.setAttribute("testKey", "testValue");
+      span.addEvent("OpenCensus span: Event 1");
+      span.updateName("OpenCensus Span renamed");
+    }
+    Tracing.getExportComponent().shutdown();
+
+    verify(spanExporter, times(1)).export(spanDataCaptor.capture());
+    Collection<SpanData> export1 = spanDataCaptor.getAllValues().get(0);
+
+    assertThat(export1.size()).isEqualTo(1);
+    SpanData spanData1 = export1.iterator().next();
+    assertThat(spanData1.getName()).isEqualTo("OpenCensus Span renamed");
+    assertThat(spanData1.getTotalRecordedEvents()).isEqualTo(1);
+    assertThat(spanData1.getEvents().get(0).getName()).isEqualTo("OpenCensus span: Event 1");
+    assertThat(spanData1.getAttributes().get(AttributeKey.stringKey("testKey")))
+        .isEqualTo("testValue");
   }
 
   @Test
@@ -154,6 +231,24 @@ class InteroperabilityTest {
       io.opencensus.trace.Span span = tracer.getCurrentSpan();
       span.addAnnotation("OpenCensus: Event 1");
       span.addAnnotation("OpenCensus: Event 2");
+      span.addAnnotation(Annotation.fromDescription("OpenCensus: Event 2"));
+      span.setStatus(Status.RESOURCE_EXHAUSTED);
+      span.putAttribute("testKey", AttributeValue.stringAttributeValue("testValue"));
+    }
+    Tracing.getExportComponent().shutdown();
+    verify(spanExporter, never()).export(anyCollection());
+  }
+
+  @Test
+  public void testNoRecordDoesNotExport() {
+    io.opencensus.trace.Tracer tracer = Tracing.getTracer();
+    try (io.opencensus.common.Scope scope =
+        tracer.spanBuilder("OpenCensusSpan").setRecordEvents(false).startScopedSpan()) {
+      io.opencensus.trace.Span span = tracer.getCurrentSpan();
+      span.addAnnotation("OpenCensus: Event 1");
+      span.addAnnotation(Annotation.fromDescription("OpenCensus: Event 2"));
+      span.setStatus(Status.RESOURCE_EXHAUSTED);
+      span.putAttribute("testKey", AttributeValue.stringAttributeValue("testValue"));
     }
     Tracing.getExportComponent().shutdown();
     verify(spanExporter, never()).export(anyCollection());
