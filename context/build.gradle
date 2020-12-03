@@ -32,7 +32,6 @@ dependencies {
     testImplementation libraries.awaitility
     testImplementation libraries.guava
     testImplementation libraries.junit_pioneer
-    testImplementation libraries.weak_lock_free
 
     signature libraries.android_signature
 }
