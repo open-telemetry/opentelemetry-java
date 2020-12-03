@@ -116,7 +116,6 @@ public class StrictContextStorage implements ContextStorage {
 
     stackTrace = Arrays.copyOfRange(stackTrace, from, stackTrace.length);
     caller.setStackTrace(stackTrace);
-    pendingScopes.put(scope, caller);
 
     return new StrictScope(scope, caller);
   }
@@ -139,10 +138,15 @@ public class StrictContextStorage implements ContextStorage {
   // AssertionError to ensure test runners render the stack trace
   public void ensureAllClosed() {
     pendingScopes.expungeStaleEntries();
-    for (CallerStackTrace caller : pendingScopes.drainPendingCallers()) {
-      // Sometimes unit test runners truncate the cause of the exception.
-      // This flattens the exception as the caller of close() isn't important vs the one that leaked
-      throw callerError(caller);
+    List<CallerStackTrace> leaked = pendingScopes.drainPendingCallers();
+    if (!leaked.isEmpty()) {
+      if (leaked.size() > 1) {
+        logger.log(Level.SEVERE, "Multiple scopes leaked - first will be thrown as an error.");
+      }
+      for (CallerStackTrace caller : leaked) {
+        logger.log(Level.SEVERE, "Scope leaked", callerError(caller));
+      }
+      throw callerError(leaked.get(0));
     }
   }
 
@@ -153,6 +157,7 @@ public class StrictContextStorage implements ContextStorage {
     StrictScope(Scope delegate, CallerStackTrace caller) {
       this.delegate = delegate;
       this.caller = caller;
+      pendingScopes.put(this, caller);
     }
 
     @Override

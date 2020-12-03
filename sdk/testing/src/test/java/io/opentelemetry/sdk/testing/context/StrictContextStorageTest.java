@@ -180,6 +180,14 @@ class StrictContextStorageTest {
   }
 
   @Test
+  @SuppressWarnings("UnusedVariable")
+  void multipleLeaks() {
+    Scope scope1 = Context.current().with(ANIMAL, "cat").makeCurrent();
+    Scope scope2 = Context.current().with(ANIMAL, "dog").makeCurrent();
+    assertThatThrownBy(strictStorage::ensureAllClosed).isInstanceOf(AssertionError.class);
+  }
+
+  @Test
   void garbageCollectedScope() {
     Logger logger = StrictContextStorage.logger;
     AtomicReference<LogRecord> logged = new AtomicReference<>();
