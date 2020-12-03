@@ -56,7 +56,8 @@ opentelemetry-java-instrumentation project under a different module name. The mo
 
 #### Enhancements
 
-- The OpenTelemetrySdk builder now supports the addition of SpanProcessors to the resulting SDK.
+- The OpenTelemetrySdk builder now supports the addition of `SpanProcessor`s to the resulting SDK.
+- The OpenTelemetrySdk builder now supports the assignment of an `IdGenerator` to the resulting SDK.
 - The `ReadableSpan` interface now exposes the `Span.Kind` of the span.
 - The SDK no longer depends on the guava library.
 - The parent SpanContext is now exposed on the `SpanData` interface.
