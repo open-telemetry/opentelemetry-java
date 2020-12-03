@@ -30,9 +30,15 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+/**
+ * A read-only view of an array of key-value pairs.
+ */
 @SuppressWarnings("unchecked")
 public final class ReadOnlyArrayMap<K, V> implements Map<K, V> {
 
+  /**
+   * Returns a read-only view of the given {@code array}.
+   */
   public static <K, V> Map<K, V> wrap(List<Object> array) {
     if (array.isEmpty()) {
       return Collections.emptyMap();
