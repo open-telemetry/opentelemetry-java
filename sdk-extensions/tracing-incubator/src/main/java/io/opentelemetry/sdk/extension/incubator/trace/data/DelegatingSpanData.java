@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.trace.data;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
@@ -25,7 +25,7 @@ import java.util.List;
  * <pre>{@code
  * SpanDataWithClientType extends DelegatingSpanData {
  *
- *   private final ReadableAttributes attributes;
+ *   private final Attributes attributes;
  *
  *   SpanDataWithClientType(SpanData delegate) {
  *     super(delegate);
@@ -37,7 +37,7 @@ import java.util.List;
  *   }
  *
  *   {@literal @}Override
- *   public ReadableAttributes getAttributes() {
+ *   public Attributes getAttributes() {
  *     return attributes;
  *   }
  * }
@@ -103,7 +103,7 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public ReadableAttributes getAttributes() {
+  public Attributes getAttributes() {
     return delegate.getAttributes();
   }
 

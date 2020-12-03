@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.trace.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
@@ -144,7 +144,7 @@ public abstract class SpanDataBuilder implements SpanData {
 
     public abstract Builder setEndEpochNanos(long epochNanos);
 
-    public abstract Builder setAttributes(ReadableAttributes attributes);
+    public abstract Builder setAttributes(Attributes attributes);
 
     public abstract Builder setEvents(List<Event> events);
 

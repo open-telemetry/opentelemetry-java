@@ -7,6 +7,7 @@ package io.opentelemetry.api.common;
 
 import static io.opentelemetry.api.common.ArrayBackedAttributes.sortAndFilterToAttributes;
 
+import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,13 +30,22 @@ import javax.annotation.concurrent.Immutable;
  */
 @SuppressWarnings("rawtypes")
 @Immutable
-public interface Attributes extends ReadableAttributes {
+public interface Attributes {
 
-  @Override
+  /** Returns the value for the given {@link AttributeKey}, or {@code null} if not found. */
   <T> T get(AttributeKey<T> key);
 
-  @Override
+  /** Iterates over all the key-value pairs of attributes contained by this instance. */
   void forEach(BiConsumer<AttributeKey<?>, Object> consumer);
+
+  /** The number of attributes contained in this. */
+  int size();
+
+  /** Whether there are any attributes contained in this. */
+  boolean isEmpty();
+
+  /** Returns a read-only view of this {@link Attributes} as a {@link Map}. */
+  Map<AttributeKey<?>, Object> asMap();
 
   /** Returns a {@link Attributes} instance with no attributes. */
   static Attributes empty() {
@@ -139,8 +149,13 @@ public interface Attributes extends ReadableAttributes {
     return new ArrayBackedAttributesBuilder();
   }
 
-  /** Returns a new {@link AttributesBuilder} instance from ReadableAttributes. */
-  static AttributesBuilder builder(ReadableAttributes attributes) {
+  /**
+   * Returns a new {@link AttributesBuilder} instance from Attributes.
+   *
+   * @deprecated Use {@link Attributes#toBuilder()}
+   */
+  @Deprecated
+  static AttributesBuilder builder(Attributes attributes) {
     final AttributesBuilder builder = new ArrayBackedAttributesBuilder();
     builder.putAll(attributes);
     return builder;

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import org.assertj.core.api.Assertions;
 
@@ -16,8 +16,8 @@ import org.assertj.core.api.Assertions;
  */
 public class OpenTelemetryAssertions extends Assertions {
 
-  /** Returns an assertion for {@link ReadableAttributes}. */
-  public static AttributesAssert assertThat(ReadableAttributes attributes) {
+  /** Returns an assertion for {@link Attributes}. */
+  public static AttributesAssert assertThat(Attributes attributes) {
     return new AttributesAssert(attributes);
   }
 

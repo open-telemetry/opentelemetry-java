@@ -12,7 +12,7 @@ import com.google.gson.Gson;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
@@ -181,7 +181,7 @@ final class Adapter {
    * @see #toKeyValue
    */
   @VisibleForTesting
-  static Collection<Model.KeyValue> toKeyValues(ReadableAttributes attributes) {
+  static Collection<Model.KeyValue> toKeyValues(Attributes attributes) {
     final List<Model.KeyValue> tags = new ArrayList<>(attributes.size());
     attributes.forEach((key, value) -> tags.add(toKeyValue(key, value)));
     return tags;

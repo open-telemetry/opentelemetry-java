@@ -6,11 +6,11 @@
 package io.opentelemetry.sdk.trace.samplers;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.common.ReadableAttributes;
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -64,9 +64,9 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
       Context parentContext,
       String traceId,
       String name,
-      Span.Kind spanKind,
-      ReadableAttributes attributes,
-      List<SpanData.Link> parentLinks) {
+      Kind spanKind,
+      Attributes attributes,
+      List<Link> parentLinks) {
     // Always sample if we are within probability range. This is true even for child spans (that
     // may have had a different sampling samplingResult made) to allow for different sampling
     // policies,

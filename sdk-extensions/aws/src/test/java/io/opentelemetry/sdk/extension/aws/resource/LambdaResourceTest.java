@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.util.HashMap;
@@ -26,7 +25,7 @@ class LambdaResourceTest {
     ResourceProvider resource = new LambdaResource(emptyMap());
 
     // when
-    ReadableAttributes attributes = resource.create().getAttributes();
+    Attributes attributes = resource.create().getAttributes();
 
     // then
     assertTrue(attributes.isEmpty());
@@ -39,7 +38,7 @@ class LambdaResourceTest {
         new LambdaResource(singletonMap("AWS_LAMBDA_FUNCTION_NAME", "my-function"));
 
     // when
-    ReadableAttributes attributes = resource.create().getAttributes();
+    Attributes attributes = resource.create().getAttributes();
 
     // then
     assertThat(attributes)
@@ -62,7 +61,7 @@ class LambdaResourceTest {
     ResourceProvider resource = new LambdaResource(envVars);
 
     // when
-    ReadableAttributes attributes = resource.create().getAttributes();
+    Attributes attributes = resource.create().getAttributes();
 
     // then
     assertThat(attributes)
