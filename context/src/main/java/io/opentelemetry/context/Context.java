@@ -81,7 +81,7 @@ public interface Context {
    * is only a workaround hiding an underlying context propagation issue.
    */
   static Context root() {
-    return DefaultContext.root();
+    return ArrayBasedContext.root();
   }
 
   /**

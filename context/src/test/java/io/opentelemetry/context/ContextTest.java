@@ -174,6 +174,10 @@ class ContextTest {
 
     assertThat(context4.get(ANIMAL)).isEqualTo("dog");
     assertThat(context4.get(BAG)).isNull();
+
+    Context context5 = context4.with(ANIMAL, "dog");
+    assertThat(context5.get(ANIMAL)).isEqualTo("dog");
+    assertThat(context5).isSameAs(context4);
   }
 
   @Test

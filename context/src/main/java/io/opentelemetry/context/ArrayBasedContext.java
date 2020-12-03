@@ -22,9 +22,12 @@
 
 package io.opentelemetry.context;
 
-final class DefaultContext {
+import java.util.Arrays;
+import javax.annotation.Nullable;
 
-  private static final Context ROOT = new PersistentHashArrayMappedTrie.RootNode();
+final class ArrayBasedContext implements Context {
+
+  private static final Context ROOT = new ArrayBasedContext(new Object[0]);
 
   // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
   // this method.
@@ -42,5 +45,40 @@ final class DefaultContext {
     return ROOT;
   }
 
-  private DefaultContext() {}
+  private final Object[] entries;
+
+  private ArrayBasedContext(Object[] entries) {
+    this.entries = entries;
+  }
+
+  @Override
+  @Nullable
+  public <V> V get(ContextKey<V> key) {
+    for (int i = 0; i < entries.length; i += 2) {
+      if (entries[i] == key) {
+        @SuppressWarnings("unchecked")
+        V result = (V) entries[i + 1];
+        return result;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public <V> Context with(ContextKey<V> key, V value) {
+    for (int i = 0; i < entries.length; i += 2) {
+      if (entries[i] == key) {
+        if (entries[i + 1] == value) {
+          return this;
+        }
+        Object[] newEntries = entries.clone();
+        newEntries[i + 1] = value;
+        return new ArrayBasedContext(newEntries);
+      }
+    }
+    Object[] newEntries = Arrays.copyOf(entries, entries.length + 2);
+    newEntries[newEntries.length - 2] = key;
+    newEntries[newEntries.length - 1] = value;
+    return new ArrayBasedContext(newEntries);
+  }
 }
