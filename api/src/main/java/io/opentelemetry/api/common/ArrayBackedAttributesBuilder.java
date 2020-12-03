@@ -91,7 +91,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public AttributesBuilder putAll(ReadableAttributes attributes) {
+  public AttributesBuilder putAll(Attributes attributes) {
     // Attributes must iterate over their entries with matching types for key / value, so this
     // downcast to the raw type is safe.
     attributes.forEach((key, value) -> put((AttributeKey) key, value));

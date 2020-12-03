@@ -10,7 +10,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -128,7 +128,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       spanBuilder.parentId(spanData.getParentSpanId());
     }
 
-    ReadableAttributes spanAttributes = spanData.getAttributes();
+    Attributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
         (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
     SpanData.Status status = spanData.getStatus();
@@ -163,7 +163,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   private static Endpoint chooseEndpoint(SpanData spanData, Endpoint localEndpoint) {
-    ReadableAttributes resourceAttributes = spanData.getResource().getAttributes();
+    Attributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
     String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);

@@ -67,7 +67,7 @@ class EnvAutodetectResourceTest {
             .readEnvironmentVariables()
             .readSystemProperties()
             .build();
-    Attributes result = (Attributes) resource.getAttributes();
+    Attributes result = resource.getAttributes();
     assertThat(result).isEqualTo(Attributes.of(stringKey("value"), "foo"));
     System.clearProperty(key);
   }
@@ -82,7 +82,7 @@ class EnvAutodetectResourceTest {
               .readEnvironmentVariables()
               .readSystemProperties()
               .build();
-      Attributes result = (Attributes) resource.getAttributes();
+      Attributes result = resource.getAttributes();
       assertThat(result).isEqualTo(Attributes.of(stringKey("value"), "foo"));
     }
   }

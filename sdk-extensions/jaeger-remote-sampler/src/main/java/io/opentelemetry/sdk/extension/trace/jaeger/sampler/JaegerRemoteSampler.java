@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
@@ -69,7 +69,7 @@ public class JaegerRemoteSampler implements Sampler {
       String traceId,
       String name,
       Kind spanKind,
-      ReadableAttributes attributes,
+      Attributes attributes,
       List<Link> parentLinks) {
     return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
   }

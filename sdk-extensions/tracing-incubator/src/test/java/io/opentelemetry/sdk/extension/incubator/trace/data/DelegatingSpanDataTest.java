@@ -12,7 +12,6 @@ import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
@@ -53,7 +52,7 @@ class DelegatingSpanDataTest {
     }
 
     @Override
-    public ReadableAttributes getAttributes() {
+    public Attributes getAttributes() {
       return attributes;
     }
 

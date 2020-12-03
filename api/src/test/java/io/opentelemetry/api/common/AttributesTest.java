@@ -237,7 +237,7 @@ class AttributesTest {
             false);
     assertThat(attributes).isEqualTo(wantAttributes);
 
-    AttributesBuilder newAttributes = Attributes.builder(attributes);
+    AttributesBuilder newAttributes = attributes.toBuilder();
     newAttributes.put("newKey", "newValue");
     assertThat(newAttributes.build())
         .isEqualTo(
