@@ -22,17 +22,19 @@ final class TracerSharedState {
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
-  private volatile TraceConfig activeTraceConfig = TraceConfig.getDefault();
+  private volatile TraceConfig activeTraceConfig;
   private volatile SpanProcessor activeSpanProcessor = NoopSpanProcessor.getInstance();
   private volatile boolean isStopped = false;
 
   @GuardedBy("lock")
   private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
 
-  TracerSharedState(Clock clock, IdGenerator idGenerator, Resource resource) {
+  TracerSharedState(
+      Clock clock, IdGenerator idGenerator, Resource resource, TraceConfig traceConfig) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.resource = resource;
+    this.activeTraceConfig = traceConfig;
   }
 
   Clock getClock() {
