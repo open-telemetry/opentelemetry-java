@@ -31,8 +31,7 @@ for a list of major changes since last release.
 After releasing is done, you need to first update the docs.
 
 ```
-git fetch upstream --tags
-./gradlew updateVersionInDocs
+./gradlew updateVersionInDocs -Prelease.version=x.y.z
 ```
 
 Next, update the
