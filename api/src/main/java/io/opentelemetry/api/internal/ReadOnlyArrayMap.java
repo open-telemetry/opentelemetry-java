@@ -31,9 +31,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 @SuppressWarnings("unchecked")
-final class ReadOnlyArrayMap<K, V> implements Map<K, V> {
+public final class ReadOnlyArrayMap<K, V> implements Map<K, V> {
 
-  static <K, V> Map<K, V> wrap(List<Object> array) {
+  public static <K, V> Map<K, V> wrap(List<Object> array) {
     if (array.isEmpty()) {
       return Collections.emptyMap();
     }

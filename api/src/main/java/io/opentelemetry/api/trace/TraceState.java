@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -68,6 +69,9 @@ public interface TraceState {
 
   /** Iterates over all the key-value entries contained in this {@link TraceState}. */
   void forEach(BiConsumer<String, String> consumer);
+
+  /** Returns a read-only view of this {@link TraceState} as a {@link Map}. */
+  Map<String, String> asMap();
 
   /**
    * Returns a {@code Builder} based on this {@code TraceState}.

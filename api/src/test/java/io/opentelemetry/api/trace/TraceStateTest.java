@@ -65,6 +65,17 @@ class TraceStateTest {
   }
 
   @Test
+  void asMap() {
+    assertThat(firstTraceState.asMap()).containsExactly(entry(FIRST_KEY, FIRST_VALUE));
+
+    assertThat(secondTraceState.asMap()).containsExactly(entry(SECOND_KEY, SECOND_VALUE));
+
+    // Reverse order of input.
+    assertThat(multiValueTraceState.asMap())
+        .containsExactly(entry(SECOND_KEY, SECOND_VALUE), entry(FIRST_KEY, FIRST_VALUE));
+  }
+
+  @Test
   void disallowsNullKey() {
     assertThat(EMPTY.toBuilder().set(null, FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
