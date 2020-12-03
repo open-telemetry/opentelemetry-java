@@ -16,6 +16,8 @@ This has been corrected, and all instances should have independent Tracer and Me
 - `Labels` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - `TraceState` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - `Attributes` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- The `ReadableAttributes` interface has been removed, as it was redundant with the `Attributes` interface. All APIs that
+used or returned `ReadableAttributes` should accept or return standard `Attributes` implementations.
 - `SpanContext` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - The functional `AttributeConsumer` interface has been removed and replaced with a standard `java.util.function.BiConsumer`.
 - The signature of the `BaggageBuilder.put(String, String, EntryMetadata entryMetadata)` 
