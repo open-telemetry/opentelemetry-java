@@ -208,8 +208,14 @@ public class StrictContextStorage implements ContextStorage {
     private final ConcurrentHashMap<WeakKey<Scope>, CallerStackTrace> map;
 
     PendingScopes(ConcurrentHashMap<WeakKey<Scope>, CallerStackTrace> map) {
-      super(/* cleanerThread= */ true, /* reuseKeys= */ false, map);
+      super(/* cleanerThread= */ false, /* reuseKeys= */ false, map);
       this.map = map;
+      // Start cleaner thread ourselves to make sure it runs after initializing our fields.
+      Thread thread = new Thread(this);
+      thread.setName("weak-ref-cleaner-strictcontextstorage");
+      thread.setPriority(Thread.MIN_PRIORITY);
+      thread.setDaemon(true);
+      thread.start();
     }
 
     List<CallerStackTrace> drainPendingCallers() {
