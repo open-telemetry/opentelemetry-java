@@ -207,6 +207,7 @@ public class StrictContextStorage implements ContextStorage {
     // it. https://github.com/raphw/weak-lock-free/pull/12
     private final ConcurrentHashMap<WeakKey<Scope>, CallerStackTrace> map;
 
+    @SuppressWarnings("ThreadPriorityCheck")
     PendingScopes(ConcurrentHashMap<WeakKey<Scope>, CallerStackTrace> map) {
       super(/* cleanerThread= */ false, /* reuseKeys= */ false, map);
       this.map = map;
