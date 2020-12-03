@@ -5,8 +5,8 @@
 
 package io.opentelemetry.api.baggage;
 
-import static io.opentelemetry.api.baggage.BaggageTestUtil.baggageToList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
@@ -23,9 +23,10 @@ class ScopedBaggageTest {
   private static final String VALUE_3 = "value 3";
   private static final String VALUE_4 = "value 4";
 
-  private static final EntryMetadata METADATA_UNLIMITED_PROPAGATION =
-      EntryMetadata.create("unlimited");
-  private static final EntryMetadata METADATA_NO_PROPAGATION = EntryMetadata.create("noprop");
+  private static final BaggageEntryMetadata METADATA_UNLIMITED_PROPAGATION =
+      BaggageEntryMetadata.create("unlimited");
+  private static final BaggageEntryMetadata METADATA_NO_PROPAGATION =
+      BaggageEntryMetadata.create("noprop");
 
   @Test
   void emptyBaggage() {
@@ -51,10 +52,10 @@ class ScopedBaggageTest {
     try (Scope scope = scopedBaggage.makeCurrent()) {
       Baggage newEntries =
           Baggage.builder().put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION).build();
-      assertThat(baggageToList(newEntries))
-          .containsExactlyInAnyOrder(
-              Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
-              Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
+      assertThat(newEntries.asMap())
+          .containsOnly(
+              entry(KEY_1, Entry.create(VALUE_1, METADATA_UNLIMITED_PROPAGATION)),
+              entry(KEY_2, Entry.create(VALUE_2, METADATA_UNLIMITED_PROPAGATION)));
       assertThat(Baggage.current()).isSameAs(scopedBaggage);
     }
   }
@@ -65,8 +66,8 @@ class ScopedBaggageTest {
     Baggage scopedBaggage =
         Baggage.builder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = scopedBaggage.makeCurrent()) {
-      assertThat(baggageToList(Baggage.current()))
-          .containsExactly(Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION));
+      assertThat(Baggage.current().asMap())
+          .containsOnly(entry(KEY_1, Entry.create(VALUE_1, METADATA_UNLIMITED_PROPAGATION)));
       assertThat(Baggage.current()).isSameAs(scopedBaggage);
     }
     assertThat(Baggage.current().isEmpty()).isTrue();
@@ -80,10 +81,10 @@ class ScopedBaggageTest {
       Baggage innerBaggage =
           Baggage.builder().put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION).build();
       try (Scope scope2 = innerBaggage.makeCurrent()) {
-        assertThat(baggageToList(Baggage.current()))
-            .containsExactlyInAnyOrder(
-                Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
-                Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
+        assertThat(Baggage.current().asMap())
+            .containsOnly(
+                entry(KEY_1, Entry.create(VALUE_1, METADATA_UNLIMITED_PROPAGATION)),
+                entry(KEY_2, Entry.create(VALUE_2, METADATA_UNLIMITED_PROPAGATION)));
         assertThat(Baggage.current()).isSameAs(innerBaggage);
       }
       assertThat(Baggage.current()).isSameAs(scopedBaggage);
@@ -104,11 +105,11 @@ class ScopedBaggageTest {
               .put(KEY_2, VALUE_4, METADATA_NO_PROPAGATION)
               .build();
       try (Scope scope2 = innerBaggage.makeCurrent()) {
-        assertThat(baggageToList(Baggage.current()))
-            .containsExactlyInAnyOrder(
-                Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
-                Entry.create(KEY_2, VALUE_4, METADATA_NO_PROPAGATION),
-                Entry.create(KEY_3, VALUE_3, METADATA_NO_PROPAGATION));
+        assertThat(Baggage.current().asMap())
+            .containsOnly(
+                entry(KEY_1, Entry.create(VALUE_1, METADATA_UNLIMITED_PROPAGATION)),
+                entry(KEY_2, Entry.create(VALUE_4, METADATA_NO_PROPAGATION)),
+                entry(KEY_3, Entry.create(VALUE_3, METADATA_NO_PROPAGATION)));
         assertThat(Baggage.current()).isSameAs(innerBaggage);
       }
       assertThat(Baggage.current()).isSameAs(scopedBaggage);
@@ -126,8 +127,8 @@ class ScopedBaggageTest {
               .setNoParent()
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
-      assertThat(baggageToList(innerBaggage))
-          .containsExactly(Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
+      assertThat(innerBaggage.asMap())
+          .containsOnly(entry(KEY_2, Entry.create(VALUE_2, METADATA_UNLIMITED_PROPAGATION)));
     }
     assertThat(Baggage.current().isEmpty()).isTrue();
   }

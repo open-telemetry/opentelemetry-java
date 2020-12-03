@@ -116,13 +116,13 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     /**
      * Assign an {@link IdGenerator}.
      *
-     * @param idsGenerator A generator for trace and span ids. Note: this should be thread-safe and
+     * @param idGenerator A generator for trace and span ids. Note: this should be thread-safe and
      *     as contention free as possible.
      * @return this
      */
-    public Builder setIdsGenerator(IdGenerator idsGenerator) {
-      Objects.requireNonNull(idsGenerator, "idsGenerator");
-      this.idsGenerator = idsGenerator;
+    public Builder setIdGenerator(IdGenerator idGenerator) {
+      Objects.requireNonNull(idGenerator, "idGenerator");
+      this.idsGenerator = idGenerator;
       return this;
     }
 

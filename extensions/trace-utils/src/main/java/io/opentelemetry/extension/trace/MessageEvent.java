@@ -21,8 +21,13 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>It requires a {@link Type type} and a message id that serves to uniquely identify each
  * message. It can optionally have information about the message size.
+ *
+ * @deprecated This class will be removed in SDK 0.13.0. If these attributes are useful to you,
+ *     consider filing an issue or a PR to have them added to {@link
+ *     io.opentelemetry.api.trace.attributes.SemanticAttributes}.
  */
 @Immutable
+@Deprecated
 public final class MessageEvent {
 
   private static final String EVENT_NAME = "message";

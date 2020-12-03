@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableMap;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
 import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.baggage.EntryMetadata;
+import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -170,7 +170,7 @@ class JaegerPropagatorTest {
     Baggage baggage =
         Baggage.builder()
             .put("nometa", "nometa-value")
-            .put("meta", "meta-value", EntryMetadata.create("somemetadata; someother=foo"))
+            .put("meta", "meta-value", BaggageEntryMetadata.create("somemetadata; someother=foo"))
             .build();
     Map<String, String> carrier = new LinkedHashMap<>();
     jaegerPropagator.inject(Context.root().with(baggage), carrier, Map::put);

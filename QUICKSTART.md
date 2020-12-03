@@ -43,7 +43,7 @@ monitored. More information is available in the specification chapter [Obtaining
 
 ```java
 Tracer tracer =
-    OpenTelemetry.getGlobalTracer("instrumentation-library-name","semver:1.0.0");
+    OpenTelemetry.getGlobalTracer("instrumentation-library-name", "1.0.0");
 ```
 
 ### Create basic Span
@@ -262,7 +262,7 @@ The following is an example of counter usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = OpenTelemetry.getGlobalMeter("instrumentation-library-name","semver:1.0.0");
+Meter meter = OpenTelemetry.getGlobalMeter("instrumentation-library-name", "1.0.0");
 
 // Build counter e.g. LongCounter 
 LongCounter counter = meter

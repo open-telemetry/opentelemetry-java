@@ -85,8 +85,7 @@ public interface OpenTelemetry {
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
-   * @param instrumentationVersion The version of the instrumentation library (e.g.,
-   *     "semver:1.0.0").
+   * @param instrumentationVersion The version of the instrumentation library (e.g., "1.0.0").
    * @return a tracer instance.
    */
   static Tracer getGlobalTracer(String instrumentationName, String instrumentationVersion) {

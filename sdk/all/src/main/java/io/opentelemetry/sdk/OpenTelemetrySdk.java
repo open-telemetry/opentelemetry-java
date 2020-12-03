@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -112,15 +113,19 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     private Clock clock;
     private Resource resource;
     private final List<SpanProcessor> spanProcessors = new ArrayList<>();
+    private IdGenerator idGenerator;
 
     /**
      * Sets the {@link TracerSdkProvider} to use. This can be used to configure tracing settings by
      * returning the instance created by a {@link TracerSdkProvider.Builder}.
      *
+     * <p>If you use this method, it is assumed that you are providing a fully configured
+     * TracerSdkProvider, and other settings will be ignored.
+     *
      * <p>Note: the parameter passed in here must be a {@link TracerSdkProvider} instance.
      *
-     * @see TracerSdkProvider#builder()
      * @param tracerProvider A {@link TracerSdkProvider} to use with this instance.
+     * @see TracerSdkProvider#builder()
      */
     @Override
     public Builder setTracerProvider(TracerProvider tracerProvider) {
@@ -158,6 +163,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     /**
      * Sets the {@link Clock} to be used for measuring timings.
      *
+     * <p>If you use {@link #setTracerProvider(TracerProvider)}, this will be ignored for purposes
+     * of configuring the TracerProvider.
+     *
      * @param clock The clock to use for all temporal needs.
      * @return this
      */
@@ -169,6 +177,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
     /**
      * Sets the {@link Resource} to be attached to all telemetry reported by this SDK.
+     *
+     * <p>If you use {@link #setTracerProvider(TracerProvider)}, this will be ignored for purposes
+     * of configuring the TracerProvider.
      *
      * @param resource A Resource implementation.
      * @return this
@@ -186,6 +197,18 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
      */
     public Builder addSpanProcessor(SpanProcessor spanProcessor) {
       spanProcessors.add(spanProcessor);
+      return this;
+    }
+
+    /**
+     * Set the {@link IdGenerator} that will be used by the SDK for generating trace and span ids.
+     *
+     * <p>Using {@link #setTracerProvider(TracerProvider)} will override this setting.
+     *
+     * @return this
+     */
+    public Builder setIdGenerator(IdGenerator idGenerator) {
+      this.idGenerator = idGenerator;
       return this;
     }
 
@@ -226,6 +249,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       }
       if (resource != null) {
         tracerProviderBuilder.setResource(resource);
+      }
+      if (idGenerator != null) {
+        tracerProviderBuilder.setIdGenerator(idGenerator);
       }
       return tracerProviderBuilder.build();
     }
