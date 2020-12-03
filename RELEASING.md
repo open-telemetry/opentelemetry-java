@@ -28,12 +28,16 @@ for a list of major changes since last release.
 
 ## Update release versions in documentations and CHANGELOG files
 
-After releasing is done, you need to update
+After releasing is done, you need to first update the docs.
+
+```
+./gradlew updateVersionInDocs -Prelease.version=x.y.z
+```
+
+Next, update the
 [CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/master/CHANGELOG.md).
 
-Create a PR to mark the new release in
-[CHANGELOG.md](https://github.com/census-instrumentation/opencensus-java/blob/master/CHANGELOG.md)
-on master branch.
+Create a PR to mark the new release in README.md and CHANGELOG.md on the master branch.
 
 ## Patch Release
 

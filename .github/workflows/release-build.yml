@@ -20,13 +20,7 @@ jobs:
         with:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
-          arguments: updateVersionInDocs build --stacktrace -Prelease.version=${{ github.event.inputs.version }}
-      - name: Setup git name
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-      - name: Commit README updates
-        run: git commit -am "Releasing ${{ github.event.inputs.version }}"
+          arguments: build --stacktrace -Prelease.version=${{ github.event.inputs.version }}
       - name: Publish artifacts
         run: ./gradlew final --stacktrace -Prelease.version=${{ github.event.inputs.version }}
         env:
@@ -34,5 +28,3 @@ jobs:
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
           GRGIT_USER: ${{ github.actor }}
           GRGIT_PASS: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push README updates
-        run: git push
