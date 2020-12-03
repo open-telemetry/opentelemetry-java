@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.example;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
@@ -102,7 +102,7 @@ class ConfigureTraceExample {
           String traceId,
           String name,
           Kind spanKind,
-          Attributes attributes,
+          ReadableAttributes attributes,
           List<Link> parentLinks) {
         return SamplingResult.create(
             name.contains("SAMPLE")
