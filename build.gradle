@@ -300,7 +300,6 @@ configure(opentelemetryProjects) {
         prometheusVersion = '0.9.0'
         protobufVersion = '3.14.0'
         protocVersion = '3.14.0'
-        weakLockFreeVersion = '0.18'
         zipkinReporterVersion = '2.12.2'
         zipkinVersion = '2.18.3'
 
@@ -333,7 +332,6 @@ configure(opentelemetryProjects) {
                 prometheus_client_common: "io.prometheus:simpleclient_common:${prometheusVersion}",
                 protobuf                : "com.google.protobuf:protobuf-java",
                 protobuf_util           : "com.google.protobuf:protobuf-java-util",
-                weak_lock_free          : "com.blogspot.mydailyjava:weak-lock-free:${weakLockFreeVersion}",
                 zipkin_reporter         : "io.zipkin.reporter2:zipkin-reporter",
                 zipkin_okhttp           : "io.zipkin.reporter2:zipkin-sender-okhttp3",
 
