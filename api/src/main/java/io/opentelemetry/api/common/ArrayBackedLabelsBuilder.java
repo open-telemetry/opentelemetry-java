@@ -21,7 +21,7 @@ class ArrayBackedLabelsBuilder implements LabelsBuilder {
 
   @Override
   public Labels build() {
-    return Labels.ArrayBackedLabels.sortAndFilterToLabels(data.toArray());
+    return ArrayBackedLabels.sortAndFilterToLabels(data.toArray());
   }
 
   @Override
