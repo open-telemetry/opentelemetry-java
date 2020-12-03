@@ -214,6 +214,13 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       return this;
     }
 
+    /**
+     * Set the {@link TraceConfig} that will be initially set on the Tracing SDK.
+     *
+     * <p>Using {@link #setTracerProvider(TracerProvider)} will override this setting.
+     *
+     * @return this
+     */
     public Builder setTraceConfig(TraceConfig traceConfig) {
       this.traceConfig = traceConfig;
       return this;
