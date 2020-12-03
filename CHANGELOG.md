@@ -277,7 +277,7 @@ Many thanks to all who made this release possible:
 - API:
     - BREAKING CHANGE: Renamed HttpTextFormat to TextMapPropagator
     - Added a toBuilder method to the Attributes class
-    - Added method to create an Attributes Builder from Attributes
+    - Added method to create an Attributes Builder from ReadableAttributes
     - Updates to the Attributes' null-handling to conform to the specification
     - TraceState validations were updated to match the W3C specification
     - recordException Span API now has an additional overload to support additional attributes
