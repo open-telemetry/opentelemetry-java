@@ -33,6 +33,7 @@ import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.IdGenerator;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -202,7 +203,7 @@ class StrictContextStorageTest {
       Context.current().with(ANIMAL, "cat").makeCurrent();
 
       await()
-          .atMost(30, TimeUnit.SECONDS)
+          .atMost(Duration.ofSeconds(30))
           .untilAsserted(
               () -> {
                 System.gc();
