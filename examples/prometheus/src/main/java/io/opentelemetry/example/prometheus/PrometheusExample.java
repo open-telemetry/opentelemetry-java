@@ -1,7 +1,6 @@
 package io.opentelemetry.example.prometheus;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.AsynchronousInstrument;
 import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
@@ -33,15 +32,8 @@ public class PrometheusExample {
             .longValueObserverBuilder("incoming.messages")
             .setDescription("No of incoming messages awaiting processing")
             .setUnit("message")
+            .setCallback(result -> result.observe(incomingMessageCount, Labels.empty()))
             .build();
-
-    observer.setCallback(
-        new LongValueObserver.Callback<LongValueObserver.LongResult>() {
-          @Override
-          public void update(AsynchronousInstrument.LongResult result) {
-            result.observe(incomingMessageCount, Labels.empty());
-          }
-        });
 
     PrometheusCollector.builder()
         .setMetricProducer(meterSdkProvider.getMetricProducer())
@@ -62,6 +54,7 @@ public class PrometheusExample {
         incomingMessageCount = ThreadLocalRandom.current().nextLong(100);
         Thread.sleep(1000);
       } catch (InterruptedException e) {
+        // ignored here
       }
     }
   }

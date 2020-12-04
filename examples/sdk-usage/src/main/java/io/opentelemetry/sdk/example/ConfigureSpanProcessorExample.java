@@ -9,12 +9,10 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import java.util.Arrays;
 
 /** This example shows how to instantiate different Span Processors. */
 public class ConfigureSpanProcessorExample {
@@ -73,9 +71,10 @@ public class ConfigureSpanProcessorExample {
             .build();
     tracerProvider.addSpanProcessor(batchSpansProcessor);
 
-    // Configure the multi spans processor. A MultiSpanProcessor accepts a list of Span Processors.
+    // Configure the composite span processor. A Composite SpanProcessor accepts a list of Span
+    // Processors.
     SpanProcessor multiSpanProcessor =
-        MultiSpanProcessor.create(Arrays.asList(simpleSpansProcessor, batchSpansProcessor));
+        SpanProcessor.composite(simpleSpansProcessor, batchSpansProcessor);
     tracerProvider.addSpanProcessor(multiSpanProcessor);
   }
 }
