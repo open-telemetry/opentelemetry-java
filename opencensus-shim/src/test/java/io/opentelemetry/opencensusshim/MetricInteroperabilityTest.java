@@ -54,8 +54,7 @@ public class MetricInteroperabilityTest {
     ViewManager viewManager = Stats.getViewManager();
     viewManager.registerView(view);
     FakeMetricExporter metricExporter = new FakeMetricExporter();
-    OpenTelemetryMetricsExporter exporter =
-        OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 500));
+    OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 500));
 
     TagContext tagContext =
         tagger
@@ -65,7 +64,6 @@ public class MetricInteroperabilityTest {
     try (Scope ss = tagger.withTagContext(tagContext)) {
       statsRecorder.newMeasureMap().put(latency, 50).record();
     }
-    exporter.stop();
     List<MetricData> metricData = metricExporter.waitForNumberOfExports(1).get(0);
     assertThat(metricData.size()).isEqualTo(1);
     MetricData metric = metricData.get(0);
@@ -99,8 +97,7 @@ public class MetricInteroperabilityTest {
     ViewManager viewManager = Stats.getViewManager();
     viewManager.registerView(view);
     FakeMetricExporter metricExporter = new FakeMetricExporter();
-    OpenTelemetryMetricsExporter exporter =
-        OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 500));
+    OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 500));
 
     TagContext tagContext =
         tagger
@@ -112,7 +109,6 @@ public class MetricInteroperabilityTest {
     }
     // Sleep so that there is time for export() to be called.
     Thread.sleep(2);
-    exporter.stop();
     // This is 0 in case this test gets run first, or by itself.
     // If other views have already been registered in other tests, they will produce metric data, so
     // we are testing for the absence of this particular view's metric data.
