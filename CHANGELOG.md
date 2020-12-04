@@ -28,6 +28,7 @@ method has been changed to `put(String, String, BaggageEntryMetadata)`
 - A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
 - An `asMap()` method has been added to the `Attributes` interface to enable conversion to a standard `java.util.Map`.
 - An `asMap()` method has been added to the `Baggage` interface to enable conversion to a standard `java.util.Map`.
+- An `asMap()` method has been added to the `TraceState` interface to enable conversion to a standard `java.util.Map`.
 - The Semantic Attributes constants have been updated to the version in the yaml spec as of Dec 1, 2020.
 
 #### Miscellaneous
