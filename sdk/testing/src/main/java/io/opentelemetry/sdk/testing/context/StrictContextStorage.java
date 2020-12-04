@@ -142,9 +142,9 @@ public class StrictContextStorage implements ContextStorage {
     if (!leaked.isEmpty()) {
       if (leaked.size() > 1) {
         logger.log(Level.SEVERE, "Multiple scopes leaked - first will be thrown as an error.");
-      }
-      for (CallerStackTrace caller : leaked) {
-        logger.log(Level.SEVERE, "Scope leaked", callerError(caller));
+        for (CallerStackTrace caller : leaked) {
+          logger.log(Level.SEVERE, "Scope leaked", callerError(caller));
+        }
       }
       throw callerError(leaked.get(0));
     }

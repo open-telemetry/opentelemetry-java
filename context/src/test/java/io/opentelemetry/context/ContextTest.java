@@ -174,6 +174,10 @@ class ContextTest {
 
     assertThat(context4.get(ANIMAL)).isEqualTo("dog");
     assertThat(context4.get(BAG)).isNull();
+
+    String newDogStr = new String("dog");
+    assertThat(newDogStr).isEqualTo("dog");
+    assertThat(newDogStr)
   }
 
   @Test
