@@ -42,8 +42,9 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     return new Builder();
   }
 
-  private TracerSdkProvider(Clock clock, IdGenerator idsGenerator, Resource resource) {
-    this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
+  private TracerSdkProvider(
+      Clock clock, IdGenerator idsGenerator, Resource resource, TraceConfig traceConfig) {
+    this.sharedState = new TracerSharedState(clock, idsGenerator, resource, traceConfig);
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
 
@@ -92,7 +93,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   }
 
   /**
-   * Builder class for the TracerSdkFactory. Has fully functional default implementations of all
+   * Builder class for the TraceSdkProvider. Has fully functional default implementations of all
    * three required interfaces.
    */
   public static class Builder {
@@ -100,6 +101,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     private Clock clock = SystemClock.getInstance();
     private IdGenerator idsGenerator = IdGenerator.random();
     private Resource resource = Resource.getDefault();
+    private TraceConfig traceConfig = TraceConfig.getDefault();
 
     /**
      * Assign a {@link Clock}.
@@ -139,12 +141,23 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     }
 
     /**
-     * Create a new TracerSdkFactory instance.
+     * Assign an initial {@link TraceConfig} that should be used with this SDK.
      *
-     * @return An initialized TracerSdkFactory.
+     * @return this
+     */
+    public Builder setTraceConfig(TraceConfig traceConfig) {
+      this.traceConfig = traceConfig;
+      Objects.requireNonNull(traceConfig);
+      return this;
+    }
+
+    /**
+     * Create a new TraceSdkProvider instance.
+     *
+     * @return An initialized TraceSdkProvider.
      */
     public TracerSdkProvider build() {
-      return new TracerSdkProvider(clock, idsGenerator, resource);
+      return new TracerSdkProvider(clock, idsGenerator, resource, traceConfig);
     }
 
     private Builder() {}
