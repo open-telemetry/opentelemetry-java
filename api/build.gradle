@@ -19,7 +19,3 @@ dependencies {
     testImplementation libraries.jqf,
             libraries.guava_testlib
 }
-
-javadoc {
-    exclude 'io/opentelemetry/internal/**'
-}

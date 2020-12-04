@@ -25,12 +25,14 @@ import static java.lang.Thread.currentThread;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
-import java.util.ArrayList;
+import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * A {@link ContextStorage} which keeps track of opened and closed {@link Scope}s, reporting caller
@@ -76,12 +78,15 @@ public class StrictContextStorage implements ContextStorage {
     return new StrictContextStorage(delegate);
   }
 
+  // Visible for testing
+  static final Logger logger = Logger.getLogger(StrictContextStorage.class.getName());
+
   private final ContextStorage delegate;
-  private final BlockingQueue<CallerStackTrace> currentCallers;
+  private final PendingScopes pendingScopes;
 
   private StrictContextStorage(ContextStorage delegate) {
     this.delegate = delegate;
-    currentCallers = new LinkedBlockingDeque<>();
+    pendingScopes = PendingScopes.create();
   }
 
   @Override
@@ -112,7 +117,7 @@ public class StrictContextStorage implements ContextStorage {
     stackTrace = Arrays.copyOfRange(stackTrace, from, stackTrace.length);
     caller.setStackTrace(stackTrace);
 
-    return new StrictScope(scope, caller, currentCallers);
+    return new StrictScope(scope, caller);
   }
 
   @Override
@@ -132,35 +137,34 @@ public class StrictContextStorage implements ContextStorage {
    */
   // AssertionError to ensure test runners render the stack trace
   public void ensureAllClosed() {
-    List<CallerStackTrace> leakedCallers = new ArrayList<>();
-    currentCallers.drainTo(leakedCallers);
-    for (CallerStackTrace caller : leakedCallers) {
-      // Sometimes unit test runners truncate the cause of the exception.
-      // This flattens the exception as the caller of close() isn't important vs the one that leaked
-      AssertionError toThrow =
-          new AssertionError(
-              "Thread [" + caller.threadName + "] opened a scope of " + caller.context + " here:");
-      toThrow.setStackTrace(caller.getStackTrace());
-      throw toThrow;
+    pendingScopes.expungeStaleEntries();
+    List<CallerStackTrace> leaked = pendingScopes.drainPendingCallers();
+    if (!leaked.isEmpty()) {
+      if (leaked.size() > 1) {
+        logger.log(Level.SEVERE, "Multiple scopes leaked - first will be thrown as an error.");
+        for (CallerStackTrace caller : leaked) {
+          logger.log(Level.SEVERE, "Scope leaked", callerError(caller));
+        }
+      }
+      throw callerError(leaked.get(0));
     }
   }
 
-  private static final class StrictScope implements Scope {
+  final class StrictScope implements Scope {
     final Scope delegate;
-    final BlockingQueue<CallerStackTrace> currentCallers;
     final CallerStackTrace caller;
 
-    private StrictScope(
-        Scope delegate, CallerStackTrace caller, BlockingQueue<CallerStackTrace> currentCallers) {
+    StrictScope(Scope delegate, CallerStackTrace caller) {
       this.delegate = delegate;
-      this.currentCallers = currentCallers;
       this.caller = caller;
-      this.currentCallers.add(caller);
+      pendingScopes.put(this, caller);
     }
 
     @Override
     public void close() {
-      currentCallers.remove(caller);
+      caller.closed = true;
+      pendingScopes.remove(this);
+
       if (currentThread().getId() != caller.threadId) {
         throw new IllegalStateException(
             String.format(
@@ -177,7 +181,7 @@ public class StrictContextStorage implements ContextStorage {
     }
   }
 
-  private static class CallerStackTrace extends Throwable {
+  static class CallerStackTrace extends Throwable {
 
     private static final long serialVersionUID = 783294061323215387L;
 
@@ -185,9 +189,67 @@ public class StrictContextStorage implements ContextStorage {
     final long threadId = currentThread().getId();
     final Context context;
 
+    volatile boolean closed;
+
     CallerStackTrace(Context context) {
       super("Thread [" + currentThread().getName() + "] opened scope for " + context + " here:");
       this.context = context;
     }
+  }
+
+  static class PendingScopes extends WeakConcurrentMap<Scope, CallerStackTrace> {
+
+    static PendingScopes create() {
+      return new PendingScopes(new ConcurrentHashMap<>());
+    }
+
+    // We need to explicitly pass a map to the constructor because we otherwise cannot remove from
+    // it. https://github.com/raphw/weak-lock-free/pull/12
+    private final ConcurrentHashMap<WeakKey<Scope>, CallerStackTrace> map;
+
+    @SuppressWarnings("ThreadPriorityCheck")
+    PendingScopes(ConcurrentHashMap<WeakKey<Scope>, CallerStackTrace> map) {
+      super(/* cleanerThread= */ false, /* reuseKeys= */ false, map);
+      this.map = map;
+      // Start cleaner thread ourselves to make sure it runs after initializing our fields.
+      Thread thread = new Thread(this);
+      thread.setName("weak-ref-cleaner-strictcontextstorage");
+      thread.setPriority(Thread.MIN_PRIORITY);
+      thread.setDaemon(true);
+      thread.start();
+    }
+
+    List<CallerStackTrace> drainPendingCallers() {
+      List<CallerStackTrace> pendingCallers =
+          map.values().stream().filter(caller -> !caller.closed).collect(Collectors.toList());
+      map.clear();
+      return pendingCallers;
+    }
+
+    // Called by cleaner thread.
+    @Override
+    public void run() {
+      try {
+        while (!Thread.interrupted()) {
+          CallerStackTrace caller = map.remove(remove());
+          if (caller != null && !caller.closed) {
+            logger.log(
+                Level.SEVERE, "Scope garbage collected before being closed.", callerError(caller));
+          }
+        }
+      } catch (InterruptedException ignored) {
+        // do nothing
+      }
+    }
+  }
+
+  static AssertionError callerError(CallerStackTrace caller) {
+    // Sometimes unit test runners truncate the cause of the exception.
+    // This flattens the exception as the caller of close() isn't important vs the one that leaked
+    AssertionError toThrow =
+        new AssertionError(
+            "Thread [" + caller.threadName + "] opened a scope of " + caller.context + " here:");
+    toThrow.setStackTrace(caller.getStackTrace());
+    return toThrow;
   }
 }
