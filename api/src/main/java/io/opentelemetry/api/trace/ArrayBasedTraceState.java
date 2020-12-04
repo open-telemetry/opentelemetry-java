@@ -6,8 +6,10 @@
 package io.opentelemetry.api.trace;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.internal.ReadOnlyArrayMap;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -44,6 +46,12 @@ abstract class ArrayBasedTraceState implements TraceState {
     for (int i = 0; i < entries.size(); i += 2) {
       consumer.accept(entries.get(i), entries.get(i + 1));
     }
+  }
+
+  @Override
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public Map<String, String> asMap() {
+    return ReadOnlyArrayMap.wrap((List) getEntries());
   }
 
   abstract List<String> getEntries();
