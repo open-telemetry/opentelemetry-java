@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace.samplers;
 
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
@@ -88,7 +88,7 @@ public interface Sampler {
    *     the parentContext, unless this is a root span.
    * @param name the name of the new {@code Span}.
    * @param spanKind the {@link Kind} of the {@code Span}.
-   * @param attributes {@link ReadableAttributes} associated with the span.
+   * @param attributes {@link Attributes} associated with the span.
    * @param parentLinks the parentLinks associated with the new {@code Span}.
    * @return sampling samplingResult whether span should be sampled or not.
    */
@@ -97,7 +97,7 @@ public interface Sampler {
       String traceId,
       String name,
       Kind spanKind,
-      ReadableAttributes attributes,
+      Attributes attributes,
       List<Link> parentLinks);
 
   /**

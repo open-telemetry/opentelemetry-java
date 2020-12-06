@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.extension.zpages;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -381,7 +381,7 @@ final class TracezZPageHandler extends ZPageHandler {
         escapeHtml(renderEvent(event)));
   }
 
-  private static String renderAttributes(ReadableAttributes attributes) {
+  private static String renderAttributes(Attributes attributes) {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
     attributes.forEach(

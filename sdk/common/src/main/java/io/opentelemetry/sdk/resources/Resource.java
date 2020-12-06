@@ -14,7 +14,6 @@ import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
 import java.util.Objects;
@@ -112,7 +111,7 @@ public abstract class Resource {
    *
    * @return a map of attributes.
    */
-  public abstract ReadableAttributes getAttributes();
+  public abstract Attributes getAttributes();
 
   @Memoized
   @Override
@@ -160,7 +159,7 @@ public abstract class Resource {
     return new AutoValue_Resource(attrBuilder.build());
   }
 
-  private static void checkAttributes(ReadableAttributes attributes) {
+  private static void checkAttributes(Attributes attributes) {
     attributes.forEach(
         (key, value) -> {
           Utils.checkArgument(

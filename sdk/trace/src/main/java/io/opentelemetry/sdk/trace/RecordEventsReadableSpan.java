@@ -13,7 +13,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
@@ -519,7 +518,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private ReadableAttributes getImmutableAttributes() {
+  private Attributes getImmutableAttributes() {
     if (attributes == null || attributes.isEmpty()) {
       return Attributes.empty();
     }

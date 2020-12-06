@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.OperationSamplingStrategy;
@@ -40,7 +40,7 @@ class PerOperationSampler implements Sampler {
       String traceId,
       String name,
       Kind spanKind,
-      ReadableAttributes attributes,
+      Attributes attributes,
       List<Link> parentLinks) {
     Sampler sampler = this.perOperationSampler.get(name);
     if (sampler == null) {

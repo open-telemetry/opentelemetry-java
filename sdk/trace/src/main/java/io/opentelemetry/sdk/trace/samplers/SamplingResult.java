@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.samplers;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
@@ -17,7 +16,7 @@ import java.util.List;
 
 /**
  * Sampling result returned by {@link Sampler#shouldSample(Context, String, String, Span.Kind,
- * ReadableAttributes, List)}.
+ * Attributes, List)}.
  */
 public interface SamplingResult {
 
@@ -96,7 +95,7 @@ public interface SamplingResult {
    * @param parentTraceState The TraceState from the parent span. Might be an empty TraceState, if
    *     there is no parent. This will be the same TraceState that was passed in via the {@link
    *     SpanContext} parameter on the {@link Sampler#shouldSample(Context, String, String,
-   *     Span.Kind, ReadableAttributes, List)} call.
+   *     Span.Kind, Attributes, List)} call.
    */
   default TraceState getUpdatedTraceState(TraceState parentTraceState) {
     return parentTraceState;

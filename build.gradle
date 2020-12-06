@@ -200,6 +200,10 @@ configure(opentelemetryProjects) {
         withSourcesJar()
     }
 
+    javadoc {
+        exclude 'io/opentelemetry/internal/**'
+    }
+
     tasks {
         def testJava8 = register('testJava8', Test) {
             javaLauncher = javaToolchains.launcherFor {

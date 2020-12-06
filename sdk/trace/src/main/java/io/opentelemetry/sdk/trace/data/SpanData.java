@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.trace.data;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
@@ -120,7 +119,7 @@ public interface SpanData {
    *
    * @return the attributes recorded for this {@code Span}.
    */
-  ReadableAttributes getAttributes();
+  Attributes getAttributes();
 
   /**
    * Returns the timed events recorded for this {@code Span}.

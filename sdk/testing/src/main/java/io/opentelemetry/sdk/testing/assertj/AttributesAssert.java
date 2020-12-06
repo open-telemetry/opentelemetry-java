@@ -8,15 +8,15 @@ package io.opentelemetry.sdk.testing.assertj;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.assertj.core.api.AbstractAssert;
 
-/** Assertions for {@link ReadableAttributes}. */
-public class AttributesAssert extends AbstractAssert<AttributesAssert, ReadableAttributes> {
-  AttributesAssert(ReadableAttributes actual) {
+/** Assertions for {@link Attributes}. */
+public class AttributesAssert extends AbstractAssert<AttributesAssert, Attributes> {
+  AttributesAssert(Attributes actual) {
     super(actual, AttributesAssert.class);
   }
 

@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -188,7 +187,7 @@ class ResourceTest {
   @Test
   void testSdkTelemetryResources() {
     Resource resource = Resource.getTelemetrySdk();
-    ReadableAttributes attributes = resource.getAttributes();
+    Attributes attributes = resource.getAttributes();
     assertThat(attributes.get(stringKey("telemetry.sdk.name"))).isEqualTo("opentelemetry");
     assertThat(attributes.get(stringKey("telemetry.sdk.language"))).isEqualTo("java");
     assertThat(attributes.get(stringKey("telemetry.sdk.version"))).isNotNull();

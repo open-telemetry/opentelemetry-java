@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.resources;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import org.junit.jupiter.api.Test;
@@ -116,7 +115,7 @@ class OsResourceTest {
 
   @Test
   void inDefault() {
-    ReadableAttributes attributes = Resource.getDefault().getAttributes();
+    Attributes attributes = Resource.getDefault().getAttributes();
     assertThat(attributes.get(ResourceAttributes.OS_NAME)).isNotNull();
     assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotNull();
   }

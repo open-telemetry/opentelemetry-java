@@ -5,11 +5,12 @@
 
 package io.opentelemetry.sdk.trace.samplers;
 
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -52,9 +53,9 @@ public class ParentBasedSampler implements Sampler {
       Context parentContext,
       String traceId,
       String name,
-      Span.Kind spanKind,
-      ReadableAttributes attributes,
-      List<SpanData.Link> parentLinks) {
+      Kind spanKind,
+      Attributes attributes,
+      List<Link> parentLinks) {
     SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
     if (!parentSpanContext.isValid()) {
       return this.root.shouldSample(

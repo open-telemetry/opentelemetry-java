@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.function.BiConsumer;
  * <p>Note: this doesn't implement the Map interface, but behaves very similarly to one.
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
-final class AttributesMap implements ReadableAttributes {
+final class AttributesMap implements Attributes {
   private final Map<AttributeKey<?>, Object> data;
 
   private final long capacity;
@@ -80,6 +81,11 @@ final class AttributesMap implements ReadableAttributes {
   }
 
   @Override
+  public AttributesBuilder toBuilder() {
+    return Attributes.builder().putAll(this);
+  }
+
+  @Override
   public String toString() {
     return "AttributesMap{"
         + "data="
@@ -91,7 +97,7 @@ final class AttributesMap implements ReadableAttributes {
         + '}';
   }
 
-  ReadableAttributes immutableCopy() {
+  Attributes immutableCopy() {
     Map<AttributeKey<?>, Object> dataCopy = new LinkedHashMap<>(data);
     return new AttributesMap(capacity, Collections.unmodifiableMap(dataCopy));
   }

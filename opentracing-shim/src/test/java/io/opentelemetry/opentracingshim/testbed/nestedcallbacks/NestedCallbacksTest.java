@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -45,7 +45,7 @@ public final class NestedCallbacksTest {
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getName()).isEqualTo("one");
 
-    ReadableAttributes attrs = spans.get(0).getAttributes();
+    Attributes attrs = spans.get(0).getAttributes();
     assertThat(attrs.size()).isEqualTo(3);
     for (int i = 1; i <= 3; i++) {
       assertThat(spans.get(0).getAttributes().get(stringKey("key" + i)))

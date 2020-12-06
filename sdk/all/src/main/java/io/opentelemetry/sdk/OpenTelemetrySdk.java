@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -114,6 +115,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     private Resource resource;
     private final List<SpanProcessor> spanProcessors = new ArrayList<>();
     private IdGenerator idGenerator;
+    private TraceConfig traceConfig;
 
     /**
      * Sets the {@link TracerSdkProvider} to use. This can be used to configure tracing settings by
@@ -213,6 +215,18 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     }
 
     /**
+     * Set the {@link TraceConfig} that will be initially set on the Tracing SDK.
+     *
+     * <p>Using {@link #setTracerProvider(TracerProvider)} will override this setting.
+     *
+     * @return this
+     */
+    public Builder setTraceConfig(TraceConfig traceConfig) {
+      this.traceConfig = traceConfig;
+      return this;
+    }
+
+    /**
      * Returns a new {@link OpenTelemetrySdk} built with the configuration of this {@link Builder}.
      */
     @Override
@@ -252,6 +266,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       }
       if (idGenerator != null) {
         tracerProviderBuilder.setIdGenerator(idGenerator);
+      }
+      if (traceConfig != null) {
+        tracerProviderBuilder.setTraceConfig(traceConfig);
       }
       return tracerProviderBuilder.build();
     }
