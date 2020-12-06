@@ -26,7 +26,7 @@ public class DaemonThreadFactory implements ThreadFactory {
     Thread t = Executors.defaultThreadFactory().newThread(runnable);
     try {
       t.setDaemon(true);
-      t.setName(namePrefix + "_" + counter.incrementAndGet());
+      t.setName(namePrefix + "-" + counter.incrementAndGet());
     } catch (SecurityException e) {
       // Well, we tried.
     }

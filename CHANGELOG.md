@@ -2,6 +2,10 @@
 
 ## Unreleased:
 
+-----
+
+## Version 0.12.0 - 2020-12-04
+
 ### API
 
 #### Bugfixes
@@ -93,7 +97,7 @@ This is included in the Resource SPI implementation that the module provides.
 
 -----
 
-## Version 0.11.0 - 2010-11-18
+## Version 0.11.0 - 2020-11-18
 
 ### API
 
@@ -152,7 +156,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 
 -----
 
-## Version 0.10.0 - 2010-11-06
+## Version 0.10.0 - 2020-11-06
 
 ### API
 

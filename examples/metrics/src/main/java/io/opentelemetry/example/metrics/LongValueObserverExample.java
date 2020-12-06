@@ -19,9 +19,8 @@ public class LongValueObserverExample {
             .longValueObserverBuilder("jvm.memory.total")
             .setDescription("Reports JVM memory usage.")
             .setUnit("byte")
+            .setCallback(
+                result -> result.observe(Runtime.getRuntime().totalMemory(), Labels.empty()))
             .build();
-
-    observer.setCallback(
-        result -> result.observe(Runtime.getRuntime().totalMemory(), Labels.empty()));
   }
 }

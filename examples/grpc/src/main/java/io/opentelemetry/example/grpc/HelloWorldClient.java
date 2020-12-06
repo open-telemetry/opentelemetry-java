@@ -20,10 +20,10 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.propagation.HttpTraceContext;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -117,9 +117,7 @@ public class HelloWorldClient {
 
   private static void initTracing() {
     OpenTelemetry.setGlobalPropagators(
-        DefaultContextPropagators.builder()
-            .addTextMapPropagator(HttpTraceContext.getInstance())
-            .build());
+        ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
 
     // Use the OpenTelemetry SDK
     LoggingSpanExporter exporter = new LoggingSpanExporter();
