@@ -34,7 +34,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class InteroperabilityTest {
+class TraceInteroperabilityTest {
 
   private static final String NULL_SPAN_ID = "0000000000000000";
 
