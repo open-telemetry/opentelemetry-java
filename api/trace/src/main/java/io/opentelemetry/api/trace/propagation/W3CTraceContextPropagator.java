@@ -7,7 +7,6 @@ package io.opentelemetry.api.trace.propagation;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
-import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.internal;
+package io.opentelemetry.api.trace.propagation;
 
 /**
  * {@link ThreadLocal} buffers for use when creating new derived objects such as {@link String}s.
@@ -12,7 +12,7 @@ package io.opentelemetry.api.internal;
  * should get a temporary buffer, fill it with data, and finish by converting into the derived
  * object within the same method to avoid multiple usages of the same buffer.
  */
-public final class TemporaryBuffers {
+final class TemporaryBuffers {
 
   private static final ThreadLocal<char[]> CHAR_ARRAY = new ThreadLocal<>();
 
@@ -22,7 +22,7 @@ public final class TemporaryBuffers {
    * not be zeroed and may be larger than the requested size, you must make sure to fill the entire
    * content to the desired value and set the length explicitly when converting to a {@link String}.
    */
-  public static char[] chars(int len) {
+  static char[] chars(int len) {
     char[] buffer = CHAR_ARRAY.get();
     if (buffer == null) {
       buffer = new char[len];
