@@ -59,7 +59,7 @@ SDK library `opentelemetry-sdk-trace:1.11.33`.
     - API modules for immature signals will be co-versioned along with mature API modules.
     - The java packages for immature APIs will be used as if they were mature signals. This will enable users to easily transition from immature to 
     mature usage, without having to change imports. 
-    - SDK modules for immature signals will also be named with an "-experiment" suffix, in parallel to their API modules.
+    - SDK modules for immature signals will also be named with an "-experimental" suffix, in parallel to their API modules.
     
 ### Examples
 
