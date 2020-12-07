@@ -51,19 +51,6 @@ public final class Utils {
   }
 
   /**
-   * Throws an {@link IllegalStateException} if the argument is false. This method is similar to
-   * {@code Preconditions.checkState(boolean, Object)} from Guava.
-   *
-   * @param isValid whether the state check passed.
-   * @param errorMessage the message to use for the exception.
-   */
-  public static void checkState(boolean isValid, String errorMessage) {
-    if (!isValid) {
-      throw new IllegalStateException(String.valueOf(errorMessage));
-    }
-  }
-
-  /**
    * Substitutes each {@code %s} in {@code template} with an argument. These are matched by
    * position: the first {@code %s} gets {@code args[0]}, etc. If there are more arguments than
    * placeholders, the unmatched arguments will be appended to the end of the formatted message in
