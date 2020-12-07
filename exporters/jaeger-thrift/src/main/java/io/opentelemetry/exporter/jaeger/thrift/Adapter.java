@@ -15,7 +15,7 @@ import io.jaegertracing.thriftjava.SpanRefType;
 import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceId;
@@ -172,7 +172,7 @@ final class Adapter {
    * @return a collection of Jaeger key values
    * @see #toTag
    */
-  static List<Tag> toTags(ReadableAttributes attributes) {
+  static List<Tag> toTags(Attributes attributes) {
     List<Tag> results = new ArrayList<>();
     attributes.forEach((key, value) -> results.add(toTag(key, value)));
     return results;

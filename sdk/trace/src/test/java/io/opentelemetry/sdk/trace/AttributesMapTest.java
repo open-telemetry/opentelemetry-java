@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -44,7 +44,7 @@ class AttributesMapTest {
   }
 
   private void assertOrdering(
-      ReadableAttributes attributes, List<String> expectedKeyOrder, List<Long> expectedValueOrder) {
+      Attributes attributes, List<String> expectedKeyOrder, List<Long> expectedValueOrder) {
     attributes.forEach(
         new BiConsumer<AttributeKey<?>, Object>() {
           private int counter = 0;
