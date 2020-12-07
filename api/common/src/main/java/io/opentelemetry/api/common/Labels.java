@@ -5,11 +5,9 @@
 
 package io.opentelemetry.api.common;
 
-import static io.opentelemetry.api.common.Labels.ArrayBackedLabels.sortAndFilterToLabels;
+import static io.opentelemetry.api.common.ArrayBackedLabels.sortAndFilterToLabels;
 
-import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
-import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -27,52 +25,14 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface Labels {
 
-  /** Iterates over all the key-value pairs of labels contained by this instance. */
-  void forEach(BiConsumer<String, String> consumer);
-
-  /** The number of key-value pairs of labels in this instance. */
-  int size();
-
-  /** Returns the value for the given {@code key}, or {@code null} if the key is not present. */
-  @Nullable
-  String get(String key);
-
-  /** Returns whether this instance is empty (contains no labels). */
-  boolean isEmpty();
-
-  @AutoValue
-  @Immutable
-  abstract class ArrayBackedLabels extends ImmutableKeyValuePairs<String, String>
-      implements Labels {
-    private static final Labels EMPTY = Labels.builder().build();
-
-    ArrayBackedLabels() {}
-
-    @Override
-    protected abstract List<Object> data();
-
-    @Override
-    public void forEach(BiConsumer<String, String> consumer) {
-      List<Object> data = data();
-      for (int i = 0; i < data.size(); i += 2) {
-        consumer.accept((String) data.get(i), (String) data.get(i + 1));
-      }
-    }
-
-    static Labels sortAndFilterToLabels(Object... data) {
-      return new AutoValue_Labels_ArrayBackedLabels(
-          sortAndFilter(data, /* filterNullValues= */ false));
-    }
-
-    @Override
-    public LabelsBuilder toBuilder() {
-      return new ArrayBackedLabelsBuilder(data());
-    }
-  }
-
   /** Returns a {@link Labels} instance with no attributes. */
   static Labels empty() {
-    return ArrayBackedLabels.EMPTY;
+    return ArrayBackedLabels.empty();
+  }
+
+  /** Creates a new {@link LabelsBuilder} instance for creating arbitrary {@link Labels}. */
+  static LabelsBuilder builder() {
+    return new ArrayBackedLabelsBuilder();
   }
 
   /** Returns a {@link Labels} instance with a single key-value pair. */
@@ -136,20 +96,27 @@ public interface Labels {
         key5, value5);
   }
 
-  static Labels of(String[] keyValueLabelPairs) {
+  /** Returns a {@link Labels} instance with the provided {@code keyValueLabelPairs}. */
+  static Labels of(String... keyValueLabelPairs) {
     return sortAndFilterToLabels((Object[]) keyValueLabelPairs);
   }
 
-  /**
-   * Create a {@link ArrayBackedLabelsBuilder} pre-populated with the contents of this Labels
-   * instance.
-   */
-  LabelsBuilder toBuilder();
+  /** Iterates over all the key-value pairs of labels contained by this instance. */
+  void forEach(BiConsumer<String, String> consumer);
 
-  /**
-   * Creates a new {@link ArrayBackedLabelsBuilder} instance for creating arbitrary {@link Labels}.
-   */
-  static LabelsBuilder builder() {
-    return new ArrayBackedLabelsBuilder();
-  }
+  /** The number of key-value pairs of labels in this instance. */
+  int size();
+
+  /** Returns the value for the given {@code key}, or {@code null} if the key is not present. */
+  @Nullable
+  String get(String key);
+
+  /** Returns whether this instance is empty (contains no labels). */
+  boolean isEmpty();
+
+  /** Returns a read-only view of these {@link Labels} as a {@link Map}. */
+  Map<String, String> asMap();
+
+  /** Create a {@link LabelsBuilder} pre-populated with the contents of this Labels instance. */
+  LabelsBuilder toBuilder();
 }

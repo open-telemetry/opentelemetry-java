@@ -30,6 +30,16 @@ class LabelsTest {
   }
 
   @Test
+  void asMap() {
+    Labels labels =
+        Labels.of(
+            "key1", "value1",
+            "key2", "value2");
+
+    assertThat(labels.asMap()).containsExactly(entry("key1", "value1"), entry("key2", "value2"));
+  }
+
+  @Test
   void forEach_singleAttribute() {
     final Map<String, String> entriesSeen = new HashMap<>();
 
