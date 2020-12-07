@@ -114,7 +114,7 @@ final class DefaultMeter implements Meter {
 
   @Override
   public BatchRecorder newBatchRecorder(String... keyValuePairs) {
-    Utils.validateLabelPairs(keyValuePairs);
+    validateLabelPairs(keyValuePairs);
     return NoopBatchRecorder.INSTANCE;
   }
 
@@ -675,5 +675,22 @@ final class DefaultMeter implements Meter {
     }
 
     protected abstract B getThis();
+  }
+
+  /**
+   * Validates that the array of Strings is 1) even in length, and 2) they can be formed into valid
+   * pairs where the first item in the pair is not null.
+   *
+   * @param keyValuePairs The String[] to validate for correctness.
+   * @throws IllegalArgumentException if any of the preconditions are violated.
+   */
+  private static void validateLabelPairs(String[] keyValuePairs) {
+    Utils.checkArgument(
+        keyValuePairs.length % 2 == 0,
+        "You must provide an even number of key/value pair arguments.");
+    for (int i = 0; i < keyValuePairs.length; i += 2) {
+      String key = keyValuePairs[i];
+      Objects.requireNonNull(key, "You cannot provide null keys for label creation.");
+    }
   }
 }
