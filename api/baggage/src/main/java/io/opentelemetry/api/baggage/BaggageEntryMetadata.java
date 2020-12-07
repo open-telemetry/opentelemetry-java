@@ -12,13 +12,11 @@ package io.opentelemetry.api.baggage;
 public interface BaggageEntryMetadata {
 
   /** Returns an empty {@link BaggageEntryMetadata}. */
-  @SuppressWarnings("deprecation")
   static BaggageEntryMetadata empty() {
     return EntryMetadata.EMPTY;
   }
 
   /** Returns a new {@link BaggageEntryMetadata} with the given value. */
-  @SuppressWarnings("deprecation")
   static BaggageEntryMetadata create(String metadata) {
     return EntryMetadata.create(metadata);
   }

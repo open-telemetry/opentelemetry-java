@@ -113,15 +113,6 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
     globalOpenTelemetry = null;
   }
 
-  @Override
-  @Deprecated
-  public Builder toBuilder() {
-    return new Builder()
-        .setTracerProvider(tracerProvider)
-        .setMeterProvider(meterProvider)
-        .setPropagators(propagators);
-  }
-
   protected static class Builder implements OpenTelemetryBuilder<Builder> {
     protected ContextPropagators propagators = ContextPropagators.noop();
 

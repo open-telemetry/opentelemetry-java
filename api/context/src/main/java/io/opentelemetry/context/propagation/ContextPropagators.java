@@ -86,14 +86,12 @@ public interface ContextPropagators {
    *     new MyCustomContextPropagator()));
    * }</pre>
    */
-  @SuppressWarnings("deprecation")
   static ContextPropagators create(TextMapPropagator textPropagator) {
     requireNonNull(textPropagator, "textPropagator");
     return new DefaultContextPropagators(textPropagator);
   }
 
   /** Returns a {@link ContextPropagators} which performs no injection or extraction. */
-  @SuppressWarnings("deprecation")
   static ContextPropagators noop() {
     return DefaultContextPropagators.noop();
   }
