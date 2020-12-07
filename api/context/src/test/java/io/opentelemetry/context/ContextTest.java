@@ -174,6 +174,18 @@ class ContextTest {
 
     assertThat(context4.get(ANIMAL)).isEqualTo("dog");
     assertThat(context4.get(BAG)).isNull();
+
+    Context context5 = context4.with(ANIMAL, "dog");
+    assertThat(context5.get(ANIMAL)).isEqualTo("dog");
+    assertThat(context5).isSameAs(context4);
+
+    String dog = new String("dog");
+    assertThat(dog).isEqualTo("dog");
+    assertThat(dog).isNotSameAs("dog");
+    Context context6 = context5.with(ANIMAL, dog);
+    assertThat(context6.get(ANIMAL)).isEqualTo("dog");
+    // We reuse context object when values match by reference, not value.
+    assertThat(context6).isNotSameAs(context5);
   }
 
   @Test
