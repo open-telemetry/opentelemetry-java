@@ -17,7 +17,6 @@ import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
@@ -28,16 +27,12 @@ public class BaggageBenchmark {
   @Param({"0", "1", "10", "100"})
   public int itemsToAdd;
 
-  private List<String> keys;
-  private List<String> values;
+  // pre-allocate the keys & values to remove one possible confounding factor
+  private static final List<String> keys = new ArrayList<>(100);
+  private static final List<String> values = new ArrayList<>(100);
 
-  @Setup
-  public void setUp() {
-    keys = new ArrayList<>(itemsToAdd);
-    values = new ArrayList<>(itemsToAdd);
-
-    // pre-allocate the keys & values to remove one possible confounding factor
-    for (int i = 0; i < itemsToAdd; i++) {
+  static {
+    for (int i = 0; i < 100; i++) {
       keys.add("key" + i);
       values.add("value" + i);
     }
