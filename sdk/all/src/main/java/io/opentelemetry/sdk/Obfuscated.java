@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.internal;
+package io.opentelemetry.sdk;
 
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -19,7 +19,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * global providers returned by the API and points them to it's embedded SDK.
  */
 @ThreadSafe
-public interface Obfuscated<T> {
+interface Obfuscated<T> {
 
   /**
    * Returns the unobfuscated provider.
