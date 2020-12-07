@@ -13,8 +13,14 @@ class BatchRecorderTest {
   private static final Meter meter = Meter.getDefault();
 
   @Test
-  void testNewBatchRecorder_badLabelSet() {
+  void testNewBatchRecorder_WrongNumberOfLabels() {
     assertThrows(IllegalArgumentException.class, () -> meter.newBatchRecorder("key"), "key/value");
+  }
+
+  @Test
+  void testNewBatchRecorder_NullLabelKey() {
+    assertThrows(
+        NullPointerException.class, () -> meter.newBatchRecorder(null, "value"), "null keys");
   }
 
   @Test
