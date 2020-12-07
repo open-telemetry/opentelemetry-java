@@ -43,14 +43,15 @@ class PrometheusCollectorTest {
     when(metricProducer.collectAllMetrics()).thenReturn(generateTestData());
     StringWriter stringWriter = new StringWriter();
     TextFormat.write004(stringWriter, CollectorRegistry.defaultRegistry.metricFamilySamples());
-    assertThat(stringWriter.toString())
-        .isEqualTo(
-            "# HELP grpc_name long_description\n"
-                + "# TYPE grpc_name counter\n"
-                + "grpc_name{kp=\"vp\",} 5.0\n"
-                + "# HELP http_name double_description\n"
-                + "# TYPE http_name counter\n"
-                + "http_name{kp=\"vp\",} 3.5\n");
+    String actual = stringWriter.toString();
+    String expected =
+        "# HELP grpc_name long_description\n"
+            + "# TYPE grpc_name counter\n"
+            + "grpc_name{kp=\"vp\",} 5.0\n"
+            + "# HELP http_name double_description\n"
+            + "# TYPE http_name counter\n"
+            + "http_name{kp=\"vp\",} 3.5\n";
+    assertThat(actual).isEqualTo(expected);
   }
 
   private static ImmutableList<MetricData> generateTestData() {
