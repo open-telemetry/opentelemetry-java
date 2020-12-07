@@ -92,23 +92,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return (TracerSdkProvider) ((ObfuscatedTracerProvider) getTracerProvider()).unobfuscate();
   }
 
-  /**
-   * Returns a new {@link Builder} initialized with the values of this {@link OpenTelemetrySdk}.
-   *
-   * @deprecated This method should not be used, as it allows unexpected sharing of state across
-   *     instances. It will be removed in the next release.
-   */
-  @Override
-  @Deprecated
-  public Builder toBuilder() {
-    return new Builder()
-        .setTracerProvider(getTracerProvider())
-        .setMeterProvider(getMeterProvider())
-        .setPropagators(getPropagators())
-        .setClock(clock)
-        .setResource(resource);
-  }
-
   /** A builder for configuring an {@link OpenTelemetrySdk}. */
   public static class Builder extends DefaultOpenTelemetry.Builder {
     private Clock clock;

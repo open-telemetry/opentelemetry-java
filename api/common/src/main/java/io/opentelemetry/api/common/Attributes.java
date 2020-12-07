@@ -150,18 +150,6 @@ public interface Attributes {
   }
 
   /**
-   * Returns a new {@link AttributesBuilder} instance from Attributes.
-   *
-   * @deprecated Use {@link Attributes#toBuilder()}
-   */
-  @Deprecated
-  static AttributesBuilder builder(Attributes attributes) {
-    final AttributesBuilder builder = new ArrayBackedAttributesBuilder();
-    builder.putAll(attributes);
-    return builder;
-  }
-
-  /**
    * Returns a new {@link AttributesBuilder} instance populated with the data of this {@link
    * Attributes}.
    */

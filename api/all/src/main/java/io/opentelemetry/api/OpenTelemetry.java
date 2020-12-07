@@ -205,16 +205,6 @@ public interface OpenTelemetry {
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
   ContextPropagators getPropagators();
 
-  /**
-   * Returns a new {@link OpenTelemetryBuilder} with the configuration of this {@link
-   * OpenTelemetry}.
-   *
-   * @deprecated This method should not be used, as it allows unexpected sharing of state across
-   *     instances. It will be removed in the next release.
-   */
-  @Deprecated
-  OpenTelemetryBuilder<?> toBuilder();
-
   /** Returns a new {@link OpenTelemetryBuilder}. */
   static OpenTelemetryBuilder<?> builder() {
     return new DefaultOpenTelemetry.Builder();

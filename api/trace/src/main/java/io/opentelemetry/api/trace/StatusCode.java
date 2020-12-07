@@ -10,33 +10,15 @@ package io.opentelemetry.api.trace;
  * value that does not collide with any previously used value.
  */
 public enum StatusCode {
+  /** The default status. */
+  UNSET,
 
   /**
    * The operation has been validated by an Application developers or Operator to have completed
    * successfully.
    */
-  OK(0),
-
-  /** The default status. */
-  UNSET(1),
+  OK,
 
   /** The operation contains an error. */
-  ERROR(2);
-
-  private final int value;
-
-  StatusCode(int value) {
-    this.value = value;
-  }
-
-  /**
-   * Returns the numerical value of the code.
-   *
-   * @return the numerical value of the code.
-   * @deprecated The value is not a part of the OpenTelemetry specification and will be remmoved.
-   */
-  @Deprecated
-  public int value() {
-    return value;
-  }
+  ERROR
 }
