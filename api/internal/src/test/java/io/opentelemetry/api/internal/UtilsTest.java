@@ -42,10 +42,4 @@ class UtilsTest {
                 false, TEST_MESSAGE_TEMPLATE, TEST_MESSAGE_VALUE, TEST_MESSAGE_VALUE),
         FORMATTED_COMPLEX_TEST_MESSAGE);
   }
-
-  @Test
-  void checkState() {
-    assertThrows(
-        IllegalStateException.class, () -> Utils.checkState(false, TEST_MESSAGE), TEST_MESSAGE);
-  }
 }
