@@ -68,6 +68,9 @@ final class LazyStorage {
       "io.opentelemetry.context.contextStorageProvider";
   private static final String ENFORCE_DEFAULT_STORAGE_VALUE = "default";
 
+  private static final String ENABLE_STRICT_CONTEXT_PROVIDER_PROPERTY =
+      "io.opentelemetry.context.enableStrictContext";
+
   private static final Logger logger = Logger.getLogger(LazyStorage.class.getName());
 
   private static final ContextStorage storage;
@@ -75,6 +78,9 @@ final class LazyStorage {
   static {
     AtomicReference<Throwable> deferredStorageFailure = new AtomicReference<>();
     ContextStorage created = createStorage(deferredStorageFailure);
+    if (Boolean.getBoolean(ENABLE_STRICT_CONTEXT_PROVIDER_PROPERTY)) {
+      created = StrictContextStorage.create(created);
+    }
     for (Function<? super ContextStorage, ? extends ContextStorage> wrapper :
         ContextStorageWrappers.getWrappers()) {
       created = wrapper.apply(created);

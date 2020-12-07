@@ -63,6 +63,18 @@ import javax.annotation.Nullable;
  *   <li>Attaching Context from a different ancestor will cause information in the current Context
  *       to be lost. This should generally be avoided.
  * </ul>
+ *
+ * <p>Context propagation is not trivial, and when done incorrectly can lead to broken traces or
+ * even mixed traces. We provide a debug mechanism for context propagation, which can be enabled by
+ * setting {@code -Dio.opentelemetry.context.enableStrictContext=true} in your JVM args. This will
+ * enable a strict checker that makes sure that {@link Scope}s are closed on the correct thread and
+ * that they are not garbage collected before being closed. This is done with some relatively
+ * expensive stack trace walking. It is highly recommended to enable this in unit tests and staging
+ * environments, and you may consider enabling it in production if you have the CPU budget or have
+ * very strict requirements on context being propagated correctly (i.e., because you use context in
+ * a multi-tenant system).
+ *
+ * @see StrictContextStorage
  */
 public interface Context {
 

@@ -19,6 +19,8 @@ testSets {
     otelAsBraveTest
 
     storageWrappersTest
+
+    strictContextEnabledTest
 }
 
 dependencies {
@@ -34,4 +36,8 @@ dependencies {
     testImplementation libraries.junit_pioneer
 
     signature libraries.android_signature
+}
+
+tasks.named("strictContextEnabledTest").configure {
+    jvmArgs "-Dio.opentelemetry.context.enableStrictContext=true"
 }

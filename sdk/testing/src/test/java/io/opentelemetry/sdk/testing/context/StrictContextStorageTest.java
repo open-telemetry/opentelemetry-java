@@ -32,6 +32,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.StrictContextStorage;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
@@ -189,7 +190,7 @@ class StrictContextStorageTest {
 
   @Test
   void garbageCollectedScope() {
-    Logger logger = StrictContextStorage.logger;
+    Logger logger = Logger.getLogger(StrictContextStorage.class.getName());
     AtomicReference<LogRecord> logged = new AtomicReference<>();
     Handler handler =
         new Handler() {

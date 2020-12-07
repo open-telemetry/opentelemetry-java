@@ -18,13 +18,10 @@
  * the License.
  */
 
-package io.opentelemetry.sdk.testing.context;
+package io.opentelemetry.context;
 
 import static java.lang.Thread.currentThread;
 
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextStorage;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import java.util.Arrays;
 import java.util.List;
@@ -78,8 +75,7 @@ public class StrictContextStorage implements ContextStorage {
     return new StrictContextStorage(delegate);
   }
 
-  // Visible for testing
-  static final Logger logger = Logger.getLogger(StrictContextStorage.class.getName());
+  private static final Logger logger = Logger.getLogger(StrictContextStorage.class.getName());
 
   private final ContextStorage delegate;
   private final PendingScopes pendingScopes;
