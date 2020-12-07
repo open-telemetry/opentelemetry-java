@@ -365,10 +365,11 @@ public abstract class TraceConfig {
       if (traceConfig.getMaxNumberOfAttributesPerLink() <= 0) {
         throw new IllegalArgumentException("maxNumberOfAttributesPerLink must be greater than 0");
       }
-      if (traceConfig.getMaxLengthOfAttributeValues() < -1) {
+      if (traceConfig.getMaxLengthOfAttributeValues() <= 0
+          && traceConfig.getMaxLengthOfAttributeValues() != UNLIMITED_ATTRIBUTE_LENGTH) {
         throw new IllegalArgumentException(
             "maxLengthOfAttributeValues must be -1 to "
-                + "disable length restriction, or 0 or higher to enable length restriction");
+                + "disable length restriction, or positive to enable length restriction");
       }
       return traceConfig;
     }
