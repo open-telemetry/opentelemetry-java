@@ -89,26 +89,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
         List<MetricData.Point> points = new ArrayList<>();
         MetricDescriptor.Type type = null;
         for (Point point : timeSeries.getPoints()) {
-          long timestampNanos =
-              TimeUnit.SECONDS.toNanos(point.getTimestamp().getSeconds())
-                  + point.getTimestamp().getNanos();
-          type = metric.getMetricDescriptor().getType();
-          switch (type) {
-            case GAUGE_INT64:
-            case CUMULATIVE_INT64:
-              points.add(mapLongPoint(labels, point, timestampNanos));
-              break;
-            case GAUGE_DOUBLE:
-            case CUMULATIVE_DOUBLE:
-              points.add(mapDoublePoint(labels, point, timestampNanos));
-              break;
-            case SUMMARY:
-              points.add(mapSummaryPoint(labels, point, timestampNanos));
-              break;
-            default:
-              unsupportedTypes.add(type);
-              break;
-          }
+          type = mapAndAddPoint(unsupportedTypes, metric, labels, points, point);
         }
         MetricData.Type metricDataType = mapType(type);
         if (metricDataType != null) {
@@ -132,6 +113,36 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
     if (!metricData.isEmpty()) {
       otelExporter.export(metricData);
     }
+  }
+
+  @Nonnull
+  private static MetricDescriptor.Type mapAndAddPoint(
+      Set<MetricDescriptor.Type> unsupportedTypes,
+      Metric metric,
+      Labels labels,
+      List<MetricData.Point> points,
+      Point point) {
+    long timestampNanos =
+        TimeUnit.SECONDS.toNanos(point.getTimestamp().getSeconds())
+            + point.getTimestamp().getNanos();
+    MetricDescriptor.Type type = metric.getMetricDescriptor().getType();
+    switch (type) {
+      case GAUGE_INT64:
+      case CUMULATIVE_INT64:
+        points.add(mapLongPoint(labels, point, timestampNanos));
+        break;
+      case GAUGE_DOUBLE:
+      case CUMULATIVE_DOUBLE:
+        points.add(mapDoublePoint(labels, point, timestampNanos));
+        break;
+      case SUMMARY:
+        points.add(mapSummaryPoint(labels, point, timestampNanos));
+        break;
+      default:
+        unsupportedTypes.add(type);
+        break;
+    }
+    return type;
   }
 
   public void stop() {
