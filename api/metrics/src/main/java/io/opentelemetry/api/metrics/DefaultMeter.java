@@ -420,12 +420,6 @@ final class DefaultMeter implements Meter {
 
     private NoopDoubleSumObserver() {}
 
-    @Override
-    @Deprecated
-    public void setCallback(Callback<DoubleResult> callback) {
-      Objects.requireNonNull(callback, "callback");
-    }
-
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
 
@@ -452,12 +446,6 @@ final class DefaultMeter implements Meter {
   private static final class NoopLongSumObserver implements LongSumObserver {
 
     private NoopLongSumObserver() {}
-
-    @Override
-    @Deprecated
-    public void setCallback(Callback<LongResult> callback) {
-      Objects.requireNonNull(callback, "callback");
-    }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
@@ -486,12 +474,6 @@ final class DefaultMeter implements Meter {
 
     private NoopDoubleUpDownSumObserver() {}
 
-    @Override
-    @Deprecated
-    public void setCallback(Callback<DoubleResult> callback) {
-      Objects.requireNonNull(callback, "callback");
-    }
-
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
 
@@ -518,12 +500,6 @@ final class DefaultMeter implements Meter {
   private static final class NoopLongUpDownSumObserver implements LongUpDownSumObserver {
 
     private NoopLongUpDownSumObserver() {}
-
-    @Override
-    @Deprecated
-    public void setCallback(Callback<LongResult> callback) {
-      Objects.requireNonNull(callback, "callback");
-    }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
@@ -552,12 +528,6 @@ final class DefaultMeter implements Meter {
 
     private NoopDoubleValueObserver() {}
 
-    @Override
-    @Deprecated
-    public void setCallback(Callback<DoubleResult> callback) {
-      Objects.requireNonNull(callback, "callback");
-    }
-
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
 
@@ -584,12 +554,6 @@ final class DefaultMeter implements Meter {
   private static final class NoopLongValueObserver implements LongValueObserver {
 
     private NoopLongValueObserver() {}
-
-    @Override
-    @Deprecated
-    public void setCallback(Callback<LongResult> callback) {
-      Objects.requireNonNull(callback, "callback");
-    }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
