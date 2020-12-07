@@ -80,6 +80,8 @@ jobs:
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
           GRGIT_USER: ${{ github.actor }}
           GRGIT_PASS: ${{ secrets.GITHUB_TOKEN }}
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
       - run: git push
       - name: Checkout master
         uses: actions/checkout@v2

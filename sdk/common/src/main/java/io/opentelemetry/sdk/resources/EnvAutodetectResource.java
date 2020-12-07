@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.resources;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -33,7 +32,7 @@ final class EnvAutodetectResource {
    * Values may be quoted or unquoted in general.
    * If a value contains whitespaces, =, or " characters, it must always be quoted.
    */
-  @VisibleForTesting
+  // Visible for testing
   static Attributes parseResourceAttributes(@Nullable String rawEnvAttributes) {
     if (rawEnvAttributes == null) {
       return Attributes.empty();

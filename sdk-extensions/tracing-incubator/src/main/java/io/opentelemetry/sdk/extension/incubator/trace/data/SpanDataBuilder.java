@@ -6,8 +6,9 @@
 package io.opentelemetry.sdk.extension.incubator.trace.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -48,7 +49,7 @@ public abstract class SpanDataBuilder implements SpanData {
         .setSpanId(spanData.getSpanId())
         .setSampled(spanData.isSampled())
         .setTraceState(spanData.getTraceState())
-        .setParentSpanId(spanData.getParentSpanId())
+        .setParentSpanContext(spanData.getParentSpanContext())
         .setResource(spanData.getResource())
         .setInstrumentationLibraryInfo(spanData.getInstrumentationLibraryInfo())
         .setName(spanData.getName())
@@ -59,7 +60,6 @@ public abstract class SpanDataBuilder implements SpanData {
         .setLinks(spanData.getLinks())
         .setStatus(spanData.getStatus())
         .setEndEpochNanos(spanData.getEndEpochNanos())
-        .setHasRemoteParent(spanData.hasRemoteParent())
         .setHasEnded(spanData.hasEnded())
         .setTotalRecordedEvents(spanData.getTotalRecordedEvents())
         .setTotalRecordedLinks(spanData.getTotalRecordedLinks())
@@ -74,16 +74,9 @@ public abstract class SpanDataBuilder implements SpanData {
 
   abstract boolean getInternalHasEnded();
 
-  abstract boolean getInternalHasRemoteParent();
-
   @Override
   public final boolean hasEnded() {
     return getInternalHasEnded();
-  }
-
-  @Override
-  public final boolean hasRemoteParent() {
-    return getInternalHasRemoteParent();
   }
 
   // AutoValue won't generate equals that compares with SpanData interface but generates hash code
@@ -101,7 +94,7 @@ public abstract class SpanDataBuilder implements SpanData {
           && getSpanId().equals(that.getSpanId())
           && isSampled() == that.isSampled()
           && getTraceState().equals(that.getTraceState())
-          && getParentSpanId().equals(that.getParentSpanId())
+          && getParentSpanContext().equals(that.getParentSpanContext())
           && getResource().equals(that.getResource())
           && getInstrumentationLibraryInfo().equals(that.getInstrumentationLibraryInfo())
           && getName().equals(that.getName())
@@ -112,7 +105,6 @@ public abstract class SpanDataBuilder implements SpanData {
           && getLinks().equals(that.getLinks())
           && getStatus().equals(that.getStatus())
           && getEndEpochNanos() == that.getEndEpochNanos()
-          && hasRemoteParent() == that.hasRemoteParent()
           && hasEnded() == that.hasEnded()
           && getTotalRecordedEvents() == that.getTotalRecordedEvents()
           && getTotalRecordedLinks() == that.getTotalRecordedLinks()
@@ -139,7 +131,7 @@ public abstract class SpanDataBuilder implements SpanData {
 
     public abstract Builder setTraceState(TraceState traceState);
 
-    public abstract Builder setParentSpanId(String parentSpanId);
+    public abstract Builder setParentSpanContext(SpanContext parentSpanContext);
 
     public abstract Builder setResource(Resource resource);
 
@@ -152,7 +144,7 @@ public abstract class SpanDataBuilder implements SpanData {
 
     public abstract Builder setEndEpochNanos(long epochNanos);
 
-    public abstract Builder setAttributes(ReadableAttributes attributes);
+    public abstract Builder setAttributes(Attributes attributes);
 
     public abstract Builder setEvents(List<Event> events);
 
@@ -161,12 +153,6 @@ public abstract class SpanDataBuilder implements SpanData {
     public abstract Builder setKind(Kind kind);
 
     public abstract Builder setLinks(List<Link> links);
-
-    abstract Builder setInternalHasRemoteParent(boolean hasRemoteParent);
-
-    public final Builder setHasRemoteParent(boolean hasRemoteParent) {
-      return setInternalHasRemoteParent(hasRemoteParent);
-    }
 
     abstract Builder setInternalHasEnded(boolean hasEnded);
 

@@ -5,15 +5,16 @@
 
 package io.opentelemetry.sdk.resources;
 
+import static java.util.Objects.requireNonNull;
+
 import com.google.auto.value.AutoValue;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -69,7 +70,8 @@ public abstract class ResourcesConfig {
    * @return a new {@link Builder}.
    */
   public static Builder builder() {
-    return new AutoValue_ResourcesConfig.Builder().setDisabledResourceProviders(ImmutableSet.of());
+    return new AutoValue_ResourcesConfig.Builder()
+        .setDisabledResourceProviders(Collections.emptySet());
   }
 
   /**
@@ -94,7 +96,7 @@ public abstract class ResourcesConfig {
      * @param configMap {@link Map} holding the configuration values.
      * @return this
      */
-    @VisibleForTesting
+    // Visible for testing
     @Override
     protected Builder fromConfigMap(
         Map<String, String> configMap, NamingConvention namingConvention) {
@@ -103,8 +105,11 @@ public abstract class ResourcesConfig {
       String stringValue = getStringProperty(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS, configMap);
       if (stringValue != null) {
         this.setDisabledResourceProviders(
-            ImmutableSet.copyOf(
-                Splitter.on(',').omitEmptyStrings().trimResults().split(stringValue)));
+            Collections.unmodifiableSet(
+                Arrays.stream(stringValue.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toSet())));
       }
       return this;
     }
@@ -128,8 +133,7 @@ public abstract class ResourcesConfig {
      */
     public ResourcesConfig build() {
       ResourcesConfig resourcesConfig = autoBuild();
-      Preconditions.checkArgument(
-          resourcesConfig.getDisabledResourceProviders() != null, "disabledResourceProviders");
+      requireNonNull(resourcesConfig.getDisabledResourceProviders(), "disabledResourceProviders");
       return resourcesConfig;
     }
   }

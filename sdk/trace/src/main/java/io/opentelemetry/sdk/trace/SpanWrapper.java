@@ -6,8 +6,9 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -34,7 +35,7 @@ abstract class SpanWrapper implements SpanData {
 
   abstract List<SpanData.Event> resolvedEvents();
 
-  abstract ReadableAttributes attributes();
+  abstract Attributes attributes();
 
   abstract int totalAttributeCount();
 
@@ -56,7 +57,7 @@ abstract class SpanWrapper implements SpanData {
       RecordEventsReadableSpan delegate,
       List<SpanData.Link> links,
       List<Event> events,
-      ReadableAttributes attributes,
+      Attributes attributes,
       int totalAttributeCount,
       int totalRecordedEvents,
       Status status,
@@ -97,8 +98,8 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public String getParentSpanId() {
-    return delegate().getParentSpanId();
+  public SpanContext getParentSpanContext() {
+    return delegate().getParentSpanContext();
   }
 
   @Override
@@ -127,7 +128,7 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public ReadableAttributes getAttributes() {
+  public Attributes getAttributes() {
     return attributes();
   }
 
@@ -149,11 +150,6 @@ abstract class SpanWrapper implements SpanData {
   @Override
   public long getEndEpochNanos() {
     return endEpochNanos();
-  }
-
-  @Override
-  public boolean hasRemoteParent() {
-    return delegate().hasRemoteParent();
   }
 
   @Override

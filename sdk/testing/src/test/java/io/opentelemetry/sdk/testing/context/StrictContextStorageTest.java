@@ -22,6 +22,7 @@ package io.opentelemetry.sdk.testing.context;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -31,9 +32,15 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.StrictContextStorage;
 import io.opentelemetry.sdk.trace.IdGenerator;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -171,5 +178,54 @@ class StrictContextStorageTest {
 
   static void assertStackTraceStartsWithMethod(Throwable throwable, String methodName) {
     assertThat(throwable.getStackTrace()[0].getMethodName()).isEqualTo(methodName);
+  }
+
+  @Test
+  @SuppressWarnings("UnusedVariable")
+  void multipleLeaks() {
+    Scope scope1 = Context.current().with(ANIMAL, "cat").makeCurrent();
+    Scope scope2 = Context.current().with(ANIMAL, "dog").makeCurrent();
+    assertThatThrownBy(strictStorage::ensureAllClosed).isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void garbageCollectedScope() {
+    Logger logger = Logger.getLogger(StrictContextStorage.class.getName());
+    AtomicReference<LogRecord> logged = new AtomicReference<>();
+    Handler handler =
+        new Handler() {
+          @Override
+          public void publish(LogRecord record) {
+            logged.set(record);
+          }
+
+          @Override
+          public void flush() {}
+
+          @Override
+          public void close() {}
+        };
+    logger.addHandler(handler);
+    logger.setUseParentHandlers(false);
+    try {
+      Context.current().with(ANIMAL, "cat").makeCurrent();
+
+      await()
+          .atMost(Duration.ofSeconds(30))
+          .untilAsserted(
+              () -> {
+                System.gc();
+                assertThat(logged).doesNotHaveValue(null);
+                LogRecord record = logged.get();
+                assertThat(record.getLevel()).isEqualTo(Level.SEVERE);
+                assertThat(record.getMessage())
+                    .isEqualTo("Scope garbage collected before being closed.");
+                assertThat(record.getThrown().getMessage())
+                    .matches("Thread \\[Test worker\\] opened a scope of .* here:");
+              });
+    } finally {
+      logger.removeHandler(handler);
+      logger.setUseParentHandlers(true);
+    }
   }
 }

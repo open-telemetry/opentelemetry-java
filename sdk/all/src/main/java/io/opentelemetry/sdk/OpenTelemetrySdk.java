@@ -7,10 +7,8 @@ package io.opentelemetry.sdk;
 
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.internal.Obfuscated;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -19,9 +17,11 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -91,37 +91,25 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return (TracerSdkProvider) ((ObfuscatedTracerProvider) getTracerProvider()).unobfuscate();
   }
 
-  /**
-   * Returns a new {@link Builder} initialized with the values of this {@link OpenTelemetrySdk}.
-   *
-   * @deprecated This method should not be used, as it allows unexpected sharing of state across
-   *     instances. It will be removed in the next release.
-   */
-  @Override
-  @Deprecated
-  public Builder toBuilder() {
-    return new Builder()
-        .setTracerProvider(getTracerProvider())
-        .setMeterProvider(getMeterProvider())
-        .setPropagators(getPropagators())
-        .setClock(clock)
-        .setResource(resource);
-  }
-
   /** A builder for configuring an {@link OpenTelemetrySdk}. */
   public static class Builder extends DefaultOpenTelemetry.Builder {
     private Clock clock;
     private Resource resource;
     private final List<SpanProcessor> spanProcessors = new ArrayList<>();
+    private IdGenerator idGenerator;
+    private TraceConfig traceConfig;
 
     /**
      * Sets the {@link TracerSdkProvider} to use. This can be used to configure tracing settings by
      * returning the instance created by a {@link TracerSdkProvider.Builder}.
      *
+     * <p>If you use this method, it is assumed that you are providing a fully configured
+     * TracerSdkProvider, and other settings will be ignored.
+     *
      * <p>Note: the parameter passed in here must be a {@link TracerSdkProvider} instance.
      *
-     * @see TracerSdkProvider#builder()
      * @param tracerProvider A {@link TracerSdkProvider} to use with this instance.
+     * @see TracerSdkProvider#builder()
      */
     @Override
     public Builder setTracerProvider(TracerProvider tracerProvider) {
@@ -159,6 +147,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     /**
      * Sets the {@link Clock} to be used for measuring timings.
      *
+     * <p>If you use {@link #setTracerProvider(TracerProvider)}, this will be ignored for purposes
+     * of configuring the TracerProvider.
+     *
      * @param clock The clock to use for all temporal needs.
      * @return this
      */
@@ -170,6 +161,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
     /**
      * Sets the {@link Resource} to be attached to all telemetry reported by this SDK.
+     *
+     * <p>If you use {@link #setTracerProvider(TracerProvider)}, this will be ignored for purposes
+     * of configuring the TracerProvider.
      *
      * @param resource A Resource implementation.
      * @return this
@@ -187,6 +181,30 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
      */
     public Builder addSpanProcessor(SpanProcessor spanProcessor) {
       spanProcessors.add(spanProcessor);
+      return this;
+    }
+
+    /**
+     * Set the {@link IdGenerator} that will be used by the SDK for generating trace and span ids.
+     *
+     * <p>Using {@link #setTracerProvider(TracerProvider)} will override this setting.
+     *
+     * @return this
+     */
+    public Builder setIdGenerator(IdGenerator idGenerator) {
+      this.idGenerator = idGenerator;
+      return this;
+    }
+
+    /**
+     * Set the {@link TraceConfig} that will be initially set on the Tracing SDK.
+     *
+     * <p>Using {@link #setTracerProvider(TracerProvider)} will override this setting.
+     *
+     * @return this
+     */
+    public Builder setTraceConfig(TraceConfig traceConfig) {
+      this.traceConfig = traceConfig;
       return this;
     }
 
@@ -228,6 +246,12 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       if (resource != null) {
         tracerProviderBuilder.setResource(resource);
       }
+      if (idGenerator != null) {
+        tracerProviderBuilder.setIdGenerator(idGenerator);
+      }
+      if (traceConfig != null) {
+        tracerProviderBuilder.setTraceConfig(traceConfig);
+      }
       return tracerProviderBuilder.build();
     }
 
@@ -253,7 +277,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
    * @see Obfuscated
    */
   @ThreadSafe
-  @VisibleForTesting
+  // Visible for testing
   static class ObfuscatedTracerProvider implements TracerProvider, Obfuscated<TracerProvider> {
 
     private final TracerProvider delegate;

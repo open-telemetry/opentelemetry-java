@@ -16,11 +16,9 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -65,7 +63,6 @@ class RecordEventsReadableSpanTest {
   private static final String SPAN_NEW_NAME = "NewName";
   private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
   private static final long MILLIS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
-  private static final boolean EXPECTED_HAS_REMOTE_PARENT = true;
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
   private final IdGenerator idsGenerator = IdGenerator.random();
@@ -287,16 +284,6 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CLIENT);
     try {
       assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
-    } finally {
-      span.end();
-    }
-  }
-
-  @Test
-  void getSpanHasRemoteParent() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
-    try {
-      assertThat(span.toSpanData().hasRemoteParent()).isTrue();
     } finally {
       span.end();
     }
@@ -812,8 +799,10 @@ class RecordEventsReadableSpanTest {
             SPAN_NAME,
             instrumentationLibraryInfo,
             kind,
-            parentSpanId,
-            /* hasRemoteParent= */ true,
+            parentSpanId != null
+                ? SpanContext.create(
+                    traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())
+                : SpanContext.getInvalid(),
             Context.root(),
             config,
             spanProcessor,
@@ -844,7 +833,7 @@ class RecordEventsReadableSpanTest {
 
   private void verifySpanData(
       SpanData spanData,
-      final ReadableAttributes attributes,
+      final Attributes attributes,
       List<Event> eventData,
       List<Link> links,
       String spanName,
@@ -855,7 +844,6 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
-    assertThat(spanData.hasRemoteParent()).isEqualTo(EXPECTED_HAS_REMOTE_PARENT);
     assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
@@ -868,15 +856,9 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.hasEnded()).isEqualTo(hasEnded);
 
     // verify equality manually, since the implementations don't all equals with each other.
-    ReadableAttributes spanDataAttributes = spanData.getAttributes();
+    Attributes spanDataAttributes = spanData.getAttributes();
     assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
-    spanDataAttributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            assertThat(attributes.get(key)).isEqualTo(value);
-          }
-        });
+    spanDataAttributes.forEach((key, value) -> assertThat(attributes.get(key)).isEqualTo(value));
   }
 
   @Test
@@ -892,7 +874,7 @@ class RecordEventsReadableSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     final AttributesMap attributesWithCapacity = new AttributesMap(32);
-    attributes.forEach(attributesWithCapacity::put);
+    attributes.forEach((key, value) -> attributesWithCapacity.put((AttributeKey) key, value));
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
@@ -905,8 +887,10 @@ class RecordEventsReadableSpanTest {
             name,
             instrumentationLibraryInfo,
             kind,
-            parentSpanId,
-            /* hasRemoteParent= */ EXPECTED_HAS_REMOTE_PARENT,
+            parentSpanId != null
+                ? SpanContext.create(
+                    traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())
+                : SpanContext.getInvalid(),
             Context.root(),
             traceConfig,
             spanProcessor,

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.testing.assertj;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -93,14 +93,15 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span has the given parent span ID. */
   public SpanDataAssert hasParentSpanId(String parentSpanId) {
     isNotNull();
-    if (!actual.getParentSpanId().equals(parentSpanId)) {
+    String actualParentSpanId = actual.getParentSpanId();
+    if (!actualParentSpanId.equals(parentSpanId)) {
       failWithActualExpectedAndMessage(
-          actual.getParentSpanId(),
+          actualParentSpanId,
           parentSpanId,
           "Expected span [%s] to have parent span ID <%s> but was <%s>",
           actual.getName(),
           parentSpanId,
-          actual.getParentSpanId());
+          actualParentSpanId);
     }
     return this;
   }
@@ -192,7 +193,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   }
 
   /** Asserts the span has the given attributes. */
-  public SpanDataAssert hasAttributes(ReadableAttributes attributes) {
+  public SpanDataAssert hasAttributes(Attributes attributes) {
     isNotNull();
     if (!actual.getAttributes().equals(attributes)) {
       failWithActualExpectedAndMessage(
@@ -207,7 +208,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   }
 
   /** Asserts the span has attributes satisfying the given condition. */
-  public SpanDataAssert hasAttributesSatisfying(Consumer<ReadableAttributes> attributes) {
+  public SpanDataAssert hasAttributesSatisfying(Consumer<Attributes> attributes) {
     isNotNull();
     assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);
     return this;
@@ -298,24 +299,6 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span ends at the given epoch timestamp. */
   public SpanDataAssert endsAt(Instant timestamp) {
     return endsAt(toNanos(timestamp));
-  }
-
-  /** Asserts the span has a remote parent. */
-  public SpanDataAssert hasRemoteParent() {
-    isNotNull();
-    if (!actual.hasRemoteParent()) {
-      failWithMessage("Expected span [%s] to have remote parent but did not", actual.getName());
-    }
-    return this;
-  }
-
-  /** Asserts the span does not have a remote parent. */
-  public SpanDataAssert doesNotHaveRemoteParent() {
-    isNotNull();
-    if (actual.hasRemoteParent()) {
-      failWithMessage("Expected span [%s] to have remote parent but did not", actual.getName());
-    }
-    return this;
   }
 
   /** Asserts the span has ended. */

@@ -7,8 +7,9 @@ package io.opentelemetry.sdk.extension.incubator.trace.data;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -24,7 +25,7 @@ import java.util.List;
  * <pre>{@code
  * SpanDataWithClientType extends DelegatingSpanData {
  *
- *   private final ReadableAttributes attributes;
+ *   private final Attributes attributes;
  *
  *   SpanDataWithClientType(SpanData delegate) {
  *     super(delegate);
@@ -36,7 +37,7 @@ import java.util.List;
  *   }
  *
  *   {@literal @}Override
- *   public ReadableAttributes getAttributes() {
+ *   public Attributes getAttributes() {
  *     return attributes;
  *   }
  * }
@@ -72,8 +73,8 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public String getParentSpanId() {
-    return delegate.getParentSpanId();
+  public SpanContext getParentSpanContext() {
+    return delegate.getParentSpanContext();
   }
 
   @Override
@@ -102,7 +103,7 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public ReadableAttributes getAttributes() {
+  public Attributes getAttributes() {
     return delegate.getAttributes();
   }
 
@@ -124,11 +125,6 @@ public abstract class DelegatingSpanData implements SpanData {
   @Override
   public long getEndEpochNanos() {
     return delegate.getEndEpochNanos();
-  }
-
-  @Override
-  public boolean hasRemoteParent() {
-    return delegate.hasRemoteParent();
   }
 
   @Override
@@ -162,7 +158,7 @@ public abstract class DelegatingSpanData implements SpanData {
           && getSpanId().equals(that.getSpanId())
           && isSampled() == that.isSampled()
           && getTraceState().equals(that.getTraceState())
-          && getParentSpanId().equals(that.getParentSpanId())
+          && getParentSpanContext().equals(that.getParentSpanContext())
           && getResource().equals(that.getResource())
           && getInstrumentationLibraryInfo().equals(that.getInstrumentationLibraryInfo())
           && getName().equals(that.getName())
@@ -173,7 +169,6 @@ public abstract class DelegatingSpanData implements SpanData {
           && getLinks().equals(that.getLinks())
           && getStatus().equals(that.getStatus())
           && getEndEpochNanos() == that.getEndEpochNanos()
-          && hasRemoteParent() == that.hasRemoteParent()
           && hasEnded() == that.hasEnded()
           && getTotalRecordedEvents() == that.getTotalRecordedEvents()
           && getTotalRecordedLinks() == that.getTotalRecordedLinks()
@@ -194,7 +189,7 @@ public abstract class DelegatingSpanData implements SpanData {
     code *= 1000003;
     code ^= getTraceState().hashCode();
     code *= 1000003;
-    code ^= getParentSpanId().hashCode();
+    code ^= getParentSpanContext().hashCode();
     code *= 1000003;
     code ^= getResource().hashCode();
     code *= 1000003;
@@ -215,8 +210,6 @@ public abstract class DelegatingSpanData implements SpanData {
     code ^= getStatus().hashCode();
     code *= 1000003;
     code ^= (int) ((getEndEpochNanos() >>> 32) ^ getEndEpochNanos());
-    code *= 1000003;
-    code ^= hasRemoteParent() ? 1231 : 1237;
     code *= 1000003;
     code ^= hasEnded() ? 1231 : 1237;
     code *= 1000003;
@@ -243,8 +236,8 @@ public abstract class DelegatingSpanData implements SpanData {
         + "traceState="
         + getTraceState()
         + ", "
-        + "parentSpanId="
-        + getParentSpanId()
+        + "parentSpanContext="
+        + getParentSpanContext()
         + ", "
         + "resource="
         + getResource()
@@ -275,9 +268,6 @@ public abstract class DelegatingSpanData implements SpanData {
         + ", "
         + "endEpochNanos="
         + getEndEpochNanos()
-        + ", "
-        + "hasRemoteParent="
-        + hasRemoteParent()
         + ", "
         + "hasEnded="
         + hasEnded()

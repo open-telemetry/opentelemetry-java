@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.trace.data;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
@@ -51,12 +50,33 @@ public interface SpanData {
   TraceState getTraceState();
 
   /**
+   * Returns the parent {@link SpanContext}. If the span is a root span, the {@link SpanContext}
+   * returned will be invalid.
+   */
+  SpanContext getParentSpanContext();
+
+  /**
    * Returns the parent {@code SpanId}. If the {@code Span} is a root {@code Span}, the SpanId
-   * returned will be invalid..
+   * returned will be invalid.
    *
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
    */
-  String getParentSpanId();
+  default String getParentSpanId() {
+    return getParentSpanContext().getSpanIdAsHexString();
+  }
+
+  /**
+   * Returns {@code true} if the parent is on a different process. {@code false} if this is a root
+   * span.
+   *
+   * @return {@code true} if the parent is on a different process. {@code false} if this is a root
+   *     span.
+   * @deprecated Use {@link #getParentSpanContext()}
+   */
+  @Deprecated
+  default boolean hasRemoteParent() {
+    return getParentSpanContext().isRemote();
+  }
 
   /**
    * Returns the resource of this {@code Span}.
@@ -99,7 +119,7 @@ public interface SpanData {
    *
    * @return the attributes recorded for this {@code Span}.
    */
-  ReadableAttributes getAttributes();
+  Attributes getAttributes();
 
   /**
    * Returns the timed events recorded for this {@code Span}.
@@ -128,15 +148,6 @@ public interface SpanData {
    * @return the end epoch timestamp in nanos of this {@code Span}.
    */
   long getEndEpochNanos();
-
-  /**
-   * Returns {@code true} if the parent is on a different process. {@code false} if this is a root
-   * span.
-   *
-   * @return {@code true} if the parent is on a different process. {@code false} if this is a root
-   *     span.
-   */
-  boolean hasRemoteParent();
 
   /**
    * Returns whether this Span has already been ended.

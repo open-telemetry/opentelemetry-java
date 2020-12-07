@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
-import io.opentelemetry.api.internal.Utils;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -21,13 +20,9 @@ final class StringUtils {
    * element truncated to {@code limit} characters.
    *
    * <p>Otherwise return given {@code value}
-   *
-   * @throws IllegalArgumentException if limit is zero or negative
    */
   @SuppressWarnings("unchecked")
   static <T> T truncateToSize(AttributeKey<T> key, T value, int limit) {
-    Utils.checkArgument(limit > 0, "attribute value limit must be positive, got %d", limit);
-
     if (value == null
         || ((key.getType() != AttributeType.STRING)
             && (key.getType() != AttributeType.STRING_ARRAY))) {

@@ -10,7 +10,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
@@ -57,7 +56,7 @@ class RateLimitingSampler implements Sampler {
       String traceId,
       String name,
       Kind spanKind,
-      ReadableAttributes attributes,
+      Attributes attributes,
       List<Link> parentLinks) {
 
     if (Span.fromContext(parentContext).getSpanContext().isSampled()) {

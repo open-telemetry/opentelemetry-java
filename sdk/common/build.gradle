@@ -12,8 +12,6 @@ ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/common"
 dependencies {
     api project(':opentelemetry-api')
 
-    implementation libraries.guava
-
     annotationProcessor libraries.auto_value
 
     testAnnotationProcessor libraries.auto_value

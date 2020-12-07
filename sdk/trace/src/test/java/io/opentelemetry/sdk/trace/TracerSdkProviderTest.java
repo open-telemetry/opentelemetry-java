@@ -47,9 +47,18 @@ class TracerSdkProviderTest {
             TracerSdkProvider.builder()
                 .setClock(mock(Clock.class))
                 .setResource(mock(Resource.class))
-                .setIdsGenerator(mock(IdGenerator.class))
+                .setIdGenerator(mock(IdGenerator.class))
+                .setTraceConfig(mock(TraceConfig.class))
                 .build())
         .isNotNull();
+  }
+
+  @Test
+  void builder_NullTraceConfig() {
+    assertThrows(
+        NullPointerException.class,
+        () -> TracerSdkProvider.builder().setTraceConfig(null),
+        "traceConfig");
   }
 
   @Test
@@ -70,7 +79,7 @@ class TracerSdkProviderTest {
   void builder_NullIdsGenerator() {
     assertThrows(
         NullPointerException.class,
-        () -> TracerSdkProvider.builder().setIdsGenerator(null),
+        () -> TracerSdkProvider.builder().setIdGenerator(null),
         "idsGenerator");
   }
 
@@ -105,6 +114,15 @@ class TracerSdkProviderTest {
         TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build();
     tracerFactory.updateActiveTraceConfig(newConfig);
     assertThat(tracerFactory.getActiveTraceConfig()).isEqualTo(newConfig);
+  }
+
+  @Test
+  void build_traceConfig() {
+    TraceConfig initialTraceConfig = mock(TraceConfig.class);
+    TracerSdkProvider tracerSdkProvider =
+        TracerSdkProvider.builder().setTraceConfig(initialTraceConfig).build();
+
+    assertThat(tracerSdkProvider.getActiveTraceConfig()).isSameAs(initialTraceConfig);
   }
 
   @Test

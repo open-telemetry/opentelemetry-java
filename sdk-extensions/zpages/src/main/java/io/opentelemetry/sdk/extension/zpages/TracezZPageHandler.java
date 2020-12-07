@@ -5,10 +5,8 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -27,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -301,7 +300,7 @@ final class TracezZPageHandler extends ZPageHandler {
         span.isSampled() ? SAMPLED_TRACE_ID_COLOR : NOT_SAMPLED_TRACE_ID_COLOR,
         span.getTraceId(),
         span.getSpanId(),
-        (span.getParentSpanId() == null ? SpanId.getInvalid() : span.getParentSpanId()));
+        span.getParentSpanId());
     out.print("</tr>");
     zebraStripe = !zebraStripe;
 
@@ -382,15 +381,15 @@ final class TracezZPageHandler extends ZPageHandler {
         escapeHtml(renderEvent(event)));
   }
 
-  private static String renderAttributes(ReadableAttributes attributes) {
+  private static String renderAttributes(Attributes attributes) {
     final StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("Attributes:{");
     attributes.forEach(
-        new AttributeConsumer() {
+        new BiConsumer<AttributeKey<?>, Object>() {
           private boolean first = true;
 
           @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
+          public void accept(AttributeKey<?> key, Object value) {
             if (first) {
               first = false;
             } else {

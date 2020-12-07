@@ -8,12 +8,10 @@ package io.opentelemetry.exporter.zipkin;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
@@ -58,7 +56,7 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
  * <p>For environment variables, {@link ZipkinSpanExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the service name.
+ *   <li>{@code OTEL_EXPORTER_ZIPKIN_SERVICE_NAME}: to set the service name.
  *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the endpoint URL.
  * </ul>
  */
@@ -126,18 +124,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
             .duration(Math.max(1, endTimestamp - startTimestamp))
             .localEndpoint(endpoint);
 
-    if (SpanId.isValid(spanData.getParentSpanId())) {
+    if (spanData.getParentSpanContext().isValid()) {
       spanBuilder.parentId(spanData.getParentSpanId());
     }
 
-    ReadableAttributes spanAttributes = spanData.getAttributes();
+    Attributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            spanBuilder.putTag(key.getKey(), valueToString(key, value));
-          }
-        });
+        (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
     SpanData.Status status = spanData.getStatus();
     // include status code & description.
     if (!status.isUnset()) {
@@ -170,7 +163,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   private static Endpoint chooseEndpoint(SpanData spanData, Endpoint localEndpoint) {
-    ReadableAttributes resourceAttributes = spanData.getResource().getAttributes();
+    Attributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
     String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
@@ -183,8 +176,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   @Nullable
   private static Span.Kind toSpanKind(SpanData spanData) {
     // This is a hack because the Span API did not have SpanKind.
-    if (spanData.getKind() == Kind.SERVER
-        || (spanData.getKind() == null && Boolean.TRUE.equals(spanData.hasRemoteParent()))) {
+    if (spanData.getKind() == Kind.SERVER) {
       return Span.Kind.SERVER;
     }
 
@@ -207,7 +199,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     return NANOSECONDS.toMicros(epochNanos);
   }
 
-  private static <T> String valueToString(AttributeKey<T> key, T attributeValue) {
+  private static <T> String valueToString(AttributeKey<?> key, Object attributeValue) {
     AttributeType type = key.getType();
     switch (type) {
       case STRING:

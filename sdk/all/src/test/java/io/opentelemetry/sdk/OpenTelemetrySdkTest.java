@@ -24,8 +24,10 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -112,10 +114,17 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void testReconfigure_justClockAndResource() {
+  void testConfiguration_tracerSettings() {
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
+    IdGenerator idGenerator = mock(IdGenerator.class);
+    TraceConfig traceConfig = mock(TraceConfig.class);
     OpenTelemetrySdk openTelemetry =
-        OpenTelemetrySdk.builder().setClock(clock).setResource(resource).build();
+        OpenTelemetrySdk.builder()
+            .setClock(clock)
+            .setResource(resource)
+            .setIdGenerator(idGenerator)
+            .setTraceConfig(traceConfig)
+            .build();
     TracerProvider unobfuscatedTracerProvider =
         ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
 
@@ -125,7 +134,9 @@ class OpenTelemetrySdkTest {
     assertThat(unobfuscatedTracerProvider)
         .extracting("sharedState")
         .hasFieldOrPropertyWithValue("clock", clock)
-        .hasFieldOrPropertyWithValue("resource", resource);
+        .hasFieldOrPropertyWithValue("resource", resource)
+        .hasFieldOrPropertyWithValue("idGenerator", idGenerator)
+        .hasFieldOrPropertyWithValue("activeTraceConfig", traceConfig);
 
     assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
     // Since MeterProvider is in a different package, the only alternative to this reflective

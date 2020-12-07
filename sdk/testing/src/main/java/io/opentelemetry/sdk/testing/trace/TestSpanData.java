@@ -7,9 +7,8 @@ package io.opentelemetry.sdk.testing.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -34,7 +33,7 @@ public abstract class TestSpanData implements SpanData {
    */
   public static Builder builder() {
     return new AutoValue_TestSpanData.Builder()
-        .setParentSpanId(SpanId.getInvalid())
+        .setParentSpanContext(SpanContext.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
@@ -44,22 +43,14 @@ public abstract class TestSpanData implements SpanData {
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
         .setSampled(false)
-        .setHasRemoteParent(false)
         .setTotalAttributeCount(0);
   }
 
   abstract boolean getInternalHasEnded();
 
-  abstract boolean getInternalHasRemoteParent();
-
   @Override
   public final boolean hasEnded() {
     return getInternalHasEnded();
-  }
-
-  @Override
-  public final boolean hasRemoteParent() {
-    return getInternalHasRemoteParent();
   }
 
   /** A {@code Builder} class for {@link TestSpanData}. */
@@ -111,12 +102,12 @@ public abstract class TestSpanData implements SpanData {
     public abstract Builder setTraceState(TraceState traceState);
 
     /**
-     * The parent span id associated for this span, which may be null.
+     * The parent span context associated for this span, which may be null.
      *
-     * @param parentSpanId the SpanId of the parent
+     * @param parentSpanContext the SpanId of the parent
      * @return this.
      */
-    public abstract Builder setParentSpanId(String parentSpanId);
+    public abstract Builder setParentSpanContext(SpanContext parentSpanContext);
 
     /**
      * Set the {@link Resource} associated with this span. Must not be null.
@@ -161,14 +152,13 @@ public abstract class TestSpanData implements SpanData {
     public abstract Builder setEndEpochNanos(long epochNanos);
 
     /**
-     * Set the attributes that are associated with this span, in the form of {@link
-     * ReadableAttributes}.
+     * Set the attributes that are associated with this span, in the form of {@link Attributes}.
      *
-     * @param attributes {@link ReadableAttributes} for this span.
+     * @param attributes {@link Attributes} for this span.
      * @return this
-     * @see ReadableAttributes
+     * @see Attributes
      */
-    public abstract Builder setAttributes(ReadableAttributes attributes);
+    public abstract Builder setAttributes(Attributes attributes);
 
     /**
      * Set timed events that are associated with this span. Must not be null, may be empty.
@@ -202,18 +192,6 @@ public abstract class TestSpanData implements SpanData {
      * @return this
      */
     public abstract Builder setLinks(List<SpanData.Link> links);
-
-    abstract Builder setInternalHasRemoteParent(boolean hasRemoteParent);
-
-    /**
-     * Sets to true if the span has a parent on a different process.
-     *
-     * @param hasRemoteParent A boolean indicating if the span has a remote parent.
-     * @return this
-     */
-    public final Builder setHasRemoteParent(boolean hasRemoteParent) {
-      return setInternalHasRemoteParent(hasRemoteParent);
-    }
 
     abstract Builder setInternalHasEnded(boolean hasEnded);
 

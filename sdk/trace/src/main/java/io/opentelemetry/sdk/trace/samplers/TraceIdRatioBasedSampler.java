@@ -6,12 +6,11 @@
 package io.opentelemetry.sdk.trace.samplers;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.base.Preconditions;
-import io.opentelemetry.api.common.ReadableAttributes;
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,7 +28,9 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
   TraceIdRatioBasedSampler() {}
 
   static TraceIdRatioBasedSampler create(double ratio) {
-    Preconditions.checkArgument(ratio >= 0.0 && ratio <= 1.0, "ratio must be in range [0.0, 1.0]");
+    if (ratio < 0.0 || ratio > 1.0) {
+      throw new IllegalArgumentException("ratio must be in range [0.0, 1.0]");
+    }
     long idUpperBound;
     // Special case the limits, to avoid any possible issues with lack of precision across
     // double/long boundaries. For probability == 0.0, we use Long.MIN_VALUE as this guarantees
@@ -63,9 +64,9 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
       Context parentContext,
       String traceId,
       String name,
-      Span.Kind spanKind,
-      ReadableAttributes attributes,
-      List<SpanData.Link> parentLinks) {
+      Kind spanKind,
+      Attributes attributes,
+      List<Link> parentLinks) {
     // Always sample if we are within probability range. This is true even for child spans (that
     // may have had a different sampling samplingResult made) to allow for different sampling
     // policies,

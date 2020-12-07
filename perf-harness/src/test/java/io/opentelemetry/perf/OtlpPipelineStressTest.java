@@ -35,9 +35,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -134,7 +134,7 @@ public class OtlpPipelineStressTest {
   }
 
   @Test
-  @Ignore("we don't want to run this with every build.")
+  @Disabled("we don't want to run this with every build.")
   void oltpExportWithFlakyCollector() throws IOException, InterruptedException {
     ToxicList toxics = collectorProxy.toxics();
     //    Latency latency = toxics.latency("jittery_latency", ToxicDirection.UPSTREAM, 500);

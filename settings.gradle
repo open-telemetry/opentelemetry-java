@@ -2,7 +2,6 @@ pluginManagement {
     plugins {
         id "com.diffplug.spotless" version "5.8.2"
         id "com.github.ben-manes.versions" version "0.36.0"
-        id "com.github.kt3k.coveralls" version "2.0.1"
         id "com.google.protobuf" version "0.8.14"
         id "com.jfrog.artifactory" version "4.18.0"
         id "com.jfrog.bintray" version "1.8.5"
@@ -29,6 +28,11 @@ plugins {
 rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all",
         ":opentelemetry-api",
+        ":opentelemetry-api-baggage",
+        ":opentelemetry-api-common",
+        ":opentelemetry-api-internal",
+        ":opentelemetry-api-trace",
+        ":opentelemetry-api-metrics",
         ":opentelemetry-context",
         ":opentelemetry-extension-annotations",
         ":opentelemetry-extension-kotlin",
@@ -65,6 +69,7 @@ include ":opentelemetry-all",
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name
+            .replace("opentelemetry-api-", "api/")
             .replace("opentelemetry-integration-tests-", "integration-tests/")
             .replace("opentelemetry-exporter-", "exporters/")
             .replace("opentelemetry-extension-", "extensions/")
@@ -74,6 +79,8 @@ rootProject.children.each {
             .replace("opentelemetry-", "") as File
 }
 
+project(":opentelemetry-api").projectDir = "$rootDir/api/all" as File
+project(":opentelemetry-context").projectDir = "$rootDir/api/context" as File
 project(":opentelemetry-sdk").projectDir = "$rootDir/sdk/all" as File
 
 def isCI = System.getenv("CI") != null
