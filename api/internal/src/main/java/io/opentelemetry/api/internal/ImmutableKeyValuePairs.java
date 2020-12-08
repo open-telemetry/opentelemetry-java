@@ -25,7 +25,6 @@ import javax.annotation.concurrent.Immutable;
  *
  * @param <V> The type of the values contained in this.
  */
-@SuppressWarnings("rawtypes")
 @Immutable
 public abstract class ImmutableKeyValuePairs<K, V> {
 
@@ -61,7 +60,6 @@ public abstract class ImmutableKeyValuePairs<K, V> {
    * Sorts and dedupes the key/value pairs in {@code data}. If {@code filterNullValues} is {@code
    * true}, {@code null} values will be removed.
    */
-  @SuppressWarnings("unchecked")
   public static List<Object> sortAndFilter(Object[] data, boolean filterNullValues) {
     checkArgument(
         data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
@@ -77,8 +75,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
 
   // note: merge sort implementation cribbed from this wikipedia article:
   // https://en.wikipedia.org/wiki/Merge_sort (this is the top-down variant)
-  private static <K extends Comparable<K>> void mergeSort(
-      Object[] sourceArray, Object[] workArray, int n) {
+  private static void mergeSort(Object[] sourceArray, Object[] workArray, int n) {
     System.arraycopy(sourceArray, 0, workArray, 0, sourceArray.length);
     splitAndMerge(workArray, 0, n, sourceArray); // sort data from workArray[] into sourceArray[]
   }
@@ -87,7 +84,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
    * Sort the given run of array targetArray[] using array workArray[] as a source. beginIndex is
    * inclusive; endIndex is exclusive (targetArray[endIndex] is not in the set).
    */
-  private static <K extends Comparable<K>> void splitAndMerge(
+  private static void splitAndMerge(
       Object[] workArray, int beginIndex, int endIndex, Object[] targetArray) {
     if (endIndex - beginIndex <= 2) { // if single element in the run, it's sorted
       return;

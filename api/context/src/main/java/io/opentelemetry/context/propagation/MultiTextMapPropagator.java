@@ -31,8 +31,8 @@ final class MultiTextMapPropagator implements TextMapPropagator {
 
   private static List<String> getAllFields(TextMapPropagator[] textPropagators) {
     Set<String> fields = new LinkedHashSet<>();
-    for (int i = 0; i < textPropagators.length; i++) {
-      fields.addAll(textPropagators[i].fields());
+    for (TextMapPropagator textPropagator : textPropagators) {
+      fields.addAll(textPropagator.fields());
     }
 
     return new ArrayList<>(fields);
@@ -40,15 +40,15 @@ final class MultiTextMapPropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {
-    for (int i = 0; i < textPropagators.length; i++) {
-      textPropagators[i].inject(context, carrier, setter);
+    for (TextMapPropagator textPropagator : textPropagators) {
+      textPropagator.inject(context, carrier, setter);
     }
   }
 
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
-    for (int i = 0; i < textPropagators.length; i++) {
-      context = textPropagators[i].extract(context, carrier, getter);
+    for (TextMapPropagator textPropagator : textPropagators) {
+      context = textPropagator.extract(context, carrier, getter);
     }
     return context;
   }
