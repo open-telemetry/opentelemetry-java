@@ -64,7 +64,7 @@ class RateLimitingSampler implements Sampler {
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
     for (SpanData.Link parentLink : parentLinks) {
-      if (parentLink.getContext().isSampled()) {
+      if (parentLink.getSpanContext().isSampled()) {
         return Sampler.alwaysOn()
             .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
       }
