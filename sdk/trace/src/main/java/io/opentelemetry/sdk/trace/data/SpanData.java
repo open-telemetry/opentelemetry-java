@@ -225,12 +225,19 @@ public interface SpanData {
       return ImmutableLink.create(spanContext, attributes, totalAttributeCount);
     }
 
+    /** Returns the {@code SpanContext} of the span this {@link Link} refers to. */
+    SpanContext getSpanContext();
+
     /**
      * Returns the {@code SpanContext}.
      *
      * @return the {@code SpanContext}.
+     * @deprecated Use {@link #getSpanContext()}
      */
-    SpanContext getContext();
+    @Deprecated
+    default SpanContext getContext() {
+      return getSpanContext();
+    }
 
     /**
      * Returns the set of attributes.
