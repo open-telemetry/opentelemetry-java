@@ -50,8 +50,9 @@ tasks.named('jacocoTestReport', JacocoReport) {
 
     configurations.runtimeClasspath.each {
         additionalClassDirs(zipTree(it).filter {
-            // Exclude internal and generated code
-            !it.absolutePath.contains("/internal/") &&
+            // Exclude mrjar (jacoco complains), shaded, and generated code
+            !it.absolutePath.contains("META-INF/versions/") &&
+                    !it.absolutePath.contains("/internal/shaded/") &&
                     !it.absolutePath.contains("io/opentelemetry/proto/") &&
                     !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
                     !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/")
