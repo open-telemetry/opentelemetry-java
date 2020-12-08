@@ -271,14 +271,19 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   }
 
   /**
-   * A {@link TracerProvider} wrapper that forces users to access the SDK specific implementation
-   * via the SDK, instead of via the API and casting it to the SDK specific implementation.
+   * This interface allows the SDK to unobfuscate an obfuscated static global provider.
    *
-   * @see Obfuscated
+   * <p>Static global providers are obfuscated when they are returned from the API to prevent users
+   * from casting them to their SDK specific implementation.
+   *
+   * <p>This is important for auto-instrumentation, because if users take the static global providers
+   * that are returned from the API, and cast them to their SDK specific implementations, then those
+   * casts will fail under auto-instrumentation, because auto-instrumentation takes over the static
+   * global providers returned by the API and points them to it's embedded SDK.
    */
   @ThreadSafe
   // Visible for testing
-  static class ObfuscatedTracerProvider implements TracerProvider, Obfuscated<TracerProvider> {
+  static class ObfuscatedTracerProvider implements TracerProvider {
 
     private final TracerProvider delegate;
 
@@ -296,7 +301,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       return delegate.get(instrumentationName, instrumentationVersion);
     }
 
-    @Override
     public TracerProvider unobfuscate() {
       return delegate;
     }
