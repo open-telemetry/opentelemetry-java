@@ -111,6 +111,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     private IdGenerator idsGenerator = IdGenerator.random();
     private Resource resource = Resource.getDefault();
     private TraceConfig traceConfig = TraceConfig.getDefault();
+
     /**
      * Assign a {@link Clock}.
      *
