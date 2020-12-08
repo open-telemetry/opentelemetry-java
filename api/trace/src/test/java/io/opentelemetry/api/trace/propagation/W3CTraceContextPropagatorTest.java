@@ -167,9 +167,7 @@ class W3CTraceContextPropagatorTest {
   @Test
   void extract_Nothing() {
     // Context remains untouched.
-    assertThat(
-            w3cTraceContextPropagator.extract(
-                Context.current(), Collections.<String, String>emptyMap(), getter))
+    assertThat(w3cTraceContextPropagator.extract(Context.current(), Collections.emptyMap(), getter))
         .isSameAs(Context.current());
   }
 

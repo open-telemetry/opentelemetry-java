@@ -43,7 +43,7 @@ class W3CBaggagePropagatorTest {
   void extract_noBaggageHeader() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
-    Context result = propagator.extract(Context.root(), ImmutableMap.<String, String>of(), getter);
+    Context result = propagator.extract(Context.root(), ImmutableMap.of(), getter);
 
     assertThat(result).isEqualTo(Context.root());
   }

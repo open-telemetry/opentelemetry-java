@@ -43,13 +43,7 @@ public class W3CTraceContextPropagatorInjectBenchmark {
   private final TextMapPropagator w3cTraceContextPropagator =
       W3CTraceContextPropagator.getInstance();
   private final Map<String, String> carrier = new HashMap<>();
-  private final Setter<Map<String, String>> setter =
-      new Setter<Map<String, String>>() {
-        @Override
-        public void set(Map<String, String> carrier, String key, String value) {
-          carrier.put(key, value);
-        }
-      };
+  private final Setter<Map<String, String>> setter = Map::put;
   private final List<Context> contexts = createContexts(spanContexts);
 
   /** Benchmark for measuring inject with default trace state and sampled trace options. */

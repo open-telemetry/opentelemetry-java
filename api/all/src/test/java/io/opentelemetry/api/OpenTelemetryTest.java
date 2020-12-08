@@ -101,7 +101,7 @@ class OpenTelemetryTest {
                       instanceof SecondTracerProviderFactory))
           .isTrue();
     } finally {
-      serviceFile.delete();
+      assertThat(serviceFile.delete()).isTrue();
     }
   }
 
@@ -118,7 +118,7 @@ class OpenTelemetryTest {
       assertThat(OpenTelemetry.getGlobalTracerProvider().get(""))
           .isInstanceOf(SecondTracerProviderFactory.class);
     } finally {
-      serviceFile.delete();
+      assertThat(serviceFile.delete()).isTrue();
     }
   }
 
@@ -143,7 +143,7 @@ class OpenTelemetryTest {
       assertThat(OpenTelemetry.getGlobalMeterProvider())
           .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
     } finally {
-      serviceFile.delete();
+      assertThat(serviceFile.delete()).isTrue();
     }
   }
 
@@ -162,14 +162,14 @@ class OpenTelemetryTest {
       assertThat(OpenTelemetry.getGlobalMeterProvider())
           .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
     } finally {
-      serviceFile.delete();
+      assertThat(serviceFile.delete()).isTrue();
     }
   }
 
   @Test
   void testMeterNotFound() {
     System.setProperty(MeterProviderFactory.class.getName(), "io.does.not.exists");
-    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getGlobalMeterProvider());
+    assertThrows(IllegalStateException.class, OpenTelemetry::getGlobalMeterProvider);
   }
 
   @Test
