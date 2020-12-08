@@ -14,9 +14,6 @@ extensions:
 exporters:
   logging:
     loglevel: debug
-  otlp:
-    endpoint: backend:8080
-    insecure: true
 
 service:
   extensions: [health_check]
@@ -24,4 +21,4 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch, queued_retry]
-      exporters: [logging, otlp]
+      exporters: [logging]
