@@ -14,7 +14,7 @@ Issues/support for these propagators is only provided as a minimal "best effort"
 bugs should be filed with the respective vendors themselves.
 
 * AWS X-Ray (file an issue here and mention @anuraaga)
-* ListStep OpenTracing (file an issue here and mention @carlosalberto)
+* LightStep OpenTracing (file an issue here and mention @carlosalberto)
 * B3 (file an issue on [the OpenZipkin repo](https://github.com/openzipkin/b3-propagation) that points here)
 * Jaeger (file an issue on [the Jaeger repo](https://github.com/jaegertracing/jaeger) that points here)
 
