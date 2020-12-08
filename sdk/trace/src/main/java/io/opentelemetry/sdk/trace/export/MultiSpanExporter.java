@@ -19,11 +19,8 @@ import java.util.logging.Logger;
  *
  * <p>Can be used to export to multiple backends using the same {@code SpanProcessor} like a {@code
  * SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
- *
- * @deprecated Use {@link SpanExporter#composite(SpanExporter...)}
  */
-@Deprecated
-public final class MultiSpanExporter implements SpanExporter {
+final class MultiSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(MultiSpanExporter.class.getName());
 
   private final SpanExporter[] spanExporters;
@@ -33,10 +30,8 @@ public final class MultiSpanExporter implements SpanExporter {
    *
    * @param spanExporters the exporters spans should be sent to
    * @return the aggregate span exporter
-   * @deprecated Use {@link SpanExporter#composite(SpanExporter...)}
    */
-  @Deprecated
-  public static SpanExporter create(List<SpanExporter> spanExporters) {
+  static SpanExporter create(List<SpanExporter> spanExporters) {
     return new MultiSpanExporter(spanExporters.toArray(new SpanExporter[0]));
   }
 
