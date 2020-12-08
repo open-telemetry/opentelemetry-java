@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk.metricsv2.spi;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metricsv2.MeterProviderImpl;
 import io.opentelemetry.spi.metrics.MeterProviderFactory;
 
 public class MeterProviderFactoryImpl implements MeterProviderFactory {
   @Override
   public MeterProvider create() {
-    return MeterProviderImpl.create(MillisClock.getInstance());
+    return MeterProviderImpl.create(SystemClock.getInstance());
   }
 }
