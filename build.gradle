@@ -377,6 +377,46 @@ configure(opentelemetryProjects) {
 
     jacoco { toolVersion = "0.8.6" }
 
+    // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
+
+    // Do not generate reports for individual projects
+    tasks.named("jacocoTestReport") {
+        enabled = false
+    }
+
+    configurations {
+        transitiveSourceElements {
+            visible = false
+            canBeResolved = false
+            canBeConsumed = true
+            extendsFrom(configurations.implementation)
+            attributes {
+                attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+                attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
+                attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'source-folders'))
+            }
+            sourceSets.main.java.srcDirs.forEach {
+                outgoing.artifact(it)
+            }
+        }
+
+        coverageDataElements {
+            visible = false
+            canBeResolved = false
+            canBeConsumed = true
+            extendsFrom(configurations.implementation)
+            attributes {
+                attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+                attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
+                attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'jacoco-coverage-data'))
+            }
+            // This will cause the test task to run if the coverage data is requested by the aggregation task
+            outgoing.artifact(tasks.named("test").map { task ->
+                task.extensions.getByType(JacocoTaskExtension).destinationFile
+            })
+        }
+    }
+
     spotless {
         java {
             googleJavaFormat("1.9")

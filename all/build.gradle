@@ -5,69 +5,66 @@ plugins {
 description = "OpenTelemetry All"
 ext.moduleName = "io.opentelemetry.all"
 
-def subprojects = [
-        project(':opentelemetry-api'),
-        project(':opentelemetry-context'),
-        project(':opentelemetry-extension-runtime-metrics'),
-        project(':opentelemetry-extension-trace-propagators'),
-        project(':opentelemetry-extension-trace-utils'),
-        project(':opentelemetry-extension-annotations'),
-        project(':opentelemetry-exporter-jaeger'),
-        project(':opentelemetry-exporter-logging'),
-        project(':opentelemetry-exporter-otlp'),
-        project(':opentelemetry-exporter-prometheus'),
-        project(':opentelemetry-exporter-zipkin'),
-        project(':opentelemetry-opencensus-shim'),
-        project(':opentelemetry-opentracing-shim'),
-        project(':opentelemetry-sdk-common'),
-        project(':opentelemetry-sdk-metrics'),
-        project(':opentelemetry-sdk-testing'),
-        project(':opentelemetry-sdk-trace'),
-        project(':opentelemetry-sdk'),
-        project(':opentelemetry-sdk-extension-async-processor'),
-        project(':opentelemetry-sdk-extension-aws'),
-        project(':opentelemetry-sdk-extension-jaeger-remote-sampler'),
-        project(':opentelemetry-sdk-extension-logging'),
-        project(':opentelemetry-sdk-extension-otproto'),
-        project(':opentelemetry-sdk-extension-resources'),
-        project(':opentelemetry-sdk-extension-tracing-incubator'),
-        project(':opentelemetry-sdk-extension-zpages'),
-]
-
-for (subproject in rootProject.subprojects) {
-    if (subproject == project) {
-        continue
-    }
-    evaluationDependsOn(subproject.path)
-}
-
 dependencies {
-    compile subprojects
+    rootProject.subprojects.each { subproject ->
+        // Generate aggregate coverage report for published modules that enable jacoco.
+        subproject.plugins.withId("jacoco") {
+            subproject.plugins.withId("maven-publish") {
+                implementation(subproject) {
+                    transitive = false
+                }
+            }
+        }
+    }
     testCompile libraries.archunit
 }
 
-task jacocoMerge(type: JacocoMerge) {
-    dependsOn(subprojects.jacocoTestReport.dependsOn)
-    mustRunAfter(subprojects.jacocoTestReport.mustRunAfter)
-    destinationFile = file("${buildDir}/jacoco/test.exec")
-    executionData = files(subprojects.jacocoTestReport.executionData)
-            .filter { f -> f.exists() }
+// https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
+
+def sourcesPath = configurations.create("sourcesPath") {
+    visible = false
+    canBeResolved = true
+    canBeConsumed = false
+    extendsFrom(configurations.implementation)
+    attributes {
+        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
+        attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'source-folders'))
+    }
 }
 
-jacocoTestReport {
-    dependsOn(jacocoMerge)
-    reports {
-        xml.enabled = true
-        html.enabled = true
+def coverageDataPath = configurations.create("coverageDataPath") {
+    visible = false
+    canBeResolved = true
+    canBeConsumed = false
+    extendsFrom(configurations.implementation)
+    attributes {
+        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
+        attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'jacoco-coverage-data'))
     }
+}
 
-    additionalSourceDirs.from = files(subprojects.sourceSets.main.allSource.srcDirs)
-    sourceDirectories.from = files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories.from = files(subprojects.sourceSets.main.output)
-    classDirectories.from = files(classDirectories.files.collect {
-        fileTree(dir: it, excludes: [
-                // Ignore generated code
-                "io/opentelemetry/exporters/jaeger/proto/**"
-        ])
-    })
+tasks.register('codeCoverageReport', JacocoReport) {
+    configurations.runtimeClasspath.each {
+        additionalClassDirs(zipTree(it).filter {
+            // Exclude internal and generated code
+            !it.absolutePath.contains("/internal/") &&
+                    !it.absolutePath.contains("io/opentelemetry/proto/") &&
+                    !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
+                    !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/")
+        })
+    }
+    additionalSourceDirs(sourcesPath.incoming.artifactView { lenient(true) }.files)
+    executionData(coverageDataPath.incoming.artifactView { lenient(true) }.files.filter { it.exists() })
+
+    reports {
+        // xml is usually used to integrate code coverage with
+        // other tools like SonarQube, Coveralls or Codecov
+        xml.enabled true
+
+        // HTML reports can be used to see code coverage
+        // without any external tools
+        html.enabled true
+    }
 }

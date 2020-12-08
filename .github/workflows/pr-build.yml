@@ -35,7 +35,7 @@ jobs:
       - uses: burrunan/gradle-cache-action@v1.5
         with:
           remote-build-cache-proxy-enabled: false
-          arguments: build --stacktrace ${{ matrix.coverage && ':opentelemetry-all:jacocoTestReport' || '' }}
+          arguments: build --stacktrace ${{ matrix.coverage && ':opentelemetry-all:codeCoverageReport' || '' }}
           properties: |
             testAdditionalJavaVersions=${{ matrix.testAdditionalJavaVersions }}
             org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }}
