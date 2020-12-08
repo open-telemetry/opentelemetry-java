@@ -54,7 +54,11 @@ public interface TracerSdkManagement {
    * <p>This operation may block until all the Spans are processed. Must be called before turning
    * off the main application to ensure all data are processed and exported.
    *
-   * <p>After this is called all the newly created {@code Span}s will be no-op.
+   * <p>After this is called, newly created {@code Span}s will be no-ops.
+   *
+   * <p>After this is called, further attempts at re-using or reconfiguring this instance will
+   * result in undefined behavior. It should be considered a terminal operation for the SDK
+   * implementation.
    */
   void shutdown();
 
