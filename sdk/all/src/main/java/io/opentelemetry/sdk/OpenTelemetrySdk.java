@@ -216,10 +216,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       MeterProvider meterProvider = buildMeterProvider();
       TracerSdkProvider tracerProvider = buildTracerProvider();
 
-      for (SpanProcessor spanProcessor : spanProcessors) {
-        tracerProvider.addSpanProcessor(spanProcessor);
-      }
-
       OpenTelemetrySdk sdk =
           new OpenTelemetrySdk(
               new ObfuscatedTracerProvider(tracerProvider),
@@ -252,6 +248,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       if (traceConfig != null) {
         tracerProviderBuilder.setTraceConfig(traceConfig);
       }
+      spanProcessors.forEach(tracerProviderBuilder::addSpanProcessor);
       return tracerProviderBuilder.build();
     }
 

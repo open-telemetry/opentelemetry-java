@@ -15,6 +15,8 @@ import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,8 +45,13 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   }
 
   private TracerSdkProvider(
-      Clock clock, IdGenerator idsGenerator, Resource resource, TraceConfig traceConfig) {
-    this.sharedState = new TracerSharedState(clock, idsGenerator, resource, traceConfig);
+      Clock clock,
+      IdGenerator idsGenerator,
+      Resource resource,
+      TraceConfig traceConfig,
+      List<SpanProcessor> spanProcessors) {
+    this.sharedState =
+        new TracerSharedState(clock, idsGenerator, resource, traceConfig, spanProcessors);
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
 
@@ -98,11 +105,12 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
    */
   public static class Builder {
 
+    private final List<SpanProcessor> spanProcessors = new ArrayList<>();
+
     private Clock clock = SystemClock.getInstance();
     private IdGenerator idsGenerator = IdGenerator.random();
     private Resource resource = Resource.getDefault();
     private TraceConfig traceConfig = TraceConfig.getDefault();
-
     /**
      * Assign a {@link Clock}.
      *
@@ -152,12 +160,22 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     }
 
     /**
+     * Add a SpanProcessor to the span pipeline that will be built.
+     *
+     * @return this
+     */
+    public Builder addSpanProcessor(SpanProcessor spanProcessor) {
+      spanProcessors.add(spanProcessor);
+      return this;
+    }
+
+    /**
      * Create a new TraceSdkProvider instance.
      *
      * @return An initialized TraceSdkProvider.
      */
     public TracerSdkProvider build() {
-      return new TracerSdkProvider(clock, idsGenerator, resource, traceConfig);
+      return new TracerSdkProvider(clock, idsGenerator, resource, traceConfig, spanProcessors);
     }
 
     private Builder() {}
