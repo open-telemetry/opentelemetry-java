@@ -45,7 +45,9 @@ def coverageDataPath = configurations.create("coverageDataPath") {
     }
 }
 
-tasks.register('codeCoverageReport', JacocoReport) {
+tasks.named('jacocoTestReport', JacocoReport) {
+    enabled = true
+
     configurations.runtimeClasspath.each {
         additionalClassDirs(zipTree(it).filter {
             // Exclude internal and generated code
