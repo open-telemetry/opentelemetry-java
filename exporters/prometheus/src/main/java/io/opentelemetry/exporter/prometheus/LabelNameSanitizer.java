@@ -6,15 +6,15 @@
 package io.opentelemetry.exporter.prometheus;
 
 import io.prometheus.client.Collector;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /** Used to convert a label keys to a label names. Sanitizes the label keys. Not thread safe. */
-public class LabelNameSanitizer implements Function<String, String> {
+class LabelNameSanitizer implements Function<String, String> {
 
   private final Function<String, String> delegate;
-  private final Map<String, String> cache = new HashMap<>();
+  private final Map<String, String> cache = new ConcurrentHashMap<>();
 
   public LabelNameSanitizer() {
     this(Collector::sanitizeMetricName);
