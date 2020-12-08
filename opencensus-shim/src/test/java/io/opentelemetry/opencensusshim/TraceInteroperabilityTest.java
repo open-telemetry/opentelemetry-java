@@ -120,7 +120,7 @@ class TraceInteroperabilityTest {
       span.putAttributes(
           ImmutableMap.of(
               "testKey",
-              AttributeValue.stringAttributeValue("testValue"),
+              AttributeValue.doubleAttributeValue(2.5),
               "testKey2",
               AttributeValue.booleanAttributeValue(false)));
       span.addMessageEvent(
@@ -128,7 +128,13 @@ class TraceInteroperabilityTest {
               .setUncompressedMessageSize(10)
               .setCompressedMessageSize(8)
               .build());
-      span.addAnnotation("OpenCensus: Event 1");
+      span.addAnnotation(
+          "OpenCensus: Event 1",
+          ImmutableMap.of(
+              "testKey",
+              AttributeValue.doubleAttributeValue(123),
+              "testKey2",
+              AttributeValue.booleanAttributeValue(true)));
       createOpenCensusScopedSpanWithChildSpan(
           /* withInnerOpenTelemetrySpan= */ false, /* withInnerOpenCensusSpan= */ true);
       span.addAnnotation(Annotation.fromDescription("OpenCensus: Event 2"));
@@ -160,8 +166,7 @@ class TraceInteroperabilityTest {
     assertThat(spanData3.getName()).isEqualTo("OpenCensusSpan");
     assertThat(spanData3.getKind()).isEqualTo(Span.Kind.SERVER);
     assertThat(spanData3.getStatus()).isEqualTo(SpanData.Status.ok());
-    assertThat(spanData3.getAttributes().get(AttributeKey.stringKey("testKey")))
-        .isEqualTo("testValue");
+    assertThat(spanData3.getAttributes().get(AttributeKey.doubleKey("testKey"))).isEqualTo(2.5);
     assertThat(spanData3.getAttributes().get(AttributeKey.booleanKey("testKey2"))).isEqualTo(false);
     assertThat(spanData3.getTotalRecordedEvents()).isEqualTo(3);
     assertThat(spanData3.getEvents().get(0).getName()).isEqualTo("12345");
@@ -187,6 +192,11 @@ class TraceInteroperabilityTest {
                 .get(AttributeKey.stringKey("message.event.type")))
         .isEqualTo("SENT");
     assertThat(spanData3.getEvents().get(1).getName()).isEqualTo("OpenCensus: Event 1");
+    assertThat(spanData3.getEvents().get(1).getAttributes().get(AttributeKey.doubleKey("testKey")))
+        .isEqualTo(123);
+    assertThat(
+            spanData3.getEvents().get(1).getAttributes().get(AttributeKey.booleanKey("testKey2")))
+        .isEqualTo(true);
     assertThat(spanData3.getEvents().get(2).getName()).isEqualTo("OpenCensus: Event 2");
 
     assertThat(spanData1.getParentSpanId()).isEqualTo(spanData2.getSpanId());
