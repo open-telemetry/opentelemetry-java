@@ -92,6 +92,17 @@ public class StrictContextStorage implements ContextStorage {
     CallerStackTrace caller = new CallerStackTrace(context);
     StackTraceElement[] stackTrace = caller.getStackTrace();
 
+    // Detect invalid use from kotlin.
+    for (StackTraceElement element : stackTrace) {
+      if (element.getClassName().equals("kotlin.coroutines.jvm.internal.BaseContinuationImpl")
+          && element.getMethodName().equals("resumeWith")) {
+        throw new AssertionError(
+            "Attempting to call Context.makeCurrent from inside a Kotlin coroutine. "
+                + "This is not allowed. Use Context.asContextElement provided by "
+                + "opentelemetry-extension-kotlin instead.");
+      }
+    }
+
     // "new CallerStackTrace(context)" isn't the line we want to start the caller stack trace with
     int i = 1;
 
