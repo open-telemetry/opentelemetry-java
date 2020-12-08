@@ -39,6 +39,14 @@ If you depend on the `opentelemetry-api` module, you should get the rest of the 
 - The `SpanData.Link.getContext()` method has been deprecated in favor of a new `SpanData.Link.getSpanContext()`. 
 The deprecated method will be removed in the next release of the SDK.
 
+### Extensions
+
+#### Breaking Changes
+
+- The deprecated `opentelemetry-extension-runtime-metrics` module has been removed. The functionality is available in the 
+opentelemetry-java-instrumentation project under a different module name.
+- The deprecated `trace-utils` module has been removed.
+
 -----
 
 ## Version 0.12.0 - 2020-12-04
