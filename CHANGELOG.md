@@ -2,6 +2,36 @@
 
 ## Unreleased:
 
+### API
+
+#### Breaking Changes
+
+- The `Labels.ArrayBackedLabelsBuilder` class has been made non-public. 
+You can still access the `LabelsBuilder` functionality via the `Labels.builder()` method.
+- Methods deprecated in the 0.12.0 release have been removed or made non-public:
+    - The `HttpTraceContext` class has been removed.
+    - The `toBuilder()` method on the OpenTelemetry interface has been removed.
+    - The `Attributes.builder(Attributes)` method has been removed in favor of `Attributes.toBuilder(Attributes)`.
+    - The `DefaultContextPropagators` class has made non-public.
+    - The `TraceMultiPropagator` builder has been removed in favor of a simple factory method. 
+    - The `value()` method on the `StatusCode` enum has been removed.
+    - The Baggage `EntryMetadata` class has been removed in favor of the `BaggageEntryMetadata` interface.
+    - The `setCallback()` method on the asynchronous metric instruments has been removed. 
+
+#### Enhancements
+
+- An `asMap` method has been added to the `Labels` interface, to expose them as a `java.util.Map`.
+- You can now enable strict Context verification via a system property (`-Dio.opentelemetry.context.enableStrictContext=true`)
+Enabling this mode will make sure that all `Scope`s that are created are closed, and generate log messages if they 
+are not closed before being garbage collected. This mode of operation is CPU intensive, so be careful before
+enabling it in high-throughput environments that do not need this strict verification. See the javadoc on the 
+`io.opentelemetry.context.Context` interface for details. 
+
+#### Miscellaneous
+
+- The API has been broken into separate modules, in preparation for the 1.0 release of the tracing API.
+If you depend on the `opentelemetry-api` module, you should get the rest of the API modules as transitive dependencies.
+
 -----
 
 ## Version 0.12.0 - 2020-12-04
