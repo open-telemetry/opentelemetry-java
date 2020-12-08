@@ -11,43 +11,37 @@ import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
 abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.Result>
     extends AbstractInstrument implements AsynchronousInstrument<T> {
-  @Nullable private volatile Callback<T> metricUpdater = null;
+  @Nullable private final Callback<T> metricUpdater;
   private final ReentrantLock collectLock = new ReentrantLock();
 
   AbstractAsynchronousInstrument(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      ActiveBatcher activeBatcher) {
+      ActiveBatcher activeBatcher,
+      @Nullable Callback<T> metricUpdater) {
     super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+    this.metricUpdater = metricUpdater;
   }
 
   @Override
   List<MetricData> collectAll() {
-    Callback<T> currentMetricUpdater = metricUpdater;
-    if (currentMetricUpdater == null) {
+    if (metricUpdater == null) {
       return Collections.emptyList();
     }
     collectLock.lock();
     try {
       final ActiveBatcher activeBatcher = getActiveBatcher();
-      currentMetricUpdater.update(newResult(activeBatcher));
+      metricUpdater.update(newResult(activeBatcher));
       return activeBatcher.completeCollectionCycle();
     } finally {
       collectLock.unlock();
     }
-  }
-
-  @Override
-  @Deprecated
-  public void setCallback(Callback<T> callback) {
-    this.metricUpdater = Objects.requireNonNull(callback, "callback");
   }
 
   abstract T newResult(ActiveBatcher activeBatcher);
@@ -69,8 +63,9 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
-        ActiveBatcher activeBatcher) {
-      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+        ActiveBatcher activeBatcher,
+        @Nullable Callback<LongResult> metricUpdater) {
+      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher, metricUpdater);
     }
 
     @Override
@@ -101,8 +96,9 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
-        ActiveBatcher activeBatcher) {
-      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+        ActiveBatcher activeBatcher,
+        @Nullable Callback<DoubleResult> metricUpdater) {
+      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher, metricUpdater);
     }
 
     @Override

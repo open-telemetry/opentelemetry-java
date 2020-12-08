@@ -51,8 +51,7 @@ class ImmutableBaggageTest {
 
   @Test
   void getEntries_chain() {
-    Baggage parent = TWO_ENTRIES;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(TWO_ENTRIES);
     Baggage baggage = Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build();
     assertThat(baggage.asMap())
         .containsOnly(entry(K1, Entry.create(V2, TMD)), entry(K2, Entry.create(V2, TMD)));
@@ -60,24 +59,21 @@ class ImmutableBaggageTest {
 
   @Test
   void put_newKey() {
-    Baggage parent = ONE_ENTRY;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(ONE_ENTRY);
     assertThat(Baggage.builder().setParent(parentContext).put(K2, V2, TMD).build().asMap())
         .containsOnly(entry(K1, Entry.create(V1, TMD)), entry(K2, Entry.create(V2, TMD)));
   }
 
   @Test
   void put_existingKey() {
-    Baggage parent = ONE_ENTRY;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(ONE_ENTRY);
     assertThat(Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build().asMap())
         .containsOnly(entry(K1, Entry.create(V2, TMD)));
   }
 
   @Test
   void put_nullKey() {
-    Baggage parent = ONE_ENTRY;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(ONE_ENTRY);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
     builder.put(null, V2, TMD);
@@ -86,8 +82,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_nullValue() {
-    Baggage parent = ONE_ENTRY;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(ONE_ENTRY);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
     builder.put(K2, null, TMD);
@@ -96,8 +91,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_nullMetadata() {
-    Baggage parent = ONE_ENTRY;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(ONE_ENTRY);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
     builder.put(K2, V2, null);
@@ -106,8 +100,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_keyUnprintableChars() {
-    Baggage parent = ONE_ENTRY;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(ONE_ENTRY);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
     builder.put("\2ab\3cd", "value");
@@ -116,8 +109,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_keyEmpty() {
-    Baggage parent = ONE_ENTRY;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(ONE_ENTRY);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
     builder.put("", "value");
@@ -126,8 +118,7 @@ class ImmutableBaggageTest {
 
   @Test
   void put_valueUnprintableChars() {
-    Baggage parent = ONE_ENTRY;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(ONE_ENTRY);
     BaggageBuilder builder = Baggage.builder().setParent(parentContext);
     Baggage built = builder.build();
     builder.put(K2, "\2ab\3cd");
@@ -136,7 +127,7 @@ class ImmutableBaggageTest {
 
   @Test
   void setParent_nullContext() {
-    assertThrows(NullPointerException.class, () -> Baggage.builder().setParent((Context) null));
+    assertThrows(NullPointerException.class, () -> Baggage.builder().setParent(null));
   }
 
   @Test
@@ -150,8 +141,7 @@ class ImmutableBaggageTest {
   @Test
   void setParent_fromEmptyContext() {
     Context emptyContext = Context.root();
-    Baggage parent = ONE_ENTRY;
-    try (Scope scope = parent.makeCurrent()) {
+    try (Scope ignored = ONE_ENTRY.makeCurrent()) {
       Baggage baggage = Baggage.builder().setParent(emptyContext).build();
       assertThat(baggage.isEmpty()).isTrue();
     }
@@ -159,8 +149,7 @@ class ImmutableBaggageTest {
 
   @Test
   void setParent_setNoParent() {
-    Baggage parent = ONE_ENTRY;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(ONE_ENTRY);
     Baggage baggage = Baggage.builder().setParent(parentContext).setNoParent().build();
     assertThat(baggage.isEmpty()).isTrue();
   }
@@ -185,8 +174,7 @@ class ImmutableBaggageTest {
 
   @Test
   void remove_keyFromParent() {
-    Baggage parent = TWO_ENTRIES;
-    Context parentContext = Context.root().with(parent);
+    Context parentContext = Context.root().with(TWO_ENTRIES);
     assertThat(Baggage.builder().setParent(parentContext).remove(K1).build().asMap())
         .containsOnly(entry(K2, Entry.create(V2, TMD)));
   }

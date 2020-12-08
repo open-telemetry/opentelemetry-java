@@ -47,7 +47,7 @@ class LazyStorageTest {
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE)).isEqualTo(mockContextStorage);
     } finally {
-      serviceFile.delete();
+      assertThat(serviceFile.delete()).isTrue();
     }
   }
 
@@ -61,7 +61,7 @@ class LazyStorageTest {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
           .isEqualTo(ContextStorage.defaultStorage());
     } finally {
-      serviceFile.delete();
+      assertThat(serviceFile.delete()).isTrue();
     }
   }
 
@@ -72,7 +72,7 @@ class LazyStorageTest {
     try {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE)).isEqualTo(mockContextStorage);
     } finally {
-      serviceFile.delete();
+      assertThat(serviceFile.delete()).isTrue();
     }
   }
 
@@ -91,7 +91,7 @@ class LazyStorageTest {
       assertThat(LazyStorage.createStorage(DEFERRED_STORAGE_FAILURE))
           .isEqualTo(ContextStorage.defaultStorage());
     } finally {
-      serviceFile.delete();
+      assertThat(serviceFile.delete()).isTrue();
     }
   }
 

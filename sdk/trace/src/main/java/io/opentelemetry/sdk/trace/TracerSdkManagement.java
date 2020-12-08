@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the
@@ -40,7 +41,7 @@ public interface TracerSdkManagement {
    *
    * <p>Any registered processor cause overhead, consider to use an async/batch processor especially
    * for span exporting, and export to multiple backends using the {@link
-   * io.opentelemetry.sdk.trace.export.MultiSpanExporter}.
+   * io.opentelemetry.sdk.trace.export.SpanExporter#composite(SpanExporter...)}.
    *
    * @param spanProcessor the new {@code SpanProcessor} to be added.
    */

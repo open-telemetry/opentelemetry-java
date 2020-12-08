@@ -30,7 +30,6 @@ public interface SpanProcessor {
    * Returns a {@link SpanProcessor} which simply delegates all processing to the {@code processors}
    * in order.
    */
-  @SuppressWarnings("deprecation")
   static SpanProcessor composite(Iterable<SpanProcessor> processors) {
     List<SpanProcessor> processorsList = new ArrayList<>();
     for (SpanProcessor processor : processors) {
