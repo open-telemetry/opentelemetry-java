@@ -27,19 +27,6 @@ public interface AsynchronousInstrument<R extends Result> extends Instrument {
     void update(R result);
   }
 
-  /**
-   * Sets a callback that gets executed every collection interval.
-   *
-   * <p>Evaluation is deferred until needed, if this {@code AsynchronousInstrument} metric is not
-   * exported then it will never be called.
-   *
-   * @param callback the callback to be executed before export.
-   * @deprecated Please register the callback while building the instrument. This method will be
-   *     deprecated in 0.13.0.
-   */
-  @Deprecated
-  void setCallback(Callback<R> callback);
-
   /** Builder class for {@link AsynchronousInstrument}. */
   interface Builder<R extends Result> extends Instrument.Builder {
     /**

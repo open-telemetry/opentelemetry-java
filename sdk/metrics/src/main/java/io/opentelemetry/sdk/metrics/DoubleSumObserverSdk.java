@@ -9,6 +9,7 @@ import io.opentelemetry.api.metrics.DoubleSumObserver;
 import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubleAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import javax.annotation.Nullable;
 
 final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
     implements DoubleSumObserver {
@@ -17,15 +18,21 @@ final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Batcher batcher) {
-    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
+      Batcher batcher,
+      @Nullable Callback<DoubleResult> metricUpdater) {
+    super(
+        descriptor,
+        meterProviderSharedState,
+        meterSharedState,
+        new ActiveBatcher(batcher),
+        metricUpdater);
   }
 
   static final class Builder
       extends AbstractAsynchronousInstrument.Builder<DoubleSumObserverSdk.Builder>
       implements DoubleSumObserver.Builder {
 
-    private Callback<DoubleResult> callback;
+    @Nullable private Callback<DoubleResult> callback;
 
     Builder(
         String name,
@@ -46,7 +53,6 @@ final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
       return this;
     }
 
-    @SuppressWarnings("deprecation") // need to call the deprecated method for now
     @Override
     public DoubleSumObserverSdk build() {
       InstrumentDescriptor instrumentDescriptor =
@@ -56,10 +62,8 @@ final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
               instrumentDescriptor,
               getMeterProviderSharedState(),
               getMeterSharedState(),
-              getBatcher(instrumentDescriptor));
-      if (callback != null) {
-        instrument.setCallback(callback);
-      }
+              getBatcher(instrumentDescriptor),
+              callback);
       return register(instrument);
     }
   }
