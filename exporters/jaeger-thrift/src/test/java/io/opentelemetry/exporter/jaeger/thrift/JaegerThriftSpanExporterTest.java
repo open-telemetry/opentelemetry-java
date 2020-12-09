@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.jaeger.thrift;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
-import com.google.common.collect.Lists;
 import io.jaegertracing.internal.exceptions.SenderException;
 import io.jaegertracing.thrift.internal.senders.ThriftSender;
 import io.jaegertracing.thriftjava.Process;
@@ -29,6 +28,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -170,7 +170,7 @@ class JaegerThriftSpanExporterTest {
             .build();
 
     // test
-    CompletableResultCode result = exporter.export(Lists.newArrayList(span, span2));
+    CompletableResultCode result = exporter.export(Arrays.asList(span, span2));
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isEqualTo(true);
 
