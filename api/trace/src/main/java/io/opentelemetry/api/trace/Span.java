@@ -121,7 +121,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  Span setAttribute(String key, @Nonnull String value);
+  default Span setAttribute(String key, @Nonnull String value) {
+    return setAttribute(AttributeKey.stringKey(key), value);
+  }
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -134,7 +136,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  Span setAttribute(String key, long value);
+  default Span setAttribute(String key, long value) {
+    return setAttribute(AttributeKey.longKey(key), value);
+  }
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -147,7 +151,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  Span setAttribute(String key, double value);
+  default Span setAttribute(String key, double value) {
+    return setAttribute(AttributeKey.doubleKey(key), value);
+  }
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -160,7 +166,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  Span setAttribute(String key, boolean value);
+  default Span setAttribute(String key, boolean value) {
+    return setAttribute(AttributeKey.booleanKey(key), value);
+  }
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -183,8 +191,7 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setAttribute(AttributeKey<Long> key, int value) {
-    setAttribute(key, (long) value);
-    return this;
+    return setAttribute(key, (long) value);
   }
 
   /**
@@ -299,7 +306,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param statusCode the {@link StatusCode} to set.
    * @return this.
    */
-  Span setStatus(StatusCode statusCode);
+  default Span setStatus(StatusCode statusCode) {
+    return setStatus(statusCode, null);
+  }
 
   /**
    * Sets the status to the {@code Span}.
