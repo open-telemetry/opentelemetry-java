@@ -68,7 +68,8 @@ public class SpanPipelineBenchmark {
 
       String address = collector.getHost() + ":" + collector.getMappedPort(EXPOSED_PORT);
 
-      TraceConfig alwaysOn = TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
+      TraceConfig alwaysOn =
+          TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
 
       TracerSdkProvider tracerProvider =
           TracerSdkProvider.builder().setTraceConfig(alwaysOn).build();
