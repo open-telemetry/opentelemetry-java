@@ -8,6 +8,7 @@ package io.opentelemetry.sdk;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.DefaultOpenTelemetry;
+import io.opentelemetry.api.DefaultOpenTelemetryBuilder;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
@@ -92,7 +93,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   }
 
   /** A builder for configuring an {@link OpenTelemetrySdk}. */
-  public static class Builder extends DefaultOpenTelemetry.Builder {
+  public static class Builder extends DefaultOpenTelemetryBuilder {
     private Clock clock;
     private Resource resource;
     private final List<SpanProcessor> spanProcessors = new ArrayList<>();

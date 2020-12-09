@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -51,7 +52,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetry previous = OpenTelemetry.get();
     assertThatCode(OpenTelemetrySdk::getGlobalTracerManagement).doesNotThrowAnyException();
     try {
-      OpenTelemetry.set(OpenTelemetry.builder().setTracerProvider(tracerProvider).build());
+      OpenTelemetry.set(DefaultOpenTelemetry.builder().setTracerProvider(tracerProvider).build());
       assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement)
           .isInstanceOf(IllegalStateException.class);
     } finally {
