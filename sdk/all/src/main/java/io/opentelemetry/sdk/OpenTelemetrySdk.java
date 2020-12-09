@@ -233,7 +233,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     private TracerSdkProvider buildTracerProvider() {
       TracerProvider tracerProvider = super.tracerProvider;
       if (tracerProvider != null) {
-        return (TracerSdkProvider) tracerProvider;
+        TracerSdkProvider sdkProvider = (TracerSdkProvider) tracerProvider;
+        spanProcessors.forEach(sdkProvider::addSpanProcessor);
+        return sdkProvider;
       }
       TracerSdkProvider.Builder tracerProviderBuilder = TracerSdkProvider.builder();
       if (clock != null) {

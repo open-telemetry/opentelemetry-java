@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -40,6 +41,7 @@ class OpenTelemetrySdkTest {
   @Mock private MeterSdkProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
+  @Mock private SpanProcessor spanProcessor;
 
   @Test
   void testGetGlobal() {
@@ -190,5 +192,16 @@ class OpenTelemetrySdkTest {
     assertThrows(
         IllegalArgumentException.class,
         () -> OpenTelemetrySdk.builder().setTracerProvider(mock(TracerProvider.class)));
+  }
+
+  @Test
+  void addSpanProcessorToProvidedTracer() {
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(TracerSdkProvider.builder().build())
+            .addSpanProcessor(spanProcessor)
+            .build();
+    openTelemetry.getTracerProvider().get("test").spanBuilder("test").startSpan();
+    verify(spanProcessor).onStart(any(), any());
   }
 }
