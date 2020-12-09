@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.testing.junit4;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -97,13 +98,13 @@ public class OpenTelemetryRule extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    previousGlobalOpenTelemetry = OpenTelemetry.get();
-    OpenTelemetry.set(openTelemetry);
+    previousGlobalOpenTelemetry = GlobalOpenTelemetry.get();
+    GlobalOpenTelemetry.set(openTelemetry);
     clearSpans();
   }
 
   @Override
   protected void after() {
-    OpenTelemetry.set(previousGlobalOpenTelemetry);
+    GlobalOpenTelemetry.set(previousGlobalOpenTelemetry);
   }
 }

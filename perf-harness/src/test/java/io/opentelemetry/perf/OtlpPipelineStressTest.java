@@ -10,7 +10,7 @@ import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import eu.rekawek.toxiproxy.model.ToxicList;
 import eu.rekawek.toxiproxy.model.toxic.Timeout;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -203,7 +203,7 @@ public class OtlpPipelineStressTest {
 
   private static void runOnce(Integer numberOfSpans, int numberOfMillisToRunFor)
       throws InterruptedException {
-    Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.perf");
+    Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.perf");
     long start = System.currentTimeMillis();
     int i = 0;
     while (numberOfSpans == null

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -65,7 +65,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
       SpanExporter exporter = new DelayingSpanExporter();
       processor = BatchSpanProcessor.builder(exporter).build();
 
-      tracer = OpenTelemetry.getGlobalTracerProvider().get("benchmarkTracer");
+      tracer = GlobalOpenTelemetry.getTracerProvider().get("benchmarkTracer");
     }
 
     @TearDown(Level.Trial)
