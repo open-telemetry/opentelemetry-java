@@ -25,7 +25,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   private static final Tracer tracer = OpenTelemetry.getTracer();
  *   void doWork() {
  *     Span span = tracer.spanBuilder("MyClass.DoWork").startSpan();
- *     try(Scope ignored = span.makeCurrent()) {
+ *     try (Scope ignored = span.makeCurrent()) {
  *       Span.current().addEvent("Starting the work.");
  *       doWorkInternal();
  *       Span.current().addEvent("Finished working.");
