@@ -16,16 +16,9 @@ final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
 
   DoubleSumObserverSdk(
       InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
       InstrumentAccumulator instrumentAccumulator,
       @Nullable Callback<DoubleResult> metricUpdater) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        instrumentAccumulator,
-        metricUpdater);
+    super(descriptor, instrumentAccumulator, metricUpdater);
   }
 
   static final class Builder
@@ -59,11 +52,7 @@ final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
           getInstrumentDescriptor(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE);
       DoubleSumObserverSdk instrument =
           new DoubleSumObserverSdk(
-              instrumentDescriptor,
-              getMeterProviderSharedState(),
-              getMeterSharedState(),
-              getBatcher(instrumentDescriptor),
-              callback);
+              instrumentDescriptor, getBatcher(instrumentDescriptor), callback);
       return register(instrument);
     }
   }

@@ -15,11 +15,8 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     implements DoubleValueRecorder {
 
   private DoubleValueRecorderSdk(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentAccumulator instrumentAccumulator) {
-    super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
+      InstrumentDescriptor descriptor, InstrumentAccumulator instrumentAccumulator) {
+    super(descriptor, instrumentAccumulator);
   }
 
   @Override
@@ -73,11 +70,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
       InstrumentDescriptor instrumentDescriptor =
           getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE);
       return register(
-          new DoubleValueRecorderSdk(
-              instrumentDescriptor,
-              getMeterProviderSharedState(),
-              getMeterSharedState(),
-              getBatcher(instrumentDescriptor)));
+          new DoubleValueRecorderSdk(instrumentDescriptor, getBatcher(instrumentDescriptor)));
     }
   }
 }

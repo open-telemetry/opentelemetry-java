@@ -17,15 +17,14 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     extends AbstractInstrument {
   private final ConcurrentHashMap<Labels, B> boundLabels;
   private final ReentrantLock collectLock;
+  private final InstrumentAccumulator instrumentAccumulator;
 
   AbstractSynchronousInstrument(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentAccumulator instrumentAccumulator) {
-    super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
+      InstrumentDescriptor descriptor, InstrumentAccumulator instrumentAccumulator) {
+    super(descriptor);
     boundLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
+    this.instrumentAccumulator = instrumentAccumulator;
   }
 
   public B bind(Labels labels) {
@@ -37,7 +36,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     }
 
     // Missing entry or no longer mapped, try to add a new entry.
-    binding = newBinding(getInstrumentAccumulator());
+    binding = newBinding(instrumentAccumulator);
     while (true) {
       B oldBound = boundLabels.putIfAbsent(labels, binding);
       if (oldBound != null) {
@@ -62,7 +61,6 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
   final List<MetricData> collectAll() {
     collectLock.lock();
     try {
-      InstrumentAccumulator instrumentAccumulator = getInstrumentAccumulator();
       for (Map.Entry<Labels, B> entry : boundLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {

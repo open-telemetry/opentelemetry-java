@@ -17,36 +17,14 @@ import java.util.Objects;
 abstract class AbstractInstrument implements Instrument {
 
   private final InstrumentDescriptor descriptor;
-  private final MeterProviderSharedState meterProviderSharedState;
-  private final MeterSharedState meterSharedState;
-  private final InstrumentAccumulator instrumentAccumulator;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
-  AbstractInstrument(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentAccumulator instrumentAccumulator) {
+  AbstractInstrument(InstrumentDescriptor descriptor) {
     this.descriptor = descriptor;
-    this.meterProviderSharedState = meterProviderSharedState;
-    this.meterSharedState = meterSharedState;
-    this.instrumentAccumulator = instrumentAccumulator;
   }
 
   final InstrumentDescriptor getDescriptor() {
     return descriptor;
-  }
-
-  final MeterProviderSharedState getMeterProviderSharedState() {
-    return meterProviderSharedState;
-  }
-
-  final MeterSharedState getMeterSharedState() {
-    return meterSharedState;
-  }
-
-  final InstrumentAccumulator getInstrumentAccumulator() {
-    return instrumentAccumulator;
   }
 
   /**
@@ -112,14 +90,6 @@ abstract class AbstractInstrument implements Instrument {
       return getThis();
     }
 
-    final MeterProviderSharedState getMeterProviderSharedState() {
-      return meterProviderSharedState;
-    }
-
-    final MeterSharedState getMeterSharedState() {
-      return meterSharedState;
-    }
-
     final InstrumentDescriptor getInstrumentDescriptor(
         InstrumentType type, InstrumentValueType valueType) {
       return InstrumentDescriptor.create(name, description, unit, type, valueType);
@@ -128,7 +98,7 @@ abstract class AbstractInstrument implements Instrument {
     abstract B getThis();
 
     final <I extends AbstractInstrument> I register(I instrument) {
-      return getMeterSharedState().getInstrumentRegistry().register(instrument);
+      return meterSharedState.getInstrumentRegistry().register(instrument);
     }
 
     protected InstrumentAccumulator getBatcher(InstrumentDescriptor descriptor) {

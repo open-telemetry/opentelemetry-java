@@ -16,16 +16,9 @@ final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
 
   LongValueObserverSdk(
       InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
       InstrumentAccumulator instrumentAccumulator,
       @Nullable Callback<LongResult> metricUpdater) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        instrumentAccumulator,
-        metricUpdater);
+    super(descriptor, instrumentAccumulator, metricUpdater);
   }
 
   static final class Builder
@@ -59,11 +52,7 @@ final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
           getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG);
       LongValueObserverSdk instrument =
           new LongValueObserverSdk(
-              instrumentDescriptor,
-              getMeterProviderSharedState(),
-              getMeterSharedState(),
-              getBatcher(instrumentDescriptor),
-              callback);
+              instrumentDescriptor, getBatcher(instrumentDescriptor), callback);
       return register(instrument);
     }
   }

@@ -125,9 +125,6 @@ class AbstractInstrumentBuilderTest {
         new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
             .setDescription(DESCRIPTION)
             .setUnit(UNIT);
-    assertThat(testInstrumentBuilder.getMeterProviderSharedState())
-        .isSameAs(METER_PROVIDER_SHARED_STATE);
-    assertThat(testInstrumentBuilder.getMeterSharedState()).isSameAs(METER_SHARED_STATE);
 
     TestInstrument testInstrument = testInstrumentBuilder.build();
     assertThat(testInstrument).isInstanceOf(TestInstrument.class);
@@ -153,18 +150,13 @@ class AbstractInstrumentBuilderTest {
     @Override
     public TestInstrument build() {
       return new TestInstrument(
-          getInstrumentDescriptor(InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
-          getMeterProviderSharedState(),
-          getMeterSharedState());
+          getInstrumentDescriptor(InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG));
     }
   }
 
   private static final class TestInstrument extends AbstractInstrument {
-    TestInstrument(
-        InstrumentDescriptor descriptor,
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(descriptor, meterProviderSharedState, meterSharedState, null);
+    TestInstrument(InstrumentDescriptor descriptor) {
+      super(descriptor);
     }
 
     @Override
