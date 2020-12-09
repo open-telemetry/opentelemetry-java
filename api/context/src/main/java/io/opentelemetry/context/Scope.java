@@ -13,7 +13,7 @@ import io.opentelemetry.context.ThreadLocalContextStorage.NoopScope;
  * you use this class with a {@code try-with-resources} block:
  *
  * <pre>{@code
- * try (Scope ignored = TracingContextUtils.currentContextWith(span)) {
+ * try (Scope ignored = span.makeCurrent()) {
  *   ...
  * }
  * }</pre>
