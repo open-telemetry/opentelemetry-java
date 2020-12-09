@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * Util methods to convert OpenTelemetry Metrics data models to Prometheus data models.
@@ -75,6 +76,8 @@ final class MetricAdapter {
     return Collector.Type.UNTYPED;
   }
 
+  private static final Function<String, String> sanitizer = new LabelNameSanitizer();
+
   // Converts a list of points from MetricData to a list of Prometheus Samples.
   static List<Sample> toSamples(String name, MetricData.Type type, Collection<Point> points) {
     final List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
@@ -87,7 +90,6 @@ final class MetricAdapter {
         labelNames = new ArrayList<>(labels.size());
         labelValues = new ArrayList<>(labels.size());
 
-        // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
         labels.forEach(new Consumer(labelNames, labelValues));
       }
 
@@ -112,11 +114,6 @@ final class MetricAdapter {
     return samples;
   }
 
-  // Converts a label keys to a label names. Sanitizes the label keys.
-  static String toLabelName(String labelKey) {
-    return Collector.sanitizeMetricName(labelKey);
-  }
-
   private static final class Consumer implements BiConsumer<String, String> {
     final List<String> labelNames;
     final List<String> labelValues;
@@ -127,8 +124,9 @@ final class MetricAdapter {
     }
 
     @Override
-    public void accept(String key, String value) {
-      labelNames.add(toLabelName(key));
+    public void accept(String labelName, String value) {
+      String sanitizedLabelName = sanitizer.apply(labelName);
+      labelNames.add(sanitizedLabelName);
       labelValues.add(value == null ? "" : value);
     }
   }
