@@ -271,7 +271,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   }
 
   /**
-   * This interface allows the SDK to unobfuscate an obfuscated static global provider.
+   * This class allows the SDK to unobfuscate an obfuscated static global provider.
    *
    * <p>Static global providers are obfuscated when they are returned from the API to prevent users
    * from casting them to their SDK specific implementation. For example, we do not want users to
