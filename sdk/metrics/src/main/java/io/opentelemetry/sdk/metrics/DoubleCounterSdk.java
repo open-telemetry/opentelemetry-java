@@ -18,8 +18,8 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Batcher batcher) {
-    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
+      InstrumentAccumulator instrumentAccumulator) {
+    super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
   }
 
   @Override
@@ -38,15 +38,15 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
   }
 
   @Override
-  BoundInstrument newBinding(Batcher batcher) {
-    return new BoundInstrument(batcher);
+  BoundInstrument newBinding(InstrumentAccumulator instrumentAccumulator) {
+    return new BoundInstrument(instrumentAccumulator);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
       implements DoubleCounter.BoundDoubleCounter {
 
-    BoundInstrument(Batcher batcher) {
-      super(batcher.getAggregator());
+    BoundInstrument(InstrumentAccumulator instrumentAccumulator) {
+      super(instrumentAccumulator.getAggregator());
     }
 
     @Override

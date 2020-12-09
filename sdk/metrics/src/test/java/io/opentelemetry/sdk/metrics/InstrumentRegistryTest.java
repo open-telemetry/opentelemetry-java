@@ -29,7 +29,6 @@ class InstrumentRegistryTest {
           "name", "other_description", "1", InstrumentType.COUNTER, InstrumentValueType.LONG);
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
-  private static final ActiveBatcher ACTIVE_BATCHER = new ActiveBatcher(Batchers.getNoop());
 
   @Test
   void register() {
@@ -37,7 +36,10 @@ class InstrumentRegistryTest {
         MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
     TestInstrument testInstrument =
         new TestInstrument(
-            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, ACTIVE_BATCHER);
+            INSTRUMENT_DESCRIPTOR,
+            METER_PROVIDER_SHARED_STATE,
+            meterSharedState,
+            InstrumentAccumulators.getNoop());
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
@@ -50,7 +52,7 @@ class InstrumentRegistryTest {
                         INSTRUMENT_DESCRIPTOR,
                         METER_PROVIDER_SHARED_STATE,
                         meterSharedState,
-                        ACTIVE_BATCHER)))
+                        InstrumentAccumulators.getNoop())))
         .isSameAs(testInstrument);
   }
 
@@ -59,7 +61,10 @@ class InstrumentRegistryTest {
     MeterSharedState meterSharedState = MeterSharedState.create(getEmpty());
     TestInstrument testInstrument =
         new TestInstrument(
-            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, ACTIVE_BATCHER);
+            INSTRUMENT_DESCRIPTOR,
+            METER_PROVIDER_SHARED_STATE,
+            meterSharedState,
+            InstrumentAccumulators.getNoop());
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
 
@@ -73,7 +78,7 @@ class InstrumentRegistryTest {
                         OTHER_INSTRUMENT_DESCRIPTOR,
                         METER_PROVIDER_SHARED_STATE,
                         meterSharedState,
-                        ACTIVE_BATCHER)),
+                        InstrumentAccumulators.getNoop())),
         "Instrument with same name and different descriptor already created.");
   }
 
@@ -82,7 +87,10 @@ class InstrumentRegistryTest {
     MeterSharedState meterSharedState = MeterSharedState.create(getEmpty());
     TestInstrument testInstrument =
         new TestInstrument(
-            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, ACTIVE_BATCHER);
+            INSTRUMENT_DESCRIPTOR,
+            METER_PROVIDER_SHARED_STATE,
+            meterSharedState,
+            InstrumentAccumulators.getNoop());
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
 
@@ -96,7 +104,7 @@ class InstrumentRegistryTest {
                         INSTRUMENT_DESCRIPTOR,
                         METER_PROVIDER_SHARED_STATE,
                         meterSharedState,
-                        ACTIVE_BATCHER)),
+                        InstrumentAccumulators.getNoop())),
         "Instrument with same name and different descriptor already created.");
   }
 
@@ -105,8 +113,8 @@ class InstrumentRegistryTest {
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
-        ActiveBatcher activeBatcher) {
-      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+        InstrumentAccumulator instrumentAccumulator) {
+      super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
     }
 
     @Override
@@ -120,8 +128,8 @@ class InstrumentRegistryTest {
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
-        ActiveBatcher activeBatcher) {
-      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+        InstrumentAccumulator instrumentAccumulator) {
+      super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
     }
 
     @Override

@@ -55,16 +55,17 @@ class ViewRegistryTest {
     AggregationConfiguration specification =
         AggregationConfiguration.create(
             Aggregations.count(), AggregationConfiguration.Temporality.CUMULATIVE);
-    Batcher expectedBatcher =
-        Batchers.getCumulativeAllLabels(
+    InstrumentAccumulator expectedInstrumentAccumulator =
+        InstrumentAccumulators.getCumulativeAllLabels(
             descriptor, providerSharedState, meterSharedState, Aggregations.count());
 
     when(chooser.chooseAggregation(descriptor)).thenReturn(specification);
 
-    Batcher result = viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
+    InstrumentAccumulator result =
+        viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
 
     assertThat(result.generatesDeltas()).isFalse();
-    assertThat(result).isEqualTo(expectedBatcher);
+    assertThat(result).isEqualTo(expectedInstrumentAccumulator);
 
     assertThat(result).isNotNull();
   }
@@ -86,16 +87,17 @@ class ViewRegistryTest {
     AggregationConfiguration specification =
         AggregationConfiguration.create(
             Aggregations.count(), AggregationConfiguration.Temporality.DELTA);
-    Batcher expectedBatcher =
-        Batchers.getDeltaAllLabels(
+    InstrumentAccumulator expectedInstrumentAccumulator =
+        InstrumentAccumulators.getDeltaAllLabels(
             descriptor, providerSharedState, meterSharedState, Aggregations.count());
 
     when(chooser.chooseAggregation(descriptor)).thenReturn(specification);
 
-    Batcher result = viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
+    InstrumentAccumulator result =
+        viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
 
     assertThat(result.generatesDeltas()).isTrue();
-    assertThat(result).isEqualTo(expectedBatcher);
+    assertThat(result).isEqualTo(expectedInstrumentAccumulator);
 
     assertThat(result).isNotNull();
   }

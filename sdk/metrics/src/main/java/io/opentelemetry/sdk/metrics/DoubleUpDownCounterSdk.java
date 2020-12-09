@@ -18,8 +18,8 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Batcher batcher) {
-    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
+      InstrumentAccumulator instrumentAccumulator) {
+    super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
   }
 
   @Override
@@ -35,15 +35,15 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
   }
 
   @Override
-  BoundInstrument newBinding(Batcher batcher) {
-    return new BoundInstrument(batcher);
+  BoundInstrument newBinding(InstrumentAccumulator instrumentAccumulator) {
+    return new BoundInstrument(instrumentAccumulator);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
       implements BoundDoubleUpDownCounter {
 
-    BoundInstrument(Batcher batcher) {
-      super(batcher.getAggregator());
+    BoundInstrument(InstrumentAccumulator instrumentAccumulator) {
+      super(instrumentAccumulator.getAggregator());
     }
 
     @Override

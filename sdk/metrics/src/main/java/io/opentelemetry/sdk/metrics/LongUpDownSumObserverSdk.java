@@ -17,13 +17,13 @@ final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Batcher batcher,
+      InstrumentAccumulator instrumentAccumulator,
       @Nullable Callback<LongResult> metricUpdater) {
     super(
         descriptor,
         meterProviderSharedState,
         meterSharedState,
-        new ActiveBatcher(batcher),
+        instrumentAccumulator,
         metricUpdater);
   }
 

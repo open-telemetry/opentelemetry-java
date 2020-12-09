@@ -28,17 +28,20 @@ class AbstractInstrumentTest {
       InstrumentationLibraryInfo.create("test_abstract_instrument", "");
   private static final MeterSharedState METER_SHARED_STATE =
       MeterSharedState.create(INSTRUMENTATION_LIBRARY_INFO);
-  private static final ActiveBatcher ACTIVE_BATCHER = new ActiveBatcher(Batchers.getNoop());
 
   @Test
   void getValues() {
     TestInstrument testInstrument =
         new TestInstrument(
-            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE, ACTIVE_BATCHER);
+            INSTRUMENT_DESCRIPTOR,
+            METER_PROVIDER_SHARED_STATE,
+            METER_SHARED_STATE,
+            InstrumentAccumulators.getNoop());
     assertThat(testInstrument.getDescriptor()).isSameAs(INSTRUMENT_DESCRIPTOR);
     assertThat(testInstrument.getMeterProviderSharedState()).isSameAs(METER_PROVIDER_SHARED_STATE);
     assertThat(testInstrument.getMeterSharedState()).isSameAs(METER_SHARED_STATE);
-    assertThat(testInstrument.getActiveBatcher()).isSameAs(ACTIVE_BATCHER);
+    assertThat(testInstrument.getInstrumentAccumulator())
+        .isSameAs(InstrumentAccumulators.getNoop());
   }
 
   private static final class TestInstrument extends AbstractInstrument {
@@ -46,8 +49,8 @@ class AbstractInstrumentTest {
         InstrumentDescriptor descriptor,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
-        ActiveBatcher activeBatcher) {
-      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+        InstrumentAccumulator instrumentAccumulator) {
+      super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
     }
 
     @Override

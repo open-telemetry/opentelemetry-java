@@ -22,8 +22,8 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      ActiveBatcher activeBatcher) {
-    super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+      InstrumentAccumulator instrumentAccumulator) {
+    super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
     boundLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
   }
@@ -37,7 +37,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     }
 
     // Missing entry or no longer mapped, try to add a new entry.
-    binding = newBinding(getActiveBatcher());
+    binding = newBinding(getInstrumentAccumulator());
     while (true) {
       B oldBound = boundLabels.putIfAbsent(labels, binding);
       if (oldBound != null) {
@@ -62,7 +62,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
   final List<MetricData> collectAll() {
     collectLock.lock();
     try {
-      Batcher batcher = getActiveBatcher();
+      InstrumentAccumulator instrumentAccumulator = getInstrumentAccumulator();
       for (Map.Entry<Labels, B> entry : boundLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {
@@ -70,13 +70,14 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
           // acquire but because we requested a specific value only one will succeed.
           boundLabels.remove(entry.getKey(), entry.getValue());
         }
-        batcher.batch(entry.getKey(), entry.getValue().getAggregator(), unmappedEntry);
+        instrumentAccumulator.batch(
+            entry.getKey(), entry.getValue().getAggregator(), unmappedEntry);
       }
-      return batcher.completeCollectionCycle();
+      return instrumentAccumulator.completeCollectionCycle();
     } finally {
       collectLock.unlock();
     }
   }
 
-  abstract B newBinding(Batcher batcher);
+  abstract B newBinding(InstrumentAccumulator instrumentAccumulator);
 }
