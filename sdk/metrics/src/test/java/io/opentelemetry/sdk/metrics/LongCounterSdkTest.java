@@ -67,7 +67,7 @@ class LongCounterSdkTest {
     assertThat(metricData.getName()).isEqualTo("testCounter");
     assertThat(metricData.getDescription()).isEqualTo("My very own counter");
     assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.MONOTONIC_LONG);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_SUM);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -89,7 +89,7 @@ class LongCounterSdkTest {
     assertThat(metricData.getName()).isEqualTo("testCounter");
     assertThat(metricData.getDescription()).isEqualTo("My very own counter");
     assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.MONOTONIC_LONG);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_SUM);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();

@@ -411,7 +411,7 @@ class MeterSdkTest {
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.Type.MONOTONIC_LONG,
+                MetricData.Type.LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
@@ -420,7 +420,7 @@ class MeterSdkTest {
                 "testDoubleCounter",
                 "",
                 "1",
-                MetricData.Type.MONOTONIC_DOUBLE,
+                MetricData.Type.DOUBLE_SUM,
                 Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), Labels.empty(), 10.1))),
             MetricData.create(

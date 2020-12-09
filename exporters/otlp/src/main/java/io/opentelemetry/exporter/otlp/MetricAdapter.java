@@ -101,10 +101,10 @@ final class MetricAdapter {
     boolean monotonic = false;
 
     switch (metricData.getType()) {
-      case MONOTONIC_LONG:
+      case LONG_SUM:
         monotonic = true;
         // fall through
-      case NON_MONOTONIC_LONG:
+      case NON_MONOTONIC_LONG_SUM:
         builder.setIntSum(
             IntSum.newBuilder()
                 .setIsMonotonic(monotonic)
@@ -112,10 +112,10 @@ final class MetricAdapter {
                 .addAllDataPoints(toIntDataPoints(metricData.getPoints()))
                 .build());
         break;
-      case MONOTONIC_DOUBLE:
+      case DOUBLE_SUM:
         monotonic = true;
         // fall through
-      case NON_MONOTONIC_DOUBLE:
+      case NON_MONOTONIC_DOUBLE_SUM:
         builder.setDoubleSum(
             DoubleSum.newBuilder()
                 .setIsMonotonic(monotonic)
@@ -130,13 +130,13 @@ final class MetricAdapter {
                 .addAllDataPoints(toSummaryDataPoints(metricData.getPoints()))
                 .build());
         break;
-      case GAUGE_LONG:
+      case LONG_GAUGE:
         builder.setIntGauge(
             IntGauge.newBuilder()
                 .addAllDataPoints(toIntDataPoints(metricData.getPoints()))
                 .build());
         break;
-      case GAUGE_DOUBLE:
+      case DOUBLE_GAUGE:
         builder.setDoubleGauge(
             DoubleGauge.newBuilder()
                 .addAllDataPoints(toDoubleDataPoints(metricData.getPoints()))
@@ -148,10 +148,10 @@ final class MetricAdapter {
 
   private static AggregationTemporality mapToTemporality(MetricData.Type type) {
     switch (type) {
-      case NON_MONOTONIC_LONG:
-      case NON_MONOTONIC_DOUBLE:
-      case MONOTONIC_LONG:
-      case MONOTONIC_DOUBLE:
+      case NON_MONOTONIC_LONG_SUM:
+      case NON_MONOTONIC_DOUBLE_SUM:
+      case LONG_SUM:
+      case DOUBLE_SUM:
         return AGGREGATION_TEMPORALITY_CUMULATIVE;
       case SUMMARY:
         return AGGREGATION_TEMPORALITY_DELTA;
