@@ -40,7 +40,9 @@ public class SpanPipelineBenchmark {
     private static final int EXPOSED_PORT = 5678;
     private static final int HEALTH_CHECK_PORT = 13133;
     private SpanBuilderSdk spanBuilderSdk;
+
     protected abstract SpanProcessor getSpanProcessor(String collectorAddress);
+
     protected abstract void runThePipeline();
 
     protected void doWork() {
@@ -66,13 +68,11 @@ public class SpanPipelineBenchmark {
 
       String address = collector.getHost() + ":" + collector.getMappedPort(EXPOSED_PORT);
 
-      TracerSdkProvider tracerProvider = TracerSdkProvider.builder().build();
+      TraceConfig alwaysOn = TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
 
+      TracerSdkProvider tracerProvider =
+          TracerSdkProvider.builder().setTraceConfig(alwaysOn).build();
       tracerProvider.addSpanProcessor(getSpanProcessor(address));
-
-      TraceConfig alwaysOn =
-          tracerProvider.getActiveTraceConfig().toBuilder().setSampler(Sampler.alwaysOn()).build();
-      tracerProvider.updateActiveTraceConfig(alwaysOn);
 
       Tracer tracerSdk = tracerProvider.get("PipelineBenchmarkTracer");
       spanBuilderSdk = (SpanBuilderSdk) tracerSdk.spanBuilder("PipelineBenchmarkSpan");
