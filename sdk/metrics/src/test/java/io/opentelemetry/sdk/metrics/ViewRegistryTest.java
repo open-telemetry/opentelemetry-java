@@ -56,7 +56,7 @@ class ViewRegistryTest {
         AggregationConfiguration.create(
             Aggregations.count(), AggregationConfiguration.Temporality.CUMULATIVE);
     InstrumentAccumulator expectedInstrumentAccumulator =
-        InstrumentAccumulators.getCumulativeAllLabels(
+        InstrumentAccumulator.getCumulativeAllLabels(
             descriptor, providerSharedState, meterSharedState, Aggregations.count());
 
     when(chooser.chooseAggregation(descriptor)).thenReturn(specification);
@@ -88,7 +88,7 @@ class ViewRegistryTest {
         AggregationConfiguration.create(
             Aggregations.count(), AggregationConfiguration.Temporality.DELTA);
     InstrumentAccumulator expectedInstrumentAccumulator =
-        InstrumentAccumulators.getDeltaAllLabels(
+        InstrumentAccumulator.getDeltaAllLabels(
             descriptor, providerSharedState, meterSharedState, Aggregations.count());
 
     when(chooser.chooseAggregation(descriptor)).thenReturn(specification);
