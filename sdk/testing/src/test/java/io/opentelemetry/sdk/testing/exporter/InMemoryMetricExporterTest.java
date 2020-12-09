@@ -32,7 +32,7 @@ class InMemoryMetricExporterTest {
         "name",
         "description",
         "1",
-        MetricData.Type.MONOTONIC_LONG,
+        MetricData.Type.SUM_LONG,
         Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
   }
 

@@ -67,7 +67,7 @@ class LongUpDownCounterSdkTest {
     assertThat(metricData.getName()).isEqualTo("testUpDownCounter");
     assertThat(metricData.getDescription()).isEqualTo("My very own counter");
     assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.NON_MONOTONIC_LONG);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.NON_MONOTONIC_SUM_LONG);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();

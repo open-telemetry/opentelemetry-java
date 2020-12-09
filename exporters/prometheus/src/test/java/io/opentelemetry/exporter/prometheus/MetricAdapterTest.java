@@ -25,13 +25,13 @@ class MetricAdapterTest {
 
   @Test
   void toProtoMetricDescriptorType() {
-    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.NON_MONOTONIC_DOUBLE))
+    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.NON_MONOTONIC_SUM_DOUBLE))
         .isEqualTo(Collector.Type.GAUGE);
-    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.NON_MONOTONIC_LONG))
+    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.NON_MONOTONIC_SUM_LONG))
         .isEqualTo(Collector.Type.GAUGE);
-    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.MONOTONIC_DOUBLE))
+    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.SUM_DOUBLE))
         .isEqualTo(Collector.Type.COUNTER);
-    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.MONOTONIC_LONG))
+    assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.SUM_LONG))
         .isEqualTo(Collector.Type.COUNTER);
     assertThat(MetricAdapter.toMetricFamilyType(MetricData.Type.SUMMARY))
         .isEqualTo(Collector.Type.SUMMARY);
@@ -44,14 +44,13 @@ class MetricAdapterTest {
   @Test
   void toSamples_LongPoints() {
     assertThat(
-            MetricAdapter.toSamples(
-                "full_name", MetricData.Type.MONOTONIC_LONG, Collections.emptyList()))
+            MetricAdapter.toSamples("full_name", MetricData.Type.SUM_LONG, Collections.emptyList()))
         .isEmpty();
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.NON_MONOTONIC_LONG,
+                MetricData.Type.NON_MONOTONIC_SUM_LONG,
                 Collections.singletonList(
                     MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
@@ -60,7 +59,7 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.NON_MONOTONIC_LONG,
+                MetricData.Type.NON_MONOTONIC_SUM_LONG,
                 Collections.singletonList(
                     MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
@@ -69,7 +68,7 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.MONOTONIC_LONG,
+                MetricData.Type.SUM_LONG,
                 ImmutableList.of(
                     MetricData.LongPoint.create(123, 456, Labels.empty(), 5),
                     MetricData.LongPoint.create(321, 654, Labels.of("kp", "vp"), 7))))
@@ -93,13 +92,13 @@ class MetricAdapterTest {
   void toSamples_DoublePoints() {
     assertThat(
             MetricAdapter.toSamples(
-                "full_name", MetricData.Type.NON_MONOTONIC_DOUBLE, Collections.emptyList()))
+                "full_name", MetricData.Type.NON_MONOTONIC_SUM_DOUBLE, Collections.emptyList()))
         .isEmpty();
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.MONOTONIC_DOUBLE,
+                MetricData.Type.SUM_DOUBLE,
                 Collections.singletonList(
                     MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
@@ -108,7 +107,7 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_SUM_DOUBLE,
                 ImmutableList.of(
                     MetricData.DoublePoint.create(123, 456, Labels.empty(), 5),
                     MetricData.DoublePoint.create(321, 654, Labels.of("kp", "vp"), 7))))
@@ -197,7 +196,7 @@ class MetricAdapterTest {
             "instrument.name",
             "description",
             "1",
-            MetricData.Type.MONOTONIC_DOUBLE,
+            MetricData.Type.SUM_DOUBLE,
             Collections.singletonList(
                 MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5)));
 

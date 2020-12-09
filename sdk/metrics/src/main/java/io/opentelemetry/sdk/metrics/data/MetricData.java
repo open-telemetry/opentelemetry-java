@@ -24,25 +24,6 @@ public abstract class MetricData {
 
   /** The kind of metric. It describes how the data is reported. */
   public enum Type {
-    /** An instantaneous measurement of a long (int64) value. Reports {@link LongPoint} points. */
-    NON_MONOTONIC_LONG,
-
-    /** An instantaneous measurement of a double value. Reports {@link DoublePoint} points. */
-    NON_MONOTONIC_DOUBLE,
-
-    /** An cumulative measurement of an long (int64) value. Reports {@link LongPoint} points. */
-    MONOTONIC_LONG,
-
-    /** An cumulative measurement of a double value. Reports {@link DoublePoint} points. */
-    MONOTONIC_DOUBLE,
-
-    /**
-     * A Summary of measurements of numeric values, containing the minimum value recorded, the
-     * maximum value recorded, the sum of all measurements and the total number of measurements
-     * recorded.
-     */
-    SUMMARY,
-
     /**
      * A Gauge represents a measurement of a long value at a moment in time. Generally only one
      * instance of a given Gauge metric will be reported per reporting interval.
@@ -53,7 +34,26 @@ public abstract class MetricData {
      * A Gauge represents a measurement of a double value at a moment in time. Generally only one
      * instance of a given Gauge metric will be reported per reporting interval.
      */
-    GAUGE_DOUBLE
+    GAUGE_DOUBLE,
+
+    /** A sum of long (int64) values. Reports {@link LongPoint} points. */
+    NON_MONOTONIC_SUM_LONG,
+
+    /** A sum of double values. Reports {@link DoublePoint} points. */
+    NON_MONOTONIC_SUM_DOUBLE,
+
+    /** A sum of non negative long (int64) values. Reports {@link LongPoint} points. */
+    SUM_LONG,
+
+    /** A sum of non negative double values. Reports {@link DoublePoint} points. */
+    SUM_DOUBLE,
+
+    /**
+     * A Summary of measurements of numeric values, containing the minimum value recorded, the
+     * maximum value recorded, the sum of all measurements and the total number of measurements
+     * recorded.
+     */
+    SUMMARY,
   }
 
   /**

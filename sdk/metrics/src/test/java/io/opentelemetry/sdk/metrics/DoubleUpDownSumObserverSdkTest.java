@@ -60,7 +60,7 @@ class DoubleUpDownSumObserverSdkTest {
                 "testObserver",
                 "My own DoubleUpDownSumObserver",
                 "ms",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_SUM_DOUBLE,
                 Collections.emptyList()));
   }
 
@@ -80,7 +80,7 @@ class DoubleUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_SUM_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -96,7 +96,7 @@ class DoubleUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_SUM_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - 2 * SECOND_NANOS,

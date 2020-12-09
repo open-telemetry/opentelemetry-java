@@ -60,7 +60,7 @@ class DoubleSumObserverSdkTest {
                 "testObserver",
                 "My own DoubleSumObserver",
                 "ms",
-                MetricData.Type.MONOTONIC_DOUBLE,
+                MetricData.Type.SUM_DOUBLE,
                 Collections.emptyList()));
   }
 
@@ -80,7 +80,7 @@ class DoubleSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.MONOTONIC_DOUBLE,
+                MetricData.Type.SUM_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -96,7 +96,7 @@ class DoubleSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.MONOTONIC_DOUBLE,
+                MetricData.Type.SUM_DOUBLE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - 2 * SECOND_NANOS,

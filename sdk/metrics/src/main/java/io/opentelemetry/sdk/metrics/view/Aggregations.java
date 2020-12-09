@@ -124,15 +124,15 @@ public class Aggregations {
         case COUNTER:
         case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Type.MONOTONIC_LONG
-              : MetricData.Type.MONOTONIC_DOUBLE;
+              ? MetricData.Type.SUM_LONG
+              : MetricData.Type.SUM_DOUBLE;
         case UP_DOWN_COUNTER:
         case VALUE_RECORDER:
         case UP_DOWN_SUM_OBSERVER:
         case VALUE_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Type.NON_MONOTONIC_LONG
-              : MetricData.Type.NON_MONOTONIC_DOUBLE;
+              ? MetricData.Type.NON_MONOTONIC_SUM_LONG
+              : MetricData.Type.NON_MONOTONIC_SUM_DOUBLE;
       }
       throw new IllegalArgumentException("Unsupported instrument/value types");
     }
@@ -167,7 +167,7 @@ public class Aggregations {
     @Override
     public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      return MetricData.Type.MONOTONIC_LONG;
+      return MetricData.Type.SUM_LONG;
     }
 
     @Override
@@ -240,12 +240,12 @@ public class Aggregations {
       switch (instrumentType) {
         case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Type.MONOTONIC_LONG
-              : MetricData.Type.MONOTONIC_DOUBLE;
+              ? MetricData.Type.SUM_LONG
+              : MetricData.Type.SUM_DOUBLE;
         case UP_DOWN_SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Type.NON_MONOTONIC_LONG
-              : MetricData.Type.NON_MONOTONIC_DOUBLE;
+              ? MetricData.Type.NON_MONOTONIC_SUM_LONG
+              : MetricData.Type.NON_MONOTONIC_SUM_DOUBLE;
         case VALUE_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
               ? MetricData.Type.GAUGE_LONG

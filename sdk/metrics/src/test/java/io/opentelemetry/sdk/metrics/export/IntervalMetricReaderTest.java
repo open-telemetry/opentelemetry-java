@@ -48,7 +48,7 @@ class IntervalMetricReaderTest {
           "my metric",
           "my metric description",
           "us",
-          MetricData.Type.MONOTONIC_LONG,
+          MetricData.Type.SUM_LONG,
           LONG_POINT_LIST);
 
   @Mock private MetricProducer metricProducer;
