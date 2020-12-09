@@ -124,6 +124,9 @@ final class InstrumentAccumulators {
 
     @Override
     public final void batch(Labels labelSet, Aggregator aggregator, boolean unmappedAggregator) {
+      if (!aggregator.hasRecordings()) {
+        return;
+      }
       Aggregator currentAggregator = aggregatorMap.get(labelSet);
       if (currentAggregator == null) {
         // This aggregator is not mapped, we can use this instance.

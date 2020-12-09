@@ -81,7 +81,7 @@ class LongCounterSdkTest {
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
-    BoundInstrument ignored = longCounter.bind(Labels.of("foo", "bar"));
+    BoundInstrument bound = longCounter.bind(Labels.of("foo", "bar"));
 
     List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
@@ -93,6 +93,8 @@ class LongCounterSdkTest {
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
+
+    bound.unbind();
   }
 
   @Test
