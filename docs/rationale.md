@@ -70,7 +70,7 @@ Purely for illustration purposes, not intended to represent actual releases:
 
 - `v1.0.0` release:
     - `io.opentelemetry:opentelemetry-api:1.0.0`
-        - Contains APIs for tracing, baggage, propagators (via the context dependency)
+        - Includes APIs for tracing, baggage, context, propagators (via the context dependency)
     - `io.opentelemetry:opentelemetry-api-metrics:1.0.0-alpha`
         - Note: packages here are the final package structure: `io.opentelemetry.api.metrics.*`
     - `io.opentelemetry:opentelemetry-sdk-trace:1.0.0`
