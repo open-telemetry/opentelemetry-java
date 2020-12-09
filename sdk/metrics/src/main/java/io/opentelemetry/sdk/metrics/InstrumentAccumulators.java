@@ -20,11 +20,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-/** A collection of available Batchers. */
-final class Batchers {
+/** A collection of available InstrumentAccumulators. */
+final class InstrumentAccumulators {
 
-  static Batcher getNoop() {
+  static InstrumentAccumulator getNoop() {
     return Noop.INSTANCE;
   }
 
@@ -33,7 +34,7 @@ final class Batchers {
    * "Cumulative" means that all metrics that are generated will be considered for the lifetime of
    * the Instrument being aggregated.
    */
-  static Batcher getCumulativeAllLabels(
+  static InstrumentAccumulator getCumulativeAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
@@ -51,7 +52,7 @@ final class Batchers {
    * Create a Batcher that uses the "delta" Temporality and uses all labels for aggregation. "Delta"
    * means that all metrics that are generated are only for the most recent collection interval.
    */
-  static Batcher getDeltaAllLabels(
+  static InstrumentAccumulator getDeltaAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
@@ -65,7 +66,7 @@ final class Batchers {
         /* delta= */ true);
   }
 
-  private static final class Noop implements Batcher {
+  private static final class Noop implements InstrumentAccumulator {
     private static final Noop INSTANCE = new Noop();
 
     @Override
@@ -87,7 +88,7 @@ final class Batchers {
     }
   }
 
-  private static final class AllLabels implements Batcher {
+  private static final class AllLabels implements InstrumentAccumulator {
     private final InstrumentDescriptor descriptor;
     private final Aggregation aggregation;
     private final Resource resource;
@@ -123,6 +124,9 @@ final class Batchers {
 
     @Override
     public final void batch(Labels labelSet, Aggregator aggregator, boolean unmappedAggregator) {
+      if (!aggregator.hasRecordings()) {
+        return;
+      }
       Aggregator currentAggregator = aggregatorMap.get(labelSet);
       if (currentAggregator == null) {
         // This aggregator is not mapped, we can use this instance.
@@ -183,35 +187,25 @@ final class Batchers {
       if (delta != allLabels.delta) {
         return false;
       }
-      if (descriptor != null
-          ? !descriptor.equals(allLabels.descriptor)
-          : allLabels.descriptor != null) {
+      if (!Objects.equals(descriptor, allLabels.descriptor)) {
         return false;
       }
-      if (aggregation != null
-          ? !aggregation.equals(allLabels.aggregation)
-          : allLabels.aggregation != null) {
+      if (!Objects.equals(aggregation, allLabels.aggregation)) {
         return false;
       }
-      if (resource != null ? !resource.equals(allLabels.resource) : allLabels.resource != null) {
+      if (!Objects.equals(resource, allLabels.resource)) {
         return false;
       }
-      if (instrumentationLibraryInfo != null
-          ? !instrumentationLibraryInfo.equals(allLabels.instrumentationLibraryInfo)
-          : allLabels.instrumentationLibraryInfo != null) {
+      if (!Objects.equals(instrumentationLibraryInfo, allLabels.instrumentationLibraryInfo)) {
         return false;
       }
-      if (clock != null ? !clock.equals(allLabels.clock) : allLabels.clock != null) {
+      if (!Objects.equals(clock, allLabels.clock)) {
         return false;
       }
-      if (aggregatorFactory != null
-          ? !aggregatorFactory.equals(allLabels.aggregatorFactory)
-          : allLabels.aggregatorFactory != null) {
+      if (!Objects.equals(aggregatorFactory, allLabels.aggregatorFactory)) {
         return false;
       }
-      return aggregatorMap != null
-          ? aggregatorMap.equals(allLabels.aggregatorMap)
-          : allLabels.aggregatorMap == null;
+      return Objects.equals(aggregatorMap, allLabels.aggregatorMap);
     }
 
     @Override
@@ -231,5 +225,5 @@ final class Batchers {
     }
   }
 
-  private Batchers() {}
+  private InstrumentAccumulators() {}
 }

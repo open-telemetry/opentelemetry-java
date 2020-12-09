@@ -18,13 +18,13 @@ final class DoubleUpDownSumObserverSdk extends AbstractDoubleAsynchronousInstrum
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Batcher batcher,
+      InstrumentAccumulator instrumentAccumulator,
       @Nullable Callback<DoubleResult> metricUpdater) {
     super(
         descriptor,
         meterProviderSharedState,
         meterSharedState,
-        new ActiveBatcher(batcher),
+        instrumentAccumulator,
         metricUpdater);
   }
 

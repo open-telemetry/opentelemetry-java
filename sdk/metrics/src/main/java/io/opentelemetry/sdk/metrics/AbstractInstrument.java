@@ -19,18 +19,18 @@ abstract class AbstractInstrument implements Instrument {
   private final InstrumentDescriptor descriptor;
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
-  private final ActiveBatcher activeBatcher;
+  private final InstrumentAccumulator instrumentAccumulator;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
   AbstractInstrument(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      ActiveBatcher activeBatcher) {
+      InstrumentAccumulator instrumentAccumulator) {
     this.descriptor = descriptor;
     this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = meterSharedState;
-    this.activeBatcher = activeBatcher;
+    this.instrumentAccumulator = instrumentAccumulator;
   }
 
   final InstrumentDescriptor getDescriptor() {
@@ -45,8 +45,8 @@ abstract class AbstractInstrument implements Instrument {
     return meterSharedState;
   }
 
-  final ActiveBatcher getActiveBatcher() {
-    return activeBatcher;
+  final InstrumentAccumulator getInstrumentAccumulator() {
+    return instrumentAccumulator;
   }
 
   /**
@@ -131,7 +131,7 @@ abstract class AbstractInstrument implements Instrument {
       return getMeterSharedState().getInstrumentRegistry().register(instrument);
     }
 
-    protected Batcher getBatcher(InstrumentDescriptor descriptor) {
+    protected InstrumentAccumulator getBatcher(InstrumentDescriptor descriptor) {
       return meterSdk.createBatcher(descriptor, meterProviderSharedState, meterSharedState);
     }
   }

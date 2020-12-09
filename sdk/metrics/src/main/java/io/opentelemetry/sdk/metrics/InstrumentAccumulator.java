@@ -11,15 +11,15 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 
 /**
- * A {@code Batcher} represents an internal representation of an {code Instrument} aggregation
- * process. It records individual measurements (via the {@code Aggregator}). It batches together
- * {@code Aggregator}s for the similar sets of labels.
+ * An {@code InstrumentAccumulator} represents an internal instance of an {@code Accumulator} for a
+ * specific {code Instrument}. It records individual measurements (via the {@code Aggregator}). It
+ * batches together {@code Aggregator}s for the similar sets of labels.
  *
  * <p>The only thread safe method in this class is {@link #getAggregator()}. An entire collection
  * cycle must be protected by a lock. A collection cycle is defined by multiple calls to {@link
  * #batch(Labels, Aggregator, boolean)} followed by one {@link #completeCollectionCycle()};
  */
-interface Batcher {
+interface InstrumentAccumulator {
 
   /**
    * Returns the {@link Aggregator} that should be used by the bindings, or observers.
