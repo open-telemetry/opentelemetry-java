@@ -55,10 +55,10 @@ class ViewRegistry {
     Aggregation aggregation = specification.aggregation();
 
     if (Temporality.CUMULATIVE == specification.temporality()) {
-      return InstrumentAccumulators.getCumulativeAllLabels(
+      return InstrumentAccumulator.getCumulativeAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     } else if (Temporality.DELTA == specification.temporality()) {
-      return InstrumentAccumulators.getDeltaAllLabels(
+      return InstrumentAccumulator.getDeltaAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     }
     throw new IllegalStateException("unsupported Temporality: " + specification.temporality());

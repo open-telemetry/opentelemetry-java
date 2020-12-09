@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -28,20 +29,22 @@ class AbstractInstrumentTest {
       InstrumentationLibraryInfo.create("test_abstract_instrument", "");
   private static final MeterSharedState METER_SHARED_STATE =
       MeterSharedState.create(INSTRUMENTATION_LIBRARY_INFO);
+  private static final InstrumentAccumulator ACCUMULATOR =
+      InstrumentAccumulator.getDeltaAllLabels(
+          INSTRUMENT_DESCRIPTOR,
+          METER_PROVIDER_SHARED_STATE,
+          METER_SHARED_STATE,
+          Aggregations.count());
 
   @Test
   void getValues() {
     TestInstrument testInstrument =
         new TestInstrument(
-            INSTRUMENT_DESCRIPTOR,
-            METER_PROVIDER_SHARED_STATE,
-            METER_SHARED_STATE,
-            InstrumentAccumulators.getNoop());
+            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE, ACCUMULATOR);
     assertThat(testInstrument.getDescriptor()).isSameAs(INSTRUMENT_DESCRIPTOR);
     assertThat(testInstrument.getMeterProviderSharedState()).isSameAs(METER_PROVIDER_SHARED_STATE);
     assertThat(testInstrument.getMeterSharedState()).isSameAs(METER_SHARED_STATE);
-    assertThat(testInstrument.getInstrumentAccumulator())
-        .isSameAs(InstrumentAccumulators.getNoop());
+    assertThat(testInstrument.getInstrumentAccumulator()).isSameAs(ACCUMULATOR);
   }
 
   private static final class TestInstrument extends AbstractInstrument {

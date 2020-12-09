@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.common.InstrumentationLibraryInfo.getEmpty;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -14,6 +13,7 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -29,17 +29,20 @@ class InstrumentRegistryTest {
           "name", "other_description", "1", InstrumentType.COUNTER, InstrumentValueType.LONG);
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
+  private final MeterSharedState meterSharedState =
+      MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
+  private final InstrumentAccumulator accumulator =
+      InstrumentAccumulator.getDeltaAllLabels(
+          INSTRUMENT_DESCRIPTOR,
+          METER_PROVIDER_SHARED_STATE,
+          meterSharedState,
+          Aggregations.count());
 
   @Test
   void register() {
-    MeterSharedState meterSharedState =
-        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
     TestInstrument testInstrument =
         new TestInstrument(
-            INSTRUMENT_DESCRIPTOR,
-            METER_PROVIDER_SHARED_STATE,
-            meterSharedState,
-            InstrumentAccumulators.getNoop());
+            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, accumulator);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
@@ -52,19 +55,15 @@ class InstrumentRegistryTest {
                         INSTRUMENT_DESCRIPTOR,
                         METER_PROVIDER_SHARED_STATE,
                         meterSharedState,
-                        InstrumentAccumulators.getNoop())))
+                        accumulator)))
         .isSameAs(testInstrument);
   }
 
   @Test
   void register_OtherDescriptor() {
-    MeterSharedState meterSharedState = MeterSharedState.create(getEmpty());
     TestInstrument testInstrument =
         new TestInstrument(
-            INSTRUMENT_DESCRIPTOR,
-            METER_PROVIDER_SHARED_STATE,
-            meterSharedState,
-            InstrumentAccumulators.getNoop());
+            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, accumulator);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
 
@@ -78,19 +77,15 @@ class InstrumentRegistryTest {
                         OTHER_INSTRUMENT_DESCRIPTOR,
                         METER_PROVIDER_SHARED_STATE,
                         meterSharedState,
-                        InstrumentAccumulators.getNoop())),
+                        accumulator)),
         "Instrument with same name and different descriptor already created.");
   }
 
   @Test
   void register_OtherInstance() {
-    MeterSharedState meterSharedState = MeterSharedState.create(getEmpty());
     TestInstrument testInstrument =
         new TestInstrument(
-            INSTRUMENT_DESCRIPTOR,
-            METER_PROVIDER_SHARED_STATE,
-            meterSharedState,
-            InstrumentAccumulators.getNoop());
+            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, accumulator);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
 
@@ -104,7 +99,7 @@ class InstrumentRegistryTest {
                         INSTRUMENT_DESCRIPTOR,
                         METER_PROVIDER_SHARED_STATE,
                         meterSharedState,
-                        InstrumentAccumulators.getNoop())),
+                        accumulator)),
         "Instrument with same name and different descriptor already created.");
   }
 

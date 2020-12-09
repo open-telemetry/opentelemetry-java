@@ -71,7 +71,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
           boundLabels.remove(entry.getKey(), entry.getValue());
         }
         instrumentAccumulator.batch(
-            entry.getKey(), entry.getValue().getAggregator(), unmappedEntry);
+            entry.getKey(), entry.getValue().getAggregator(), !unmappedEntry);
       }
       return instrumentAccumulator.completeCollectionCycle();
     } finally {
