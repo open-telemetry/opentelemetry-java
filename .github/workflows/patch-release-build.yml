@@ -64,13 +64,13 @@ jobs:
               # Trim whitespaces and cherrypick
               echo $word | sed 's/ *$//g' | sed 's/^ *//g' | git cherry-pick --stdin
           done
-      - uses: burrunan/gradle-cache-action@v1.5
+      - uses: burrunan/gradle-cache-action@v1.6
         with:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
           arguments: build --stacktrace -Prelease.version=${{ github.event.inputs.version }}
       - name: Publish artifacts
-        uses: burrunan/gradle-cache-action@v1.5
+        uses: burrunan/gradle-cache-action@v1.6
         with:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
@@ -85,7 +85,7 @@ jobs:
       - run: git push
       - name: Checkout master
         uses: actions/checkout@v2
-      - uses: burrunan/gradle-cache-action@v1.5
+      - uses: burrunan/gradle-cache-action@v1.6
         with:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
