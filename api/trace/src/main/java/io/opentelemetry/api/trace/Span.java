@@ -121,7 +121,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  Span setAttribute(String key, @Nonnull String value);
+  default Span setAttribute(String key, @Nonnull String value) {
+    return setAttribute(AttributeKey.stringKey(key), value);
+  }
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -134,7 +136,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  Span setAttribute(String key, long value);
+  default Span setAttribute(String key, long value) {
+    return setAttribute(AttributeKey.longKey(key), value);
+  }
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -147,7 +151,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  Span setAttribute(String key, double value);
+  default Span setAttribute(String key, double value) {
+    return setAttribute(AttributeKey.doubleKey(key), value);
+  }
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -160,7 +166,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  Span setAttribute(String key, boolean value);
+  default Span setAttribute(String key, boolean value) {
+    return setAttribute(AttributeKey.booleanKey(key), value);
+  }
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -183,8 +191,7 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setAttribute(AttributeKey<Long> key, int value) {
-    setAttribute(key, (long) value);
-    return this;
+    return setAttribute(key, (long) value);
   }
 
   /**
@@ -193,7 +200,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param name the name of the event.
    * @return this.
    */
-  Span addEvent(String name);
+  default Span addEvent(String name) {
+    return addEvent(name, Attributes.empty());
+  }
 
   /**
    * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
@@ -209,7 +218,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param unit the unit of the timestamp
    * @return this.
    */
-  Span addEvent(String name, long timestamp, TimeUnit unit);
+  default Span addEvent(String name, long timestamp, TimeUnit unit) {
+    return addEvent(name, Attributes.empty(), timestamp, unit);
+  }
 
   /**
    * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
@@ -299,7 +310,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param statusCode the {@link StatusCode} to set.
    * @return this.
    */
-  Span setStatus(StatusCode statusCode);
+  default Span setStatus(StatusCode statusCode) {
+    return setStatus(statusCode, null);
+  }
 
   /**
    * Sets the status to the {@code Span}.
@@ -326,7 +339,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param exception the {@link Throwable} to record.
    * @return this.
    */
-  Span recordException(Throwable exception);
+  default Span recordException(Throwable exception) {
+    return recordException(exception, Attributes.empty());
+  }
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
