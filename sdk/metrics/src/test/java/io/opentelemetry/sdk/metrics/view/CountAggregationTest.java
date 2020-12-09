@@ -20,9 +20,9 @@ class CountAggregationTest {
     Aggregation count = Aggregations.count();
     for (InstrumentType type : InstrumentType.values()) {
       assertThat(count.getDescriptorType(type, InstrumentValueType.DOUBLE))
-          .isEqualTo(MetricData.Type.SUM_LONG);
+          .isEqualTo(MetricData.Type.LONG_SUM);
       assertThat(count.getDescriptorType(type, InstrumentValueType.LONG))
-          .isEqualTo(MetricData.Type.SUM_LONG);
+          .isEqualTo(MetricData.Type.LONG_SUM);
     }
   }
 

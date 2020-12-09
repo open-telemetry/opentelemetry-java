@@ -60,7 +60,7 @@ class LongSumObserverSdkTest {
                 "testObserver",
                 "My own LongSumObserver",
                 "ms",
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 Collections.emptyList()));
   }
 
@@ -80,7 +80,7 @@ class LongSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -96,7 +96,7 @@ class LongSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - 2 * SECOND_NANOS,

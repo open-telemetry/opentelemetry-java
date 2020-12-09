@@ -61,13 +61,13 @@ final class MetricAdapter {
 
   static Collector.Type toMetricFamilyType(MetricData.Type type) {
     switch (type) {
-      case NON_MONOTONIC_SUM_LONG:
-      case NON_MONOTONIC_SUM_DOUBLE:
-      case GAUGE_LONG:
-      case GAUGE_DOUBLE:
+      case NON_MONOTONIC_LONG_SUM:
+      case NON_MONOTONIC_DOUBLE_SUM:
+      case LONG_GAUGE:
+      case DOUBLE_GAUGE:
         return Collector.Type.GAUGE;
-      case SUM_LONG:
-      case SUM_DOUBLE:
+      case LONG_SUM:
+      case DOUBLE_SUM:
         return Collector.Type.COUNTER;
       case SUMMARY:
         return Collector.Type.SUMMARY;
@@ -92,15 +92,15 @@ final class MetricAdapter {
       }
 
       switch (type) {
-        case SUM_DOUBLE:
-        case NON_MONOTONIC_SUM_DOUBLE:
-        case GAUGE_DOUBLE:
+        case DOUBLE_SUM:
+        case NON_MONOTONIC_DOUBLE_SUM:
+        case DOUBLE_GAUGE:
           DoublePoint doublePoint = (DoublePoint) point;
           samples.add(new Sample(name, labelNames, labelValues, doublePoint.getValue()));
           break;
-        case SUM_LONG:
-        case NON_MONOTONIC_SUM_LONG:
-        case GAUGE_LONG:
+        case LONG_SUM:
+        case NON_MONOTONIC_LONG_SUM:
+        case LONG_GAUGE:
           LongPoint longPoint = (LongPoint) point;
           samples.add(new Sample(name, labelNames, labelValues, longPoint.getValue()));
           break;

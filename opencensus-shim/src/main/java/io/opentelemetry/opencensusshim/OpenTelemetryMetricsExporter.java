@@ -205,13 +205,13 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
     }
     switch (type) {
       case GAUGE_INT64:
-        return MetricData.Type.GAUGE_LONG;
+        return MetricData.Type.LONG_GAUGE;
       case GAUGE_DOUBLE:
-        return MetricData.Type.GAUGE_DOUBLE;
+        return MetricData.Type.DOUBLE_GAUGE;
       case CUMULATIVE_INT64:
-        return MetricData.Type.SUM_LONG;
+        return MetricData.Type.LONG_SUM;
       case CUMULATIVE_DOUBLE:
-        return MetricData.Type.SUM_DOUBLE;
+        return MetricData.Type.DOUBLE_SUM;
       case SUMMARY:
         return MetricData.Type.SUMMARY;
       default:

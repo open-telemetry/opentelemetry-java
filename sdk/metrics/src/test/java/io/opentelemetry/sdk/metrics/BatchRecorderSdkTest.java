@@ -115,7 +115,7 @@ class BatchRecorderSdkTest {
                 "testDoubleCounter",
                 "",
                 "1",
-                MetricData.Type.SUM_DOUBLE,
+                MetricData.Type.DOUBLE_SUM,
                 Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), labelSet, 24.2d))));
     assertThat(longCounter.collectAll())
@@ -126,7 +126,7 @@ class BatchRecorderSdkTest {
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), labelSet, 12))));
     assertThat(doubleUpDownCounter.collectAll())
@@ -137,7 +137,7 @@ class BatchRecorderSdkTest {
                 "testDoubleUpDownCounter",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_SUM_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
                 Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d))));
     assertThat(longUpDownCounter.collectAll())
@@ -148,7 +148,7 @@ class BatchRecorderSdkTest {
                 "testLongUpDownCounter",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_SUM_LONG,
+                MetricData.Type.NON_MONOTONIC_LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), labelSet, -12))));
 

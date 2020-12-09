@@ -28,25 +28,25 @@ public abstract class MetricData {
      * A Gauge represents a measurement of a long value at a moment in time. Generally only one
      * instance of a given Gauge metric will be reported per reporting interval.
      */
-    GAUGE_LONG,
+    LONG_GAUGE,
 
     /**
      * A Gauge represents a measurement of a double value at a moment in time. Generally only one
      * instance of a given Gauge metric will be reported per reporting interval.
      */
-    GAUGE_DOUBLE,
+    DOUBLE_GAUGE,
 
     /** A sum of long (int64) values. Reports {@link LongPoint} points. */
-    NON_MONOTONIC_SUM_LONG,
+    NON_MONOTONIC_LONG_SUM,
 
     /** A sum of double values. Reports {@link DoublePoint} points. */
-    NON_MONOTONIC_SUM_DOUBLE,
+    NON_MONOTONIC_DOUBLE_SUM,
 
     /** A sum of non negative long (int64) values. Reports {@link LongPoint} points. */
-    SUM_LONG,
+    LONG_SUM,
 
     /** A sum of non negative double values. Reports {@link DoublePoint} points. */
-    SUM_DOUBLE,
+    DOUBLE_SUM,
 
     /**
      * A Summary of measurements of numeric values, containing the minimum value recorded, the

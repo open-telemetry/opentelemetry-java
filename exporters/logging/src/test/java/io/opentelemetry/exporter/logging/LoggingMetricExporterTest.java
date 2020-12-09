@@ -74,7 +74,7 @@ class LoggingMetricExporterTest {
                 "counterOne",
                 "A simple counter",
                 "one",
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(
                         nowEpochNanos, nowEpochNanos + 245, Labels.of("z", "y", "x", "w"), 1010))),
@@ -84,7 +84,7 @@ class LoggingMetricExporterTest {
                 "observedValue",
                 "an observer gauge",
                 "kb",
-                MetricData.Type.NON_MONOTONIC_SUM_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
                 Collections.singletonList(
                     DoublePoint.create(
                         nowEpochNanos,

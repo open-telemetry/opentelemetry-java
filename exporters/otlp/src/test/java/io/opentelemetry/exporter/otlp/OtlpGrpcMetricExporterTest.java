@@ -254,7 +254,7 @@ class OtlpGrpcMetricExporterTest {
         "name",
         "description",
         "1",
-        MetricData.Type.SUM_LONG,
+        MetricData.Type.LONG_SUM,
         Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
   }
 

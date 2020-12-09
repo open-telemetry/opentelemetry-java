@@ -60,7 +60,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "My own LongValueObserver",
                 "ms",
-                MetricData.Type.GAUGE_LONG,
+                MetricData.Type.LONG_GAUGE,
                 Collections.emptyList()));
   }
 
@@ -80,7 +80,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.GAUGE_LONG,
+                MetricData.Type.LONG_GAUGE,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -96,7 +96,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.GAUGE_LONG,
+                MetricData.Type.LONG_GAUGE,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,

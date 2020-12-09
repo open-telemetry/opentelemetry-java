@@ -61,7 +61,7 @@ class PrometheusCollectorTest {
             "grpc.name",
             "long_description",
             "1",
-            MetricData.Type.SUM_LONG,
+            MetricData.Type.LONG_SUM,
             Collections.singletonList(
                 MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
         MetricData.create(
@@ -70,7 +70,7 @@ class PrometheusCollectorTest {
             "http.name",
             "double_description",
             "1",
-            MetricData.Type.SUM_DOUBLE,
+            MetricData.Type.DOUBLE_SUM,
             Collections.singletonList(
                 MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5))));
   }

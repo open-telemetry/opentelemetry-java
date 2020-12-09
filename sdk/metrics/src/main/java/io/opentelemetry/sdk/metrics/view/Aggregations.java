@@ -124,15 +124,15 @@ public class Aggregations {
         case COUNTER:
         case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Type.SUM_LONG
-              : MetricData.Type.SUM_DOUBLE;
+              ? MetricData.Type.LONG_SUM
+              : MetricData.Type.DOUBLE_SUM;
         case UP_DOWN_COUNTER:
         case VALUE_RECORDER:
         case UP_DOWN_SUM_OBSERVER:
         case VALUE_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Type.NON_MONOTONIC_SUM_LONG
-              : MetricData.Type.NON_MONOTONIC_SUM_DOUBLE;
+              ? MetricData.Type.NON_MONOTONIC_LONG_SUM
+              : MetricData.Type.NON_MONOTONIC_DOUBLE_SUM;
       }
       throw new IllegalArgumentException("Unsupported instrument/value types");
     }
@@ -167,7 +167,7 @@ public class Aggregations {
     @Override
     public MetricData.Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      return MetricData.Type.SUM_LONG;
+      return MetricData.Type.LONG_SUM;
     }
 
     @Override
@@ -240,16 +240,16 @@ public class Aggregations {
       switch (instrumentType) {
         case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Type.SUM_LONG
-              : MetricData.Type.SUM_DOUBLE;
+              ? MetricData.Type.LONG_SUM
+              : MetricData.Type.DOUBLE_SUM;
         case UP_DOWN_SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Type.NON_MONOTONIC_SUM_LONG
-              : MetricData.Type.NON_MONOTONIC_SUM_DOUBLE;
+              ? MetricData.Type.NON_MONOTONIC_LONG_SUM
+              : MetricData.Type.NON_MONOTONIC_DOUBLE_SUM;
         case VALUE_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
-              ? MetricData.Type.GAUGE_LONG
-              : MetricData.Type.GAUGE_DOUBLE;
+              ? MetricData.Type.LONG_GAUGE
+              : MetricData.Type.DOUBLE_GAUGE;
         default:
           // Do not change this unless the limitations of the current LastValueAggregator are fixed.
           throw new IllegalArgumentException(

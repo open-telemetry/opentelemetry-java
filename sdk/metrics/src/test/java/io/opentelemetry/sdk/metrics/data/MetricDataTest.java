@@ -58,7 +58,7 @@ class MetricDataTest {
                 "metric_name",
                 "metric_description",
                 "ms",
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 singletonList(DOUBLE_POINT)),
         "instrumentationLibraryInfo");
   }
@@ -74,7 +74,7 @@ class MetricDataTest {
                 null,
                 "metric_description",
                 "ms",
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 singletonList(DOUBLE_POINT)),
         "name");
   }
@@ -90,7 +90,7 @@ class MetricDataTest {
                 "metric_name",
                 null,
                 "ms",
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 singletonList(DOUBLE_POINT)),
         "description");
   }
@@ -106,7 +106,7 @@ class MetricDataTest {
                 "metric_name",
                 "metric_description",
                 null,
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 singletonList(DOUBLE_POINT)),
         "unit");
   }
@@ -138,7 +138,7 @@ class MetricDataTest {
                 "metric_name",
                 "metric_description",
                 "ms",
-                MetricData.Type.SUM_LONG,
+                MetricData.Type.LONG_SUM,
                 null),
         "points");
   }
@@ -152,12 +152,12 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.Type.SUM_LONG,
+            MetricData.Type.LONG_SUM,
             Collections.emptyList());
     assertThat(metricData.getName()).isEqualTo("metric_name");
     assertThat(metricData.getDescription()).isEqualTo("metric_description");
     assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.SUM_LONG);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_SUM);
     assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
     assertThat(metricData.getInstrumentationLibraryInfo())
         .isEqualTo(InstrumentationLibraryInfo.getEmpty());
@@ -178,7 +178,7 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.Type.SUM_LONG,
+            MetricData.Type.LONG_SUM,
             Collections.singletonList(LONG_POINT));
     assertThat(metricData.getPoints()).containsExactly(LONG_POINT);
   }
@@ -200,7 +200,7 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.Type.NON_MONOTONIC_SUM_DOUBLE,
+            MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
             Collections.singletonList(SUMMARY_POINT));
     assertThat(metricData.getPoints()).containsExactly(SUMMARY_POINT);
   }
@@ -219,7 +219,7 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.Type.NON_MONOTONIC_SUM_DOUBLE,
+            MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
             Collections.singletonList(DOUBLE_POINT));
     assertThat(metricData.getPoints()).containsExactly(DOUBLE_POINT);
   }
