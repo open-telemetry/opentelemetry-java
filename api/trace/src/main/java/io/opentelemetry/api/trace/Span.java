@@ -200,7 +200,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param name the name of the event.
    * @return this.
    */
-  Span addEvent(String name);
+  default Span addEvent(String name) {
+    return addEvent(name, Attributes.empty());
+  }
 
   /**
    * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
@@ -216,7 +218,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param unit the unit of the timestamp
    * @return this.
    */
-  Span addEvent(String name, long timestamp, TimeUnit unit);
+  default Span addEvent(String name, long timestamp, TimeUnit unit) {
+    return addEvent(name, Attributes.empty(), timestamp, unit);
+  }
 
   /**
    * Adds an event to the {@link Span} with the given {@code timestamp}, as nanos since epoch. Note,
@@ -335,7 +339,9 @@ public interface Span extends ImplicitContextKeyed {
    * @param exception the {@link Throwable} to record.
    * @return this.
    */
-  Span recordException(Throwable exception);
+  default Span recordException(Throwable exception) {
+    return recordException(exception, Attributes.empty());
+  }
 
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
