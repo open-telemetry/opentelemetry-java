@@ -6,27 +6,20 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.DoubleUpDownSumObserver;
-import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubleAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.function.Consumer;
-import javax.annotation.Nullable;
 
-final class DoubleUpDownSumObserverSdk extends AbstractDoubleAsynchronousInstrument
+final class DoubleUpDownSumObserverSdk extends AbstractAsynchronousInstrument
     implements DoubleUpDownSumObserver {
 
   DoubleUpDownSumObserverSdk(
-      InstrumentDescriptor descriptor,
-      InstrumentProcessor instrumentProcessor,
-      @Nullable Consumer<DoubleResult> metricUpdater) {
-    super(descriptor, instrumentProcessor, metricUpdater);
+      InstrumentDescriptor descriptor, AsynchronousInstrumentAccumulator accumulator) {
+    super(descriptor, accumulator);
   }
 
   static final class Builder
-      extends AbstractAsynchronousInstrument.Builder<DoubleUpDownSumObserverSdk.Builder>
+      extends AbstractDoubleAsynchronousInstrumentBuilder<DoubleUpDownSumObserverSdk.Builder>
       implements DoubleUpDownSumObserver.Builder {
-
-    @Nullable private Consumer<DoubleResult> callback;
 
     Builder(
         String name,
@@ -46,16 +39,8 @@ final class DoubleUpDownSumObserverSdk extends AbstractDoubleAsynchronousInstrum
     }
 
     @Override
-    public Builder setUpdater(Consumer<DoubleResult> updater) {
-      this.callback = updater;
-      return this;
-    }
-
-    @Override
     public DoubleUpDownSumObserverSdk build() {
-      return build(
-          (instrumentDescriptor, instrumentProcessor) ->
-              new DoubleUpDownSumObserverSdk(instrumentDescriptor, instrumentProcessor, callback));
+      return buildInstrument(DoubleUpDownSumObserverSdk::new);
     }
   }
 }

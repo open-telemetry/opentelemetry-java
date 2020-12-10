@@ -40,7 +40,16 @@ class LongValueObserverSdkTest {
             .setDescription("My own LongValueObserver")
             .setUnit("ms")
             .build();
-    assertThat(longValueObserver.collectAll()).isEmpty();
+    assertThat(longValueObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "My own LongValueObserver",
+                "ms",
+                MetricData.Type.LONG_GAUGE,
+                Collections.emptyList()));
   }
 
   @Test

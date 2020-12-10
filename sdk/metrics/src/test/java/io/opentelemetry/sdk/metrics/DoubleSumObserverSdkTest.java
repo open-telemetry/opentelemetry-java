@@ -40,7 +40,16 @@ class DoubleSumObserverSdkTest {
             .setDescription("My own DoubleSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(doubleSumObserver.collectAll()).isEmpty();
+    assertThat(doubleSumObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "My own DoubleSumObserver",
+                "ms",
+                MetricData.Type.DOUBLE_SUM,
+                Collections.emptyList()));
   }
 
   @Test

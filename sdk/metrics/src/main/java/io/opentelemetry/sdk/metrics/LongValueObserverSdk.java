@@ -6,27 +6,20 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.LongValueObserver;
-import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.function.Consumer;
-import javax.annotation.Nullable;
 
-final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
+final class LongValueObserverSdk extends AbstractAsynchronousInstrument
     implements LongValueObserver {
 
   LongValueObserverSdk(
-      InstrumentDescriptor descriptor,
-      InstrumentProcessor instrumentProcessor,
-      @Nullable Consumer<LongResult> metricUpdater) {
-    super(descriptor, instrumentProcessor, metricUpdater);
+      InstrumentDescriptor descriptor, AsynchronousInstrumentAccumulator accumulator) {
+    super(descriptor, accumulator);
   }
 
   static final class Builder
-      extends AbstractAsynchronousInstrument.Builder<LongValueObserverSdk.Builder>
+      extends AbstractLongAsynchronousInstrumentBuilder<LongValueObserverSdk.Builder>
       implements LongValueObserver.Builder {
-
-    @Nullable private Consumer<LongResult> callback;
 
     Builder(
         String name,
@@ -46,16 +39,8 @@ final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
     }
 
     @Override
-    public Builder setUpdater(Consumer<LongResult> updater) {
-      this.callback = updater;
-      return this;
-    }
-
-    @Override
     public LongValueObserverSdk build() {
-      return build(
-          (instrumentDescriptor, instrumentProcessor) ->
-              new LongValueObserverSdk(instrumentDescriptor, instrumentProcessor, callback));
+      return buildInstrument(LongValueObserverSdk::new);
     }
   }
 }

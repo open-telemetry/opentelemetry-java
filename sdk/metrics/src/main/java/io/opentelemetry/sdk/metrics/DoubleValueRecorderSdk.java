@@ -16,8 +16,9 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     implements DoubleValueRecorder {
 
   private DoubleValueRecorderSdk(
-      InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
-    super(descriptor, instrumentProcessor, BoundInstrument::new);
+      InstrumentDescriptor descriptor,
+      SynchronousInstrumentAccumulator<BoundInstrument> accumulator) {
+    super(descriptor, accumulator);
   }
 
   @Override
@@ -45,7 +46,8 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     }
   }
 
-  static final class Builder extends AbstractInstrument.Builder<DoubleValueRecorderSdk.Builder>
+  static final class Builder
+      extends AbstractSynchronousInstrumentBuilder<DoubleValueRecorderSdk.Builder>
       implements DoubleValueRecorder.Builder {
 
     Builder(
@@ -67,7 +69,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
 
     @Override
     public DoubleValueRecorderSdk build() {
-      return build(DoubleValueRecorderSdk::new);
+      return buildInstrument(BoundInstrument::new, DoubleValueRecorderSdk::new);
     }
   }
 }
