@@ -32,7 +32,12 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+      super(
+          name,
+          InstrumentType.VALUE_OBSERVER,
+          InstrumentValueType.DOUBLE,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -48,12 +53,9 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
 
     @Override
     public DoubleValueObserverSdk build() {
-      InstrumentDescriptor instrumentDescriptor =
-          getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.DOUBLE);
-      DoubleValueObserverSdk instrument =
-          new DoubleValueObserverSdk(
-              instrumentDescriptor, getBatcher(instrumentDescriptor), callback);
-      return register(instrument);
+      return build(
+          (instrumentDescriptor, instrumentProcessor) ->
+              new DoubleValueObserverSdk(instrumentDescriptor, instrumentProcessor, callback));
     }
   }
 }

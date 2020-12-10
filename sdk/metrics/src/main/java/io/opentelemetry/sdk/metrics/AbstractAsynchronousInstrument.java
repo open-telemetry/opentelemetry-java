@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.AsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
@@ -50,9 +52,11 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
       extends AbstractInstrument.Builder<B> {
     Builder(
         String name,
+        InstrumentType instrumentType,
+        InstrumentValueType instrumentValueType,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+      super(name, instrumentType, instrumentValueType, meterProviderSharedState, meterSharedState);
     }
   }
 

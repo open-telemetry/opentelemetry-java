@@ -57,7 +57,12 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+      super(
+          name,
+          InstrumentType.COUNTER,
+          InstrumentValueType.LONG,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -67,9 +72,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
 
     @Override
     public LongCounterSdk build() {
-      InstrumentDescriptor instrumentDescriptor =
-          getInstrumentDescriptor(InstrumentType.COUNTER, InstrumentValueType.LONG);
-      return register(new LongCounterSdk(instrumentDescriptor, getBatcher(instrumentDescriptor)));
+      return build(LongCounterSdk::new);
     }
   }
 }

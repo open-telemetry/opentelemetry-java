@@ -52,7 +52,12 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+      super(
+          name,
+          InstrumentType.VALUE_RECORDER,
+          InstrumentValueType.DOUBLE,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -62,10 +67,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
 
     @Override
     public DoubleValueRecorderSdk build() {
-      InstrumentDescriptor instrumentDescriptor =
-          getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE);
-      return register(
-          new DoubleValueRecorderSdk(instrumentDescriptor, getBatcher(instrumentDescriptor)));
+      return build(DoubleValueRecorderSdk::new);
     }
   }
 }
