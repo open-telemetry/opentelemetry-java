@@ -29,9 +29,8 @@ final class LongSumObserverSdk extends AbstractLongAsynchronousInstrument
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        MeterSdk meterSdk) {
-      super(name, meterProviderSharedState, meterSharedState, meterSdk);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override

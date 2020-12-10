@@ -50,9 +50,8 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        MeterSdk meterSdk) {
-      super(name, meterProviderSharedState, meterSharedState, meterSdk);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
