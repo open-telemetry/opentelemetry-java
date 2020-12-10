@@ -31,7 +31,12 @@ final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+      super(
+          name,
+          InstrumentType.UP_DOWN_SUM_OBSERVER,
+          InstrumentValueType.LONG,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -47,12 +52,9 @@ final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
 
     @Override
     public LongUpDownSumObserverSdk build() {
-      InstrumentDescriptor instrumentDescriptor =
-          getInstrumentDescriptor(InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG);
-      LongUpDownSumObserverSdk instrument =
-          new LongUpDownSumObserverSdk(
-              instrumentDescriptor, getBatcher(instrumentDescriptor), callback);
-      return register(instrument);
+      return build(
+          (instrumentDescriptor, instrumentProcessor) ->
+              new LongUpDownSumObserverSdk(instrumentDescriptor, instrumentProcessor, callback));
     }
   }
 }

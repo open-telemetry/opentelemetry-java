@@ -52,7 +52,12 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
+      super(
+          name,
+          InstrumentType.VALUE_RECORDER,
+          InstrumentValueType.LONG,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -62,9 +67,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
 
     @Override
     public LongValueRecorderSdk build() {
-      InstrumentDescriptor descriptor =
-          getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG);
-      return register(new LongValueRecorderSdk(descriptor, getBatcher(descriptor)));
+      return build(LongValueRecorderSdk::new);
     }
   }
 }
