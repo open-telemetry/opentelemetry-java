@@ -15,7 +15,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
     implements LongCounter {
 
   private LongCounterSdk(InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
-    super(descriptor, instrumentProcessor);
+    super(descriptor, instrumentProcessor, BoundInstrument::new);
   }
 
   @Override
@@ -31,11 +31,6 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
   @Override
   public void add(long increment) {
     add(increment, Labels.empty());
-  }
-
-  @Override
-  BoundInstrument newBinding(InstrumentProcessor instrumentProcessor) {
-    return new BoundInstrument(instrumentProcessor);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument

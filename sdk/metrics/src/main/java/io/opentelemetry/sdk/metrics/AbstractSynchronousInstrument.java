@@ -12,16 +12,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 
 abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     extends AbstractInstrument {
   private final ConcurrentHashMap<Labels, B> boundLabels;
   private final ReentrantLock collectLock;
   private final InstrumentProcessor instrumentProcessor;
+  private final Function<InstrumentProcessor, B> boundFactory;
 
   AbstractSynchronousInstrument(
-      InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
+      InstrumentDescriptor descriptor,
+      InstrumentProcessor instrumentProcessor,
+      Function<InstrumentProcessor, B> boundFactory) {
     super(descriptor);
+    this.boundFactory = boundFactory;
     boundLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.instrumentProcessor = instrumentProcessor;
@@ -36,7 +41,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     }
 
     // Missing entry or no longer mapped, try to add a new entry.
-    binding = newBinding(instrumentProcessor);
+    binding = boundFactory.apply(instrumentProcessor);
     while (true) {
       B oldBound = boundLabels.putIfAbsent(labels, binding);
       if (oldBound != null) {
@@ -75,6 +80,4 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
       collectLock.unlock();
     }
   }
-
-  abstract B newBinding(InstrumentProcessor instrumentProcessor);
 }

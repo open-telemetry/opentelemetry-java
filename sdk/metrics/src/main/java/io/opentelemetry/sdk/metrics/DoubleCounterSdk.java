@@ -16,7 +16,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
 
   private DoubleCounterSdk(
       InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
-    super(descriptor, instrumentProcessor);
+    super(descriptor, instrumentProcessor, BoundInstrument::new);
   }
 
   @Override
@@ -32,11 +32,6 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
   @Override
   public void add(double increment) {
     add(increment, Labels.empty());
-  }
-
-  @Override
-  BoundInstrument newBinding(InstrumentProcessor instrumentProcessor) {
-    return new BoundInstrument(instrumentProcessor);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
