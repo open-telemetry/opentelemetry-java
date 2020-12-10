@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.AsynchronousInstrument.Result;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -17,11 +16,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * permitted to report only one value per distinct label set per period. If the application observes
  * multiple values for the same label set, in a single callback, the last value is the only value
  * kept.
- *
- * @param <R> the callback Result type.
  */
 @ThreadSafe
-public interface AsynchronousInstrument<R extends Result> extends Instrument {
+public interface AsynchronousInstrument extends Instrument {
   /** A {@code Callback} for a {@code AsynchronousInstrument}. */
   interface Callback<R extends Result> {
     void update(R result);
@@ -40,7 +37,7 @@ public interface AsynchronousInstrument<R extends Result> extends Instrument {
     Builder<R> setCallback(Callback<R> callback);
 
     @Override
-    AsynchronousInstrument<R> build();
+    AsynchronousInstrument build();
   }
 
   interface Result {}
