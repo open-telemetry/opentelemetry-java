@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.metrics;
 
-import io.opentelemetry.api.metrics.AsynchronousInstrument.DoubleResult;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -47,7 +46,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * }</pre>
  */
 @ThreadSafe
-public interface DoubleUpDownSumObserver extends AsynchronousInstrument<DoubleResult> {
+public interface DoubleUpDownSumObserver extends AsynchronousInstrument {
 
   /** Builder class for {@link DoubleUpDownSumObserver}. */
   interface Builder extends AsynchronousInstrument.Builder<DoubleResult> {

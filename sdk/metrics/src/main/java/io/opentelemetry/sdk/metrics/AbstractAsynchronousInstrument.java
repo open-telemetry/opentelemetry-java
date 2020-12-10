@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
 abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.Result>
-    extends AbstractInstrument implements AsynchronousInstrument<T> {
+    extends AbstractInstrument implements AsynchronousInstrument {
   @Nullable private final Callback<T> metricUpdater;
   private final ReentrantLock collectLock = new ReentrantLock();
   private final InstrumentProcessor instrumentProcessor;
