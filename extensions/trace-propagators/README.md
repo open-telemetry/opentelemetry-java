@@ -29,7 +29,7 @@ will become candidates for future removal.
 
 ---
 #### Running micro-benchmarks
-From the root of the repo run `./gradlew clean :opentelemetry-extension-trace-propagator:jmh` 
+From the root of the repo run `./gradlew clean :opentelemetry-extension-trace-propagators:jmh` 
 to run all the benchmarks 
-or run `./gradlew clean :opentelemetry-extension-trace-propagator:jmh -PjmhIncludeSingleClass=<ClassNameHere>` 
+or run `./gradlew clean :opentelemetry-extension-trace-propagators:jmh -PjmhIncludeSingleClass=<ClassNameHere>` 
 to run a specific benchmark class.
