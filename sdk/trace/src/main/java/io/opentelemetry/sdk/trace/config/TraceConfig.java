@@ -76,7 +76,7 @@ public abstract class TraceConfig {
   // These values are the default values for all the global parameters.
   // TODO: decide which default sampler to use
 
-  private static final TraceConfig DEFAULT = TraceConfig.builder().build();
+  private static final TraceConfig DEFAULT = new TraceConfigBuilder().build();
 
   /**
    * Returns the default {@code TraceConfig}.
@@ -85,11 +85,6 @@ public abstract class TraceConfig {
    */
   public static TraceConfig getDefault() {
     return DEFAULT;
-  }
-
-  /** Returns a {@link TraceConfigBuilder} to configure a {@link TraceConfig}. */
-  public static TraceConfigBuilder builder() {
-    return new TraceConfigBuilder();
   }
 
   static TraceConfig create(

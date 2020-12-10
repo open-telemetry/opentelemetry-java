@@ -26,62 +26,68 @@ class TraceConfigTest {
 
   @Test
   void updateTraceConfig_NullSampler() {
-    assertThrows(NullPointerException.class, () -> TraceConfig.builder().setSampler(null));
+    assertThrows(
+        NullPointerException.class, () -> TraceConfig.getDefault().toBuilder().setSampler(null));
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributes() {
     assertThrows(
-        IllegalArgumentException.class, () -> TraceConfig.builder().setMaxNumberOfAttributes(0));
+        IllegalArgumentException.class,
+        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributes(0));
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfEvents() {
     assertThrows(
-        IllegalArgumentException.class, () -> TraceConfig.builder().setMaxNumberOfEvents(0));
+        IllegalArgumentException.class,
+        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfEvents(0));
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfLinks() {
     assertThrows(
-        IllegalArgumentException.class, () -> TraceConfig.builder().setMaxNumberOfLinks(0));
+        IllegalArgumentException.class,
+        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(0));
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributesPerEvent() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> TraceConfig.builder().setMaxNumberOfAttributesPerEvent(0));
+        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerEvent(0));
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributesPerLink() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> TraceConfig.builder().setMaxNumberOfAttributesPerLink(0));
+        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerLink(0));
   }
 
   @Test
   void updateTraceConfig_InvalidTraceIdRatioBased() {
     assertThrows(
-        IllegalArgumentException.class, () -> TraceConfig.builder().setTraceIdRatioBased(2));
+        IllegalArgumentException.class,
+        () -> TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(2));
   }
 
   @Test
   void updateTraceConfig_NegativeTraceIdRatioBased() {
     assertThrows(
-        IllegalArgumentException.class, () -> TraceConfig.builder().setTraceIdRatioBased(-1));
+        IllegalArgumentException.class,
+        () -> TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(-1));
   }
 
   @Test
   void updateTraceConfig_OffTraceIdRatioBased() {
-    TraceConfig traceConfig = TraceConfig.builder().setTraceIdRatioBased(0).build();
+    TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(0).build();
     assertThat(traceConfig.getSampler()).isSameAs(Sampler.alwaysOff());
   }
 
   @Test
   void updateTraceConfig_OnTraceIdRatioBased() {
-    TraceConfig traceConfig = TraceConfig.builder().setTraceIdRatioBased(1).build();
+    TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(1).build();
 
     Sampler sampler = traceConfig.getSampler();
     assertThat(sampler).isEqualTo(Sampler.parentBased(Sampler.alwaysOn()));
@@ -90,7 +96,7 @@ class TraceConfigTest {
   @Test
   void updateTraceConfig_All() {
     TraceConfig traceConfig =
-        TraceConfig.builder()
+        TraceConfig.getDefault().toBuilder()
             .setSampler(Sampler.alwaysOff())
             .setMaxNumberOfAttributes(8)
             .setMaxNumberOfEvents(10)
