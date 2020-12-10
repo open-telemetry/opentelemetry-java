@@ -18,15 +18,15 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     extends AbstractInstrument implements AsynchronousInstrument<T> {
   @Nullable private final Callback<T> metricUpdater;
   private final ReentrantLock collectLock = new ReentrantLock();
+  private final InstrumentAccumulator instrumentAccumulator;
 
   AbstractAsynchronousInstrument(
       InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
       InstrumentAccumulator instrumentAccumulator,
       @Nullable Callback<T> metricUpdater) {
-    super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
+    super(descriptor);
     this.metricUpdater = metricUpdater;
+    this.instrumentAccumulator = instrumentAccumulator;
   }
 
   @Override
@@ -36,7 +36,6 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     }
     collectLock.lock();
     try {
-      final InstrumentAccumulator instrumentAccumulator = getInstrumentAccumulator();
       metricUpdater.update(newResult(instrumentAccumulator));
       return instrumentAccumulator.completeCollectionCycle();
     } finally {
@@ -61,16 +60,9 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
       extends AbstractAsynchronousInstrument<LongResult> {
     AbstractLongAsynchronousInstrument(
         InstrumentDescriptor descriptor,
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
         InstrumentAccumulator instrumentAccumulator,
         @Nullable Callback<LongResult> metricUpdater) {
-      super(
-          descriptor,
-          meterProviderSharedState,
-          meterSharedState,
-          instrumentAccumulator,
-          metricUpdater);
+      super(descriptor, instrumentAccumulator, metricUpdater);
     }
 
     @Override
@@ -99,16 +91,9 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
       extends AbstractAsynchronousInstrument<DoubleResult> {
     AbstractDoubleAsynchronousInstrument(
         InstrumentDescriptor descriptor,
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
         InstrumentAccumulator instrumentAccumulator,
         @Nullable Callback<DoubleResult> metricUpdater) {
-      super(
-          descriptor,
-          meterProviderSharedState,
-          meterSharedState,
-          instrumentAccumulator,
-          metricUpdater);
+      super(descriptor, instrumentAccumulator, metricUpdater);
     }
 
     @Override

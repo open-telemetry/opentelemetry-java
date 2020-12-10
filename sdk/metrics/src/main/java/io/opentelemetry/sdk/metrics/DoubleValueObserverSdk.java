@@ -16,16 +16,9 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
 
   DoubleValueObserverSdk(
       InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
       InstrumentAccumulator instrumentAccumulator,
       @Nullable Callback<DoubleResult> metricUpdater) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        instrumentAccumulator,
-        metricUpdater);
+    super(descriptor, instrumentAccumulator, metricUpdater);
   }
 
   static final class Builder
@@ -59,11 +52,7 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
           getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.DOUBLE);
       DoubleValueObserverSdk instrument =
           new DoubleValueObserverSdk(
-              instrumentDescriptor,
-              getMeterProviderSharedState(),
-              getMeterSharedState(),
-              getBatcher(instrumentDescriptor),
-              callback);
+              instrumentDescriptor, getBatcher(instrumentDescriptor), callback);
       return register(instrument);
     }
   }

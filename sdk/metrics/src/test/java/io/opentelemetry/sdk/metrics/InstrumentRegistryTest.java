@@ -9,12 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -27,22 +24,12 @@ class InstrumentRegistryTest {
   private static final InstrumentDescriptor OTHER_INSTRUMENT_DESCRIPTOR =
       InstrumentDescriptor.create(
           "name", "other_description", "1", InstrumentType.COUNTER, InstrumentValueType.LONG);
-  private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
-      MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
-  private final MeterSharedState meterSharedState =
-      MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
-  private final InstrumentAccumulator accumulator =
-      InstrumentAccumulator.getDeltaAllLabels(
-          INSTRUMENT_DESCRIPTOR,
-          METER_PROVIDER_SHARED_STATE,
-          meterSharedState,
-          Aggregations.count());
 
   @Test
   void register() {
-    TestInstrument testInstrument =
-        new TestInstrument(
-            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, accumulator);
+    MeterSharedState meterSharedState =
+        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
+    TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
@@ -50,20 +37,15 @@ class InstrumentRegistryTest {
     assertThat(
             meterSharedState
                 .getInstrumentRegistry()
-                .register(
-                    new TestInstrument(
-                        INSTRUMENT_DESCRIPTOR,
-                        METER_PROVIDER_SHARED_STATE,
-                        meterSharedState,
-                        accumulator)))
+                .register(new TestInstrument(INSTRUMENT_DESCRIPTOR)))
         .isSameAs(testInstrument);
   }
 
   @Test
   void register_OtherDescriptor() {
-    TestInstrument testInstrument =
-        new TestInstrument(
-            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, accumulator);
+    MeterSharedState meterSharedState =
+        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
+    TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
 
@@ -72,20 +54,15 @@ class InstrumentRegistryTest {
         () ->
             meterSharedState
                 .getInstrumentRegistry()
-                .register(
-                    new TestInstrument(
-                        OTHER_INSTRUMENT_DESCRIPTOR,
-                        METER_PROVIDER_SHARED_STATE,
-                        meterSharedState,
-                        accumulator)),
+                .register(new TestInstrument(OTHER_INSTRUMENT_DESCRIPTOR)),
         "Instrument with same name and different descriptor already created.");
   }
 
   @Test
   void register_OtherInstance() {
-    TestInstrument testInstrument =
-        new TestInstrument(
-            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, meterSharedState, accumulator);
+    MeterSharedState meterSharedState =
+        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
+    TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
 
@@ -94,22 +71,13 @@ class InstrumentRegistryTest {
         () ->
             meterSharedState
                 .getInstrumentRegistry()
-                .register(
-                    new OtherTestInstrument(
-                        INSTRUMENT_DESCRIPTOR,
-                        METER_PROVIDER_SHARED_STATE,
-                        meterSharedState,
-                        accumulator)),
+                .register(new OtherTestInstrument(INSTRUMENT_DESCRIPTOR)),
         "Instrument with same name and different descriptor already created.");
   }
 
   private static final class TestInstrument extends AbstractInstrument {
-    TestInstrument(
-        InstrumentDescriptor descriptor,
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        InstrumentAccumulator instrumentAccumulator) {
-      super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
+    TestInstrument(InstrumentDescriptor descriptor) {
+      super(descriptor);
     }
 
     @Override
@@ -119,12 +87,8 @@ class InstrumentRegistryTest {
   }
 
   private static final class OtherTestInstrument extends AbstractInstrument {
-    OtherTestInstrument(
-        InstrumentDescriptor descriptor,
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        InstrumentAccumulator instrumentAccumulator) {
-      super(descriptor, meterProviderSharedState, meterSharedState, instrumentAccumulator);
+    OtherTestInstrument(InstrumentDescriptor descriptor) {
+      super(descriptor);
     }
 
     @Override
