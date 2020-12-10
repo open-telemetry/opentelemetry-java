@@ -196,35 +196,39 @@ class OpenTelemetrySdkTest {
         () -> OpenTelemetrySdk.builder().setTracerProvider(mock(TracerProvider.class)));
   }
 
-  //This is just a demonstration of maximum that one can do with OpenTelemetry configuration.
-  //Demonstrates how clear or confusing is SDK configuration
+  // This is just a demonstration of maximum that one can do with OpenTelemetry configuration.
+  // Demonstrates how clear or confusing is SDK configuration
   @Test
   void fullOpenTelemetrySdkConfigurationDemo() {
     TraceConfig currentConfig = TraceConfig.getDefault();
-    TraceConfig newConfig = currentConfig.toBuilder()
-        .setSampler(mock(Sampler.class))
-        .setMaxLengthOfAttributeValues(128)
-        .build();
+    TraceConfig newConfig =
+        currentConfig.toBuilder()
+            .setSampler(mock(Sampler.class))
+            .setMaxLengthOfAttributeValues(128)
+            .build();
 
-    OpenTelemetrySdk.Builder sdkBuilder = OpenTelemetrySdk.builder()
-        .addSpanProcessor(mock(SpanProcessor.class))
-        .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
-        .setIdGenerator(mock(IdGenerator.class))
-        .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
-        .setClock(mock(Clock.class))
-        .setResource(mock(Resource.class));
+    OpenTelemetrySdk.Builder sdkBuilder =
+        OpenTelemetrySdk.builder()
+            .addSpanProcessor(mock(SpanProcessor.class))
+            .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
+            .setIdGenerator(mock(IdGenerator.class))
+            .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
+            .setClock(mock(Clock.class))
+            .setResource(mock(Resource.class));
 
-    TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder()
-        .setClock(mock(Clock.class))
-        .setIdGenerator(mock(IdGenerator.class))
-        .setResource(mock(Resource.class))
-        .setTraceConfig(newConfig)
-        .build();
+    TracerSdkProvider tracerSdkProvider =
+        TracerSdkProvider.builder()
+            .setClock(mock(Clock.class))
+            .setIdGenerator(mock(IdGenerator.class))
+            .setResource(mock(Resource.class))
+            .setTraceConfig(newConfig)
+            .build();
 
-    MeterSdkProvider meterSdkProvider = MeterSdkProvider.builder()
-        .setClock(mock(Clock.class))
-        .setResource(mock(Resource.class))
-        .build();
+    MeterSdkProvider meterSdkProvider =
+        MeterSdkProvider.builder()
+            .setClock(mock(Clock.class))
+            .setResource(mock(Resource.class))
+            .build();
 
     sdkBuilder.setTracerProvider(tracerSdkProvider);
     sdkBuilder.setMeterProvider(meterSdkProvider);
@@ -233,8 +237,9 @@ class OpenTelemetrySdkTest {
     sdkBuilder.build();
   }
 
-  //This is just a demonstration of the bare minimal required configuration in order to get useful SDK.
-  //Demonstrates how clear or confusing is SDK configuration
+  // This is just a demonstration of the bare minimal required configuration in order to get useful
+  // SDK.
+  // Demonstrates how clear or confusing is SDK configuration
   @Test
   void trivialOpenTelemetrySdkConfigurationDemo() {
     OpenTelemetrySdk.builder()
@@ -243,16 +248,15 @@ class OpenTelemetrySdkTest {
         .build();
   }
 
-  //This is just a demonstration of two small but not trivial configurations.
-  //Demonstrates how clear or confusing is SDK configuration
+  // This is just a demonstration of two small but not trivial configurations.
+  // Demonstrates how clear or confusing is SDK configuration
   @Test
   void minimalOpenTelemetrySdkConfigurationDemo() {
     OpenTelemetrySdk.builder()
         .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
-        .setTraceConfig(TraceConfig.getDefault().toBuilder()
-            .setSampler(mock(Sampler.class))
-            .build())
+        .setTraceConfig(
+            TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
         .build();
 
     OpenTelemetrySdk.builder()
@@ -261,5 +265,4 @@ class OpenTelemetrySdkTest {
         .setIdGenerator(mock(IdGenerator.class))
         .build();
   }
-
 }
