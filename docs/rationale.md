@@ -41,7 +41,7 @@ function, *with no recompilation required*, with any API+SDK that has the same m
 SDK library `opentelemetry-sdk-trace:1.11.33` plus `opentelemetry-api-trace:1.11.33`. 
     - We call this requirement the "ABI" compatibility requirement for "Application Binary Interface" compatibility. 
 - SDK Stability:
-    - Public portions of the SDK (constructors, configuration, und-user interfaces) must remain backwards compatible.
+    - Public portions of the SDK (constructors, configuration, end-user interfaces) must remain backwards compatible.
         - Precisely what this includes has yet to be delineated. 
     - Internal interfaces are allowed to break.
 
@@ -91,4 +91,3 @@ Purely for illustration purposes, not intended to represent actual releases:
         - Note: packages here have not changed from the experimental jar...just a jar rename happened.
     - `io.opentelemetry:opentelemetry-sdk-all:1.15.0`
         - The SDK side of io.opentelemetry:opentelemetry-api:1.15.0
-
