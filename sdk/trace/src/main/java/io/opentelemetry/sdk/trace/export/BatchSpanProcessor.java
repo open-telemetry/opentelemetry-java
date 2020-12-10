@@ -167,7 +167,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
           .longValueObserverBuilder("queueSize")
           .setDescription("The number of spans queued")
           .setUnit("1")
-          .setCallback(
+          .setUpdater(
               result ->
                   result.observe(
                       queue.size(),

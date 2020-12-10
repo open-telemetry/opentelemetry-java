@@ -12,18 +12,19 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.Result>
     extends AbstractInstrument implements AsynchronousInstrument {
-  @Nullable private final Callback<T> metricUpdater;
+  @Nullable private final Consumer<T> metricUpdater;
   private final ReentrantLock collectLock = new ReentrantLock();
   private final InstrumentProcessor instrumentProcessor;
 
   AbstractAsynchronousInstrument(
       InstrumentDescriptor descriptor,
       InstrumentProcessor instrumentProcessor,
-      @Nullable Callback<T> metricUpdater) {
+      @Nullable Consumer<T> metricUpdater) {
     super(descriptor);
     this.metricUpdater = metricUpdater;
     this.instrumentProcessor = instrumentProcessor;
@@ -36,7 +37,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     }
     collectLock.lock();
     try {
-      metricUpdater.update(newResult(instrumentProcessor));
+      metricUpdater.accept(newResult(instrumentProcessor));
       return instrumentProcessor.completeCollectionCycle();
     } finally {
       collectLock.unlock();
@@ -60,7 +61,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     AbstractLongAsynchronousInstrument(
         InstrumentDescriptor descriptor,
         InstrumentProcessor instrumentProcessor,
-        @Nullable Callback<LongResult> metricUpdater) {
+        @Nullable Consumer<LongResult> metricUpdater) {
       super(descriptor, instrumentProcessor, metricUpdater);
     }
 
@@ -91,7 +92,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     AbstractDoubleAsynchronousInstrument(
         InstrumentDescriptor descriptor,
         InstrumentProcessor instrumentProcessor,
-        @Nullable Callback<DoubleResult> metricUpdater) {
+        @Nullable Consumer<DoubleResult> metricUpdater) {
       super(descriptor, instrumentProcessor, metricUpdater);
     }
 

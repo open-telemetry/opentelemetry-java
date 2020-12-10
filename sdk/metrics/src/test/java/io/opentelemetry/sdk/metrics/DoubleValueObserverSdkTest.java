@@ -51,7 +51,7 @@ class DoubleValueObserverSdkTest {
             .doubleValueObserverBuilder("testObserver")
             .setDescription("My own DoubleValueObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
     assertThat(doubleValueObserver.collectAll())
         .containsExactly(
@@ -70,7 +70,7 @@ class DoubleValueObserverSdkTest {
     DoubleValueObserverSdk doubleValueObserver =
         testSdk
             .doubleValueObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12.1d, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleValueObserver.collectAll())

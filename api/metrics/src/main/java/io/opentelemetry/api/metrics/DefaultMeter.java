@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
 import java.util.Objects;
+import java.util.function.Consumer;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -429,8 +430,8 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setCallback(Callback<DoubleResult> callback) {
-        Objects.requireNonNull(callback, "callback");
+      public Builder setUpdater(Consumer<DoubleResult> updater) {
+        Objects.requireNonNull(updater, "callback");
         return this;
       }
 
@@ -456,8 +457,8 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public NoopBuilder setCallback(Callback<LongResult> callback) {
-        Objects.requireNonNull(callback, "callback");
+      public NoopBuilder setUpdater(Consumer<LongResult> updater) {
+        Objects.requireNonNull(updater, "callback");
         return this;
       }
 
@@ -483,8 +484,8 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setCallback(Callback<DoubleResult> callback) {
-        Objects.requireNonNull(callback, "callback");
+      public Builder setUpdater(Consumer<DoubleResult> updater) {
+        Objects.requireNonNull(updater, "callback");
         return this;
       }
 
@@ -510,8 +511,8 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setCallback(Callback<LongResult> callback) {
-        Objects.requireNonNull(callback, "callback");
+      public Builder setUpdater(Consumer<LongResult> updater) {
+        Objects.requireNonNull(updater, "callback");
         return this;
       }
 
@@ -537,8 +538,8 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setCallback(Callback<DoubleResult> callback) {
-        Objects.requireNonNull(callback, "callback");
+      public Builder setUpdater(Consumer<DoubleResult> updater) {
+        Objects.requireNonNull(updater, "callback");
         return this;
       }
 
@@ -564,8 +565,8 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setCallback(Callback<LongResult> callback) {
-        Objects.requireNonNull(callback, "callback");
+      public Builder setUpdater(Consumer<LongResult> updater) {
+        Objects.requireNonNull(updater, "callback");
         return this;
       }
 

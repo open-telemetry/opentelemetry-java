@@ -69,7 +69,7 @@ class DoubleUpDownSumObserverTest {
   void preventNull_Callback() {
     assertThrows(
         NullPointerException.class,
-        () -> meter.doubleUpDownSumObserverBuilder("metric").setCallback(null).build(),
+        () -> meter.doubleUpDownSumObserverBuilder("metric").setUpdater(null).build(),
         "callback");
   }
 
@@ -79,7 +79,7 @@ class DoubleUpDownSumObserverTest {
         .doubleUpDownSumObserverBuilder(NAME)
         .setDescription(DESCRIPTION)
         .setUnit(UNIT)
-        .setCallback(result -> {})
+        .setUpdater(result -> {})
         .build();
   }
 }
