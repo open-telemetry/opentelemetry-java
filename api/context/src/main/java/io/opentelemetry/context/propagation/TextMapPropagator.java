@@ -63,6 +63,18 @@ public interface TextMapPropagator {
     return MultiTextMapPropagator.create(propagators);
   }
 
+  /**
+   * Returns a {@link TextMapPropagator} which simply delegates injection and extraction to the
+   * provided propagators. Extraction will short circuit when the first propagator updates
+   * the context.
+   *
+   * <p>Invocation order of {@code TextMapPropagator#inject()} and {@code
+   * TextMapPropagator#extract()} for registered trace propagators is undefined.
+   */
+  static TextMapPropagator compositeWithShortCircuit(Iterable<TextMapPropagator> propagators) {
+    return MultiTextMapPropagator.builder(propagators).stopExtractAfterFirst().build();
+  }
+
   /** Returns a {@link TextMapPropagator} which does no injection or extraction. */
   static TextMapPropagator noop() {
     return NoopTextMapPropagator.getInstance();
