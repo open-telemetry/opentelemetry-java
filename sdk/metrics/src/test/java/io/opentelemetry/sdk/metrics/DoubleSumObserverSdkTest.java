@@ -50,7 +50,7 @@ class DoubleSumObserverSdkTest {
             .doubleSumObserverBuilder("testObserver")
             .setDescription("My own DoubleSumObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
     assertThat(doubleSumObserver.collectAll())
         .containsExactly(
@@ -69,7 +69,7 @@ class DoubleSumObserverSdkTest {
     DoubleSumObserverSdk doubleSumObserver =
         testSdk
             .doubleSumObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12.1d, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleSumObserver.collectAll())

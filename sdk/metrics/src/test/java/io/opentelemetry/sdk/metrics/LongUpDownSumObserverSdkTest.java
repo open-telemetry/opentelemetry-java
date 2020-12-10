@@ -50,7 +50,7 @@ class LongUpDownSumObserverSdkTest {
             .longUpDownSumObserverBuilder("testObserver")
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
     assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
@@ -69,7 +69,7 @@ class LongUpDownSumObserverSdkTest {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longUpDownSumObserver.collectAll())

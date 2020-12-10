@@ -71,7 +71,7 @@ class LongUpDownSumObserverTest {
   void preventNull_Callback() {
     assertThrows(
         NullPointerException.class,
-        () -> meter.longUpDownSumObserverBuilder("metric").setCallback(null).build(),
+        () -> meter.longUpDownSumObserverBuilder("metric").setUpdater(null).build(),
         "callback");
   }
 
@@ -81,7 +81,7 @@ class LongUpDownSumObserverTest {
         .longUpDownSumObserverBuilder(NAME)
         .setDescription(DESCRIPTION)
         .setUnit(UNIT)
-        .setCallback(result -> {})
+        .setUpdater(result -> {})
         .build();
   }
 }

@@ -68,7 +68,7 @@ class DoubleValueObserverTest {
   void preventNull_Callback() {
     assertThrows(
         NullPointerException.class,
-        () -> meter.doubleValueObserverBuilder("metric").setCallback(null).build(),
+        () -> meter.doubleValueObserverBuilder("metric").setUpdater(null).build(),
         "callback");
   }
 
@@ -78,7 +78,7 @@ class DoubleValueObserverTest {
         .doubleValueObserverBuilder(NAME)
         .setDescription(DESCRIPTION)
         .setUnit(UNIT)
-        .setCallback(result -> {})
+        .setUpdater(result -> {})
         .build();
   }
 }

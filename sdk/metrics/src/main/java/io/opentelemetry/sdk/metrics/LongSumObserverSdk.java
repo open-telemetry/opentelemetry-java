@@ -9,6 +9,7 @@ import io.opentelemetry.api.metrics.LongSumObserver;
 import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 final class LongSumObserverSdk extends AbstractLongAsynchronousInstrument
@@ -16,7 +17,7 @@ final class LongSumObserverSdk extends AbstractLongAsynchronousInstrument
   LongSumObserverSdk(
       InstrumentDescriptor descriptor,
       InstrumentProcessor instrumentProcessor,
-      @Nullable Callback<LongResult> metricUpdater) {
+      @Nullable Consumer<LongResult> metricUpdater) {
     super(descriptor, instrumentProcessor, metricUpdater);
   }
 
@@ -24,7 +25,7 @@ final class LongSumObserverSdk extends AbstractLongAsynchronousInstrument
       extends AbstractAsynchronousInstrument.Builder<LongSumObserverSdk.Builder>
       implements LongSumObserver.Builder {
 
-    @Nullable private Callback<LongResult> callback;
+    @Nullable private Consumer<LongResult> callback;
 
     Builder(
         String name,
@@ -39,8 +40,8 @@ final class LongSumObserverSdk extends AbstractLongAsynchronousInstrument
     }
 
     @Override
-    public Builder setCallback(Callback<LongResult> callback) {
-      this.callback = callback;
+    public Builder setUpdater(Consumer<LongResult> updater) {
+      this.callback = updater;
       return this;
     }
 

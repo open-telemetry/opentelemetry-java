@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
+import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -32,7 +33,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .build();
  *
  *   void init() {
- *     cpuObserver.setCallback(
+ *     cpuObserver.setUpdater(
  *         new LongSumObserver.Callback<LongResult>() {
  *          {@literal @}Override
  *           public void update(LongResult result) {
@@ -57,7 +58,7 @@ public interface LongSumObserver extends AsynchronousInstrument {
     Builder setUnit(String unit);
 
     @Override
-    Builder setCallback(Callback<LongResult> callback);
+    Builder setUpdater(Consumer<LongResult> updater);
 
     @Override
     LongSumObserver build();

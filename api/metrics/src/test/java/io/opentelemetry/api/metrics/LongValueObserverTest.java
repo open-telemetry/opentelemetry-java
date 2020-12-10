@@ -72,7 +72,7 @@ class LongValueObserverTest {
   void preventNull_Callback() {
     assertThrows(
         NullPointerException.class,
-        () -> meter.longValueObserverBuilder("metric").setCallback(null).build(),
+        () -> meter.longValueObserverBuilder("metric").setUpdater(null).build(),
         "callback");
   }
 
@@ -82,7 +82,7 @@ class LongValueObserverTest {
         .longValueObserverBuilder(NAME)
         .setDescription(DESCRIPTION)
         .setUnit(UNIT)
-        .setCallback(result -> {})
+        .setUpdater(result -> {})
         .build();
   }
 }
