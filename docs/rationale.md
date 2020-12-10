@@ -38,12 +38,14 @@ Because this is a common usage for spans, we do not support try-with-resources.
     - Once the API for a given signal (spans, logs, metrics, baggage) has been officially released, code instrumented with that API module will 
 function, *with no recompilation required*, with any API+SDK that has the same major version, and equal or greater minor or patch version. 
     - For example, libraries that are instrumented with `opentelemetry-api-trace:1.0.1` will function, at runtime with 
-SDK library `opentelemetry-sdk-trace:1.11.33` plus `opentelemetry-api-trace:1.11.33`. 
+SDK library `opentelemetry-sdk-trace:1.11.33` plus `opentelemetry-api-trace:1.11.33` (or whatever specific versions are specified by 
+      the bom version `1.11.33`, if the individual versions have diverged). 
     - We call this requirement the "ABI" compatibility requirement for "Application Binary Interface" compatibility. 
 - SDK Stability:
     - Public portions of the SDK (constructors, configuration, end-user interfaces) must remain backwards compatible.
-        - Precisely what this includes has yet to be delineated. 
-    - Internal interfaces are allowed to break.
+        - Precisely what this includes has yet to be delineated.
+- Internal implementation details of both the API and SDK are allowed to be changed, 
+  as long as the public APIs are not changed in an ABI-incompatible manner.
 
 ### Methods
 
