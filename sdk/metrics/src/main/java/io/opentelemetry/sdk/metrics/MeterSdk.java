@@ -16,15 +16,12 @@ import java.util.List;
 final class MeterSdk implements Meter {
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
-  private final ViewRegistry viewRegistry;
 
   MeterSdk(
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      ViewRegistry viewRegistry) {
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = MeterSharedState.create(instrumentationLibraryInfo);
-    this.viewRegistry = viewRegistry;
   }
 
   InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
@@ -120,6 +117,8 @@ final class MeterSdk implements Meter {
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
 
-    return viewRegistry.createBatcher(meterProviderSharedState, meterSharedState, descriptor);
+    return meterProviderSharedState
+        .getViewRegistry()
+        .createBatcher(meterProviderSharedState, meterSharedState, descriptor);
   }
 }

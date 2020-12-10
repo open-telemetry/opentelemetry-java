@@ -142,8 +142,7 @@ class OpenTelemetrySdkTest {
     // Since MeterProvider is in a different package, the only alternative to this reflective
     // approach would be to make the fields public for testing which is worse than this.
     assertThat(openTelemetry.getMeterProvider())
-        .extracting("registry")
-        .extracting("meterProviderSharedState")
+        .extracting("sharedState")
         .hasFieldOrPropertyWithValue("clock", clock)
         .hasFieldOrPropertyWithValue("resource", resource);
 

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -35,14 +34,15 @@ public final class MeterSdkProvider implements MeterProvider {
 
   private static final Logger LOGGER = Logger.getLogger(MeterSdkProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
-  private final MeterSdkComponentRegistry registry;
+  private final ComponentRegistry<MeterSdk> registry;
   private final MetricProducer metricProducer;
-  private final ViewRegistry viewRegistry = new ViewRegistry();
+  private final MeterProviderSharedState sharedState;
 
   private MeterSdkProvider(Clock clock, Resource resource) {
+    this.sharedState = MeterProviderSharedState.create(clock, resource);
     this.registry =
-        new MeterSdkComponentRegistry(
-            MeterProviderSharedState.create(clock, resource), viewRegistry);
+        new ComponentRegistry<>(
+            instrumentationLibraryInfo -> new MeterSdk(sharedState, instrumentationLibraryInfo));
     this.metricProducer = new MetricProducerSdk(this.registry);
   }
 
@@ -131,22 +131,6 @@ public final class MeterSdkProvider implements MeterProvider {
     }
   }
 
-  private static final class MeterSdkComponentRegistry extends ComponentRegistry<MeterSdk> {
-    private final MeterProviderSharedState meterProviderSharedState;
-    private final ViewRegistry viewRegistry;
-
-    private MeterSdkComponentRegistry(
-        MeterProviderSharedState meterProviderSharedState, ViewRegistry viewRegistry) {
-      this.meterProviderSharedState = meterProviderSharedState;
-      this.viewRegistry = viewRegistry;
-    }
-
-    @Override
-    public MeterSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo, viewRegistry);
-    }
-  }
-
   /**
    * Register a view with the given {@link InstrumentSelector}.
    *
@@ -172,13 +156,13 @@ public final class MeterSdkProvider implements MeterProvider {
    * @see AggregationConfiguration
    */
   public void registerView(InstrumentSelector selector, AggregationConfiguration specification) {
-    viewRegistry.registerView(selector, specification);
+    sharedState.getViewRegistry().registerView(selector, specification);
   }
 
   private static final class MetricProducerSdk implements MetricProducer {
-    private final MeterSdkComponentRegistry registry;
+    private final ComponentRegistry<MeterSdk> registry;
 
-    private MetricProducerSdk(MeterSdkComponentRegistry registry) {
+    private MetricProducerSdk(ComponentRegistry<MeterSdk> registry) {
       this.registry = registry;
     }
 
