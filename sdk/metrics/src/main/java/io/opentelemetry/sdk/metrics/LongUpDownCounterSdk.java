@@ -15,8 +15,8 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInst
     implements LongUpDownCounter {
 
   private LongUpDownCounterSdk(
-      InstrumentDescriptor descriptor, InstrumentAccumulator instrumentAccumulator) {
-    super(descriptor, instrumentAccumulator);
+      InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
+    super(descriptor, instrumentProcessor);
   }
 
   @Override
@@ -32,15 +32,15 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInst
   }
 
   @Override
-  BoundInstrument newBinding(InstrumentAccumulator instrumentAccumulator) {
-    return new BoundInstrument(instrumentAccumulator);
+  BoundInstrument newBinding(InstrumentProcessor instrumentProcessor) {
+    return new BoundInstrument(instrumentProcessor);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
       implements BoundLongUpDownCounter {
 
-    BoundInstrument(InstrumentAccumulator instrumentAccumulator) {
-      super(instrumentAccumulator.getAggregator());
+    BoundInstrument(InstrumentProcessor instrumentProcessor) {
+      super(instrumentProcessor.getAggregator());
     }
 
     @Override

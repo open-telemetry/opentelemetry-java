@@ -15,9 +15,9 @@ final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
     implements LongUpDownSumObserver {
   LongUpDownSumObserverSdk(
       InstrumentDescriptor descriptor,
-      InstrumentAccumulator instrumentAccumulator,
+      InstrumentProcessor instrumentProcessor,
       @Nullable Callback<LongResult> metricUpdater) {
-    super(descriptor, instrumentAccumulator, metricUpdater);
+    super(descriptor, instrumentProcessor, metricUpdater);
   }
 
   static final class Builder
