@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Map;
@@ -19,12 +20,12 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
   private final ConcurrentHashMap<Labels, B> boundLabels;
   private final ReentrantLock collectLock;
   private final InstrumentProcessor instrumentProcessor;
-  private final Function<InstrumentProcessor, B> boundFactory;
+  private final Function<Aggregator, B> boundFactory;
 
   AbstractSynchronousInstrument(
       InstrumentDescriptor descriptor,
       InstrumentProcessor instrumentProcessor,
-      Function<InstrumentProcessor, B> boundFactory) {
+      Function<Aggregator, B> boundFactory) {
     super(descriptor);
     this.boundFactory = boundFactory;
     boundLabels = new ConcurrentHashMap<>();
@@ -41,7 +42,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     }
 
     // Missing entry or no longer mapped, try to add a new entry.
-    binding = boundFactory.apply(instrumentProcessor);
+    binding = boundFactory.apply(instrumentProcessor.getAggregator());
     while (true) {
       B oldBound = boundLabels.putIfAbsent(labels, binding);
       if (oldBound != null) {
