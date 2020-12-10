@@ -16,9 +16,9 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
 
   DoubleValueObserverSdk(
       InstrumentDescriptor descriptor,
-      InstrumentAccumulator instrumentAccumulator,
+      InstrumentProcessor instrumentProcessor,
       @Nullable Callback<DoubleResult> metricUpdater) {
-    super(descriptor, instrumentAccumulator, metricUpdater);
+    super(descriptor, instrumentProcessor, metricUpdater);
   }
 
   static final class Builder

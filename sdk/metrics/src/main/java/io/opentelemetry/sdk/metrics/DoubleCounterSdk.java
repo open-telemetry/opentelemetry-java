@@ -15,8 +15,8 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
     implements DoubleCounter {
 
   private DoubleCounterSdk(
-      InstrumentDescriptor descriptor, InstrumentAccumulator instrumentAccumulator) {
-    super(descriptor, instrumentAccumulator);
+      InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
+    super(descriptor, instrumentProcessor);
   }
 
   @Override
@@ -35,15 +35,15 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
   }
 
   @Override
-  BoundInstrument newBinding(InstrumentAccumulator instrumentAccumulator) {
-    return new BoundInstrument(instrumentAccumulator);
+  BoundInstrument newBinding(InstrumentProcessor instrumentProcessor) {
+    return new BoundInstrument(instrumentProcessor);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
       implements DoubleCounter.BoundDoubleCounter {
 
-    BoundInstrument(InstrumentAccumulator instrumentAccumulator) {
-      super(instrumentAccumulator.getAggregator());
+    BoundInstrument(InstrumentProcessor instrumentProcessor) {
+      super(instrumentProcessor.getAggregator());
     }
 
     @Override

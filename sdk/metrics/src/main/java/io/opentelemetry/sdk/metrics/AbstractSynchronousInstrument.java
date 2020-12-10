@@ -17,14 +17,14 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     extends AbstractInstrument {
   private final ConcurrentHashMap<Labels, B> boundLabels;
   private final ReentrantLock collectLock;
-  private final InstrumentAccumulator instrumentAccumulator;
+  private final InstrumentProcessor instrumentProcessor;
 
   AbstractSynchronousInstrument(
-      InstrumentDescriptor descriptor, InstrumentAccumulator instrumentAccumulator) {
+      InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
     super(descriptor);
     boundLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
-    this.instrumentAccumulator = instrumentAccumulator;
+    this.instrumentProcessor = instrumentProcessor;
   }
 
   public B bind(Labels labels) {
@@ -36,7 +36,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     }
 
     // Missing entry or no longer mapped, try to add a new entry.
-    binding = newBinding(instrumentAccumulator);
+    binding = newBinding(instrumentProcessor);
     while (true) {
       B oldBound = boundLabels.putIfAbsent(labels, binding);
       if (oldBound != null) {
@@ -68,14 +68,13 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
           // acquire but because we requested a specific value only one will succeed.
           boundLabels.remove(entry.getKey(), entry.getValue());
         }
-        instrumentAccumulator.batch(
-            entry.getKey(), entry.getValue().getAggregator(), !unmappedEntry);
+        instrumentProcessor.batch(entry.getKey(), entry.getValue().getAggregator(), !unmappedEntry);
       }
-      return instrumentAccumulator.completeCollectionCycle();
+      return instrumentProcessor.completeCollectionCycle();
     } finally {
       collectLock.unlock();
     }
   }
 
-  abstract B newBinding(InstrumentAccumulator instrumentAccumulator);
+  abstract B newBinding(InstrumentProcessor instrumentProcessor);
 }

@@ -16,9 +16,9 @@ final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
 
   DoubleSumObserverSdk(
       InstrumentDescriptor descriptor,
-      InstrumentAccumulator instrumentAccumulator,
+      InstrumentProcessor instrumentProcessor,
       @Nullable Callback<DoubleResult> metricUpdater) {
-    super(descriptor, instrumentAccumulator, metricUpdater);
+    super(descriptor, instrumentProcessor, metricUpdater);
   }
 
   static final class Builder

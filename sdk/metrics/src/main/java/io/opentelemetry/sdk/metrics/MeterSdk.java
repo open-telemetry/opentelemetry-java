@@ -113,10 +113,9 @@ final class MeterSdk implements Meter {
   }
 
   /**
-   * Creates a {@link InstrumentAccumulator}, by using the {@link ViewRegistry} to do the actual
-   * work.
+   * Creates a {@link InstrumentProcessor}, by using the {@link ViewRegistry} to do the actual work.
    */
-  InstrumentAccumulator createBatcher(
+  InstrumentProcessor createBatcher(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {

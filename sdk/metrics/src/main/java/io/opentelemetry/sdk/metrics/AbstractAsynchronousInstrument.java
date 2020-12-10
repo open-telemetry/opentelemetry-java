@@ -18,15 +18,15 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     extends AbstractInstrument implements AsynchronousInstrument<T> {
   @Nullable private final Callback<T> metricUpdater;
   private final ReentrantLock collectLock = new ReentrantLock();
-  private final InstrumentAccumulator instrumentAccumulator;
+  private final InstrumentProcessor instrumentProcessor;
 
   AbstractAsynchronousInstrument(
       InstrumentDescriptor descriptor,
-      InstrumentAccumulator instrumentAccumulator,
+      InstrumentProcessor instrumentProcessor,
       @Nullable Callback<T> metricUpdater) {
     super(descriptor);
     this.metricUpdater = metricUpdater;
-    this.instrumentAccumulator = instrumentAccumulator;
+    this.instrumentProcessor = instrumentProcessor;
   }
 
   @Override
@@ -36,14 +36,14 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
     }
     collectLock.lock();
     try {
-      metricUpdater.update(newResult(instrumentAccumulator));
-      return instrumentAccumulator.completeCollectionCycle();
+      metricUpdater.update(newResult(instrumentProcessor));
+      return instrumentProcessor.completeCollectionCycle();
     } finally {
       collectLock.unlock();
     }
   }
 
-  abstract T newResult(InstrumentAccumulator instrumentAccumulator);
+  abstract T newResult(InstrumentProcessor instrumentProcessor);
 
   abstract static class Builder<B extends AbstractInstrument.Builder<?>>
       extends AbstractInstrument.Builder<B> {
@@ -60,29 +60,29 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
       extends AbstractAsynchronousInstrument<LongResult> {
     AbstractLongAsynchronousInstrument(
         InstrumentDescriptor descriptor,
-        InstrumentAccumulator instrumentAccumulator,
+        InstrumentProcessor instrumentProcessor,
         @Nullable Callback<LongResult> metricUpdater) {
-      super(descriptor, instrumentAccumulator, metricUpdater);
+      super(descriptor, instrumentProcessor, metricUpdater);
     }
 
     @Override
-    LongResultSdk newResult(InstrumentAccumulator instrumentAccumulator) {
-      return new LongResultSdk(instrumentAccumulator);
+    LongResultSdk newResult(InstrumentProcessor instrumentProcessor) {
+      return new LongResultSdk(instrumentProcessor);
     }
 
     private static final class LongResultSdk implements LongResult {
 
-      private final InstrumentAccumulator instrumentAccumulator;
+      private final InstrumentProcessor instrumentProcessor;
 
-      private LongResultSdk(InstrumentAccumulator instrumentAccumulator) {
-        this.instrumentAccumulator = instrumentAccumulator;
+      private LongResultSdk(InstrumentProcessor instrumentProcessor) {
+        this.instrumentProcessor = instrumentProcessor;
       }
 
       @Override
       public void observe(long sum, Labels labels) {
-        Aggregator aggregator = instrumentAccumulator.getAggregator();
+        Aggregator aggregator = instrumentProcessor.getAggregator();
         aggregator.recordLong(sum);
-        instrumentAccumulator.batch(labels, aggregator, /* mappedAggregator= */ false);
+        instrumentProcessor.batch(labels, aggregator, /* mappedAggregator= */ false);
       }
     }
   }
@@ -91,29 +91,29 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
       extends AbstractAsynchronousInstrument<DoubleResult> {
     AbstractDoubleAsynchronousInstrument(
         InstrumentDescriptor descriptor,
-        InstrumentAccumulator instrumentAccumulator,
+        InstrumentProcessor instrumentProcessor,
         @Nullable Callback<DoubleResult> metricUpdater) {
-      super(descriptor, instrumentAccumulator, metricUpdater);
+      super(descriptor, instrumentProcessor, metricUpdater);
     }
 
     @Override
-    DoubleResultSdk newResult(InstrumentAccumulator instrumentAccumulator) {
-      return new DoubleResultSdk(instrumentAccumulator);
+    DoubleResultSdk newResult(InstrumentProcessor instrumentProcessor) {
+      return new DoubleResultSdk(instrumentProcessor);
     }
 
     private static final class DoubleResultSdk implements DoubleResult {
 
-      private final InstrumentAccumulator instrumentAccumulator;
+      private final InstrumentProcessor instrumentProcessor;
 
-      private DoubleResultSdk(InstrumentAccumulator instrumentAccumulator) {
-        this.instrumentAccumulator = instrumentAccumulator;
+      private DoubleResultSdk(InstrumentProcessor instrumentProcessor) {
+        this.instrumentProcessor = instrumentProcessor;
       }
 
       @Override
       public void observe(double sum, Labels labels) {
-        Aggregator aggregator = instrumentAccumulator.getAggregator();
+        Aggregator aggregator = instrumentProcessor.getAggregator();
         aggregator.recordDouble(sum);
-        instrumentAccumulator.batch(labels, aggregator, /* mappedAggregator= */ false);
+        instrumentProcessor.batch(labels, aggregator, /* mappedAggregator= */ false);
       }
     }
   }

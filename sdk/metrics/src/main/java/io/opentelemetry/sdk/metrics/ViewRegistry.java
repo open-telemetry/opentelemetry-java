@@ -44,8 +44,8 @@ class ViewRegistry {
     aggregationChooser.addView(selector, specification);
   }
 
-  /** Create a new {@link InstrumentAccumulator} for use in metric recording aggregation. */
-  InstrumentAccumulator createBatcher(
+  /** Create a new {@link InstrumentProcessor} for use in metric recording aggregation. */
+  InstrumentProcessor createBatcher(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
@@ -55,10 +55,10 @@ class ViewRegistry {
     Aggregation aggregation = specification.aggregation();
 
     if (Temporality.CUMULATIVE == specification.temporality()) {
-      return InstrumentAccumulator.getCumulativeAllLabels(
+      return InstrumentProcessor.getCumulativeAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     } else if (Temporality.DELTA == specification.temporality()) {
-      return InstrumentAccumulator.getDeltaAllLabels(
+      return InstrumentProcessor.getDeltaAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     }
     throw new IllegalStateException("unsupported Temporality: " + specification.temporality());

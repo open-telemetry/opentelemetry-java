@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * An {@code InstrumentAccumulator} represents an internal instance of an {@code Accumulator} for a
+ * An {@code InstrumentProcessor} represents an internal instance of an {@code Accumulator} for a
  * specific {code Instrument}. It records individual measurements (via the {@code Aggregator}). It
  * batches together {@code Aggregator}s for the similar sets of labels.
  *
@@ -29,7 +29,7 @@ import java.util.Objects;
  * cycle must be protected by a lock. A collection cycle is defined by multiple calls to {@link
  * #batch(Labels, Aggregator, boolean)} followed by one {@link #completeCollectionCycle()};
  */
-final class InstrumentAccumulator {
+final class InstrumentProcessor {
   private final InstrumentDescriptor descriptor;
   private final Aggregation aggregation;
   private final Resource resource;
@@ -45,12 +45,12 @@ final class InstrumentAccumulator {
    * aggregation. "Cumulative" means that all metrics that are generated will be considered for the
    * lifetime of the Instrument being aggregated.
    */
-  static InstrumentAccumulator getCumulativeAllLabels(
+  static InstrumentProcessor getCumulativeAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       Aggregation aggregation) {
-    return new InstrumentAccumulator(
+    return new InstrumentProcessor(
         descriptor,
         aggregation,
         meterProviderSharedState.getResource(),
@@ -64,12 +64,12 @@ final class InstrumentAccumulator {
    * aggregation. "Delta" means that all metrics that are generated are only for the most recent
    * collection interval.
    */
-  static InstrumentAccumulator getDeltaAllLabels(
+  static InstrumentProcessor getDeltaAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       Aggregation aggregation) {
-    return new InstrumentAccumulator(
+    return new InstrumentProcessor(
         descriptor,
         aggregation,
         meterProviderSharedState.getResource(),
@@ -78,7 +78,7 @@ final class InstrumentAccumulator {
         /* delta= */ true);
   }
 
-  private InstrumentAccumulator(
+  private InstrumentProcessor(
       InstrumentDescriptor descriptor,
       Aggregation aggregation,
       Resource resource,
@@ -113,7 +113,7 @@ final class InstrumentAccumulator {
    * @param aggregator the {@link Aggregator} used to aggregate individual events for the given
    *     {@code LabelSetSdk}.
    * @param mappedAggregator {@code true} if the {@code Aggregator} is still in used by a binding.
-   *     If {@code false} the {@code Batcher} can reuse the {@code Aggregator} instance.
+   *     If {@code false} the {@code InstrumentProcessor} can reuse the {@code Aggregator} instance.
    */
   void batch(Labels labelSet, Aggregator aggregator, boolean mappedAggregator) {
     if (!aggregator.hasRecordings()) {
@@ -183,7 +183,7 @@ final class InstrumentAccumulator {
       return false;
     }
 
-    InstrumentAccumulator allLabels = (InstrumentAccumulator) o;
+    InstrumentProcessor allLabels = (InstrumentProcessor) o;
 
     if (startEpochNanos != allLabels.startEpochNanos) {
       return false;

@@ -14,9 +14,8 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
     implements LongCounter {
 
-  private LongCounterSdk(
-      InstrumentDescriptor descriptor, InstrumentAccumulator instrumentAccumulator) {
-    super(descriptor, instrumentAccumulator);
+  private LongCounterSdk(InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
+    super(descriptor, instrumentProcessor);
   }
 
   @Override
@@ -35,15 +34,15 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
   }
 
   @Override
-  BoundInstrument newBinding(InstrumentAccumulator instrumentAccumulator) {
-    return new BoundInstrument(instrumentAccumulator);
+  BoundInstrument newBinding(InstrumentProcessor instrumentProcessor) {
+    return new BoundInstrument(instrumentProcessor);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
       implements LongCounter.BoundLongCounter {
 
-    BoundInstrument(InstrumentAccumulator instrumentAccumulator) {
-      super(instrumentAccumulator.getAggregator());
+    BoundInstrument(InstrumentProcessor instrumentProcessor) {
+      super(instrumentProcessor.getAggregator());
     }
 
     @Override
