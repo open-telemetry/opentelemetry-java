@@ -6,10 +6,8 @@
 package io.opentelemetry.context.propagation;
 
 import io.opentelemetry.context.Context;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -62,17 +60,7 @@ public interface TextMapPropagator {
    * TextMapPropagator#extract()} for registered trace propagators is undefined.
    */
   static TextMapPropagator composite(Iterable<TextMapPropagator> propagators) {
-    List<TextMapPropagator> propagatorsList = new ArrayList<>();
-    for (TextMapPropagator propagator : propagators) {
-      propagatorsList.add(propagator);
-    }
-    if (propagatorsList.isEmpty()) {
-      return NoopTextMapPropagator.getInstance();
-    }
-    if (propagatorsList.size() == 1) {
-      return propagatorsList.get(0);
-    }
-    return new MultiTextMapPropagator(propagatorsList);
+    return MultiTextMapPropagator.create(propagators);
   }
 
   /** Returns a {@link TextMapPropagator} which does no injection or extraction. */
@@ -136,7 +124,7 @@ public interface TextMapPropagator {
    *
    * <p>If the value could not be parsed, the underlying implementation will decide to set an object
    * representing either an empty value, an invalid value, or a valid value. Implementation must not
-   * set {@code null}.
+   * return {@code null}.
    *
    * @param context the {@code Context} used to store the extracted value.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
