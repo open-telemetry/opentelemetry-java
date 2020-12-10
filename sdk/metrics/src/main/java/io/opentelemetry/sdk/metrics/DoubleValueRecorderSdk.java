@@ -16,7 +16,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
 
   private DoubleValueRecorderSdk(
       InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
-    super(descriptor, instrumentProcessor);
+    super(descriptor, instrumentProcessor, BoundInstrument::new);
   }
 
   @Override
@@ -29,11 +29,6 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
   @Override
   public void record(double value) {
     record(value, Labels.empty());
-  }
-
-  @Override
-  BoundInstrument newBinding(InstrumentProcessor instrumentProcessor) {
-    return new BoundInstrument(instrumentProcessor);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument

@@ -16,7 +16,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
 
   private LongValueRecorderSdk(
       InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
-    super(descriptor, instrumentProcessor);
+    super(descriptor, instrumentProcessor, BoundInstrument::new);
   }
 
   @Override
@@ -29,11 +29,6 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
   @Override
   public void record(long value) {
     record(value, Labels.empty());
-  }
-
-  @Override
-  BoundInstrument newBinding(InstrumentProcessor instrumentProcessor) {
-    return new BoundInstrument(instrumentProcessor);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
