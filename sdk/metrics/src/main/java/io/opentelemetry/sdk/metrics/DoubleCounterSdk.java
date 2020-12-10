@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -37,8 +38,8 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
   static final class BoundInstrument extends AbstractBoundInstrument
       implements DoubleCounter.BoundDoubleCounter {
 
-    BoundInstrument(InstrumentProcessor instrumentProcessor) {
-      super(instrumentProcessor.getAggregator());
+    BoundInstrument(Aggregator aggregator) {
+      super(aggregator);
     }
 
     @Override

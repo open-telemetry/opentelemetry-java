@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -36,8 +37,8 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
   static final class BoundInstrument extends AbstractBoundInstrument
       implements LongCounter.BoundLongCounter {
 
-    BoundInstrument(InstrumentProcessor instrumentProcessor) {
-      super(instrumentProcessor.getAggregator());
+    BoundInstrument(Aggregator aggregator) {
+      super(aggregator);
     }
 
     @Override
