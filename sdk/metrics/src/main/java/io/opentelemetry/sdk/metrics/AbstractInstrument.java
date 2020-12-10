@@ -61,16 +61,13 @@ abstract class AbstractInstrument implements Instrument {
     private final String name;
     private final MeterProviderSharedState meterProviderSharedState;
     private final MeterSharedState meterSharedState;
-    private final MeterSdk meterSdk;
     private String description = "";
     private String unit = "1";
 
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        MeterSdk meterSdk) {
-      this.meterSdk = meterSdk;
+        MeterSharedState meterSharedState) {
       Objects.requireNonNull(name, "name");
       Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
       this.name = name;
@@ -101,8 +98,10 @@ abstract class AbstractInstrument implements Instrument {
       return meterSharedState.getInstrumentRegistry().register(instrument);
     }
 
-    protected InstrumentProcessor getBatcher(InstrumentDescriptor descriptor) {
-      return meterSdk.createBatcher(descriptor, meterProviderSharedState, meterSharedState);
+    final InstrumentProcessor getBatcher(InstrumentDescriptor descriptor) {
+      return meterProviderSharedState
+          .getViewRegistry()
+          .createBatcher(meterProviderSharedState, meterSharedState, descriptor);
     }
   }
 }
