@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
@@ -28,7 +29,7 @@ public interface TracerSdkManagement {
    *
    * <p>Note: To update the {@link TraceConfig} associated with this instance you should use the
    * {@link TraceConfig#toBuilder()} method on the {@link TraceConfig} returned from {@link
-   * #getActiveTraceConfig()}, make the changes desired to the {@link TraceConfig.Builder} instance,
+   * #getActiveTraceConfig()}, make the changes desired to the {@link TraceConfigBuilder} instance,
    * then use this method with the resulting {@link TraceConfig} instance.
    *
    * @param traceConfig the new active {@code TraceConfig}.
