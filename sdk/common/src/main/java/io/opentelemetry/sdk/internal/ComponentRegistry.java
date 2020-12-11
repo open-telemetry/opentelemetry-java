@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /**
@@ -18,9 +19,14 @@ import javax.annotation.Nullable;
  *
  * @param <V> the type of the registered value.
  */
-public abstract class ComponentRegistry<V> {
+public final class ComponentRegistry<V> {
 
   private final ConcurrentMap<InstrumentationLibraryInfo, V> registry = new ConcurrentHashMap<>();
+  private final Function<InstrumentationLibraryInfo, V> factory;
+
+  public ComponentRegistry(Function<InstrumentationLibraryInfo, V> factory) {
+    this.factory = factory;
+  }
 
   /**
    * Returns the registered value associated with this name and {@code null} version if any,
@@ -46,12 +52,13 @@ public abstract class ComponentRegistry<V> {
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create(instrumentationName, instrumentationVersion);
 
+    // Optimistic lookup, before creating the new component.
     V component = registry.get(instrumentationLibraryInfo);
     if (component != null) {
       return component;
     }
 
-    V newComponent = newComponent(instrumentationLibraryInfo);
+    V newComponent = factory.apply(instrumentationLibraryInfo);
     V oldComponent = registry.putIfAbsent(instrumentationLibraryInfo, newComponent);
     return oldComponent != null ? oldComponent : newComponent;
   }
@@ -64,6 +71,4 @@ public abstract class ComponentRegistry<V> {
   public final Collection<V> getComponents() {
     return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
   }
-
-  public abstract V newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo);
 }

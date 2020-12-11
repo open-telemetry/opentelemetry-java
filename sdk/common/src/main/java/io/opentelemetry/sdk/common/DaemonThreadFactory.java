@@ -10,8 +10,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * A {@link ThreadFactory} that delegates to {@code MoreExecutors.platformThreadFactory()} and marks
- * all threads as daemon.
+ * A {@link ThreadFactory} that delegates to {@code Executors.defaultThreadFactory()} and marks all
+ * threads as daemon.
  */
 public class DaemonThreadFactory implements ThreadFactory {
   private final String namePrefix;

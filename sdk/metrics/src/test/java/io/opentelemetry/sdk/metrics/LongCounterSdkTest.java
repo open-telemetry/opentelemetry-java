@@ -35,7 +35,7 @@ class LongCounterSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void add_PreventNullLabels() {
@@ -67,7 +67,7 @@ class LongCounterSdkTest {
     assertThat(metricData.getName()).isEqualTo("testCounter");
     assertThat(metricData.getDescription()).isEqualTo("My very own counter");
     assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.MONOTONIC_LONG);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_SUM);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -81,7 +81,7 @@ class LongCounterSdkTest {
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
-    BoundInstrument ignored = longCounter.bind(Labels.of("foo", "bar"));
+    BoundInstrument bound = longCounter.bind(Labels.of("foo", "bar"));
 
     List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
@@ -89,10 +89,12 @@ class LongCounterSdkTest {
     assertThat(metricData.getName()).isEqualTo("testCounter");
     assertThat(metricData.getDescription()).isEqualTo("My very own counter");
     assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.MONOTONIC_LONG);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_SUM);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
+
+    bound.unbind();
   }
 
   @Test

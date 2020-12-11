@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * Util methods to convert OpenTelemetry Metrics data models to Prometheus data models.
@@ -61,19 +62,21 @@ final class MetricAdapter {
 
   static Collector.Type toMetricFamilyType(MetricData.Type type) {
     switch (type) {
-      case NON_MONOTONIC_LONG:
-      case NON_MONOTONIC_DOUBLE:
-      case GAUGE_LONG:
-      case GAUGE_DOUBLE:
+      case NON_MONOTONIC_LONG_SUM:
+      case NON_MONOTONIC_DOUBLE_SUM:
+      case LONG_GAUGE:
+      case DOUBLE_GAUGE:
         return Collector.Type.GAUGE;
-      case MONOTONIC_LONG:
-      case MONOTONIC_DOUBLE:
+      case LONG_SUM:
+      case DOUBLE_SUM:
         return Collector.Type.COUNTER;
       case SUMMARY:
         return Collector.Type.SUMMARY;
     }
     return Collector.Type.UNTYPED;
   }
+
+  private static final Function<String, String> sanitizer = new LabelNameSanitizer();
 
   // Converts a list of points from MetricData to a list of Prometheus Samples.
   static List<Sample> toSamples(String name, MetricData.Type type, Collection<Point> points) {
@@ -87,20 +90,19 @@ final class MetricAdapter {
         labelNames = new ArrayList<>(labels.size());
         labelValues = new ArrayList<>(labels.size());
 
-        // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
         labels.forEach(new Consumer(labelNames, labelValues));
       }
 
       switch (type) {
-        case MONOTONIC_DOUBLE:
-        case NON_MONOTONIC_DOUBLE:
-        case GAUGE_DOUBLE:
+        case DOUBLE_SUM:
+        case NON_MONOTONIC_DOUBLE_SUM:
+        case DOUBLE_GAUGE:
           DoublePoint doublePoint = (DoublePoint) point;
           samples.add(new Sample(name, labelNames, labelValues, doublePoint.getValue()));
           break;
-        case MONOTONIC_LONG:
-        case NON_MONOTONIC_LONG:
-        case GAUGE_LONG:
+        case LONG_SUM:
+        case NON_MONOTONIC_LONG_SUM:
+        case LONG_GAUGE:
           LongPoint longPoint = (LongPoint) point;
           samples.add(new Sample(name, labelNames, labelValues, longPoint.getValue()));
           break;
@@ -110,11 +112,6 @@ final class MetricAdapter {
       }
     }
     return samples;
-  }
-
-  // Converts a label keys to a label names. Sanitizes the label keys.
-  static String toLabelName(String labelKey) {
-    return Collector.sanitizeMetricName(labelKey);
   }
 
   private static final class Consumer implements BiConsumer<String, String> {
@@ -127,8 +124,9 @@ final class MetricAdapter {
     }
 
     @Override
-    public void accept(String key, String value) {
-      labelNames.add(toLabelName(key));
+    public void accept(String labelName, String value) {
+      String sanitizedLabelName = sanitizer.apply(labelName);
+      labelNames.add(sanitizedLabelName);
       labelValues.add(value == null ? "" : value);
     }
   }

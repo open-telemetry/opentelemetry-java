@@ -9,6 +9,7 @@ import io.opentelemetry.api.metrics.DoubleValueObserver;
 import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubleAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
@@ -16,30 +17,27 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
 
   DoubleValueObserverSdk(
       InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      Batcher batcher,
-      @Nullable Callback<DoubleResult> metricUpdater) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(batcher),
-        metricUpdater);
+      InstrumentProcessor instrumentProcessor,
+      @Nullable Consumer<DoubleResult> metricUpdater) {
+    super(descriptor, instrumentProcessor, metricUpdater);
   }
 
   static final class Builder
       extends AbstractAsynchronousInstrument.Builder<DoubleValueObserverSdk.Builder>
       implements DoubleValueObserver.Builder {
 
-    @Nullable private Callback<DoubleResult> callback;
+    @Nullable private Consumer<DoubleResult> callback;
 
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        MeterSdk meterSdk) {
-      super(name, meterProviderSharedState, meterSharedState, meterSdk);
+        MeterSharedState meterSharedState) {
+      super(
+          name,
+          InstrumentType.VALUE_OBSERVER,
+          InstrumentValueType.DOUBLE,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -48,23 +46,16 @@ final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
     }
 
     @Override
-    public Builder setCallback(Callback<DoubleResult> callback) {
-      this.callback = callback;
+    public Builder setUpdater(Consumer<DoubleResult> updater) {
+      this.callback = updater;
       return this;
     }
 
     @Override
     public DoubleValueObserverSdk build() {
-      InstrumentDescriptor instrumentDescriptor =
-          getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.DOUBLE);
-      DoubleValueObserverSdk instrument =
-          new DoubleValueObserverSdk(
-              instrumentDescriptor,
-              getMeterProviderSharedState(),
-              getMeterSharedState(),
-              getBatcher(instrumentDescriptor),
-              callback);
-      return register(instrument);
+      return build(
+          (instrumentDescriptor, instrumentProcessor) ->
+              new DoubleValueObserverSdk(instrumentDescriptor, instrumentProcessor, callback));
     }
   }
 }

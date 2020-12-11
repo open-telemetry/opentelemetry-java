@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.zpages;
 
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -368,7 +369,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       return;
     }
     if (action.equals(QUERY_STRING_ACTION_CHANGE)) {
-      TraceConfig.Builder newConfigBuilder =
+      TraceConfigBuilder newConfigBuilder =
           this.tracerSdkManagement.getActiveTraceConfig().toBuilder();
       String samplingProbabilityStr = queryMap.get(QUERY_STRING_SAMPLING_PROBABILITY);
       if (samplingProbabilityStr != null) {

@@ -24,17 +24,29 @@ public abstract class MetricData {
 
   /** The kind of metric. It describes how the data is reported. */
   public enum Type {
-    /** An instantaneous measurement of a long (int64) value. Reports {@link LongPoint} points. */
-    NON_MONOTONIC_LONG,
+    /**
+     * A Gauge represents a measurement of a long value at a moment in time. Generally only one
+     * instance of a given Gauge metric will be reported per reporting interval.
+     */
+    LONG_GAUGE,
 
-    /** An instantaneous measurement of a double value. Reports {@link DoublePoint} points. */
-    NON_MONOTONIC_DOUBLE,
+    /**
+     * A Gauge represents a measurement of a double value at a moment in time. Generally only one
+     * instance of a given Gauge metric will be reported per reporting interval.
+     */
+    DOUBLE_GAUGE,
 
-    /** An cumulative measurement of an long (int64) value. Reports {@link LongPoint} points. */
-    MONOTONIC_LONG,
+    /** A sum of long (int64) values. Reports {@link LongPoint} points. */
+    NON_MONOTONIC_LONG_SUM,
 
-    /** An cumulative measurement of a double value. Reports {@link DoublePoint} points. */
-    MONOTONIC_DOUBLE,
+    /** A sum of double values. Reports {@link DoublePoint} points. */
+    NON_MONOTONIC_DOUBLE_SUM,
+
+    /** A sum of non negative long (int64) values. Reports {@link LongPoint} points. */
+    LONG_SUM,
+
+    /** A sum of non negative double values. Reports {@link DoublePoint} points. */
+    DOUBLE_SUM,
 
     /**
      * A Summary of measurements of numeric values, containing the minimum value recorded, the
@@ -42,18 +54,6 @@ public abstract class MetricData {
      * recorded.
      */
     SUMMARY,
-
-    /**
-     * A Gauge represents a measurement of a long value at a moment in time. Generally only one
-     * instance of a given Gauge metric will be reported per reporting interval.
-     */
-    GAUGE_LONG,
-
-    /**
-     * A Gauge represents a measurement of a double value at a moment in time. Generally only one
-     * instance of a given Gauge metric will be reported per reporting interval.
-     */
-    GAUGE_DOUBLE
   }
 
   /**

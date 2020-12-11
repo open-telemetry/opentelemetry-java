@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.sdk.metrics.DoubleUpDownCounterSdk.BoundInstrument;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -15,11 +16,8 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     implements DoubleUpDownCounter {
 
   private DoubleUpDownCounterSdk(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      Batcher batcher) {
-    super(descriptor, meterProviderSharedState, meterSharedState, new ActiveBatcher(batcher));
+      InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
+    super(descriptor, instrumentProcessor, BoundInstrument::new);
   }
 
   @Override
@@ -34,16 +32,11 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     add(increment, Labels.empty());
   }
 
-  @Override
-  BoundInstrument newBinding(Batcher batcher) {
-    return new BoundInstrument(batcher);
-  }
-
   static final class BoundInstrument extends AbstractBoundInstrument
       implements BoundDoubleUpDownCounter {
 
-    BoundInstrument(Batcher batcher) {
-      super(batcher.getAggregator());
+    BoundInstrument(Aggregator aggregator) {
+      super(aggregator);
     }
 
     @Override
@@ -58,9 +51,13 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        MeterSdk meterSdk) {
-      super(name, meterProviderSharedState, meterSharedState, meterSdk);
+        MeterSharedState meterSharedState) {
+      super(
+          name,
+          InstrumentType.UP_DOWN_COUNTER,
+          InstrumentValueType.DOUBLE,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -70,14 +67,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
 
     @Override
     public DoubleUpDownCounterSdk build() {
-      InstrumentDescriptor instrumentDescriptor =
-          getInstrumentDescriptor(InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.DOUBLE);
-      return register(
-          new DoubleUpDownCounterSdk(
-              instrumentDescriptor,
-              getMeterProviderSharedState(),
-              getMeterSharedState(),
-              getBatcher(instrumentDescriptor)));
+      return build(DoubleUpDownCounterSdk::new);
     }
   }
 }

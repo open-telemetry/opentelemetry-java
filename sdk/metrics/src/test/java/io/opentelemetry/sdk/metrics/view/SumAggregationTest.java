@@ -31,15 +31,15 @@ class SumAggregationTest {
     Aggregation sum = Aggregations.sum();
     for (InstrumentType type : MONOTONIC_INSTRUMENTS) {
       assertThat(sum.getDescriptorType(type, InstrumentValueType.DOUBLE))
-          .isEqualTo(MetricData.Type.MONOTONIC_DOUBLE);
+          .isEqualTo(MetricData.Type.DOUBLE_SUM);
       assertThat(sum.getDescriptorType(type, InstrumentValueType.LONG))
-          .isEqualTo(MetricData.Type.MONOTONIC_LONG);
+          .isEqualTo(MetricData.Type.LONG_SUM);
     }
     for (InstrumentType type : NON_MONOTONIC_INSTRUMENTS) {
       assertThat(sum.getDescriptorType(type, InstrumentValueType.DOUBLE))
-          .isEqualTo(MetricData.Type.NON_MONOTONIC_DOUBLE);
+          .isEqualTo(MetricData.Type.NON_MONOTONIC_DOUBLE_SUM);
       assertThat(sum.getDescriptorType(type, InstrumentValueType.LONG))
-          .isEqualTo(MetricData.Type.NON_MONOTONIC_LONG);
+          .isEqualTo(MetricData.Type.NON_MONOTONIC_LONG_SUM);
     }
   }
 

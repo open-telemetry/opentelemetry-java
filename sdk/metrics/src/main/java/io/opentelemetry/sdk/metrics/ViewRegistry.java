@@ -44,11 +44,8 @@ class ViewRegistry {
     aggregationChooser.addView(selector, specification);
   }
 
-  /**
-   * Create a new {@link io.opentelemetry.sdk.metrics.Batcher} for use in metric recording
-   * aggregation.
-   */
-  Batcher createBatcher(
+  /** Create a new {@link InstrumentProcessor} for use in metric recording aggregation. */
+  InstrumentProcessor createBatcher(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
@@ -58,10 +55,10 @@ class ViewRegistry {
     Aggregation aggregation = specification.aggregation();
 
     if (Temporality.CUMULATIVE == specification.temporality()) {
-      return Batchers.getCumulativeAllLabels(
+      return InstrumentProcessor.getCumulativeAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     } else if (Temporality.DELTA == specification.temporality()) {
-      return Batchers.getDeltaAllLabels(
+      return InstrumentProcessor.getDeltaAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     }
     throw new IllegalStateException("unsupported Temporality: " + specification.temporality());

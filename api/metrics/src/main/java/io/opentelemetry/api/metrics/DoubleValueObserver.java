@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
-import io.opentelemetry.api.metrics.AsynchronousInstrument.DoubleResult;
+import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -30,7 +30,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .build();
  *
  *   void init() {
- *     cpuObserver.setCallback(
+ *     cpuObserver.setUpdater(
  *         new DoubleValueObserver.Callback<DoubleResult>() {
  *          {@literal @}Override
  *           public void update(DoubleResult result) {
@@ -43,7 +43,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * }</pre>
  */
 @ThreadSafe
-public interface DoubleValueObserver extends AsynchronousInstrument<DoubleResult> {
+public interface DoubleValueObserver extends AsynchronousInstrument {
 
   /** Builder class for {@link DoubleValueObserver}. */
   interface Builder extends AsynchronousInstrument.Builder<DoubleResult> {
@@ -54,7 +54,7 @@ public interface DoubleValueObserver extends AsynchronousInstrument<DoubleResult
     Builder setUnit(String unit);
 
     @Override
-    Builder setCallback(Callback<DoubleResult> callback);
+    Builder setUpdater(Consumer<DoubleResult> updater);
 
     @Override
     DoubleValueObserver build();

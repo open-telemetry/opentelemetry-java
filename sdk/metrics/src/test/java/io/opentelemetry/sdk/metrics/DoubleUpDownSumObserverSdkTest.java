@@ -30,7 +30,7 @@ class DoubleUpDownSumObserverSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void collectMetrics_NoCallback() {
@@ -50,7 +50,7 @@ class DoubleUpDownSumObserverSdkTest {
             .doubleUpDownSumObserverBuilder("testObserver")
             .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
     assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
@@ -60,7 +60,7 @@ class DoubleUpDownSumObserverSdkTest {
                 "testObserver",
                 "My own DoubleUpDownSumObserver",
                 "ms",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
                 Collections.emptyList()));
   }
 
@@ -69,7 +69,7 @@ class DoubleUpDownSumObserverSdkTest {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12.1d, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleUpDownSumObserver.collectAll())
@@ -80,7 +80,7 @@ class DoubleUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -96,7 +96,7 @@ class DoubleUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
+                MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - 2 * SECOND_NANOS,

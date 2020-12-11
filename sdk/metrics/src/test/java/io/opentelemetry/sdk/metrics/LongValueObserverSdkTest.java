@@ -30,7 +30,7 @@ class LongValueObserverSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void collectMetrics_NoCallback() {
@@ -50,7 +50,7 @@ class LongValueObserverSdkTest {
             .longValueObserverBuilder("testObserver")
             .setDescription("My own LongValueObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
     assertThat(longValueObserver.collectAll())
         .containsExactly(
@@ -60,7 +60,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "My own LongValueObserver",
                 "ms",
-                MetricData.Type.GAUGE_LONG,
+                MetricData.Type.LONG_GAUGE,
                 Collections.emptyList()));
   }
 
@@ -69,7 +69,7 @@ class LongValueObserverSdkTest {
     LongValueObserverSdk longValueObserver =
         testSdk
             .longValueObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longValueObserver.collectAll())
@@ -80,7 +80,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.GAUGE_LONG,
+                MetricData.Type.LONG_GAUGE,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -96,7 +96,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.GAUGE_LONG,
+                MetricData.Type.LONG_GAUGE,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,

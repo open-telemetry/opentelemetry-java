@@ -30,7 +30,7 @@ class LongUpDownSumObserverSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void collectMetrics_NoCallback() {
@@ -50,7 +50,7 @@ class LongUpDownSumObserverSdkTest {
             .longUpDownSumObserverBuilder("testObserver")
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
     assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
@@ -60,7 +60,7 @@ class LongUpDownSumObserverSdkTest {
                 "testObserver",
                 "My own LongUpDownSumObserver",
                 "ms",
-                MetricData.Type.NON_MONOTONIC_LONG,
+                MetricData.Type.NON_MONOTONIC_LONG_SUM,
                 Collections.emptyList()));
   }
 
@@ -69,7 +69,7 @@ class LongUpDownSumObserverSdkTest {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longUpDownSumObserver.collectAll())
@@ -80,7 +80,7 @@ class LongUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_LONG,
+                MetricData.Type.NON_MONOTONIC_LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -96,7 +96,7 @@ class LongUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_LONG,
+                MetricData.Type.NON_MONOTONIC_LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - 2 * SECOND_NANOS,

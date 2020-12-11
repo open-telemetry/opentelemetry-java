@@ -30,7 +30,7 @@ class LongSumObserverSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void collectMetrics_NoCallback() {
@@ -50,7 +50,7 @@ class LongSumObserverSdkTest {
             .longSumObserverBuilder("testObserver")
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
     assertThat(longSumObserver.collectAll())
         .containsExactly(
@@ -60,7 +60,7 @@ class LongSumObserverSdkTest {
                 "testObserver",
                 "My own LongSumObserver",
                 "ms",
-                MetricData.Type.MONOTONIC_LONG,
+                MetricData.Type.LONG_SUM,
                 Collections.emptyList()));
   }
 
@@ -69,7 +69,7 @@ class LongSumObserverSdkTest {
     LongSumObserverSdk longSumObserver =
         testSdk
             .longSumObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longSumObserver.collectAll())
@@ -80,7 +80,7 @@ class LongSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.MONOTONIC_LONG,
+                MetricData.Type.LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -96,7 +96,7 @@ class LongSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.MONOTONIC_LONG,
+                MetricData.Type.LONG_SUM,
                 Collections.singletonList(
                     LongPoint.create(
                         testClock.now() - 2 * SECOND_NANOS,

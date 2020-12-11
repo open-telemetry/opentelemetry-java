@@ -10,8 +10,6 @@ description = 'OpenTelemetry API'
 ext.moduleName = "io.opentelemetry.api.common"
 
 dependencies {
-    api project(':opentelemetry-api-internal')
-
     annotationProcessor libraries.auto_value
 
     signature libraries.android_signature

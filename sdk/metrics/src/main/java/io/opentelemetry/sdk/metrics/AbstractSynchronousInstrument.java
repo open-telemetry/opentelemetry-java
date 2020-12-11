@@ -6,26 +6,31 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 
 abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     extends AbstractInstrument {
   private final ConcurrentHashMap<Labels, B> boundLabels;
   private final ReentrantLock collectLock;
+  private final InstrumentProcessor instrumentProcessor;
+  private final Function<Aggregator, B> boundFactory;
 
   AbstractSynchronousInstrument(
       InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      ActiveBatcher activeBatcher) {
-    super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+      InstrumentProcessor instrumentProcessor,
+      Function<Aggregator, B> boundFactory) {
+    super(descriptor);
+    this.boundFactory = boundFactory;
     boundLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
+    this.instrumentProcessor = instrumentProcessor;
   }
 
   public B bind(Labels labels) {
@@ -37,7 +42,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     }
 
     // Missing entry or no longer mapped, try to add a new entry.
-    binding = newBinding(getActiveBatcher());
+    binding = boundFactory.apply(instrumentProcessor.getAggregator());
     while (true) {
       B oldBound = boundLabels.putIfAbsent(labels, binding);
       if (oldBound != null) {
@@ -62,7 +67,6 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
   final List<MetricData> collectAll() {
     collectLock.lock();
     try {
-      Batcher batcher = getActiveBatcher();
       for (Map.Entry<Labels, B> entry : boundLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {
@@ -70,13 +74,11 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
           // acquire but because we requested a specific value only one will succeed.
           boundLabels.remove(entry.getKey(), entry.getValue());
         }
-        batcher.batch(entry.getKey(), entry.getValue().getAggregator(), unmappedEntry);
+        instrumentProcessor.batch(entry.getKey(), entry.getValue().getAggregator(), !unmappedEntry);
       }
-      return batcher.completeCollectionCycle();
+      return instrumentProcessor.completeCollectionCycle();
     } finally {
       collectLock.unlock();
     }
   }
-
-  abstract B newBinding(Batcher batcher);
 }

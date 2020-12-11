@@ -30,7 +30,7 @@ class DoubleSumObserverSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void collectMetrics_NoCallback() {
@@ -50,7 +50,7 @@ class DoubleSumObserverSdkTest {
             .doubleSumObserverBuilder("testObserver")
             .setDescription("My own DoubleSumObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
     assertThat(doubleSumObserver.collectAll())
         .containsExactly(
@@ -60,7 +60,7 @@ class DoubleSumObserverSdkTest {
                 "testObserver",
                 "My own DoubleSumObserver",
                 "ms",
-                MetricData.Type.MONOTONIC_DOUBLE,
+                MetricData.Type.DOUBLE_SUM,
                 Collections.emptyList()));
   }
 
@@ -69,7 +69,7 @@ class DoubleSumObserverSdkTest {
     DoubleSumObserverSdk doubleSumObserver =
         testSdk
             .doubleSumObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12.1d, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleSumObserver.collectAll())
@@ -80,7 +80,7 @@ class DoubleSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.MONOTONIC_DOUBLE,
+                MetricData.Type.DOUBLE_SUM,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -96,7 +96,7 @@ class DoubleSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.MONOTONIC_DOUBLE,
+                MetricData.Type.DOUBLE_SUM,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - 2 * SECOND_NANOS,

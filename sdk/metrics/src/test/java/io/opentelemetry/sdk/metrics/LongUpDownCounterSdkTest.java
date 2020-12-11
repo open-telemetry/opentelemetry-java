@@ -35,7 +35,7 @@ class LongUpDownCounterSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void add_PreventNullLabels() {
@@ -67,7 +67,7 @@ class LongUpDownCounterSdkTest {
     assertThat(metricData.getName()).isEqualTo("testUpDownCounter");
     assertThat(metricData.getDescription()).isEqualTo("My very own counter");
     assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.NON_MONOTONIC_LONG);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.NON_MONOTONIC_LONG_SUM);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();

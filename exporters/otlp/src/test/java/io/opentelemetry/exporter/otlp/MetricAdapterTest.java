@@ -210,7 +210,7 @@ class MetricAdapterTest {
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.MONOTONIC_LONG,
+                    MetricData.Type.LONG_SUM,
                     singletonList(MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5)))))
         .isEqualTo(
             Metric.newBuilder()
@@ -243,7 +243,7 @@ class MetricAdapterTest {
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.MONOTONIC_DOUBLE,
+                    MetricData.Type.DOUBLE_SUM,
                     singletonList(
                         MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1)))))
         .isEqualTo(
@@ -281,7 +281,7 @@ class MetricAdapterTest {
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.NON_MONOTONIC_LONG,
+                    MetricData.Type.NON_MONOTONIC_LONG_SUM,
                     singletonList(MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5)))))
         .isEqualTo(
             Metric.newBuilder()
@@ -314,7 +314,7 @@ class MetricAdapterTest {
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.NON_MONOTONIC_DOUBLE,
+                    MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
                     singletonList(
                         MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1)))))
         .isEqualTo(
@@ -352,7 +352,7 @@ class MetricAdapterTest {
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.GAUGE_LONG,
+                    MetricData.Type.LONG_GAUGE,
                     singletonList(MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5)))))
         .isEqualTo(
             Metric.newBuilder()
@@ -383,7 +383,7 @@ class MetricAdapterTest {
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.GAUGE_DOUBLE,
+                    MetricData.Type.DOUBLE_GAUGE,
                     singletonList(
                         MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1)))))
         .isEqualTo(
@@ -498,7 +498,7 @@ class MetricAdapterTest {
                         "name",
                         "description",
                         "1",
-                        MetricData.Type.MONOTONIC_DOUBLE,
+                        MetricData.Type.DOUBLE_SUM,
                         Collections.singletonList(
                             MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))),
                     MetricData.create(
@@ -507,7 +507,7 @@ class MetricAdapterTest {
                         "name",
                         "description",
                         "1",
-                        MetricData.Type.MONOTONIC_DOUBLE,
+                        MetricData.Type.DOUBLE_SUM,
                         Collections.singletonList(
                             MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))),
                     MetricData.create(
@@ -516,7 +516,7 @@ class MetricAdapterTest {
                         "name",
                         "description",
                         "1",
-                        MetricData.Type.MONOTONIC_DOUBLE,
+                        MetricData.Type.DOUBLE_SUM,
                         Collections.singletonList(
                             MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))),
                     MetricData.create(
@@ -525,7 +525,7 @@ class MetricAdapterTest {
                         "name",
                         "description",
                         "1",
-                        MetricData.Type.MONOTONIC_DOUBLE,
+                        MetricData.Type.DOUBLE_SUM,
                         Collections.singletonList(
                             MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))))))
         .containsExactlyInAnyOrder(

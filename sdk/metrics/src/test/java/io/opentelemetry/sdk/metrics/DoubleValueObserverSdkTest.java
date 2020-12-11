@@ -31,7 +31,7 @@ class DoubleValueObserverSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void collectMetrics_NoCallback() {
@@ -51,7 +51,7 @@ class DoubleValueObserverSdkTest {
             .doubleValueObserverBuilder("testObserver")
             .setDescription("My own DoubleValueObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
     assertThat(doubleValueObserver.collectAll())
         .containsExactly(
@@ -61,7 +61,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "My own DoubleValueObserver",
                 "ms",
-                MetricData.Type.GAUGE_DOUBLE,
+                MetricData.Type.DOUBLE_GAUGE,
                 Collections.emptyList()));
   }
 
@@ -70,7 +70,7 @@ class DoubleValueObserverSdkTest {
     DoubleValueObserverSdk doubleValueObserver =
         testSdk
             .doubleValueObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12.1d, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleValueObserver.collectAll())
@@ -81,7 +81,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.GAUGE_DOUBLE,
+                MetricData.Type.DOUBLE_GAUGE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
@@ -97,7 +97,7 @@ class DoubleValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.GAUGE_DOUBLE,
+                MetricData.Type.DOUBLE_GAUGE,
                 Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
