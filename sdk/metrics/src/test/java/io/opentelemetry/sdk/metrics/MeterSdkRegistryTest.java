@@ -82,24 +82,28 @@ class MeterSdkRegistryTest {
 
     assertThat(meterProvider.getMetricProducer().collectAllMetrics())
         .containsExactlyInAnyOrder(
-            MetricData.create(
+            MetricData.createLongSum(
                 Resource.getEmpty(),
                 meterSdk1.getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.Type.LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
-            MetricData.create(
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))),
+            MetricData.createLongSum(
                 Resource.getEmpty(),
                 meterSdk2.getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.Type.LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))));
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))));
   }
 
   @Test

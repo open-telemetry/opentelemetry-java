@@ -40,16 +40,7 @@ class LongUpDownSumObserverSdkTest {
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(longUpDownSumObserver.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own LongUpDownSumObserver",
-                "ms",
-                MetricData.Type.NON_MONOTONIC_LONG_SUM,
-                Collections.emptyList()));
+    assertThat(longUpDownSumObserver.collectAll()).isEmpty();
   }
 
   @Test
@@ -61,16 +52,7 @@ class LongUpDownSumObserverSdkTest {
             .setUnit("ms")
             .setUpdater(result -> {})
             .build();
-    assertThat(longUpDownSumObserver.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own LongUpDownSumObserver",
-                "ms",
-                MetricData.Type.NON_MONOTONIC_LONG_SUM,
-                Collections.emptyList()));
+    assertThat(longUpDownSumObserver.collectAll()).isEmpty();
   }
 
   @Test
@@ -83,34 +65,38 @@ class LongUpDownSumObserverSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12))));
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ false,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(
-                        testClock.now() - 2 * SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12))));
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ false,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(
+                            testClock.now() - 2 * SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12)))));
   }
 }

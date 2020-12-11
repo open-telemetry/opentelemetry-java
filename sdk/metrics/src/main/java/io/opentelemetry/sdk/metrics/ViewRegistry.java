@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
-import io.opentelemetry.sdk.metrics.view.AggregationConfiguration.Temporality;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 
 // notes:
@@ -54,10 +55,10 @@ class ViewRegistry {
 
     Aggregation aggregation = specification.aggregation();
 
-    if (Temporality.CUMULATIVE == specification.temporality()) {
+    if (MetricData.AggregationTemporality.CUMULATIVE == specification.temporality()) {
       return InstrumentProcessor.getCumulativeAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
-    } else if (Temporality.DELTA == specification.temporality()) {
+    } else if (MetricData.AggregationTemporality.DELTA == specification.temporality()) {
       return InstrumentProcessor.getDeltaAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     }

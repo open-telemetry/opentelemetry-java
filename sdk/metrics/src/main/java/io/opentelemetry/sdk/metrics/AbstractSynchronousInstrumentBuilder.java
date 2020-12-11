@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.function.BiFunction;

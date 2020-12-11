@@ -10,9 +10,9 @@ import static io.prometheus.client.Collector.doubleToGoString;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -47,29 +47,40 @@ final class MetricAdapter {
   // Converts a MetricData to a Prometheus MetricFamilySamples.
   static MetricFamilySamples toMetricFamilySamples(MetricData metricData) {
     String cleanMetricName = cleanMetricName(metricData.getName());
-    Collector.Type type = toMetricFamilyType(metricData.getType());
+    Collector.Type type = toMetricFamilyType(metricData);
 
     return new MetricFamilySamples(
         cleanMetricName,
         type,
         metricData.getDescription(),
-        toSamples(cleanMetricName, metricData.getType(), metricData.getPoints()));
+        toSamples(cleanMetricName, metricData.getType(), getPoints(metricData)));
   }
 
   private static String cleanMetricName(String descriptorMetricName) {
     return Collector.sanitizeMetricName(descriptorMetricName);
   }
 
-  static Collector.Type toMetricFamilyType(MetricData.Type type) {
-    switch (type) {
-      case NON_MONOTONIC_LONG_SUM:
-      case NON_MONOTONIC_DOUBLE_SUM:
+  static Collector.Type toMetricFamilyType(MetricData metricData) {
+    switch (metricData.getType()) {
       case LONG_GAUGE:
       case DOUBLE_GAUGE:
         return Collector.Type.GAUGE;
       case LONG_SUM:
+        MetricData.LongSumData longSumData = metricData.getLongSumData();
+        if (longSumData.isMonotonic()
+            && longSumData.getAggregationTemporality()
+                == MetricData.AggregationTemporality.CUMULATIVE) {
+          return Collector.Type.COUNTER;
+        }
+        return Collector.Type.GAUGE;
       case DOUBLE_SUM:
-        return Collector.Type.COUNTER;
+        MetricData.DoubleSumData doubleSumData = metricData.getDoubleSumData();
+        if (doubleSumData.isMonotonic()
+            && doubleSumData.getAggregationTemporality()
+                == MetricData.AggregationTemporality.CUMULATIVE) {
+          return Collector.Type.COUNTER;
+        }
+        return Collector.Type.GAUGE;
       case SUMMARY:
         return Collector.Type.SUMMARY;
     }
@@ -95,19 +106,17 @@ final class MetricAdapter {
 
       switch (type) {
         case DOUBLE_SUM:
-        case NON_MONOTONIC_DOUBLE_SUM:
         case DOUBLE_GAUGE:
           DoublePoint doublePoint = (DoublePoint) point;
           samples.add(new Sample(name, labelNames, labelValues, doublePoint.getValue()));
           break;
         case LONG_SUM:
-        case NON_MONOTONIC_LONG_SUM:
         case LONG_GAUGE:
           LongPoint longPoint = (LongPoint) point;
           samples.add(new Sample(name, labelNames, labelValues, longPoint.getValue()));
           break;
         case SUMMARY:
-          addSummarySamples((SummaryPoint) point, name, labelNames, labelValues, samples);
+          addSummarySamples((DoubleSummaryPoint) point, name, labelNames, labelValues, samples);
           break;
       }
     }
@@ -132,16 +141,17 @@ final class MetricAdapter {
   }
 
   private static void addSummarySamples(
-      SummaryPoint summaryPoint,
+      DoubleSummaryPoint doubleSummaryPoint,
       String name,
       List<String> labelNames,
       List<String> labelValues,
       List<Sample> samples) {
     samples.add(
-        new Sample(name + SAMPLE_SUFFIX_COUNT, labelNames, labelValues, summaryPoint.getCount()));
+        new Sample(
+            name + SAMPLE_SUFFIX_COUNT, labelNames, labelValues, doubleSummaryPoint.getCount()));
     samples.add(
-        new Sample(name + SAMPLE_SUFFIX_SUM, labelNames, labelValues, summaryPoint.getSum()));
-    List<ValueAtPercentile> valueAtPercentiles = summaryPoint.getPercentileValues();
+        new Sample(name + SAMPLE_SUFFIX_SUM, labelNames, labelValues, doubleSummaryPoint.getSum()));
+    List<ValueAtPercentile> valueAtPercentiles = doubleSummaryPoint.getPercentileValues();
     List<String> labelNamesWithQuantile = new ArrayList<>(labelNames.size());
     labelNamesWithQuantile.addAll(labelNames);
     labelNamesWithQuantile.add(LABEL_NAME_QUANTILE);
@@ -161,6 +171,22 @@ final class MetricAdapter {
       return numPoints * 4;
     }
     return numPoints;
+  }
+
+  private static Collection<MetricData.Point> getPoints(MetricData metricData) {
+    switch (metricData.getType()) {
+      case DOUBLE_GAUGE:
+        return metricData.getDoubleGaugeData().getPoints();
+      case DOUBLE_SUM:
+        return metricData.getDoubleSumData().getPoints();
+      case LONG_GAUGE:
+        return metricData.getLongGaugeData().getPoints();
+      case LONG_SUM:
+        return metricData.getLongSumData().getPoints();
+      case SUMMARY:
+        return metricData.getDoubleSummaryData().getPoints();
+    }
+    return Collections.emptyList();
   }
 
   private MetricAdapter() {}

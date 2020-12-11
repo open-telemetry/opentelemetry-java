@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 

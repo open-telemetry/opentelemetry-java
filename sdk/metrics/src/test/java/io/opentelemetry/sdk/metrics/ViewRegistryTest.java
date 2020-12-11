@@ -12,8 +12,10 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -31,7 +33,7 @@ class ViewRegistryTest {
         InstrumentSelector.newBuilder().instrumentType(InstrumentType.COUNTER).build();
     AggregationConfiguration specification =
         AggregationConfiguration.create(
-            Aggregations.count(), AggregationConfiguration.Temporality.CUMULATIVE);
+            Aggregations.count(), MetricData.AggregationTemporality.CUMULATIVE);
 
     viewRegistry.registerView(selector, specification);
 
@@ -54,7 +56,7 @@ class ViewRegistryTest {
 
     AggregationConfiguration specification =
         AggregationConfiguration.create(
-            Aggregations.count(), AggregationConfiguration.Temporality.CUMULATIVE);
+            Aggregations.count(), MetricData.AggregationTemporality.CUMULATIVE);
     InstrumentProcessor expectedInstrumentProcessor =
         InstrumentProcessor.getCumulativeAllLabels(
             descriptor, providerSharedState, meterSharedState, Aggregations.count());
@@ -86,7 +88,7 @@ class ViewRegistryTest {
 
     AggregationConfiguration specification =
         AggregationConfiguration.create(
-            Aggregations.count(), AggregationConfiguration.Temporality.DELTA);
+            Aggregations.count(), MetricData.AggregationTemporality.DELTA);
     InstrumentProcessor expectedInstrumentProcessor =
         InstrumentProcessor.getDeltaAllLabels(
             descriptor, providerSharedState, meterSharedState, Aggregations.count());

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.AsynchronousInstrument;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.function.BiFunction;

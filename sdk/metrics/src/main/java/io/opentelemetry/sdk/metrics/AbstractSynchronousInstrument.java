@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 
