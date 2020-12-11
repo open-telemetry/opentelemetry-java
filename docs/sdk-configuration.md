@@ -16,6 +16,9 @@ their application developers. May write custom SDK extensions such as exporters,
 with their internal infrastructure and as such have some familiarity with tracing at least as the
 SDK presents it.
 
+- Telemetry extension authors. Write custom SDK extensions, often to support a particular backend.
+Verify familiar with telemetry.
+
 - OpenTelemetry maintainers. Write the SDK code.
 
 When making decisions, especially about complexity, we always prioritize the application developers,
@@ -29,13 +32,15 @@ to be much more of them than other audiences.
 ### Goals
 
 - Provide a single entrypoint to configuring the SDK. For end-users, less familiar with the SDK, we
-want to have everything together to provide discoverability and simpler end-user code.
+want to have everything together to provide discoverability and simpler end-user code. If there are
+several, clear use cases which benefit from different entrypoints, we could have multiple
+corresponding to each one.
 
 - Fit well with common Java idioms such as dependency injection, or common frameworks like Spring.
 
 - Reduce the chance of gotchas or configuration mishaps.
 
-- Aim for optimal performance for the most common use case.
+- Aim for optimal performance of the configured SDK for the most common use case.
 
 ### Non-goals
 
@@ -51,8 +56,8 @@ components.
 
 ## Configuring an instance of the SDK
 
-The SDK consists of configuration options for all the signals it supports. Users all have different
-requirements for how they use the SDK, for example they may use different exporters depending on
+The SDK exposes configuration options for all the signals it supports. Users all have different
+requirements for how they use the SDK; for example they may use different exporters depending on
 their backend. Because we cannot guess the configuration the user needs, we expect that the SDK must
 be configured by the user before it can be used.
 
@@ -78,7 +83,7 @@ OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
 
 This
 
-- Exports spans using OTLP to spans-service
+- Exports spans using OTLP to `spans-service`
   - Uses the BatchSpanProcessor (or a batching exporter wraper) which we consider the best default 
   for exporting. It has defaults for queue size, timeout, etc
 - Exposes metrics using Prometheus format
@@ -99,7 +104,8 @@ Let's look at a more complicated example
 OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
   .setResource(Resource.getDefault().merge(CoolResource.getDefault()))
   .setClock(AtomicClock.create())
-  .setPropagators(B3Propagator.getInstance())
+  .addPropatator(B3Propagator.getInstance())
+  .addPropagator(TracingVendorPropagator.getInstance())
   .addSpanExporter(OtlpGrpcSpanExporter.builder()
     .setEndpoint("spans-service:4317")
     .setTimeout(Duration.ofSeconds(10))
@@ -119,7 +125,7 @@ OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
   .build()
 ```
 
-This configures resource, clock, exporters, span processors, sampler, trace limits, and metrics.
+This configures resource, clock, exporters, span processors, propagators, sampler, trace limits, and metrics.
 Everything is exposed on the `OpenTelemetrySdkBuilder` to provide discoverability of all the parts
 of the SDK and to let the SDK manage shared components - it is not possible to configure a different
 `Resource` for tracing and metrics, something that would be a gotcha. Exporters are handled natively
@@ -251,7 +257,7 @@ public class MyService {
 ## The global instance of the SDK
 
 A built instance is convenient to use in most Java apps because of dependency injection. Because it
-has a easy-to-reason lifecycle, being tied into the dependency ordering (even if dependency 
+has a easy-to-reason initialization ordering, being tied into the dependency ordering (even if dependency 
 injection happened to be done manually through constructor invocation), we encourage application
 developers to only use it.
 
@@ -270,7 +276,7 @@ should not have any effect one way or the other in the vast majority of cases.
 MySQL is the only known corner case that requires the global SDK instance. If such a corner case
 didn't exist, we may not even support it in the first place.
 
-See special note with Java Agent below though.
+See special note about Java Agent below though.
 
 ## Telemetry within SDK components
 
@@ -296,12 +302,15 @@ public class BatchExporter implements SpanExporter {
   
   @Override
   public void setOpenTelemetry(OpenTelemetry openTelemetry) {
-    traer = openTelemetry.getTracerProvider().get("spanexporter");
+    tracer = openTelemetry.getTracerProvider().get("spanexporter");
   }
   
   @Override
   public void export() {
-    tracer.spanBuilder("export").startSpan();
+    Tracer tracer = this.tracer;
+    if (tracer != null) {
+      tracer.spanBuilder("export").startSpan();
+    }
   }
 }
 public class OpenTelemetrySdkBuilder {
@@ -396,7 +405,7 @@ class SleuthUsingService {
 
 ## Auto-configuration
 
-The above presents programmatic configuration for the SDK and proposeds that the core SDK has no
+The above presents programmatic configuration for the SDK and proposes that the core SDK has no
 other mechanism for configuration. There is no SPI nor processing of environment variables or
 system properties. There are many mechanisms for configuration, for example Spring Boot. 
 Integration with these systems becomes easier to reason about if we consider auto-configuration at
