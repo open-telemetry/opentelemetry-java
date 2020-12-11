@@ -40,7 +40,16 @@ class LongUpDownSumObserverSdkTest {
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(longUpDownSumObserver.collectAll()).isEmpty();
+    assertThat(longUpDownSumObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "My own LongUpDownSumObserver",
+                "ms",
+                MetricData.Type.NON_MONOTONIC_LONG_SUM,
+                Collections.emptyList()));
   }
 
   @Test

@@ -41,7 +41,16 @@ class DoubleValueObserverSdkTest {
             .setDescription("My own DoubleValueObserver")
             .setUnit("ms")
             .build();
-    assertThat(doubleValueObserver.collectAll()).isEmpty();
+    assertThat(doubleValueObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "My own DoubleValueObserver",
+                "ms",
+                MetricData.Type.DOUBLE_GAUGE,
+                Collections.emptyList()));
   }
 
   @Test

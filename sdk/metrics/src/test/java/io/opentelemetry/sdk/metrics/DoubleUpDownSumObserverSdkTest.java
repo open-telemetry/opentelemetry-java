@@ -37,10 +37,19 @@ class DoubleUpDownSumObserverSdkTest {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
-            .setDescription("My very own DoubleUpDownSumObserver")
+            .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(doubleUpDownSumObserver.collectAll()).isEmpty();
+    assertThat(doubleUpDownSumObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "My own DoubleUpDownSumObserver",
+                "ms",
+                MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
+                Collections.emptyList()));
   }
 
   @Test

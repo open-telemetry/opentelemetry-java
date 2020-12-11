@@ -16,8 +16,9 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
     implements LongValueRecorder {
 
   private LongValueRecorderSdk(
-      InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
-    super(descriptor, instrumentProcessor, BoundInstrument::new);
+      InstrumentDescriptor descriptor,
+      SynchronousInstrumentAccumulator<BoundInstrument> accumulator) {
+    super(descriptor, accumulator);
   }
 
   @Override
@@ -45,7 +46,8 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
     }
   }
 
-  static final class Builder extends AbstractInstrument.Builder<LongValueRecorderSdk.Builder>
+  static final class Builder
+      extends AbstractSynchronousInstrumentBuilder<LongValueRecorderSdk.Builder>
       implements LongValueRecorder.Builder {
 
     Builder(
@@ -67,7 +69,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
 
     @Override
     public LongValueRecorderSdk build() {
-      return build(LongValueRecorderSdk::new);
+      return buildInstrument(BoundInstrument::new, LongValueRecorderSdk::new);
     }
   }
 }

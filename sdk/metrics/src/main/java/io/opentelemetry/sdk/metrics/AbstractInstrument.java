@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 abstract class AbstractInstrument implements Instrument {
 
@@ -60,26 +59,17 @@ abstract class AbstractInstrument implements Instrument {
             + " characters.";
 
     private final String name;
-    private final MeterProviderSharedState meterProviderSharedState;
-    private final MeterSharedState meterSharedState;
     private final InstrumentType instrumentType;
     private final InstrumentValueType instrumentValueType;
     private String description = "";
     private String unit = "1";
 
-    Builder(
-        String name,
-        InstrumentType instrumentType,
-        InstrumentValueType instrumentValueType,
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
+    Builder(String name, InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       Objects.requireNonNull(name, "name");
       Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
       this.name = name;
       this.instrumentType = instrumentType;
       this.instrumentValueType = instrumentValueType;
-      this.meterProviderSharedState = meterProviderSharedState;
-      this.meterSharedState = meterSharedState;
     }
 
     @Override
@@ -96,19 +86,9 @@ abstract class AbstractInstrument implements Instrument {
 
     abstract B getThis();
 
-    final <I extends AbstractInstrument> I build(
-        BiFunction<InstrumentDescriptor, InstrumentProcessor, I> instrumentFactory) {
-      InstrumentDescriptor descriptor =
-          InstrumentDescriptor.create(name, description, unit, instrumentType, instrumentValueType);
-      return meterSharedState
-          .getInstrumentRegistry()
-          .register(instrumentFactory.apply(descriptor, getBatcher(descriptor)));
-    }
-
-    private InstrumentProcessor getBatcher(InstrumentDescriptor descriptor) {
-      return meterProviderSharedState
-          .getViewRegistry()
-          .createBatcher(meterProviderSharedState, meterSharedState, descriptor);
+    final InstrumentDescriptor buildDescriptor() {
+      return InstrumentDescriptor.create(
+          name, description, unit, instrumentType, instrumentValueType);
     }
   }
 }

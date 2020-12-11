@@ -40,7 +40,16 @@ class LongSumObserverSdkTest {
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(longSumObserver.collectAll()).isEmpty();
+    assertThat(longSumObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testObserver",
+                "My own LongSumObserver",
+                "ms",
+                MetricData.Type.LONG_SUM,
+                Collections.emptyList()));
   }
 
   @Test

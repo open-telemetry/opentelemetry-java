@@ -16,8 +16,9 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     implements DoubleUpDownCounter {
 
   private DoubleUpDownCounterSdk(
-      InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
-    super(descriptor, instrumentProcessor, BoundInstrument::new);
+      InstrumentDescriptor descriptor,
+      SynchronousInstrumentAccumulator<BoundInstrument> accumulator) {
+    super(descriptor, accumulator);
   }
 
   @Override
@@ -45,7 +46,8 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     }
   }
 
-  static final class Builder extends AbstractInstrument.Builder<DoubleUpDownCounterSdk.Builder>
+  static final class Builder
+      extends AbstractSynchronousInstrumentBuilder<DoubleUpDownCounterSdk.Builder>
       implements DoubleUpDownCounter.Builder {
 
     Builder(
@@ -67,7 +69,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
 
     @Override
     public DoubleUpDownCounterSdk build() {
-      return build(DoubleUpDownCounterSdk::new);
+      return buildInstrument(BoundInstrument::new, DoubleUpDownCounterSdk::new);
     }
   }
 }
