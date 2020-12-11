@@ -205,8 +205,13 @@ public interface OpenTelemetry {
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
   ContextPropagators getPropagators();
 
-  /** Returns a new {@link OpenTelemetryBuilder}. */
+  /**
+   * Returns a new {@link OpenTelemetryBuilder}.
+   *
+   * @deprecated use {@link DefaultOpenTelemetry#builder()}.
+   */
+  @Deprecated
   static OpenTelemetryBuilder<?> builder() {
-    return new DefaultOpenTelemetry.Builder();
+    return new DefaultOpenTelemetryBuilder();
   }
 }
