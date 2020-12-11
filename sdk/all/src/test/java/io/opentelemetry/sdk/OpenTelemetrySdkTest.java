@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -23,7 +22,6 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -38,11 +36,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("deprecation") // Testing deprecated code
 class OpenTelemetrySdkTest {
 
   @Mock private TracerSdkProvider tracerProvider;
-  @Mock private MeterSdkProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
@@ -68,8 +64,6 @@ class OpenTelemetrySdkTest {
   void testGlobalDefault() {
     assertThat(((TracerSdkProvider) OpenTelemetrySdk.getGlobalTracerManagement()).get(""))
         .isSameAs(OpenTelemetry.getGlobalTracerProvider().get(""));
-    assertThat(OpenTelemetrySdk.getGlobalMeterProvider())
-        .isSameAs(OpenTelemetry.getGlobalMeterProvider());
     assertThat(OpenTelemetrySdk.getGlobalTracerManagement()).isNotNull();
   }
 
@@ -79,10 +73,6 @@ class OpenTelemetrySdkTest {
         .isEqualTo(OpenTelemetry.getGlobalTracerProvider().get("testTracer1"));
     assertThat(OpenTelemetry.getGlobalTracer("testTracer2", "testVersion"))
         .isEqualTo(OpenTelemetry.getGlobalTracerProvider().get("testTracer2", "testVersion"));
-    assertThat(OpenTelemetry.getGlobalMeter("testMeter1"))
-        .isEqualTo(OpenTelemetry.getGlobalMeterProvider().get("testMeter1"));
-    assertThat(OpenTelemetry.getGlobalMeter("testMeter2", "testVersion"))
-        .isEqualTo(OpenTelemetry.getGlobalMeterProvider().get("testMeter2", "testVersion"));
   }
 
   @Test
@@ -94,7 +84,6 @@ class OpenTelemetrySdkTest {
             obfuscatedTracerProvider ->
                 assertThat(obfuscatedTracerProvider.unobfuscate())
                     .isInstanceOf(TracerSdkProvider.class));
-    assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
     assertThat(openTelemetry.getResource()).isEqualTo(Resource.getDefault());
     assertThat(openTelemetry.getClock()).isEqualTo(SystemClock.getInstance());
   }
@@ -105,14 +94,12 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
-            .setMeterProvider(meterProvider)
             .setPropagators(propagators)
             .setClock(clock)
             .setResource(resource)
             .build();
     assertThat(((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate())
         .isEqualTo(tracerProvider);
-    assertThat(openTelemetry.getMeterProvider()).isEqualTo(meterProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
     assertThat(openTelemetry.getResource()).isEqualTo(resource);
     assertThat(openTelemetry.getClock()).isEqualTo(clock);
@@ -142,14 +129,6 @@ class OpenTelemetrySdkTest {
         .hasFieldOrPropertyWithValue("resource", resource)
         .hasFieldOrPropertyWithValue("idGenerator", idGenerator)
         .hasFieldOrPropertyWithValue("activeTraceConfig", traceConfig);
-
-    assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
-    // Since MeterProvider is in a different package, the only alternative to this reflective
-    // approach would be to make the fields public for testing which is worse than this.
-    assertThat(openTelemetry.getMeterProvider())
-        .extracting("sharedState")
-        .hasFieldOrPropertyWithValue("clock", clock)
-        .hasFieldOrPropertyWithValue("resource", resource);
 
     assertThat(openTelemetry.getResource()).isSameAs(resource);
     assertThat(openTelemetry.getClock()).isSameAs(clock);
@@ -190,9 +169,6 @@ class OpenTelemetrySdkTest {
   void onlySdkInstancesAllowed() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> OpenTelemetrySdk.builder().setMeterProvider(mock(MeterProvider.class)));
-    assertThrows(
-        IllegalArgumentException.class,
         () -> OpenTelemetrySdk.builder().setTracerProvider(mock(TracerProvider.class)));
   }
 
@@ -224,14 +200,7 @@ class OpenTelemetrySdkTest {
             .setTraceConfig(newConfig)
             .build();
 
-    MeterSdkProvider meterSdkProvider =
-        MeterSdkProvider.builder()
-            .setClock(mock(Clock.class))
-            .setResource(mock(Resource.class))
-            .build();
-
     sdkBuilder.setTracerProvider(tracerSdkProvider);
-    sdkBuilder.setMeterProvider(meterSdkProvider);
     sdkBuilder.setTraceConfig(newConfig);
 
     sdkBuilder.build();

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 
@@ -17,14 +16,6 @@ public interface OpenTelemetryBuilder<T extends OpenTelemetryBuilder<T>> {
 
   /** Sets the {@link TracerProvider} to use. */
   T setTracerProvider(TracerProvider tracerProvider);
-
-  /**
-   * Sets the {@link MeterProvider} to use.
-   *
-   * @deprecated this will be removed soon in preparation for the initial otel release.
-   */
-  @Deprecated
-  T setMeterProvider(MeterProvider meterProvider);
 
   /** Sets the {@link ContextPropagators} to use. */
   T setPropagators(ContextPropagators propagators);

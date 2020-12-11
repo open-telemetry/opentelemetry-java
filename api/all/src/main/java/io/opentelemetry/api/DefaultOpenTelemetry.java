@@ -7,11 +7,9 @@ package io.opentelemetry.api;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.spi.OpenTelemetryFactory;
-import io.opentelemetry.spi.metrics.MeterProviderFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
@@ -52,7 +50,6 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
 
   private final TracerProvider tracerProvider;
-  private final MeterProvider meterProvider;
 
   private volatile ContextPropagators propagators;
 
@@ -67,20 +64,12 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   @Override
-  @Deprecated
-  public MeterProvider getMeterProvider() {
-    return meterProvider;
-  }
-
-  @Override
   public ContextPropagators getPropagators() {
     return propagators;
   }
 
-  protected DefaultOpenTelemetry(
-      TracerProvider tracerProvider, MeterProvider meterProvider, ContextPropagators propagators) {
+  protected DefaultOpenTelemetry(TracerProvider tracerProvider, ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;
-    this.meterProvider = meterProvider;
     this.propagators = propagators;
   }
 
@@ -118,20 +107,11 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
     protected ContextPropagators propagators = ContextPropagators.noop();
 
     protected TracerProvider tracerProvider;
-    protected MeterProvider meterProvider;
 
     @Override
     public Builder setTracerProvider(TracerProvider tracerProvider) {
       requireNonNull(tracerProvider, "tracerProvider");
       this.tracerProvider = tracerProvider;
-      return this;
-    }
-
-    @Override
-    @Deprecated
-    public Builder setMeterProvider(MeterProvider meterProvider) {
-      requireNonNull(meterProvider, "meterProvider");
-      this.meterProvider = meterProvider;
       return this;
     }
 
@@ -144,16 +124,6 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
 
     @Override
     public OpenTelemetry build() {
-      MeterProvider meterProvider = this.meterProvider;
-      if (meterProvider == null) {
-        MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
-        if (meterProviderFactory != null) {
-          meterProvider = meterProviderFactory.create();
-        } else {
-          meterProvider = MeterProvider.getDefault();
-        }
-      }
-
       TracerProvider tracerProvider = this.tracerProvider;
       if (tracerProvider == null) {
         TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
@@ -164,7 +134,7 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
         }
       }
 
-      return new DefaultOpenTelemetry(tracerProvider, meterProvider, propagators);
+      return new DefaultOpenTelemetry(tracerProvider, propagators);
     }
   }
 }

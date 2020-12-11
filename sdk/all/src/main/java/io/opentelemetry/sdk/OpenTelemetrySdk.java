@@ -9,13 +9,11 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -55,16 +53,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
-  /**
-   * Returns the global {@link MeterSdkProvider}.
-   *
-   * @deprecated this will be removed soon in preparation for the initial otel release.
-   */
-  @Deprecated
-  public static MeterSdkProvider getGlobalMeterProvider() {
-    return (MeterSdkProvider) OpenTelemetry.get().getMeterProvider();
-  }
-
   private static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
 
   private final Clock clock;
@@ -72,11 +60,10 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
   private OpenTelemetrySdk(
       TracerProvider tracerProvider,
-      MeterProvider meterProvider,
       ContextPropagators contextPropagators,
       Clock clock,
       Resource resource) {
-    super(tracerProvider, meterProvider, contextPropagators);
+    super(tracerProvider, contextPropagators);
     this.clock = clock;
     this.resource = resource;
   }
@@ -123,23 +110,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
             "The OpenTelemetrySdk can only be configured with a TracerSdkProvider");
       }
       super.setTracerProvider(tracerProvider);
-      return this;
-    }
-
-    /**
-     * Sets the {@link MeterProvider} to use.. This can be used to configure tracing settings by
-     * returning the instance created by a {@link MeterSdkProvider.Builder}.
-     *
-     * @see MeterSdkProvider#builder()
-     */
-    @Override
-    @Deprecated
-    public Builder setMeterProvider(MeterProvider meterProvider) {
-      if (!(meterProvider instanceof MeterSdkProvider)) {
-        throw new IllegalArgumentException(
-            "The OpenTelemetrySdk can only be configured with a MeterSdkProvider");
-      }
-      super.setMeterProvider(meterProvider);
       return this;
     }
 
@@ -219,7 +189,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
      */
     @Override
     public OpenTelemetrySdk build() {
-      MeterProvider meterProvider = buildMeterProvider();
       TracerSdkProvider tracerProvider = buildTracerProvider();
 
       for (SpanProcessor spanProcessor : spanProcessors) {
@@ -229,7 +198,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       OpenTelemetrySdk sdk =
           new OpenTelemetrySdk(
               new ObfuscatedTracerProvider(tracerProvider),
-              meterProvider,
               super.propagators,
               clock == null ? SystemClock.getInstance() : clock,
               resource == null ? Resource.getDefault() : resource);
@@ -259,20 +227,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
         tracerProviderBuilder.setTraceConfig(traceConfig);
       }
       return tracerProviderBuilder.build();
-    }
-
-    private MeterProvider buildMeterProvider() {
-      if (super.meterProvider != null) {
-        return super.meterProvider;
-      }
-      MeterSdkProvider.Builder meterProviderBuilder = MeterSdkProvider.builder();
-      if (clock != null) {
-        meterProviderBuilder.setClock(clock);
-      }
-      if (resource != null) {
-        meterProviderBuilder.setResource(resource);
-      }
-      return meterProviderBuilder.build();
     }
   }
 

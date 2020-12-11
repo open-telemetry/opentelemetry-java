@@ -9,7 +9,8 @@ description = 'OpenTelemetry Protocol Exporter'
 ext.moduleName = "io.opentelemetry.exporter.otlp"
 
 dependencies {
-    api project(':opentelemetry-sdk')
+    api project(':opentelemetry-sdk'),
+            project(':opentelemetry-sdk-metrics')
 
     implementation project(':opentelemetry-sdk-extension-otproto'),
             libraries.grpc_api,
