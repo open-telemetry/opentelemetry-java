@@ -65,8 +65,8 @@ public interface TextMapPropagator {
 
   /**
    * Returns a {@link TextMapPropagator} which simply delegates injection and extraction to the
-   * provided propagators. Extraction will short circuit when the first propagator updates
-   * the context.
+   * provided propagators. Extraction will short circuit when the first propagator updates the
+   * context.
    *
    * <p>Invocation order of {@code TextMapPropagator#inject()} and {@code
    * TextMapPropagator#extract()} for registered trace propagators is undefined.

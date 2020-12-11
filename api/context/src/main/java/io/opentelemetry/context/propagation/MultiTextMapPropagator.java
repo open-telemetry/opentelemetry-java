@@ -5,16 +5,10 @@
 
 package io.opentelemetry.context.propagation;
 
-import static java.util.Objects.requireNonNull;
-
 import io.opentelemetry.context.Context;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import javax.annotation.Nullable;
 
 final class MultiTextMapPropagator implements TextMapPropagator {
@@ -46,7 +40,7 @@ final class MultiTextMapPropagator implements TextMapPropagator {
    *
    * @param propagators delegates
    */
-  public static Builder builder(TextMapPropagator... propagators) {
+  public static TextMapPropagatorBuilder builder(TextMapPropagator... propagators) {
     return builder(Arrays.asList(propagators));
   }
 
@@ -55,11 +49,11 @@ final class MultiTextMapPropagator implements TextMapPropagator {
    *
    * @param propagators delegates
    */
-  public static Builder builder(Iterable<TextMapPropagator> propagators) {
-    return new Builder(propagators);
+  public static TextMapPropagatorBuilder builder(Iterable<TextMapPropagator> propagators) {
+    return new TextMapPropagatorBuilder(propagators);
   }
 
-  MultiTextMapPropagator(Builder builder) {
+  MultiTextMapPropagator(TextMapPropagatorBuilder builder) {
     this.textPropagators = new TextMapPropagator[builder.delegates.size()];
     builder.delegates.toArray(this.textPropagators);
     this.allFields = Collections.unmodifiableCollection(builder.allFields);
@@ -104,49 +98,5 @@ final class MultiTextMapPropagator implements TextMapPropagator {
       context = updatedContext;
     }
     return context;
-  }
-
-  static class Builder {
-    private final List<TextMapPropagator> delegates;
-    private Collection<String> allFields;
-    private boolean stopExtractAfterFirst = false;
-    private boolean iterateBackwards = false;
-
-    private Builder(Iterable<TextMapPropagator> delegates) {
-      this.delegates = new ArrayList<>();
-      for (TextMapPropagator propagator : delegates) {
-        requireNonNull(propagator, "propagator");
-        this.delegates.add(propagator);
-      }
-    }
-
-    public Builder stopExtractAfterFirst() {
-      this.stopExtractAfterFirst = true;
-      return this;
-    }
-
-    public Builder iterateBackwards() {
-      this.iterateBackwards = true;
-      return this;
-    }
-
-    TextMapPropagator build() {
-      if (delegates.isEmpty()) {
-        return TextMapPropagator.noop();
-      }
-      if (delegates.size() == 1) {
-        return delegates.get(0);
-      }
-      this.allFields = getAllFieldsFromDelegates();
-      return new MultiTextMapPropagator(this);
-    }
-
-    private List<String> getAllFieldsFromDelegates() {
-      Set<String> fields = new LinkedHashSet<>();
-      for (TextMapPropagator textPropagator : delegates) {
-        fields.addAll(textPropagator.fields());
-      }
-      return new ArrayList<>(fields);
-    }
   }
 }
