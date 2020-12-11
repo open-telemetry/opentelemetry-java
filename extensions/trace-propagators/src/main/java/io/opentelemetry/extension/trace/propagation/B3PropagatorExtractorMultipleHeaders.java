@@ -5,11 +5,6 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
-import static io.opentelemetry.extension.trace.propagation.B3Propagator.DEBUG_HEADER;
-import static io.opentelemetry.extension.trace.propagation.B3Propagator.SAMPLED_HEADER;
-import static io.opentelemetry.extension.trace.propagation.B3Propagator.SPAN_ID_HEADER;
-import static io.opentelemetry.extension.trace.propagation.B3Propagator.TRACE_ID_HEADER;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -33,7 +28,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
 
   private static <C> Optional<Context> extractSpanContextFromMultipleHeaders(
       Context context, C carrier, TextMapPropagator.Getter<C> getter) {
-    String traceId = getter.get(carrier, TRACE_ID_HEADER);
+    String traceId = getter.get(carrier, B3Propagator.TRACE_ID_HEADER);
     if (StringUtils.isNullOrEmpty(traceId)) {
       return Optional.empty();
     }
@@ -43,7 +38,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
       return Optional.empty();
     }
 
-    String spanId = getter.get(carrier, SPAN_ID_HEADER);
+    String spanId = getter.get(carrier, B3Propagator.SPAN_ID_HEADER);
     if (!Common.isSpanIdValid(spanId)) {
       logger.fine("Invalid SpanId in B3 header: " + spanId + "'. Returning INVALID span context.");
       return Optional.empty();
@@ -51,14 +46,14 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
 
     // if debug flag is set, then set sampled flag, and also set B3 debug to true in the context
     // for onward use by B3 injector
-    if (B3Propagator.MULTI_HEADER_DEBUG.equals(getter.get(carrier, DEBUG_HEADER))) {
+    if (B3Propagator.MULTI_HEADER_DEBUG.equals(getter.get(carrier, B3Propagator.DEBUG_HEADER))) {
       return Optional.of(
           context
               .with(B3Propagator.DEBUG_CONTEXT_KEY, true)
               .with(Span.wrap(Common.buildSpanContext(traceId, spanId, Common.TRUE_INT))));
     }
 
-    String sampled = getter.get(carrier, SAMPLED_HEADER);
+    String sampled = getter.get(carrier, B3Propagator.SAMPLED_HEADER);
     return Optional.of(context.with(Span.wrap(Common.buildSpanContext(traceId, spanId, sampled))));
   }
 }
