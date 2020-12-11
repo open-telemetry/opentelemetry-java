@@ -40,16 +40,7 @@ class LongValueObserverSdkTest {
             .setDescription("My own LongValueObserver")
             .setUnit("ms")
             .build();
-    assertThat(longValueObserver.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own LongValueObserver",
-                "ms",
-                MetricData.Type.LONG_GAUGE,
-                Collections.emptyList()));
+    assertThat(longValueObserver.collectAll()).isEmpty();
   }
 
   @Test
@@ -61,16 +52,7 @@ class LongValueObserverSdkTest {
             .setUnit("ms")
             .setUpdater(result -> {})
             .build();
-    assertThat(longValueObserver.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own LongValueObserver",
-                "ms",
-                MetricData.Type.LONG_GAUGE,
-                Collections.emptyList()));
+    assertThat(longValueObserver.collectAll()).isEmpty();
   }
 
   @Test
@@ -83,34 +65,34 @@ class LongValueObserverSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longValueObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createLongGauge(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.LONG_GAUGE,
-                Collections.singletonList(
-                    LongPoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12))));
+                MetricData.LongGaugeData.create(
+                    Collections.singletonList(
+                        LongPoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longValueObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createLongGauge(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.LONG_GAUGE,
-                Collections.singletonList(
-                    LongPoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12))));
+                MetricData.LongGaugeData.create(
+                    Collections.singletonList(
+                        LongPoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12)))));
   }
 }

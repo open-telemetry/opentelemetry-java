@@ -55,23 +55,27 @@ class PrometheusCollectorTest {
 
   private static ImmutableList<MetricData> generateTestData() {
     return ImmutableList.of(
-        MetricData.create(
+        MetricData.createLongSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("grpc", "version"),
             "grpc.name",
             "long_description",
             "1",
-            MetricData.Type.LONG_SUM,
-            Collections.singletonList(
-                MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
-        MetricData.create(
+            MetricData.LongSumData.create(
+                /* isMonotonic= */ true,
+                MetricData.AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5)))),
+        MetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("http", "version"),
             "http.name",
             "double_description",
             "1",
-            MetricData.Type.DOUBLE_SUM,
-            Collections.singletonList(
-                MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5))));
+            MetricData.DoubleSumData.create(
+                /* isMonotonic= */ true,
+                MetricData.AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5)))));
   }
 }

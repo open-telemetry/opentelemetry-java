@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -61,29 +61,7 @@ class LongValueRecorderSdkTest {
     LongValueRecorderSdk longMeasure =
         testSdk
             .longValueRecorderBuilder("testRecorder")
-            .setDescription("My very own counter")
-            .setUnit("ms")
-            .build();
-    assertThat(longMeasure).isInstanceOf(LongValueRecorderSdk.class);
-    List<MetricData> metricDataList = longMeasure.collectAll();
-    assertThat(metricDataList)
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "My very own counter",
-                "ms",
-                MetricData.Type.SUMMARY,
-                Collections.emptyList()));
-  }
-
-  @Test
-  void collectMetrics_emptyCollectionCycle() {
-    LongValueRecorderSdk longMeasure =
-        testSdk
-            .longValueRecorderBuilder("testRecorder")
-            .setDescription("My very own counter")
+            .setDescription("My own counter")
             .setUnit("ms")
             .build();
 
@@ -91,41 +69,37 @@ class LongValueRecorderSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
 
     List<MetricData> metricDataList = longMeasure.collectAll();
-    assertThat(metricDataList)
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "My very own counter",
-                "ms",
-                MetricData.Type.SUMMARY,
-                Collections.emptyList()));
+    assertThat(metricDataList).isEmpty();
   }
 
   @Test
   void collectMetrics_WithOneRecord() {
-    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
+    LongValueRecorderSdk longMeasure =
+        testSdk
+            .longValueRecorderBuilder("testRecorder")
+            .setDescription("My own counter")
+            .setUnit("ms")
+            .build();
     testClock.advanceNanos(SECOND_NANOS);
     longMeasure.record(12, Labels.empty());
     List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleSummary(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testRecorder",
-                "",
-                "1",
-                MetricData.Type.SUMMARY,
-                Collections.singletonList(
-                    SummaryPoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.empty(),
-                        1,
-                        12,
-                        valueAtPercentiles(12, 12)))));
+                "My own counter",
+                "ms",
+                MetricData.DoubleSummaryData.create(
+                    Collections.singletonList(
+                        DoubleSummaryPoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.empty(),
+                            1,
+                            12,
+                            valueAtPercentiles(12, 12))))));
   }
 
   @Test
@@ -161,12 +135,11 @@ class LongValueRecorderSdkTest {
       List<MetricData> metricDataList = longMeasure.collectAll();
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
-      assertThat(metricData.getPoints()).hasSize(2);
-      assertThat(metricData.getPoints())
+      assertThat(metricData.getDoubleSummaryData().getPoints())
           .containsExactlyInAnyOrder(
-              SummaryPoint.create(
+              DoubleSummaryPoint.create(
                   startTime, firstCollect, Labels.empty(), 2, -2, valueAtPercentiles(-14, 12)),
-              SummaryPoint.create(
+              MetricData.DoubleSummaryPoint.create(
                   startTime,
                   firstCollect,
                   Labels.of("K", "V"),
@@ -183,17 +156,16 @@ class LongValueRecorderSdkTest {
       metricDataList = longMeasure.collectAll();
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
-      assertThat(metricData.getPoints()).hasSize(2);
-      assertThat(metricData.getPoints())
+      assertThat(metricData.getDoubleSummaryData().getPoints())
           .containsExactlyInAnyOrder(
-              SummaryPoint.create(
+              DoubleSummaryPoint.create(
                   startTime + SECOND_NANOS,
                   secondCollect,
                   Labels.empty(),
                   1,
                   17,
                   valueAtPercentiles(17, 17)),
-              SummaryPoint.create(
+              DoubleSummaryPoint.create(
                   startTime + SECOND_NANOS,
                   secondCollect,
                   Labels.of("K", "V"),
@@ -260,9 +232,9 @@ class LongValueRecorderSdkTest {
     stressTestBuilder.build().run();
     List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getPoints())
+    assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
         .containsExactly(
-            SummaryPoint.create(
+            DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of("K", "V"),
@@ -300,30 +272,30 @@ class LongValueRecorderSdkTest {
     stressTestBuilder.build().run();
     List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getPoints())
+    assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
         .containsExactly(
-            SummaryPoint.create(
+            DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of(keys[0], values[0]),
                 2_000,
                 20_000,
                 valueAtPercentiles(9, 11)),
-            SummaryPoint.create(
+            MetricData.DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of(keys[1], values[1]),
                 2_000,
                 20_000,
                 valueAtPercentiles(9, 11)),
-            SummaryPoint.create(
+            DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of(keys[2], values[2]),
                 2_000,
                 20_000,
                 valueAtPercentiles(9, 11)),
-            SummaryPoint.create(
+            DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of(keys[3], values[3]),

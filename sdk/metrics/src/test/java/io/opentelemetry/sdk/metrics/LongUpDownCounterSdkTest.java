@@ -62,15 +62,7 @@ class LongUpDownCounterSdkTest {
             .setUnit("ms")
             .build();
     List<MetricData> metricDataList = longUpDownCounter.collectAll();
-    assertThat(metricDataList).hasSize(1);
-    MetricData metricData = metricDataList.get(0);
-    assertThat(metricData.getName()).isEqualTo("testUpDownCounter");
-    assertThat(metricData.getDescription()).isEqualTo("My very own counter");
-    assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.NON_MONOTONIC_LONG_SUM);
-    assertThat(metricData.getResource()).isEqualTo(RESOURCE);
-    assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(metricData.getPoints()).isEmpty();
+    assertThat(metricDataList).isEmpty();
   }
 
   @Test
@@ -84,8 +76,7 @@ class LongUpDownCounterSdkTest {
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(metricData.getPoints()).hasSize(1);
-    assertThat(metricData.getPoints())
+    assertThat(metricData.getLongSumData().getPoints())
         .containsExactly(
             LongPoint.create(testClock.now() - SECOND_NANOS, testClock.now(), Labels.empty(), 12));
   }
@@ -126,8 +117,7 @@ class LongUpDownCounterSdkTest {
       List<MetricData> metricDataList = longUpDownCounter.collectAll();
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
-      assertThat(metricData.getPoints()).hasSize(2);
-      assertThat(metricData.getPoints())
+      assertThat(metricData.getLongSumData().getPoints())
           .containsExactly(
               LongPoint.create(startTime, firstCollect, Labels.of("K", "V"), 555),
               LongPoint.create(startTime, firstCollect, Labels.empty(), 33));
@@ -141,8 +131,7 @@ class LongUpDownCounterSdkTest {
       metricDataList = longUpDownCounter.collectAll();
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
-      assertThat(metricData.getPoints()).hasSize(2);
-      assertThat(metricData.getPoints())
+      assertThat(metricData.getLongSumData().getPoints())
           .containsExactly(
               LongPoint.create(startTime, secondCollect, Labels.of("K", "V"), 777),
               LongPoint.create(startTime, secondCollect, Labels.empty(), 44));
@@ -205,7 +194,7 @@ class LongUpDownCounterSdkTest {
     stressTestBuilder.build().run();
     List<MetricData> metricDataList = longUpDownCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getPoints())
+    assertThat(metricDataList.get(0).getLongSumData().getPoints())
         .containsExactly(
             LongPoint.create(testClock.now(), testClock.now(), Labels.of("K", "V"), 160_000));
   }
@@ -236,7 +225,7 @@ class LongUpDownCounterSdkTest {
     stressTestBuilder.build().run();
     List<MetricData> metricDataList = longUpDownCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getPoints())
+    assertThat(metricDataList.get(0).getLongSumData().getPoints())
         .containsExactly(
             LongPoint.create(
                 testClock.now(), testClock.now(), Labels.of(keys[0], values[0]), 20_000),

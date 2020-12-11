@@ -62,15 +62,7 @@ class DoubleUpDownCounterSdkTest {
             .setUnit("ms")
             .build();
     List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
-    assertThat(metricDataList).hasSize(1);
-    MetricData metricData = metricDataList.get(0);
-    assertThat(metricData.getName()).isEqualTo("testUpDownCounter");
-    assertThat(metricData.getDescription()).isEqualTo("My very own counter");
-    assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.NON_MONOTONIC_DOUBLE_SUM);
-    assertThat(metricData.getResource()).isEqualTo(RESOURCE);
-    assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(metricData.getPoints()).isEmpty();
+    assertThat(metricDataList).isEmpty();
   }
 
   @Test
@@ -84,10 +76,9 @@ class DoubleUpDownCounterSdkTest {
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(metricData.getPoints()).hasSize(1);
     // TODO: This is not perfect because we compare double values using direct equal, maybe worth
     //  changing to do a proper comparison for double values, here and everywhere else.
-    assertThat(metricData.getPoints())
+    assertThat(metricData.getDoubleSumData().getPoints())
         .containsExactly(
             DoublePoint.create(
                 testClock.now() - SECOND_NANOS, testClock.now(), Labels.empty(), 12.1d));
@@ -129,8 +120,7 @@ class DoubleUpDownCounterSdkTest {
       List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
-      assertThat(metricData.getPoints()).hasSize(2);
-      assertThat(metricData.getPoints())
+      assertThat(metricData.getDoubleSumData().getPoints())
           .containsExactly(
               DoublePoint.create(startTime, firstCollect, Labels.of("K", "V"), 555.9d),
               DoublePoint.create(startTime, firstCollect, Labels.empty(), 33.5d));
@@ -144,8 +134,7 @@ class DoubleUpDownCounterSdkTest {
       metricDataList = doubleUpDownCounter.collectAll();
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
-      assertThat(metricData.getPoints()).hasSize(2);
-      assertThat(metricData.getPoints())
+      assertThat(metricData.getDoubleSumData().getPoints())
           .containsExactly(
               DoublePoint.create(startTime, secondCollect, Labels.of("K", "V"), 777.9d),
               DoublePoint.create(startTime, secondCollect, Labels.empty(), 44.5d));
@@ -209,7 +198,7 @@ class DoubleUpDownCounterSdkTest {
     stressTestBuilder.build().run();
     List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getPoints())
+    assertThat(metricDataList.get(0).getDoubleSumData().getPoints())
         .containsExactly(
             DoublePoint.create(testClock.now(), testClock.now(), Labels.of("K", "V"), 80_000));
   }
@@ -240,7 +229,7 @@ class DoubleUpDownCounterSdkTest {
     stressTestBuilder.build().run();
     List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getPoints())
+    assertThat(metricDataList.get(0).getDoubleSumData().getPoints())
         .containsExactly(
             DoublePoint.create(
                 testClock.now(), testClock.now(), Labels.of(keys[0], values[0]), 40_000),

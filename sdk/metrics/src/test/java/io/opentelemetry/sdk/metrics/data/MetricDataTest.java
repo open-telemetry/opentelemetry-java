@@ -5,15 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -36,8 +34,8 @@ class MetricDataTest {
           START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), LONG_VALUE);
   private static final DoublePoint DOUBLE_POINT =
       DoublePoint.create(START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), DOUBLE_VALUE);
-  private static final SummaryPoint SUMMARY_POINT =
-      SummaryPoint.create(
+  private static final DoubleSummaryPoint SUMMARY_POINT =
+      MetricData.DoubleSummaryPoint.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
           Labels.of("key", "value"),
@@ -48,120 +46,23 @@ class MetricDataTest {
               ValueAtPercentile.create(100, DOUBLE_VALUE)));
 
   @Test
-  void metricData_NullInstrumentationLibraryInfo() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            MetricData.create(
-                Resource.getEmpty(),
-                null,
-                "metric_name",
-                "metric_description",
-                "ms",
-                MetricData.Type.LONG_SUM,
-                singletonList(DOUBLE_POINT)),
-        "instrumentationLibraryInfo");
-  }
-
-  @Test
-  void metricData_NullName() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            MetricData.create(
-                Resource.getEmpty(),
-                InstrumentationLibraryInfo.getEmpty(),
-                null,
-                "metric_description",
-                "ms",
-                MetricData.Type.LONG_SUM,
-                singletonList(DOUBLE_POINT)),
-        "name");
-  }
-
-  @Test
-  void metricData_NullDescription() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            MetricData.create(
-                Resource.getEmpty(),
-                InstrumentationLibraryInfo.getEmpty(),
-                "metric_name",
-                null,
-                "ms",
-                MetricData.Type.LONG_SUM,
-                singletonList(DOUBLE_POINT)),
-        "description");
-  }
-
-  @Test
-  void metricData_NullUnit() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            MetricData.create(
-                Resource.getEmpty(),
-                InstrumentationLibraryInfo.getEmpty(),
-                "metric_name",
-                "metric_description",
-                null,
-                MetricData.Type.LONG_SUM,
-                singletonList(DOUBLE_POINT)),
-        "unit");
-  }
-
-  @Test
-  void metricData_NullType() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            MetricData.create(
-                Resource.getEmpty(),
-                InstrumentationLibraryInfo.getEmpty(),
-                "metric_name",
-                "metric_description",
-                "ms",
-                null,
-                singletonList(DOUBLE_POINT)),
-        "type");
-  }
-
-  @Test
-  void metricData_NullPoints() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            MetricData.create(
-                Resource.getEmpty(),
-                InstrumentationLibraryInfo.getEmpty(),
-                "metric_name",
-                "metric_description",
-                "ms",
-                MetricData.Type.LONG_SUM,
-                null),
-        "points");
-  }
-
-  @Test
   void metricData_Getters() {
     MetricData metricData =
-        MetricData.create(
+        MetricData.createDoubleGauge(
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.Type.LONG_SUM,
-            Collections.emptyList());
+            MetricData.DoubleGaugeData.create(Collections.emptyList()));
     assertThat(metricData.getName()).isEqualTo("metric_name");
     assertThat(metricData.getDescription()).isEqualTo("metric_description");
     assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_SUM);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.DOUBLE_GAUGE);
     assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
     assertThat(metricData.getInstrumentationLibraryInfo())
         .isEqualTo(InstrumentationLibraryInfo.getEmpty());
-    assertThat(metricData.getPoints()).isEmpty();
+    assertThat(metricData.isEmpty()).isTrue();
   }
 
   @Test
@@ -172,15 +73,60 @@ class MetricDataTest {
     assertThat(LONG_POINT.getLabels().get("key")).isEqualTo("value");
     assertThat(LONG_POINT.getValue()).isEqualTo(LONG_VALUE);
     MetricData metricData =
-        MetricData.create(
+        MetricData.createLongGauge(
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.Type.LONG_SUM,
-            Collections.singletonList(LONG_POINT));
-    assertThat(metricData.getPoints()).containsExactly(LONG_POINT);
+            MetricData.LongGaugeData.create(Collections.singletonList(LONG_POINT)));
+    assertThat(metricData.isEmpty()).isFalse();
+    assertThat(metricData.getLongGaugeData().getPoints()).containsExactly(LONG_POINT);
+    metricData =
+        MetricData.createLongSum(
+            Resource.getEmpty(),
+            InstrumentationLibraryInfo.getEmpty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            MetricData.LongSumData.create(
+                /* isMonotonic= */ false,
+                MetricData.AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(DOUBLE_POINT)));
+    assertThat(metricData.isEmpty()).isFalse();
+    assertThat(metricData.getLongSumData().getPoints()).containsExactly(DOUBLE_POINT);
+  }
+
+  @Test
+  void metricData_DoublePoints() {
+    assertThat(DOUBLE_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+    assertThat(DOUBLE_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
+    assertThat(DOUBLE_POINT.getLabels().size()).isEqualTo(1);
+    assertThat(DOUBLE_POINT.getLabels().get("key")).isEqualTo("value");
+    assertThat(DOUBLE_POINT.getValue()).isEqualTo(DOUBLE_VALUE);
+    MetricData metricData =
+        MetricData.createDoubleGauge(
+            Resource.getEmpty(),
+            InstrumentationLibraryInfo.getEmpty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            MetricData.DoubleGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
+    assertThat(metricData.isEmpty()).isFalse();
+    assertThat(metricData.getDoubleGaugeData().getPoints()).containsExactly(DOUBLE_POINT);
+    metricData =
+        MetricData.createDoubleSum(
+            Resource.getEmpty(),
+            InstrumentationLibraryInfo.getEmpty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            MetricData.DoubleSumData.create(
+                /* isMonotonic= */ false,
+                MetricData.AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(DOUBLE_POINT)));
+    assertThat(metricData.isEmpty()).isFalse();
+    assertThat(metricData.getDoubleSumData().getPoints()).containsExactly(DOUBLE_POINT);
   }
 
   @Test
@@ -194,33 +140,44 @@ class MetricDataTest {
     assertThat(SUMMARY_POINT.getPercentileValues())
         .isEqualTo(Arrays.asList(MINIMUM_VALUE, MAXIMUM_VALUE));
     MetricData metricData =
-        MetricData.create(
+        MetricData.createDoubleSummary(
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
-            Collections.singletonList(SUMMARY_POINT));
-    assertThat(metricData.getPoints()).containsExactly(SUMMARY_POINT);
+            MetricData.DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
+    assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
   }
 
   @Test
-  void metricData_DoublePoints() {
-    assertThat(DOUBLE_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
-    assertThat(DOUBLE_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
-    assertThat(DOUBLE_POINT.getLabels().size()).isEqualTo(1);
-    assertThat(DOUBLE_POINT.getLabels().get("key")).isEqualTo("value");
-    assertThat(DOUBLE_POINT.getValue()).isEqualTo(DOUBLE_VALUE);
+  void metricData_GetDefault() {
     MetricData metricData =
-        MetricData.create(
+        MetricData.createDoubleSummary(
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
-            Collections.singletonList(DOUBLE_POINT));
-    assertThat(metricData.getPoints()).containsExactly(DOUBLE_POINT);
+            MetricData.DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
+    assertThat(metricData.getDoubleGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
+    assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
+
+    metricData =
+        MetricData.createDoubleGauge(
+            Resource.getEmpty(),
+            InstrumentationLibraryInfo.getEmpty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            MetricData.DoubleGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
+    assertThat(metricData.getDoubleGaugeData().getPoints()).containsExactly(DOUBLE_POINT);
+    assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
+    assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getDoubleSummaryData().getPoints()).isEmpty();
   }
 }

@@ -7,9 +7,11 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.Instrument;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -19,6 +21,73 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class MetricData {
+  private static final DoubleGaugeData DEFAULT_DOUBLE_GAUGE_DATA =
+      DoubleGaugeData.create(Collections.emptyList());
+  private static final LongGaugeData DEFAULT_LONG_GAUGE_DATA =
+      LongGaugeData.create(Collections.emptyList());
+  private static final DoubleSumData DEFAULT_DOUBLE_SUM_DATA =
+      DoubleSumData.create(
+          /* isMonotonic= */ false, AggregationTemporality.CUMULATIVE, Collections.emptyList());
+  private static final LongSumData DEFAULT_LONG_SUM_DATA =
+      LongSumData.create(
+          /* isMonotonic= */ false, AggregationTemporality.CUMULATIVE, Collections.emptyList());
+  private static final DoubleSummaryData DEFAULT_DOUBLE_SUMMARY_DATA =
+      DoubleSummaryData.create(Collections.emptyList());
+
+  public static MetricData createDoubleGauge(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      DoubleGaugeData data) {
+    return new AutoValue_MetricData(
+        resource, instrumentationLibraryInfo, name, description, unit, Type.DOUBLE_GAUGE, data);
+  }
+
+  public static MetricData createLongGauge(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      LongGaugeData data) {
+    return new AutoValue_MetricData(
+        resource, instrumentationLibraryInfo, name, description, unit, Type.LONG_GAUGE, data);
+  }
+
+  public static MetricData createDoubleSum(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      DoubleSumData data) {
+    return new AutoValue_MetricData(
+        resource, instrumentationLibraryInfo, name, description, unit, Type.DOUBLE_SUM, data);
+  }
+
+  public static MetricData createLongSum(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      LongSumData data) {
+    return new AutoValue_MetricData(
+        resource, instrumentationLibraryInfo, name, description, unit, Type.LONG_SUM, data);
+  }
+
+  public static MetricData createDoubleSummary(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      DoubleSummaryData data) {
+    return new AutoValue_MetricData(
+        resource, instrumentationLibraryInfo, name, description, unit, Type.SUMMARY, data);
+  }
 
   MetricData() {}
 
@@ -36,16 +105,10 @@ public abstract class MetricData {
      */
     DOUBLE_GAUGE,
 
-    /** A sum of long (int64) values. Reports {@link LongPoint} points. */
-    NON_MONOTONIC_LONG_SUM,
-
-    /** A sum of double values. Reports {@link DoublePoint} points. */
-    NON_MONOTONIC_DOUBLE_SUM,
-
-    /** A sum of non negative long (int64) values. Reports {@link LongPoint} points. */
+    /** A sum of non negative long (int64) values. Reports {@link LongSumData} data. */
     LONG_SUM,
 
-    /** A sum of non negative double values. Reports {@link DoublePoint} points. */
+    /** A sum of non negative double values. Reports {@link DoubleSumData} data. */
     DOUBLE_SUM,
 
     /**
@@ -54,6 +117,14 @@ public abstract class MetricData {
      * recorded.
      */
     SUMMARY,
+  }
+
+  /** An enumeration which describes the time period over which metrics should be aggregated. */
+  public enum AggregationTemporality {
+    /** Metrics will be aggregated only over the most recent collection interval. */
+    DELTA,
+    /** Metrics will be aggregated over the lifetime of the associated {@link Instrument}. */
+    CUMULATIVE
   }
 
   /**
@@ -99,26 +170,182 @@ public abstract class MetricData {
    */
   public abstract Type getType();
 
-  /**
-   * Returns the data {@link Point}s for this metric.
-   *
-   * <p>Only one type of points are available at any moment for a {@link MetricData}, and the type
-   * is determined by the {@link Type}.
-   *
-   * @return the data {@link Point}s for this metric, or empty {@code Collection} if no points.
-   */
-  public abstract Collection<Point> getPoints();
+  abstract Data getData();
 
-  public static MetricData create(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      String name,
-      String description,
-      String unit,
-      Type type,
-      Collection<Point> points) {
-    return new AutoValue_MetricData(
-        resource, instrumentationLibraryInfo, name, description, unit, type, points);
+  /**
+   * Returns {@code true} if there are no points associated with this metric.
+   *
+   * @return {@code true} if there are no points associated with this metric.
+   */
+  public boolean isEmpty() {
+    return getData().getPoints().isEmpty();
+  }
+
+  /**
+   * Returns the {@code DoubleGaugeData} if type is {@link Type#DOUBLE_GAUGE}, otherwise a default
+   * empty data.
+   *
+   * @return the {@code DoubleGaugeData} if type is {@link Type#DOUBLE_GAUGE}, otherwise a default
+   *     empty data.
+   */
+  public final DoubleGaugeData getDoubleGaugeData() {
+    if (getType() == Type.DOUBLE_GAUGE) {
+      return (DoubleGaugeData) getData();
+    }
+    return DEFAULT_DOUBLE_GAUGE_DATA;
+  }
+
+  /**
+   * Returns the {@code LongGaugeData} if type is {@link Type#LONG_GAUGE}, otherwise a default empty
+   * data.
+   *
+   * @return the {@code LongGaugeData} if type is {@link Type#LONG_GAUGE}, otherwise a default empty
+   *     data.
+   */
+  public final LongGaugeData getLongGaugeData() {
+    if (getType() == Type.LONG_GAUGE) {
+      return (LongGaugeData) getData();
+    }
+    return DEFAULT_LONG_GAUGE_DATA;
+  }
+
+  /**
+   * Returns the {@code DoubleSumData} if type is {@link Type#DOUBLE_SUM}, otherwise a default empty
+   * data.
+   *
+   * @return the {@code DoubleSumData} if type is {@link Type#DOUBLE_SUM}, otherwise a default empty
+   *     data.
+   */
+  public final DoubleSumData getDoubleSumData() {
+    if (getType() == Type.DOUBLE_SUM) {
+      return (DoubleSumData) getData();
+    }
+    return DEFAULT_DOUBLE_SUM_DATA;
+  }
+
+  /**
+   * Returns the {@code LongSumData} if type is {@link Type#LONG_SUM}, otherwise a default empty
+   * data.
+   *
+   * @return the {@code LongSumData} if type is {@link Type#LONG_SUM}, otherwise a default empty
+   *     data.
+   */
+  public final LongSumData getLongSumData() {
+    if (getType() == Type.LONG_SUM) {
+      return (LongSumData) getData();
+    }
+    return DEFAULT_LONG_SUM_DATA;
+  }
+
+  /**
+   * Returns the {@code DoubleSummaryData} if type is {@link Type#SUMMARY}, otherwise a default
+   * empty data.
+   *
+   * @return the {@code DoubleSummaryData} if type is {@link Type#SUMMARY}, otherwise a default *
+   *     empty data.
+   */
+  public final DoubleSummaryData getDoubleSummaryData() {
+    if (getType() == Type.SUMMARY) {
+      return (DoubleSummaryData) getData();
+    }
+    return DEFAULT_DOUBLE_SUMMARY_DATA;
+  }
+
+  @Immutable
+  abstract static class Data {
+    /**
+     * Returns the data {@link Point}s for this metric.
+     *
+     * @return the data {@link Point}s for this metric, or empty {@code Collection} if no points.
+     */
+    public abstract Collection<Point> getPoints();
+  }
+
+  @Immutable
+  @AutoValue
+  // TODO: Change to use DoublePoint.
+  public abstract static class DoubleGaugeData extends Data {
+    public static DoubleGaugeData create(List<Point> points) {
+      return new AutoValue_MetricData_DoubleGaugeData(points);
+    }
+
+    @Override
+    public abstract Collection<Point> getPoints();
+  }
+
+  @Immutable
+  @AutoValue
+  // TODO: Change to use LongPoint.
+  public abstract static class LongGaugeData extends Data {
+    public static LongGaugeData create(List<Point> points) {
+      return new AutoValue_MetricData_LongGaugeData(points);
+    }
+
+    @Override
+    public abstract Collection<Point> getPoints();
+  }
+
+  @Immutable
+  abstract static class SumData extends Data {
+    /**
+     * Returns "true" if the sum is monotonic.
+     *
+     * @return "true" if the sum is monotonic
+     */
+    public abstract boolean isMonotonic();
+
+    /**
+     * Returns the {@code AggregationTemporality} of this metric,
+     *
+     * <p>AggregationTemporality describes if the aggregator reports delta changes since last report
+     * time, or cumulative changes since a fixed start time.
+     *
+     * @return the {@code AggregationTemporality} of this metric
+     */
+    public abstract AggregationTemporality getAggregationTemporality();
+  }
+
+  @Immutable
+  @AutoValue
+  // TODO: Change to use DoublePoint.
+  public abstract static class DoubleSumData extends SumData {
+    public static DoubleSumData create(
+        boolean isMonotonic, AggregationTemporality temporality, Collection<Point> points) {
+      return new AutoValue_MetricData_DoubleSumData(isMonotonic, temporality, points);
+    }
+
+    @Override
+    public abstract Collection<Point> getPoints();
+  }
+
+  @Immutable
+  @AutoValue
+  // TODO: Change to use LongPoint.
+  public abstract static class LongSumData extends SumData {
+    public static LongSumData create(
+        boolean isMonotonic, AggregationTemporality temporality, Collection<Point> points) {
+      return new AutoValue_MetricData_LongSumData(isMonotonic, temporality, points);
+    }
+
+    @Override
+    public abstract Collection<Point> getPoints();
+  }
+
+  @Immutable
+  @AutoValue
+  // TODO: Change to use DoubleSummaryPoint.
+  public abstract static class DoubleSummaryData extends Data {
+    public static DoubleSummaryData create(Collection<Point> points) {
+      return new AutoValue_MetricData_DoubleSummaryData(points);
+    }
+
+    @Override
+    public abstract Collection<Point> getPoints();
+  }
+
+  /** This method will be removed soon. */
+  public Collection<Point> getPoints() {
+    return getData().getPoints();
   }
 
   @Immutable
@@ -204,9 +431,9 @@ public abstract class MetricData {
    */
   @Immutable
   @AutoValue
-  public abstract static class SummaryPoint extends Point {
+  public abstract static class DoubleSummaryPoint extends Point {
 
-    SummaryPoint() {}
+    DoubleSummaryPoint() {}
 
     /**
      * The number of values that are being summarized.
@@ -230,14 +457,14 @@ public abstract class MetricData {
      */
     public abstract List<ValueAtPercentile> getPercentileValues();
 
-    public static SummaryPoint create(
+    public static DoubleSummaryPoint create(
         long startEpochNanos,
         long epochNanos,
         Labels labels,
         long count,
         double sum,
         List<ValueAtPercentile> percentileValues) {
-      return new AutoValue_MetricData_SummaryPoint(
+      return new AutoValue_MetricData_DoubleSummaryPoint(
           startEpochNanos, epochNanos, labels, count, sum, percentileValues);
     }
   }

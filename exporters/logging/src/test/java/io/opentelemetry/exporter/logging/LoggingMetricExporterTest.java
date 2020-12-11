@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -51,46 +50,53 @@ class LoggingMetricExporterTest {
         InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
     exporter.export(
         Arrays.asList(
-            MetricData.create(
+            MetricData.createDoubleSummary(
                 resource,
                 instrumentationLibraryInfo,
                 "measureOne",
                 "A summarized test measure",
                 "ms",
-                MetricData.Type.SUMMARY,
-                Collections.singletonList(
-                    SummaryPoint.create(
-                        nowEpochNanos,
-                        nowEpochNanos + 245,
-                        Labels.of("a", "b", "c", "d"),
-                        1010,
-                        50000,
-                        Arrays.asList(
-                            ValueAtPercentile.create(0.0, 25),
-                            ValueAtPercentile.create(100.0, 433))))),
-            MetricData.create(
+                MetricData.DoubleSummaryData.create(
+                    Collections.singletonList(
+                        MetricData.DoubleSummaryPoint.create(
+                            nowEpochNanos,
+                            nowEpochNanos + 245,
+                            Labels.of("a", "b", "c", "d"),
+                            1010,
+                            50000,
+                            Arrays.asList(
+                                ValueAtPercentile.create(0.0, 25),
+                                ValueAtPercentile.create(100.0, 433)))))),
+            MetricData.createLongSum(
                 resource,
                 instrumentationLibraryInfo,
                 "counterOne",
                 "A simple counter",
                 "one",
-                MetricData.Type.LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(
-                        nowEpochNanos, nowEpochNanos + 245, Labels.of("z", "y", "x", "w"), 1010))),
-            MetricData.create(
+                MetricData.LongSumData.create(
+                    true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(
+                            nowEpochNanos,
+                            nowEpochNanos + 245,
+                            Labels.of("z", "y", "x", "w"),
+                            1010)))),
+            MetricData.createDoubleSum(
                 resource,
                 instrumentationLibraryInfo,
                 "observedValue",
                 "an observer gauge",
                 "kb",
-                MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
-                Collections.singletonList(
-                    DoublePoint.create(
-                        nowEpochNanos,
-                        nowEpochNanos + 245,
-                        Labels.of("1", "2", "3", "4"),
-                        33.7767)))));
+                MetricData.DoubleSumData.create(
+                    true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        DoublePoint.create(
+                            nowEpochNanos,
+                            nowEpochNanos + 245,
+                            Labels.of("1", "2", "3", "4"),
+                            33.7767))))));
   }
 
   @Test

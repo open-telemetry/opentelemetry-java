@@ -71,8 +71,8 @@ public class MetricInteroperabilityTest {
     assertThat(metric.getDescription()).isEqualTo("The sum of the task latencies.");
     assertThat(metric.getUnit()).isEqualTo("ms");
     assertThat(metric.getType()).isEqualTo(MetricData.Type.LONG_SUM);
-    assertThat(metric.getPoints().size()).isEqualTo(1);
-    Point point = metric.getPoints().iterator().next();
+    assertThat(metric.getLongSumData().getPoints().size()).isEqualTo(1);
+    Point point = metric.getLongSumData().getPoints().iterator().next();
     assertThat(((LongPoint) point).getValue()).isEqualTo(50);
     assertThat(point.getLabels().size()).isEqualTo(1);
     assertThat(point.getLabels().get(tagKey.getName())).isEqualTo(tagValue.asString());

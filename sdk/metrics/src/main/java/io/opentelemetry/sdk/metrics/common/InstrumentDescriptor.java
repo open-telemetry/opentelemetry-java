@@ -3,18 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.common;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import javax.annotation.concurrent.Immutable;
 
 @AutoValue
 @Immutable
-abstract class InstrumentDescriptor {
-  static InstrumentDescriptor create(
+public abstract class InstrumentDescriptor {
+  public static InstrumentDescriptor create(
       String name,
       String description,
       String unit,
@@ -23,15 +21,15 @@ abstract class InstrumentDescriptor {
     return new AutoValue_InstrumentDescriptor(name, description, unit, type, valueType);
   }
 
-  abstract String getName();
+  public abstract String getName();
 
-  abstract String getDescription();
+  public abstract String getDescription();
 
-  abstract String getUnit();
+  public abstract String getUnit();
 
-  abstract InstrumentType getType();
+  public abstract InstrumentType getType();
 
-  abstract InstrumentValueType getValueType();
+  public abstract InstrumentValueType getValueType();
 
   @Memoized
   @Override

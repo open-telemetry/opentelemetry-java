@@ -40,16 +40,7 @@ class DoubleSumObserverSdkTest {
             .setDescription("My own DoubleSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(doubleSumObserver.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own DoubleSumObserver",
-                "ms",
-                MetricData.Type.DOUBLE_SUM,
-                Collections.emptyList()));
+    assertThat(doubleSumObserver.collectAll()).isEmpty();
   }
 
   @Test
@@ -61,16 +52,7 @@ class DoubleSumObserverSdkTest {
             .setUnit("ms")
             .setUpdater(result -> {})
             .build();
-    assertThat(doubleSumObserver.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own DoubleSumObserver",
-                "ms",
-                MetricData.Type.DOUBLE_SUM,
-                Collections.emptyList()));
+    assertThat(doubleSumObserver.collectAll()).isEmpty();
   }
 
   @Test
@@ -78,39 +60,45 @@ class DoubleSumObserverSdkTest {
     DoubleSumObserverSdk doubleSumObserver =
         testSdk
             .doubleSumObserverBuilder("testObserver")
+            .setDescription("My own DoubleSumObserver")
+            .setUnit("ms")
             .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleSumObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
-                "",
-                "1",
-                MetricData.Type.DOUBLE_SUM,
-                Collections.singletonList(
-                    DoublePoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12.1d))));
+                "My own DoubleSumObserver",
+                "ms",
+                MetricData.DoubleSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        DoublePoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12.1d)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleSumObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
-                "",
-                "1",
-                MetricData.Type.DOUBLE_SUM,
-                Collections.singletonList(
-                    DoublePoint.create(
-                        testClock.now() - 2 * SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12.1d))));
+                "My own DoubleSumObserver",
+                "ms",
+                MetricData.DoubleSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        DoublePoint.create(
+                            testClock.now() - 2 * SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12.1d)))));
   }
 }

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -17,16 +19,16 @@ import java.util.regex.Pattern;
 class AggregationChooser {
   private static final AggregationConfiguration CUMULATIVE_SUM =
       AggregationConfiguration.create(
-          Aggregations.sum(), AggregationConfiguration.Temporality.CUMULATIVE);
+          Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_SUMMARY =
       AggregationConfiguration.create(
-          Aggregations.minMaxSumCount(), AggregationConfiguration.Temporality.DELTA);
+          Aggregations.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
   private static final AggregationConfiguration CUMULATIVE_LAST_VALUE =
       AggregationConfiguration.create(
-          Aggregations.lastValue(), AggregationConfiguration.Temporality.CUMULATIVE);
+          Aggregations.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_LAST_VALUE =
       AggregationConfiguration.create(
-          Aggregations.lastValue(), AggregationConfiguration.Temporality.DELTA);
+          Aggregations.lastValue(), MetricData.AggregationTemporality.DELTA);
 
   private final Map<InstrumentSelector, AggregationConfiguration> configuration =
       new ConcurrentHashMap<>();
