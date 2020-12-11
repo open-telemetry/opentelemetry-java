@@ -131,7 +131,7 @@ of the SDK and to let the SDK manage shared components - it is not possible to c
 `Resource` for tracing and metrics, something that would be a gotcha. Exporters are handled natively
 given they are so important - even though the exporters are specified before span processors, they
 will always be executed last to make sure all span processors appy to them. The exporter builders
-inherit from a `ExporterBuilder` type of abstract class - it takes cafe of batching configuration to
+inherit from a `ExporterBuilder` type of abstract class - it takes care of batching configuration to
 avoid having to understand separate concepts like `BatchSpanProcessor`. Exporters that don't support
 batching at all, like the custom `FullyAsyncZipkinExporter` don't have to. Note this can be
 similarly achieved by having wrappers like `BatchExporter.wrap(OtlpGrpcSpanExporter.builder()...`
@@ -196,7 +196,7 @@ public class OpenTelemetryModule {
   }
   
   @Bean
-  public MeterProvider tracerProvider(OpenTelemetry openTelemetry) {
+  public MeterProvider meterProvider(OpenTelemetry openTelemetry) {
     return openTelemetry.getMeterProvider();
   }
   
