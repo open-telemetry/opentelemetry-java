@@ -25,7 +25,6 @@ package io.opentelemetry.opencensusshim;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.opentelemetry.opencensusshim.SpanConverter.mapKind;
 
-import io.opencensus.common.Clock;
 import io.opencensus.implcore.trace.internal.RandomHandler;
 import io.opencensus.trace.Sampler;
 import io.opencensus.trace.Span;
@@ -45,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
@@ -138,11 +136,9 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
 
     // If sampled
     io.opentelemetry.api.trace.SpanBuilder otelSpanBuilder =
-        OTEL_TRACER
-            .spanBuilder(name)
-            .setStartTimestamp(options.clock.nowNanos(), TimeUnit.NANOSECONDS);
+        OTEL_TRACER.spanBuilder(name);
     if (ocParent != null && ocParent instanceof OpenTelemetrySpanImpl) {
-      otelSpanBuilder.setParent(Context.root().with((OpenTelemetrySpanImpl) ocParent));
+      otelSpanBuilder.setParent(Context.current().with((OpenTelemetrySpanImpl) ocParent));
     }
     if (ocRemoteParentSpanContext != null) {
       otelSpanBuilder.addLink(SpanConverter.mapSpanContext(ocRemoteParentSpanContext));
@@ -217,12 +213,10 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
 
   static final class Options {
     private final RandomHandler randomHandler;
-    private final Clock clock;
     private final TraceConfig traceConfig;
 
-    Options(RandomHandler randomHandler, Clock clock, TraceConfig traceConfig) {
+    Options(RandomHandler randomHandler, TraceConfig traceConfig) {
       this.randomHandler = checkNotNull(randomHandler, "randomHandler");
-      this.clock = checkNotNull(clock, "clock");
       this.traceConfig = checkNotNull(traceConfig, "traceConfig");
     }
   }

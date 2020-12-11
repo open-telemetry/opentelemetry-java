@@ -22,7 +22,6 @@
 
 package io.opentelemetry.opencensusshim;
 
-import io.opencensus.common.Clock;
 import io.opencensus.implcore.trace.internal.RandomHandler;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanBuilder;
@@ -36,8 +35,8 @@ class OpenTelemetryTracerImpl extends Tracer {
   private final OpenTelemetrySpanBuilderImpl.Options spanBuilderOptions;
 
   public OpenTelemetryTracerImpl(
-      RandomHandler randomHandler, Clock clock, TraceConfig traceConfig) {
-    spanBuilderOptions = new Options(randomHandler, clock, traceConfig);
+      RandomHandler randomHandler, TraceConfig traceConfig) {
+    spanBuilderOptions = new Options(randomHandler, traceConfig);
   }
 
   @Override

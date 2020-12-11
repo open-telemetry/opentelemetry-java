@@ -32,7 +32,7 @@ public final class OpenTelemetryTraceComponentImpl extends TraceComponent {
   public OpenTelemetryTraceComponentImpl() {
     clock = MillisClock.getInstance();
     RandomHandler randomHandler = new ThreadLocalRandomHandler();
-    tracer = new OpenTelemetryTracerImpl(randomHandler, clock, traceConfig);
+    tracer = new OpenTelemetryTracerImpl(randomHandler, traceConfig);
   }
 
   @Override
