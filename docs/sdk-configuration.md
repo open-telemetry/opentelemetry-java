@@ -353,8 +353,8 @@ developers to only use it.
 However, there are corner cases where an instance cannot be injected. The famous example is MySQL -
 MySQL interceptors are initialized by calling a default constructor, and there is no way to pass a
 built instance of a signal provider. For this case, we must store an SDK instance into a global
-variable. To reduce gotchas for application developers, the first SDK that is instantiated is stored
-automatically in the global variable.
+variable. It is expected that frameworks or end-users will set the SDK as the global to support
+instrumentation that requires this.
 
 Before an SDK has been set, access to the global SDK will throw an exception and will not return a
 default. The global can only be used after an SDK has been configured. SDKs must be configured early
