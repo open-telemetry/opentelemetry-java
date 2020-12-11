@@ -72,21 +72,49 @@ In Java, the builder pattern is common for configuring instances. Let's look at 
 like. The simplest configuration will be when a user wants to get a default experience, exporting
 with a specific exporter to an endpoint.
 
+The SDK builder will simply allow accept its components as builder parameters. It only allows
+setting SDK implementations and is not meant for use with partial SDKs.
+
 ```java
-OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
-  .addSpanExporter(OtlpGrpcSpanExporter.builder()
-    .setEndpoint("spans-service:4317")
-    .build())
-  .addMetricExposition(PrometheusExposition.getDefault())
-  .build();
+class OpenTelemetrySdkBuilder {
+  public OpenTelemetrySdkBuilder setTracerProvider(TracerSdkProvider tracerProvider);
+  public OpenTelemetrySdkBuilder setMeterProvider(MeterSdkProvider meterProvider);
+  public OpenTelemetrySdk build();
+}
+```
+
+A very simple configuration may look like this.
+
+```java
+class HelloWorld {
+    public static void main(String[] args) {
+        TracerSdkProvider tracerProvider = TracerSdkProvider.builder()
+          .addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder())
+              .setEndpoint("spans-service:4317")
+              .build())
+          .build();
+        
+        MeterSdkProvider meterProvider = MeterSdkProvider.builder().build();
+        IntervalMetricReader.builder()
+          .setMetricProducers(meterProvider.getMetricProducer())
+          .setMetricExporter(PrometheusMetricServer.create())
+          .build();
+        
+        OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
+          .addPropagator(W3CHttpTraceContextPropagator.getInstance())
+          .setTracerProvider(tracerProvider)
+          .setMeterProvider(meterProvider)
+          .build();
+   }
+}
 ```
 
 This
 
 - Exports spans using OTLP to `spans-service`
-  - Uses the BatchSpanProcessor (or a batching exporter wraper) which we consider the best default 
-  for exporting. It has defaults for queue size, timeout, etc
+  - Uses the BatchSpanProcessor. Future work is to make configuring this more intuitive
 - Exposes metrics using Prometheus format
+  - Future work is to make configuring this more intuitive
 - Uses ParentBased(AlwaysOn) sampler
 - Uses standard random IDs
 - Uses a default Resource which simply consists of the SDK (or any other resources we decide to)
@@ -94,6 +122,7 @@ include in the core SDK, not extensions
 - Uses the default Clock, which uses Java 8 / 9+ optimized APIs for getting time
   - The only real reason a user would set this is for unit tests, not for production
 - Enforces default numeric limits related to number of attribute, etc
+- Enables single w3c propagator
 
 Because the exporting is often the only aspect an end user needs to configure, this is the simplest
 possible API for configuring the SDK.
@@ -101,47 +130,70 @@ possible API for configuring the SDK.
 Let's look at a more complicated example
 
 ```java
-OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
-  .setResource(Resource.getDefault().merge(CoolResource.getDefault()))
-  .setClock(AtomicClock.create())
-  .addPropatator(B3Propagator.getInstance())
-  .addPropagator(TracingVendorPropagator.getInstance())
-  .addSpanExporter(OtlpGrpcSpanExporter.builder()
-    .setEndpoint("spans-service:4317")
-    .setTimeout(Duration.ofSeconds(10))
-    .setBatchQueueSize(10000)
-    .build())
-  .addSpanExporter(ZipkinExporter.builder()
-    .setEndpoint("spans-service:4317")
-    .disableBatching()
-    .build())
-  .addSpanExporter(FullyAsyncZipkinExporter.create())
-  .addSpanProcessor(CustomAttributeAddingProcessor.create())
-  .addSpanProcessor(CustomEventAddingProcessor.create())
-  .setTraceSampler(Sampler.rateLimiting())
-  .setTraceLimits(TraceLimits.builder().setMaxAttributes(10).build())
-  .setIdGenerator(TimestampedIdGenerator.create())
-  .setMeterStuff(InProgressMetricsStuff.create())
-  .build()
+class HelloWorld {
+    public static void main(String[] args) {
+        Resource resource = Resource.getDefault().merge(CoolResource.getDefault());
+        Clock clock = AtomicClock.create();
+        TracerSdkProvider tracerProvider = TracerSdkProvider.builder()
+            .setResource(resource)
+            .setClock(clock)
+            .addSpanProcessor(CustomAttributeAddingProcessor.create())
+            .addSpanProcessor(CustomEventAddingProcessor.create())
+            .addSpanProcessor(BatchSpanProcessor.builder(
+                OtlpGrpcSpanExporter.builder()
+                    .setEndpoint("spans-service:4317")
+                    .setTimeout(Duration.ofSeconds(10))
+                    .setBatchQueueSize(10000)
+                    .build())
+                .build())
+            .addSpanProcessor(SimpleSpanProcessor.builder(
+                ZipkinExporter.builder()
+                    .setEndpoint("spans-service:4317")
+                    .build())
+                .build())
+            .setTraceSampler(Sampler.rateLimiting())
+            .setTraceLimits(TraceLimits.builder().setMaxAttributes(10).build())
+            .setIdGenerator(TimestampedIdGenerator.create())
+            .build();
+        
+        MeterSdkProvider meterProvider = MeterSdkProvider.builder()
+            .setResource(resource)
+            .setClock(clock)
+            .setMeterStuff(InProgressMetricsStuff.create())
+            .build();
+        IntervalMetricReader.builder()
+            .setMetricProducers(meterProvider.getMetricProducer())
+            .setMetricExporter(PrometheusMetricServer.create())
+            .build();
+        
+        OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
+            .addPropagator(W3CHttpTraceContextPropagator.getInstance())
+            .addPropagator(B3Propagator.getInstance())
+            .setTracerProvider(tracerProvider)
+            .setMeterProvider(meterProvider)
+            .build();
+ 
+        OpenTelemetrySdk openTelemetryForJaegerBackend = OpenTelemetrySdk.builder()
+           .addPropagator(JaegerPropagator.getInstance())
+           .setTracerProvider(tracerProvider)
+           .setMeterProvider(meterProvider)
+           .build();
+   }
+}
 ```
 
 This configures resource, clock, exporters, span processors, propagators, sampler, trace limits, and metrics.
-Everything is exposed on the `OpenTelemetrySdkBuilder` to provide discoverability of all the parts
-of the SDK and to let the SDK manage shared components - it is not possible to configure a different
-`Resource` for tracing and metrics, something that would be a gotcha. Exporters are handled natively
-given they are so important - even though the exporters are specified before span processors, they
-will always be executed last to make sure all span processors appy to them. The exporter builders
-inherit from a `ExporterBuilder` type of abstract class - it takes care of batching configuration to
-avoid having to understand separate concepts like `BatchSpanProcessor`. Exporters that don't support
-batching at all, like the custom `FullyAsyncZipkinExporter` don't have to. Note this can be
-similarly achieved by having wrappers like `BatchExporter.wrap(OtlpGrpcSpanExporter.builder()...`
-as well and is presented as one option.
+It configures two SDKs with different propagators. We unfortunately cannot achieve our goal of only
+setting a property once - `Resource` and `Clock` are shared among signals but configured repeatedly.
+An alternative is to flatten all settings onto `OpenTelemetrySdkBuilder` - this has a downside that
+it makes it very natural to create new tracer / meter providers for each configuration of the SDK,
+which could result in a lot of duplication of resources like threads, workers, TCP connections. So
+instead, this can make it clearer that those signals themselves are full-featured, and 
+`OpenTelemetry` is just a bag of signals.
 
-Note that parts can be separated to separate subconfig classes if it seems to make the API easier to
-use. We would want to avoid duplication though, e.g., having two configurations that expect a
-`Resource`.
+Keep in mind, reconfiguring `Clock` is expected to be an extremely uncommon operation.
 
-One thing to keep in mind is that it will be less common for an application developer to go this far
+Another thing to keep in mind is that it will be less common for an application developer to go this far
 and we can expect it is actually framework developers that use the full configuration capabilities
 of the SDK, likely by tying it to a separate configuration system.
 
@@ -163,53 +215,90 @@ Spring, Guice, Dagger, HK, and many more. They will all follow a very similar pa
 ```java
 @Component
 public class OpenTelemetryModule {
+    @Bean
+    public Resource resource() {
+        return Resource.getDefault().merge(CoolResource.getDefault());
+    }
+    
+    @Bean
+    public Clock otelClock() {
+        return AtomicClock.create();
+    }
+
+    @Bean
+    public TracerSdkProvider tracerProvider(Resource resource, Clock clock, MonitoringConfig config) {
+        return TracerSdkProvider.builder()
+            .setResource(resource)
+            .setClock(clock)
+            .addSpanProcessor(CustomAttributeAddingProcessor.create())
+            .addSpanProcessor(CustomEventAddingProcessor.create())
+            .addSpanProcessor(BatchSpanProcessor.builder(
+                OtlpGrpcSpanExporter.builder()
+                    .setEndpoint(config.getOtlpExporter().getEndpoint())
+                    .setTimeout(config.getOtlpExporter().getTimeout())
+                    .build())
+                .setBatchQueueSize(config.getOtlpExporter().getQueueSize())
+                .setTimeout(config.getOtlpExporter().getTimeout())
+                .build())
+            .addSpanProcessor(SimpleSpanProcessor.builder(
+                ZipkinExporter.builder()
+                    .setEndpoint(config.getZipkinExporter().getEndpoint())
+                    .build())
+                .build())
+            .setTraceSampler(config.getSamplingRate() != 0 
+               ? Sampler.rateLimiting(config.getSamplingRate()) : Sampler.getDefault())
+            .setTraceLimits(TraceLimits.builder().setMaxAttributes(config.getMaxSpanAttributes()).build())
+            .setIdGenerator(TimestampedIdGenerator.create())
+            .build();
+    }
   
-  @Bean
-  public OpenTelemetry openTelemetry(MonitoringConfig config) {
-    OpenTelemetrySdk.builder()
-      .setResource(Resource.getDefault().merge(CoolResource.getDefault()))
-      .setClock(AtomicClock.create())
-      .setPropagators(B3Propagator.getInstance())
-      .addSpanExporter(OtlpGrpcSpanExporter.builder()
-        .setEndpoint(config.getOtlpExporter().getEndpoint())
-        .setTimeout(config.getOtlpExporter().getTimeout())
-        .setBatchQueueSize(config.getOtlpExporter().getQueueSize())
-        .build())
-      .addSpanExporter(ZipkinExporter.builder()
-        .setEndpoint(config.getZipkinExporter().getEndpoint())
-        .disableBatching()
-        .build())
-      .addSpanExporter(FullyAsyncZipkinExporter.create())
-      .addSpanProcessor(CustomAttributeAddingProcessor.create())
-      .addSpanProcessor(CustomEventAddingProcessor.create())
-      .setTraceSampler(config.getSamplingRate() != 0 
-          ? Sampler.rateLimiting(config.getSamplingRate()) : Sampler.getDefault())
-      .setTraceLimits(TraceLimits.builder().setMaxAttributes(config.getMaxSpanAttributes()).build())
-      .setIdGenerator(TimestampedIdGenerator.create())
-      .setMeterStuff(InProgressMetricsStuff.create())
-      .build();
-  }
+    @Bean
+    public MeterSdkProvider meterProvider(Resource resource, Clock clock) {
+        return MeterSdkProvider.builder()
+            .setResource(resource)
+            .setClock(clock)
+            .setMeterStuff(InProgressMetricsStuff.create())
+            .build();
+    }
+
+    @Bean
+    public IntervalMetricReader metricReader(MeterSdkProvider meterProvider) {
+        return IntervalMetricReader.builder()
+            .addMetricProducer(meterProvider.getMetricProducer())
+            .addMetricExporter(PrometheusMetricServer.create())
+            .build();
+    }
+
+    @Bean
+    public OpenTelemetry openTelemetry(TracerSdkProvider tracerProvider, MeterSdkProvider meterProvider) {
+        return OpenTelemetrySdk.builder()
+           .addPropagator(W3CHttpTraceContextPropagator.getInstance())
+           .addPropagator(B3Propagator.getInstance())
+           .setTracerProvider(tracerProvider)
+           .setMeterProvider(meterProvider)
+           .build();
+    }
+
+    @Bean
+    @ForJaeger
+    public OpenTelemetry openTelemetryJaeger(TracerSdkProvider tracerProvider, MeterSdkProvider meterProvider) {
+        return OpenTelemetrySdk.builder()
+           .addPropagator(JaegerPropagator.getInstance())
+           .setTracerProvider(tracerProvider)
+           .setMeterProvider(meterProvider)
+           .build();
+    }
   
-  @Bean
-  public TracerProvider tracerProvider(OpenTelemetry openTelemetry) {
-    return openTelemetry.getTracerProvider();
-  }
-  
-  @Bean
-  public MeterProvider meterProvider(OpenTelemetry openTelemetry) {
-    return openTelemetry.getMeterProvider();
-  }
-  
-  @Bean
-  public AuthServiceStub authService(OpenTelemetry openTelemetry, AuthConfig config) {
-    return AuthServiceGrpc.newBlockingStub(ManagedChannelBuilder.forEndpoint(config.getEndpoint()))
-      .withInterceptor(TracingClientInterceptor.create(openTelemetry));
-  }
-  
-  @Bean
-  public ServletFilter servletFilter(OpenTelemetry openTelemetry) {
-    return TracingServletFilter.create(openTelemetry);
-  }
+    @Bean
+    public AuthServiceStub authService(@ForJaeger OpenTelemetry openTelemetry, AuthConfig config) {
+        return AuthServiceGrpc.newBlockingStub(ManagedChannelBuilder.forEndpoint(config.getEndpoint()))
+          .withInterceptor(TracingClientInterceptor.create(openTelemetry));
+    }
+    
+    @Bean
+    public ServletFilter servletFilter(OpenTelemetry openTelemetry) {
+        return TracingServletFilter.create(openTelemetry);
+    }
 }
 
 // Use some instrumented client
@@ -302,34 +391,34 @@ public class BatchExporter implements SpanExporter {
   
   @Override
   public void setOpenTelemetry(OpenTelemetry openTelemetry) {
-    tracer = openTelemetry.getTracerProvider().get("spanexporter");
+        tracer = openTelemetry.getTracerProvider().get("spanexporter");
   }
   
   @Override
   public void export() {
-    Tracer tracer = this.tracer;
-    if (tracer != null) {
-      tracer.spanBuilder("export").startSpan();
-    }
+        Tracer tracer = this.tracer;
+        if (tracer != null) {
+          tracer.spanBuilder("export").startSpan();
+        }
   }
 }
 public class OpenTelemetrySdkBuilder {
-  public OpenTelemetrySdkBuilder addSpanExporter(SpanExporter exporter) {
-    tracerProvider.addSpanExporter(exporter);
-    components.add(exporter);
-  }
-
-  public OpenTelemetrySdkBuilder setSampler(Sampler sampler) {
-    tracerProvider.setSampler(sampler);
-    components.add(sampler);
-  }
-
-  public OpenTelemetry build() {
-    OpenTelemetrySdk sdk = new OpenTelemetrySdk(tracerProvider.build(), meterProvider.build());
-    for (OpenTelemetryComponent component : components) {
-      component.setOpenTelemetry(sdk);
+    public OpenTelemetrySdkBuilder addSpanExporter(SpanExporter exporter) {
+        tracerProvider.addSpanExporter(exporter);
+        components.add(exporter);
     }
-  }
+    
+    public OpenTelemetrySdkBuilder setSampler(Sampler sampler) {
+        tracerProvider.setSampler(sampler);
+        components.add(sampler);
+    }
+    
+    public OpenTelemetry build() {
+        OpenTelemetrySdk sdk = new OpenTelemetrySdk(tracerProvider.build(), meterProvider.build());
+        for (OpenTelemetryComponent component : components) {
+          component.setOpenTelemetry(sdk);
+        }
+    }
 }
 ```
 
@@ -340,27 +429,27 @@ natively support lazy injection.
 @Component
 public class MonitoringModule {
   
-  @Bean
-  @ForSpanExporter
-  public Tracer tracer(TracerProvider tracerProvider) {
+    @Bean
+    @ForSpanExporter
+    public Tracer tracer(TracerProvider tracerProvider) {
     return tracerProvider.get("spanexporter");
-  }
+    }
 }
 
 @Component
 public class MyExporter implements SpanExporter {
 
-  private Lazy<Tracer> tracer;
-  
-  @Inject
-  public MyExporter(@ForSpanExporter Lazy<Tracer> tracer) {
+    private Lazy<Tracer> tracer;
+    
+    @Inject
+    public MyExporter(@ForSpanExporter Lazy<Tracer> tracer) {
     this.tracer = tracer;
-  }
-  
-  @Override
-  public void export() {
+    }
+    
+    @Override
+    public void export() {
     tracer.get().spanBuilder("export").startSpan();
-  }
+    }
 }
 ```
 
@@ -402,6 +491,15 @@ class SleuthUsingService {
 }
 ```
 
+## Library instrumentation
+
+As the configuration of observability is contained on `OpenTelemetry` instances, it is expected that
+library instrumentation accept an `OpenTelemetry` instance, often as a builder for their e.g.,
+tracing interceptor, when configuring observability. An alternative method that leaves out the
+parameter and falls back to the global can be added as well. Library authors would still have the
+choice of starting with using the global and adding configurability by accepting `OpenTelemetry` if
+users request it - we would expect official `OpenTelemetry` maintained library instrumentation to
+follow our pattern though.
 
 ## Auto-configuration
 
@@ -431,6 +529,15 @@ injection is not available, though, there is no option but to provide access to 
 global variable. We can expect such usage to still function correctly even if the agent is removed
 and a different configuration mechanism is used, such as manual configuration as above, or Spring
 Sleuth.
+
+### SDK Auto-Configuration Wrapper
+
+For non-agent users, we can still provide a non-programmatic solution for configuring the SDK -
+it can be a different artifact which contains SPIs similar to what we have currently, supports
+environment variables and other auto-configuration. A single entrypoint method, `initialize()` could
+determine the configuration, initialize `OpenTelemetry`, and set it as the global. As this artifact
+is in our control, it would be reasonable for `opentelemetry-api` to check the classpath for the
+presence of the wrapper and invoke it automatically.
 
 ### Spring Sleuth
 
