@@ -34,8 +34,7 @@ import javax.annotation.Nullable;
 class OpenTelemetryTracerImpl extends Tracer {
   private final OpenTelemetrySpanBuilderImpl.Options spanBuilderOptions;
 
-  public OpenTelemetryTracerImpl(
-      RandomHandler randomHandler, TraceConfig traceConfig) {
+  public OpenTelemetryTracerImpl(RandomHandler randomHandler, TraceConfig traceConfig) {
     spanBuilderOptions = new Options(randomHandler, traceConfig);
   }
 

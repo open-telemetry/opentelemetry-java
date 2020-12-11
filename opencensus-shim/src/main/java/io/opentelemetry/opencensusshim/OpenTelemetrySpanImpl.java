@@ -124,11 +124,6 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   }
 
   @Override
-  public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode) {
-    return otelSpan.setStatus(canonicalCode);
-  }
-
-  @Override
   public void end(EndSpanOptions options) {
     otelSpan.end();
   }
@@ -137,26 +132,6 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   @SuppressWarnings("ParameterPackage")
   public void end(long timestamp, TimeUnit unit) {
     otelSpan.end(timestamp, unit);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span setAttribute(String key, @Nonnull String value) {
-    return otelSpan.setAttribute(key, value);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span setAttribute(String key, long value) {
-    return otelSpan.setAttribute(key, value);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span setAttribute(String key, double value) {
-    return otelSpan.setAttribute(key, value);
-  }
-
-  @Override
-  public io.opentelemetry.api.trace.Span setAttribute(String key, boolean value) {
-    return otelSpan.setAttribute(key, value);
   }
 
   @Override

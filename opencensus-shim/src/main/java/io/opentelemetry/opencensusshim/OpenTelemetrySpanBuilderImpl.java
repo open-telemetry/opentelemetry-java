@@ -135,8 +135,7 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
     }
 
     // If sampled
-    io.opentelemetry.api.trace.SpanBuilder otelSpanBuilder =
-        OTEL_TRACER.spanBuilder(name);
+    io.opentelemetry.api.trace.SpanBuilder otelSpanBuilder = OTEL_TRACER.spanBuilder(name);
     if (ocParent != null && ocParent instanceof OpenTelemetrySpanImpl) {
       otelSpanBuilder.setParent(Context.current().with((OpenTelemetrySpanImpl) ocParent));
     }
