@@ -55,7 +55,12 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
-  /** Returns the global {@link MeterSdkProvider}. */
+  /**
+   * Returns the global {@link MeterSdkProvider}.
+   *
+   * @deprecated this will be removed soon in preparation for the initial otel release.
+   */
+  @Deprecated
   public static MeterSdkProvider getGlobalMeterProvider() {
     return (MeterSdkProvider) OpenTelemetry.get().getMeterProvider();
   }
@@ -128,6 +133,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
      * @see MeterSdkProvider#builder()
      */
     @Override
+    @Deprecated
     public Builder setMeterProvider(MeterProvider meterProvider) {
       if (!(meterProvider instanceof MeterSdkProvider)) {
         throw new IllegalArgumentException(

@@ -38,6 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("deprecation") // Testing deprecated code
 class OpenTelemetrySdkTest {
 
   @Mock private TracerSdkProvider tracerProvider;

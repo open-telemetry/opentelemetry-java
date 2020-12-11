@@ -16,9 +16,10 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
@@ -86,16 +87,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private final TraceServiceFutureStub traceService;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
-
-  private final LongCounter spansSeen =
-      OpenTelemetry.getGlobalMeter("io.opentelemetry.exporters.otlp")
-          .longCounterBuilder("spansSeenByExporter")
-          .build();
-
-  private final LongCounter spansExported =
-      OpenTelemetry.getGlobalMeter("io.opentelemetry.exporters.otlp")
-          .longCounterBuilder("spansExportedByExporter")
-          .build();
+  private final LongCounter.BoundLongCounter spansSeen;
+  private final LongCounter.BoundLongCounter spansExportedSuccess;
+  private final LongCounter.BoundLongCounter spansExportedFailure;
 
   /**
    * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.
@@ -105,6 +99,12 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    *     or to a negative value, the exporter will wait indefinitely.
    */
   private OtlpGrpcSpanExporter(ManagedChannel channel, long deadlineMs) {
+    Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.exporters.otlp");
+    this.spansSeen =
+        meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
+    LongCounter spansExportedCounter = meter.longCounterBuilder("spansExportedByExporter").build();
+    this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_LABELS);
+    this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
     this.managedChannel = channel;
     this.deadlineMs = deadlineMs;
     this.traceService = TraceServiceGrpc.newFutureStub(channel);
@@ -118,7 +118,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    spansSeen.add(spans.size(), EXPORTER_NAME_LABELS);
+    spansSeen.add(spans.size());
     ExportTraceServiceRequest exportTraceServiceRequest =
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
@@ -138,13 +138,13 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
         new FutureCallback<ExportTraceServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportTraceServiceResponse response) {
-            spansExported.add(spans.size(), EXPORT_SUCCESS_LABELS);
+            spansExportedSuccess.add(spans.size());
             result.succeed();
           }
 
           @Override
           public void onFailure(Throwable t) {
-            spansExported.add(spans.size(), EXPORT_FAILURE_LABELS);
+            spansExportedFailure.add(spans.size());
             logger.log(Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
             logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
             result.fail();

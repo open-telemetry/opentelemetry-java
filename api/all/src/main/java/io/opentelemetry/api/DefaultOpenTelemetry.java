@@ -67,6 +67,7 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   @Override
+  @Deprecated
   public MeterProvider getMeterProvider() {
     return meterProvider;
   }
@@ -127,6 +128,7 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
     }
 
     @Override
+    @Deprecated
     public Builder setMeterProvider(MeterProvider meterProvider) {
       requireNonNull(meterProvider, "meterProvider");
       this.meterProvider = meterProvider;
