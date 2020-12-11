@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * An {@code InstrumentProcessor} represents an internal instance of an {@code Accumulator} for a
@@ -170,59 +169,5 @@ final class InstrumentProcessor {
    */
   boolean generatesDeltas() {
     return delta;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    InstrumentProcessor allLabels = (InstrumentProcessor) o;
-
-    if (startEpochNanos != allLabels.startEpochNanos) {
-      return false;
-    }
-    if (delta != allLabels.delta) {
-      return false;
-    }
-    if (!Objects.equals(descriptor, allLabels.descriptor)) {
-      return false;
-    }
-    if (!Objects.equals(aggregation, allLabels.aggregation)) {
-      return false;
-    }
-    if (!Objects.equals(resource, allLabels.resource)) {
-      return false;
-    }
-    if (!Objects.equals(instrumentationLibraryInfo, allLabels.instrumentationLibraryInfo)) {
-      return false;
-    }
-    if (!Objects.equals(clock, allLabels.clock)) {
-      return false;
-    }
-    if (!Objects.equals(aggregatorFactory, allLabels.aggregatorFactory)) {
-      return false;
-    }
-    return Objects.equals(aggregatorMap, allLabels.aggregatorMap);
-  }
-
-  @Override
-  public int hashCode() {
-    int result = descriptor != null ? descriptor.hashCode() : 0;
-    result = 31 * result + (aggregation != null ? aggregation.hashCode() : 0);
-    result = 31 * result + (resource != null ? resource.hashCode() : 0);
-    result =
-        31 * result
-            + (instrumentationLibraryInfo != null ? instrumentationLibraryInfo.hashCode() : 0);
-    result = 31 * result + (clock != null ? clock.hashCode() : 0);
-    result = 31 * result + (aggregatorFactory != null ? aggregatorFactory.hashCode() : 0);
-    result = 31 * result + (aggregatorMap != null ? aggregatorMap.hashCode() : 0);
-    result = 31 * result + (int) (startEpochNanos ^ (startEpochNanos >>> 32));
-    result = 31 * result + (delta ? 1 : 0);
-    return result;
   }
 }
