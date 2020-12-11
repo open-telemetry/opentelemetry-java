@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -169,7 +169,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutMillis = exporterTimeoutMillis;
       this.queue = queue;
-      Meter meter = GlobalOpenTelemetry.getMeter("io.opentelemetry.sdk.trace");
+      Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.trace");
       meter
           .longValueObserverBuilder("queueSize")
           .setDescription("The number of spans queued")

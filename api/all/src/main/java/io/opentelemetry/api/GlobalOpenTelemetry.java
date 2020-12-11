@@ -115,7 +115,12 @@ public final class GlobalOpenTelemetry {
     return get().getTracer(instrumentationName, instrumentationVersion);
   }
 
-  /** Returns the globally registered {@link MeterProvider}. */
+  /**
+   * Returns the globally registered {@link MeterProvider}.
+   *
+   * @deprecated this will be removed soon in preparation for the initial otel release.
+   */
+  @Deprecated
   public static MeterProvider getMeterProvider() {
     return get().getMeterProvider();
   }
@@ -128,7 +133,9 @@ public final class GlobalOpenTelemetry {
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
    * @return a tracer instance.
+   * @deprecated this will be removed soon in preparation for the initial otel release.
    */
+  @Deprecated
   public static Meter getMeter(String instrumentationName) {
     return get().getMeter(instrumentationName);
   }
@@ -144,7 +151,9 @@ public final class GlobalOpenTelemetry {
    *     instrument*ed* library.
    * @param instrumentationVersion The version of the instrumentation library.
    * @return a tracer instance.
+   * @deprecated this will be removed soon in preparation for the initial otel release.
    */
+  @Deprecated
   public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
     return get().getMeter(instrumentationName, instrumentationVersion);
   }

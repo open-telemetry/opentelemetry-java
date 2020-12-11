@@ -30,6 +30,7 @@ public class DefaultOpenTelemetryBuilder
   }
 
   @Override
+  @Deprecated
   public DefaultOpenTelemetryBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
     this.meterProvider = meterProvider;
