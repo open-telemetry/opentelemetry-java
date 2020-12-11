@@ -77,7 +77,7 @@ public class MetricInteroperabilityTest {
       statsRecorder.newMeasureMap().put(latency, 50).record();
       statsRecorder.newMeasureMap().put(latency2, 60).record();
     }
-    List<MetricData> metricData = metricExporter.waitForNumberOfExports(1).get(0);
+    List<MetricData> metricData = metricExporter.waitForNumberOfExports(3).get(2);
     assertThat(metricData.size()).isEqualTo(2);
 
     MetricData metric = metricData.get(0);
