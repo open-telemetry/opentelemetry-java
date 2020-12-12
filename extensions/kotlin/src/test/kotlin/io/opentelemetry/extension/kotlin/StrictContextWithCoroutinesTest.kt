@@ -141,6 +141,7 @@ class StrictContextWithCoroutinesTest {
         Context.current().with(ANIMAL, animal).makeCurrent().use {
             assertThat(Context.current().get(ANIMAL)).isEqualTo(animal)
             delay(10)
+            // May be on a different thread, in which case ANIMAL != animal!
         }
     }
 
@@ -148,6 +149,7 @@ class StrictContextWithCoroutinesTest {
         val scope = Context.current().with(ANIMAL, animal).makeCurrent()
         assertThat(Context.current().get(ANIMAL)).isEqualTo(animal)
         delay(10)
+        // May be on a different thread, in which case ANIMAL != animal!
         scope.close()
     }
 
@@ -155,6 +157,7 @@ class StrictContextWithCoroutinesTest {
         withContext(Context.current().with(ANIMAL, animal).asContextElement()) {
             assertThat(Context.current().get(ANIMAL)).isEqualTo(animal)
             delay(10)
+            assertThat(Context.current().get(ANIMAL)).isEqualTo(animal)
         }
     }
 
