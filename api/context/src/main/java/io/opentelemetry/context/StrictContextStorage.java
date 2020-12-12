@@ -92,14 +92,24 @@ public class StrictContextStorage implements ContextStorage {
     CallerStackTrace caller = new CallerStackTrace(context);
     StackTraceElement[] stackTrace = caller.getStackTrace();
 
-    // Detect invalid use from kotlin.
-    for (StackTraceElement element : stackTrace) {
-      if (element.getClassName().equals("kotlin.coroutines.jvm.internal.BaseContinuationImpl")
-          && element.getMethodName().equals("resumeWith")) {
-        throw new AssertionError(
-            "Attempting to call Context.makeCurrent from inside a Kotlin coroutine. "
-                + "This is not allowed. Use Context.asContextElement provided by "
-                + "opentelemetry-extension-kotlin instead.");
+    // Detect invalid use from top-level kotlin coroutine. The stacktrace will have the order
+    // makeCurrent -> invokeSuspend -> resumeWith
+    for (int i = 0; i < stackTrace.length; i++) {
+      StackTraceElement element = stackTrace[i];
+      if (element.getClassName().equals(Context.class.getName())
+          && element.getMethodName().equals("makeCurrent")) {
+        if (i + 2 < stackTrace.length) {
+          StackTraceElement maybeResumptionElement = stackTrace[i + 2];
+          if (maybeResumptionElement
+                  .getClassName()
+                  .equals("kotlin.coroutines.jvm.internal.BaseContinuationImpl")
+              && maybeResumptionElement.getMethodName().equals("resumeWith")) {
+            throw new AssertionError(
+                "Attempting to call Context.makeCurrent from inside a Kotlin coroutine. "
+                    + "This is not allowed. Use Context.asContextElement provided by "
+                    + "opentelemetry-extension-kotlin instead of makeCurrent.");
+          }
+        }
       }
     }
 
@@ -171,6 +181,46 @@ public class StrictContextStorage implements ContextStorage {
     public void close() {
       caller.closed = true;
       pendingScopes.remove(this);
+
+      // Detect invalid use from Kotlin suspending function. For non top-level coroutines, we can
+      // only detect illegal usage on close, which will happen after the suspending function
+      // resumes and is decoupled from the caller.
+      // Illegal usage is close -> (optional closeFinally) -> "suspending function name" ->
+      // resumeWith.
+      StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+      for (int i = 0; i < stackTrace.length; i++) {
+        StackTraceElement element = stackTrace[i];
+        if (element.getClassName().equals(StrictScope.class.getName())
+            && element.getMethodName().equals("close")) {
+          int maybeResumeWithFrameIndex = i + 2;
+          if (i + 1 < stackTrace.length) {
+            StackTraceElement nextElement = stackTrace[i + 1];
+            if (nextElement.getClassName().equals("kotlin.jdk7.AutoCloseableKt")
+                && nextElement.getMethodName().equals("closeFinally")
+                && i + 2 < stackTrace.length) {
+              // Skip extension method for AutoCloseable.use
+              maybeResumeWithFrameIndex = i + 3;
+            }
+          }
+          if (stackTrace[maybeResumeWithFrameIndex].getMethodName().equals("invokeSuspend")) {
+            // Skip synthetic invokeSuspend function.
+            // NB: The stacktrace showed in an IntelliJ debug pane does not show this.
+            maybeResumeWithFrameIndex++;
+          }
+          if (maybeResumeWithFrameIndex < stackTrace.length) {
+            StackTraceElement maybeResumptionElement = stackTrace[maybeResumeWithFrameIndex];
+            if (maybeResumptionElement
+                    .getClassName()
+                    .equals("kotlin.coroutines.jvm.internal.BaseContinuationImpl")
+                && maybeResumptionElement.getMethodName().equals("resumeWith")) {
+              throw new AssertionError(
+                  "Attempting to close a Scope created by Context.makeCurrent from inside a Kotlin "
+                      + "coroutine. This is not allowed. Use Context.asContextElement provided by "
+                      + "opentelemetry-extension-kotlin instead of makeCurrent.");
+            }
+          }
+        }
+      }
 
       if (currentThread().getId() != caller.threadId) {
         throw new IllegalStateException(
