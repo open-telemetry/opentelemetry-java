@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the
@@ -27,7 +29,7 @@ public interface TracerSdkManagement {
    *
    * <p>Note: To update the {@link TraceConfig} associated with this instance you should use the
    * {@link TraceConfig#toBuilder()} method on the {@link TraceConfig} returned from {@link
-   * #getActiveTraceConfig()}, make the changes desired to the {@link TraceConfig.Builder} instance,
+   * #getActiveTraceConfig()}, make the changes desired to the {@link TraceConfigBuilder} instance,
    * then use this method with the resulting {@link TraceConfig} instance.
    *
    * @param traceConfig the new active {@code TraceConfig}.
@@ -40,7 +42,7 @@ public interface TracerSdkManagement {
    *
    * <p>Any registered processor cause overhead, consider to use an async/batch processor especially
    * for span exporting, and export to multiple backends using the {@link
-   * io.opentelemetry.sdk.trace.export.MultiSpanExporter}.
+   * io.opentelemetry.sdk.trace.export.SpanExporter#composite(SpanExporter...)}.
    *
    * @param spanProcessor the new {@code SpanProcessor} to be added.
    */
@@ -53,7 +55,11 @@ public interface TracerSdkManagement {
    * <p>This operation may block until all the Spans are processed. Must be called before turning
    * off the main application to ensure all data are processed and exported.
    *
-   * <p>After this is called all the newly created {@code Span}s will be no-op.
+   * <p>After this is called, newly created {@code Span}s will be no-ops.
+   *
+   * <p>After this is called, further attempts at re-using or reconfiguring this instance will
+   * result in undefined behavior. It should be considered a terminal operation for the SDK
+   * implementation.
    */
   void shutdown();
 

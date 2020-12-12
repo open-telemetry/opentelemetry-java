@@ -7,34 +7,44 @@ package io.opentelemetry.sdk.metrics.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import java.util.EnumSet;
+import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Aggregations#sum()}. */
 class LastValueAggregationTest {
-  private static final EnumSet<InstrumentType> SUPPORTED_INSTRUMENTS =
-      EnumSet.of(InstrumentType.SUM_OBSERVER, InstrumentType.UP_DOWN_SUM_OBSERVER);
 
   @Test
-  void getDescriptorType_ForSupportedInstruments() {
+  void toMetricData() {
     Aggregation lastValue = Aggregations.lastValue();
-    assertThat(lastValue.getDescriptorType(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE))
-        .isEqualTo(MetricData.Type.MONOTONIC_DOUBLE);
-    assertThat(lastValue.getDescriptorType(InstrumentType.SUM_OBSERVER, InstrumentValueType.LONG))
-        .isEqualTo(MetricData.Type.MONOTONIC_LONG);
-    assertThat(
-            lastValue.getDescriptorType(
-                InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.DOUBLE))
-        .isEqualTo(MetricData.Type.NON_MONOTONIC_DOUBLE);
-    assertThat(
-            lastValue.getDescriptorType(
-                InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG))
-        .isEqualTo(MetricData.Type.NON_MONOTONIC_LONG);
+    Aggregator aggregator =
+        lastValue.getAggregatorFactory(InstrumentValueType.LONG).getAggregator();
+    aggregator.recordLong(10);
+
+    MetricData metricData =
+        lastValue.toMetricData(
+            Resource.getDefault(),
+            InstrumentationLibraryInfo.getEmpty(),
+            InstrumentDescriptor.create(
+                "name",
+                "description",
+                "unit",
+                InstrumentType.VALUE_OBSERVER,
+                InstrumentValueType.LONG),
+            Collections.singletonMap(Labels.empty(), aggregator),
+            0,
+            100);
+    assertThat(metricData).isNotNull();
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_GAUGE);
   }
 
   @Test
@@ -44,17 +54,5 @@ class LastValueAggregationTest {
         .isInstanceOf(LongLastValueAggregator.getFactory().getClass());
     assertThat(lastValue.getAggregatorFactory(InstrumentValueType.DOUBLE))
         .isInstanceOf(DoubleLastValueAggregator.getFactory().getClass());
-  }
-
-  @Test
-  void availableForInstrument() {
-    Aggregation lastValue = Aggregations.lastValue();
-    for (InstrumentType type : InstrumentType.values()) {
-      if (SUPPORTED_INSTRUMENTS.contains(type)) {
-        assertThat(lastValue.availableForInstrument(type)).isTrue();
-      } else {
-        assertThat(lastValue.availableForInstrument(type)).isFalse();
-      }
-    }
   }
 }

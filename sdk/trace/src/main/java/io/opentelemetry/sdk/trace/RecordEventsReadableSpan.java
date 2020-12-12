@@ -5,16 +5,9 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.doubleKey;
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
@@ -31,6 +24,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -254,30 +248,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public ReadWriteSpan setAttribute(String key, String value) {
-    setAttribute(stringKey(key), value);
-    return this;
-  }
-
-  @Override
-  public ReadWriteSpan setAttribute(String key, long value) {
-    setAttribute(longKey(key), value);
-    return this;
-  }
-
-  @Override
-  public ReadWriteSpan setAttribute(String key, double value) {
-    setAttribute(doubleKey(key), value);
-    return this;
-  }
-
-  @Override
-  public ReadWriteSpan setAttribute(String key, boolean value) {
-    setAttribute(booleanKey(key), value);
-    return this;
-  }
-
-  @Override
   public <T> ReadWriteSpan setAttribute(AttributeKey<T> key, T value) {
     if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
       return this;
@@ -348,13 +318,21 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return this;
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   static Attributes copyAndLimitAttributes(final Attributes attributes, final int limit) {
     if (attributes.isEmpty() || attributes.size() <= limit) {
       return attributes;
     }
 
     AttributesBuilder result = Attributes.builder();
-    attributes.forEach(new LimitingAttributeConsumer(limit, result));
+    int i = 0;
+    for (Map.Entry<AttributeKey<?>, Object> entry : attributes.asMap().entrySet()) {
+      if (i >= limit) {
+        break;
+      }
+      result.put((AttributeKey) entry.getKey(), entry.getValue());
+      i++;
+    }
     return result.build();
   }
 
@@ -369,12 +347,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       }
       totalRecordedEvents++;
     }
-  }
-
-  @Override
-  public ReadWriteSpan setStatus(StatusCode statusCode) {
-    setStatus(statusCode, null);
-    return this;
   }
 
   @Override
@@ -511,7 +483,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private ReadableAttributes getImmutableAttributes() {
+  private Attributes getImmutableAttributes() {
     if (attributes == null || attributes.isEmpty()) {
       return Attributes.empty();
     }
@@ -563,25 +535,5 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     sb.append(endEpochNanos);
     sb.append("}");
     return sb.toString();
-  }
-
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  private static class LimitingAttributeConsumer implements AttributeConsumer {
-    private final int limit;
-    private final AttributesBuilder builder;
-    private int added;
-
-    public LimitingAttributeConsumer(int limit, AttributesBuilder builder) {
-      this.limit = limit;
-      this.builder = builder;
-    }
-
-    @Override
-    public void accept(AttributeKey key, Object value) {
-      if (added < limit) {
-        builder.put(key, value);
-        added++;
-      }
-    }
   }
 }

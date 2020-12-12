@@ -11,9 +11,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
@@ -182,15 +181,9 @@ final class Adapter {
    * @see #toKeyValue
    */
   @VisibleForTesting
-  static Collection<Model.KeyValue> toKeyValues(ReadableAttributes attributes) {
+  static Collection<Model.KeyValue> toKeyValues(Attributes attributes) {
     final List<Model.KeyValue> tags = new ArrayList<>(attributes.size());
-    attributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            tags.add(toKeyValue(key, value));
-          }
-        });
+    attributes.forEach((key, value) -> tags.add(toKeyValue(key, value)));
     return tags;
   }
 
@@ -202,7 +195,7 @@ final class Adapter {
    * @return a Jaeger key value
    */
   @VisibleForTesting
-  static <T> Model.KeyValue toKeyValue(AttributeKey<T> key, T value) {
+  static Model.KeyValue toKeyValue(AttributeKey<?> key, Object value) {
     Model.KeyValue.Builder builder = Model.KeyValue.newBuilder();
     builder.setKey(key.getKey());
 
@@ -258,8 +251,9 @@ final class Adapter {
   @VisibleForTesting
   static Model.SpanRef toSpanRef(Link link) {
     Model.SpanRef.Builder builder = Model.SpanRef.newBuilder();
-    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsHexString()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsHexString()));
+    builder.setTraceId(
+        TraceProtoUtils.toProtoTraceId(link.getSpanContext().getTraceIdAsHexString()));
+    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getSpanContext().getSpanIdAsHexString()));
 
     // we can assume that all links are *follows from*
     // https://github.com/open-telemetry/opentelemetry-java/issues/475

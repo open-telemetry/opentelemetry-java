@@ -10,7 +10,6 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
@@ -31,7 +30,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   private static final Logger logger = Logger.getLogger(TracerSdkProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "unknown";
   private final TracerSharedState sharedState;
-  private final TracerSdkComponentRegistry tracerSdkComponentRegistry;
+  private final ComponentRegistry<TracerSdk> tracerSdkComponentRegistry;
 
   /**
    * Returns a new {@link Builder} for {@link TracerSdkProvider}.
@@ -42,9 +41,12 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     return new Builder();
   }
 
-  private TracerSdkProvider(Clock clock, IdGenerator idsGenerator, Resource resource) {
-    this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
-    this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
+  private TracerSdkProvider(
+      Clock clock, IdGenerator idsGenerator, Resource resource, TraceConfig traceConfig) {
+    this.sharedState = new TracerSharedState(clock, idsGenerator, resource, traceConfig);
+    this.tracerSdkComponentRegistry =
+        new ComponentRegistry<>(
+            instrumentationLibraryInfo -> new TracerSdk(sharedState, instrumentationLibraryInfo));
   }
 
   @Override
@@ -92,7 +94,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
   }
 
   /**
-   * Builder class for the TracerSdkFactory. Has fully functional default implementations of all
+   * Builder class for the TraceSdkProvider. Has fully functional default implementations of all
    * three required interfaces.
    */
   public static class Builder {
@@ -100,6 +102,7 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     private Clock clock = SystemClock.getInstance();
     private IdGenerator idsGenerator = IdGenerator.random();
     private Resource resource = Resource.getDefault();
+    private TraceConfig traceConfig = TraceConfig.getDefault();
 
     /**
      * Assign a {@link Clock}.
@@ -116,13 +119,13 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     /**
      * Assign an {@link IdGenerator}.
      *
-     * @param idsGenerator A generator for trace and span ids. Note: this should be thread-safe and
+     * @param idGenerator A generator for trace and span ids. Note: this should be thread-safe and
      *     as contention free as possible.
      * @return this
      */
-    public Builder setIdsGenerator(IdGenerator idsGenerator) {
-      Objects.requireNonNull(idsGenerator, "idsGenerator");
-      this.idsGenerator = idsGenerator;
+    public Builder setIdGenerator(IdGenerator idGenerator) {
+      Objects.requireNonNull(idGenerator, "idGenerator");
+      this.idsGenerator = idGenerator;
       return this;
     }
 
@@ -139,27 +142,25 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
     }
 
     /**
-     * Create a new TracerSdkFactory instance.
+     * Assign an initial {@link TraceConfig} that should be used with this SDK.
      *
-     * @return An initialized TracerSdkFactory.
+     * @return this
+     */
+    public Builder setTraceConfig(TraceConfig traceConfig) {
+      this.traceConfig = traceConfig;
+      Objects.requireNonNull(traceConfig);
+      return this;
+    }
+
+    /**
+     * Create a new TraceSdkProvider instance.
+     *
+     * @return An initialized TraceSdkProvider.
      */
     public TracerSdkProvider build() {
-      return new TracerSdkProvider(clock, idsGenerator, resource);
+      return new TracerSdkProvider(clock, idsGenerator, resource, traceConfig);
     }
 
     private Builder() {}
-  }
-
-  private static final class TracerSdkComponentRegistry extends ComponentRegistry<TracerSdk> {
-    private final TracerSharedState sharedState;
-
-    private TracerSdkComponentRegistry(TracerSharedState sharedState) {
-      this.sharedState = sharedState;
-    }
-
-    @Override
-    public TracerSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      return new TracerSdk(sharedState, instrumentationLibraryInfo);
-    }
   }
 }

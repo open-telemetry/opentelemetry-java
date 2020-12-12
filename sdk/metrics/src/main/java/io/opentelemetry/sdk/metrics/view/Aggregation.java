@@ -5,10 +5,16 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
+import java.util.Map;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -29,30 +35,23 @@ public interface Aggregation {
   AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType);
 
   /**
-   * Returns the {@link MetricData.Type} that this {@code Aggregation} will produce.
+   * Returns the {@link MetricData} that this {@code Aggregation} will produce.
    *
-   * @param instrumentType the type of the {@code Instrument}.
-   * @param instrumentValueType the type of recorded values for the {@code Instrument}.
+   * @param resource the Resource associated with the {@code Instrument}.
+   * @param instrumentationLibraryInfo the InstrumentationLibraryInfo associated with the {@code
+   *     Instrument}.
+   * @param descriptor the InstrumentDescriptor of the {@code Instrument}.
+   * @param aggregatorMap the map of Labels to Aggregators.
+   * @param startEpochNanos the startEpochNanos for the {@code Point}.
+   * @param epochNanos the epochNanos for the {@code Point}.
    * @return the {@link MetricData.Type} that this {@code Aggregation} will produce.
    */
-  MetricData.Type getDescriptorType(
-      InstrumentType instrumentType, InstrumentValueType instrumentValueType);
-
-  /**
-   * Returns the unit that this {@code Aggregation} will produce.
-   *
-   * @param initialUnit the initial unit for the {@code Instrument}'s measurements.
-   * @return the unit that this {@code Aggregation} will produce.
-   */
-  String getUnit(String initialUnit);
-
-  /**
-   * Returns {@code true} if this {@code Aggregation} can be applied to the given {@code
-   * InstrumentType}.
-   *
-   * @param instrumentType the type of the {@code Instrument}.
-   * @return {@code true} if this {@code Aggregation} can be applied to the given {@code
-   *     InstrumentType}.
-   */
-  boolean availableForInstrument(InstrumentType instrumentType);
+  @Nullable
+  MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor,
+      Map<Labels, Aggregator> aggregatorMap,
+      long startEpochNanos,
+      long epochNanos);
 }

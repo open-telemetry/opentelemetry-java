@@ -35,11 +35,8 @@ import javax.annotation.concurrent.Immutable;
  * registered trace propagator, returning immediately when a successful extraction happened.
  *
  * <pre>{@code
- * TextMapPropagator traceFormats = TraceMultiPropagator.builder()
- *   .addPropagator(new MyCustomTracePropagator())
- *   .addPropagator(new JaegerPropagator())
- *   .addPropagator(new HttpTraceContext())
- *   .build();
+ * TextMapPropagator traceFormats = TraceMultiPropagator.create(
+ *     new HttpTraceContext(), new JaegerPropagator(), new MyCustomTracePropagator())
  * // Register it in the global propagators:
  * OpenTelemetry.setPropagators(
  *     DefaultContextPropagators.builder()
@@ -88,18 +85,6 @@ public class TraceMultiPropagator implements TextMapPropagator {
       fields.addAll(propagator.fields());
     }
     this.propagatorsFields = Collections.unmodifiableList(new ArrayList<>(fields));
-  }
-
-  /**
-   * Returns a {@link TraceMultiPropagator.Builder} to create a new {@link TraceMultiPropagator}
-   * object.
-   *
-   * @return a {@link TraceMultiPropagator.Builder}.
-   * @deprecated Use {@link TraceMultiPropagator#create(TextMapPropagator...)}.
-   */
-  @Deprecated
-  public static Builder builder() {
-    return new Builder();
   }
 
   /**
@@ -154,50 +139,5 @@ public class TraceMultiPropagator implements TextMapPropagator {
 
   private static boolean isSpanContextExtracted(Context context) {
     return Span.fromContextOrNull(context) != null;
-  }
-
-  /**
-   * {@link Builder} is used to construct a new {@code TraceMultiPropagator} object with the
-   * specified propagators.
-   *
-   * @deprecated Use {@link TraceMultiPropagator#create(TextMapPropagator...)}
-   */
-  @Deprecated
-  public static class Builder {
-    private final List<TextMapPropagator> propagators;
-
-    private Builder() {
-      propagators = new ArrayList<>();
-    }
-
-    /**
-     * Adds a {@link TextMapPropagator} trace propagator.
-     *
-     * <p>Registered propagators will be invoked in reverse order, starting with the last propagator
-     * to the first one.
-     *
-     * @param propagator the propagator to be added.
-     * @return this.
-     * @throws NullPointerException if {@code propagator} is {@code null}.
-     * @deprecated Use {@link TraceMultiPropagator#create(TextMapPropagator...)}
-     */
-    @Deprecated
-    public Builder addPropagator(TextMapPropagator propagator) {
-      requireNonNull(propagator, "propagator");
-
-      propagators.add(propagator);
-      return this;
-    }
-
-    /**
-     * Builds a new {@code TraceMultiPropagator} with the specified propagators.
-     *
-     * @return the newly created {@code TraceMultiPropagator} instance.
-     * @deprecated Use {@link TraceMultiPropagator#create(TextMapPropagator...)}
-     */
-    @Deprecated
-    public TraceMultiPropagator build() {
-      return new TraceMultiPropagator(propagators);
-    }
   }
 }

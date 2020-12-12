@@ -24,7 +24,7 @@ public abstract class InstrumentationLibraryInfo {
    *
    * @param name name of the instrumentation library (e.g., "io.opentelemetry.contrib.mongodb"),
    *     must not be null
-   * @param version version of the instrumentation library (e.g., "semver:1.0.0"), might be null
+   * @param version version of the instrumentation library (e.g., "1.0.0"), might be null
    * @return the new instance
    */
   public static InstrumentationLibraryInfo create(String name, @Nullable String version) {

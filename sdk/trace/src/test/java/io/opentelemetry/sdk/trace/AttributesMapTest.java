@@ -9,11 +9,11 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Test;
 
 class AttributesMapTest {
@@ -44,13 +44,13 @@ class AttributesMapTest {
   }
 
   private void assertOrdering(
-      ReadableAttributes attributes, List<String> expectedKeyOrder, List<Long> expectedValueOrder) {
+      Attributes attributes, List<String> expectedKeyOrder, List<Long> expectedValueOrder) {
     attributes.forEach(
-        new AttributeConsumer() {
+        new BiConsumer<AttributeKey<?>, Object>() {
           private int counter = 0;
 
           @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
+          public void accept(AttributeKey<?> key, Object value) {
             String k = key.getKey();
             Long val = (Long) value;
             assertThat(val).isEqualTo(expectedValueOrder.get(counter));

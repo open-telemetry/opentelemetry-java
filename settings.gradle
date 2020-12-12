@@ -28,12 +28,14 @@ plugins {
 rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all",
         ":opentelemetry-api",
+        ":opentelemetry-api-baggage",
+        ":opentelemetry-api-common",
+        ":opentelemetry-api-trace",
+        ":opentelemetry-api-metrics",
         ":opentelemetry-context",
         ":opentelemetry-extension-annotations",
         ":opentelemetry-extension-kotlin",
-        ":opentelemetry-extension-runtime-metrics",
         ":opentelemetry-extension-trace-propagators",
-        ":opentelemetry-extension-trace-utils",
         ":opentelemetry-exporter-jaeger",
         ":opentelemetry-exporter-jaeger-thrift",
         ":opentelemetry-exporter-logging",
@@ -64,6 +66,7 @@ include ":opentelemetry-all",
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name
+            .replace("opentelemetry-api-", "api/")
             .replace("opentelemetry-integration-tests-", "integration-tests/")
             .replace("opentelemetry-exporter-", "exporters/")
             .replace("opentelemetry-extension-", "extensions/")
@@ -73,6 +76,8 @@ rootProject.children.each {
             .replace("opentelemetry-", "") as File
 }
 
+project(":opentelemetry-api").projectDir = "$rootDir/api/all" as File
+project(":opentelemetry-context").projectDir = "$rootDir/api/context" as File
 project(":opentelemetry-sdk").projectDir = "$rootDir/sdk/all" as File
 
 def isCI = System.getenv("CI") != null

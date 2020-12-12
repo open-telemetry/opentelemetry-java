@@ -10,10 +10,8 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
@@ -173,6 +171,7 @@ final class SpanBuilderSdk implements SpanBuilder {
   }
 
   @Override
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public Span startSpan() {
     final Context parentContext =
         isRootSpan ? Context.root() : parent == null ? Context.current() : parent;
@@ -192,7 +191,7 @@ final class SpanBuilderSdk implements SpanBuilder {
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
-    ReadableAttributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
+    Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
     SamplingResult samplingResult =
         traceConfig
             .getSampler()
@@ -208,18 +207,12 @@ final class SpanBuilderSdk implements SpanBuilder {
     if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);
     }
-    ReadableAttributes samplingAttributes = samplingResult.getAttributes();
+    Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
-      samplingAttributes.forEach(
-          new AttributeConsumer() {
-            @Override
-            public <T> void accept(AttributeKey<T> key, T value) {
-              attributes.put(key, value);
-            }
-          });
+      samplingAttributes.forEach((key, value) -> attributes.put((AttributeKey) key, value));
     }
 
     // Avoid any possibility to modify the attributes by adding attributes to the Builder after the

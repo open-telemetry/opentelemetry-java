@@ -1,0 +1,25 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "me.champeau.gradle.jmh"
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry API'
+ext.moduleName = "io.opentelemetry.api"
+
+dependencies {
+    api project(':opentelemetry-context'),
+            project(':opentelemetry-api-baggage'),
+            project(':opentelemetry-api-common'),
+            project(':opentelemetry-api-metrics'),
+            project(':opentelemetry-api-trace')
+
+    annotationProcessor libraries.auto_value
+
+    signature libraries.android_signature
+
+    testImplementation libraries.jqf,
+            libraries.guava_testlib
+}

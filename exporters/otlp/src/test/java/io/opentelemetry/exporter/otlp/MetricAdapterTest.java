@@ -145,7 +145,7 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSummaryDataPoints(
                 singletonList(
-                    MetricData.SummaryPoint.create(
+                    MetricData.DoubleSummaryPoint.create(
                         123,
                         456,
                         Labels.of("k", "v"),
@@ -167,9 +167,9 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSummaryDataPoints(
                 ImmutableList.of(
-                    MetricData.SummaryPoint.create(
+                    MetricData.DoubleSummaryPoint.create(
                         123, 456, Labels.empty(), 7, 15.3, Collections.emptyList()),
-                    MetricData.SummaryPoint.create(
+                    MetricData.DoubleSummaryPoint.create(
                         321,
                         654,
                         Labels.of("k", "v"),
@@ -204,14 +204,17 @@ class MetricAdapterTest {
   void toProtoMetric_monotonic() {
     assertThat(
             MetricAdapter.toProtoMetric(
-                MetricData.create(
+                MetricData.createLongSum(
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.MONOTONIC_LONG,
-                    singletonList(MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5)))))
+                    MetricData.LongSumData.create(
+                        /* isMonotonic= */ true,
+                        MetricData.AggregationTemporality.CUMULATIVE,
+                        singletonList(
+                            MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -237,15 +240,17 @@ class MetricAdapterTest {
                 .build());
     assertThat(
             MetricAdapter.toProtoMetric(
-                MetricData.create(
+                MetricData.createDoubleSum(
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.MONOTONIC_DOUBLE,
-                    singletonList(
-                        MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1)))))
+                    MetricData.DoubleSumData.create(
+                        /* isMonotonic= */ true,
+                        MetricData.AggregationTemporality.CUMULATIVE,
+                        singletonList(
+                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -275,14 +280,17 @@ class MetricAdapterTest {
   void toProtoMetric_nonMonotonic() {
     assertThat(
             MetricAdapter.toProtoMetric(
-                MetricData.create(
+                MetricData.createLongSum(
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.NON_MONOTONIC_LONG,
-                    singletonList(MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5)))))
+                    MetricData.LongSumData.create(
+                        /* isMonotonic= */ false,
+                        MetricData.AggregationTemporality.CUMULATIVE,
+                        singletonList(
+                            MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -308,15 +316,17 @@ class MetricAdapterTest {
                 .build());
     assertThat(
             MetricAdapter.toProtoMetric(
-                MetricData.create(
+                MetricData.createDoubleSum(
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.NON_MONOTONIC_DOUBLE,
-                    singletonList(
-                        MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1)))))
+                    MetricData.DoubleSumData.create(
+                        /* isMonotonic= */ false,
+                        MetricData.AggregationTemporality.CUMULATIVE,
+                        singletonList(
+                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -346,14 +356,15 @@ class MetricAdapterTest {
   void toProtoMetric_gauges() {
     assertThat(
             MetricAdapter.toProtoMetric(
-                MetricData.create(
+                MetricData.createLongGauge(
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.GAUGE_LONG,
-                    singletonList(MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5)))))
+                    MetricData.LongGaugeData.create(
+                        singletonList(
+                            MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -377,15 +388,15 @@ class MetricAdapterTest {
                 .build());
     assertThat(
             MetricAdapter.toProtoMetric(
-                MetricData.create(
+                MetricData.createDoubleGauge(
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.GAUGE_DOUBLE,
-                    singletonList(
-                        MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1)))))
+                    MetricData.DoubleGaugeData.create(
+                        singletonList(
+                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -413,16 +424,16 @@ class MetricAdapterTest {
   void toProtoMetric_summary() {
     assertThat(
             MetricAdapter.toProtoMetric(
-                MetricData.create(
+                MetricData.createDoubleSummary(
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
                     "name",
                     "description",
                     "1",
-                    MetricData.Type.SUMMARY,
-                    singletonList(
-                        MetricData.SummaryPoint.create(
-                            123, 456, Labels.of("k", "v"), 5, 33d, emptyList())))))
+                    MetricData.DoubleSummaryData.create(
+                        singletonList(
+                            MetricData.DoubleSummaryPoint.create(
+                                123, 456, Labels.of("k", "v"), 5, 33d, emptyList()))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -492,42 +503,54 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toProtoResourceMetrics(
                 ImmutableList.of(
-                    MetricData.create(
+                    MetricData.createDoubleSum(
                         resource,
                         instrumentationLibraryInfo,
                         "name",
                         "description",
                         "1",
-                        MetricData.Type.MONOTONIC_DOUBLE,
-                        Collections.singletonList(
-                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))),
-                    MetricData.create(
+                        MetricData.DoubleSumData.create(
+                            /* isMonotonic= */ true,
+                            MetricData.AggregationTemporality.CUMULATIVE,
+                            Collections.singletonList(
+                                MetricData.DoublePoint.create(
+                                    123, 456, Labels.of("k", "v"), 5.0)))),
+                    MetricData.createDoubleSum(
                         resource,
                         instrumentationLibraryInfo,
                         "name",
                         "description",
                         "1",
-                        MetricData.Type.MONOTONIC_DOUBLE,
-                        Collections.singletonList(
-                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))),
-                    MetricData.create(
+                        MetricData.DoubleSumData.create(
+                            /* isMonotonic= */ true,
+                            MetricData.AggregationTemporality.CUMULATIVE,
+                            Collections.singletonList(
+                                MetricData.DoublePoint.create(
+                                    123, 456, Labels.of("k", "v"), 5.0)))),
+                    MetricData.createDoubleSum(
                         Resource.getEmpty(),
                         instrumentationLibraryInfo,
                         "name",
                         "description",
                         "1",
-                        MetricData.Type.MONOTONIC_DOUBLE,
-                        Collections.singletonList(
-                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))),
-                    MetricData.create(
+                        MetricData.DoubleSumData.create(
+                            /* isMonotonic= */ true,
+                            MetricData.AggregationTemporality.CUMULATIVE,
+                            Collections.singletonList(
+                                MetricData.DoublePoint.create(
+                                    123, 456, Labels.of("k", "v"), 5.0)))),
+                    MetricData.createDoubleSum(
                         Resource.getEmpty(),
                         InstrumentationLibraryInfo.getEmpty(),
                         "name",
                         "description",
                         "1",
-                        MetricData.Type.MONOTONIC_DOUBLE,
-                        Collections.singletonList(
-                            MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.0))))))
+                        MetricData.DoubleSumData.create(
+                            /* isMonotonic= */ true,
+                            MetricData.AggregationTemporality.CUMULATIVE,
+                            Collections.singletonList(
+                                MetricData.DoublePoint.create(
+                                    123, 456, Labels.of("k", "v"), 5.0)))))))
         .containsExactlyInAnyOrder(
             ResourceMetrics.newBuilder()
                 .setResource(resourceProto)

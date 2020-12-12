@@ -43,7 +43,7 @@ monitored. More information is available in the specification chapter [Obtaining
 
 ```java
 Tracer tracer =
-    OpenTelemetry.getGlobalTracer("instrumentation-library-name","semver:1.0.0");
+    OpenTelemetry.getGlobalTracer("instrumentation-library-name", "1.0.0");
 ```
 
 ### Create basic Span
@@ -262,7 +262,7 @@ The following is an example of counter usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = OpenTelemetry.getGlobalMeter("instrumentation-library-name","semver:1.0.0");
+Meter meter = OpenTelemetry.getGlobalMeter("instrumentation-library-name", "1.0.0");
 
 // Build counter e.g. LongCounter 
 LongCounter counter = meter
@@ -383,12 +383,12 @@ tracerSdkManagement.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
 ### Exporter
 
 Span processors are initialized with an exporter which is responsible for sending the telemetry data
-a particular backend. OpenTelemetry offers four exporters out of the box:
+a particular backend. OpenTelemetry offers five exporters out of the box:
 - In-Memory Exporter: keeps the data in memory, useful for debugging.
 - Jaeger Exporter: prepares and sends the collected telemetry data to a Jaeger backend via gRPC.
 - Zipkin Exporter: prepares and sends the collected telemetry data to a Zipkin backend via the Zipkin APIs.
 - Logging Exporter: saves the telemetry data into log streams.
-- OpenTelemetry Exporter: sends the data to the [OpenTelemetry Collector] (not yet implemented).
+- OpenTelemetry Exporter: sends the data to the [OpenTelemetry Collector].
 
 Other exporters can be found in the [OpenTelemetry Registry].
 

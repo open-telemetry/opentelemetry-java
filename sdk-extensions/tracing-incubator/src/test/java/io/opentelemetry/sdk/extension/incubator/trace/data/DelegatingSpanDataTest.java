@@ -12,7 +12,6 @@ import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
@@ -47,13 +46,13 @@ class DelegatingSpanDataTest {
         clientType = "unknown";
       }
       AttributesBuilder newAttributes = Attributes.builder();
-      delegate.getAttributes().forEach(newAttributes::put);
+      newAttributes.putAll(delegate.getAttributes());
       newAttributes.put("client_type", clientType);
       attributes = newAttributes.build();
     }
 
     @Override
-    public ReadableAttributes getAttributes() {
+    public Attributes getAttributes() {
       return attributes;
     }
 

@@ -5,12 +5,13 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * A map with a fixed capacity that drops attributes when the map gets full.
@@ -18,7 +19,7 @@ import java.util.Map;
  * <p>Note: this doesn't implement the Map interface, but behaves very similarly to one.
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
-final class AttributesMap implements ReadableAttributes {
+final class AttributesMap implements Attributes {
   private final Map<AttributeKey<?>, Object> data;
 
   private final long capacity;
@@ -66,7 +67,7 @@ final class AttributesMap implements ReadableAttributes {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  public void forEach(AttributeConsumer consumer) {
+  public void forEach(BiConsumer<AttributeKey<?>, Object> consumer) {
     for (Map.Entry<AttributeKey<?>, Object> entry : data.entrySet()) {
       AttributeKey key = entry.getKey();
       Object value = entry.getValue();
@@ -77,6 +78,11 @@ final class AttributesMap implements ReadableAttributes {
   @Override
   public Map<AttributeKey<?>, Object> asMap() {
     return Collections.unmodifiableMap(data);
+  }
+
+  @Override
+  public AttributesBuilder toBuilder() {
+    return Attributes.builder().putAll(this);
   }
 
   @Override
@@ -91,7 +97,7 @@ final class AttributesMap implements ReadableAttributes {
         + '}';
   }
 
-  ReadableAttributes immutableCopy() {
+  Attributes immutableCopy() {
     Map<AttributeKey<?>, Object> dataCopy = new LinkedHashMap<>(data);
     return new AttributesMap(capacity, Collections.unmodifiableMap(dataCopy));
   }

@@ -6,17 +6,78 @@
 
 #### Breaking Changes
 
+- The `Labels.ArrayBackedLabelsBuilder` class has been made non-public. 
+You can still access the `LabelsBuilder` functionality via the `Labels.builder()` method.
+- Methods deprecated in the 0.12.0 release have been removed or made non-public:
+    - The `HttpTraceContext` class has been removed.
+    - The `toBuilder()` method on the OpenTelemetry interface has been removed.
+    - The `Attributes.builder(Attributes)` method has been removed in favor of `Attributes.toBuilder(Attributes)`.
+    - The `DefaultContextPropagators` class has made non-public.
+    - The `TraceMultiPropagator` builder has been removed in favor of a simple factory method. 
+    - The `value()` method on the `StatusCode` enum has been removed.
+    - The Baggage `EntryMetadata` class has been removed in favor of the `BaggageEntryMetadata` interface.
+    - The `setCallback()` method on the asynchronous metric instruments has been removed. 
+
+#### Enhancements
+
+- An `asMap` method has been added to the `Labels` interface, to expose them as a `java.util.Map`.
+- You can now enable strict Context verification via a system property (`-Dio.opentelemetry.context.enableStrictContext=true`)
+Enabling this mode will make sure that all `Scope`s that are created are closed, and generate log messages if they 
+are not closed before being garbage collected. This mode of operation is CPU intensive, so be careful before
+enabling it in high-throughput environments that do not need this strict verification. See the javadoc on the 
+`io.opentelemetry.context.Context` interface for details. 
+
+#### Miscellaneous
+
+- The API has been broken into separate modules, in preparation for the 1.0 release of the tracing API.
+If you depend on the `opentelemetry-api` module, you should get the rest of the API modules as transitive dependencies.
+
+### SDK
+
+#### Miscellaneous
+
+- The `SpanData.Link.getContext()` method has been deprecated in favor of a new `SpanData.Link.getSpanContext()`. 
+The deprecated method will be removed in the next release of the SDK.
+
+### Extensions
+
+#### Breaking Changes
+
+- The deprecated `opentelemetry-extension-runtime-metrics` module has been removed. The functionality is available in the 
+opentelemetry-java-instrumentation project under a different module name.
+- The deprecated `trace-utils` module has been removed.
+
+-----
+
+## Version 0.12.0 - 2020-12-04
+
+### API
+
+#### Bugfixes
+
+- Usages of tracers and meters on all `OpenTelemetry` instances were being delegated to the global Meter and Tracer.
+This has been corrected, and all instances should have independent Tracer and Meter instances.
+
+#### Breaking Changes
+
 - The `AttributesBuilder` no long accepts null values for array-valued attributes with numeric or boolean types.
 - The `TextMapPropagator.fields()` method now returns a `Collection` rather than a `List`.
 - `Labels` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - `TraceState` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
 - `Attributes` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- The `ReadableAttributes` interface has been removed, as it was redundant with the `Attributes` interface. All APIs that
+used or returned `ReadableAttributes` should accept or return standard `Attributes` implementations.
 - `SpanContext` has been converted to an interface, from an abstract class. Its API has otherwise remained the same.
+- The functional `AttributeConsumer` interface has been removed and replaced with a standard `java.util.function.BiConsumer`.
+- The signature of the `BaggageBuilder.put(String, String, EntryMetadata entryMetadata)` 
+method has been changed to `put(String, String, BaggageEntryMetadata)`
 
 #### Enhancements
 
 - A `builder()` method has been added to the OpenTelemetry interface to facilitate constructing implementations.
 - An `asMap()` method has been added to the `Attributes` interface to enable conversion to a standard `java.util.Map`.
+- An `asMap()` method has been added to the `Baggage` interface to enable conversion to a standard `java.util.Map`.
+- An `asMap()` method has been added to the `TraceState` interface to enable conversion to a standard `java.util.Map`.
 - The Semantic Attributes constants have been updated to the version in the yaml spec as of Dec 1, 2020.
 
 #### Miscellaneous
@@ -29,11 +90,13 @@ You can access the same functionality via static methods on the `ContextPropagat
 - The `setCallback()` method on the asynchronous metric instruments has been deprecated and will be removed in 0.13.0. 
 Instead, use the `setCallback()` method on the builder for the instruments.
 - The `value()` method on the `StatusCode` enum has been deprecated and will be removed in 0.13.0.
+- The Baggage `EntryMetadata` class has been deprecated in favor of the `BaggageEntryMetadata` interface. The class will be made non-public in 0.13.0.
 
 ### Extensions
 
 - The `opentelemetry-extension-runtime-metrics` module has been deprecated. The functionality is available in the 
 opentelemetry-java-instrumentation project under a different module name. The module here will be removed in 0.13.0.
+- The `trace-utils` module has been deprecated. If you need this module, please let us know! The module will be removed in 0.13.0.
  
 ### SDK
 
@@ -45,7 +108,8 @@ opentelemetry-java-instrumentation project under a different module name. The mo
 
 #### Enhancements
 
-- The OpenTelemetrySdk builder now supports the addition of SpanProcessors to the resulting SDK.
+- The OpenTelemetrySdk builder now supports the addition of `SpanProcessor`s to the resulting SDK.
+- The OpenTelemetrySdk builder now supports the assignment of an `IdGenerator` to the resulting SDK.
 - The `ReadableSpan` interface now exposes the `Span.Kind` of the span.
 - The SDK no longer depends on the guava library.
 - The parent SpanContext is now exposed on the `SpanData` interface.
@@ -74,10 +138,11 @@ and the classes in it have been repackaged into the `io.opentelemetry.sdk.extens
 
 - The `opentelemetry-sdk-extension-resources` now includes resource attributes for the process runtime via the `ProcessRuntimeResource` class.
 This is included in the Resource SPI implementation that the module provides.
+- The `opentelemetry-sdk-extension-aws` extension now will auto-detect AWS Lambda resource attributes.
 
 -----
 
-## Version 0.11.0 - 2010-11-18
+## Version 0.11.0 - 2020-11-18
 
 ### API
 
@@ -136,7 +201,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 
 -----
 
-## Version 0.10.0 - 2010-11-06
+## Version 0.10.0 - 2020-11-06
 
 ### API
 

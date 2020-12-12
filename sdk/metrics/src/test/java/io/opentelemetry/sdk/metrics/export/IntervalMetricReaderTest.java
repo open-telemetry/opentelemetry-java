@@ -42,14 +42,16 @@ class IntervalMetricReaderTest {
       Collections.singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
-      MetricData.create(
+      MetricData.createDoubleSum(
           Resource.getEmpty(),
           InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
           "my metric",
           "my metric description",
           "us",
-          MetricData.Type.MONOTONIC_LONG,
-          LONG_POINT_LIST);
+          MetricData.DoubleSumData.create(
+              /* isMonotonic= */ true,
+              MetricData.AggregationTemporality.CUMULATIVE,
+              LONG_POINT_LIST));
 
   @Mock private MetricProducer metricProducer;
 

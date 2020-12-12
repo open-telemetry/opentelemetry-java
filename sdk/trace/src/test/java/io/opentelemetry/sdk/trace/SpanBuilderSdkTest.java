@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -205,7 +204,7 @@ class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       SpanData spanData = span.toSpanData();
-      ReadableAttributes attrs = spanData.getAttributes();
+      Attributes attrs = spanData.getAttributes();
       assertThat(attrs.size()).isEqualTo(5);
       assertThat(attrs.get(stringKey("string"))).isEqualTo("value");
       assertThat(attrs.get(longKey("long"))).isEqualTo(12345L);
@@ -229,7 +228,7 @@ class SpanBuilderSdkTest {
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      ReadableAttributes attrs = span.toSpanData().getAttributes();
+      Attributes attrs = span.toSpanData().getAttributes();
       assertThat(attrs.size()).isEqualTo(5);
       assertThat(attrs.get(stringKey("string"))).isEqualTo("value");
       assertThat(attrs.get(longKey("long"))).isEqualTo(12345L);
@@ -246,7 +245,7 @@ class SpanBuilderSdkTest {
     span.setAttribute("boolean2", true);
     span.setAttribute(stringKey("stringAttribute2"), "attrvalue");
 
-    ReadableAttributes attrs = span.toSpanData().getAttributes();
+    Attributes attrs = span.toSpanData().getAttributes();
     assertThat(attrs.size()).isEqualTo(5);
     assertThat(attrs.get(stringKey("string2"))).isNull();
     assertThat(attrs.get(longKey("long2"))).isNull();
@@ -292,14 +291,14 @@ class SpanBuilderSdkTest {
     spanBuilder.setAttribute("key2", "value2");
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
 
-    ReadableAttributes beforeAttributes = span.toSpanData().getAttributes();
+    Attributes beforeAttributes = span.toSpanData().getAttributes();
     assertThat(beforeAttributes.size()).isEqualTo(2);
     assertThat(beforeAttributes.get(stringKey("key1"))).isEqualTo("value1");
     assertThat(beforeAttributes.get(stringKey("key2"))).isEqualTo("value2");
 
     spanBuilder.setAttribute("key3", "value3");
 
-    ReadableAttributes afterAttributes = span.toSpanData().getAttributes();
+    Attributes afterAttributes = span.toSpanData().getAttributes();
     assertThat(afterAttributes.size()).isEqualTo(2);
     assertThat(afterAttributes.get(stringKey("key1"))).isEqualTo("value1");
     assertThat(afterAttributes.get(stringKey("key2"))).isEqualTo("value2");
@@ -364,7 +363,7 @@ class SpanBuilderSdkTest {
     }
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      ReadableAttributes attrs = span.toSpanData().getAttributes();
+      Attributes attrs = span.toSpanData().getAttributes();
       assertThat(attrs.size()).isEqualTo(maxNumberOfAttrs);
       for (int i = 0; i < maxNumberOfAttrs; i++) {
         assertThat(attrs.get(longKey("key" + i))).isEqualTo(i);
@@ -403,7 +402,7 @@ class SpanBuilderSdkTest {
         Arrays.asList("small", null, "very large string that we have to cut"));
 
     try {
-      ReadableAttributes attrs = span.toSpanData().getAttributes();
+      Attributes attrs = span.toSpanData().getAttributes();
       assertThat(attrs.get(stringKey("builderStringNull"))).isEqualTo(null);
       assertThat(attrs.get(stringKey("builderStringSmall"))).isEqualTo("small");
       assertThat(attrs.get(stringKey("builderStringLarge"))).isEqualTo("very large");
@@ -507,7 +506,7 @@ class SpanBuilderSdkTest {
                           String traceId,
                           String name,
                           Kind spanKind,
-                          ReadableAttributes attributes,
+                          Attributes attributes,
                           List<Link> parentLinks) {
                         return new SamplingResult() {
                           @Override
@@ -555,7 +554,7 @@ class SpanBuilderSdkTest {
                           String traceId,
                           String name,
                           Kind spanKind,
-                          ReadableAttributes attributes,
+                          Attributes attributes,
                           List<Link> parentLinks) {
                         return new SamplingResult() {
                           @Override

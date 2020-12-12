@@ -248,34 +248,26 @@ class OtlpGrpcMetricExporterTest {
   private static MetricData generateFakeMetric() {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
-    return MetricData.create(
+    return MetricData.createLongSum(
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
         "name",
         "description",
         "1",
-        MetricData.Type.MONOTONIC_LONG,
-        Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
+        MetricData.LongSumData.create(
+            /* isMonotonic= */ true,
+            MetricData.AggregationTemporality.CUMULATIVE,
+            Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5))));
   }
 
   private static final class FakeCollector extends MetricsServiceGrpc.MetricsServiceImplBase {
     private final List<ResourceMetrics> receivedMetrics = new ArrayList<>();
     private Status returnedStatus = Status.OK;
-    private long delayMs = 0;
 
     @Override
     public void export(
         ExportMetricsServiceRequest request,
         StreamObserver<ExportMetricsServiceResponse> responseObserver) {
-
-      if (delayMs > 0) {
-        try {
-          // add a delay to simulate export taking a long time
-          TimeUnit.MILLISECONDS.sleep(delayMs);
-        } catch (InterruptedException e) {
-          // do nothing
-        }
-      }
 
       receivedMetrics.addAll(request.getResourceMetricsList());
       responseObserver.onNext(ExportMetricsServiceResponse.newBuilder().build());
@@ -296,10 +288,6 @@ class OtlpGrpcMetricExporterTest {
 
     void setReturnedStatus(Status returnedStatus) {
       this.returnedStatus = returnedStatus;
-    }
-
-    void setCollectorDelay(long delayMs) {
-      this.delayMs = delayMs;
     }
   }
 }

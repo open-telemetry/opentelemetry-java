@@ -14,9 +14,8 @@ import io.jaegertracing.thriftjava.SpanRef;
 import io.jaegertracing.thriftjava.SpanRefType;
 import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ReadableAttributes;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceId;
@@ -173,15 +172,9 @@ final class Adapter {
    * @return a collection of Jaeger key values
    * @see #toTag
    */
-  static List<Tag> toTags(ReadableAttributes attributes) {
+  static List<Tag> toTags(Attributes attributes) {
     List<Tag> results = new ArrayList<>();
-    attributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            results.add(toTag(key, value));
-          }
-        });
+    attributes.forEach((key, value) -> results.add(toTag(key, value)));
     return results;
   }
 
@@ -193,7 +186,7 @@ final class Adapter {
    * @return a Jaeger key value
    */
   // VisibleForTesting
-  static <T> Tag toTag(AttributeKey<T> key, T value) {
+  static Tag toTag(AttributeKey<?> key, Object value) {
     switch (key.getType()) {
       case STRING:
         return new Tag(key.getKey(), TagType.STRING).setVStr((String) value);
@@ -236,8 +229,8 @@ final class Adapter {
     // https://github.com/open-telemetry/opentelemetry-java/pull/481/files#r312577862
     return new SpanRef(
         SpanRefType.FOLLOWS_FROM,
-        TraceId.traceIdLowBytesAsLong(link.getContext().getTraceIdAsHexString()),
-        TraceId.traceIdHighBytesAsLong(link.getContext().getTraceIdAsHexString()),
-        SpanId.asLong(link.getContext().getSpanIdAsHexString()));
+        TraceId.traceIdLowBytesAsLong(link.getSpanContext().getTraceIdAsHexString()),
+        TraceId.traceIdHighBytesAsLong(link.getSpanContext().getTraceIdAsHexString()),
+        SpanId.asLong(link.getSpanContext().getSpanIdAsHexString()));
   }
 }

@@ -28,8 +28,7 @@ public enum TestSdk {
           InstrumentationLibraryInfo instrumentationLibraryInfo =
               InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics", null);
 
-          return new MeterSdk(
-              meterProviderSharedState, instrumentationLibraryInfo, new ViewRegistry());
+          return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo);
         }
       });
 

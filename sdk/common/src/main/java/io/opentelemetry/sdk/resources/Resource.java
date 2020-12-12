@@ -11,11 +11,9 @@ import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_VERSION;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
 import java.util.Objects;
@@ -113,7 +111,7 @@ public abstract class Resource {
    *
    * @return a map of attributes.
    */
-  public abstract ReadableAttributes getAttributes();
+  public abstract Attributes getAttributes();
 
   @Memoized
   @Override
@@ -156,34 +154,17 @@ public abstract class Resource {
     }
 
     AttributesBuilder attrBuilder = Attributes.builder();
-    Merger merger = new Merger(attrBuilder);
-    other.getAttributes().forEach(merger);
-    this.getAttributes().forEach(merger);
+    attrBuilder.putAll(other.getAttributes());
+    attrBuilder.putAll(this.getAttributes());
     return new AutoValue_Resource(attrBuilder.build());
   }
 
-  private static final class Merger implements AttributeConsumer {
-    private final AttributesBuilder attrBuilder;
-
-    private Merger(AttributesBuilder attrBuilder) {
-      this.attrBuilder = attrBuilder;
-    }
-
-    @Override
-    public <T> void accept(AttributeKey<T> key, T value) {
-      attrBuilder.put(key, value);
-    }
-  }
-
-  private static void checkAttributes(ReadableAttributes attributes) {
+  private static void checkAttributes(Attributes attributes) {
     attributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            Utils.checkArgument(
-                isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
-            Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
-          }
+        (key, value) -> {
+          Utils.checkArgument(
+              isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
+          Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
         });
   }
 

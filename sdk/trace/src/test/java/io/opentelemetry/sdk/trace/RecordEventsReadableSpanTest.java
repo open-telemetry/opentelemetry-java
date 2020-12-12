@@ -16,11 +16,9 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.opentelemetry.api.common.AttributeConsumer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.common.ReadableAttributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -835,7 +833,7 @@ class RecordEventsReadableSpanTest {
 
   private void verifySpanData(
       SpanData spanData,
-      final ReadableAttributes attributes,
+      final Attributes attributes,
       List<Event> eventData,
       List<Link> links,
       String spanName,
@@ -858,15 +856,9 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.hasEnded()).isEqualTo(hasEnded);
 
     // verify equality manually, since the implementations don't all equals with each other.
-    ReadableAttributes spanDataAttributes = spanData.getAttributes();
+    Attributes spanDataAttributes = spanData.getAttributes();
     assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
-    spanDataAttributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            assertThat(attributes.get(key)).isEqualTo(value);
-          }
-        });
+    spanDataAttributes.forEach((key, value) -> assertThat(attributes.get(key)).isEqualTo(value));
   }
 
   @Test
@@ -882,7 +874,7 @@ class RecordEventsReadableSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     final AttributesMap attributesWithCapacity = new AttributesMap(32);
-    attributes.forEach(attributesWithCapacity::put);
+    attributes.forEach((key, value) -> attributesWithCapacity.put((AttributeKey) key, value));
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =

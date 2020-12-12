@@ -12,8 +12,10 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -31,7 +33,7 @@ class ViewRegistryTest {
         InstrumentSelector.newBuilder().instrumentType(InstrumentType.COUNTER).build();
     AggregationConfiguration specification =
         AggregationConfiguration.create(
-            Aggregations.count(), AggregationConfiguration.Temporality.CUMULATIVE);
+            Aggregations.count(), MetricData.AggregationTemporality.CUMULATIVE);
 
     viewRegistry.registerView(selector, specification);
 
@@ -54,17 +56,18 @@ class ViewRegistryTest {
 
     AggregationConfiguration specification =
         AggregationConfiguration.create(
-            Aggregations.count(), AggregationConfiguration.Temporality.CUMULATIVE);
-    Batcher expectedBatcher =
-        Batchers.getCumulativeAllLabels(
+            Aggregations.count(), MetricData.AggregationTemporality.CUMULATIVE);
+    InstrumentProcessor expectedInstrumentProcessor =
+        InstrumentProcessor.getCumulativeAllLabels(
             descriptor, providerSharedState, meterSharedState, Aggregations.count());
 
     when(chooser.chooseAggregation(descriptor)).thenReturn(specification);
 
-    Batcher result = viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
+    InstrumentProcessor result =
+        viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
 
     assertThat(result.generatesDeltas()).isFalse();
-    assertThat(result).isEqualTo(expectedBatcher);
+    assertThat(result).isEqualTo(expectedInstrumentProcessor);
 
     assertThat(result).isNotNull();
   }
@@ -85,17 +88,18 @@ class ViewRegistryTest {
 
     AggregationConfiguration specification =
         AggregationConfiguration.create(
-            Aggregations.count(), AggregationConfiguration.Temporality.DELTA);
-    Batcher expectedBatcher =
-        Batchers.getDeltaAllLabels(
+            Aggregations.count(), MetricData.AggregationTemporality.DELTA);
+    InstrumentProcessor expectedInstrumentProcessor =
+        InstrumentProcessor.getDeltaAllLabels(
             descriptor, providerSharedState, meterSharedState, Aggregations.count());
 
     when(chooser.chooseAggregation(descriptor)).thenReturn(specification);
 
-    Batcher result = viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
+    InstrumentProcessor result =
+        viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
 
     assertThat(result.generatesDeltas()).isTrue();
-    assertThat(result).isEqualTo(expectedBatcher);
+    assertThat(result).isEqualTo(expectedInstrumentProcessor);
 
     assertThat(result).isNotNull();
   }

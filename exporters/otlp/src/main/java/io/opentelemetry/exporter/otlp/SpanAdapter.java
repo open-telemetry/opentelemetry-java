@@ -13,8 +13,6 @@ import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 
-import io.opentelemetry.api.common.AttributeConsumer;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -96,13 +94,7 @@ final class SpanAdapter {
     builder.setEndTimeUnixNano(spanData.getEndEpochNanos());
     spanData
         .getAttributes()
-        .forEach(
-            new AttributeConsumer() {
-              @Override
-              public <T> void accept(AttributeKey<T> key, T value) {
-                builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
-              }
-            });
+        .forEach((key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
     builder.setDroppedAttributesCount(
         spanData.getTotalAttributeCount() - spanData.getAttributes().size());
     for (Event event : spanData.getEvents()) {
@@ -139,13 +131,7 @@ final class SpanAdapter {
     builder.setTimeUnixNano(event.getEpochNanos());
     event
         .getAttributes()
-        .forEach(
-            new AttributeConsumer() {
-              @Override
-              public <T> void accept(AttributeKey<T> key, T value) {
-                builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
-              }
-            });
+        .forEach((key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
     builder.setDroppedAttributesCount(
         event.getTotalAttributeCount() - event.getAttributes().size());
     return builder.build();
@@ -153,17 +139,13 @@ final class SpanAdapter {
 
   static Span.Link toProtoSpanLink(SpanData.Link link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
-    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceIdAsHexString()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanIdAsHexString()));
+    builder.setTraceId(
+        TraceProtoUtils.toProtoTraceId(link.getSpanContext().getTraceIdAsHexString()));
+    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getSpanContext().getSpanIdAsHexString()));
     // TODO: Set TraceState;
     Attributes attributes = link.getAttributes();
     attributes.forEach(
-        new AttributeConsumer() {
-          @Override
-          public <T> void accept(AttributeKey<T> key, T value) {
-            builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
-          }
-        });
+        (key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
 
     builder.setDroppedAttributesCount(link.getTotalAttributeCount() - attributes.size());
     return builder.build();

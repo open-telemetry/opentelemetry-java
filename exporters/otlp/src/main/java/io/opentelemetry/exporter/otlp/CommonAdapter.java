@@ -15,7 +15,7 @@ import java.util.List;
 
 final class CommonAdapter {
   @SuppressWarnings("unchecked")
-  public static <T> KeyValue toProtoAttribute(AttributeKey<T> key, T value) {
+  public static KeyValue toProtoAttribute(AttributeKey<?> key, Object value) {
     KeyValue.Builder builder = KeyValue.newBuilder().setKey(key.getKey());
     switch (key.getType()) {
       case STRING:

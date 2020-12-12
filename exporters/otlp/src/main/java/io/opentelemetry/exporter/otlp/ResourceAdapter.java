@@ -5,8 +5,6 @@
 
 package io.opentelemetry.exporter.otlp;
 
-import io.opentelemetry.api.common.AttributeConsumer;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.proto.resource.v1.Resource;
 
 final class ResourceAdapter {
@@ -14,13 +12,7 @@ final class ResourceAdapter {
     final Resource.Builder builder = Resource.newBuilder();
     resource
         .getAttributes()
-        .forEach(
-            new AttributeConsumer() {
-              @Override
-              public <T> void accept(AttributeKey<T> key, T value) {
-                builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
-              }
-            });
+        .forEach((key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
     return builder.build();
   }
 
