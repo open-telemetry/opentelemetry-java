@@ -370,11 +370,12 @@ class AttributesTest {
             .put("http.response_size", 100)
             .put("process.cpu_consumed", 33.44)
             .put("error", true)
+            .put("success", "true")
             .build();
 
     assertThat(attributes.toString())
         .isEqualTo(
             "{error=true, http.response_size=100, "
-                + "otel.status_code=OK, process.cpu_consumed=33.44}");
+                + "otel.status_code=\"OK\", process.cpu_consumed=33.44, success=\"true\"}");
   }
 }
