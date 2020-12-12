@@ -74,7 +74,7 @@ class OpenTelemetryTest {
     TracerProvider tracerProvider = mock(TracerProvider.class);
     ContextPropagators contextPropagators = mock(ContextPropagators.class);
     OpenTelemetry openTelemetry =
-        OpenTelemetry.builder()
+        DefaultOpenTelemetry.builder()
             .setMeterProvider(meterProvider)
             .setTracerProvider(tracerProvider)
             .setPropagators(contextPropagators)
@@ -193,12 +193,12 @@ class OpenTelemetryTest {
     Tracer tracer1 = mock(Tracer.class);
     when(provider1.get("foo")).thenReturn(tracer1);
     when(provider1.get("foo", "1.0")).thenReturn(tracer1);
-    OpenTelemetry otel1 = OpenTelemetry.builder().setTracerProvider(provider1).build();
+    OpenTelemetry otel1 = DefaultOpenTelemetry.builder().setTracerProvider(provider1).build();
     TracerProvider provider2 = mock(TracerProvider.class);
     Tracer tracer2 = mock(Tracer.class);
     when(provider2.get("foo")).thenReturn(tracer2);
     when(provider2.get("foo", "1.0")).thenReturn(tracer2);
-    OpenTelemetry otel2 = OpenTelemetry.builder().setTracerProvider(provider2).build();
+    OpenTelemetry otel2 = DefaultOpenTelemetry.builder().setTracerProvider(provider2).build();
 
     assertThat(otel1.getTracer("foo")).isSameAs(tracer1);
     assertThat(otel1.getTracer("foo", "1.0")).isSameAs(tracer1);
@@ -212,12 +212,12 @@ class OpenTelemetryTest {
     Meter meter1 = mock(Meter.class);
     when(provider1.get("foo")).thenReturn(meter1);
     when(provider1.get("foo", "1.0")).thenReturn(meter1);
-    OpenTelemetry otel1 = OpenTelemetry.builder().setMeterProvider(provider1).build();
+    OpenTelemetry otel1 = DefaultOpenTelemetry.builder().setMeterProvider(provider1).build();
     MeterProvider provider2 = mock(MeterProvider.class);
     Meter meter2 = mock(Meter.class);
     when(provider2.get("foo")).thenReturn(meter2);
     when(provider2.get("foo", "1.0")).thenReturn(meter2);
-    OpenTelemetry otel2 = OpenTelemetry.builder().setMeterProvider(provider2).build();
+    OpenTelemetry otel2 = DefaultOpenTelemetry.builder().setMeterProvider(provider2).build();
 
     assertThat(otel1.getMeter("foo")).isSameAs(meter1);
     assertThat(otel1.getMeter("foo", "1.0")).isSameAs(meter1);
@@ -228,9 +228,9 @@ class OpenTelemetryTest {
   @Test
   void independentNonGlobalPropagators() {
     ContextPropagators propagators1 = mock(ContextPropagators.class);
-    OpenTelemetry otel1 = OpenTelemetry.builder().setPropagators(propagators1).build();
+    OpenTelemetry otel1 = DefaultOpenTelemetry.builder().setPropagators(propagators1).build();
     ContextPropagators propagators2 = mock(ContextPropagators.class);
-    OpenTelemetry otel2 = OpenTelemetry.builder().setPropagators(propagators2).build();
+    OpenTelemetry otel2 = DefaultOpenTelemetry.builder().setPropagators(propagators2).build();
 
     assertThat(otel1.getPropagators()).isSameAs(propagators1);
     assertThat(otel2.getPropagators()).isSameAs(propagators2);
