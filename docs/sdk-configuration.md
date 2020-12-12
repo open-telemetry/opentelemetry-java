@@ -79,7 +79,8 @@ setting SDK implementations and is not meant for use with partial SDKs.
 class OpenTelemetrySdkBuilder {
   public OpenTelemetrySdkBuilder setTracerProvider(TracerSdkProvider tracerProvider);
   public OpenTelemetrySdkBuilder setMeterProvider(MeterSdkProvider meterProvider);
-  public OpenTelemetrySdk build();
+  public OpenTelemetrySdk buildAndSetAsGlobal();
+  public OpenTelemetrySdk buildWithoutSettingAsGlobal();
 }
 ```
 
@@ -356,8 +357,12 @@ built instance of a signal provider. For this case, we must store an SDK instanc
 variable. It is expected that frameworks or end-users will set the SDK as the global to support
 instrumentation that requires this.
 
-Before an SDK has been set, access to the global SDK will throw an exception and will not return a
-default. The global can only be used after an SDK has been configured. SDKs must be configured early
+Before an SDK has been set, access to the global `OpenTelemetry` will return a no-op 
+`DefaultOpenTelemetry`. This is because it is possible library instrumentation is using the global,
+and it may even use it during the processing of a request (rather than only at initialization time).
+For this reason, we cannot throw an exception. Instead, if the SDK is detected on the classpath, we
+will log a `SEVERE` warning once-only indicating the API has been accessed before the SDK configured
+with directions on how a user could solve the problem. SDKs must be configured early
 in an application to ensure it applies to all of the logic in the app, and this will generally be
 ensured by the configuration framework such as Spring. For application developers, this restriction
 should not have any effect one way or the other in the vast majority of cases.
@@ -475,7 +480,6 @@ end-users to affect it negatively.
 Some highly buggy code that could be enabled by mutability.
 
 ```java
-
 class SleuthUsingService {
   
   @Inject
@@ -490,6 +494,70 @@ class SleuthUsingService {
   }
 }
 ```
+
+## TracerSdkManagement
+
+With the proposal to make a configured SDK fully built rather than allowing configuration
+mutability, the SDK management interface would only have `shutdown` and `forceFlush`. It seems
+reasonable to actually remove `shutdown` from the `TracerSdkProvider` - the SDK provider is mostly
+a bag of parts and has no intrinsic component, if instead components like `BatchSpanProcessor` and
+`SpanExporter` implement `Closeable`, we can model shutdown as the responsibility of the creator of
+the resources, which is idiomatic. In DI frameworks, this would generally be automatic. This would
+prevent the case where two `TracerProvider` share an exporter and one of them is shutdown - when
+shutting down the exporter, shut down the exporter.
+
+```java
+public class MyApp {
+ 
+    public static void main(String[] args) {
+        try (OtlpGrpcSpanExporter otlpExporter = OtlpGrpcSpanExporter.builder().build();
+              BatchSpanProcessor otlpProcessor = BatchSpanProcessor.builder(otlpExporter).build()) {
+            OpenTelemetrySdk sdk = OpenTelemetrySdk.builder()
+                .setTracerProvider(TracerSdkProvider.builder()
+                                        .addSpanProcessor(otlpProcessor)
+                                        .build())
+                .build();
+ 
+            Server server = Server.builder().setOpenTelemetry(sdk).build();
+            server.listenAndServe();
+        }
+    }
+
+}
+```
+
+```java
+@Component
+public class MyModule {
+
+    @Bean
+    // If SpanExporter extends Closeable, it's automatically closed
+    OtlpGrpcSpanExporter otlpExporter() {
+        return OtlpGrpcSpanExporter.builder().build()
+    }
+   
+    @Bean
+    // If BatchSpanProcessor extends Closeable, it's automatically closed
+    BatchSpanProcessor otlpSpanProcessor(OtlpGrpcSpanExporter otlpExporter) {
+        return BatchSpanProcessor.builder(otlpExporter).build();
+    }
+ 
+    @Bean
+    TracerSdkProvider tracerProvider(BatchSpanProcessor otlpSpanProcessor) {
+        return TracerSdkProvider.builder().addSpanProcessor(otlpSpanProcessor).build();
+    }
+
+    @Bean
+    OpenTelemetrySdk openTelemetry(TracerSdkProvider tracerProvider) {
+        return OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
+    }
+}
+```
+
+The `OpenTelemetrySdk` and `TracerSdkProvider` are still exposed to provide access to `forceFlush`.
+This makes it seem like `forceFlush`, though implemented in the SDK, may be more appropriate for the
+API as it's an end-user API - it could make the separation of concerns of the initialization of the
+SDK and the end-user tracing API complete. But the spec currently does not allow it.
 
 ## Library instrumentation
 
