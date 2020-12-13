@@ -364,4 +364,11 @@ class AttributesTest {
     assertThat(attributes.get(doubleArrayKey("arrayDouble"))).isEqualTo(singletonList(1.0d));
     assertThat(attributes.get(booleanArrayKey("arrayBool"))).isEqualTo(singletonList(true));
   }
+
+  @Test
+  void onlySameTypeCanRetrieveValue() {
+    Attributes attributes = Attributes.of(stringKey("animal"), "cat");
+    assertThat(attributes.get(stringKey("animal"))).isEqualTo("cat");
+    assertThat(attributes.get(longKey("animal"))).isNull();
+  }
 }

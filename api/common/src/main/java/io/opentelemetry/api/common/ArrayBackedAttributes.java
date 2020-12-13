@@ -8,6 +8,7 @@ package io.opentelemetry.api.common;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiConsumer;
 import javax.annotation.concurrent.Immutable;
@@ -16,6 +17,11 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
     implements Attributes {
+
+  // We only compare the key name, not type, when constructing, to allow deduping keys with the
+  // same name but different type.
+  private static final Comparator<AttributeKey<?>> KEY_COMPARATOR_FOR_CONSTRUCTION =
+      Comparator.comparing(AttributeKey::getKey);
 
   static final Attributes EMPTY = Attributes.builder().build();
 
@@ -53,6 +59,7 @@ abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey
         data[i] = null;
       }
     }
-    return new AutoValue_ArrayBackedAttributes(sortAndFilter(data, /* filterNullValues= */ true));
+    return new AutoValue_ArrayBackedAttributes(
+        sortAndFilter(data, /* filterNullValues= */ true, KEY_COMPARATOR_FOR_CONSTRUCTION));
   }
 }

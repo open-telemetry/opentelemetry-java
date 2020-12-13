@@ -9,6 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -58,26 +59,42 @@ public abstract class ImmutableKeyValuePairs<K, V> {
 
   /**
    * Sorts and dedupes the key/value pairs in {@code data}. If {@code filterNullValues} is {@code
-   * true}, {@code null} values will be removed.
+   * true}, {@code null} values will be removed. Keys must be {@link Comparable}.
    */
   public static List<Object> sortAndFilter(Object[] data, boolean filterNullValues) {
+    return sortAndFilter(data, filterNullValues, Comparator.naturalOrder());
+  }
+
+  /**
+   * Sorts and dedupes the key/value pairs in {@code data}. If {@code filterNullValues} is {@code
+   * true}, {@code null} values will be removed. Keys will be compared with the given {@link
+   * Comparator}.
+   */
+  public static List<Object> sortAndFilter(
+      Object[] data, boolean filterNullValues, Comparator<?> keyComparator) {
     checkArgument(
         data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
 
-    mergeSort(data);
-    return dedupe(data, filterNullValues);
+    mergeSort(data, keyComparator);
+    return dedupe(data, filterNullValues, keyComparator);
   }
 
-  private static void mergeSort(Object[] data) {
+  private static void mergeSort(Object[] data, Comparator<?> keyComparator) {
     Object[] workArray = new Object[data.length];
-    mergeSort(data, workArray, data.length);
+    mergeSort(data, workArray, data.length, keyComparator);
   }
 
   // note: merge sort implementation cribbed from this wikipedia article:
   // https://en.wikipedia.org/wiki/Merge_sort (this is the top-down variant)
-  private static void mergeSort(Object[] sourceArray, Object[] workArray, int n) {
+  private static void mergeSort(
+      Object[] sourceArray, Object[] workArray, int n, Comparator<?> keyComparatr) {
     System.arraycopy(sourceArray, 0, workArray, 0, sourceArray.length);
-    splitAndMerge(workArray, 0, n, sourceArray); // sort data from workArray[] into sourceArray[]
+    splitAndMerge(
+        workArray,
+        0,
+        n,
+        sourceArray,
+        keyComparatr); // sort data from workArray[] into sourceArray[]
   }
 
   /**
@@ -85,17 +102,21 @@ public abstract class ImmutableKeyValuePairs<K, V> {
    * inclusive; endIndex is exclusive (targetArray[endIndex] is not in the set).
    */
   private static void splitAndMerge(
-      Object[] workArray, int beginIndex, int endIndex, Object[] targetArray) {
+      Object[] workArray,
+      int beginIndex,
+      int endIndex,
+      Object[] targetArray,
+      Comparator<?> keyComparator) {
     if (endIndex - beginIndex <= 2) { // if single element in the run, it's sorted
       return;
     }
     // split the run longer than 1 item into halves
     int midpoint = ((endIndex + beginIndex) / 4) * 2; // note: due to it's being key/value pairs
     // recursively sort both runs from array targetArray[] into workArray[]
-    splitAndMerge(targetArray, beginIndex, midpoint, workArray);
-    splitAndMerge(targetArray, midpoint, endIndex, workArray);
+    splitAndMerge(targetArray, beginIndex, midpoint, workArray, keyComparator);
+    splitAndMerge(targetArray, midpoint, endIndex, workArray, keyComparator);
     // merge the resulting runs from array workArray[] into targetArray[]
-    merge(workArray, beginIndex, midpoint, endIndex, targetArray);
+    merge(workArray, beginIndex, midpoint, endIndex, targetArray, keyComparator);
   }
 
   /**
@@ -103,8 +124,13 @@ public abstract class ImmutableKeyValuePairs<K, V> {
    * middleIndex:endIndex-1]. Result is targetArray[ beginIndex:endIndex-1].
    */
   @SuppressWarnings("unchecked")
-  private static <K extends Comparable<K>> void merge(
-      Object[] sourceArray, int beginIndex, int middleIndex, int endIndex, Object[] targetArray) {
+  private static <K> void merge(
+      Object[] sourceArray,
+      int beginIndex,
+      int middleIndex,
+      int endIndex,
+      Object[] targetArray,
+      Comparator<K> keyComparator) {
     int leftKeyIndex = beginIndex;
     int rightKeyIndex = middleIndex;
 
@@ -114,7 +140,8 @@ public abstract class ImmutableKeyValuePairs<K, V> {
       // If left run head exists and is <= existing right run head.
       if (leftKeyIndex < middleIndex - 1
           && (rightKeyIndex >= endIndex - 1
-              || compareToNullSafe((K) sourceArray[leftKeyIndex], (K) sourceArray[rightKeyIndex])
+              || compareToNullSafe(
+                      (K) sourceArray[leftKeyIndex], (K) sourceArray[rightKeyIndex], keyComparator)
                   <= 0)) {
         targetArray[k] = sourceArray[leftKeyIndex];
         targetArray[k + 1] = sourceArray[leftKeyIndex + 1];
@@ -127,18 +154,20 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     }
   }
 
-  private static <K extends Comparable<K>> int compareToNullSafe(
-      @Nullable K key, @Nullable K pivotKey) {
+  private static <K> int compareToNullSafe(
+      @Nullable K key, @Nullable K pivotKey, Comparator<K> keyComparator) {
     if (key == null) {
       return pivotKey == null ? 0 : -1;
     }
     if (pivotKey == null) {
       return 1;
     }
-    return key.compareTo(pivotKey);
+    return keyComparator.compare(key, pivotKey);
   }
 
-  private static List<Object> dedupe(Object[] data, boolean filterNullValues) {
+  @SuppressWarnings("unchecked")
+  private static <K> List<Object> dedupe(
+      Object[] data, boolean filterNullValues, Comparator<K> keyComparator) {
     List<Object> result = new ArrayList<>(data.length);
     Object previousKey = null;
 
@@ -149,7 +178,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
       if (key == null) {
         continue;
       }
-      if (key.equals(previousKey)) {
+      if (previousKey != null && keyComparator.compare((K) key, (K) previousKey) == 0) {
         continue;
       }
       previousKey = key;
