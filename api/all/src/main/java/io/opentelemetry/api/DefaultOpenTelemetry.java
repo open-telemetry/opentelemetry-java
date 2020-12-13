@@ -20,6 +20,11 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public class DefaultOpenTelemetry implements OpenTelemetry {
   private static final Object mutex = new Object();
+  @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
+
+  private final TracerProvider tracerProvider;
+  private final MeterProvider meterProvider;
+  private volatile ContextPropagators propagators;
 
   static OpenTelemetry getGlobalOpenTelemetry() {
     if (globalOpenTelemetry == null) {
@@ -49,13 +54,6 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
   public static DefaultOpenTelemetryBuilder builder() {
     return new DefaultOpenTelemetryBuilder();
   }
-
-  @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
-
-  private final TracerProvider tracerProvider;
-  private final MeterProvider meterProvider;
-
-  private volatile ContextPropagators propagators;
 
   @Override
   public void setPropagators(ContextPropagators propagators) {
