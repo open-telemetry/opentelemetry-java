@@ -18,12 +18,12 @@ final class MultiTextMapPropagator implements TextMapPropagator {
   private final boolean iterateBackwards;
 
   /** Returns a {@link MultiTextMapPropagator} for the given {@code propagators}. */
-  public static TextMapPropagator create(TextMapPropagator... propagators) {
+  static TextMapPropagator create(TextMapPropagator... propagators) {
     return builder(propagators).build();
   }
 
   /** Returns a {@link MultiTextMapPropagator} for the given {@code propagators}. */
-  public static TextMapPropagator create(Iterable<TextMapPropagator> propagators) {
+  static TextMapPropagator create(Iterable<TextMapPropagator> propagators) {
     return builder(propagators).build();
   }
 
@@ -31,7 +31,7 @@ final class MultiTextMapPropagator implements TextMapPropagator {
    * Creates a {@link MultiTextMapPropagator} instance that will iterate in reverse order and will
    * stop extracts when the first delegate updates the context.
    */
-  public static TextMapPropagator createBackwards(TextMapPropagator... propagators) {
+  static TextMapPropagator createBackwards(TextMapPropagator... propagators) {
     return builder(propagators).stopExtractAfterFirst().iterateBackwards().build();
   }
 
@@ -40,7 +40,7 @@ final class MultiTextMapPropagator implements TextMapPropagator {
    *
    * @param propagators delegates
    */
-  public static TextMapPropagatorBuilder builder(TextMapPropagator... propagators) {
+  static TextMapPropagatorBuilder builder(TextMapPropagator... propagators) {
     return builder(Arrays.asList(propagators));
   }
 
@@ -49,7 +49,7 @@ final class MultiTextMapPropagator implements TextMapPropagator {
    *
    * @param propagators delegates
    */
-  public static TextMapPropagatorBuilder builder(Iterable<TextMapPropagator> propagators) {
+  static TextMapPropagatorBuilder builder(Iterable<TextMapPropagator> propagators) {
     return new TextMapPropagatorBuilder(propagators);
   }
 
