@@ -19,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
 /**
  * A Sampler that uses the sampled flag of the parent Span, if present. If the span has no parent,
  * this Sampler will use the "root" sampler that it is built with. See documentation on the {@link
- * Builder} methods for the details on the various configurable options.
+ * ParentBasedSamplerBuilder} methods for the details on the various configurable options.
  */
 @Immutable
 public class ParentBasedSampler implements Sampler {
@@ -30,7 +30,7 @@ public class ParentBasedSampler implements Sampler {
   private final Sampler localParentSampled;
   private final Sampler localParentNotSampled;
 
-  private ParentBasedSampler(
+  ParentBasedSampler(
       Sampler root,
       @Nullable Sampler remoteParentSampled,
       @Nullable Sampler remoteParentNotSampled,
@@ -91,78 +91,6 @@ public class ParentBasedSampler implements Sampler {
   @Override
   public String toString() {
     return getDescription();
-  }
-
-  /** A builder for creating ParentBased sampler instances. */
-  public static class Builder {
-
-    private final Sampler root;
-    private Sampler remoteParentSampled;
-    private Sampler remoteParentNotSampled;
-    private Sampler localParentSampled;
-    private Sampler localParentNotSampled;
-
-    /**
-     * Sets the {@link Sampler} to use when there is a remote parent that was sampled. If not set,
-     * defaults to always sampling if the remote parent was sampled.
-     *
-     * @return this Builder
-     */
-    public Builder setRemoteParentSampled(Sampler remoteParentSampled) {
-      this.remoteParentSampled = remoteParentSampled;
-      return this;
-    }
-
-    /**
-     * Sets the {@link Sampler} to use when there is a remote parent that was not sampled. If not
-     * set, defaults to never sampling when the remote parent isn't sampled.
-     *
-     * @return this Builder
-     */
-    public Builder setRemoteParentNotSampled(Sampler remoteParentNotSampled) {
-      this.remoteParentNotSampled = remoteParentNotSampled;
-      return this;
-    }
-
-    /**
-     * Sets the {@link Sampler} to use when there is a local parent that was sampled. If not set,
-     * defaults to always sampling if the local parent was sampled.
-     *
-     * @return this Builder
-     */
-    public Builder setLocalParentSampled(Sampler localParentSampled) {
-      this.localParentSampled = localParentSampled;
-      return this;
-    }
-
-    /**
-     * Sets the {@link Sampler} to use when there is a local parent that was not sampled. If not
-     * set, defaults to never sampling when the local parent isn't sampled.
-     *
-     * @return this Builder
-     */
-    public Builder setLocalParentNotSampled(Sampler localParentNotSampled) {
-      this.localParentNotSampled = localParentNotSampled;
-      return this;
-    }
-
-    /**
-     * Builds the {@link ParentBasedSampler}.
-     *
-     * @return the ParentBased sampler.
-     */
-    public Sampler build() {
-      return new ParentBasedSampler(
-          this.root,
-          this.remoteParentSampled,
-          this.remoteParentNotSampled,
-          this.localParentSampled,
-          this.localParentNotSampled);
-    }
-
-    Builder(Sampler root) {
-      this.root = root;
-    }
   }
 
   @Override
