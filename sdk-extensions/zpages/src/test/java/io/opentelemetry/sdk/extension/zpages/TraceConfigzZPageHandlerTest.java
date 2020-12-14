@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.ByteArrayOutputStream;
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceConfigzZPageHandler}. */
 public final class TraceConfigzZPageHandlerTest {
-  private static final TracerSdkManagement TRACER_SDK_MANAGEMENT =
+  private static final SdkTracerManagement TRACER_SDK_MANAGEMENT =
       OpenTelemetrySdk.getGlobalTracerManagement();
   private static final Map<String, String> emptyQueryMap = ImmutableMap.of();
 

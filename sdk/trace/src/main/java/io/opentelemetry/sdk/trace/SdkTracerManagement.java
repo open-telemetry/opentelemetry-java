@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the
  * Tracing SDK, as well as several lifecycle methods.
  */
-public interface TracerSdkManagement {
+public interface SdkTracerManagement {
 
   /**
    * Returns the active {@code TraceConfig}.
