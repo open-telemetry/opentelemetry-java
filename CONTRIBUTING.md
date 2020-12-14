@@ -74,6 +74,8 @@ which uses [google-java-format](https://github.com/google/google-java-format) li
     * static methods
     * instance methods
     * inner classes
+* Adding `toString()` overrides on classes is encouraged, but we only use `toString()` to provide debugging assistance. The implementations
+of all `toString()` methods should be considered to be unstable unless explicitly documented otherwise.
 
 If you notice any practice being applied in the project consistently that isn't listed here, please consider a pull request to add it.
 
