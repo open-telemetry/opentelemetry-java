@@ -4,6 +4,10 @@ on:
   pull_request:
     branches:
       - master
+    paths-ignore:
+      - "docs/**"
+      - "examples/**"
+      - "**.md"
 
 jobs:
   build:
