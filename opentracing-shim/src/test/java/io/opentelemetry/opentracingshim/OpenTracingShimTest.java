@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import org.junit.jupiter.api.Test;
 
 class OpenTracingShimTest {
@@ -25,7 +25,7 @@ class OpenTracingShimTest {
   @Test
   void createTracerShim_fromOpenTelemetryInstance() {
     OpenTelemetry openTelemetry = mock(OpenTelemetry.class);
-    TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+    SdkTracerProvider sdk = SdkTracerProvider.builder().build();
     when(openTelemetry.getTracerProvider()).thenReturn(sdk);
     when(openTelemetry.getPropagators()).thenReturn(mock(ContextPropagators.class));
 

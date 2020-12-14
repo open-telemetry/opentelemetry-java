@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 class SpanShimTest {
 
-  private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
+  private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
       new TelemetryInfo(tracer, OpenTelemetry.getGlobalPropagators());
