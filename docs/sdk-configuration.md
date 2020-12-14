@@ -17,7 +17,7 @@ with their internal infrastructure and as such have some familiarity with tracin
 SDK presents it.
 
 - Telemetry extension authors. Write custom SDK extensions, often to support a particular backend.
-Verify familiar with telemetry.
+Very familiar with telemetry.
 
 - OpenTelemetry maintainers. Write the SDK code.
 
@@ -72,7 +72,7 @@ In Java, the builder pattern is common for configuring instances. Let's look at 
 like. The simplest configuration will be when a user wants to get a default experience, exporting
 with a specific exporter to an endpoint.
 
-The SDK builder will simply allow accept its components as builder parameters. It only allows
+The SDK builder will simply accept its components as builder parameters. It only allows
 setting SDK implementations and is not meant for use with partial SDKs.
 
 ```java
@@ -105,7 +105,7 @@ class HelloWorld {
           .addPropagator(W3CHttpTraceContextPropagator.getInstance())
           .setTracerProvider(tracerProvider)
           .setMeterProvider(meterProvider)
-          .build();
+          .buildAndSetAsGlobal();
    }
 }
 ```
@@ -172,13 +172,13 @@ class HelloWorld {
             .addPropagator(B3Propagator.getInstance())
             .setTracerProvider(tracerProvider)
             .setMeterProvider(meterProvider)
-            .build();
+            .buildAndSetAsGlobal();
  
         OpenTelemetrySdk openTelemetryForJaegerBackend = OpenTelemetrySdk.builder()
            .addPropagator(JaegerPropagator.getInstance())
            .setTracerProvider(tracerProvider)
            .setMeterProvider(meterProvider)
-           .build();
+           .buildWithoutSettingAsGlobal();
    }
 }
 ```
@@ -277,7 +277,7 @@ public class OpenTelemetryModule {
            .addPropagator(B3Propagator.getInstance())
            .setTracerProvider(tracerProvider)
            .setMeterProvider(meterProvider)
-           .build();
+           .buildAndSetAsGlobal();
     }
 
     @Bean
@@ -287,7 +287,7 @@ public class OpenTelemetryModule {
            .addPropagator(JaegerPropagator.getInstance())
            .setTracerProvider(tracerProvider)
            .setMeterProvider(meterProvider)
-           .build();
+           .buildWithoutSettingAsGlobal();
     }
   
     @Bean
@@ -503,11 +503,7 @@ class SleuthUsingService {
 
 As the configuration of observability is contained on `OpenTelemetry` instances, it is expected that
 library instrumentation accept an `OpenTelemetry` instance, often as a builder for their e.g.,
-tracing interceptor, when configuring observability. An alternative method that leaves out the
-parameter and falls back to the global can be added as well. Library authors would still have the
-choice of starting with using the global and adding configurability by accepting `OpenTelemetry` if
-users request it - we would expect official `OpenTelemetry` maintained library instrumentation to
-follow our pattern though.
+tracing interceptor, when configuring observability.
 
 ## Auto-configuration
 
