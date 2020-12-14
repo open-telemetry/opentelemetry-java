@@ -8,10 +8,12 @@ package io.opentelemetry.sdk.trace.export;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.TracerSdkManagement;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An interface that allows different tracing services to export recorded data for sampled spans in
@@ -20,7 +22,7 @@ import java.util.List;
  * <p>To export data this MUST be register to the {@code TracerSdk} using a {@link
  * SimpleSpanProcessor} or a {@code BatchSampledSpansProcessor}.
  */
-public interface SpanExporter {
+public interface SpanExporter extends Closeable {
 
   /**
    * Returns a {@link SpanExporter} which simply delegates all exports to the {@code exporters} in
@@ -81,4 +83,10 @@ public interface SpanExporter {
    * @return a {@link CompletableResultCode} which is completed when shutdown completes.
    */
   CompletableResultCode shutdown();
+
+  /** Closes this {@link SpanExporter}, releasing any resources. */
+  @Override
+  default void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
+  }
 }

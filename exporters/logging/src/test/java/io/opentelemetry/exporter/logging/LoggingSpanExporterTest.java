@@ -40,7 +40,7 @@ class LoggingSpanExporterTest {
 
   @AfterEach
   void tearDown() {
-    exporter.shutdown();
+    exporter.close();
   }
 
   @Test

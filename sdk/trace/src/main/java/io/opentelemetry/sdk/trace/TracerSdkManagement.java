@@ -10,12 +10,13 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.Closeable;
 
 /**
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the
  * Tracing SDK, as well as several lifecycle methods.
  */
-public interface TracerSdkManagement {
+public interface TracerSdkManagement extends Closeable {
 
   /**
    * Returns the active {@code TraceConfig}.
@@ -70,4 +71,22 @@ public interface TracerSdkManagement {
    * @see SpanProcessor#forceFlush()
    */
   CompletableResultCode forceFlush();
+
+  /**
+   * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
+   * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
+   *
+   * <p>This operation may block until all the Spans are processed. Must be called before turning
+   * off the main application to ensure all data are processed and exported.
+   *
+   * <p>After this is called, newly created {@code Span}s will be no-ops.
+   *
+   * <p>After this is called, further attempts at re-using or reconfiguring this instance will
+   * result in undefined behavior. It should be considered a terminal operation for the SDK
+   * implementation.
+   */
+  @Override
+  default void close() {
+    shutdown();
+  }
 }
