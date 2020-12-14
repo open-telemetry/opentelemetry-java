@@ -87,7 +87,7 @@ class BatchSpanProcessorTest {
     options.put("otel.bsp.max.export.batch.size", "56");
     options.put("otel.bsp.export.timeout.millis", "78");
     options.put("otel.bsp.export.sampled", "false");
-    BatchSpanProcessor.Builder config =
+    BatchSpanProcessorBuilder config =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
             .fromConfigMap(options, ConfigTester.getNamingDot());
     assertThat(config.getScheduleDelayMillis()).isEqualTo(12);
@@ -99,19 +99,19 @@ class BatchSpanProcessorTest {
 
   @Test
   void configTest_EmptyOptions() {
-    BatchSpanProcessor.Builder config =
+    BatchSpanProcessorBuilder config =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
             .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
     assertThat(config.getScheduleDelayMillis())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_SCHEDULE_DELAY_MILLIS);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS);
     assertThat(config.getMaxQueueSize())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_MAX_QUEUE_SIZE);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_QUEUE_SIZE);
     assertThat(config.getMaxExportBatchSize())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
     assertThat(config.getExporterTimeoutMillis())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_EXPORT_TIMEOUT_MILLIS);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS);
     assertThat(config.getExportOnlySampled())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test

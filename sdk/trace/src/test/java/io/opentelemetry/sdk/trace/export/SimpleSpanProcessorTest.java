@@ -71,7 +71,7 @@ class SimpleSpanProcessorTest {
   void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.ssp.export.sampled", "false");
-    SimpleSpanProcessor.Builder config =
+    SimpleSpanProcessorBuilder config =
         SimpleSpanProcessor.builder(spanExporter)
             .fromConfigMap(options, ConfigTester.getNamingDot());
     assertThat(config.getExportOnlySampled()).isEqualTo(false);
@@ -79,11 +79,11 @@ class SimpleSpanProcessorTest {
 
   @Test
   void configTest_EmptyOptions() {
-    SimpleSpanProcessor.Builder config =
+    SimpleSpanProcessorBuilder config =
         SimpleSpanProcessor.builder(spanExporter)
             .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
     assertThat(config.getExportOnlySampled())
-        .isEqualTo(SimpleSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
+        .isEqualTo(SimpleSpanProcessorBuilder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test
