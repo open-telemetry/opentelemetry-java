@@ -460,22 +460,26 @@ public class MyExporter implements SpanExporter {
 
 ## Immutability of OpenTelemetry configuration
 
-The above attempts to avoid allowing a built SDK to be mutated. Allowing mutation can make code
+The above attempts to avoid allowing a built SDK to be mutated, e.g., it is shallow immutable. Allowing mutation can make code
 harder to reason about (any component, even deep in business logic, could update the SDK without
 hindrance), can reduce performance (require volatile read on most operations), and produce thread
 safety issues if not well implemented. In particular, compared to the current state as of writing,
 
-- `addSpanProcessor` is not needed because we instead push the complexity of handling telemetry
-within telemetry components to those components, where the maintainers will have more domain
-knowledge. It allows this mutator method to be removed from the end-user API.
+- `TracerSdkManagement.addSpanProcessor` is not needed. We needed a mutable SDK to allow span
+processors to use global APIs for telemetry, but because we instead push the complexity of handling 
+[telemetry within SDK components](#Telemetry within SDK components) to those components, where the 
+maintainers will have more domain knowledge. It allows this mutator method to be removed from the 
+end-user API.
 
-- `updateTraceConfig` - instead of allowing updates at the top level, we should consider making
-`TraceConfig` an interface, and the SDK default implementation is static. It allows the above
-benefits of immutability to be in place for the common case where dynamic updates are not needed.
+- `TracerSdkManagement.updateTraceConfig` - instead of allowing replacing of the config at the top level, we should consider making
+`TraceConfig` an interface, and the SDK default implementation is a simple implementation that always returns
+a constant configuration. It allows the above benefits of immutability to be in place for the common case where dynamic updates are not needed.
 Where dynamic updates are needed, it can be replaced with a mutable implementation instead of making
 the SDK configuration mutable. This keeps update methods out of the end-user APIs and will generally
 give framework developers more control by handling dynamicism themselves without the chance of
-end-users to affect it negatively.
+end-users to affect it negatively. For example, spring-boot may wire trace config updates to
+actuator, its admin interface, and does not have to worry about business logic side-stepping this
+mechanism by calling `updateTraceConfig`.
 
 Some highly buggy code that could be enabled by mutability.
 
@@ -494,70 +498,6 @@ class SleuthUsingService {
   }
 }
 ```
-
-## TracerSdkManagement
-
-With the proposal to make a configured SDK fully built rather than allowing configuration
-mutability, the SDK management interface would only have `shutdown` and `forceFlush`. It seems
-reasonable to actually remove `shutdown` from the `TracerSdkProvider` - the SDK provider is mostly
-a bag of parts and has no intrinsic component, if instead components like `BatchSpanProcessor` and
-`SpanExporter` implement `Closeable`, we can model shutdown as the responsibility of the creator of
-the resources, which is idiomatic. In DI frameworks, this would generally be automatic. This would
-prevent the case where two `TracerProvider` share an exporter and one of them is shutdown - when
-shutting down the exporter, shut down the exporter.
-
-```java
-public class MyApp {
- 
-    public static void main(String[] args) {
-        try (OtlpGrpcSpanExporter otlpExporter = OtlpGrpcSpanExporter.builder().build();
-              BatchSpanProcessor otlpProcessor = BatchSpanProcessor.builder(otlpExporter).build()) {
-            OpenTelemetrySdk sdk = OpenTelemetrySdk.builder()
-                .setTracerProvider(TracerSdkProvider.builder()
-                                        .addSpanProcessor(otlpProcessor)
-                                        .build())
-                .build();
- 
-            Server server = Server.builder().setOpenTelemetry(sdk).build();
-            server.listenAndServe();
-        }
-    }
-
-}
-```
-
-```java
-@Component
-public class MyModule {
-
-    @Bean
-    // If SpanExporter extends Closeable, it's automatically closed
-    OtlpGrpcSpanExporter otlpExporter() {
-        return OtlpGrpcSpanExporter.builder().build()
-    }
-   
-    @Bean
-    // If BatchSpanProcessor extends Closeable, it's automatically closed
-    BatchSpanProcessor otlpSpanProcessor(OtlpGrpcSpanExporter otlpExporter) {
-        return BatchSpanProcessor.builder(otlpExporter).build();
-    }
- 
-    @Bean
-    TracerSdkProvider tracerProvider(BatchSpanProcessor otlpSpanProcessor) {
-        return TracerSdkProvider.builder().addSpanProcessor(otlpSpanProcessor).build();
-    }
-
-    @Bean
-    OpenTelemetrySdk openTelemetry(TracerSdkProvider tracerProvider) {
-        return OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
-    }
-}
-```
-
-The `OpenTelemetrySdk` and `TracerSdkProvider` are still exposed to provide access to `forceFlush`.
-This makes it seem like `forceFlush`, though implemented in the SDK, may be more appropriate for the
-API as it's an end-user API - it could make the separation of concerns of the initialization of the
-SDK and the end-user tracing API complete. But the spec currently does not allow it.
 
 ## Library instrumentation
 
