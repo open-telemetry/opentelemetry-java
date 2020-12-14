@@ -40,7 +40,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return new Builder();
   }
 
-  /** Returns the cersdkmglobal {@link OpenTelemetrySdk}. */
+  /** Returns the global {@link OpenTelemetrySdk}. */
   public static OpenTelemetrySdk get() {
     return (OpenTelemetrySdk) OpenTelemetry.get();
   }
