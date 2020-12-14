@@ -6,8 +6,6 @@
 
 #### Breaking Changes
 
-- TraceMultiPropagator extension has been removed. Users should migrate to the instance returned 
-  from `TextMapPropagator.compositeWithShortCircuit()`. 
 - The `Labels.ArrayBackedLabelsBuilder` class has been made non-public. 
 You can still access the `LabelsBuilder` functionality via the `Labels.builder()` method.
 - Methods deprecated in the 0.12.0 release have been removed or made non-public:
