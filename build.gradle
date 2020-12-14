@@ -344,6 +344,7 @@ configure(opentelemetryProjects) {
 
                 // Test dependencies.
                 assertj                     : "org.assertj:assertj-core:3.18.1",
+                equals_verifier              : "nl.jqno.equalsverifier:equalsverifier:3.5",
                 guava_testlib               : "com.google.guava:guava-testlib",
                 junit                       : 'junit:junit:4.13.1',
                 junit_pioneer               : 'org.junit-pioneer:junit-pioneer:1.0.0',
@@ -455,6 +456,7 @@ configure(opentelemetryProjects) {
                 libraries.jsr305
 
         testImplementation libraries.junit_jupiter_api,
+                libraries.equals_verifier,
                 libraries.mockito,
                 libraries.mockito_junit_jupiter,
                 libraries.assertj,

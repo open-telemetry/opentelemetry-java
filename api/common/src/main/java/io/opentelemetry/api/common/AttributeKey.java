@@ -19,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @SuppressWarnings("rawtypes")
 @Immutable
-public interface AttributeKey<T> extends Comparable<AttributeKey> {
+public interface AttributeKey<T> {
   /** Returns the underlying String representation of the key. */
   String getKey();
 
