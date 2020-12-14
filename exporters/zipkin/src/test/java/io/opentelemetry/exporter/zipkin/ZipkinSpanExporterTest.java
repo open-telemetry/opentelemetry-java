@@ -399,8 +399,8 @@ class ZipkinSpanExporterTest {
     String endpoint = "http://127.0.0.1:9090";
     options.put("otel.exporter.zipkin.service.name", serviceName);
     options.put("otel.exporter.zipkin.endpoint", endpoint);
-    ZipkinSpanExporter.Builder config = ZipkinSpanExporter.builder();
-    ZipkinSpanExporter.Builder spy = Mockito.spy(config);
+    ZipkinSpanExporterBuilder config = ZipkinSpanExporter.builder();
+    ZipkinSpanExporterBuilder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
     Mockito.verify(spy).setServiceName(serviceName);
     Mockito.verify(spy).setEndpoint(endpoint);
