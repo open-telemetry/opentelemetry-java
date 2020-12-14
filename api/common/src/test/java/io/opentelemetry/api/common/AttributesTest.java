@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.entry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class AttributesTest {
 
   @Test
   void forEach() {
-    final Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    final Map<AttributeKey, Object> entriesSeen = new LinkedHashMap<>();
 
     Attributes attributes = Attributes.of(stringKey("key1"), "value1", longKey("key2"), 333L);
 

@@ -87,14 +87,14 @@ public abstract class ImmutableKeyValuePairs<K, V> {
   // note: merge sort implementation cribbed from this wikipedia article:
   // https://en.wikipedia.org/wiki/Merge_sort (this is the top-down variant)
   private static void mergeSort(
-      Object[] sourceArray, Object[] workArray, int n, Comparator<?> keyComparatr) {
+      Object[] sourceArray, Object[] workArray, int n, Comparator<?> keyComparator) {
     System.arraycopy(sourceArray, 0, workArray, 0, sourceArray.length);
     splitAndMerge(
         workArray,
         0,
         n,
         sourceArray,
-        keyComparatr); // sort data from workArray[] into sourceArray[]
+        keyComparator); // sort data from workArray[] into sourceArray[]
   }
 
   /**
