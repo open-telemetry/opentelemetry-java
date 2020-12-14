@@ -73,7 +73,6 @@ public interface TextMapPropagator {
    */
   static TextMapPropagator compositeWithShortCircuit(Iterable<TextMapPropagator> propagators) {
     return MultiTextMapPropagator.builder(propagators).stopExtractAfterFirst().build();
-
   }
   /**
    * Returns a {@link TextMapPropagator} which simply delegates injection and extraction to the
