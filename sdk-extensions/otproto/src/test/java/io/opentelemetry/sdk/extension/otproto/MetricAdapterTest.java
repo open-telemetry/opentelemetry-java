@@ -33,6 +33,8 @@ import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -460,18 +462,31 @@ class MetricAdapterTest {
 
   @Test
   void toProtoResourceMetrics() {
-    Resource resource = Resource.create(Attributes.of(stringKey("ka"), "va"));
+    Resource resource =
+        Resource.create(
+            Attributes.of(
+                stringKey("ka"), "va", ResourceAttributes.SERVICE_NAME, "myservice.name"));
     io.opentelemetry.proto.resource.v1.Resource resourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder()
             .addAllAttributes(
-                singletonList(
+                Arrays.asList(
                     KeyValue.newBuilder()
                         .setKey("ka")
                         .setValue(AnyValue.newBuilder().setStringValue("va").build())
+                        .build(),
+                    KeyValue.newBuilder()
+                        .setKey("service.name")
+                        .setValue(AnyValue.newBuilder().setStringValue("myservice.name").build())
                         .build()))
             .build();
     io.opentelemetry.proto.resource.v1.Resource emptyResourceProto =
-        io.opentelemetry.proto.resource.v1.Resource.newBuilder().build();
+        io.opentelemetry.proto.resource.v1.Resource.newBuilder()
+            .addAttributes(
+                KeyValue.newBuilder()
+                    .setKey("service.name")
+                    .setValue(AnyValue.newBuilder().setStringValue("myservice.name").build())
+                    .build())
+            .build();
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create("name", "version");
     InstrumentationLibrary instrumentationLibraryProto =
@@ -527,7 +542,8 @@ class MetricAdapterTest {
                                 MetricData.DoublePoint.create(
                                     123, 456, Labels.of("k", "v"), 5.0)))),
                     MetricData.createDoubleSum(
-                        Resource.getEmpty(),
+                        Resource.create(
+                            Attributes.of(ResourceAttributes.SERVICE_NAME, "myservice.name")),
                         instrumentationLibraryInfo,
                         "name",
                         "description",
@@ -539,7 +555,8 @@ class MetricAdapterTest {
                                 MetricData.DoublePoint.create(
                                     123, 456, Labels.of("k", "v"), 5.0)))),
                     MetricData.createDoubleSum(
-                        Resource.getEmpty(),
+                        Resource.create(
+                            Attributes.of(ResourceAttributes.SERVICE_NAME, "myservice.name")),
                         InstrumentationLibraryInfo.getEmpty(),
                         "name",
                         "description",

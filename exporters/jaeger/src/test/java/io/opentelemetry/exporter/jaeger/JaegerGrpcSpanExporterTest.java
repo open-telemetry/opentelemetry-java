@@ -215,7 +215,8 @@ class JaegerGrpcSpanExporterTest {
     assertThat(batch.getSpansCount()).isEqualTo(1);
     assertThat(batch.getSpans(0).getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(TRACE_ID));
     assertThat(batch.getProcess().getServiceName()).isEqualTo("test");
-    assertThat(batch.getProcess().getTagsCount()).isEqualTo(4);
+    // one extra from the service.name
+    assertThat(batch.getProcess().getTagsCount()).isEqualTo(5);
 
     assertThat(
             getSpanTagValue(batch.getSpans(0), "otel.library.name")

@@ -8,13 +8,13 @@ package io.opentelemetry.sdk.extension.otproto;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import org.junit.jupiter.api.Test;
 
 class ResourceAdapterTest {
@@ -26,8 +26,8 @@ class ResourceAdapterTest {
                         Attributes.of(
                             booleanKey("key_bool"),
                             true,
-                            stringKey("key_string"),
-                            "string",
+                            ResourceAttributes.SERVICE_NAME,
+                            "myservice.name",
                             longKey("key_int"),
                             100L,
                             doubleKey("key_double"),
@@ -39,8 +39,8 @@ class ResourceAdapterTest {
                 .setValue(AnyValue.newBuilder().setBoolValue(true).build())
                 .build(),
             KeyValue.newBuilder()
-                .setKey("key_string")
-                .setValue(AnyValue.newBuilder().setStringValue("string").build())
+                .setKey("service.name")
+                .setValue(AnyValue.newBuilder().setStringValue("myservice.name").build())
                 .build(),
             KeyValue.newBuilder()
                 .setKey("key_int")
@@ -54,7 +54,9 @@ class ResourceAdapterTest {
 
   @Test
   void toProtoResource_Empty() {
-    assertThat(ResourceAdapter.toProtoResource(Resource.getEmpty()))
-        .isEqualTo(io.opentelemetry.proto.resource.v1.Resource.newBuilder().build());
+    io.opentelemetry.proto.resource.v1.Resource emptyProtoResource =
+        ResourceAdapter.toProtoResource(Resource.getEmpty());
+    // we get one from the fallback service name
+    assertThat(emptyProtoResource.getAttributesCount()).isEqualTo(1);
   }
 }

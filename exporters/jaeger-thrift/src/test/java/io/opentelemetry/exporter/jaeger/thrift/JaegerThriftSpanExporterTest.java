@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.jaeger.thrift;
 
+import static io.opentelemetry.sdk.resources.ResourceAttributes.SERVICE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
@@ -82,7 +83,10 @@ class JaegerThriftSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key"), "resource-attr-value")))
+                        AttributeKey.stringKey("resource-attr-key"),
+                        "resource-attr-value",
+                        SERVICE_NAME,
+                        "myservice.name")))
             .build();
 
     // test
@@ -100,6 +104,7 @@ class JaegerThriftSpanExporterTest {
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
     expectedProcess.addToTags(
         new Tag("resource-attr-key", TagType.STRING).setVStr("resource-attr-value"));
+    expectedProcess.addToTags(new Tag("service.name", TagType.STRING).setVStr("myservice.name"));
 
     Span expectedSpan =
         new Span()
@@ -144,7 +149,10 @@ class JaegerThriftSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-1"), "resource-attr-value-1")))
+                        AttributeKey.stringKey("resource-attr-key-1"),
+                        "resource-attr-value-1",
+                        SERVICE_NAME,
+                        "myservice.name")))
             .build();
 
     SpanData span2 =
@@ -165,7 +173,10 @@ class JaegerThriftSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-2"), "resource-attr-value-2")))
+                        AttributeKey.stringKey("resource-attr-key-2"),
+                        "resource-attr-value-2",
+                        SERVICE_NAME,
+                        "myservice.name")))
             .build();
 
     // test
@@ -183,6 +194,7 @@ class JaegerThriftSpanExporterTest {
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
     expectedProcess1.addToTags(
         new Tag("resource-attr-key-1", TagType.STRING).setVStr("resource-attr-value-1"));
+    expectedProcess1.addToTags(new Tag("service.name", TagType.STRING).setVStr("myservice.name"));
 
     Process expectedProcess2 = new Process("myservice.name");
     expectedProcess2.addToTags(
@@ -193,6 +205,7 @@ class JaegerThriftSpanExporterTest {
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
     expectedProcess2.addToTags(
         new Tag("resource-attr-key-2", TagType.STRING).setVStr("resource-attr-value-2"));
+    expectedProcess2.addToTags(new Tag("service.name", TagType.STRING).setVStr("myservice.name"));
 
     Span expectedSpan1 =
         new Span()

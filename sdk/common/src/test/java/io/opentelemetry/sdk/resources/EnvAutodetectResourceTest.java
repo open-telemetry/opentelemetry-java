@@ -61,21 +61,26 @@ class EnvAutodetectResourceTest {
   @Test
   void getResourceAttributes_properties() {
     String key = "otel.resource.attributes";
-    System.setProperty(key, "value = foo");
+    System.setProperty(key, "value = foo,service.name=myservice.name");
     Resource resource =
         new EnvAutodetectResource.Builder()
             .readEnvironmentVariables()
             .readSystemProperties()
             .build();
     Attributes result = resource.getAttributes();
-    assertThat(result).isEqualTo(Attributes.of(stringKey("value"), "foo"));
+    assertThat(result)
+        .isEqualTo(
+            Attributes.of(
+                stringKey("value"), "foo", ResourceAttributes.SERVICE_NAME, "myservice.name"));
     System.clearProperty(key);
   }
 
   public static class ResourceAttributesEnvVarsTest {
 
     @Test
-    @SetEnvironmentVariable(key = "OTEL_RESOURCE_ATTRIBUTES", value = "value = foo")
+    @SetEnvironmentVariable(
+        key = "OTEL_RESOURCE_ATTRIBUTES",
+        value = "value = foo,service.name=myservice.name")
     public void getResourceAttributes_envvars() {
       Resource resource =
           new EnvAutodetectResource.Builder()
@@ -83,7 +88,10 @@ class EnvAutodetectResourceTest {
               .readSystemProperties()
               .build();
       Attributes result = resource.getAttributes();
-      assertThat(result).isEqualTo(Attributes.of(stringKey("value"), "foo"));
+      assertThat(result)
+          .isEqualTo(
+              Attributes.of(
+                  stringKey("value"), "foo", ResourceAttributes.SERVICE_NAME, "myservice.name"));
     }
   }
 }

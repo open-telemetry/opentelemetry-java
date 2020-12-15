@@ -24,7 +24,7 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * {@link Resource} represents a resource, which capture identifying information about the entities
- * for which signals (stats or traces) are reported.
+ * for which signals (metrics, logs, or traces) are reported.
  */
 @Immutable
 @AutoValue
@@ -36,11 +36,15 @@ public abstract class Resource {
           + " characters.";
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
-  private static final Resource EMPTY = create(Attributes.empty());
 
   private static final Resource TELEMETRY_SDK;
+  private static final String FALLBACK_SERVICE_NAME;
 
   static {
+    String osName = System.getProperty("os.name");
+    boolean windows = osName != null && osName.toLowerCase().contains("windows");
+    FALLBACK_SERVICE_NAME = windows ? "unknown_service:java.exe" : "unknown_service:java";
+
     TELEMETRY_SDK =
         create(
             Attributes.builder()
@@ -49,6 +53,8 @@ public abstract class Resource {
                 .put(SDK_VERSION, readVersion())
                 .build());
   }
+
+  private static final Resource EMPTY = create(Attributes.empty());
 
   private static final Resource DEFAULT =
       new EnvAutodetectResource.Builder()
@@ -128,7 +134,7 @@ public abstract class Resource {
    */
   public static Resource create(Attributes attributes) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
-    return new AutoValue_Resource(attributes);
+    return createResource(attributes);
   }
 
   /**
@@ -155,8 +161,29 @@ public abstract class Resource {
 
     AttributesBuilder attrBuilder = Attributes.builder();
     attrBuilder.putAll(other.getAttributes());
-    attrBuilder.putAll(this.getAttributes());
-    return new AutoValue_Resource(attrBuilder.build());
+
+    Attributes currentAttributes = this.getAttributes();
+    // a little hack to make sure that the child service.name can override the fallback.
+    String otherServiceName = other.getAttributes().get(ResourceAttributes.SERVICE_NAME);
+    if (!FALLBACK_SERVICE_NAME.equals(otherServiceName)) {
+      currentAttributes =
+          currentAttributes.toBuilder()
+              .put(ResourceAttributes.SERVICE_NAME, otherServiceName)
+              .build();
+    }
+
+    attrBuilder.putAll(currentAttributes);
+    return createResource(attrBuilder.build());
+  }
+
+  private static AutoValue_Resource createResource(Attributes attributes) {
+    if (attributes.get(ResourceAttributes.SERVICE_NAME) == null) {
+      attributes =
+          attributes.toBuilder()
+              .put(ResourceAttributes.SERVICE_NAME, FALLBACK_SERVICE_NAME)
+              .build();
+    }
+    return new AutoValue_Resource(attributes);
   }
 
   private static void checkAttributes(Attributes attributes) {

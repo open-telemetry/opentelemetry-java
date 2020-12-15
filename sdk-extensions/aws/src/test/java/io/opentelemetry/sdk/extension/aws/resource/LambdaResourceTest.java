@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.aws.resource;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.attributes.SemanticAttributes;
@@ -28,7 +27,8 @@ class LambdaResourceTest {
     Attributes attributes = resource.create().getAttributes();
 
     // then
-    assertTrue(attributes.isEmpty());
+    // we get one from the fallback service.name
+    assertThat(attributes.asMap()).hasSize(1);
   }
 
   @Test
@@ -41,13 +41,14 @@ class LambdaResourceTest {
     Attributes attributes = resource.create().getAttributes();
 
     // then
-    assertThat(attributes)
-        .isEqualTo(
+    assertThat(attributes.asMap())
+        .containsAllEntriesOf(
             Attributes.of(
-                SemanticAttributes.CLOUD_PROVIDER,
-                "aws",
-                SemanticAttributes.FAAS_NAME,
-                "my-function"));
+                    SemanticAttributes.CLOUD_PROVIDER,
+                    "aws",
+                    SemanticAttributes.FAAS_NAME,
+                    "my-function")
+                .asMap());
   }
 
   @Test
@@ -64,17 +65,18 @@ class LambdaResourceTest {
     Attributes attributes = resource.create().getAttributes();
 
     // then
-    assertThat(attributes)
-        .isEqualTo(
+    assertThat(attributes.asMap())
+        .containsAllEntriesOf(
             Attributes.of(
-                SemanticAttributes.CLOUD_PROVIDER,
-                "aws",
-                SemanticAttributes.CLOUD_REGION,
-                "us-east-1",
-                SemanticAttributes.FAAS_NAME,
-                "my-function",
-                SemanticAttributes.FAAS_VERSION,
-                "1.2.3"));
+                    SemanticAttributes.CLOUD_PROVIDER,
+                    "aws",
+                    SemanticAttributes.CLOUD_REGION,
+                    "us-east-1",
+                    SemanticAttributes.FAAS_NAME,
+                    "my-function",
+                    SemanticAttributes.FAAS_VERSION,
+                    "1.2.3")
+                .asMap());
   }
 
   @Test

@@ -104,6 +104,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     return builder.build();
   }
 
+  // visible for testing
   static Span generateSpan(SpanData spanData, Endpoint localEndpoint) {
     Endpoint endpoint = chooseEndpoint(spanData, localEndpoint);
 

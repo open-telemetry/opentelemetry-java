@@ -44,12 +44,14 @@ class ResourceTest {
     Attributes attributes = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
     Resource resource = Resource.create(attributes);
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(2);
-    assertThat(resource.getAttributes()).isEqualTo(attributes);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(3);
+    assertThat(resource.getAttributes().asMap()).containsAllEntriesOf(attributes.asMap());
 
     Resource resource1 = Resource.create(Attributes.empty());
     assertThat(resource1.getAttributes()).isNotNull();
-    assertThat(resource1.getAttributes().isEmpty()).isTrue();
+    // one extra from the service.name
+    assertThat(resource1.getAttributes().size()).isEqualTo(1);
   }
 
   @Test
@@ -59,38 +61,45 @@ class ResourceTest {
     attributes.put(stringKey("string"), null);
     Resource resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isZero();
+    assertThat(resource.getAttributes().size()).isOne();
     attributes.put(stringArrayKey("stringArray"), Arrays.asList(null, "a"));
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(1);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(2);
 
     attributes.put(booleanKey("bool"), true);
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(2);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(3);
     attributes.put(booleanArrayKey("boolArray"), Arrays.asList(null, true));
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(3);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(4);
 
     attributes.put(longKey("long"), 0L);
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(4);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(5);
     attributes.put(longArrayKey("longArray"), Arrays.asList(1L, null));
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(5);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(6);
 
     attributes.put(doubleKey("double"), 1.1);
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(6);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(7);
     attributes.put(doubleArrayKey("doubleArray"), Arrays.asList(1.1, null));
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(7);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(8);
   }
 
   @Test
@@ -105,7 +114,8 @@ class ResourceTest {
 
     Resource resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(4);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(5);
 
     // Arrays with null values should be maintained
     attributes.put(stringArrayKey("ArrayWithNullStringKey"), singletonList(null));
@@ -115,7 +125,8 @@ class ResourceTest {
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(8);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(9);
 
     // Null arrays should be dropped
     attributes.put(stringArrayKey("NullArrayStringKey"), null);
@@ -125,7 +136,8 @@ class ResourceTest {
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(8);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(9);
 
     attributes.put(stringKey("dropNullString"), null);
     attributes.put(longKey("dropNullLong"), null);
@@ -134,7 +146,8 @@ class ResourceTest {
 
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
-    assertThat(resource.getAttributes().size()).isEqualTo(8);
+    // one extra from the service.name
+    assertThat(resource.getAttributes().size()).isEqualTo(9);
   }
 
   @Test
@@ -154,7 +167,7 @@ class ResourceTest {
         Attributes.of(stringKey("a"), "1", stringKey("b"), "2", stringKey("c"), "4");
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(resource2);
-    assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
+    assertThat(resource.getAttributes().asMap()).containsAllEntriesOf(expectedAttributes.asMap());
   }
 
   @Test
@@ -162,7 +175,7 @@ class ResourceTest {
     Attributes expectedAttributes = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1);
-    assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
+    assertThat(resource.getAttributes().asMap()).containsAllEntriesOf(expectedAttributes.asMap());
   }
 
   @Test
@@ -174,14 +187,14 @@ class ResourceTest {
             stringKey("c"), "4");
 
     Resource resource = DEFAULT_RESOURCE.merge(null).merge(resource2);
-    assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
+    assertThat(resource.getAttributes().asMap()).containsAllEntriesOf(expectedAttributes.asMap());
   }
 
   @Test
   void testMergeResources_Resource2_Null() {
     Attributes expectedAttributes = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(null);
-    assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
+    assertThat(resource.getAttributes().asMap()).containsAllEntriesOf(expectedAttributes.asMap());
   }
 
   @Test
@@ -191,5 +204,42 @@ class ResourceTest {
     assertThat(attributes.get(stringKey("telemetry.sdk.name"))).isEqualTo("opentelemetry");
     assertThat(attributes.get(stringKey("telemetry.sdk.language"))).isEqualTo("java");
     assertThat(attributes.get(stringKey("telemetry.sdk.version"))).isNotNull();
+  }
+
+  @Test
+  void serviceNameFallback() {
+    assertThat(Resource.getEmpty().getAttributes().get(ResourceAttributes.SERVICE_NAME))
+        .startsWith("unknown_service:java");
+    assertThat(
+            Resource.create(Attributes.of(stringKey("foo"), "bar"))
+                .getAttributes()
+                .get(ResourceAttributes.SERVICE_NAME))
+        .startsWith("unknown_service:java");
+
+    assertThat(Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME))
+        .startsWith("unknown_service:java");
+
+    // make sure the fallback is only used if necessary
+    assertThat(
+            Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "my_service"))
+                .getAttributes()
+                .get(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("my_service");
+
+    // make sure that the fallback can be overridden by a merged Resource.
+    assertThat(
+            Resource.getDefault()
+                .merge(
+                    Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "my_service")))
+                .getAttributes()
+                .get(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("my_service");
+
+    assertThat(
+            Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "my_service"))
+                .merge(Resource.getDefault())
+                .getAttributes()
+                .get(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("my_service");
   }
 }

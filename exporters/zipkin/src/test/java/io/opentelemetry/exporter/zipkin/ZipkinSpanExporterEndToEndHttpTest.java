@@ -14,6 +14,8 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -53,7 +55,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
   private static final String SERVICE_NAME = "myService";
   private static final Endpoint localEndpoint =
-      ZipkinSpanExporter.produceLocalEndpoint(SERVICE_NAME);
+      Endpoint.newBuilder().serviceName("myservice.name").build();
 
   @Rule public ZipkinRule zipkin = new ZipkinRule();
 
@@ -155,7 +157,9 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setEvents(annotations)
         .setLinks(Collections.emptyList())
         .setEndEpochNanos(END_EPOCH_NANOS)
-        .setHasEnded(true);
+        .setHasEnded(true)
+        .setResource(
+            Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "myservice.name")));
   }
 
   private static Span buildZipkinSpan() {
