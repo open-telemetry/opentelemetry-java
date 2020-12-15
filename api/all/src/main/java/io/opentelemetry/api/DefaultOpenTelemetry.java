@@ -42,6 +42,7 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   @Override
+  @Deprecated
   public MeterProvider getMeterProvider() {
     return meterProvider;
   }

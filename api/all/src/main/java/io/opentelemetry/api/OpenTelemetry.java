@@ -88,7 +88,7 @@ public interface OpenTelemetry {
   /**
    * Returns the globally registered {@link MeterProvider}.
    *
-   * @deprecated use {@link GlobalOpenTelemetry#getMeterProvider()}
+   * @deprecated this will be removed soon in preparation for the initial otel release.
    */
   @Deprecated
   static MeterProvider getGlobalMeterProvider() {
@@ -98,7 +98,7 @@ public interface OpenTelemetry {
   /**
    * Gets or creates a named meter instance from the globally registered {@link MeterProvider}.
    *
-   * @deprecated use {@link GlobalOpenTelemetry#getMeter(String)}
+   * @deprecated this will be removed soon in preparation for the initial otel release.
    */
   @Deprecated
   static Meter getGlobalMeter(String instrumentationName) {
@@ -109,7 +109,7 @@ public interface OpenTelemetry {
    * Gets or creates a named and versioned meter instance from the globally registered {@link
    * MeterProvider}.
    *
-   * @deprecated use {@link GlobalOpenTelemetry#getMeter(String, String)}
+   * @deprecated this will be removed soon in preparation for the initial otel release.
    */
   @Deprecated
   static Meter getGlobalMeter(String instrumentationName, String instrumentationVersion) {
@@ -173,17 +173,21 @@ public interface OpenTelemetry {
     return getTracerProvider().get(instrumentationName, instrumentationVersion);
   }
 
-  /** Returns the {@link MeterProvider} for this {@link OpenTelemetry}. */
+  /**
+   * Returns the {@link MeterProvider} for this {@link OpenTelemetry}.
+   *
+   * @deprecated this will be removed soon in preparation for the initial otel release.
+   */
+  @Deprecated
   MeterProvider getMeterProvider();
 
   /**
    * Gets or creates a named meter instance from the {@link MeterProvider} in this {@link
    * OpenTelemetry}.
    *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
-   * @return a tracer instance.
+   * @deprecated this will be removed soon in preparation for the initial otel release.
    */
+  @Deprecated
   default Meter getMeter(String instrumentationName) {
     return getMeterProvider().get(instrumentationName);
   }
@@ -192,11 +196,9 @@ public interface OpenTelemetry {
    * Gets or creates a named and versioned meter instance from the {@link MeterProvider} in this
    * {@link OpenTelemetry}.
    *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
-   * @param instrumentationVersion The version of the instrumentation library.
-   * @return a tracer instance.
+   * @deprecated this will be removed soon in preparation for the initial otel release.
    */
+  @Deprecated
   default Meter getMeter(String instrumentationName, String instrumentationVersion) {
     return getMeterProvider().get(instrumentationName, instrumentationVersion);
   }
