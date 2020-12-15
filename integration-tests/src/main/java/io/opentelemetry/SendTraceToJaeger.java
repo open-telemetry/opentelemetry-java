@@ -8,16 +8,26 @@ package io.opentelemetry;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 
 public class SendTraceToJaeger {
   // Jaeger Endpoint URL and PORT
   private final String ip; // = "jaeger";
   private final int port; // = 14250;
+
+  static {
+    OpenTelemetrySdk.builder()
+        .setResource(
+            Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "integration test")))
+        .build();
+  }
 
   // OTel API
   private final Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.SendTraceToJaeger");

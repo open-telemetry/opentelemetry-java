@@ -83,10 +83,10 @@ class JaegerExporterIntegrationTest {
   void testJaegerExampleAppIntegration() {
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
-        .until(JaegerExporterIntegrationTest::assertJaegerHaveTrace);
+        .until(JaegerExporterIntegrationTest::assertJaegerHasTraces);
   }
 
-  private static Boolean assertJaegerHaveTrace() {
+  private static Boolean assertJaegerHasTraces() {
     try {
       String url =
           String.format(
