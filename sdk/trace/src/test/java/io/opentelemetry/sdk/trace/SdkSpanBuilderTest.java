@@ -875,7 +875,7 @@ class SdkSpanBuilderTest {
   // Improve the toString.
   @Test
   void spanDataToString() {
-    SpanBuilder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     span.setAttribute("http.status_code", 500);
     span.setAttribute("http.url", "https://opentelemetry.io");
