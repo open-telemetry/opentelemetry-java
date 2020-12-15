@@ -33,7 +33,10 @@ class JdkHttpClient {
   private static final int TIMEOUT_MILLIS = 2000;
 
   String fetchString(
-      String httpMethod, String urlStr, Map<String, String> requestPropertyMap, String certPath) {
+      String httpMethod,
+      String urlStr,
+      Map<String, String> requestPropertyMap,
+      @Nullable String certPath) {
     final HttpURLConnection connection;
 
     try {
