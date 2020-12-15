@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp;
+package io.opentelemetry.sdk.extension.otproto;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
@@ -23,7 +23,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link CommonAdapter}. */
 class CommonAdapterTest {
   @Test
   void toProtoAttribute_Bool() {

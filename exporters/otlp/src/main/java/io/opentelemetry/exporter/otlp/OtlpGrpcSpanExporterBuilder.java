@@ -13,6 +13,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.extension.otproto.CommonProperties;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
