@@ -13,8 +13,9 @@ ext.moduleName = 'io.opentelemetry.proto'
 dependencies {
     // Protobuf plugin seems to erroneously use the non-classpath configurations for resolving
     // dependencies.
-    implementation enforcedPlatform(boms.grpc)
-    implementation enforcedPlatform(boms.protobuf)
+    boms.each {
+        implementation enforcedPlatform(it)
+    }
 
     api libraries.protobuf,
             libraries.grpc_api,

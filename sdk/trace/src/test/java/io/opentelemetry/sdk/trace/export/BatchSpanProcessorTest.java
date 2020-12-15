@@ -15,8 +15,8 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ class BatchSpanProcessorTest {
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
-  private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
+  private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("BatchSpanProcessorTest");
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
@@ -87,7 +87,7 @@ class BatchSpanProcessorTest {
     options.put("otel.bsp.max.export.batch.size", "56");
     options.put("otel.bsp.export.timeout.millis", "78");
     options.put("otel.bsp.export.sampled", "false");
-    BatchSpanProcessor.Builder config =
+    BatchSpanProcessorBuilder config =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
             .fromConfigMap(options, ConfigTester.getNamingDot());
     assertThat(config.getScheduleDelayMillis()).isEqualTo(12);
@@ -99,19 +99,19 @@ class BatchSpanProcessorTest {
 
   @Test
   void configTest_EmptyOptions() {
-    BatchSpanProcessor.Builder config =
+    BatchSpanProcessorBuilder config =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
             .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
     assertThat(config.getScheduleDelayMillis())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_SCHEDULE_DELAY_MILLIS);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS);
     assertThat(config.getMaxQueueSize())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_MAX_QUEUE_SIZE);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_QUEUE_SIZE);
     assertThat(config.getMaxExportBatchSize())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
     assertThat(config.getExporterTimeoutMillis())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_EXPORT_TIMEOUT_MILLIS);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS);
     assertThat(config.getExportOnlySampled())
-        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test

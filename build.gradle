@@ -285,6 +285,7 @@ configure(opentelemetryProjects) {
     }
 
     ext {
+        armeriaVersion = '1.3.0'
         autoValueVersion = '1.7.4'
         errorProneVersion = '2.4.0'
         errorProneJavacVersion = '9+181-r4173-1'
@@ -304,12 +305,13 @@ configure(opentelemetryProjects) {
         zipkinVersion = '2.18.3'
 
         boms = [
-                grpc           : "io.grpc:grpc-bom:${grpcVersion}",
-                guava          : "com.google.guava:guava-bom:${guavaVersion}",
-                jackson        : "com.fasterxml.jackson:jackson-bom:2.11.3",
-                junit          : "org.junit:junit-bom:${junitVersion}",
-                protobuf       : "com.google.protobuf:protobuf-bom:${protobufVersion}",
-                zipkin_reporter: "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
+                "com.linecorp.armeria:armeria-bom:${armeriaVersion}",
+                "io.grpc:grpc-bom:${grpcVersion}",
+                "com.google.guava:guava-bom:${guavaVersion}",
+                "com.fasterxml.jackson:jackson-bom:2.11.3",
+                "org.junit:junit-bom:${junitVersion}",
+                "com.google.protobuf:protobuf-bom:${protobufVersion}",
+                "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
         ]
 
         libraries = [
@@ -344,6 +346,7 @@ configure(opentelemetryProjects) {
 
                 // Test dependencies.
                 assertj                     : "org.assertj:assertj-core:3.18.1",
+                equals_verifier              : "nl.jqno.equalsverifier:equalsverifier:3.5",
                 guava_testlib               : "com.google.guava:guava-testlib",
                 junit                       : 'junit:junit:4.13.1',
                 junit_pioneer               : 'org.junit-pioneer:junit-pioneer:1.0.0',
@@ -437,12 +440,9 @@ configure(opentelemetryProjects) {
         configurations.all {
             // Kotlin compiler classpaths don't support BOM nor need it.
             if (it.name.endsWith('Classpath') && !it.name.startsWith('kotlin')) {
-                add(it.name, enforcedPlatform(boms.grpc))
-                add(it.name, enforcedPlatform(boms.guava))
-                add(it.name, enforcedPlatform(boms.jackson))
-                add(it.name, enforcedPlatform(boms.junit))
-                add(it.name, enforcedPlatform(boms.protobuf))
-                add(it.name, enforcedPlatform(boms.zipkin_reporter))
+                boms.each {bom ->
+                    add(it.name, enforcedPlatform(bom))
+                }
             }
         }
 
@@ -455,6 +455,7 @@ configure(opentelemetryProjects) {
                 libraries.jsr305
 
         testImplementation libraries.junit_jupiter_api,
+                libraries.equals_verifier,
                 libraries.mockito,
                 libraries.mockito_junit_jupiter,
                 libraries.assertj,

@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.entry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class AttributesTest {
 
   @Test
   void forEach() {
-    final Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    final Map<AttributeKey, Object> entriesSeen = new LinkedHashMap<>();
 
     Attributes attributes = Attributes.of(stringKey("key1"), "value1", longKey("key2"), 333L);
 
@@ -363,5 +364,12 @@ class AttributesTest {
     assertThat(attributes.get(longArrayKey("arrayLong"))).isEqualTo(singletonList(10L));
     assertThat(attributes.get(doubleArrayKey("arrayDouble"))).isEqualTo(singletonList(1.0d));
     assertThat(attributes.get(booleanArrayKey("arrayBool"))).isEqualTo(singletonList(true));
+  }
+
+  @Test
+  void onlySameTypeCanRetrieveValue() {
+    Attributes attributes = Attributes.of(stringKey("animal"), "cat");
+    assertThat(attributes.get(stringKey("animal"))).isEqualTo("cat");
+    assertThat(attributes.get(longKey("animal"))).isNull();
   }
 }

@@ -6,14 +6,12 @@
 package io.opentelemetry.exporter.jaeger.thrift;
 
 import io.jaegertracing.internal.exceptions.SenderException;
-import io.jaegertracing.thrift.internal.senders.HttpSender;
 import io.jaegertracing.thrift.internal.senders.ThriftSender;
 import io.jaegertracing.thriftjava.Process;
 import io.jaegertracing.thriftjava.Span;
 import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -51,7 +49,7 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
    * @param thriftSender The sender used for sending the data.
    * @param serviceName this service's name.
    */
-  private JaegerThriftSpanExporter(ThriftSender thriftSender, String serviceName) {
+  JaegerThriftSpanExporter(ThriftSender thriftSender, String serviceName) {
     this.thriftSender = thriftSender;
     String hostname;
     String ipv4;
@@ -132,8 +130,8 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static Builder builder() {
-    return new Builder();
+  public static JaegerThriftSpanExporterBuilder builder() {
+    return new JaegerThriftSpanExporterBuilder();
   }
 
   /**
@@ -145,87 +143,5 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
     final CompletableResultCode result = new CompletableResultCode();
     // todo
     return result.succeed();
-  }
-
-  /** Builder utility for this exporter. */
-  public static class Builder extends ConfigBuilder<Builder> {
-
-    private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";
-    private static final String KEY_ENDPOINT = "otel.exporter.jaeger.endpoint";
-
-    private String serviceName = DEFAULT_SERVICE_NAME;
-    private String endpoint = DEFAULT_ENDPOINT;
-    private ThriftSender thriftSender;
-
-    /**
-     * Explicitly set the {@link ThriftSender} instance to use for this Exporter. Will override any
-     * endpoint that has been set.
-     *
-     * @param thriftSender The ThriftSender to use.
-     * @return this.
-     */
-    public Builder setThriftSender(ThriftSender thriftSender) {
-      this.thriftSender = thriftSender;
-      return this;
-    }
-
-    /**
-     * Sets the service name to be used by this exporter. Required.
-     *
-     * @param serviceName the service name.
-     * @return this.
-     */
-    public Builder setServiceName(String serviceName) {
-      this.serviceName = serviceName;
-      return this;
-    }
-
-    /**
-     * Sets the Jaeger endpoint to connect to. Needs to include the full API path for trace ingest.
-     *
-     * <p>Optional, defaults to "http://localhost:14268/api/traces".
-     *
-     * @param endpoint The Jaeger endpoint URL, ex. "https://jaegerhost:14268/api/traces".
-     * @return this.
-     */
-    public Builder setEndpoint(String endpoint) {
-      this.endpoint = endpoint;
-      return this;
-    }
-
-    /**
-     * Sets the configuration values from the given configuration map for only the available keys.
-     *
-     * @param configMap {@link Map} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    protected Builder fromConfigMap(
-        Map<String, String> configMap, NamingConvention namingConvention) {
-      configMap = namingConvention.normalize(configMap);
-      String stringValue = getStringProperty(KEY_SERVICE_NAME, configMap);
-      if (stringValue != null) {
-        this.setServiceName(stringValue);
-      }
-      stringValue = getStringProperty(KEY_ENDPOINT, configMap);
-      if (stringValue != null) {
-        this.setEndpoint(stringValue);
-      }
-      return this;
-    }
-
-    /**
-     * Constructs a new instance of the exporter based on the builder's values.
-     *
-     * @return a new exporter's instance.
-     */
-    public JaegerThriftSpanExporter build() {
-      if (thriftSender == null) {
-        thriftSender = new HttpSender.Builder(endpoint).build();
-      }
-      return new JaegerThriftSpanExporter(thriftSender, serviceName);
-    }
-
-    private Builder() {}
   }
 }
