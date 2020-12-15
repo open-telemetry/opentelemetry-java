@@ -14,6 +14,10 @@ public class ParentBasedSamplerBuilder {
   private Sampler localParentSampled;
   private Sampler localParentNotSampled;
 
+  ParentBasedSamplerBuilder(Sampler root) {
+    this.root = root;
+  }
+
   /**
    * Sets the {@link Sampler} to use when there is a remote parent that was sampled. If not set,
    * defaults to always sampling if the remote parent was sampled.
@@ -70,9 +74,5 @@ public class ParentBasedSamplerBuilder {
         this.remoteParentNotSampled,
         this.localParentSampled,
         this.localParentNotSampled);
-  }
-
-  ParentBasedSamplerBuilder(Sampler root) {
-    this.root = root;
   }
 }
