@@ -141,7 +141,10 @@ class StrictContextWithCoroutinesTest {
         Context.current().with(ANIMAL, animal).makeCurrent().use {
             assertThat(Context.current().get(ANIMAL)).isEqualTo(animal)
             delay(10)
-            // May be on a different thread, in which case ANIMAL != animal!
+            // The value of ANIMAL here is undefined - it may still be the original thread with
+            // the ThreadLocal set correctly, or a completely different one with a different value.
+            // So there's nothing we can assert here, and is precisely why we forbid makeCurrent in
+            // suspending functions.
         }
     }
 
@@ -149,7 +152,10 @@ class StrictContextWithCoroutinesTest {
         val scope = Context.current().with(ANIMAL, animal).makeCurrent()
         assertThat(Context.current().get(ANIMAL)).isEqualTo(animal)
         delay(10)
-        // May be on a different thread, in which case ANIMAL != animal!
+        // The value of ANIMAL here is undefined - it may still be the original thread with
+        // the ThreadLocal set correctly, or a completely different one with a different value.
+        // So there's nothing we can assert here, and is precisely why we forbid makeCurrent in
+        // suspending functions.
         scope.close()
     }
 
