@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
  * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
  * as needed.
  */
-public class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
+public final class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "unknown";
   private final TracerSharedState sharedState;

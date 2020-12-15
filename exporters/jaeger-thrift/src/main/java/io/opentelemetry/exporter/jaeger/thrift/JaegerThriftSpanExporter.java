@@ -41,7 +41,8 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
   private final ThriftSender thriftSender;
-  private final Process process;
+  // Visible for testing
+  final Process process;
 
   /**
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.

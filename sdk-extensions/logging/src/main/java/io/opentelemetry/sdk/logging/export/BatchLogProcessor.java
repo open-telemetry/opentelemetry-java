@@ -24,7 +24,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class BatchLogProcessor implements LogProcessor {
+public final class BatchLogProcessor implements LogProcessor {
   private static final String WORKER_THREAD_NAME =
       BatchLogProcessor.class.getSimpleName() + "_WorkerThread";
 

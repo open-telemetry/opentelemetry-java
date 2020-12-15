@@ -41,7 +41,7 @@ import org.junit.rules.ExternalResource;
  * >  }
  * }</pre>
  */
-public class OpenTelemetryRule extends ExternalResource {
+public final class OpenTelemetryRule extends ExternalResource {
 
   /**
    * Returns a {@link OpenTelemetryRule} with a default SDK initialized with an in-memory span
@@ -96,7 +96,7 @@ public class OpenTelemetryRule extends ExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
+  protected void before() {
     previousGlobalOpenTelemetry = OpenTelemetry.get();
     OpenTelemetry.set(openTelemetry);
     clearSpans();

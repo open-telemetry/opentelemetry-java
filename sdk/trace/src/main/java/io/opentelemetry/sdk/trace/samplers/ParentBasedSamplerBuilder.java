@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.samplers;
 
 /** A builder for creating ParentBased sampler instances. */
-public class ParentBasedSamplerBuilder {
+public final class ParentBasedSamplerBuilder {
 
   private final Sampler root;
   private Sampler remoteParentSampled;

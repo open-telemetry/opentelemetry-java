@@ -50,7 +50,7 @@ import javax.annotation.concurrent.Immutable;
  * }</pre>
  */
 @Immutable
-public class TraceMultiPropagator implements TextMapPropagator {
+public final class TraceMultiPropagator implements TextMapPropagator {
 
   /** Returns a {@link TraceMultiPropagator} for the given {@code propagators}. */
   public static TextMapPropagator create(TextMapPropagator... propagators) {

@@ -12,7 +12,7 @@ import io.opentelemetry.spi.OpenTelemetryFactory;
  * Factory SPI implementation to register a {@link OpenTelemetrySdk} as the default {@link
  * OpenTelemetry}.
  */
-public class OpenTelemetrySdkFactory implements OpenTelemetryFactory {
+public final class OpenTelemetrySdkFactory implements OpenTelemetryFactory {
   @Override
   public OpenTelemetry create() {
     return OpenTelemetrySdk.builder().build();

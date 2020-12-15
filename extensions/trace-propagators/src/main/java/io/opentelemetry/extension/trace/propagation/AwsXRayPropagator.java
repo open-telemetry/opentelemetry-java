@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
  *     .build());
  * }</pre>
  */
-public class AwsXRayPropagator implements TextMapPropagator {
+public final class AwsXRayPropagator implements TextMapPropagator {
 
   // Visible for testing
   static final String TRACE_HEADER_KEY = "X-Amzn-Trace-Id";

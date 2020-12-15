@@ -46,7 +46,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * >  }
  * }</pre>
  */
-public class OpenTelemetryExtension
+public final class OpenTelemetryExtension
     implements BeforeEachCallback, BeforeAllCallback, AfterAllCallback {
 
   /**
