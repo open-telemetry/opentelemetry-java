@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.entry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class AttributesTest {
 
   @Test
   void forEach() {
-    final Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    final Map<AttributeKey, Object> entriesSeen = new LinkedHashMap<>();
 
     Attributes attributes = Attributes.of(stringKey("key1"), "value1", longKey("key2"), 333L);
 
@@ -377,5 +378,12 @@ class AttributesTest {
         .isEqualTo(
             "{error=true, http.response_size=100, "
                 + "otel.status_code=\"OK\", process.cpu_consumed=33.44, success=\"true\"}");
+  }
+
+  @Test
+  void onlySameTypeCanRetrieveValue() {
+    Attributes attributes = Attributes.of(stringKey("animal"), "cat");
+    assertThat(attributes.get(stringKey("animal"))).isEqualTo("cat");
+    assertThat(attributes.get(longKey("animal"))).isNull();
   }
 }

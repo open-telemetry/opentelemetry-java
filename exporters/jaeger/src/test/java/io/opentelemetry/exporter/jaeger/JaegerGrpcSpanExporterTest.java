@@ -264,8 +264,8 @@ class JaegerGrpcSpanExporterTest {
     String endpoint = "127.0.0.1:9090";
     options.put("otel.exporter.jaeger.service.name", serviceName);
     options.put("otel.exporter.jaeger.endpoint", endpoint);
-    JaegerGrpcSpanExporter.Builder config = JaegerGrpcSpanExporter.builder();
-    JaegerGrpcSpanExporter.Builder spy = Mockito.spy(config);
+    JaegerGrpcSpanExporterBuilder config = JaegerGrpcSpanExporter.builder();
+    JaegerGrpcSpanExporterBuilder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
     Mockito.verify(spy).setServiceName(serviceName);
     Mockito.verify(spy).setEndpoint(endpoint);

@@ -12,7 +12,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +25,15 @@ public final class TracezDataAggregatorTest {
   private static final String SPAN_NAME_ONE = "one";
   private static final String SPAN_NAME_TWO = "two";
   private final TestClock testClock = TestClock.create();
-  private final TracerSdkProvider tracerSdkProvider =
-      TracerSdkProvider.builder().setClock(testClock).build();
-  private final Tracer tracer = tracerSdkProvider.get("TracezDataAggregatorTest");
+  private final SdkTracerProvider sdkTracerProvider =
+      SdkTracerProvider.builder().setClock(testClock).build();
+  private final Tracer tracer = sdkTracerProvider.get("TracezDataAggregatorTest");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
 
   @BeforeEach
   void setup() {
-    tracerSdkProvider.addSpanProcessor(spanProcessor);
+    sdkTracerProvider.addSpanProcessor(spanProcessor);
   }
 
   @Test

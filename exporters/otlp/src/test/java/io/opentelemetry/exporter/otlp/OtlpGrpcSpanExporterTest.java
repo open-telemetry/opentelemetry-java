@@ -56,8 +56,8 @@ class OtlpGrpcSpanExporterTest {
     options.put(
         "otel.exporter.otlp.span.headers",
         "key=value;key2=value2=;key3=val=ue3; key4 = value4 ;key5= ");
-    OtlpGrpcSpanExporter.Builder config = OtlpGrpcSpanExporter.builder();
-    OtlpGrpcSpanExporter.Builder spy = Mockito.spy(config);
+    OtlpGrpcSpanExporterBuilder config = OtlpGrpcSpanExporter.builder();
+    OtlpGrpcSpanExporterBuilder spy = Mockito.spy(config);
     spy.fromConfigMap(options, OtlpGrpcMetricExporterTest.ConfigBuilderTest.getNaming());
     Mockito.verify(spy).setDeadlineMs(12);
     Mockito.verify(spy).setEndpoint("http://localhost:6553");
