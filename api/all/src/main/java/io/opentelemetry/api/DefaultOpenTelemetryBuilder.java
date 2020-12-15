@@ -47,8 +47,7 @@ public class DefaultOpenTelemetryBuilder
   public OpenTelemetry build() {
     MeterProvider meterProvider = this.meterProvider;
     if (meterProvider == null) {
-      MeterProviderFactory meterProviderFactory =
-          DefaultOpenTelemetry.loadSpi(MeterProviderFactory.class);
+      MeterProviderFactory meterProviderFactory = Utils.loadSpi(MeterProviderFactory.class);
       if (meterProviderFactory != null) {
         meterProvider = meterProviderFactory.create();
       } else {
@@ -58,8 +57,7 @@ public class DefaultOpenTelemetryBuilder
 
     TracerProvider tracerProvider = this.tracerProvider;
     if (tracerProvider == null) {
-      TracerProviderFactory tracerProviderFactory =
-          DefaultOpenTelemetry.loadSpi(TracerProviderFactory.class);
+      TracerProviderFactory tracerProviderFactory = Utils.loadSpi(TracerProviderFactory.class);
       if (tracerProviderFactory != null) {
         tracerProvider = tracerProviderFactory.create();
       } else {
