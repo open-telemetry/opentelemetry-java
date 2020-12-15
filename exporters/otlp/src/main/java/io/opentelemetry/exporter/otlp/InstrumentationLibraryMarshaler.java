@@ -10,25 +10,19 @@ import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.io.IOException;
-import javax.annotation.Nullable;
 
 final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
   private final ByteString name;
   private final ByteString version;
 
-  @Nullable
   static InstrumentationLibraryMarshaler create(InstrumentationLibraryInfo libraryInfo) {
     ByteString name = MarshalerUtil.toByteString(libraryInfo.getName());
     ByteString version = MarshalerUtil.toByteString(libraryInfo.getVersion());
-    int size = computeSize(name, version);
-    if (size == 0) {
-      return null;
-    }
-    return new InstrumentationLibraryMarshaler(size, name, version);
+    return new InstrumentationLibraryMarshaler(name, version);
   }
 
-  private InstrumentationLibraryMarshaler(int size, ByteString name, ByteString version) {
-    super(size);
+  private InstrumentationLibraryMarshaler(ByteString name, ByteString version) {
+    super(computeSize(name, version));
     this.name = name;
     this.version = version;
   }

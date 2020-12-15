@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -57,16 +58,34 @@ class TraceMarshalerTest {
 
   @Test
   void marshalAndSizeRequest() throws IOException {
-    List<SpanData> spanDataList = Arrays.asList(testSpanData(), testSpanData(), testSpanData());
+    assertMarshalAndSize(Arrays.asList(testSpanData(), testSpanData(), testSpanData()));
+  }
 
+  @Test
+  void marshalAndSizeRequest_Empty() throws IOException {
+    assertMarshalAndSize(
+        Collections.singletonList(
+            TestSpanData.builder()
+                .setTraceId("0123456789abcdef0123456789abcdef")
+                .setSpanId("0123456789abcdef")
+                .setKind(Span.Kind.INTERNAL)
+                .setName("")
+                .setStartEpochNanos(0)
+                .setEndEpochNanos(0)
+                .setHasEnded(true)
+                .setStatus(SpanData.Status.unset())
+                .build()));
+  }
+
+  private static void assertMarshalAndSize(List<SpanData> spanDataList) throws IOException {
     ExportTraceServiceRequest protoRequest =
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spanDataList))
             .build();
-
     TraceMarshaler.RequestMarshaler requestMarshaler =
         TraceMarshaler.RequestMarshaler.create(spanDataList);
-    assertThat(requestMarshaler.getSerializedSize()).isEqualTo(protoRequest.getSerializedSize());
+    int protoSize = protoRequest.getSerializedSize();
+    assertThat(requestMarshaler.getSerializedSize()).isEqualTo(protoSize);
 
     ExportTraceServiceRequest protoCustomRequest =
         TraceMarshaler.RequestMarshaler.create(spanDataList).toRequest();

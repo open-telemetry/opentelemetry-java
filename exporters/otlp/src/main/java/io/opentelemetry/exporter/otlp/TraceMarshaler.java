@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class TraceMarshaler {
 
@@ -83,11 +82,11 @@ final class TraceMarshaler {
   }
 
   private static final class ResourceSpansMarshaler extends MarshalerWithSize {
-    @Nullable private final ResourceMarshaler resourceMarshaler;
+    private final ResourceMarshaler resourceMarshaler;
     private final InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers;
 
     private ResourceSpansMarshaler(
-        @Nullable ResourceMarshaler resourceMarshaler,
+        ResourceMarshaler resourceMarshaler,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
       super(calculateSize(resourceMarshaler, instrumentationLibrarySpansMarshalers));
       this.resourceMarshaler = resourceMarshaler;
@@ -96,10 +95,7 @@ final class TraceMarshaler {
 
     @Override
     public void writeTo(CodedOutputStream output) throws IOException {
-      if (resourceMarshaler != null) {
-        MarshalerUtil.marshalMessage(
-            ResourceSpans.RESOURCE_FIELD_NUMBER, resourceMarshaler, output);
-      }
+      MarshalerUtil.marshalMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, resourceMarshaler, output);
       MarshalerUtil.marshalRepeatedMessage(
           ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
           instrumentationLibrarySpansMarshalers,
@@ -107,7 +103,7 @@ final class TraceMarshaler {
     }
 
     private static int calculateSize(
-        @Nullable ResourceMarshaler resourceMarshaler,
+        ResourceMarshaler resourceMarshaler,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
       int size = 0;
       if (resourceMarshaler != null) {
@@ -122,11 +118,11 @@ final class TraceMarshaler {
   }
 
   private static final class InstrumentationLibrarySpansMarshaler extends MarshalerWithSize {
-    @Nullable private final InstrumentationLibraryMarshaler instrumentationLibrary;
+    private final InstrumentationLibraryMarshaler instrumentationLibrary;
     private final List<SpanMarshaler> spanMarshalers;
 
     private InstrumentationLibrarySpansMarshaler(
-        @Nullable InstrumentationLibraryMarshaler instrumentationLibrary,
+        InstrumentationLibraryMarshaler instrumentationLibrary,
         List<SpanMarshaler> spanMarshalers) {
       super(calculateSize(instrumentationLibrary, spanMarshalers));
       this.instrumentationLibrary = instrumentationLibrary;
@@ -135,18 +131,16 @@ final class TraceMarshaler {
 
     @Override
     public void writeTo(CodedOutputStream output) throws IOException {
-      if (instrumentationLibrary != null) {
-        MarshalerUtil.marshalMessage(
-            InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
-            instrumentationLibrary,
-            output);
-      }
+      MarshalerUtil.marshalMessage(
+          InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
+          instrumentationLibrary,
+          output);
       MarshalerUtil.marshalRepeatedMessage(
           InstrumentationLibrarySpans.SPANS_FIELD_NUMBER, spanMarshalers, output);
     }
 
     private static int calculateSize(
-        @Nullable InstrumentationLibraryMarshaler instrumentationLibrary,
+        InstrumentationLibraryMarshaler instrumentationLibrary,
         List<SpanMarshaler> spanMarshalers) {
       int size = 0;
       if (instrumentationLibrary != null) {
@@ -176,7 +170,7 @@ final class TraceMarshaler {
     private final int droppedEventsCount;
     private final SpanLinkMarshaler[] spanLinkMarshalers;
     private final int droppedLinksCount;
-    @Nullable private final SpanStatusMarshaler spanStatusMarshaler;
+    private final SpanStatusMarshaler spanStatusMarshaler;
 
     // Because SpanMarshaler is always part of a repeated field, it cannot return "null".
     private static SpanMarshaler create(SpanData spanData) {
@@ -221,7 +215,7 @@ final class TraceMarshaler {
         int droppedEventsCount,
         SpanLinkMarshaler[] spanLinkMarshalers,
         int droppedLinksCount,
-        @Nullable SpanStatusMarshaler spanStatusMarshaler) {
+        SpanStatusMarshaler spanStatusMarshaler) {
       super(
           calculateSize(
               traceId,
@@ -280,9 +274,7 @@ final class TraceMarshaler {
       MarshalerUtil.marshalRepeatedMessage(Span.LINKS_FIELD_NUMBER, spanLinkMarshalers, output);
       MarshalerUtil.marshalUInt32(Span.DROPPED_LINKS_COUNT_FIELD_NUMBER, droppedLinksCount, output);
 
-      if (spanStatusMarshaler != null) {
-        MarshalerUtil.marshalMessage(Span.STATUS_FIELD_NUMBER, spanStatusMarshaler, output);
-      }
+      MarshalerUtil.marshalMessage(Span.STATUS_FIELD_NUMBER, spanStatusMarshaler, output);
     }
 
     private static int calculateSize(
@@ -299,7 +291,7 @@ final class TraceMarshaler {
         int droppedEventsCount,
         SpanLinkMarshaler[] spanLinkMarshalers,
         int droppedLinksCount,
-        @Nullable SpanStatusMarshaler spanStatusMarshaler) {
+        SpanStatusMarshaler spanStatusMarshaler) {
       int size = 0;
       size += MarshalerUtil.sizeBytes(Span.TRACE_ID_FIELD_NUMBER, traceId);
       size += MarshalerUtil.sizeBytes(Span.SPAN_ID_FIELD_NUMBER, spanId);
@@ -324,9 +316,7 @@ final class TraceMarshaler {
       size += MarshalerUtil.sizeRepeatedMessage(Span.LINKS_FIELD_NUMBER, spanLinkMarshalers);
       size += MarshalerUtil.sizeUInt32(Span.DROPPED_LINKS_COUNT_FIELD_NUMBER, droppedLinksCount);
 
-      if (spanStatusMarshaler != null) {
-        size += MarshalerUtil.sizeMessage(Span.STATUS_FIELD_NUMBER, spanStatusMarshaler);
-      }
+      size += MarshalerUtil.sizeMessage(Span.STATUS_FIELD_NUMBER, spanStatusMarshaler);
       return size;
     }
   }
@@ -469,7 +459,6 @@ final class TraceMarshaler {
     private final Status.DeprecatedStatusCode deprecatedStatusCode;
     private final ByteString description;
 
-    @Nullable
     static SpanStatusMarshaler create(SpanData.Status status) {
       Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
       Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
@@ -480,20 +469,14 @@ final class TraceMarshaler {
         deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
       }
       ByteString description = MarshalerUtil.toByteString(status.getDescription());
-
-      int size = computeSize(protoStatusCode, deprecatedStatusCode, description);
-      if (size == 0) {
-        return null;
-      }
-      return new SpanStatusMarshaler(size, protoStatusCode, deprecatedStatusCode, description);
+      return new SpanStatusMarshaler(protoStatusCode, deprecatedStatusCode, description);
     }
 
     private SpanStatusMarshaler(
-        int size,
         Status.StatusCode protoStatusCode,
         Status.DeprecatedStatusCode deprecatedStatusCode,
         ByteString description) {
-      super(size);
+      super(computeSize(protoStatusCode, deprecatedStatusCode, description));
       this.protoStatusCode = protoStatusCode;
       this.deprecatedStatusCode = deprecatedStatusCode;
       this.description = description;

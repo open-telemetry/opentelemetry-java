@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 public class ResourceMarshalerTest {
   @Test
   void customMarshalAndSize() throws IOException {
-    Resource resource =
+    assertMarshalAndSize(
         Resource.create(
             Attributes.builder()
                 .put(AttributeKey.booleanKey("key_bool"), true)
@@ -35,8 +35,15 @@ public class ResourceMarshalerTest {
                 .put(AttributeKey.booleanKey(""), true)
                 .put(AttributeKey.stringKey("null_value"), null)
                 .put(AttributeKey.stringKey("empty_value"), "")
-                .build());
+                .build()));
+  }
 
+  @Test
+  void customMarshalAndSize_Empty() throws IOException {
+    assertMarshalAndSize(Resource.getEmpty());
+  }
+
+  private static void assertMarshalAndSize(Resource resource) throws IOException {
     io.opentelemetry.proto.resource.v1.Resource proto = ResourceAdapter.toProtoResource(resource);
     int protoSize = proto.getSerializedSize();
 
@@ -50,12 +57,6 @@ public class ResourceMarshalerTest {
 
     ByteBuffer customOutput = ByteBuffer.allocate(customSize);
     marshaler.writeTo(CodedOutputStream.newInstance(customOutput));
-
     assertThat(customOutput).isEqualTo(protoOutput);
-  }
-
-  @Test
-  void customMarshalAndSize_Empty() {
-    assertThat(ResourceMarshaler.create(Resource.getEmpty())).isNull();
   }
 }
