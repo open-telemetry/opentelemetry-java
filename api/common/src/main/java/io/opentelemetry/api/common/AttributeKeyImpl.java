@@ -23,4 +23,9 @@ abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
 
   @Nullable
   abstract String key();
+
+  @Override
+  public final String toString() {
+    return getKey();
+  }
 }

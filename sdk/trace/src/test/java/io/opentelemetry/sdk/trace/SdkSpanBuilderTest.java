@@ -24,6 +24,7 @@ import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -866,5 +867,41 @@ class SdkSpanBuilderTest {
     assertThat(SdkSpanBuilder.isRecording(SamplingResult.Decision.DROP)).isFalse();
     assertThat(SdkSpanBuilder.isRecording(SamplingResult.Decision.RECORD_ONLY)).isTrue();
     assertThat(SdkSpanBuilder.isRecording(SamplingResult.Decision.RECORD_AND_SAMPLE)).isTrue();
+  }
+
+  // SpanData is very commonly used in unit tests, we want the toString to make sure it's relatively
+  // easy to understand failure messages.
+  // TODO(anuraaga): Currently it isn't - we even return the same (or maybe incorrect?) stuff twice.
+  // Improve the toString.
+  @Test
+  void spanDataToString() {
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    span.setAttribute("http.status_code", 500);
+    span.setAttribute("http.url", "https://opentelemetry.io");
+    span.setStatus(StatusCode.ERROR, "error");
+    span.end();
+
+    assertThat(span.toSpanData().toString())
+        .matches(
+            "SpanWrapper\\{delegate=RecordEventsReadableSpan\\{"
+                + "traceId=[0-9a-f]{32}, "
+                + "spanId=[0-9a-f]{16}, "
+                + "parentSpanContext=ImmutableSpanContext\\{"
+                + "traceIdAsHexString=00000000000000000000000000000000, "
+                + "spanIdAsHexString=0000000000000000, "
+                + "traceFlags=0, "
+                + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false}, "
+                + "name=span_name, kind=INTERNAL, "
+                + "attributes=AttributesMap\\{data=\\{http.status_code=500, "
+                + "http.url=https://opentelemetry.io}, capacity=1000, totalAddedValues=2}, "
+                + "status=ImmutableStatus\\{statusCode=ERROR, description=error}, "
+                + "totalRecordedEvents=0, totalRecordedLinks=0, startEpochNanos=[0-9]+, "
+                + "endEpochNanos=[0-9]+}, resolvedLinks=\\[], resolvedEvents=\\[], "
+                + "attributes=AttributesMap\\{data=\\{http.status_code=500, "
+                + "http.url=https://opentelemetry.io}, capacity=1000, totalAddedValues=2}, "
+                + "totalAttributeCount=2, totalRecordedEvents=0, "
+                + "status=ImmutableStatus\\{statusCode=ERROR, description=error}, name=span_name, "
+                + "endEpochNanos=[0-9]+, internalHasEnded=true}");
   }
 }

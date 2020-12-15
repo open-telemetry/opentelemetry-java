@@ -119,10 +119,7 @@ class AttributesTest {
     assertThat(map.values().contains("value1")).isTrue();
     assertThat(map.values().contains("value3")).isFalse();
 
-    assertThat(map.toString())
-        .isEqualTo(
-            "ReadOnlyArrayMap{AttributeKeyImpl{getType=STRING, key=key1}=value1,"
-                + "AttributeKeyImpl{getType=LONG, key=key2}=333}");
+    assertThat(map.toString()).isEqualTo("ReadOnlyArrayMap{key1=value1,key2=333}");
 
     assertThat(Attributes.builder().build().asMap()).isEmpty();
   }
@@ -364,6 +361,23 @@ class AttributesTest {
     assertThat(attributes.get(longArrayKey("arrayLong"))).isEqualTo(singletonList(10L));
     assertThat(attributes.get(doubleArrayKey("arrayDouble"))).isEqualTo(singletonList(1.0d));
     assertThat(attributes.get(booleanArrayKey("arrayBool"))).isEqualTo(singletonList(true));
+  }
+
+  @Test
+  void attributesToString() {
+    Attributes attributes =
+        Attributes.builder()
+            .put("otel.status_code", "OK")
+            .put("http.response_size", 100)
+            .put("process.cpu_consumed", 33.44)
+            .put("error", true)
+            .put("success", "true")
+            .build();
+
+    assertThat(attributes.toString())
+        .isEqualTo(
+            "{error=true, http.response_size=100, "
+                + "otel.status_code=\"OK\", process.cpu_consumed=33.44, success=\"true\"}");
   }
 
   @Test

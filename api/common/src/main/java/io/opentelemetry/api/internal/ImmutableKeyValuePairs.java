@@ -199,7 +199,10 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     final StringBuilder sb = new StringBuilder("{");
     List<Object> data = data();
     for (int i = 0; i < data.size(); i += 2) {
-      sb.append(data.get(i)).append("=").append(data.get(i + 1)).append(", ");
+      // Quote string values
+      Object value = data.get(i + 1);
+      String valueStr = value instanceof String ? '"' + (String) value + '"' : value.toString();
+      sb.append(data.get(i)).append("=").append(valueStr).append(", ");
     }
     // get rid of that last pesky comma
     if (sb.length() > 1) {
