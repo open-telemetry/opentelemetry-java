@@ -14,6 +14,11 @@ import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 /** Tests for the {@link EnvAutodetectResource}. */
 class EnvAutodetectResourceTest {
+  static {
+    // pre-load the default so that it doesn't get polluted by the system properties
+    //noinspection ResultOfMethodCallIgnored
+    Resource.getDefault();
+  }
 
   @Test
   void parseResourceAttributes_null() {
@@ -76,6 +81,11 @@ class EnvAutodetectResourceTest {
   }
 
   public static class ResourceAttributesEnvVarsTest {
+    static {
+      // pre-load the default so that it doesn't get polluted by the env var
+      //noinspection ResultOfMethodCallIgnored
+      Resource.getDefault();
+    }
 
     @Test
     @SetEnvironmentVariable(
