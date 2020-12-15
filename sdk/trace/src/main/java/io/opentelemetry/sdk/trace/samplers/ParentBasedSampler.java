@@ -22,7 +22,7 @@ import javax.annotation.concurrent.Immutable;
  * ParentBasedSamplerBuilder} methods for the details on the various configurable options.
  */
 @Immutable
-public class ParentBasedSampler implements Sampler {
+final class ParentBasedSampler implements Sampler {
 
   private final Sampler root;
   private final Sampler remoteParentSampled;
