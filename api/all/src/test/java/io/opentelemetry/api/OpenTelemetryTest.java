@@ -173,6 +173,7 @@ class OpenTelemetryTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation") // tested deprecated code
   void testGlobalPropagatorsSet() {
     ContextPropagators propagators = ContextPropagators.noop();
     GlobalOpenTelemetry.setPropagators(propagators);
@@ -180,6 +181,7 @@ class OpenTelemetryTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation") // tested deprecated code
   void testPropagatorsSet() {
     ContextPropagators propagators = ContextPropagators.noop();
     OpenTelemetry instance = DefaultOpenTelemetry.builder().build();
@@ -237,6 +239,7 @@ class OpenTelemetryTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation") // tested deprecated code
   void testPropagatorsSetNull() {
     assertThrows(NullPointerException.class, () -> GlobalOpenTelemetry.setPropagators(null));
   }

@@ -29,6 +29,7 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 
+@SuppressWarnings("deprecation") // using deprecated code in tests
 public class Application {
   private static final Logger logger = Logger.getLogger(Application.class.getName());
   private static final OpenTelemetry openTelemetry;
