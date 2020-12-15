@@ -28,10 +28,10 @@ public class DefaultOpenTelemetry implements OpenTelemetry {
 
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
-
   private volatile ContextPropagators propagators;
 
   @Override
+  @Deprecated
   public void setPropagators(ContextPropagators propagators) {
     this.propagators = propagators;
   }

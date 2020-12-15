@@ -158,7 +158,10 @@ public final class GlobalOpenTelemetry {
 
   /**
    * Sets the globally registered {@link ContextPropagators} for remote propagation of a context.
+   *
+   * @deprecated this will be removed soon, create a new instance if necessary.
    */
+  @Deprecated
   public static void setPropagators(ContextPropagators propagators) {
     requireNonNull(propagators, "propagators");
     get().setPropagators(propagators);

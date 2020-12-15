@@ -5,8 +5,6 @@
 
 package io.opentelemetry.api;
 
-import static java.util.Objects.requireNonNull;
-
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
@@ -15,6 +13,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.spi.OpenTelemetryFactory;
 import io.opentelemetry.spi.metrics.MeterProviderFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
+import java.util.Objects;
 
 /**
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
@@ -130,15 +129,20 @@ public interface OpenTelemetry {
   /**
    * Sets the globally registered {@link ContextPropagators} for remote propagation of a context.
    *
-   * @deprecated use {@link GlobalOpenTelemetry#setPropagators(ContextPropagators)}
+   * @deprecated this will be removed soon, create a new instance if necessary.
    */
   @Deprecated
   static void setGlobalPropagators(ContextPropagators propagators) {
-    requireNonNull(propagators, "propagators");
+    Objects.requireNonNull(propagators, "propagators");
     get().setPropagators(propagators);
   }
 
-  /** Sets the propagators that this instance should contain. */
+  /**
+   * Sets the propagators that this instance should contain.
+   *
+   * @deprecated this will be removed soon, create a new instance if necessary.
+   */
+  @Deprecated
   void setPropagators(ContextPropagators propagators);
 
   /** Returns the {@link TracerProvider} for this {@link OpenTelemetry}. */
