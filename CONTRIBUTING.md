@@ -68,8 +68,8 @@ which uses [google-java-format](https://github.com/google/google-java-format) li
 * The project aims to provide a consistent experience across all the public APIs. It is important to ensure consistency (same look and feel) across different public packages.
 * Use `final` for public classes everywhere it is possible, this ensures that these classes cannot be extended when the API does not intend to offer that functionality.
 * In general, we use the following ordering of class members:
-    * static fields
-    * non-static fields
+    * static fields (final before non-final)
+    * non-static fields (final before non-final)
     * constructors
     * static methods
     * instance methods
