@@ -7,14 +7,14 @@ package io.opentelemetry.sdk.logging;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 
 public interface LogProcessor {
 
   void addLogRecord(LogRecord record);
 
   /**
-   * Called when {@link TracerSdkProvider#shutdown()} is called.
+   * Called when {@link SdkTracerProvider#shutdown()} is called.
    *
    * @return result
    */

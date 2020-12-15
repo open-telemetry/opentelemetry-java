@@ -39,14 +39,14 @@ public class SpanPipelineBenchmark {
         DockerImageName.parse("otel/opentelemetry-collector-dev:latest");
     private static final int EXPOSED_PORT = 5678;
     private static final int HEALTH_CHECK_PORT = 13133;
-    private SpanBuilderSdk spanBuilderSdk;
+    private SdkSpanBuilder sdkSpanBuilder;
 
     protected abstract SpanProcessor getSpanProcessor(String collectorAddress);
 
     protected abstract void runThePipeline();
 
     protected void doWork() {
-      Span span = spanBuilderSdk.startSpan();
+      Span span = sdkSpanBuilder.startSpan();
       for (int i = 0; i < 10; i++) {
         span.setAttribute("benchmarkAttribute_" + i, "benchmarkAttrValue_" + i);
       }
@@ -71,12 +71,12 @@ public class SpanPipelineBenchmark {
       TraceConfig alwaysOn =
           TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
 
-      TracerSdkProvider tracerProvider =
-          TracerSdkProvider.builder().setTraceConfig(alwaysOn).build();
+      SdkTracerProvider tracerProvider =
+          SdkTracerProvider.builder().setTraceConfig(alwaysOn).build();
       tracerProvider.addSpanProcessor(getSpanProcessor(address));
 
       Tracer tracerSdk = tracerProvider.get("PipelineBenchmarkTracer");
-      spanBuilderSdk = (SpanBuilderSdk) tracerSdk.spanBuilder("PipelineBenchmarkSpan");
+      sdkSpanBuilder = (SdkSpanBuilder) tracerSdk.spanBuilder("PipelineBenchmarkSpan");
     }
 
     @Benchmark

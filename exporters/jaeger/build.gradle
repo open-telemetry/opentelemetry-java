@@ -29,7 +29,9 @@ dependencies {
 
     // Protobuf plugin seems to erroneously use the non-classpath configurations for resolving
     // dependencies.
-    testImplementation enforcedPlatform(boms.jackson)
+    boms.each {
+        testImplementation enforcedPlatform(it)
+    }
 
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
 

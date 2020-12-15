@@ -7,14 +7,12 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -50,7 +48,18 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   private final boolean sampled;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
-  private SimpleSpanProcessor(SpanExporter spanExporter, boolean sampled) {
+  /**
+   * Returns a new Builder for {@link SimpleSpanProcessor}.
+   *
+   * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
+   * @return a new {@link SimpleSpanProcessor}.
+   * @throws NullPointerException if the {@code spanExporter} is {@code null}.
+   */
+  public static SimpleSpanProcessorBuilder builder(SpanExporter spanExporter) {
+    return new SimpleSpanProcessorBuilder(spanExporter);
+  }
+
+  SimpleSpanProcessor(SpanExporter spanExporter, boolean sampled) {
     this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     this.sampled = sampled;
   }
@@ -95,85 +104,5 @@ public final class SimpleSpanProcessor implements SpanProcessor {
       return CompletableResultCode.ofSuccess();
     }
     return spanExporter.shutdown();
-  }
-
-  /**
-   * Returns a new Builder for {@link SimpleSpanProcessor}.
-   *
-   * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
-   * @return a new {@link SimpleSpanProcessor}.
-   * @throws NullPointerException if the {@code spanExporter} is {@code null}.
-   */
-  public static Builder builder(SpanExporter spanExporter) {
-    return new Builder(spanExporter);
-  }
-
-  /** Builder class for {@link SimpleSpanProcessor}. */
-  public static final class Builder extends ConfigBuilder<Builder> {
-
-    private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
-
-    // Visible for testing
-    static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
-    private final SpanExporter spanExporter;
-    private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
-
-    private Builder(SpanExporter spanExporter) {
-      this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
-    }
-
-    /**
-     * Sets the configuration values from the given configuration map for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be exported.
-     * </ul>
-     *
-     * @param configMap {@link Map} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    protected Builder fromConfigMap(
-        Map<String, String> configMap, NamingConvention namingConvention) {
-      configMap = namingConvention.normalize(configMap);
-      Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
-      if (boolValue != null) {
-        return this.setExportOnlySampled(boolValue);
-      }
-      return this;
-    }
-
-    /**
-     * Set whether only sampled spans should be exported.
-     *
-     * <p>Default value is {@code true}.
-     *
-     * @param exportOnlySampled if {@code true} report only sampled spans.
-     * @return this.
-     */
-    public Builder setExportOnlySampled(boolean exportOnlySampled) {
-      this.exportOnlySampled = exportOnlySampled;
-      return this;
-    }
-
-    // Visible for testing
-    boolean getExportOnlySampled() {
-      return exportOnlySampled;
-    }
-
-    // TODO: Add metrics for total exported spans.
-    // TODO: Consider to add support for constant Attributes and/or Resource.
-
-    /**
-     * Returns a new {@link SimpleSpanProcessor} that converts spans to proto and forwards them to
-     * the given {@code spanExporter}.
-     *
-     * @return a new {@link SimpleSpanProcessor}.
-     * @throws NullPointerException if the {@code spanExporter} is {@code null}.
-     */
-    public SimpleSpanProcessor build() {
-      return new SimpleSpanProcessor(spanExporter, exportOnlySampled);
-    }
   }
 }

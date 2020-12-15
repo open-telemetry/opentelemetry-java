@@ -56,15 +56,15 @@ public interface Sampler {
   }
 
   /**
-   * Returns a {@link ParentBasedSampler.Builder} that follows the parent's sampling decision if one
+   * Returns a {@link ParentBasedSamplerBuilder} that follows the parent's sampling decision if one
    * exists, otherwise following the root sampler and other optional sampler's decision.
    *
    * @param root the required {@code Sampler} which is used to make the sampling decisions if the
    *     parent does not exist.
    * @return a {@code ParentBased.Builder}
    */
-  static ParentBasedSampler.Builder parentBasedBuilder(Sampler root) {
-    return new ParentBasedSampler.Builder(root);
+  static ParentBasedSamplerBuilder parentBasedBuilder(Sampler root) {
+    return new ParentBasedSamplerBuilder(root);
   }
 
   /**

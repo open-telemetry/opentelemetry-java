@@ -23,12 +23,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-/** Unit tests for {@link TracerSdk}. */
+/** Unit tests for {@link SdkTracer}. */
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
 @ExtendWith(MockitoExtension.class)
-class TracerSdkTest {
+class SdkTracerTest {
 
   private static final String SPAN_NAME = "span_name";
   private static final String INSTRUMENTATION_LIBRARY_NAME =
@@ -38,15 +38,15 @@ class TracerSdkTest {
       InstrumentationLibraryInfo.create(
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
-  private final TracerSdk tracer =
-      (TracerSdk)
-          TracerSdkProvider.builder()
+  private final SdkTracer tracer =
+      (SdkTracer)
+          SdkTracerProvider.builder()
               .build()
               .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
   @Test
   void defaultSpanBuilder() {
-    assertThat(tracer.spanBuilder(SPAN_NAME)).isInstanceOf(SpanBuilderSdk.class);
+    assertThat(tracer.spanBuilder(SPAN_NAME)).isInstanceOf(SdkSpanBuilder.class);
   }
 
   @Test
@@ -63,11 +63,11 @@ class TracerSdkTest {
   @Test
   void stressTest() {
     CountingSpanProcessor spanProcessor = new CountingSpanProcessor();
-    TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
-    tracerSdkProvider.addSpanProcessor(spanProcessor);
-    TracerSdk tracer =
-        (TracerSdk)
-            tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+    sdkTracerProvider.addSpanProcessor(spanProcessor);
+    SdkTracer tracer =
+        (SdkTracer)
+            sdkTracerProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
@@ -86,11 +86,11 @@ class TracerSdkTest {
   void stressTest_withBatchSpanProcessor() {
     CountingSpanExporter countingSpanExporter = new CountingSpanExporter();
     SpanProcessor spanProcessor = BatchSpanProcessor.builder(countingSpanExporter).build();
-    TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
-    tracerSdkProvider.addSpanProcessor(spanProcessor);
-    TracerSdk tracer =
-        (TracerSdk)
-            tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+    sdkTracerProvider.addSpanProcessor(spanProcessor);
+    SdkTracer tracer =
+        (SdkTracer)
+            sdkTracerProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
@@ -135,9 +135,9 @@ class TracerSdkTest {
   }
 
   private static class SimpleSpanOperation implements OperationUpdater {
-    private final TracerSdk tracer;
+    private final SdkTracer tracer;
 
-    public SimpleSpanOperation(TracerSdk tracer) {
+    public SimpleSpanOperation(SdkTracer tracer) {
       this.tracer = tracer;
     }
 

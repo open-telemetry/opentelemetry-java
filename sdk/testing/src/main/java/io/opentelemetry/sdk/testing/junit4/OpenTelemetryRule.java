@@ -10,8 +10,8 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.List;
@@ -50,7 +50,7 @@ public class OpenTelemetryRule extends ExternalResource {
   public static OpenTelemetryRule create() {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
-    TracerSdkProvider tracerProvider = TracerSdkProvider.builder().build();
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
     tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(spanExporter).build());
 
     OpenTelemetrySdk openTelemetry =
@@ -77,8 +77,8 @@ public class OpenTelemetryRule extends ExternalResource {
     return openTelemetry;
   }
 
-  /** Returns the {@link TracerSdkManagement} created by this extension. */
-  public TracerSdkManagement getTracerManagement() {
+  /** Returns the {@link SdkTracerManagement} created by this extension. */
+  public SdkTracerManagement getTracerManagement() {
     return openTelemetry.getTracerManagement();
   }
 

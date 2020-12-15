@@ -7,7 +7,6 @@ package io.opentelemetry.api.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,9 +19,7 @@ class ImmutableKeyValuePairsTest {
     assertThat(new TestPairs(Collections.emptyList()).toString()).isEqualTo("{}");
     assertThat(new TestPairs(Arrays.asList("one", 55)).toString()).isEqualTo("{one=55}");
     assertThat(new TestPairs(Arrays.asList("one", 55, "two", "b")).toString())
-        .isEqualTo("{one=55, two=b}");
-    assertThat(new TestPairs(Arrays.asList("one", 55, "two", "b")).toString())
-        .isEqualTo(ImmutableMap.of("one", 55, "two", "b").toString());
+        .isEqualTo("{one=55, two=\"b\"}");
   }
 
   static class TestPairs extends ImmutableKeyValuePairs<String, Object> {
