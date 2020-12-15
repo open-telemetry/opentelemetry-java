@@ -6,39 +6,32 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.LongUpDownSumObserver;
-import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongAsynchronousInstrument;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import javax.annotation.Nullable;
 
-final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
+final class LongUpDownSumObserverSdk extends AbstractAsynchronousInstrument
     implements LongUpDownSumObserver {
+
   LongUpDownSumObserverSdk(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      Batcher batcher,
-      @Nullable Callback<LongResult> metricUpdater) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(batcher),
-        metricUpdater);
+      InstrumentDescriptor descriptor, AsynchronousInstrumentAccumulator accumulator) {
+    super(descriptor, accumulator);
   }
 
   static final class Builder
-      extends AbstractAsynchronousInstrument.Builder<LongUpDownSumObserverSdk.Builder>
+      extends AbstractLongAsynchronousInstrumentBuilder<LongUpDownSumObserverSdk.Builder>
       implements LongUpDownSumObserver.Builder {
-
-    @Nullable private Callback<LongResult> callback;
 
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        MeterSdk meterSdk) {
-      super(name, meterProviderSharedState, meterSharedState, meterSdk);
+        MeterSharedState meterSharedState) {
+      super(
+          name,
+          InstrumentType.UP_DOWN_SUM_OBSERVER,
+          InstrumentValueType.LONG,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -47,23 +40,8 @@ final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
     }
 
     @Override
-    public Builder setCallback(Callback<LongResult> callback) {
-      this.callback = callback;
-      return this;
-    }
-
-    @Override
     public LongUpDownSumObserverSdk build() {
-      InstrumentDescriptor instrumentDescriptor =
-          getInstrumentDescriptor(InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG);
-      LongUpDownSumObserverSdk instrument =
-          new LongUpDownSumObserverSdk(
-              instrumentDescriptor,
-              getMeterProviderSharedState(),
-              getMeterSharedState(),
-              getBatcher(instrumentDescriptor),
-              callback);
-      return register(instrument);
+      return buildInstrument(LongUpDownSumObserverSdk::new);
     }
   }
 }

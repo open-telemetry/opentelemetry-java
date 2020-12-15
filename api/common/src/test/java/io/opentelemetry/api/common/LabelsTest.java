@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ class LabelsTest {
 
   @Test
   void forEach() {
-    final Map<String, String> entriesSeen = new HashMap<>();
+    final Map<String, String> entriesSeen = new LinkedHashMap<>();
 
     Labels labels =
         Labels.of(

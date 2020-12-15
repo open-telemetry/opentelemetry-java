@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -21,8 +21,8 @@ class SpanBucketTest {
   private static final String SPAN_NAME = "span";
   private static final int LATENCY_BUCKET_SIZE = 16;
   private static final int ERROR_BUCKET_SIZE = 8;
-  private final TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
-  private final Tracer tracer = tracerSdkProvider.get("SpanBucketTest");
+  private final SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+  private final Tracer tracer = sdkTracerProvider.get("SpanBucketTest");
 
   @Test
   void verifyLatencyBucketSizeLimit() {

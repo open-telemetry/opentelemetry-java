@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -38,7 +38,7 @@ class DoubleValueRecorderSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void record_PreventNullLabels() {
@@ -64,42 +64,11 @@ class DoubleValueRecorderSdkTest {
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
-    assertThat(doubleMeasure).isInstanceOf(DoubleValueRecorderSdk.class);
-    List<MetricData> metricDataList = doubleMeasure.collectAll();
-    assertThat(metricDataList)
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "My very own measure",
-                "ms",
-                MetricData.Type.SUMMARY,
-                Collections.emptyList()));
-  }
-
-  @Test
-  void collectMetrics_EmptyCollectionCycle() {
-    DoubleValueRecorderSdk doubleMeasure =
-        testSdk
-            .doubleValueRecorderBuilder("testRecorder")
-            .setDescription("My very own measure")
-            .setUnit("ms")
-            .build();
     doubleMeasure.bind(Labels.of("key", "value"));
     testClock.advanceNanos(SECOND_NANOS);
 
     List<MetricData> metricDataList = doubleMeasure.collectAll();
-    assertThat(metricDataList)
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "My very own measure",
-                "ms",
-                MetricData.Type.SUMMARY,
-                Collections.emptyList()));
+    assertThat(metricDataList).isEmpty();
   }
 
   @Test
@@ -111,21 +80,21 @@ class DoubleValueRecorderSdkTest {
     List<MetricData> metricDataList = doubleMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleSummary(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testRecorder",
                 "",
                 "1",
-                MetricData.Type.SUMMARY,
-                Collections.singletonList(
-                    SummaryPoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.empty(),
-                        1,
-                        12.1d,
-                        valueAtPercentiles(12.1d, 12.1d)))));
+                MetricData.DoubleSummaryData.create(
+                    Collections.singletonList(
+                        DoubleSummaryPoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.empty(),
+                            1,
+                            12.1d,
+                            valueAtPercentiles(12.1d, 12.1d))))));
   }
 
   @Test
@@ -164,16 +133,16 @@ class DoubleValueRecorderSdkTest {
       List<MetricData> metricDataList = doubleMeasure.collectAll();
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
-      assertThat(metricData.getPoints())
+      assertThat(metricData.getDoubleSummaryData().getPoints())
           .containsExactlyInAnyOrder(
-              SummaryPoint.create(
+              MetricData.DoubleSummaryPoint.create(
                   startTime,
                   firstCollect,
                   Labels.empty(),
                   2,
                   -1.0d,
                   valueAtPercentiles(-13.1d, 12.1d)),
-              SummaryPoint.create(
+              MetricData.DoubleSummaryPoint.create(
                   startTime,
                   firstCollect,
                   Labels.of("K", "V"),
@@ -190,16 +159,16 @@ class DoubleValueRecorderSdkTest {
       metricDataList = doubleMeasure.collectAll();
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
-      assertThat(metricData.getPoints())
+      assertThat(metricData.getDoubleSummaryData().getPoints())
           .containsExactlyInAnyOrder(
-              SummaryPoint.create(
+              DoubleSummaryPoint.create(
                   startTime + SECOND_NANOS,
                   secondCollect,
                   Labels.empty(),
                   1,
                   17.0d,
                   valueAtPercentiles(17d, 17d)),
-              SummaryPoint.create(
+              MetricData.DoubleSummaryPoint.create(
                   startTime + SECOND_NANOS,
                   secondCollect,
                   Labels.of("K", "V"),
@@ -265,9 +234,9 @@ class DoubleValueRecorderSdkTest {
     stressTestBuilder.build().run();
     List<MetricData> metricDataList = doubleMeasure.collectAll();
     assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getPoints())
+    assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
         .containsExactly(
-            SummaryPoint.create(
+            MetricData.DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of("K", "V"),
@@ -304,30 +273,30 @@ class DoubleValueRecorderSdkTest {
     stressTestBuilder.build().run();
     List<MetricData> metricDataList = doubleMeasure.collectAll();
     assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getPoints())
+    assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
         .containsExactly(
-            SummaryPoint.create(
+            MetricData.DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of(keys[0], values[0]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)),
-            SummaryPoint.create(
+            DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of(keys[1], values[1]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)),
-            SummaryPoint.create(
+            MetricData.DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of(keys[2], values[2]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)),
-            SummaryPoint.create(
+            MetricData.DoubleSummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Labels.of(keys[3], values[3]),

@@ -32,6 +32,21 @@ enabling it in high-throughput environments that do not need this strict verific
 - The API has been broken into separate modules, in preparation for the 1.0 release of the tracing API.
 If you depend on the `opentelemetry-api` module, you should get the rest of the API modules as transitive dependencies.
 
+### SDK
+
+#### Miscellaneous
+
+- The `SpanData.Link.getContext()` method has been deprecated in favor of a new `SpanData.Link.getSpanContext()`. 
+The deprecated method will be removed in the next release of the SDK.
+
+### Extensions
+
+#### Breaking Changes
+
+- The deprecated `opentelemetry-extension-runtime-metrics` module has been removed. The functionality is available in the 
+opentelemetry-java-instrumentation project under a different module name.
+- The deprecated `trace-utils` module has been removed.
+
 -----
 
 ## Version 0.12.0 - 2020-12-04

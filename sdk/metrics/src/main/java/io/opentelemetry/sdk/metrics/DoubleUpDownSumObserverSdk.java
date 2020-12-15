@@ -6,40 +6,32 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.DoubleUpDownSumObserver;
-import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubleAsynchronousInstrument;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import javax.annotation.Nullable;
 
-final class DoubleUpDownSumObserverSdk extends AbstractDoubleAsynchronousInstrument
+final class DoubleUpDownSumObserverSdk extends AbstractAsynchronousInstrument
     implements DoubleUpDownSumObserver {
 
   DoubleUpDownSumObserverSdk(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      Batcher batcher,
-      @Nullable Callback<DoubleResult> metricUpdater) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(batcher),
-        metricUpdater);
+      InstrumentDescriptor descriptor, AsynchronousInstrumentAccumulator accumulator) {
+    super(descriptor, accumulator);
   }
 
   static final class Builder
-      extends AbstractAsynchronousInstrument.Builder<DoubleUpDownSumObserverSdk.Builder>
+      extends AbstractDoubleAsynchronousInstrumentBuilder<DoubleUpDownSumObserverSdk.Builder>
       implements DoubleUpDownSumObserver.Builder {
-
-    @Nullable private Callback<DoubleResult> callback;
 
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        MeterSdk meterSdk) {
-      super(name, meterProviderSharedState, meterSharedState, meterSdk);
+        MeterSharedState meterSharedState) {
+      super(
+          name,
+          InstrumentType.UP_DOWN_SUM_OBSERVER,
+          InstrumentValueType.DOUBLE,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -48,23 +40,8 @@ final class DoubleUpDownSumObserverSdk extends AbstractDoubleAsynchronousInstrum
     }
 
     @Override
-    public Builder setCallback(Callback<DoubleResult> callback) {
-      this.callback = callback;
-      return this;
-    }
-
-    @Override
     public DoubleUpDownSumObserverSdk build() {
-      InstrumentDescriptor instrumentDescriptor =
-          getInstrumentDescriptor(InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.DOUBLE);
-      DoubleUpDownSumObserverSdk instrument =
-          new DoubleUpDownSumObserverSdk(
-              instrumentDescriptor,
-              getMeterProviderSharedState(),
-              getMeterSharedState(),
-              getBatcher(instrumentDescriptor),
-              callback);
-      return register(instrument);
+      return buildInstrument(DoubleUpDownSumObserverSdk::new);
     }
   }
 }

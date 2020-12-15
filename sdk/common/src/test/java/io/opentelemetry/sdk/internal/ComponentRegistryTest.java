@@ -17,12 +17,7 @@ class ComponentRegistryTest {
   private static final String INSTRUMENTATION_NAME = "test_name";
   private static final String INSTRUMENTATION_VERSION = "version";
   private final ComponentRegistry<TestComponent> registry =
-      new ComponentRegistry<TestComponent>() {
-        @Override
-        public TestComponent newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-          return new TestComponent(instrumentationLibraryInfo);
-        }
-      };
+      new ComponentRegistry<>(TestComponent::new);
 
   @Test
   void libraryName_MustNotBeNull() {

@@ -22,8 +22,8 @@ import io.opentelemetry.api.common.LabelsBuilder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class OpenTelemetryMetricsExporter extends MetricExporter {
   private static final Logger LOGGER =
@@ -91,17 +92,9 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
         for (Point point : timeSeries.getPoints()) {
           type = mapAndAddPoint(unsupportedTypes, metric, labels, points, point);
         }
-        MetricData.Type metricDataType = mapType(type);
-        if (metricDataType != null) {
-          metricData.add(
-              MetricData.create(
-                  Resource.getDefault(),
-                  INSTRUMENTATION_LIBRARY_INFO,
-                  metric.getMetricDescriptor().getName(),
-                  metric.getMetricDescriptor().getDescription(),
-                  metric.getMetricDescriptor().getUnit(),
-                  metricDataType,
-                  points));
+        MetricData md = toMetricData(type, metric.getMetricDescriptor(), points);
+        if (md != null) {
+          metricData.add(md);
         }
       }
     }
@@ -150,8 +143,9 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
   }
 
   @Nonnull
-  private static SummaryPoint mapSummaryPoint(Labels labels, Point point, long timestampNanos) {
-    return SummaryPoint.create(
+  private static MetricData.DoubleSummaryPoint mapSummaryPoint(
+      Labels labels, Point point, long timestampNanos) {
+    return DoubleSummaryPoint.create(
         timestampNanos,
         timestampNanos,
         labels,
@@ -199,21 +193,59 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             .match(Double::longValue, arg -> arg, arg -> null, arg -> null, arg -> null));
   }
 
-  private static MetricData.Type mapType(MetricDescriptor.Type type) {
-    if (type == null) {
+  @Nullable
+  private static MetricData toMetricData(
+      MetricDescriptor.Type type,
+      MetricDescriptor metricDescriptor,
+      List<MetricData.Point> points) {
+    if (metricDescriptor.getType() == null) {
       return null;
     }
     switch (type) {
       case GAUGE_INT64:
-        return MetricData.Type.GAUGE_LONG;
+        return MetricData.createLongGauge(
+            Resource.getDefault(),
+            INSTRUMENTATION_LIBRARY_INFO,
+            metricDescriptor.getName(),
+            metricDescriptor.getDescription(),
+            metricDescriptor.getUnit(),
+            MetricData.LongGaugeData.create(points));
+
       case GAUGE_DOUBLE:
-        return MetricData.Type.GAUGE_DOUBLE;
+        return MetricData.createDoubleGauge(
+            Resource.getDefault(),
+            INSTRUMENTATION_LIBRARY_INFO,
+            metricDescriptor.getName(),
+            metricDescriptor.getDescription(),
+            metricDescriptor.getUnit(),
+            MetricData.DoubleGaugeData.create(points));
+
       case CUMULATIVE_INT64:
-        return MetricData.Type.MONOTONIC_LONG;
+        return MetricData.createLongSum(
+            Resource.getDefault(),
+            INSTRUMENTATION_LIBRARY_INFO,
+            metricDescriptor.getName(),
+            metricDescriptor.getDescription(),
+            metricDescriptor.getUnit(),
+            MetricData.LongSumData.create(
+                true, MetricData.AggregationTemporality.CUMULATIVE, points));
       case CUMULATIVE_DOUBLE:
-        return MetricData.Type.MONOTONIC_DOUBLE;
+        return MetricData.createDoubleSum(
+            Resource.getDefault(),
+            INSTRUMENTATION_LIBRARY_INFO,
+            metricDescriptor.getName(),
+            metricDescriptor.getDescription(),
+            metricDescriptor.getUnit(),
+            MetricData.DoubleSumData.create(
+                true, MetricData.AggregationTemporality.CUMULATIVE, points));
       case SUMMARY:
-        return MetricData.Type.SUMMARY;
+        return MetricData.createDoubleSummary(
+            Resource.getDefault(),
+            INSTRUMENTATION_LIBRARY_INFO,
+            metricDescriptor.getName(),
+            metricDescriptor.getDescription(),
+            metricDescriptor.getUnit(),
+            MetricData.DoubleSummaryData.create(points));
       default:
         return null;
     }

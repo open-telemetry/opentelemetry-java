@@ -6,39 +6,31 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.LongSumObserver;
-import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongAsynchronousInstrument;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import javax.annotation.Nullable;
 
-final class LongSumObserverSdk extends AbstractLongAsynchronousInstrument
-    implements LongSumObserver {
+final class LongSumObserverSdk extends AbstractAsynchronousInstrument implements LongSumObserver {
+
   LongSumObserverSdk(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      Batcher batcher,
-      @Nullable Callback<LongResult> metricUpdater) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(batcher),
-        metricUpdater);
+      InstrumentDescriptor descriptor, AsynchronousInstrumentAccumulator accumulator) {
+    super(descriptor, accumulator);
   }
 
   static final class Builder
-      extends AbstractAsynchronousInstrument.Builder<LongSumObserverSdk.Builder>
+      extends AbstractLongAsynchronousInstrumentBuilder<LongSumObserverSdk.Builder>
       implements LongSumObserver.Builder {
-
-    @Nullable private Callback<LongResult> callback;
 
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        MeterSdk meterSdk) {
-      super(name, meterProviderSharedState, meterSharedState, meterSdk);
+        MeterSharedState meterSharedState) {
+      super(
+          name,
+          InstrumentType.SUM_OBSERVER,
+          InstrumentValueType.LONG,
+          meterProviderSharedState,
+          meterSharedState);
     }
 
     @Override
@@ -47,23 +39,8 @@ final class LongSumObserverSdk extends AbstractLongAsynchronousInstrument
     }
 
     @Override
-    public Builder setCallback(Callback<LongResult> callback) {
-      this.callback = callback;
-      return this;
-    }
-
-    @Override
     public LongSumObserverSdk build() {
-      InstrumentDescriptor instrumentDescriptor =
-          getInstrumentDescriptor(InstrumentType.SUM_OBSERVER, InstrumentValueType.LONG);
-      LongSumObserverSdk instrument =
-          new LongSumObserverSdk(
-              instrumentDescriptor,
-              getMeterProviderSharedState(),
-              getMeterSharedState(),
-              getBatcher(instrumentDescriptor),
-              callback);
-      return register(instrument);
+      return buildInstrument(LongSumObserverSdk::new);
     }
   }
 }

@@ -31,7 +31,7 @@ class DoubleValueObserverSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void collectMetrics_NoCallback() {
@@ -51,18 +51,9 @@ class DoubleValueObserverSdkTest {
             .doubleValueObserverBuilder("testObserver")
             .setDescription("My own DoubleValueObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
-    assertThat(doubleValueObserver.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own DoubleValueObserver",
-                "ms",
-                MetricData.Type.GAUGE_DOUBLE,
-                Collections.emptyList()));
+    assertThat(doubleValueObserver.collectAll()).isEmpty();
   }
 
   @Test
@@ -70,39 +61,41 @@ class DoubleValueObserverSdkTest {
     DoubleValueObserverSdk doubleValueObserver =
         testSdk
             .doubleValueObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12.1d, Labels.of("k", "v")))
+            .setDescription("My own DoubleValueObserver")
+            .setUnit("ms")
+            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleValueObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleGauge(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
-                "",
-                "1",
-                MetricData.Type.GAUGE_DOUBLE,
-                Collections.singletonList(
-                    DoublePoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12.1d))));
+                "My own DoubleValueObserver",
+                "ms",
+                MetricData.DoubleGaugeData.create(
+                    Collections.singletonList(
+                        DoublePoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12.1d)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleValueObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleGauge(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
-                "",
-                "1",
-                MetricData.Type.GAUGE_DOUBLE,
-                Collections.singletonList(
-                    DoublePoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12.1d))));
+                "My own DoubleValueObserver",
+                "ms",
+                MetricData.DoubleGaugeData.create(
+                    Collections.singletonList(
+                        DoublePoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12.1d)))));
   }
 }

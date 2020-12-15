@@ -8,6 +8,7 @@ package io.opentelemetry.sdk;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.DefaultOpenTelemetry;
+import io.opentelemetry.api.DefaultOpenTelemetryBuilder;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
@@ -18,9 +19,9 @@ import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,15 +45,15 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return (OpenTelemetrySdk) OpenTelemetry.get();
   }
 
-  /** Returns the global {@link TracerSdkManagement}. */
-  public static TracerSdkManagement getGlobalTracerManagement() {
+  /** Returns the global {@link SdkTracerManagement}. */
+  public static SdkTracerManagement getGlobalTracerManagement() {
     TracerProvider tracerProvider = OpenTelemetry.get().getTracerProvider();
     if (!(tracerProvider instanceof ObfuscatedTracerProvider)) {
       throw new IllegalStateException(
           "Trying to access global TracerSdkManagement but global TracerProvider is not an "
               + "instance created by this SDK.");
     }
-    return (TracerSdkProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
+    return (SdkTracerProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
   /** Returns the global {@link MeterSdkProvider}. */
@@ -86,13 +87,13 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return clock;
   }
 
-  /** Returns the {@link TracerSdkManagement} for this {@link OpenTelemetrySdk}. */
-  public TracerSdkManagement getTracerManagement() {
-    return (TracerSdkProvider) ((ObfuscatedTracerProvider) getTracerProvider()).unobfuscate();
+  /** Returns the {@link SdkTracerManagement} for this {@link OpenTelemetrySdk}. */
+  public SdkTracerManagement getTracerManagement() {
+    return (SdkTracerProvider) ((ObfuscatedTracerProvider) getTracerProvider()).unobfuscate();
   }
 
   /** A builder for configuring an {@link OpenTelemetrySdk}. */
-  public static class Builder extends DefaultOpenTelemetry.Builder {
+  public static class Builder extends DefaultOpenTelemetryBuilder {
     private Clock clock;
     private Resource resource;
     private final List<SpanProcessor> spanProcessors = new ArrayList<>();
@@ -100,20 +101,20 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     private TraceConfig traceConfig;
 
     /**
-     * Sets the {@link TracerSdkProvider} to use. This can be used to configure tracing settings by
-     * returning the instance created by a {@link TracerSdkProvider.Builder}.
+     * Sets the {@link SdkTracerProvider} to use. This can be used to configure tracing settings by
+     * returning the instance created by a {@link SdkTracerProvider.Builder}.
      *
      * <p>If you use this method, it is assumed that you are providing a fully configured
      * TracerSdkProvider, and other settings will be ignored.
      *
-     * <p>Note: the parameter passed in here must be a {@link TracerSdkProvider} instance.
+     * <p>Note: the parameter passed in here must be a {@link SdkTracerProvider} instance.
      *
-     * @param tracerProvider A {@link TracerSdkProvider} to use with this instance.
-     * @see TracerSdkProvider#builder()
+     * @param tracerProvider A {@link SdkTracerProvider} to use with this instance.
+     * @see SdkTracerProvider#builder()
      */
     @Override
     public Builder setTracerProvider(TracerProvider tracerProvider) {
-      if (!(tracerProvider instanceof TracerSdkProvider)) {
+      if (!(tracerProvider instanceof SdkTracerProvider)) {
         throw new IllegalArgumentException(
             "The OpenTelemetrySdk can only be configured with a TracerSdkProvider");
       }
@@ -214,7 +215,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     @Override
     public OpenTelemetrySdk build() {
       MeterProvider meterProvider = buildMeterProvider();
-      TracerSdkProvider tracerProvider = buildTracerProvider();
+      SdkTracerProvider tracerProvider = buildTracerProvider();
 
       OpenTelemetrySdk sdk =
           new OpenTelemetrySdk(
@@ -230,14 +231,14 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       return sdk;
     }
 
-    private TracerSdkProvider buildTracerProvider() {
+    private SdkTracerProvider buildTracerProvider() {
       TracerProvider tracerProvider = super.tracerProvider;
       if (tracerProvider != null) {
-        TracerSdkProvider sdkProvider = (TracerSdkProvider) tracerProvider;
+        SdkTracerProvider sdkProvider = (SdkTracerProvider) tracerProvider;
         spanProcessors.forEach(sdkProvider::addSpanProcessor);
         return sdkProvider;
       }
-      TracerSdkProvider.Builder tracerProviderBuilder = TracerSdkProvider.builder();
+      SdkTracerProvider.Builder tracerProviderBuilder = SdkTracerProvider.builder();
       if (clock != null) {
         tracerProviderBuilder.setClock(clock);
       }
@@ -270,14 +271,15 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   }
 
   /**
-   * A {@link TracerProvider} wrapper that forces users to access the SDK specific implementation
-   * via the SDK, instead of via the API and casting it to the SDK specific implementation.
+   * This class allows the SDK to unobfuscate an obfuscated static global provider.
    *
-   * @see Obfuscated
+   * <p>Static global providers are obfuscated when they are returned from the API to prevent users
+   * from casting them to their SDK specific implementation. For example, we do not want users to
+   * use patterns like {@code (TracerSdkProvider) OpenTelemetry.getGlobalTracerProvider()}.
    */
   @ThreadSafe
   // Visible for testing
-  static class ObfuscatedTracerProvider implements TracerProvider, Obfuscated<TracerProvider> {
+  static class ObfuscatedTracerProvider implements TracerProvider {
 
     private final TracerProvider delegate;
 
@@ -295,7 +297,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       return delegate.get(instrumentationName, instrumentationVersion);
     }
 
-    @Override
     public TracerProvider unobfuscate() {
       return delegate;
     }

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.metrics.Instrument;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -17,36 +18,14 @@ import java.util.Objects;
 abstract class AbstractInstrument implements Instrument {
 
   private final InstrumentDescriptor descriptor;
-  private final MeterProviderSharedState meterProviderSharedState;
-  private final MeterSharedState meterSharedState;
-  private final ActiveBatcher activeBatcher;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
-  AbstractInstrument(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      ActiveBatcher activeBatcher) {
+  AbstractInstrument(InstrumentDescriptor descriptor) {
     this.descriptor = descriptor;
-    this.meterProviderSharedState = meterProviderSharedState;
-    this.meterSharedState = meterSharedState;
-    this.activeBatcher = activeBatcher;
   }
 
   final InstrumentDescriptor getDescriptor() {
     return descriptor;
-  }
-
-  final MeterProviderSharedState getMeterProviderSharedState() {
-    return meterProviderSharedState;
-  }
-
-  final MeterSharedState getMeterSharedState() {
-    return meterSharedState;
-  }
-
-  final ActiveBatcher getActiveBatcher() {
-    return activeBatcher;
   }
 
   /**
@@ -81,23 +60,17 @@ abstract class AbstractInstrument implements Instrument {
             + " characters.";
 
     private final String name;
-    private final MeterProviderSharedState meterProviderSharedState;
-    private final MeterSharedState meterSharedState;
-    private final MeterSdk meterSdk;
+    private final InstrumentType instrumentType;
+    private final InstrumentValueType instrumentValueType;
     private String description = "";
     private String unit = "1";
 
-    Builder(
-        String name,
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        MeterSdk meterSdk) {
-      this.meterSdk = meterSdk;
+    Builder(String name, InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       Objects.requireNonNull(name, "name");
       Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
       this.name = name;
-      this.meterProviderSharedState = meterProviderSharedState;
-      this.meterSharedState = meterSharedState;
+      this.instrumentType = instrumentType;
+      this.instrumentValueType = instrumentValueType;
     }
 
     @Override
@@ -112,27 +85,11 @@ abstract class AbstractInstrument implements Instrument {
       return getThis();
     }
 
-    final MeterProviderSharedState getMeterProviderSharedState() {
-      return meterProviderSharedState;
-    }
-
-    final MeterSharedState getMeterSharedState() {
-      return meterSharedState;
-    }
-
-    final InstrumentDescriptor getInstrumentDescriptor(
-        InstrumentType type, InstrumentValueType valueType) {
-      return InstrumentDescriptor.create(name, description, unit, type, valueType);
-    }
-
     abstract B getThis();
 
-    final <I extends AbstractInstrument> I register(I instrument) {
-      return getMeterSharedState().getInstrumentRegistry().register(instrument);
-    }
-
-    protected Batcher getBatcher(InstrumentDescriptor descriptor) {
-      return meterSdk.createBatcher(descriptor, meterProviderSharedState, meterSharedState);
+    final InstrumentDescriptor buildDescriptor() {
+      return InstrumentDescriptor.create(
+          name, description, unit, instrumentType, instrumentValueType);
     }
   }
 }

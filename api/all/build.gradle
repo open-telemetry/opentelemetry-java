@@ -13,7 +13,6 @@ dependencies {
     api project(':opentelemetry-context'),
             project(':opentelemetry-api-baggage'),
             project(':opentelemetry-api-common'),
-            project(':opentelemetry-api-internal'),
             project(':opentelemetry-api-metrics'),
             project(':opentelemetry-api-trace')
 

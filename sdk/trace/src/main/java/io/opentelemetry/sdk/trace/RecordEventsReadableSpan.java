@@ -5,11 +5,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.doubleKey;
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -253,30 +248,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public ReadWriteSpan setAttribute(String key, String value) {
-    setAttribute(stringKey(key), value);
-    return this;
-  }
-
-  @Override
-  public ReadWriteSpan setAttribute(String key, long value) {
-    setAttribute(longKey(key), value);
-    return this;
-  }
-
-  @Override
-  public ReadWriteSpan setAttribute(String key, double value) {
-    setAttribute(doubleKey(key), value);
-    return this;
-  }
-
-  @Override
-  public ReadWriteSpan setAttribute(String key, boolean value) {
-    setAttribute(booleanKey(key), value);
-    return this;
-  }
-
-  @Override
   public <T> ReadWriteSpan setAttribute(AttributeKey<T> key, T value) {
     if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
       return this;
@@ -376,12 +347,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       }
       totalRecordedEvents++;
     }
-  }
-
-  @Override
-  public ReadWriteSpan setStatus(StatusCode statusCode) {
-    setStatus(statusCode, null);
-    return this;
   }
 
   @Override

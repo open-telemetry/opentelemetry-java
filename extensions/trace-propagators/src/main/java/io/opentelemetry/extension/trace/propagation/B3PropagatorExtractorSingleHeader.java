@@ -5,9 +5,6 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
-import static io.opentelemetry.extension.trace.propagation.B3Propagator.COMBINED_HEADER;
-import static io.opentelemetry.extension.trace.propagation.B3Propagator.COMBINED_HEADER_DELIMITER;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -32,7 +29,7 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
   @SuppressWarnings("StringSplitter")
   private static <C> Optional<Context> extractSpanContextFromSingleHeader(
       Context context, C carrier, TextMapPropagator.Getter<C> getter) {
-    String value = getter.get(carrier, COMBINED_HEADER);
+    String value = getter.get(carrier, B3Propagator.COMBINED_HEADER);
     if (StringUtils.isNullOrEmpty(value)) {
       return Optional.empty();
     }
@@ -40,24 +37,30 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
     // must have between 2 and 4 hyphen delimited parts:
     //   traceId-spanId-sampled-parentSpanId (last two are optional)
     // NOTE: we do not use parentSpanId
-    String[] parts = value.split(COMBINED_HEADER_DELIMITER);
+    String[] parts = value.split(B3Propagator.COMBINED_HEADER_DELIMITER);
     if (parts.length < 2 || parts.length > 4) {
       logger.fine(
-          "Invalid combined header '" + COMBINED_HEADER + ". Returning INVALID span context.");
+          "Invalid combined header '"
+              + B3Propagator.COMBINED_HEADER
+              + ". Returning INVALID span context.");
       return Optional.empty();
     }
 
     String traceId = parts[0];
     if (!Common.isTraceIdValid(traceId)) {
       logger.fine(
-          "Invalid TraceId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
+          "Invalid TraceId in B3 header: "
+              + B3Propagator.COMBINED_HEADER
+              + ". Returning INVALID span context.");
       return Optional.empty();
     }
 
     String spanId = parts[1];
     if (!Common.isSpanIdValid(spanId)) {
       logger.fine(
-          "Invalid SpanId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
+          "Invalid SpanId in B3 header: "
+              + B3Propagator.COMBINED_HEADER
+              + ". Returning INVALID span context.");
       return Optional.empty();
     }
 

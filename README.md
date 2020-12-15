@@ -14,9 +14,10 @@ project.
 This project contains the following top level components:
 
 * [OpenTelemetry API](api/):
-  * [tracing api](api/src/main/java/io/opentelemetry/api/trace/) includes `Tracer`, `Span` and `SpanContext`.
-  * [baggage api](/api/src/main/java/io/opentelemetry/api/baggage) defines a collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
-  * [metrics api](api/src/main/java/io/opentelemetry/api/metrics/).
+  * [tracing api](api/trace/src/main/java/io/opentelemetry/api/trace/) includes `Tracer`, `Span` and `SpanContext`.
+  * [baggage api](api/baggage/src/main/java/io/opentelemetry/api/baggage/) defines a collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
+  * [metrics api](api/metrics/src/main/java/io/opentelemetry/api/metrics/).
+  * [context api](api/context/src/main/java/io/opentelemetry/context/).
 * [extensions](extensions/) define additional API extensions, which are not part of the core API.
 * [sdk](sdk/) define the reference implementation complying to the OpenTelemetry API.
 * [sdk-extensions](sdk-extensions/) define additional SDK extensions, which are not part of the core SDK.

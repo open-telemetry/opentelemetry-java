@@ -16,15 +16,12 @@ import java.util.List;
 final class MeterSdk implements Meter {
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
-  private final ViewRegistry viewRegistry;
 
   MeterSdk(
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      ViewRegistry viewRegistry) {
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = MeterSharedState.create(instrumentationLibraryInfo);
-    this.viewRegistry = viewRegistry;
   }
 
   InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
@@ -33,67 +30,62 @@ final class MeterSdk implements Meter {
 
   @Override
   public DoubleCounterSdk.Builder doubleCounterBuilder(String name) {
-    return new DoubleCounterSdk.Builder(name, meterProviderSharedState, meterSharedState, this);
+    return new DoubleCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public LongCounterSdk.Builder longCounterBuilder(String name) {
-    return new LongCounterSdk.Builder(name, meterProviderSharedState, meterSharedState, this);
+    return new LongCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public DoubleUpDownCounterSdk.Builder doubleUpDownCounterBuilder(String name) {
-    return new DoubleUpDownCounterSdk.Builder(
-        name, meterProviderSharedState, meterSharedState, this);
+    return new DoubleUpDownCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public LongUpDownCounterSdk.Builder longUpDownCounterBuilder(String name) {
-    return new LongUpDownCounterSdk.Builder(name, meterProviderSharedState, meterSharedState, this);
+    return new LongUpDownCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public DoubleValueRecorderSdk.Builder doubleValueRecorderBuilder(String name) {
-    return new DoubleValueRecorderSdk.Builder(
-        name, meterProviderSharedState, meterSharedState, this);
+    return new DoubleValueRecorderSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public LongValueRecorderSdk.Builder longValueRecorderBuilder(String name) {
-    return new LongValueRecorderSdk.Builder(name, meterProviderSharedState, meterSharedState, this);
+    return new LongValueRecorderSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public DoubleSumObserverSdk.Builder doubleSumObserverBuilder(String name) {
-    return new DoubleSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState, this);
+    return new DoubleSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public LongSumObserverSdk.Builder longSumObserverBuilder(String name) {
-    return new LongSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState, this);
+    return new LongSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public DoubleUpDownSumObserverSdk.Builder doubleUpDownSumObserverBuilder(String name) {
-    return new DoubleUpDownSumObserverSdk.Builder(
-        name, meterProviderSharedState, meterSharedState, this);
+    return new DoubleUpDownSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public LongUpDownSumObserverSdk.Builder longUpDownSumObserverBuilder(String name) {
-    return new LongUpDownSumObserverSdk.Builder(
-        name, meterProviderSharedState, meterSharedState, this);
+    return new LongUpDownSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public DoubleValueObserverSdk.Builder doubleValueObserverBuilder(String name) {
-    return new DoubleValueObserverSdk.Builder(
-        name, meterProviderSharedState, meterSharedState, this);
+    return new DoubleValueObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public LongValueObserverSdk.Builder longValueObserverBuilder(String name) {
-    return new LongValueObserverSdk.Builder(name, meterProviderSharedState, meterSharedState, this);
+    return new LongValueObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
@@ -110,14 +102,5 @@ final class MeterSdk implements Meter {
       result.addAll(instrument.collectAll());
     }
     return result;
-  }
-
-  /** Creates a {@link Batcher}, by using the {@link ViewRegistry} to do the actual work. */
-  Batcher createBatcher(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-
-    return viewRegistry.createBatcher(meterProviderSharedState, meterSharedState, descriptor);
   }
 }

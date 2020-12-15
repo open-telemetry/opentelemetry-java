@@ -30,14 +30,14 @@ class DoubleUpDownSumObserverSdkTest {
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO, new ViewRegistry());
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void collectMetrics_NoCallback() {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
-            .setDescription("My very own DoubleUpDownSumObserver")
+            .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
     assertThat(doubleUpDownSumObserver.collectAll()).isEmpty();
@@ -50,18 +50,9 @@ class DoubleUpDownSumObserverSdkTest {
             .doubleUpDownSumObserverBuilder("testObserver")
             .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
-            .setCallback(result -> {})
+            .setUpdater(result -> {})
             .build();
-    assertThat(doubleUpDownSumObserver.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own DoubleUpDownSumObserver",
-                "ms",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
-                Collections.emptyList()));
+    assertThat(doubleUpDownSumObserver.collectAll()).isEmpty();
   }
 
   @Test
@@ -69,39 +60,43 @@ class DoubleUpDownSumObserverSdkTest {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
-            .setCallback(result -> result.observe(12.1d, Labels.of("k", "v")))
+            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
-                Collections.singletonList(
-                    DoublePoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12.1d))));
+                MetricData.DoubleSumData.create(
+                    /* isMonotonic= */ false,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        DoublePoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12.1d)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_DOUBLE,
-                Collections.singletonList(
-                    DoublePoint.create(
-                        testClock.now() - 2 * SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12.1d))));
+                MetricData.DoubleSumData.create(
+                    /* isMonotonic= */ false,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        DoublePoint.create(
+                            testClock.now() - 2 * SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12.1d)))));
   }
 }

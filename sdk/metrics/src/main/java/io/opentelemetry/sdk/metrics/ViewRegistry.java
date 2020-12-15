@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
-import io.opentelemetry.sdk.metrics.view.AggregationConfiguration.Temporality;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 
 // notes:
@@ -44,11 +45,8 @@ class ViewRegistry {
     aggregationChooser.addView(selector, specification);
   }
 
-  /**
-   * Create a new {@link io.opentelemetry.sdk.metrics.Batcher} for use in metric recording
-   * aggregation.
-   */
-  Batcher createBatcher(
+  /** Create a new {@link InstrumentProcessor} for use in metric recording aggregation. */
+  InstrumentProcessor createBatcher(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
@@ -57,11 +55,11 @@ class ViewRegistry {
 
     Aggregation aggregation = specification.aggregation();
 
-    if (Temporality.CUMULATIVE == specification.temporality()) {
-      return Batchers.getCumulativeAllLabels(
+    if (MetricData.AggregationTemporality.CUMULATIVE == specification.temporality()) {
+      return InstrumentProcessor.getCumulativeAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
-    } else if (Temporality.DELTA == specification.temporality()) {
-      return Batchers.getDeltaAllLabels(
+    } else if (MetricData.AggregationTemporality.DELTA == specification.temporality()) {
+      return InstrumentProcessor.getDeltaAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     }
     throw new IllegalStateException("unsupported Temporality: " + specification.temporality());

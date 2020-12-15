@@ -64,12 +64,7 @@ public abstract class ResourcesConfig {
    */
   public abstract Set<String> getDisabledResourceProviders();
 
-  /**
-   * Returns a new {@link Builder}.
-   *
-   * @return a new {@link Builder}.
-   */
-  public static Builder builder() {
+  static Builder builder() {
     return new AutoValue_ResourcesConfig.Builder()
         .setDisabledResourceProviders(Collections.emptySet());
   }
@@ -83,7 +78,7 @@ public abstract class ResourcesConfig {
 
   /** Builder for {@link ResourcesConfig}. */
   @AutoValue.Builder
-  public abstract static class Builder extends ConfigBuilder<Builder> {
+  abstract static class Builder extends ConfigBuilder<Builder> {
 
     private static final String OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS =
         "otel.java.disabled.resource_providers";

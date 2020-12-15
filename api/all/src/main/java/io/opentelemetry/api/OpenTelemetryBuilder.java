@@ -12,7 +12,10 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 /**
  * A builder of an implementation of the OpenTelemetry API. Generally used to reconfigure SDK
  * implementations.
+ *
+ * @deprecated use the {@link DefaultOpenTelemetryBuilder} instead.
  */
+@Deprecated
 public interface OpenTelemetryBuilder<T extends OpenTelemetryBuilder<T>> {
 
   /** Sets the {@link TracerProvider} to use. */

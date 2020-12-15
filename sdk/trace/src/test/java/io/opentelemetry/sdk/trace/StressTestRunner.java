@@ -19,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
 abstract class StressTestRunner {
   abstract ImmutableList<Operation> getOperations();
 
-  abstract TracerSdk getTracer();
+  abstract SdkTracer getTracer();
 
   abstract SpanProcessor getSpanProcessor();
 
@@ -60,7 +60,7 @@ abstract class StressTestRunner {
   @AutoValue.Builder
   abstract static class Builder {
 
-    abstract Builder setTracer(TracerSdk tracerSdk);
+    abstract Builder setTracer(SdkTracer sdkTracer);
 
     abstract ImmutableList.Builder<Operation> operationsBuilder();
 

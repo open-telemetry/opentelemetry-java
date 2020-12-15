@@ -14,8 +14,7 @@ dependencies {
     implementation project(':opentelemetry-sdk'),
             libraries.jaeger_client
 
-    testImplementation "io.grpc:grpc-testing:${grpcVersion}",
-            'com.fasterxml.jackson.core:jackson-databind',
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind',
             libraries.testcontainers,
             libraries.okhttp
 
