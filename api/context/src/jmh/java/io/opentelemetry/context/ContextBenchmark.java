@@ -20,7 +20,6 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
-/** Benchmark for Context. */
 @Threads(value = 1)
 @Fork(3)
 @Warmup(iterations = 10, time = 1)
@@ -48,25 +47,21 @@ public class ContextBenchmark {
     middle = size / 2;
   }
 
-  /** Read value for first key. */
   @Benchmark
   public String readFirst() {
     return context.get(keys.get(0));
   }
 
-  /** Read value for last key. */
   @Benchmark
   public String readLast() {
     return context.get(keys.get(size - 1));
   }
 
-  /** Read value for middle key. */
   @Benchmark
   public String readMiddle() {
     return context.get(keys.get(middle));
   }
 
-  /** Read all keys. */
   @Benchmark
   public void readAll(Blackhole bh) {
     for (int i = 0; i < size; i++) {
@@ -74,13 +69,11 @@ public class ContextBenchmark {
     }
   }
 
-  /** Write one key to fresh context. */
   @Benchmark
   public Context writeOne() {
     return Context.root().with(keys.get(0), "value");
   }
 
-  /** Write all keys to fresh context. */
   @Benchmark
   public Context writeAll() {
     Context context = Context.root();
