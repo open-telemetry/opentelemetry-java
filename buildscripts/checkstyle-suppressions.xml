@@ -5,5 +5,5 @@
 
 <suppressions>
   <!-- Suppress Javadoc-related checks in non-public code. -->
-  <suppress checks="JavadocParagraph|JavadocMethod" files="[\\/](internal|jmh|test)[\\/]" />
+  <suppress checks="JavadocParagraph|JavadocMethod" files="[\\/](jmh|test)[\\/]" />
 </suppressions>
