@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp;
+package io.opentelemetry.exporter.otlp.trace;
 
 import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;

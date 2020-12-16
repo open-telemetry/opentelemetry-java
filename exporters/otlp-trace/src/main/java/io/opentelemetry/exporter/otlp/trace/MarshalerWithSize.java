@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp;
+package io.opentelemetry.exporter.otlp.trace;
 
 abstract class MarshalerWithSize implements Marshaler {
   private final int size;
