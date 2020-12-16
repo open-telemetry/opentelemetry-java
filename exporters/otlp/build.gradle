@@ -2,6 +2,7 @@ plugins {
     id "java-library"
     id "maven-publish"
 
+    id "me.champeau.gradle.jmh"
     id "ru.vyarus.animalsniffer"
 }
 
@@ -15,15 +16,16 @@ dependencies {
             libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub,
-            libraries.protobuf,
-            libraries.protobuf_util
+            libraries.protobuf
 
     testImplementation project(':opentelemetry-sdk-testing'),
             'com.linecorp.armeria:armeria-grpc',
-            'com.linecorp.armeria:armeria-junit5'
+            'com.linecorp.armeria:armeria-junit5',
+            "io.grpc:grpc-testing:${grpcVersion}"
 
-    testImplementation "io.grpc:grpc-testing:${grpcVersion}"
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
+
+    jmh project(':opentelemetry-sdk-testing')
 
     signature libraries.android_signature
 }
