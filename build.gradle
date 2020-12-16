@@ -382,7 +382,7 @@ subprojects {
 
         plugins.withId("me.champeau.gradle.jmh") {
             // Always include the jmhreport plugin and run it after jmh task.
-            pluginManager.apply "io.morethan.jmhreport"
+            plugins.apply "io.morethan.jmhreport"
             dependencies {
                 jmh libraries.jmh_core,
                         libraries.jmh_bytecode
