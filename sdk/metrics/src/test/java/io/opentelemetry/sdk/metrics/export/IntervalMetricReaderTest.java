@@ -166,8 +166,9 @@ class IntervalMetricReaderTest {
     }
 
     @Override
-    public void shutdown() {
+    public CompletableResultCode shutdown() {
       hasShutdown.set(true);
+      return CompletableResultCode.ofSuccess();
     }
 
     /**
