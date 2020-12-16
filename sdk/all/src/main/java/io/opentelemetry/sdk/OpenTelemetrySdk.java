@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk;
 
-import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -15,12 +14,23 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
-public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
+public final class OpenTelemetrySdk implements OpenTelemetry {
+  private final ObfuscatedTracerProvider tracerProvider;
+  private final SdkMeterProvider meterProvider;
+  private volatile ContextPropagators propagators;
+
+  OpenTelemetrySdk(
+      ObfuscatedTracerProvider tracerProvider,
+      SdkMeterProvider meterProvider,
+      ContextPropagators propagators) {
+    this.tracerProvider = tracerProvider;
+    this.meterProvider = meterProvider;
+    this.propagators = propagators;
+  }
 
   /**
    * Returns a new {@link OpenTelemetrySdkBuilder} for configuring an instance of {@linkplain
@@ -40,10 +50,10 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     TracerProvider tracerProvider = GlobalOpenTelemetry.get().getTracerProvider();
     if (!(tracerProvider instanceof ObfuscatedTracerProvider)) {
       throw new IllegalStateException(
-          "Trying to access global TracerSdkManagement but global TracerProvider is not an "
+          "Trying to access global SdkTracerManagement but global TracerProvider is not an "
               + "instance created by this SDK.");
     }
-    return (SdkTracerProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
+    return ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
   /**
@@ -56,18 +66,31 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return (SdkMeterProvider) GlobalOpenTelemetry.get().getMeterProvider();
   }
 
-  static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
+  @Override
+  @Deprecated
+  public void setPropagators(ContextPropagators propagators) {
+    this.propagators = propagators;
+  }
 
-  OpenTelemetrySdk(
-      TracerProvider tracerProvider,
-      MeterProvider meterProvider,
-      ContextPropagators contextPropagators) {
-    super(tracerProvider, meterProvider, contextPropagators);
+  @Override
+  public TracerProvider getTracerProvider() {
+    return tracerProvider;
+  }
+
+  @Override
+  @Deprecated
+  public MeterProvider getMeterProvider() {
+    return meterProvider;
+  }
+
+  @Override
+  public ContextPropagators getPropagators() {
+    return propagators;
   }
 
   /** Returns the {@link SdkTracerManagement} for this {@link OpenTelemetrySdk}. */
   public SdkTracerManagement getTracerManagement() {
-    return (SdkTracerProvider) ((ObfuscatedTracerProvider) getTracerProvider()).unobfuscate();
+    return tracerProvider.unobfuscate();
   }
 
   /**
@@ -81,9 +104,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   // Visible for testing
   static class ObfuscatedTracerProvider implements TracerProvider {
 
-    private final TracerProvider delegate;
+    private final SdkTracerProvider delegate;
 
-    ObfuscatedTracerProvider(TracerProvider delegate) {
+    ObfuscatedTracerProvider(SdkTracerProvider delegate) {
       this.delegate = delegate;
     }
 
@@ -97,7 +120,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
       return delegate.get(instrumentationName, instrumentationVersion);
     }
 
-    public TracerProvider unobfuscate() {
+    public SdkTracerProvider unobfuscate() {
       return delegate;
     }
   }

@@ -15,12 +15,18 @@ import io.opentelemetry.spi.trace.TracerProviderFactory;
 
 /** Builder class for {@link DefaultOpenTelemetry}. */
 @SuppressWarnings("deprecation")
-public class DefaultOpenTelemetryBuilder
+public final class DefaultOpenTelemetryBuilder
     implements OpenTelemetryBuilder<DefaultOpenTelemetryBuilder> {
-  protected ContextPropagators propagators = ContextPropagators.noop();
+  private ContextPropagators propagators = ContextPropagators.noop();
+  private TracerProvider tracerProvider;
+  private MeterProvider meterProvider;
 
-  protected TracerProvider tracerProvider;
-  protected MeterProvider meterProvider;
+  /**
+   * Package protected to disallow direct initialization.
+   *
+   * @see DefaultOpenTelemetry#builder()
+   */
+  DefaultOpenTelemetryBuilder() {}
 
   @Override
   public DefaultOpenTelemetryBuilder setTracerProvider(TracerProvider tracerProvider) {
