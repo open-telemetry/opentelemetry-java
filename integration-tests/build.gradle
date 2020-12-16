@@ -20,7 +20,6 @@ dependencies {
         project(':opentelemetry-exporter-jaeger'),
         libraries.grpc_protobuf,
         libraries.protobuf,
-        libraries.protobuf_util,
         "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind',
