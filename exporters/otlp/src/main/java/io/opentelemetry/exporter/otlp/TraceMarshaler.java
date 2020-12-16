@@ -8,17 +8,17 @@ package io.opentelemetry.exporter.otlp;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.UnknownFieldSet;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
@@ -153,10 +153,10 @@ final class TraceMarshaler {
   }
 
   private static final class SpanMarshaler extends MarshalerWithSize {
-    private final ByteString traceId;
-    private final ByteString spanId;
-    private final ByteString parentSpanId;
-    private final ByteString name;
+    private final byte[] traceId;
+    private final byte[] spanId;
+    private final byte[] parentSpanId;
+    private final byte[] name;
     private final int spanKind;
     private final long startEpochNanos;
     private final long endEpochNanos;
@@ -175,16 +175,16 @@ final class TraceMarshaler {
       SpanEventMarshaler[] spanEventMarshalers = SpanEventMarshaler.create(spanData.getEvents());
       SpanLinkMarshaler[] spanLinkMarshalers = SpanLinkMarshaler.create(spanData.getLinks());
 
-      ByteString parentSpanId = ByteString.EMPTY;
+      byte[] parentSpanId = MarshalerUtil.EMPTY_BYTES;
       if (spanData.getParentSpanContext().isValid()) {
-        parentSpanId = TraceProtoUtils.toProtoSpanId(spanData.getParentSpanId());
+        parentSpanId = SpanId.bytesFromHex(spanData.getParentSpanId(), 0);
       }
 
       return new SpanMarshaler(
-          TraceProtoUtils.toProtoTraceId(spanData.getTraceId()),
-          TraceProtoUtils.toProtoSpanId(spanData.getSpanId()),
+          TraceId.bytesFromHex(spanData.getTraceId(), 0),
+          SpanId.bytesFromHex(spanData.getSpanId(), 0),
           parentSpanId,
-          MarshalerUtil.toByteString(spanData.getName()),
+          MarshalerUtil.toBytes(spanData.getName()),
           SpanAdapter.toProtoSpanKind(spanData.getKind()).getNumber(),
           spanData.getStartEpochNanos(),
           spanData.getEndEpochNanos(),
@@ -198,10 +198,10 @@ final class TraceMarshaler {
     }
 
     private SpanMarshaler(
-        ByteString traceId,
-        ByteString spanId,
-        ByteString parentSpanId,
-        ByteString name,
+        byte[] traceId,
+        byte[] spanId,
+        byte[] parentSpanId,
+        byte[] name,
         int spanKind,
         long startEpochNanos,
         long endEpochNanos,
@@ -274,10 +274,10 @@ final class TraceMarshaler {
     }
 
     private static int calculateSize(
-        ByteString traceId,
-        ByteString spanId,
-        ByteString parentSpanId,
-        ByteString name,
+        byte[] traceId,
+        byte[] spanId,
+        byte[] parentSpanId,
+        byte[] name,
         int spanKind,
         long startEpochNanos,
         long endEpochNanos,
@@ -320,7 +320,7 @@ final class TraceMarshaler {
   private static final class SpanEventMarshaler extends MarshalerWithSize {
     private static final SpanEventMarshaler[] EMPTY = new SpanEventMarshaler[0];
     private final long epochNanos;
-    private final ByteString name;
+    private final byte[] name;
     private final AttributeMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
@@ -335,7 +335,7 @@ final class TraceMarshaler {
         result[pos++] =
             new SpanEventMarshaler(
                 event.getEpochNanos(),
-                MarshalerUtil.toByteString(event.getName()),
+                MarshalerUtil.toBytes(event.getName()),
                 AttributeMarshaler.createRepeated(event.getAttributes()),
                 event.getTotalAttributeCount() - event.getAttributes().size());
       }
@@ -345,7 +345,7 @@ final class TraceMarshaler {
 
     private SpanEventMarshaler(
         long epochNanos,
-        ByteString name,
+        byte[] name,
         AttributeMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       super(calculateSize(epochNanos, name, attributeMarshalers, droppedAttributesCount));
@@ -367,7 +367,7 @@ final class TraceMarshaler {
 
     private static int calculateSize(
         long epochNanos,
-        ByteString name,
+        byte[] name,
         AttributeMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       int size = 0;
@@ -385,8 +385,8 @@ final class TraceMarshaler {
 
   private static final class SpanLinkMarshaler extends MarshalerWithSize {
     private static final SpanLinkMarshaler[] EMPTY = new SpanLinkMarshaler[0];
-    private final ByteString traceId;
-    private final ByteString spanId;
+    private final byte[] traceId;
+    private final byte[] spanId;
     private final AttributeMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
@@ -400,8 +400,8 @@ final class TraceMarshaler {
       for (SpanData.Link link : links) {
         result[pos++] =
             new SpanLinkMarshaler(
-                TraceProtoUtils.toProtoTraceId(link.getSpanContext().getTraceIdAsHexString()),
-                TraceProtoUtils.toProtoSpanId(link.getSpanContext().getSpanIdAsHexString()),
+                link.getSpanContext().getTraceIdBytes(),
+                link.getSpanContext().getSpanIdBytes(),
                 AttributeMarshaler.createRepeated(link.getAttributes()),
                 link.getTotalAttributeCount() - link.getAttributes().size());
       }
@@ -410,8 +410,8 @@ final class TraceMarshaler {
     }
 
     private SpanLinkMarshaler(
-        ByteString traceId,
-        ByteString spanId,
+        byte[] traceId,
+        byte[] spanId,
         AttributeMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       super(calculateSize(traceId, spanId, attributeMarshalers, droppedAttributesCount));
@@ -433,8 +433,8 @@ final class TraceMarshaler {
     }
 
     private static int calculateSize(
-        ByteString traceId,
-        ByteString spanId,
+        byte[] traceId,
+        byte[] spanId,
         AttributeMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       int size = 0;
@@ -453,7 +453,7 @@ final class TraceMarshaler {
   private static final class SpanStatusMarshaler extends MarshalerWithSize {
     private final Status.StatusCode protoStatusCode;
     private final Status.DeprecatedStatusCode deprecatedStatusCode;
-    private final ByteString description;
+    private final byte[] description;
 
     static SpanStatusMarshaler create(SpanData.Status status) {
       Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
@@ -464,14 +464,14 @@ final class TraceMarshaler {
         protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
         deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
       }
-      ByteString description = MarshalerUtil.toByteString(status.getDescription());
+      byte[] description = MarshalerUtil.toBytes(status.getDescription());
       return new SpanStatusMarshaler(protoStatusCode, deprecatedStatusCode, description);
     }
 
     private SpanStatusMarshaler(
         Status.StatusCode protoStatusCode,
         Status.DeprecatedStatusCode deprecatedStatusCode,
-        ByteString description) {
+        byte[] description) {
       super(computeSize(protoStatusCode, deprecatedStatusCode, description));
       this.protoStatusCode = protoStatusCode;
       this.deprecatedStatusCode = deprecatedStatusCode;
@@ -494,7 +494,7 @@ final class TraceMarshaler {
     private static int computeSize(
         Status.StatusCode protoStatusCode,
         Status.DeprecatedStatusCode deprecatedStatusCode,
-        ByteString description) {
+        byte[] description) {
       int size = 0;
       // TODO: Make this a MarshalerUtil helper.
       if (deprecatedStatusCode != DEPRECATED_STATUS_CODE_OK) {

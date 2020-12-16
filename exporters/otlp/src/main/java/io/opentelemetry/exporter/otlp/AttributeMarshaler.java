@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.WireFormat;
 import io.opentelemetry.api.common.AttributeKey;
@@ -19,7 +18,7 @@ import java.util.function.BiConsumer;
 
 abstract class AttributeMarshaler extends MarshalerWithSize {
   private static final AttributeMarshaler[] EMPTY_REPEATED = new AttributeMarshaler[0];
-  private final ByteString key;
+  private final byte[] key;
   private final int valueSize;
 
   static AttributeMarshaler[] createRepeated(Attributes attributes) {
@@ -43,13 +42,13 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
 
   @SuppressWarnings("unchecked")
   static AttributeMarshaler create(AttributeKey<?> attributeKey, Object value) {
-    ByteString key = MarshalerUtil.toByteString(attributeKey.getKey());
+    byte[] key = MarshalerUtil.toBytes(attributeKey.getKey());
     if (value == null) {
       return new KeyValueNullMarshaler(key);
     }
     switch (attributeKey.getType()) {
       case STRING:
-        return new KeyValueStringMarshaler(key, MarshalerUtil.toByteString((String) value));
+        return new KeyValueStringMarshaler(key, MarshalerUtil.toBytes((String) value));
       case LONG:
         return new KeyValueLongMarshaler(key, (Long) value);
       case BOOLEAN:
@@ -68,7 +67,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
     throw new IllegalArgumentException("Unsupported attribute type.");
   }
 
-  private AttributeMarshaler(ByteString key, int valueSize) {
+  private AttributeMarshaler(byte[] key, int valueSize) {
     super(calculateSize(key, valueSize));
     this.key = key;
     this.valueSize = valueSize;
@@ -86,7 +85,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
 
   abstract void writeValueTo(CodedOutputStream output) throws IOException;
 
-  private static int calculateSize(ByteString key, int valueSize) {
+  private static int calculateSize(byte[] key, int valueSize) {
     return MarshalerUtil.sizeBytes(KeyValue.KEY_FIELD_NUMBER, key)
         + CodedOutputStream.computeTagSize(KeyValue.VALUE_FIELD_NUMBER)
         + CodedOutputStream.computeUInt32SizeNoTag(valueSize)
@@ -94,7 +93,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   }
 
   private static final class KeyValueNullMarshaler extends AttributeMarshaler {
-    private KeyValueNullMarshaler(ByteString key) {
+    private KeyValueNullMarshaler(byte[] key) {
       super(key, 0);
     }
 
@@ -103,29 +102,33 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   }
 
   private static final class KeyValueStringMarshaler extends AttributeMarshaler {
-    private final ByteString value;
+    private final byte[] value;
 
-    private KeyValueStringMarshaler(ByteString key, ByteString value) {
-      super(key, CodedOutputStream.computeBytesSize(AnyValue.STRING_VALUE_FIELD_NUMBER, value));
+    private KeyValueStringMarshaler(byte[] key, byte[] value) {
+      super(key, CodedOutputStream.computeByteArraySize(AnyValue.STRING_VALUE_FIELD_NUMBER, value));
       this.value = value;
     }
 
     @Override
     public void writeValueTo(CodedOutputStream output) throws IOException {
-      output.writeBytes(AnyValue.STRING_VALUE_FIELD_NUMBER, value);
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
+      output.writeByteArray(AnyValue.STRING_VALUE_FIELD_NUMBER, value);
     }
   }
 
   private static final class KeyValueLongMarshaler extends AttributeMarshaler {
     private final long value;
 
-    private KeyValueLongMarshaler(ByteString key, long value) {
+    private KeyValueLongMarshaler(byte[] key, long value) {
       super(key, CodedOutputStream.computeInt64Size(AnyValue.INT_VALUE_FIELD_NUMBER, value));
       this.value = value;
     }
 
     @Override
     public void writeValueTo(CodedOutputStream output) throws IOException {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       output.writeInt64(AnyValue.INT_VALUE_FIELD_NUMBER, value);
     }
   }
@@ -133,13 +136,15 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   private static final class KeyValueBooleanMarshaler extends AttributeMarshaler {
     private final boolean value;
 
-    private KeyValueBooleanMarshaler(ByteString key, boolean value) {
+    private KeyValueBooleanMarshaler(byte[] key, boolean value) {
       super(key, CodedOutputStream.computeBoolSize(AnyValue.BOOL_VALUE_FIELD_NUMBER, value));
       this.value = value;
     }
 
     @Override
     public void writeValueTo(CodedOutputStream output) throws IOException {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       output.writeBool(AnyValue.BOOL_VALUE_FIELD_NUMBER, value);
     }
   }
@@ -147,13 +152,17 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   private static final class KeyValueDoubleMarshaler extends AttributeMarshaler {
     private final double value;
 
-    private KeyValueDoubleMarshaler(ByteString key, double value) {
+    private KeyValueDoubleMarshaler(byte[] key, double value) {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       super(key, CodedOutputStream.computeDoubleSize(AnyValue.DOUBLE_VALUE_FIELD_NUMBER, value));
       this.value = value;
     }
 
     @Override
     public void writeValueTo(CodedOutputStream output) throws IOException {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       output.writeDouble(AnyValue.DOUBLE_VALUE_FIELD_NUMBER, value);
     }
   }
@@ -162,7 +171,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
     private final List<T> values;
     private final int valuesSize;
 
-    private KeyValueArrayMarshaler(ByteString key, List<T> values, int valuesSize) {
+    private KeyValueArrayMarshaler(byte[] key, List<T> values, int valuesSize) {
       super(key, calculateWrapperSize(valuesSize) + valuesSize);
       this.values = values;
       this.valuesSize = valuesSize;
@@ -190,17 +199,21 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   }
 
   private static final class KeyValueArrayStringMarshaler extends KeyValueArrayMarshaler<String> {
-    private KeyValueArrayStringMarshaler(ByteString key, List<String> values) {
+    private KeyValueArrayStringMarshaler(byte[] key, List<String> values) {
       super(key, values, calculateValuesSize(values));
     }
 
     @Override
     void writeArrayElementTo(String value, CodedOutputStream output) throws IOException {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       output.writeString(AnyValue.STRING_VALUE_FIELD_NUMBER, value);
     }
 
     @Override
     int getArrayElementSerializedSize(String value) {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       return CodedOutputStream.computeStringSize(AnyValue.STRING_VALUE_FIELD_NUMBER, value);
     }
 
@@ -208,6 +221,8 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       int size = 0;
       int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES_FIELD_NUMBER);
       for (String value : values) {
+        // Do not call MarshalUtil because we always have to write the message tag even if the value
+        // is empty.
         int fieldSize =
             CodedOutputStream.computeStringSize(AnyValue.STRING_VALUE_FIELD_NUMBER, value);
         size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
@@ -217,17 +232,21 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   }
 
   private static final class KeyValueArrayLongMarshaler extends KeyValueArrayMarshaler<Long> {
-    private KeyValueArrayLongMarshaler(ByteString key, List<Long> values) {
+    private KeyValueArrayLongMarshaler(byte[] key, List<Long> values) {
       super(key, values, calculateValuesSize(values));
     }
 
     @Override
     void writeArrayElementTo(Long value, CodedOutputStream output) throws IOException {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       output.writeInt64(AnyValue.INT_VALUE_FIELD_NUMBER, value);
     }
 
     @Override
     int getArrayElementSerializedSize(Long value) {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       return CodedOutputStream.computeInt64Size(AnyValue.INT_VALUE_FIELD_NUMBER, value);
     }
 
@@ -235,6 +254,8 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       int size = 0;
       int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES_FIELD_NUMBER);
       for (Long value : values) {
+        // Do not call MarshalUtil because we always have to write the message tag even if the value
+        // is empty.
         int fieldSize = CodedOutputStream.computeInt64Size(AnyValue.INT_VALUE_FIELD_NUMBER, value);
         size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
       }
@@ -243,17 +264,21 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   }
 
   private static final class KeyValueArrayBooleanMarshaler extends KeyValueArrayMarshaler<Boolean> {
-    private KeyValueArrayBooleanMarshaler(ByteString key, List<Boolean> values) {
+    private KeyValueArrayBooleanMarshaler(byte[] key, List<Boolean> values) {
       super(key, values, calculateValuesSize(values));
     }
 
     @Override
     void writeArrayElementTo(Boolean value, CodedOutputStream output) throws IOException {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       output.writeBool(AnyValue.BOOL_VALUE_FIELD_NUMBER, value);
     }
 
     @Override
     int getArrayElementSerializedSize(Boolean value) {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       return CodedOutputStream.computeBoolSize(AnyValue.BOOL_VALUE_FIELD_NUMBER, value);
     }
 
@@ -261,6 +286,8 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       int size = 0;
       int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES_FIELD_NUMBER);
       for (Boolean value : values) {
+        // Do not call MarshalUtil because we always have to write the message tag even if the value
+        // is empty.
         int fieldSize = CodedOutputStream.computeBoolSize(AnyValue.BOOL_VALUE_FIELD_NUMBER, value);
         size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
       }
@@ -269,17 +296,21 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   }
 
   private static final class KeyValueArrayDoubleMarshaler extends KeyValueArrayMarshaler<Double> {
-    private KeyValueArrayDoubleMarshaler(ByteString key, List<Double> values) {
+    private KeyValueArrayDoubleMarshaler(byte[] key, List<Double> values) {
       super(key, values, calculateValuesSize(values));
     }
 
     @Override
     void writeArrayElementTo(Double value, CodedOutputStream output) throws IOException {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       output.writeDouble(AnyValue.DOUBLE_VALUE_FIELD_NUMBER, value);
     }
 
     @Override
     int getArrayElementSerializedSize(Double value) {
+      // Do not call MarshalUtil because we always have to write the message tag even if the value
+      // is empty.
       return CodedOutputStream.computeDoubleSize(AnyValue.DOUBLE_VALUE_FIELD_NUMBER, value);
     }
 
@@ -287,6 +318,8 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       int size = 0;
       int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES_FIELD_NUMBER);
       for (Double value : values) {
+        // Do not call MarshalUtil because we always have to write the message tag even if the value
+        // is empty.
         int fieldSize =
             CodedOutputStream.computeDoubleSize(AnyValue.DOUBLE_VALUE_FIELD_NUMBER, value);
         size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;

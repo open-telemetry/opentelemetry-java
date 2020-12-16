@@ -5,14 +5,16 @@
 
 package io.opentelemetry.exporter.otlp;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.WireFormat;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.annotation.Nullable;
 
 final class MarshalerUtil {
+  static final byte[] EMPTY_BYTES = new byte[0];
+
   static <T extends Marshaler> void marshalRepeatedMessage(
       int fieldNumber, T[] repeatedMessage, CodedOutputStream output) throws IOException {
     for (Marshaler message : repeatedMessage) {
@@ -51,12 +53,12 @@ final class MarshalerUtil {
     output.writeFixed64(fieldNumber, message);
   }
 
-  static void marshalBytes(int fieldNumber, ByteString message, CodedOutputStream output)
+  static void marshalBytes(int fieldNumber, byte[] message, CodedOutputStream output)
       throws IOException {
-    if (message.isEmpty()) {
+    if (message.length == 0) {
       return;
     }
-    output.writeBytes(fieldNumber, message);
+    output.writeByteArray(fieldNumber, message);
   }
 
   static <T extends Marshaler> int sizeRepeatedMessage(int fieldNumber, T[] repeatedMessage) {
@@ -100,18 +102,18 @@ final class MarshalerUtil {
     return CodedOutputStream.computeFixed64Size(fieldNumber, message);
   }
 
-  static int sizeBytes(int fieldNumber, ByteString message) {
-    if (message.isEmpty()) {
+  static int sizeBytes(int fieldNumber, byte[] message) {
+    if (message.length == 0) {
       return 0;
     }
-    return CodedOutputStream.computeBytesSize(fieldNumber, message);
+    return CodedOutputStream.computeByteArraySize(fieldNumber, message);
   }
 
-  static ByteString toByteString(@Nullable String value) {
+  static byte[] toBytes(@Nullable String value) {
     if (value == null || value.isEmpty()) {
-      return ByteString.EMPTY;
+      return EMPTY_BYTES;
     }
-    return ByteString.copyFromUtf8(value);
+    return value.getBytes(StandardCharsets.UTF_8);
   }
 
   private MarshalerUtil() {}
