@@ -27,7 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  *   // creating InMemoryMetricExporter
  *   private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
- *   private final MeterSdkProvider meterSdkProvider = OpenTelemetrySdk.getGlobalMeterProvider();
+ *   private final MeterSdkProvider meterSdkProvider = OpenTelemetrySdk.getMeterProvider();
  *   private final Meter meter = meterSdkProvider.get("InMemoryMetricExporterExample");
  *   private IntervalMetricReader intervalMetricReader;
  *

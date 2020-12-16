@@ -8,7 +8,7 @@ package io.opentelemetry.opentracingshim;
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ class SpanBuilderShimTest {
   private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, OpenTelemetry.getGlobalPropagators());
+      new TelemetryInfo(tracer, GlobalOpenTelemetry.getPropagators());
 
   private static final String SPAN_NAME = "Span";
 

@@ -14,6 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.DefaultOpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -39,6 +40,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("deprecation") // Testing deprecated code
 class OpenTelemetrySdkTest {
 
   @Mock private SdkTracerProvider tracerProvider;
@@ -48,41 +50,42 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testGetGlobal() {
-    assertThat(OpenTelemetrySdk.get()).isSameAs(OpenTelemetry.get());
+    assertThat(OpenTelemetrySdk.get()).isSameAs(GlobalOpenTelemetry.get());
   }
 
   @Test
   void testGetTracerManagementWhenNotTracerSdk() {
-    OpenTelemetry previous = OpenTelemetry.get();
+    OpenTelemetry previous = GlobalOpenTelemetry.get();
     assertThatCode(OpenTelemetrySdk::getGlobalTracerManagement).doesNotThrowAnyException();
     try {
-      OpenTelemetry.set(DefaultOpenTelemetry.builder().setTracerProvider(tracerProvider).build());
+      GlobalOpenTelemetry.set(
+          DefaultOpenTelemetry.builder().setTracerProvider(tracerProvider).build());
       assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement)
           .isInstanceOf(IllegalStateException.class);
     } finally {
-      OpenTelemetry.set(previous);
+      GlobalOpenTelemetry.set(previous);
     }
   }
 
   @Test
   void testGlobalDefault() {
     assertThat(((SdkTracerProvider) OpenTelemetrySdk.getGlobalTracerManagement()).get(""))
-        .isSameAs(OpenTelemetry.getGlobalTracerProvider().get(""));
+        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""));
     assertThat(OpenTelemetrySdk.getGlobalMeterProvider())
-        .isSameAs(OpenTelemetry.getGlobalMeterProvider());
+        .isSameAs(GlobalOpenTelemetry.getMeterProvider());
     assertThat(OpenTelemetrySdk.getGlobalTracerManagement()).isNotNull();
   }
 
   @Test
   void testShortcutVersions() {
-    assertThat(OpenTelemetry.getGlobalTracer("testTracer1"))
-        .isEqualTo(OpenTelemetry.getGlobalTracerProvider().get("testTracer1"));
-    assertThat(OpenTelemetry.getGlobalTracer("testTracer2", "testVersion"))
-        .isEqualTo(OpenTelemetry.getGlobalTracerProvider().get("testTracer2", "testVersion"));
-    assertThat(OpenTelemetry.getGlobalMeter("testMeter1"))
-        .isEqualTo(OpenTelemetry.getGlobalMeterProvider().get("testMeter1"));
-    assertThat(OpenTelemetry.getGlobalMeter("testMeter2", "testVersion"))
-        .isEqualTo(OpenTelemetry.getGlobalMeterProvider().get("testMeter2", "testVersion"));
+    assertThat(GlobalOpenTelemetry.getTracer("testTracer1"))
+        .isEqualTo(GlobalOpenTelemetry.getTracerProvider().get("testTracer1"));
+    assertThat(GlobalOpenTelemetry.getTracer("testTracer2", "testVersion"))
+        .isEqualTo(GlobalOpenTelemetry.getTracerProvider().get("testTracer2", "testVersion"));
+    assertThat(GlobalOpenTelemetry.getMeter("testMeter1"))
+        .isEqualTo(GlobalOpenTelemetry.getMeterProvider().get("testMeter1"));
+    assertThat(GlobalOpenTelemetry.getMeter("testMeter2", "testVersion"))
+        .isEqualTo(GlobalOpenTelemetry.getMeterProvider().get("testMeter2", "testVersion"));
   }
 
   @Test

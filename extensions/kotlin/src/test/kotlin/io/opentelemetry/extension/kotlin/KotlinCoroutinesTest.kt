@@ -1,6 +1,6 @@
 package io.opentelemetry.extension.kotlin
 
-import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.ContextKey
@@ -37,7 +37,7 @@ class KotlinCoroutinesTest {
 
     @Test
     fun runWithSpan() {
-        val span = OpenTelemetry.getGlobalTracer("test").spanBuilder("test").startSpan()
+        val span = GlobalOpenTelemetry.getTracer("test").spanBuilder("test").startSpan()
         assertThat(Span.current()).isEqualTo(Span.getInvalid())
         runBlocking(Dispatchers.Default + span.asContextElement()) {
             assertThat(Span.current()).isEqualTo(span)

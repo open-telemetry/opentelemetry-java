@@ -268,11 +268,6 @@ configure(opentelemetryProjects) {
     compileTestJava {
         // serialVersionUID is basically guaranteed to be useless in tests
         options.compilerArgs += ["-Xlint:-serial"]
-
-        // Disable Java7 checks in test sources
-//        options.errorprone.disable("Java7ApiChecker")
-        // Disable AndroidJdkLibs checks in test sources
-//        options.errorprone.disable("AndroidJdkLibsChecker")
     }
 
     jar.manifest {
@@ -372,7 +367,7 @@ configure(opentelemetryProjects) {
     }
 
     checkstyle {
-        configFile = file("$rootDir/buildscripts/checkstyle.xml")
+        configDirectory = file("$rootDir/buildscripts/")
         toolVersion = "8.12"
         ignoreFailures = false
         configProperties["rootDir"] = rootDir

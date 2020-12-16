@@ -18,7 +18,7 @@ import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opencensus.trace.export.SpanData;
 import io.opencensus.trace.export.SpanData.TimedEvent;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -70,7 +70,7 @@ class SpanConverter {
       "message.event.size.compressed";
 
   private static final Tracer TRACER =
-      OpenTelemetry.getGlobalTracer("io.opencensus.opentelemetry.migration");
+      GlobalOpenTelemetry.getTracer("io.opencensus.opentelemetry.migration");
 
   private SpanConverter() {}
 

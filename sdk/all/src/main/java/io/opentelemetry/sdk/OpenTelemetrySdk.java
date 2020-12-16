@@ -9,6 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.DefaultOpenTelemetryBuilder;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
@@ -42,12 +43,12 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
   /** Returns the global {@link OpenTelemetrySdk}. */
   public static OpenTelemetrySdk get() {
-    return (OpenTelemetrySdk) OpenTelemetry.get();
+    return (OpenTelemetrySdk) GlobalOpenTelemetry.get();
   }
 
   /** Returns the global {@link SdkTracerManagement}. */
   public static SdkTracerManagement getGlobalTracerManagement() {
-    TracerProvider tracerProvider = OpenTelemetry.get().getTracerProvider();
+    TracerProvider tracerProvider = GlobalOpenTelemetry.get().getTracerProvider();
     if (!(tracerProvider instanceof ObfuscatedTracerProvider)) {
       throw new IllegalStateException(
           "Trying to access global TracerSdkManagement but global TracerProvider is not an "
@@ -56,9 +57,14 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return (SdkTracerProvider) ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
-  /** Returns the global {@link MeterSdkProvider}. */
+  /**
+   * Returns the global {@link MeterSdkProvider}.
+   *
+   * @deprecated this will be removed soon in preparation for the initial otel release.
+   */
+  @Deprecated
   public static MeterSdkProvider getGlobalMeterProvider() {
-    return (MeterSdkProvider) OpenTelemetry.get().getMeterProvider();
+    return (MeterSdkProvider) GlobalOpenTelemetry.get().getMeterProvider();
   }
 
   private static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
@@ -129,6 +135,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
      * @see MeterSdkProvider#builder()
      */
     @Override
+    @Deprecated
     public Builder setMeterProvider(MeterProvider meterProvider) {
       if (!(meterProvider instanceof MeterSdkProvider)) {
         throw new IllegalArgumentException(
@@ -230,7 +237,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
               resource == null ? Resource.getDefault() : resource);
       // Automatically initialize global OpenTelemetry with the first SDK we build.
       if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
-        OpenTelemetry.set(sdk);
+        GlobalOpenTelemetry.set(sdk);
       }
       return sdk;
     }

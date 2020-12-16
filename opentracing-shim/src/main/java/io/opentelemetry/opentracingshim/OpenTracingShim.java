@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -17,16 +18,16 @@ public final class OpenTracingShim {
   private OpenTracingShim() {}
 
   /**
-   * Creates a {@code io.opentracing.Tracer} shim out of {@code
-   * OpenTelemetry.getGlobalTracerProvider()} and {@code OpenTelemetry.getGlobalPropagators()}.
+   * Creates a {@code io.opentracing.Tracer} shim out of {@code OpenTelemetry.getTracerProvider()}
+   * and {@code OpenTelemetry.getPropagators()}.
    *
    * @return a {@code io.opentracing.Tracer}.
    */
   public static io.opentracing.Tracer createTracerShim() {
     return new TracerShim(
         new TelemetryInfo(
-            getTracer(OpenTelemetry.getGlobalTracerProvider()),
-            OpenTelemetry.getGlobalPropagators()));
+            getTracer(GlobalOpenTelemetry.getTracerProvider()),
+            GlobalOpenTelemetry.getPropagators()));
   }
 
   /**
