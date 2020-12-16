@@ -179,7 +179,7 @@ class OpenTelemetrySdkTest {
             .setMaxLengthOfAttributeValues(128)
             .build();
 
-    OpenTelemetrySdk.Builder sdkBuilder =
+    OpenTelemetrySdkBuilder sdkBuilder =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
