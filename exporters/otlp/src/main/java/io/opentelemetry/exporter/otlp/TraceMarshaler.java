@@ -106,9 +106,7 @@ final class TraceMarshaler {
         ResourceMarshaler resourceMarshaler,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
       int size = 0;
-      if (resourceMarshaler != null) {
-        size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, resourceMarshaler);
-      }
+      size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, resourceMarshaler);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
               ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
@@ -143,12 +141,10 @@ final class TraceMarshaler {
         InstrumentationLibraryMarshaler instrumentationLibrary,
         List<SpanMarshaler> spanMarshalers) {
       int size = 0;
-      if (instrumentationLibrary != null) {
-        size +=
-            MarshalerUtil.sizeMessage(
-                InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
-                instrumentationLibrary);
-      }
+      size +=
+          MarshalerUtil.sizeMessage(
+              InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
+              instrumentationLibrary);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
               InstrumentationLibrarySpans.SPANS_FIELD_NUMBER, spanMarshalers);
