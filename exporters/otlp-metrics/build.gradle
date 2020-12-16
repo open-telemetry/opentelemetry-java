@@ -8,6 +8,10 @@ plugins {
 description = 'OpenTelemetry Protocol Metrics Exporter'
 ext.moduleName = "io.opentelemetry.exporter.otlp.metrics"
 
+version = "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
+    "${major}.${minor}.${patch}-alpha"
+}
+
 dependencies {
     api project(':opentelemetry-sdk')
 
