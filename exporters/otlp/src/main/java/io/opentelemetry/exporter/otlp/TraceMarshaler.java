@@ -481,14 +481,14 @@ final class TraceMarshaler {
     @Override
     public void writeTo(CodedOutputStream output) throws IOException {
       // TODO: Make this a MarshalerUtil helper.
-      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET) {
-        output.writeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode.getNumber());
-      }
       if (deprecatedStatusCode != DEPRECATED_STATUS_CODE_OK) {
         output.writeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode.getNumber());
       }
-
       MarshalerUtil.marshalBytes(Status.MESSAGE_FIELD_NUMBER, description, output);
+      // TODO: Make this a MarshalerUtil helper.
+      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET) {
+        output.writeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode.getNumber());
+      }
     }
 
     private static int computeSize(
@@ -497,18 +497,18 @@ final class TraceMarshaler {
         ByteString description) {
       int size = 0;
       // TODO: Make this a MarshalerUtil helper.
-      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET) {
-        size +=
-            CodedOutputStream.computeEnumSize(
-                Status.CODE_FIELD_NUMBER, protoStatusCode.getNumber());
-      }
       if (deprecatedStatusCode != DEPRECATED_STATUS_CODE_OK) {
         size +=
             CodedOutputStream.computeEnumSize(
                 Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode.getNumber());
       }
-
       size += MarshalerUtil.sizeBytes(Status.MESSAGE_FIELD_NUMBER, description);
+      // TODO: Make this a MarshalerUtil helper.
+      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET) {
+        size +=
+            CodedOutputStream.computeEnumSize(
+                Status.CODE_FIELD_NUMBER, protoStatusCode.getNumber());
+      }
       return size;
     }
   }
