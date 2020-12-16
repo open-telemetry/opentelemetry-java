@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 
 public class SendTraceToJaeger {
@@ -24,8 +25,12 @@ public class SendTraceToJaeger {
 
   static {
     OpenTelemetrySdk.builder()
-        .setResource(
-            Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "integration test")))
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .setResource(
+                    Resource.create(
+                        Attributes.of(ResourceAttributes.SERVICE_NAME, "integration test")))
+                .build())
         .build();
   }
 
