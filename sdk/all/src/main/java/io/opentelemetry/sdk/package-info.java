@@ -6,7 +6,7 @@
 /**
  * The OpenTelemetry SDK.
  *
- * @see io.opentelemetry.sdk.OpenTelemetrySdk
+ * @see io.opentelemetry.sdk.SdkOpenTelemetry
  */
 @ParametersAreNonnullByDefault
 package io.opentelemetry.sdk;

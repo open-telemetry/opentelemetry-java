@@ -9,7 +9,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.SdkOpenTelemetry;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -19,7 +19,7 @@ import java.util.List;
 import org.junit.rules.ExternalResource;
 
 /**
- * A JUnit4 rule which sets up the {@link OpenTelemetrySdk} for testing, resetting state between
+ * A JUnit4 rule which sets up the {@link SdkOpenTelemetry} for testing, resetting state between
  * tests. This rule cannot be used with {@link org.junit.ClassRule}.
  *
  * <pre>{@code
@@ -54,8 +54,8 @@ public final class OpenTelemetryRule extends ExternalResource {
     SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
     tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(spanExporter).build());
 
-    OpenTelemetrySdk openTelemetry =
-        OpenTelemetrySdk.builder()
+    SdkOpenTelemetry openTelemetry =
+        SdkOpenTelemetry.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .setTracerProvider(tracerProvider)
             .build();
@@ -63,17 +63,17 @@ public final class OpenTelemetryRule extends ExternalResource {
     return new OpenTelemetryRule(openTelemetry, spanExporter);
   }
 
-  private final OpenTelemetrySdk openTelemetry;
+  private final SdkOpenTelemetry openTelemetry;
   private final InMemorySpanExporter spanExporter;
 
   private volatile OpenTelemetry previousGlobalOpenTelemetry;
 
-  private OpenTelemetryRule(OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
+  private OpenTelemetryRule(SdkOpenTelemetry openTelemetry, InMemorySpanExporter spanExporter) {
     this.openTelemetry = openTelemetry;
     this.spanExporter = spanExporter;
   }
 
-  /** Returns the {@link OpenTelemetrySdk} created by this extension. */
+  /** Returns the {@link SdkOpenTelemetry} created by this extension. */
   public OpenTelemetry getOpenTelemetry() {
     return openTelemetry;
   }

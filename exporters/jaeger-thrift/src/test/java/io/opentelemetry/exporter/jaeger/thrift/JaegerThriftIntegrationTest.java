@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.SdkOpenTelemetry;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
@@ -62,7 +62,7 @@ class JaegerThriftIntegrationTest {
             .setServiceName(SERVICE_NAME)
             .setEndpoint(JAEGER_URL + ":" + mappedPort + "/api/traces")
             .build();
-    OpenTelemetrySdk.getGlobalTracerManagement()
+    SdkOpenTelemetry.getGlobalTracerManagement()
         .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
   }
 

@@ -20,19 +20,19 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
-public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
+public final class SdkOpenTelemetry extends DefaultOpenTelemetry {
 
   /**
-   * Returns a new {@link OpenTelemetrySdkBuilder} for configuring an instance of {@linkplain
-   * OpenTelemetrySdk the OpenTelemetry SDK}.
+   * Returns a new {@link SdkOpenTelemetryBuilder} for configuring an instance of {@linkplain
+   * SdkOpenTelemetry the OpenTelemetry SDK}.
    */
-  public static OpenTelemetrySdkBuilder builder() {
-    return new OpenTelemetrySdkBuilder();
+  public static SdkOpenTelemetryBuilder builder() {
+    return new SdkOpenTelemetryBuilder();
   }
 
-  /** Returns the global {@link OpenTelemetrySdk}. */
-  public static OpenTelemetrySdk get() {
-    return (OpenTelemetrySdk) GlobalOpenTelemetry.get();
+  /** Returns the global {@link SdkOpenTelemetry}. */
+  public static SdkOpenTelemetry get() {
+    return (SdkOpenTelemetry) GlobalOpenTelemetry.get();
   }
 
   /** Returns the global {@link SdkTracerManagement}. */
@@ -58,14 +58,14 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
   static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
 
-  OpenTelemetrySdk(
+  SdkOpenTelemetry(
       TracerProvider tracerProvider,
       MeterProvider meterProvider,
       ContextPropagators contextPropagators) {
     super(tracerProvider, meterProvider, contextPropagators);
   }
 
-  /** Returns the {@link SdkTracerManagement} for this {@link OpenTelemetrySdk}. */
+  /** Returns the {@link SdkTracerManagement} for this {@link SdkOpenTelemetry}. */
   public SdkTracerManagement getTracerManagement() {
     return (SdkTracerProvider) ((ObfuscatedTracerProvider) getTracerProvider()).unobfuscate();
   }

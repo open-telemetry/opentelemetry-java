@@ -17,7 +17,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.OtlpGrpcSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.SdkOpenTelemetry;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -128,7 +128,7 @@ public class OtlpPipelineStressTest {
   @AfterEach
   void tearDown() throws IOException {
     intervalMetricReader.shutdown();
-    OpenTelemetrySdk.getGlobalTracerManagement().shutdown();
+    SdkOpenTelemetry.getGlobalTracerManagement().shutdown();
 
     toxiproxyClient.reset();
     collectorProxy.delete();
@@ -267,6 +267,6 @@ public class OtlpPipelineStressTest {
             //            .setMaxExportBatchSize(1024)
             //            .setScheduleDelayMillis(1000)
             .build();
-    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
+    SdkOpenTelemetry.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
   }
 }

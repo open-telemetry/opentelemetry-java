@@ -1,1 +1,1 @@
-io.opentelemetry.sdk.OpenTelemetrySdkFactory
+io.opentelemetry.sdk.SdkOpenTelemetryFactory

@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.zpages;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.SdkOpenTelemetry;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link TraceConfigzZPageHandler}. */
 public final class TraceConfigzZPageHandlerTest {
   private static final SdkTracerManagement TRACER_SDK_MANAGEMENT =
-      OpenTelemetrySdk.getGlobalTracerManagement();
+      SdkOpenTelemetry.getGlobalTracerManagement();
   private static final Map<String, String> emptyQueryMap = ImmutableMap.of();
 
   @BeforeEach

@@ -11,7 +11,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.SdkOpenTelemetry;
 import io.opentelemetry.sdk.testing.assertj.TracesAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
- * A JUnit5 extension which sets up the {@link OpenTelemetrySdk} for testing, resetting state
+ * A JUnit5 extension which sets up the {@link SdkOpenTelemetry} for testing, resetting state
  * between tests.
  *
  * <pre>{@code
@@ -60,8 +60,8 @@ public final class OpenTelemetryExtension
     SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
     tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(spanExporter).build());
 
-    OpenTelemetrySdk openTelemetry =
-        OpenTelemetrySdk.builder()
+    SdkOpenTelemetry openTelemetry =
+        SdkOpenTelemetry.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .setTracerProvider(tracerProvider)
             .build();
@@ -69,18 +69,18 @@ public final class OpenTelemetryExtension
     return new OpenTelemetryExtension(openTelemetry, spanExporter);
   }
 
-  private final OpenTelemetrySdk openTelemetry;
+  private final SdkOpenTelemetry openTelemetry;
   private final InMemorySpanExporter spanExporter;
 
   private volatile OpenTelemetry previousGlobalOpenTelemetry;
 
   private OpenTelemetryExtension(
-      OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
+      SdkOpenTelemetry openTelemetry, InMemorySpanExporter spanExporter) {
     this.openTelemetry = openTelemetry;
     this.spanExporter = spanExporter;
   }
 
-  /** Returns the {@link OpenTelemetrySdk} created by this extension. */
+  /** Returns the {@link SdkOpenTelemetry} created by this extension. */
   public OpenTelemetry getOpenTelemetry() {
     return openTelemetry;
   }

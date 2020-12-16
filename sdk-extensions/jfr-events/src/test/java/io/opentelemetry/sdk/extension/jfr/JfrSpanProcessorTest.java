@@ -12,7 +12,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.SdkOpenTelemetry;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,7 +29,7 @@ class JfrSpanProcessorTest {
 
   static {
     ContextStorage.addWrapper(JfrContextStorageWrapper::new);
-    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(new JfrSpanProcessor());
+    SdkOpenTelemetry.getGlobalTracerManagement().addSpanProcessor(new JfrSpanProcessor());
   }
 
   /** Simple test to validate JFR events for Span and Scope. */

@@ -18,7 +18,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.SdkOpenTelemetry;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -46,7 +46,7 @@ class TraceInteroperabilityTest {
   public void init() {
     when(spanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
     SpanProcessor spanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
-    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
+    SdkOpenTelemetry.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
   }
 
   @Test
