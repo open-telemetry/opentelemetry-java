@@ -141,8 +141,8 @@ public final class SdkMeterProvider implements MeterProvider {
    * MeterSdkProvider meterProvider = OpenTelemetrySdk.getMeterProvider();
    *
    * // create a selector to select which instruments to customize:
-   * InstrumentSelector instrumentSelector = InstrumentSelector.newBuilder()
-   *   .instrumentType(InstrumentType.COUNTER)
+   * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
+   *   .setInstrumentType(InstrumentType.COUNTER)
    *   .buildInstrument();
    *
    * // create a specification of how you want the metrics aggregated:

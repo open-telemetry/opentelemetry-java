@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 class AggregationChooser {
   private static final AggregationConfiguration CUMULATIVE_SUM =
@@ -58,10 +57,10 @@ class AggregationChooser {
   }
 
   private static boolean matchesOne(InstrumentDescriptor descriptor, InstrumentSelector selector) {
-    if (selector.hasInstrumentNameRegex() && !matchesOnName(descriptor, selector)) {
+    if (selector.getInstrumentNamePattern() != null && !matchesOnName(descriptor, selector)) {
       return false;
     }
-    if (selector.hasInstrumentType() && !matchesOnType(descriptor, selector)) {
+    if (selector.getInstrumentType() != null && !matchesOnType(descriptor, selector)) {
       return false;
     }
     return true;
@@ -69,19 +68,18 @@ class AggregationChooser {
 
   private static boolean matchesOnType(
       InstrumentDescriptor descriptor, InstrumentSelector selector) {
-    if (selector.instrumentType() == null) {
+    if (selector.getInstrumentType() == null) {
       return false;
     }
-    return selector.instrumentType().equals(descriptor.getType());
+    return selector.getInstrumentType().equals(descriptor.getType());
   }
 
   private static boolean matchesOnName(
       InstrumentDescriptor descriptor, InstrumentSelector registeredSelector) {
-    Pattern pattern = registeredSelector.instrumentNamePattern();
-    if (pattern == null) {
+    if (registeredSelector.getInstrumentNamePattern() == null) {
       return false;
     }
-    return pattern.matcher(descriptor.getName()).matches();
+    return registeredSelector.getInstrumentNamePattern().matcher(descriptor.getName()).matches();
   }
 
   private static AggregationConfiguration getDefaultSpecification(InstrumentDescriptor descriptor) {
