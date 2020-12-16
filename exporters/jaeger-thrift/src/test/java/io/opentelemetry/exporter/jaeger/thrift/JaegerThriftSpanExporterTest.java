@@ -239,7 +239,7 @@ class JaegerThriftSpanExporterTest {
         JaegerThriftSpanExporter.builder()
             .fromConfigMap(options, ConfigBuilderTest.getNaming())
             .build();
-    assertThat(exporter.process.getServiceName()).isEqualTo(serviceName);
+    assertThat(exporter.getProcess().getServiceName()).isEqualTo(serviceName);
   }
 
   abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {

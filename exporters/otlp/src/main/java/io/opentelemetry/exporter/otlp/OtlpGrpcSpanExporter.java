@@ -76,8 +76,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private final TraceServiceFutureStub traceService;
 
   private final ManagedChannel managedChannel;
-  // Visible for testing
-  final long deadlineMs;
+  private final long deadlineMs;
 
   private final LongCounter spansSeen =
       OpenTelemetry.getGlobalMeter("io.opentelemetry.exporters.otlp")
@@ -193,5 +192,10 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
         });
     managedChannel.shutdown();
     return result;
+  }
+
+  // Visible for testing
+  long getDeadlineMs() {
+    return deadlineMs;
   }
 }

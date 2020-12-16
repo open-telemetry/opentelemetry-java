@@ -267,8 +267,8 @@ class JaegerGrpcSpanExporterTest {
         JaegerGrpcSpanExporter.builder()
             .fromConfigMap(options, ConfigBuilderTest.getNaming())
             .build();
-    assertThat(exporter.processBuilder.getServiceName()).isEqualTo(serviceName);
-    assertThat(exporter.managedChannel.authority()).isEqualTo(endpoint);
+    assertThat(exporter.getProcessBuilder().getServiceName()).isEqualTo(serviceName);
+    assertThat(exporter.getManagedChannel().authority()).isEqualTo(endpoint);
   }
 
   abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {

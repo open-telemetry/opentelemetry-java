@@ -103,7 +103,7 @@ class OtlpGrpcSpanExporterTest {
             .fromConfigMap(options, OtlpGrpcMetricExporterTest.ConfigBuilderTest.getNaming())
             .build();
 
-    assertThat(exporter.deadlineMs).isEqualTo(5124);
+    assertThat(exporter.getDeadlineMs()).isEqualTo(5124);
     assertThat(
             exporter
                 .export(

@@ -50,10 +50,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private static final String IP_DEFAULT = "0.0.0.0";
   private final CollectorServiceGrpc.CollectorServiceFutureStub stub;
 
-  // Visible for testing
-  final Model.Process.Builder processBuilder;
-  // Visible for testing
-  final ManagedChannel managedChannel;
+  private final Model.Process.Builder processBuilder;
+  private final ManagedChannel managedChannel;
   private final long deadlineMs;
 
   /**
@@ -210,5 +208,15 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
         });
     managedChannel.shutdown();
     return result;
+  }
+
+  // Visible for testing
+  Model.Process.Builder getProcessBuilder() {
+    return processBuilder;
+  }
+
+  // Visible for testing
+  ManagedChannel getManagedChannel() {
+    return managedChannel;
   }
 }
