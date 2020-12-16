@@ -38,6 +38,9 @@ If you depend on the `opentelemetry-api` module, you should get the rest of the 
 - The `OpenTelemetry.builder()` and the `OpenTelemetryBuilder` interface have been deprecated and will be removed in the next release.
 The builder functionality is now only present on individual implementations of OpenTelemetry. For instance, the
 `DefaultOpenTelemetry` class has a builder available.
+- The `OpenTelemetry.setPropagators()` has been deprecated and will be removed in the next release. You should instead create your
+`OpenTelemetry` implementations with the Propagators preset, via the various builder options. For example, use 
+`DefaultOpenTelemetry.builder().setPropagators(propagators).build()` to configure your no-sdk implementation.
 
 ### SDK
 
