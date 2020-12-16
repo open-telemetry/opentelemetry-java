@@ -80,9 +80,6 @@ final class MarshalerUtil {
   }
 
   static int sizeMessage(int fieldNumber, Marshaler message) {
-    if (message == null) {
-      return 0;
-    }
     int fieldSize = message.getSerializedSize();
     return CodedOutputStream.computeTagSize(fieldNumber)
         + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)

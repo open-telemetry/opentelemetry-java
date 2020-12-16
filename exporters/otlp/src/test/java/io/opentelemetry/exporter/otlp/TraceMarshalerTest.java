@@ -77,6 +77,22 @@ class TraceMarshalerTest {
                 .build()));
   }
 
+  @Test
+  void marshalAndSizeRequest_ErrorStatus() throws IOException {
+    assertMarshalAndSize(
+        Collections.singletonList(
+            TestSpanData.builder()
+                .setTraceId("0123456789abcdef0123456789abcdef")
+                .setSpanId("0123456789abcdef")
+                .setKind(Span.Kind.INTERNAL)
+                .setName("")
+                .setStartEpochNanos(0)
+                .setEndEpochNanos(0)
+                .setHasEnded(true)
+                .setStatus(SpanData.Status.error())
+                .build()));
+  }
+
   private static void assertMarshalAndSize(List<SpanData> spanDataList) throws IOException {
     ExportTraceServiceRequest protoRequest =
         ExportTraceServiceRequest.newBuilder()
