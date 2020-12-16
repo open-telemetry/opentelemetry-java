@@ -81,7 +81,6 @@ public final class OpenTelemetryRule extends ExternalResource {
   /** Returns the {@link SdkTracerManagement} created by this extension. */
   public SdkTracerManagement getTracerManagement() {
     return openTelemetry.getTracerManagement();
-
   }
 
   /** Returns all the exported {@link SpanData} so far. */
