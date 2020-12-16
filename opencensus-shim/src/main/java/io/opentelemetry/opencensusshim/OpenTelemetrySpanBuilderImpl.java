@@ -37,7 +37,7 @@ import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opencensus.trace.config.TraceConfig;
 import io.opencensus.trace.config.TraceParams;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ import javax.annotation.Nullable;
 
 class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
   private static final Tracer OTEL_TRACER =
-      OpenTelemetry.getGlobalTracer("io.opentelemetry.opencensusshim");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.opencensusshim");
   private static final Tracestate OC_TRACESTATE_DEFAULT = Tracestate.builder().build();
   private static final TraceOptions OC_SAMPLED_TRACE_OPTIONS =
       TraceOptions.builder().setIsSampled(true).build();
