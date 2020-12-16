@@ -119,8 +119,9 @@ public final class InMemoryMetricExporter implements MetricExporter {
    * CompletableResultCode.ofFailure()}
    */
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     isStopped = true;
     finishedMetricItems.clear();
+    return CompletableResultCode.ofSuccess();
   }
 }
