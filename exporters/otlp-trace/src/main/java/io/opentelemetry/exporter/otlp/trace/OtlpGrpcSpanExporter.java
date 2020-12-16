@@ -99,6 +99,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
     this.managedChannel = channel;
     this.deadlineMs = deadlineMs;
+
     this.traceService = TraceServiceGrpc.newFutureStub(channel);
   }
 

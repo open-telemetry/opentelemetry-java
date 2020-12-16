@@ -13,8 +13,7 @@ dependencies {
             project(':opentelemetry-proto'),
             project(':opentelemetry-sdk')
 
-    implementation libraries.protobuf,
-            libraries.protobuf_util
+    implementation libraries.protobuf
 
     testImplementation project(':opentelemetry-sdk-testing')
 
