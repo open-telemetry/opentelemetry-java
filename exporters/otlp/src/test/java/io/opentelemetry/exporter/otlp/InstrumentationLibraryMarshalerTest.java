@@ -11,7 +11,6 @@ import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import org.junit.jupiter.api.Test;
 
 class InstrumentationLibraryMarshalerTest {
@@ -32,18 +31,14 @@ class InstrumentationLibraryMarshalerTest {
       throws IOException {
     InstrumentationLibrary proto =
         CommonAdapter.toProtoInstrumentationLibrary(instrumentationLibraryInfo);
-    int protoSize = proto.getSerializedSize();
-
     InstrumentationLibraryMarshaler marshaler =
         InstrumentationLibraryMarshaler.create(instrumentationLibraryInfo);
-    assertThat(marshaler).isNotNull();
-    int customSize = marshaler.getSerializedSize();
-    assertThat(customSize).isEqualTo(protoSize);
+    assertThat(marshaler.getSerializedSize()).isEqualTo(proto.getSerializedSize());
 
-    ByteBuffer protoOutput = ByteBuffer.allocate(protoSize);
+    byte[] protoOutput = new byte[proto.getSerializedSize()];
     proto.writeTo(CodedOutputStream.newInstance(protoOutput));
 
-    ByteBuffer customOutput = ByteBuffer.allocate(customSize);
+    byte[] customOutput = new byte[marshaler.getSerializedSize()];
     marshaler.writeTo(CodedOutputStream.newInstance(customOutput));
     assertThat(customOutput).isEqualTo(protoOutput);
   }

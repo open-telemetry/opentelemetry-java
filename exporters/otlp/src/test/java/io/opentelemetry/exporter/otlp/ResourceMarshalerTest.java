@@ -12,7 +12,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
@@ -45,17 +44,14 @@ public class ResourceMarshalerTest {
 
   private static void assertMarshalAndSize(Resource resource) throws IOException {
     io.opentelemetry.proto.resource.v1.Resource proto = ResourceAdapter.toProtoResource(resource);
-    int protoSize = proto.getSerializedSize();
-
     ResourceMarshaler marshaler = ResourceMarshaler.create(resource);
-    assertThat(marshaler).isNotNull();
-    int customSize = marshaler.getSerializedSize();
-    assertThat(customSize).isEqualTo(protoSize);
 
-    ByteBuffer protoOutput = ByteBuffer.allocate(protoSize);
+    assertThat(marshaler.getSerializedSize()).isEqualTo(proto.getSerializedSize());
+
+    byte[] protoOutput = new byte[proto.getSerializedSize()];
     proto.writeTo(CodedOutputStream.newInstance(protoOutput));
 
-    ByteBuffer customOutput = ByteBuffer.allocate(customSize);
+    byte[] customOutput = new byte[marshaler.getSerializedSize()];
     marshaler.writeTo(CodedOutputStream.newInstance(customOutput));
     assertThat(customOutput).isEqualTo(protoOutput);
   }

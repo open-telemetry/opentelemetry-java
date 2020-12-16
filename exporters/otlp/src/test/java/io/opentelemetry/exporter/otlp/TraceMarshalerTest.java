@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -124,14 +123,14 @@ class TraceMarshalerTest {
         TraceMarshaler.RequestMarshaler.create(spanDataList).toRequest();
     assertThat(protoCustomRequest.getSerializedSize()).isEqualTo(protoRequest.getSerializedSize());
 
-    ByteBuffer protoOutput = ByteBuffer.allocate(protoRequest.getSerializedSize());
+    byte[] protoOutput = new byte[protoRequest.getSerializedSize()];
     protoRequest.writeTo(CodedOutputStream.newInstance(protoOutput));
 
-    ByteBuffer customOutput = ByteBuffer.allocate(requestMarshaler.getSerializedSize());
+    byte[] customOutput = new byte[requestMarshaler.getSerializedSize()];
     requestMarshaler.writeTo(CodedOutputStream.newInstance(customOutput));
     assertThat(customOutput).isEqualTo(protoOutput);
 
-    ByteBuffer protoCustomOutput = ByteBuffer.allocate(protoRequest.getSerializedSize());
+    byte[] protoCustomOutput = new byte[protoRequest.getSerializedSize()];
     protoCustomRequest.writeTo(CodedOutputStream.newInstance(protoCustomOutput));
     assertThat(protoCustomOutput).isEqualTo(protoOutput);
   }
