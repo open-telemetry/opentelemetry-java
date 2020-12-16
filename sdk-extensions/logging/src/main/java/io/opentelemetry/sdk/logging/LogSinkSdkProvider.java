@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-public class LogSinkSdkProvider {
+public final class LogSinkSdkProvider {
   private final LogSink logSink = new SdkLogSink();
   private final List<LogProcessor> processors = new ArrayList<>();
 

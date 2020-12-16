@@ -38,7 +38,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -235,14 +234,12 @@ class JaegerThriftSpanExporterTest {
   void configTest() {
     Map<String, String> options = new HashMap<>();
     String serviceName = "myGreatService";
-    String endpoint = "http://127.0.0.1:9090";
     options.put("otel.exporter.jaeger.service.name", serviceName);
-    options.put("otel.exporter.jaeger.endpoint", endpoint);
-    JaegerThriftSpanExporter.Builder config = JaegerThriftSpanExporter.builder();
-    JaegerThriftSpanExporter.Builder spy = Mockito.spy(config);
-    spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
-    verify(spy).setServiceName(serviceName);
-    verify(spy).setEndpoint(endpoint);
+    JaegerThriftSpanExporter exporter =
+        JaegerThriftSpanExporter.builder()
+            .fromConfigMap(options, ConfigBuilderTest.getNaming())
+            .build();
+    assertThat(exporter.getProcess().getServiceName()).isEqualTo(serviceName);
   }
 
   abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {

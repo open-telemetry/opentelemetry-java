@@ -27,12 +27,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-/** Unit tests for {@link TracerSdkProvider}. */
+/** Unit tests for {@link SdkTracerProvider}. */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class TracerSdkProviderTest {
+class SdkTracerProviderTest {
   @Mock private SpanProcessor spanProcessor;
-  private final TracerSdkProvider tracerFactory = TracerSdkProvider.builder().build();
+  private final SdkTracerProvider tracerFactory = SdkTracerProvider.builder().build();
 
   @BeforeEach
   void setUp() {
@@ -44,7 +44,7 @@ class TracerSdkProviderTest {
   @Test
   void builder_HappyPath() {
     assertThat(
-            TracerSdkProvider.builder()
+            SdkTracerProvider.builder()
                 .setClock(mock(Clock.class))
                 .setResource(mock(Resource.class))
                 .setIdGenerator(mock(IdGenerator.class))
@@ -57,21 +57,21 @@ class TracerSdkProviderTest {
   void builder_NullTraceConfig() {
     assertThrows(
         NullPointerException.class,
-        () -> TracerSdkProvider.builder().setTraceConfig(null),
+        () -> SdkTracerProvider.builder().setTraceConfig(null),
         "traceConfig");
   }
 
   @Test
   void builder_NullClock() {
     assertThrows(
-        NullPointerException.class, () -> TracerSdkProvider.builder().setClock(null), "clock");
+        NullPointerException.class, () -> SdkTracerProvider.builder().setClock(null), "clock");
   }
 
   @Test
   void builder_NullResource() {
     assertThrows(
         NullPointerException.class,
-        () -> TracerSdkProvider.builder().setResource(null),
+        () -> SdkTracerProvider.builder().setResource(null),
         "resource");
   }
 
@@ -79,13 +79,13 @@ class TracerSdkProviderTest {
   void builder_NullIdsGenerator() {
     assertThrows(
         NullPointerException.class,
-        () -> TracerSdkProvider.builder().setIdGenerator(null),
+        () -> SdkTracerProvider.builder().setIdGenerator(null),
         "idsGenerator");
   }
 
   @Test
   void defaultGet() {
-    assertThat(tracerFactory.get("test")).isInstanceOf(TracerSdk.class);
+    assertThat(tracerFactory.get("test")).isInstanceOf(SdkTracer.class);
   }
 
   @Test
@@ -104,7 +104,7 @@ class TracerSdkProviderTest {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("theName", "theVersion");
     Tracer tracer = tracerFactory.get(expected.getName(), expected.getVersion());
-    assertThat(((TracerSdk) tracer).getInstrumentationLibraryInfo()).isEqualTo(expected);
+    assertThat(((SdkTracer) tracer).getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 
   @Test
@@ -119,10 +119,10 @@ class TracerSdkProviderTest {
   @Test
   void build_traceConfig() {
     TraceConfig initialTraceConfig = mock(TraceConfig.class);
-    TracerSdkProvider tracerSdkProvider =
-        TracerSdkProvider.builder().setTraceConfig(initialTraceConfig).build();
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder().setTraceConfig(initialTraceConfig).build();
 
-    assertThat(tracerSdkProvider.getActiveTraceConfig()).isSameAs(initialTraceConfig);
+    assertThat(sdkTracerProvider.getActiveTraceConfig()).isSameAs(initialTraceConfig);
   }
 
   @Test
@@ -155,23 +155,23 @@ class TracerSdkProviderTest {
 
   @Test
   void suppliesDefaultTracerForNullName() {
-    TracerSdk tracer = (TracerSdk) tracerFactory.get(null);
+    SdkTracer tracer = (SdkTracer) tracerFactory.get(null);
     assertThat(tracer.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(TracerSdkProvider.DEFAULT_TRACER_NAME);
+        .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
 
-    tracer = (TracerSdk) tracerFactory.get(null, null);
+    tracer = (SdkTracer) tracerFactory.get(null, null);
     assertThat(tracer.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(TracerSdkProvider.DEFAULT_TRACER_NAME);
+        .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
   }
 
   @Test
   void suppliesDefaultTracerForEmptyName() {
-    TracerSdk tracer = (TracerSdk) tracerFactory.get("");
+    SdkTracer tracer = (SdkTracer) tracerFactory.get("");
     assertThat(tracer.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(TracerSdkProvider.DEFAULT_TRACER_NAME);
+        .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
 
-    tracer = (TracerSdk) tracerFactory.get("", "");
+    tracer = (SdkTracer) tracerFactory.get("", "");
     assertThat(tracer.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(TracerSdkProvider.DEFAULT_TRACER_NAME);
+        .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
   }
 }

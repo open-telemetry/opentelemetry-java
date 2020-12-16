@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -26,8 +26,8 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanAttributeTruncateBenchmark {
 
-  private final Tracer tracerSdk = OpenTelemetry.getGlobalTracer("benchmarkTracer");
-  private SpanBuilderSdk spanBuilderSdk;
+  private final Tracer tracerSdk = GlobalOpenTelemetry.getTracer("benchmarkTracer");
+  private SdkSpanBuilder sdkSpanBuilder;
 
   public final String shortValue = "short";
   public final String longValue = "very_long_attribute_and_then_some_more";
@@ -43,8 +43,8 @@ public class SpanAttributeTruncateBenchmark {
             .setMaxLengthOfAttributeValues(maxLength)
             .build();
     OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(config);
-    spanBuilderSdk =
-        (SpanBuilderSdk)
+    sdkSpanBuilder =
+        (SdkSpanBuilder)
             tracerSdk
                 .spanBuilder("benchmarkSpan")
                 .setSpanKind(Kind.CLIENT)
@@ -66,7 +66,7 @@ public class SpanAttributeTruncateBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public RecordEventsReadableSpan shortAttributes() {
-    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilderSdk.startSpan();
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) sdkSpanBuilder.startSpan();
     for (int i = 0; i < 10; i++) {
       span.setAttribute(String.valueOf(i), shortValue);
     }
@@ -81,7 +81,7 @@ public class SpanAttributeTruncateBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public RecordEventsReadableSpan longAttributes() {
-    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilderSdk.startSpan();
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) sdkSpanBuilder.startSpan();
     for (int i = 0; i < 10; i++) {
       span.setAttribute(String.valueOf(i), longValue);
     }
@@ -96,7 +96,7 @@ public class SpanAttributeTruncateBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public RecordEventsReadableSpan veryLongAttributes() {
-    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilderSdk.startSpan();
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) sdkSpanBuilder.startSpan();
     for (int i = 0; i < 10; i++) {
       span.setAttribute(String.valueOf(i), veryLongValue);
     }

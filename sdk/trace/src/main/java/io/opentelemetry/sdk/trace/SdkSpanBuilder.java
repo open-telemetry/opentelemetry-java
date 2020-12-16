@@ -35,8 +35,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-/** {@link SpanBuilderSdk} is SDK implementation of {@link SpanBuilder}. */
-final class SpanBuilderSdk implements SpanBuilder {
+/** {@link SdkSpanBuilder} is SDK implementation of {@link SpanBuilder}. */
+final class SdkSpanBuilder implements SpanBuilder {
 
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
@@ -54,7 +54,7 @@ final class SpanBuilderSdk implements SpanBuilder {
   private long startEpochNanos = 0;
   private boolean isRootSpan;
 
-  SpanBuilderSdk(
+  SdkSpanBuilder(
       String spanName,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       SpanProcessor spanProcessor,

@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * A {@link ResourceProvider} which provides information about the current ECS container if running
  * on AWS ECS.
  */
-public class EcsResource extends ResourceProvider {
+public final class EcsResource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(EcsResource.class.getName());
 

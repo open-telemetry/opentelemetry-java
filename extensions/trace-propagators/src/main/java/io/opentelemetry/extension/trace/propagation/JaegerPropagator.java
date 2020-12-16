@@ -31,7 +31,7 @@ import javax.annotation.concurrent.Immutable;
  * Format</a>.
  */
 @Immutable
-public class JaegerPropagator implements TextMapPropagator {
+public final class JaegerPropagator implements TextMapPropagator {
 
   private static final Logger logger = Logger.getLogger(JaegerPropagator.class.getName());
 

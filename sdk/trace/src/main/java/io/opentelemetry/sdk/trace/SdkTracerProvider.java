@@ -26,27 +26,27 @@ import javax.annotation.Nullable;
  * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
  * as needed.
  */
-public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
-  private static final Logger logger = Logger.getLogger(TracerSdkProvider.class.getName());
+public final class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
+  private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "unknown";
   private final TracerSharedState sharedState;
-  private final ComponentRegistry<TracerSdk> tracerSdkComponentRegistry;
+  private final ComponentRegistry<SdkTracer> tracerSdkComponentRegistry;
 
   /**
-   * Returns a new {@link Builder} for {@link TracerSdkProvider}.
+   * Returns a new {@link Builder} for {@link SdkTracerProvider}.
    *
-   * @return a new {@link Builder} for {@link TracerSdkProvider}.
+   * @return a new {@link Builder} for {@link SdkTracerProvider}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
-  private TracerSdkProvider(
+  private SdkTracerProvider(
       Clock clock, IdGenerator idsGenerator, Resource resource, TraceConfig traceConfig) {
     this.sharedState = new TracerSharedState(clock, idsGenerator, resource, traceConfig);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
-            instrumentationLibraryInfo -> new TracerSdk(sharedState, instrumentationLibraryInfo));
+            instrumentationLibraryInfo -> new SdkTracer(sharedState, instrumentationLibraryInfo));
   }
 
   @Override
@@ -157,8 +157,8 @@ public class TracerSdkProvider implements TracerProvider, TracerSdkManagement {
      *
      * @return An initialized TraceSdkProvider.
      */
-    public TracerSdkProvider build() {
-      return new TracerSdkProvider(clock, idsGenerator, resource, traceConfig);
+    public SdkTracerProvider build() {
+      return new SdkTracerProvider(clock, idsGenerator, resource, traceConfig);
     }
 
     private Builder() {}

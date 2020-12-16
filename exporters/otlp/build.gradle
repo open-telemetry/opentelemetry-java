@@ -18,10 +18,9 @@ dependencies {
             libraries.protobuf,
             libraries.protobuf_util
 
-    implementation 'org.curioswitch.curiostack:protobuf-jackson:1.1.0'
-
     testImplementation project(':opentelemetry-sdk-testing'),
-            'org.skyscreamer:jsonassert:1.5.0'
+            'com.linecorp.armeria:armeria-grpc',
+            'com.linecorp.armeria:armeria-junit5'
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"

@@ -46,7 +46,7 @@ import javax.annotation.concurrent.Immutable;
  * }</pre>
  */
 @Immutable
-public class B3Propagator implements TextMapPropagator {
+public final class B3Propagator implements TextMapPropagator {
   static final String TRACE_ID_HEADER = "X-B3-TraceId";
   static final String SPAN_ID_HEADER = "X-B3-SpanId";
   static final String SAMPLED_HEADER = "X-B3-Sampled";

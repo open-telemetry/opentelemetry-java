@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  * A {@link ResourceProvider} which provides information about the current EC2 instance if running
  * on AWS Elastic Beanstalk.
  */
-public class BeanstalkResource extends ResourceProvider {
+public final class BeanstalkResource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(BeanstalkResource.class.getName());
 

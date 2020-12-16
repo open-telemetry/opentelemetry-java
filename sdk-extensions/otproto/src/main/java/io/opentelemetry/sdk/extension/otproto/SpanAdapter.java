@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp;
+package io.opentelemetry.sdk.extension.otproto;
 
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CLIENT;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
@@ -22,7 +22,6 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -32,8 +31,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-final class SpanAdapter {
-  static List<ResourceSpans> toProtoResourceSpans(Collection<SpanData> spanDataList) {
+/** Converter from SDK {@link SpanData} to OTLP {@link ResourceSpans}. */
+public final class SpanAdapter {
+
+  /** Converts the provided {@link SpanData} to {@link ResourceSpans}. */
+  public static List<ResourceSpans> toProtoResourceSpans(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> resourceAndLibraryMap =
         groupByResourceAndLibrary(spanDataList);
     List<ResourceSpans> resourceSpans = new ArrayList<>(resourceAndLibraryMap.size());

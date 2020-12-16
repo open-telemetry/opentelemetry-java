@@ -5,15 +5,15 @@
 
 package io.opentelemetry.sdk.logging.export;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.Utils;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logging.LogProcessor;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class BatchLogProcessor implements LogProcessor {
+public final class BatchLogProcessor implements LogProcessor {
   private static final String WORKER_THREAD_NAME =
       BatchLogProcessor.class.getSimpleName() + "_WorkerThread";
 
@@ -70,7 +70,7 @@ public class BatchLogProcessor implements LogProcessor {
 
   private static class Worker implements Runnable {
     static {
-      Meter meter = OpenTelemetry.getGlobalMeter("io.opentelemetry.sdk.logging");
+      Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.logging");
       LongCounter logRecordsProcessed =
           meter
               .longCounterBuilder("logRecordsProcessed")

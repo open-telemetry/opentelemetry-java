@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link TraceProtoUtils}. */
 class TraceProtoUtilsTest {
   private static final io.opentelemetry.proto.trace.v1.TraceConfig TRACE_CONFIG_PROTO =
       io.opentelemetry.proto.trace.v1.TraceConfig.newBuilder()

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -36,7 +36,7 @@ class JaegerIntegrationTest {
   private static final int COLLECTOR_PORT = 14250;
   private static final String SERVICE_NAME = "E2E-test";
   private static final String JAEGER_URL = "http://localhost";
-  private final Tracer tracer = OpenTelemetry.getGlobalTracer(getClass().getCanonicalName());
+  private final Tracer tracer = GlobalOpenTelemetry.getTracer(getClass().getCanonicalName());
 
   @Container
   public static GenericContainer<?> jaegerContainer =

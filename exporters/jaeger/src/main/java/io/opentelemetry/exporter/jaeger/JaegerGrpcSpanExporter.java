@@ -11,7 +11,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector.PostSpansResponse;
@@ -19,7 +18,6 @@ import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model.Process;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -28,7 +26,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -52,6 +49,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
   private final CollectorServiceGrpc.CollectorServiceFutureStub stub;
+
   private final Model.Process.Builder processBuilder;
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
@@ -64,7 +62,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    * @param deadlineMs max waiting time for the collector to process each span batch. When set to 0
    *     or to a negative value, the exporter will wait indefinitely.
    */
-  private JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel, long deadlineMs) {
+  JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel, long deadlineMs) {
     String hostname;
     String ipv4;
 
@@ -189,8 +187,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static Builder builder() {
-    return new Builder();
+  public static JaegerGrpcSpanExporterBuilder builder() {
+    return new JaegerGrpcSpanExporterBuilder();
   }
 
   /**
@@ -212,94 +210,13 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     return result;
   }
 
-  /** Builder utility for this exporter. */
-  public static class Builder extends ConfigBuilder<Builder> {
-    private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";
-    private static final String KEY_ENDPOINT = "otel.exporter.jaeger.endpoint";
+  // Visible for testing
+  Model.Process.Builder getProcessBuilder() {
+    return processBuilder;
+  }
 
-    private String serviceName = DEFAULT_SERVICE_NAME;
-    private String endpoint = DEFAULT_ENDPOINT;
-    private ManagedChannel channel;
-    private long deadlineMs = DEFAULT_DEADLINE_MS; // 10 seconds
-
-    /**
-     * Sets the service name to be used by this exporter. Required.
-     *
-     * @param serviceName the service name.
-     * @return this.
-     */
-    public Builder setServiceName(String serviceName) {
-      this.serviceName = serviceName;
-      return this;
-    }
-
-    /**
-     * Sets the managed channel to use when communicating with the backend. Takes precedence over
-     * {@link #setEndpoint(String)} if both are called.
-     *
-     * @param channel the channel to use.
-     * @return this.
-     */
-    public Builder setChannel(ManagedChannel channel) {
-      this.channel = channel;
-      return this;
-    }
-
-    /**
-     * Sets the Jaeger endpoint to connect to. Optional, defaults to "localhost:14250".
-     *
-     * @param endpoint The Jaeger endpoint URL, ex. "jaegerhost:14250".
-     * @return this.
-     */
-    public Builder setEndpoint(String endpoint) {
-      this.endpoint = endpoint;
-      return this;
-    }
-
-    /**
-     * Sets the max waiting time for the collector to process each span batch. Optional.
-     *
-     * @param deadlineMs the max waiting time in millis.
-     * @return this.
-     */
-    public Builder setDeadlineMs(long deadlineMs) {
-      this.deadlineMs = deadlineMs;
-      return this;
-    }
-
-    /**
-     * Sets the configuration values from the given configuration map for only the available keys.
-     *
-     * @param configMap {@link Map} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    protected Builder fromConfigMap(
-        Map<String, String> configMap, NamingConvention namingConvention) {
-      configMap = namingConvention.normalize(configMap);
-      String stringValue = getStringProperty(KEY_SERVICE_NAME, configMap);
-      if (stringValue != null) {
-        this.setServiceName(stringValue);
-      }
-      stringValue = getStringProperty(KEY_ENDPOINT, configMap);
-      if (stringValue != null) {
-        this.setEndpoint(stringValue);
-      }
-      return this;
-    }
-
-    /**
-     * Constructs a new instance of the exporter based on the builder's values.
-     *
-     * @return a new exporter's instance.
-     */
-    public JaegerGrpcSpanExporter build() {
-      if (channel == null) {
-        channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
-      }
-      return new JaegerGrpcSpanExporter(serviceName, channel, deadlineMs);
-    }
-
-    private Builder() {}
+  // Visible for testing
+  ManagedChannel getManagedChannel() {
+    return managedChannel;
   }
 }

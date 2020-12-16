@@ -25,6 +25,7 @@ import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.extension.otproto.MetricAdapter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
@@ -77,8 +78,8 @@ class OtlpGrpcMetricExporterTest {
     Map<String, String> options = new HashMap<>();
     options.put("otel.exporter.otlp.metric.timeout", "12");
     options.put("otel.exporter.otlp.insecure", "true");
-    OtlpGrpcMetricExporter.Builder config = OtlpGrpcMetricExporter.builder();
-    OtlpGrpcMetricExporter.Builder spy = Mockito.spy(config);
+    OtlpGrpcMetricExporterBuilder config = OtlpGrpcMetricExporter.builder();
+    OtlpGrpcMetricExporterBuilder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
     verify(spy).setDeadlineMs(12);
     verify(spy).setUseTls(false);

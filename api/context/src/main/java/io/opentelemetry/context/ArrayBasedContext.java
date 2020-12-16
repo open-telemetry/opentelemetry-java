@@ -81,4 +81,18 @@ final class ArrayBasedContext implements Context {
     newEntries[newEntries.length - 1] = value;
     return new ArrayBasedContext(newEntries);
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("{");
+    for (int i = 0; i < entries.length; i += 2) {
+      sb.append(entries[i]).append('=').append(entries[i + 1]).append(", ");
+    }
+    // get rid of that last pesky comma
+    if (sb.length() > 1) {
+      sb.setLength(sb.length() - 2);
+    }
+    sb.append('}');
+    return sb.toString();
+  }
 }

@@ -9,12 +9,12 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.PerOperationSamplingStrategies;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyResponse;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc.SamplingManagerBlockingStub;
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -26,7 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
-public class JaegerRemoteSampler implements Sampler {
+public final class JaegerRemoteSampler implements Sampler {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
   private static final String WORKER_THREAD_NAME =

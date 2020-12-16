@@ -479,6 +479,14 @@ class ContextTest {
   }
 
   @Test
+  void string() {
+    assertThat(Context.root()).hasToString("{}");
+    assertThat(Context.root().with(ANIMAL, "cat")).hasToString("{animal=cat}");
+    assertThat(Context.root().with(ANIMAL, "cat").with(BAG, 10))
+        .hasToString("{animal=cat, bag=10}");
+  }
+
+  @Test
   void hashcodeCollidingKeys() {
     Context context = Context.root();
     HashCollidingKey cheese = new HashCollidingKey();

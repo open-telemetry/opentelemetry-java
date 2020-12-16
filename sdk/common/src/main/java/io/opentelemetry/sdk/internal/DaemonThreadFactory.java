@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.common;
+package io.opentelemetry.sdk.internal;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A {@link ThreadFactory} that delegates to {@code Executors.defaultThreadFactory()} and marks all
  * threads as daemon.
  */
-public class DaemonThreadFactory implements ThreadFactory {
+public final class DaemonThreadFactory implements ThreadFactory {
   private final String namePrefix;
   private final AtomicInteger counter = new AtomicInteger();
 

@@ -12,7 +12,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -23,13 +23,13 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link InMemorySpanExporter}. */
 class InMemorySpanExporterTest {
-  private final TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
-  private final Tracer tracer = tracerSdkProvider.get("InMemorySpanExporterTest");
+  private final SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+  private final Tracer tracer = sdkTracerProvider.get("InMemorySpanExporterTest");
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
 
   @BeforeEach
   void setup() {
-    tracerSdkProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
   }
 
   @Test

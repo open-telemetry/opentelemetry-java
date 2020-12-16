@@ -5,7 +5,6 @@
 
 package io.opentelemetry.spi.metrics;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -16,8 +15,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * <br>
  * A specific implementation can be selected by a system property {@code
  * io.opentelemetry.metrics.spi.MeterProviderFactory} with value of fully qualified class name.
- *
- * @see OpenTelemetry
  */
 @ThreadSafe
 public interface MeterProviderFactory {

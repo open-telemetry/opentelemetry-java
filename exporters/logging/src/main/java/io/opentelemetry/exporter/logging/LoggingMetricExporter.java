@@ -13,7 +13,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class LoggingMetricExporter implements MetricExporter {
+public final class LoggingMetricExporter implements MetricExporter {
   private static final Logger logger = Logger.getLogger(LoggingMetricExporter.class.getName());
 
   @Override

@@ -72,7 +72,10 @@ import javax.annotation.Nullable;
  * expensive stack trace walking. It is highly recommended to enable this in unit tests and staging
  * environments, and you may consider enabling it in production if you have the CPU budget or have
  * very strict requirements on context being propagated correctly (i.e., because you use context in
- * a multi-tenant system).
+ * a multi-tenant system). For kotlin coroutine users, this will also detect invalid usage of {@link
+ * #makeCurrent()} from coroutines and suspending functions. This detection relies on internal APIs
+ * of kotlin coroutines and may not function across all versions - let us know if you find a version
+ * of kotlin coroutines where this mechanism does not function.
  *
  * @see StrictContextStorage
  */
