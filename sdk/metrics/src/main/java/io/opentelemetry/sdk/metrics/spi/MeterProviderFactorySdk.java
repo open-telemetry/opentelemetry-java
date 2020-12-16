@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.spi;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.spi.metrics.MeterProviderFactory;
 
 /**
@@ -18,7 +18,7 @@ import io.opentelemetry.spi.metrics.MeterProviderFactory;
 public final class MeterProviderFactorySdk implements MeterProviderFactory {
 
   @Override
-  public MeterSdkProvider create() {
-    return MeterSdkProvider.builder().build();
+  public SdkMeterProvider create() {
+    return SdkMeterProvider.builder().build();
   }
 }

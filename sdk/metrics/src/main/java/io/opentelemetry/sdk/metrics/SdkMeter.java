@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/** {@link MeterSdk} is SDK implementation of {@link Meter}. */
-final class MeterSdk implements Meter {
+/** {@link SdkMeter} is SDK implementation of {@link Meter}. */
+final class SdkMeter implements Meter {
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
 
-  MeterSdk(
+  SdkMeter(
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.meterProviderSharedState = meterProviderSharedState;

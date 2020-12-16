@@ -11,7 +11,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 
@@ -41,14 +41,14 @@ public final class OpenTelemetrySdkBuilder extends DefaultOpenTelemetryBuilder {
 
   /**
    * Sets the {@link MeterProvider} to use.. This can be used to configure tracing settings by
-   * returning the instance created by a {@link MeterSdkProvider.Builder}.
+   * returning the instance created by a {@link SdkMeterProvider.Builder}.
    *
-   * @see MeterSdkProvider#builder()
+   * @see SdkMeterProvider#builder()
    */
   @Override
   @Deprecated
   public OpenTelemetrySdkBuilder setMeterProvider(MeterProvider meterProvider) {
-    if (!(meterProvider instanceof MeterSdkProvider)) {
+    if (!(meterProvider instanceof SdkMeterProvider)) {
       throw new IllegalArgumentException(
           "The OpenTelemetrySdk can only be configured with a MeterSdkProvider");
     }
@@ -70,7 +70,7 @@ public final class OpenTelemetrySdkBuilder extends DefaultOpenTelemetryBuilder {
   @Override
   public OpenTelemetrySdk build() {
     if (meterProvider == null) {
-      meterProvider = MeterSdkProvider.builder().build();
+      meterProvider = SdkMeterProvider.builder().build();
     }
 
     if (tracerProvider == null) {

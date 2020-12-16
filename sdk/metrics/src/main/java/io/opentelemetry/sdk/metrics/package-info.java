@@ -6,7 +6,7 @@
 /**
  * The SDK implementation of metrics.
  *
- * @see io.opentelemetry.sdk.metrics.MeterSdkProvider
+ * @see io.opentelemetry.sdk.metrics.SdkMeterProvider
  */
 @ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.metrics;
