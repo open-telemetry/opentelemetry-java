@@ -6,13 +6,12 @@
 package io.opentelemetry.sdk.common;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.trace.Tracer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Holds information about the instrumentation library specified when creating an instance of {@link
- * Tracer} using the Tracer Provider.
+ * Holds information about the instrumentation library specified when creating an instance of a
+ * signal recorder.
  */
 @AutoValue
 @Immutable

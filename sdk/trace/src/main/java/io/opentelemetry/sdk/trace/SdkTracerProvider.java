@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
@@ -19,13 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
-/**
- * {@code Tracer} provider implementation for {@link TracerProvider}.
- *
- * <p>This class is not intended to be used in application code and it is used only by {@link
- * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
- * as needed.
- */
+/** {@code Tracer} provider implementation for {@link TracerProvider}. */
 public final class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "unknown";

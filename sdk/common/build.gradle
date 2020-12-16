@@ -10,7 +10,7 @@ ext.moduleName = "io.opentelemetry.sdk.common"
 ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/common"
 
 dependencies {
-    api project(':opentelemetry-api')
+    api project(':opentelemetry-api-common')
 
     annotationProcessor libraries.auto_value
 

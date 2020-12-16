@@ -5,16 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.spi;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.spi.metrics.MeterProviderFactory;
 
-/**
- * {@code MeterProvider} provider implementation for {@link MeterProviderFactory}.
- *
- * <p>This class is not intended to be used in application code and it is used only by {@link
- * OpenTelemetry}.
- */
+/** {@code MeterProvider} provider implementation for {@link MeterProviderFactory}. */
 public final class MeterProviderFactorySdk implements MeterProviderFactory {
 
   @Override
