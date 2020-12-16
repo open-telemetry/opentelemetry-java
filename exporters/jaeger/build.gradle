@@ -8,6 +8,7 @@ plugins {
 
 description = 'OpenTelemetry - Jaeger Exporter'
 ext.moduleName = "io.opentelemetry.exporter.jaeger"
+archivesBaseName = 'opentelemetry-exporter-jaeger'
 
 dependencies {
     api project(':opentelemetry-sdk'),

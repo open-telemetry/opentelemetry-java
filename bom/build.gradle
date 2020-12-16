@@ -5,6 +5,7 @@ plugins {
 
 description = 'OpenTelemetry Bill of Materials'
 group = "io.opentelemetry"
+archivesBaseName = 'opentelemetry-bom'
 
 dependencies {
     constraints {

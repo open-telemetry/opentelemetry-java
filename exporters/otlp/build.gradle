@@ -15,8 +15,7 @@ dependencies {
             libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub,
-            libraries.protobuf,
-            libraries.protobuf_util
+            libraries.protobuf
 
     testImplementation project(':opentelemetry-sdk-testing'),
             'com.linecorp.armeria:armeria-grpc',
