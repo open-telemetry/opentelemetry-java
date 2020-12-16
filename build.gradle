@@ -42,14 +42,13 @@ subprojects {
     group = "io.opentelemetry"
 
     plugins.withId("java") {
-        apply plugin: 'checkstyle'
-        apply plugin: 'eclipse'
-        apply plugin: 'idea'
-        apply plugin: 'signing'
-        apply plugin: 'jacoco'
+        plugins.apply('checkstyle')
+        plugins.apply('eclipse')
+        plugins.apply('idea')
+        plugins.apply('jacoco')
 
-        apply plugin: 'com.diffplug.spotless'
-        apply plugin: 'net.ltgt.errorprone'
+        plugins.apply('com.diffplug.spotless')
+        plugins.apply('net.ltgt.errorprone')
 
         repositories {
             mavenCentral()
@@ -246,7 +245,7 @@ subprojects {
         // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
 
         // Do not generate reports for individual projects
-        tasks.named("jacocoTestReport") {
+        tasks.named('jacocoTestReport') {
             enabled = false
         }
 
@@ -369,11 +368,6 @@ subprojects {
             }
         }
 
-        signing {
-            required false
-            sign configurations.archives
-        }
-
         plugins.withId("ru.vyarus.animalsniffer") {
             animalsnifferTest {
                 enabled = false
@@ -420,12 +414,12 @@ subprojects {
         }
     }
 
+   plugins.withId("maven-publish") {
+        plugins.apply('signing')
 
-
-    plugins.withId("maven-publish") {
         // Always include the artifactory/bintray plugins to do the deployment.
-        pluginManager.apply "com.jfrog.artifactory"
-        pluginManager.apply "com.jfrog.bintray"
+        plugins.apply("com.jfrog.artifactory")
+        plugins.apply("com.jfrog.bintray")
 
         releaseTask.configure {
             if (version.toString().endsWith('-SNAPSHOT')) {
@@ -488,6 +482,10 @@ subprojects {
             }
         }
 
+        signing {
+            required false
+            sign configurations.archives
+        }
 
         // Snapshot publishing.
         artifactory {
