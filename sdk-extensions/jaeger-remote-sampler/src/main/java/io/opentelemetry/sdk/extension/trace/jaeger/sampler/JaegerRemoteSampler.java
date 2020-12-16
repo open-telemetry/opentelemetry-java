@@ -26,7 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
-public class JaegerRemoteSampler implements Sampler {
+public final class JaegerRemoteSampler implements Sampler {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
   private static final String WORKER_THREAD_NAME =

@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  *     href="https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html#xray-api-traceids">Generating
  *     Trace IDs</a>
  */
-public class AwsXrayIdGenerator implements IdGenerator {
+public final class AwsXrayIdGenerator implements IdGenerator {
 
   private static final IdGenerator RANDOM_ID_GENERATOR = IdGenerator.random();
 

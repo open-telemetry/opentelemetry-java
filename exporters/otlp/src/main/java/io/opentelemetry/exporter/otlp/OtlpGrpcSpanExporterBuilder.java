@@ -18,7 +18,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
-public class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpanExporterBuilder> {
+public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpanExporterBuilder> {
 
   private static final String KEY_TIMEOUT = "otel.exporter.otlp.span.timeout";
   private static final String KEY_ENDPOINT = "otel.exporter.otlp.span.endpoint";

@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class EksResource extends ResourceProvider {
+public final class EksResource extends ResourceProvider {
 
   static final String K8S_SVC_URL = "https://kubernetes.default.svc";
   static final String AUTH_CONFIGMAP_PATH = "/api/v1/namespaces/kube-system/configmaps/aws-auth";

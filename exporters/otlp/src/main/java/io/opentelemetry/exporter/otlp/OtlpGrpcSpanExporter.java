@@ -75,6 +75,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
       Labels.of("exporter", EXPORTER_NAME, "success", "false");
 
   private final TraceServiceFutureStub traceService;
+
   private final ManagedChannel managedChannel;
   private final long deadlineMs;
   private final LongCounter.BoundLongCounter spansSeen;
@@ -187,5 +188,10 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     this.spansExportedSuccess.unbind();
     this.spansExportedFailure.unbind();
     return result;
+  }
+
+  // Visible for testing
+  long getDeadlineMs() {
+    return deadlineMs;
   }
 }
