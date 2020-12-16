@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -32,7 +32,7 @@ public class TracezSpanBucketsBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     bucket = new TracezSpanBuckets();
-    Tracer tracer = OpenTelemetry.getGlobalTracer("TracezZPageBenchmark");
+    Tracer tracer = GlobalOpenTelemetry.getTracer("TracezZPageBenchmark");
     Span span = tracer.spanBuilder(spanName).startSpan();
     span.end();
     readableSpan = (ReadableSpan) span;

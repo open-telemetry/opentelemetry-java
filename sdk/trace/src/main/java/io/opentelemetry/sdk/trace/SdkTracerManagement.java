@@ -16,7 +16,7 @@ import java.io.Closeable;
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the
  * Tracing SDK, as well as several lifecycle methods.
  */
-public interface TracerSdkManagement extends Closeable {
+public interface SdkTracerManagement extends Closeable {
 
   /**
    * Returns the active {@code TraceConfig}.

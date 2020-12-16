@@ -16,7 +16,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 
-    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.27.2',
+    testImplementation 'com.linecorp.armeria:armeria-junit5',
             libraries.guava,
             libraries.junit
 }

@@ -5,13 +5,14 @@
 
 package io.opentelemetry.sdk.testing.junit4;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.List;
@@ -50,7 +51,7 @@ public class OpenTelemetryRule extends ExternalResource {
   public static OpenTelemetryRule create() {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
-    TracerSdkProvider tracerProvider = TracerSdkProvider.builder().build();
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
     tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(spanExporter).build());
 
     OpenTelemetrySdk openTelemetry =
@@ -77,8 +78,8 @@ public class OpenTelemetryRule extends ExternalResource {
     return openTelemetry;
   }
 
-  /** Returns the {@link TracerSdkManagement} created by this extension. */
-  public TracerSdkManagement getTracerManagement() {
+  /** Returns the {@link SdkTracerManagement} created by this extension. */
+  public SdkTracerManagement getTracerManagement() {
     return openTelemetry.getTracerManagement();
   }
 
@@ -97,13 +98,13 @@ public class OpenTelemetryRule extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    previousGlobalOpenTelemetry = OpenTelemetry.get();
-    OpenTelemetry.set(openTelemetry);
+    previousGlobalOpenTelemetry = GlobalOpenTelemetry.get();
+    GlobalOpenTelemetry.set(openTelemetry);
     clearSpans();
   }
 
   @Override
   protected void after() {
-    OpenTelemetry.set(previousGlobalOpenTelemetry);
+    GlobalOpenTelemetry.set(previousGlobalOpenTelemetry);
   }
 }

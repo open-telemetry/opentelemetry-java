@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -77,7 +77,7 @@ public interface SpanExporter extends Closeable {
   CompletableResultCode flush();
 
   /**
-   * Called when {@link TracerSdkManagement#shutdown()} is called, if this {@code SpanExporter} is
+   * Called when {@link SdkTracerManagement#shutdown()} is called, if this {@code SpanExporter} is
    * registered to a {@code TracerSdkManagement} object.
    *
    * @return a {@link CompletableResultCode} which is completed when shutdown completes.

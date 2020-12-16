@@ -25,7 +25,7 @@ import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
 public class SpanBenchmark {
-  private static SpanBuilderSdk spanBuilderSdk;
+  private static SdkSpanBuilder sdkSpanBuilder;
   private final Resource serviceResource =
       Resource.create(
           Attributes.builder()
@@ -36,16 +36,16 @@ public class SpanBenchmark {
 
   @Setup(Level.Trial)
   public final void setup() {
-    TracerSdkProvider tracerProvider =
-        TracerSdkProvider.builder().setResource(serviceResource).build();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().setResource(serviceResource).build();
 
     TraceConfig alwaysOn =
         tracerProvider.getActiveTraceConfig().toBuilder().setSampler(Sampler.alwaysOn()).build();
     tracerProvider.updateActiveTraceConfig(alwaysOn);
 
     Tracer tracerSdk = tracerProvider.get("benchmarkTracer");
-    spanBuilderSdk =
-        (SpanBuilderSdk)
+    sdkSpanBuilder =
+        (SdkSpanBuilder)
             tracerSdk.spanBuilder("benchmarkSpanBuilder").setAttribute("longAttribute", 33L);
   }
 
@@ -90,7 +90,7 @@ public class SpanBenchmark {
   }
 
   private static void doSpanWork() {
-    Span span = spanBuilderSdk.startSpan();
+    Span span = sdkSpanBuilder.startSpan();
     span.addEvent("testEvent");
     span.end();
   }

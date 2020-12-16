@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -38,16 +38,16 @@ class TracezZPageHandlerTest {
   private static final String LATENCY_SPAN = "LatencySpan";
   private static final String ERROR_SPAN = "ErrorSpan";
   private final TestClock testClock = TestClock.create();
-  private final TracerSdkProvider tracerSdkProvider =
-      TracerSdkProvider.builder().setClock(testClock).build();
-  private final Tracer tracer = tracerSdkProvider.get("TracezZPageHandlerTest");
+  private final SdkTracerProvider sdkTracerProvider =
+      SdkTracerProvider.builder().setClock(testClock).build();
+  private final Tracer tracer = sdkTracerProvider.get("TracezZPageHandlerTest");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
   private final Map<String, String> emptyQueryMap = ImmutableMap.of();
 
   @BeforeEach
   void setup() {
-    tracerSdkProvider.addSpanProcessor(spanProcessor);
+    sdkTracerProvider.addSpanProcessor(spanProcessor);
   }
 
   @Test

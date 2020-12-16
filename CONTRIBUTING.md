@@ -67,6 +67,15 @@ which uses [google-java-format](https://github.com/google/google-java-format) li
 * By default, all arguments/members are treated as non-null. Every argument/member that can be `null` must be annotated with `@Nullable`.
 * The project aims to provide a consistent experience across all the public APIs. It is important to ensure consistency (same look and feel) across different public packages.
 * Use `final` for public classes everywhere it is possible, this ensures that these classes cannot be extended when the API does not intend to offer that functionality.
+* In general, we use the following ordering of class members:
+    * static fields (final before non-final)
+    * non-static fields (final before non-final)
+    * constructors
+    * static methods
+    * instance methods
+    * inner classes
+* Adding `toString()` overrides on classes is encouraged, but we only use `toString()` to provide debugging assistance. The implementations
+of all `toString()` methods should be considered to be unstable unless explicitly documented otherwise.
 
 If you notice any practice being applied in the project consistently that isn't listed here, please consider a pull request to add it.
 
