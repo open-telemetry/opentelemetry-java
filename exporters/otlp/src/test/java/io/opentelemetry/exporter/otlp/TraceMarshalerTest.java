@@ -18,6 +18,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.extension.otproto.SpanAdapter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -38,9 +39,12 @@ class TraceMarshalerTest {
               .put(
                   AttributeKey.stringArrayKey("key_string_array"),
                   Arrays.asList("string", "string"))
-              .put(AttributeKey.longArrayKey("key_string_array"), Arrays.asList(12L, 23L))
-              .put(AttributeKey.doubleArrayKey("key_string_array"), Arrays.asList(12.3, 23.1))
-              .put(AttributeKey.booleanArrayKey("key_string_array"), Arrays.asList(true, false))
+              .put(AttributeKey.longArrayKey("key_long_array"), Arrays.asList(12L, 23L))
+              .put(AttributeKey.doubleArrayKey("key_double_array"), Arrays.asList(12.3, 23.1))
+              .put(AttributeKey.booleanArrayKey("key_boolean_array"), Arrays.asList(true, false))
+              .put(AttributeKey.booleanKey(""), true)
+              .put(AttributeKey.stringKey("null_value"), null)
+              .put(AttributeKey.stringKey("empty_value"), "")
               .build());
 
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
@@ -107,6 +111,33 @@ class TraceMarshalerTest {
                 .setHasEnded(true)
                 .setStatus(SpanData.Status.unset())
                 .build()));
+  }
+
+  @Test
+  void marshalAndSizeRequest_InstrumentationLibrary() throws IOException {
+    assertMarshalAndSize(
+        Arrays.asList(
+            testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.create("name", null)),
+            testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.create("name", "")),
+            testSpanDataWithInstrumentationLibrary(
+                InstrumentationLibraryInfo.create("name", "version")),
+            testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.getEmpty()),
+            testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.create("", ""))));
+  }
+
+  private static SpanData testSpanDataWithInstrumentationLibrary(
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return TestSpanData.builder()
+        .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
+        .setTraceId("0123456789abcdef0123456789abcdef")
+        .setSpanId("0123456789abcdef")
+        .setKind(Span.Kind.INTERNAL)
+        .setName("")
+        .setStartEpochNanos(0)
+        .setEndEpochNanos(0)
+        .setHasEnded(true)
+        .setStatus(SpanData.Status.unset())
+        .build();
   }
 
   private static void assertMarshalAndSize(List<SpanData> spanDataList) throws IOException {

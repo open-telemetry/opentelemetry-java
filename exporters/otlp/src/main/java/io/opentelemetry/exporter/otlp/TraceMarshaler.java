@@ -5,11 +5,17 @@
 
 package io.opentelemetry.exporter.otlp;
 
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CLIENT;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
+import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.UnknownFieldSet;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceId;
@@ -185,7 +191,7 @@ final class TraceMarshaler {
           SpanId.bytesFromHex(spanData.getSpanId(), 0),
           parentSpanId,
           MarshalerUtil.toBytes(spanData.getName()),
-          SpanAdapter.toProtoSpanKind(spanData.getKind()).getNumber(),
+          toProtoSpanKind(spanData.getKind()).getNumber(),
           spanData.getStartEpochNanos(),
           spanData.getEndEpochNanos(),
           attributeMarshalers,
@@ -533,6 +539,22 @@ final class TraceMarshaler {
       spanList.add(SpanMarshaler.create(spanData));
     }
     return result;
+  }
+
+  private static Span.SpanKind toProtoSpanKind(Kind kind) {
+    switch (kind) {
+      case INTERNAL:
+        return SPAN_KIND_INTERNAL;
+      case SERVER:
+        return SPAN_KIND_SERVER;
+      case CLIENT:
+        return SPAN_KIND_CLIENT;
+      case PRODUCER:
+        return SPAN_KIND_PRODUCER;
+      case CONSUMER:
+        return SPAN_KIND_CONSUMER;
+    }
+    return Span.SpanKind.UNRECOGNIZED;
   }
 
   private TraceMarshaler() {}

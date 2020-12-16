@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp;
 
 import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.sdk.extension.otproto.SpanAdapter;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
