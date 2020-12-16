@@ -10,10 +10,10 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -143,28 +143,26 @@ final class InstrumentProcessor {
    * @return the list of metrics batched in this Batcher.
    */
   List<MetricData> completeCollectionCycle() {
-    List<MetricData.Point> points = new ArrayList<>(aggregatorMap.size());
     long epochNanos = clock.now();
-    for (Map.Entry<Labels, Aggregator> entry : aggregatorMap.entrySet()) {
-      MetricData.Point point =
-          entry.getValue().toPoint(startEpochNanos, epochNanos, entry.getKey());
-      if (point != null) {
-        points.add(point);
-      }
+    if (aggregatorMap.isEmpty()) {
+      return Collections.emptyList();
     }
+
+    MetricData metricData =
+        aggregation.toMetricData(
+            resource,
+            instrumentationLibraryInfo,
+            descriptor,
+            aggregatorMap,
+            startEpochNanos,
+            epochNanos);
+
     if (delta) {
       startEpochNanos = epochNanos;
       aggregatorMap = new HashMap<>();
     }
-    return Collections.singletonList(
-        MetricData.create(
-            resource,
-            instrumentationLibraryInfo,
-            descriptor.getName(),
-            descriptor.getDescription(),
-            aggregation.getUnit(descriptor.getUnit()),
-            aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
-            points));
+
+    return metricData == null ? Collections.emptyList() : Collections.singletonList(metricData);
   }
 
   /**

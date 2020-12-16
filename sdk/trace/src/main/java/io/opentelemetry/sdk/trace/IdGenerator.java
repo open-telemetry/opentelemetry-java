@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 
-/** Interface used by the {@link TracerSdk} to generate new {@link SpanId}s and {@link TraceId}s. */
+/** Interface used by the {@link SdkTracer} to generate new {@link SpanId}s and {@link TraceId}s. */
 public interface IdGenerator {
 
   /**

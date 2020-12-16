@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,17 +29,20 @@ class DoubleMinMaxSumCountTest {
     aggregator.recordDouble(100);
     assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(0, 100, Labels.empty(), 1, 100, createPercentiles(100d, 100d)));
+            DoubleSummaryPoint.create(
+                0, 100, Labels.empty(), 1, 100, createPercentiles(100d, 100d)));
 
     aggregator.recordDouble(50);
     assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(0, 100, Labels.empty(), 2, 150, createPercentiles(50d, 100d)));
+            DoubleSummaryPoint.create(
+                0, 100, Labels.empty(), 2, 150, createPercentiles(50d, 100d)));
 
     aggregator.recordDouble(-75);
     assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(0, 100, Labels.empty(), 3, 75, createPercentiles(-75d, 100d)));
+            DoubleSummaryPoint.create(
+                0, 100, Labels.empty(), 3, 75, createPercentiles(-75d, 100d)));
   }
 
   @Test
@@ -52,7 +55,8 @@ class DoubleMinMaxSumCountTest {
 
     assertThat(mergedToAggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(0, 100, Labels.empty(), 1, 100, createPercentiles(100d, 100d)));
+            DoubleSummaryPoint.create(
+                0, 100, Labels.empty(), 1, 100, createPercentiles(100d, 100d)));
 
     assertThat(aggregator.toPoint(0, 100, Labels.empty())).isNull();
   }
@@ -97,7 +101,7 @@ class DoubleMinMaxSumCountTest {
     // make sure everything gets merged when all the aggregation is done.
     aggregator.mergeToAndReset(summarizer);
 
-    SummaryPoint actual = (SummaryPoint) summarizer.toPoint(0, 100, Labels.empty());
+    DoubleSummaryPoint actual = (DoubleSummaryPoint) summarizer.toPoint(0, 100, Labels.empty());
     assertThat(actual).isNotNull();
     assertThat(actual.getStartEpochNanos()).isEqualTo(0);
     assertThat(actual.getEpochNanos()).isEqualTo(100);

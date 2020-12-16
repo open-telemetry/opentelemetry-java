@@ -23,8 +23,8 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -50,7 +50,7 @@ class SimpleSpanProcessorTest {
   @Mock private ReadableSpan readableSpan;
   @Mock private ReadWriteSpan readWriteSpan;
   @Mock private SpanExporter spanExporter;
-  private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
+  private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SimpleSpanProcessor");
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
@@ -71,7 +71,7 @@ class SimpleSpanProcessorTest {
   void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.ssp.export.sampled", "false");
-    SimpleSpanProcessor.Builder config =
+    SimpleSpanProcessorBuilder config =
         SimpleSpanProcessor.builder(spanExporter)
             .fromConfigMap(options, ConfigTester.getNamingDot());
     assertThat(config.getExportOnlySampled()).isEqualTo(false);
@@ -79,11 +79,11 @@ class SimpleSpanProcessorTest {
 
   @Test
   void configTest_EmptyOptions() {
-    SimpleSpanProcessor.Builder config =
+    SimpleSpanProcessorBuilder config =
         SimpleSpanProcessor.builder(spanExporter)
             .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
     assertThat(config.getExportOnlySampled())
-        .isEqualTo(SimpleSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
+        .isEqualTo(SimpleSpanProcessorBuilder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test

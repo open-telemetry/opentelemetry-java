@@ -10,13 +10,15 @@ import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import eu.rekawek.toxiproxy.model.ToxicList;
 import eu.rekawek.toxiproxy.model.toxic.Timeout;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -203,7 +205,7 @@ public class OtlpPipelineStressTest {
 
   private static void runOnce(Integer numberOfSpans, int numberOfMillisToRunFor)
       throws InterruptedException {
-    Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.perf");
+    Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.perf");
     long start = System.currentTimeMillis();
     int i = 0;
     while (numberOfSpans == null
@@ -240,15 +242,13 @@ public class OtlpPipelineStressTest {
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
 
-    IntervalMetricReader intervalMetricReader =
-        IntervalMetricReader.builder()
-            .setMetricExporter(metricExporter)
-            .setMetricProducers(
-                Collections.singleton(
-                    OpenTelemetrySdk.getGlobalMeterProvider().getMetricProducer()))
-            .setExportIntervalMillis(1000)
-            .build();
-    return intervalMetricReader;
+    return IntervalMetricReader.builder()
+        .setMetricExporter(metricExporter)
+        .setMetricProducers(
+            Collections.singleton(
+                ((MeterSdkProvider) GlobalMetricsProvider.get()).getMetricProducer()))
+        .setExportIntervalMillis(1000)
+        .build();
   }
 
   private static void addOtlpSpanExporter() {

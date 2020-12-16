@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -16,8 +17,9 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
     implements DoubleCounter {
 
   private DoubleCounterSdk(
-      InstrumentDescriptor descriptor, InstrumentProcessor instrumentProcessor) {
-    super(descriptor, instrumentProcessor, BoundInstrument::new);
+      InstrumentDescriptor descriptor,
+      SynchronousInstrumentAccumulator<BoundInstrument> accumulator) {
+    super(descriptor, accumulator);
   }
 
   @Override
@@ -51,7 +53,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
     }
   }
 
-  static final class Builder extends AbstractInstrument.Builder<DoubleCounterSdk.Builder>
+  static final class Builder extends AbstractSynchronousInstrumentBuilder<DoubleCounterSdk.Builder>
       implements DoubleCounter.Builder {
 
     Builder(
@@ -73,7 +75,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
 
     @Override
     public DoubleCounterSdk build() {
-      return build(DoubleCounterSdk::new);
+      return buildInstrument(BoundInstrument::new, DoubleCounterSdk::new);
     }
   }
 }

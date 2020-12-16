@@ -26,14 +26,16 @@ class InMemoryMetricExporterTest {
   private static MetricData generateFakeMetric() {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
-    return MetricData.create(
+    return MetricData.createLongSum(
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
         "name",
         "description",
         "1",
-        MetricData.Type.LONG_SUM,
-        Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
+        MetricData.LongSumData.create(
+            /* isMonotonic= */ true,
+            MetricData.AggregationTemporality.CUMULATIVE,
+            Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5))));
   }
 
   @Test

@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -71,7 +70,7 @@ class BatchRecorderSdkTest {
 
     // until record() is called, nothing should be recorded.
     Collection<MetricData> preRecord = testSdk.collectAll();
-    preRecord.forEach(metricData -> assertThat(metricData.getPoints()).isEmpty());
+    preRecord.forEach(metricData -> assertThat(metricData.isEmpty()).isTrue());
 
     batchRecorder.record();
 
@@ -109,90 +108,103 @@ class BatchRecorderSdkTest {
       boolean shouldHaveDeltas) {
     assertThat(doubleCounter.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleCounter",
                 "",
                 "1",
-                MetricData.Type.DOUBLE_SUM,
-                Collections.singletonList(
-                    DoublePoint.create(testClock.now(), testClock.now(), labelSet, 24.2d))));
+                MetricData.DoubleSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        DoublePoint.create(testClock.now(), testClock.now(), labelSet, 24.2d)))));
     assertThat(longCounter.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.Type.LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(testClock.now(), testClock.now(), labelSet, 12))));
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(testClock.now(), testClock.now(), labelSet, 12)))));
     assertThat(doubleUpDownCounter.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleUpDownCounter",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_DOUBLE_SUM,
-                Collections.singletonList(
-                    DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d))));
+                MetricData.DoubleSumData.create(
+                    /* isMonotonic= */ false,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d)))));
     assertThat(longUpDownCounter.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testLongUpDownCounter",
                 "",
                 "1",
-                MetricData.Type.NON_MONOTONIC_LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(testClock.now(), testClock.now(), labelSet, -12))));
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ false,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(testClock.now(), testClock.now(), labelSet, -12)))));
 
-    assertThat(doubleValueRecorder.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleValueRecorder",
-                "",
-                "1",
-                MetricData.Type.SUMMARY,
-                shouldHaveDeltas
-                    ? Collections.singletonList(
-                        MetricData.SummaryPoint.create(
-                            testClock.now(),
-                            testClock.now(),
-                            labelSet,
-                            1,
-                            13.1d,
-                            Arrays.asList(
-                                MetricData.ValueAtPercentile.create(0.0, 13.1),
-                                MetricData.ValueAtPercentile.create(100.0, 13.1))))
-                    : emptyList()));
-    assertThat(longValueRecorder.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongValueRecorder",
-                "",
-                "1",
-                MetricData.Type.SUMMARY,
-                shouldHaveDeltas
-                    ? Collections.singletonList(
-                        MetricData.SummaryPoint.create(
-                            testClock.now(),
-                            testClock.now(),
-                            labelSet,
-                            1,
-                            13,
-                            Arrays.asList(
-                                MetricData.ValueAtPercentile.create(0.0, 13),
-                                MetricData.ValueAtPercentile.create(100.0, 13))))
-                    : emptyList()));
+    if (shouldHaveDeltas) {
+      assertThat(doubleValueRecorder.collectAll())
+          .containsExactly(
+              MetricData.createDoubleSummary(
+                  RESOURCE,
+                  INSTRUMENTATION_LIBRARY_INFO,
+                  "testDoubleValueRecorder",
+                  "",
+                  "1",
+                  MetricData.DoubleSummaryData.create(
+                      Collections.singletonList(
+                          MetricData.DoubleSummaryPoint.create(
+                              testClock.now(),
+                              testClock.now(),
+                              labelSet,
+                              1,
+                              13.1d,
+                              Arrays.asList(
+                                  MetricData.ValueAtPercentile.create(0.0, 13.1),
+                                  MetricData.ValueAtPercentile.create(100.0, 13.1)))))));
+    } else {
+      assertThat(doubleValueRecorder.collectAll()).isEmpty();
+    }
+
+    if (shouldHaveDeltas) {
+      assertThat(longValueRecorder.collectAll())
+          .containsExactly(
+              MetricData.createDoubleSummary(
+                  RESOURCE,
+                  INSTRUMENTATION_LIBRARY_INFO,
+                  "testLongValueRecorder",
+                  "",
+                  "1",
+                  MetricData.DoubleSummaryData.create(
+                      Collections.singletonList(
+                          MetricData.DoubleSummaryPoint.create(
+                              testClock.now(),
+                              testClock.now(),
+                              labelSet,
+                              1,
+                              13,
+                              Arrays.asList(
+                                  MetricData.ValueAtPercentile.create(0.0, 13),
+                                  MetricData.ValueAtPercentile.create(100.0, 13)))))));
+    } else {
+      assertThat(longValueRecorder.collectAll()).isEmpty();
+    }
   }
 }

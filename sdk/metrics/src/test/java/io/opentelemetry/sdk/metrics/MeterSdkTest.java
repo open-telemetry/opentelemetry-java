@@ -18,8 +18,8 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -405,56 +405,62 @@ class MeterSdkTest {
 
     assertThat(testSdk.collectAll())
         .containsExactlyInAnyOrder(
-            MetricData.create(
+            MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.Type.LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
-            MetricData.create(
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))),
+            MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleCounter",
                 "",
                 "1",
-                MetricData.Type.DOUBLE_SUM,
-                Collections.singletonList(
-                    DoublePoint.create(testClock.now(), testClock.now(), Labels.empty(), 10.1))),
-            MetricData.create(
+                MetricData.DoubleSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        DoublePoint.create(
+                            testClock.now(), testClock.now(), Labels.empty(), 10.1)))),
+            MetricData.createDoubleSummary(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testLongValueRecorder",
                 "",
                 "1",
-                MetricData.Type.SUMMARY,
-                Collections.singletonList(
-                    SummaryPoint.create(
-                        testClock.now(),
-                        testClock.now(),
-                        Labels.empty(),
-                        1,
-                        10,
-                        Arrays.asList(
-                            ValueAtPercentile.create(0, 10), ValueAtPercentile.create(100, 10))))),
-            MetricData.create(
+                MetricData.DoubleSummaryData.create(
+                    Collections.singletonList(
+                        DoubleSummaryPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.empty(),
+                            1,
+                            10,
+                            Arrays.asList(
+                                ValueAtPercentile.create(0, 10),
+                                ValueAtPercentile.create(100, 10)))))),
+            MetricData.createDoubleSummary(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleValueRecorder",
                 "",
                 "1",
-                MetricData.Type.SUMMARY,
-                Collections.singletonList(
-                    SummaryPoint.create(
-                        testClock.now(),
-                        testClock.now(),
-                        Labels.empty(),
-                        1,
-                        10.1d,
-                        Arrays.asList(
-                            ValueAtPercentile.create(0, 10.1d),
-                            ValueAtPercentile.create(100, 10.1d))))));
+                MetricData.DoubleSummaryData.create(
+                    Collections.singletonList(
+                        DoubleSummaryPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.empty(),
+                            1,
+                            10.1d,
+                            Arrays.asList(
+                                ValueAtPercentile.create(0, 10.1d),
+                                ValueAtPercentile.create(100, 10.1d)))))));
   }
 }

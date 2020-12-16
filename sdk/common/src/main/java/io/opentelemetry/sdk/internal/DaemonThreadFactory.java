@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.common;
+package io.opentelemetry.sdk.internal;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;

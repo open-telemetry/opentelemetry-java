@@ -26,3 +26,10 @@ bugs should be filed with the respective vendors themselves.
 
 Extension providers that do not receive adequate support/maintenance by their respective vendors 
 will become candidates for future removal.
+
+---
+#### Running micro-benchmarks
+From the root of the repo run `./gradlew clean :opentelemetry-extension-trace-propagators:jmh` 
+to run all the benchmarks 
+or run `./gradlew clean :opentelemetry-extension-trace-propagators:jmh -PjmhIncludeSingleClass=<ClassNameHere>` 
+to run a specific benchmark class.

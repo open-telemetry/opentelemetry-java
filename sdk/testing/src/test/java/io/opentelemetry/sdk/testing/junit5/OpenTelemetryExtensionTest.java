@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.testing.junit5;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -30,12 +31,12 @@ class OpenTelemetryExtensionTest {
   // Class callbacks happen outside the rule so we can verify the restoration behavior in them.
   @BeforeAll
   public static void beforeTest() {
-    openTelemetryBeforeTest = OpenTelemetry.get();
+    openTelemetryBeforeTest = GlobalOpenTelemetry.get();
   }
 
   @AfterAll
   public static void afterTest() {
-    assertThat(OpenTelemetry.get()).isSameAs(openTelemetryBeforeTest);
+    assertThat(GlobalOpenTelemetry.get()).isSameAs(openTelemetryBeforeTest);
   }
 
   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");

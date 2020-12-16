@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.zpages;
 
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -55,7 +55,7 @@ public final class ZPageServer {
       TracezSpanProcessor.builder().build();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
-  private static final TracerSdkManagement TRACER_SDK_MANAGEMENT =
+  private static final SdkTracerManagement TRACER_SDK_MANAGEMENT =
       OpenTelemetrySdk.getGlobalTracerManagement();
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
@@ -74,7 +74,7 @@ public final class ZPageServer {
   @Nullable
   private static HttpServer server;
 
-  /** Function that adds the {@link TracezSpanProcessor} to the {@link TracerSdkManagement}. */
+  /** Function that adds the {@link TracezSpanProcessor} to the {@link SdkTracerManagement}. */
   private static void addTracezSpanProcessor() {
     if (isTracezSpanProcesserAdded.compareAndSet(/* expectedValue=*/ false, /* newValue=*/ true)) {
       TRACER_SDK_MANAGEMENT.addSpanProcessor(tracezSpanProcessor);

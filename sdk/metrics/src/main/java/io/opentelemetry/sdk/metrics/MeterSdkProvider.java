@@ -143,7 +143,7 @@ public final class MeterSdkProvider implements MeterProvider {
    * // create a selector to select which instruments to customize:
    * InstrumentSelector instrumentSelector = InstrumentSelector.newBuilder()
    *   .instrumentType(InstrumentType.COUNTER)
-   *   .build();
+   *   .buildInstrument();
    *
    * // create a specification of how you want the metrics aggregated:
    * AggregationConfiguration viewSpecification =

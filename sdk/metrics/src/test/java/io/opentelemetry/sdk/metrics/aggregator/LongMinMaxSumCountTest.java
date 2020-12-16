@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,18 +28,20 @@ class LongMinMaxSumCountTest {
     aggregator.recordLong(100);
     assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(
+            DoubleSummaryPoint.create(
                 0, 100, Labels.empty(), 1, 100, createPercentileValues(100L, 100L)));
 
     aggregator.recordLong(50);
     assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(0, 100, Labels.empty(), 2, 150, createPercentileValues(50L, 100L)));
+            DoubleSummaryPoint.create(
+                0, 100, Labels.empty(), 2, 150, createPercentileValues(50L, 100L)));
 
     aggregator.recordLong(-75);
     assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(0, 100, Labels.empty(), 3, 75, createPercentileValues(-75L, 100L)));
+            DoubleSummaryPoint.create(
+                0, 100, Labels.empty(), 3, 75, createPercentileValues(-75L, 100L)));
   }
 
   @Test
@@ -52,7 +54,7 @@ class LongMinMaxSumCountTest {
 
     assertThat(mergedToAggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(
+            DoubleSummaryPoint.create(
                 0, 100, Labels.empty(), 1, 100, createPercentileValues(100L, 100L)));
 
     assertThat(aggregator.toPoint(0, 100, Labels.empty())).isNull();
@@ -100,7 +102,7 @@ class LongMinMaxSumCountTest {
 
     assertThat(summarizer.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(
+            DoubleSummaryPoint.create(
                 0,
                 100,
                 Labels.empty(),

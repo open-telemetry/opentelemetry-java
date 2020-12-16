@@ -52,16 +52,7 @@ class LongSumObserverSdkTest {
             .setUnit("ms")
             .setUpdater(result -> {})
             .build();
-    assertThat(longSumObserver.collectAll())
-        .containsExactly(
-            MetricData.create(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own LongSumObserver",
-                "ms",
-                MetricData.Type.LONG_SUM,
-                Collections.emptyList()));
+    assertThat(longSumObserver.collectAll()).isEmpty();
   }
 
   @Test
@@ -74,34 +65,38 @@ class LongSumObserverSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longSumObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(
-                        testClock.now() - SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12))));
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longSumObserver.collectAll())
         .containsExactly(
-            MetricData.create(
+            MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testObserver",
                 "",
                 "1",
-                MetricData.Type.LONG_SUM,
-                Collections.singletonList(
-                    LongPoint.create(
-                        testClock.now() - 2 * SECOND_NANOS,
-                        testClock.now(),
-                        Labels.of("k", "v"),
-                        12))));
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPoint.create(
+                            testClock.now() - 2 * SECOND_NANOS,
+                            testClock.now(),
+                            Labels.of("k", "v"),
+                            12)))));
   }
 }

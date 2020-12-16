@@ -41,31 +41,32 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Testing deprecated code
 class OpenTelemetryTest {
 
   @BeforeAll
   static void beforeClass() {
-    DefaultOpenTelemetry.reset();
+    GlobalOpenTelemetry.reset();
   }
 
   @AfterEach
   void after() {
-    DefaultOpenTelemetry.reset();
+    GlobalOpenTelemetry.reset();
     System.clearProperty(TracerProviderFactory.class.getName());
     System.clearProperty(MeterProviderFactory.class.getName());
   }
 
   @Test
   void testDefault() {
-    assertThat(OpenTelemetry.getGlobalTracerProvider().getClass().getSimpleName())
+    assertThat(GlobalOpenTelemetry.getTracerProvider().getClass().getSimpleName())
         .isEqualTo("DefaultTracerProvider");
-    assertThat(OpenTelemetry.getGlobalTracerProvider())
-        .isSameAs(OpenTelemetry.getGlobalTracerProvider());
-    assertThat(OpenTelemetry.getGlobalMeterProvider().getClass().getSimpleName())
+    assertThat(GlobalOpenTelemetry.getTracerProvider())
+        .isSameAs(GlobalOpenTelemetry.getTracerProvider());
+    assertThat(GlobalOpenTelemetry.getMeterProvider().getClass().getSimpleName())
         .isEqualTo("DefaultMeterProvider");
-    assertThat(OpenTelemetry.getGlobalMeterProvider())
-        .isSameAs(OpenTelemetry.getGlobalMeterProvider());
-    assertThat(OpenTelemetry.getGlobalPropagators()).isSameAs(OpenTelemetry.getGlobalPropagators());
+    assertThat(GlobalOpenTelemetry.getMeterProvider())
+        .isSameAs(GlobalOpenTelemetry.getMeterProvider());
+    assertThat(GlobalOpenTelemetry.getPropagators()).isSameAs(GlobalOpenTelemetry.getPropagators());
   }
 
   @Test
@@ -74,7 +75,7 @@ class OpenTelemetryTest {
     TracerProvider tracerProvider = mock(TracerProvider.class);
     ContextPropagators contextPropagators = mock(ContextPropagators.class);
     OpenTelemetry openTelemetry =
-        OpenTelemetry.builder()
+        DefaultOpenTelemetry.builder()
             .setMeterProvider(meterProvider)
             .setTracerProvider(tracerProvider)
             .setPropagators(contextPropagators)
@@ -95,9 +96,9 @@ class OpenTelemetryTest {
             SecondTracerProviderFactory.class);
     try {
       assertThat(
-              (OpenTelemetry.getGlobalTracerProvider().get("")
+              (GlobalOpenTelemetry.getTracerProvider().get("")
                       instanceof FirstTracerProviderFactory)
-                  || (OpenTelemetry.getGlobalTracerProvider().get("")
+                  || (GlobalOpenTelemetry.getTracerProvider().get("")
                       instanceof SecondTracerProviderFactory))
           .isTrue();
     } finally {
@@ -115,7 +116,7 @@ class OpenTelemetryTest {
     System.setProperty(
         TracerProviderFactory.class.getName(), SecondTracerProviderFactory.class.getName());
     try {
-      assertThat(OpenTelemetry.getGlobalTracerProvider().get(""))
+      assertThat(GlobalOpenTelemetry.getTracerProvider().get(""))
           .isInstanceOf(SecondTracerProviderFactory.class);
     } finally {
       assertThat(serviceFile.delete()).isTrue();
@@ -125,7 +126,7 @@ class OpenTelemetryTest {
   @Test
   void testTracerNotFound() {
     System.setProperty(TracerProviderFactory.class.getName(), "io.does.not.exists");
-    assertThrows(IllegalStateException.class, () -> OpenTelemetry.getGlobalTracer("testTracer"));
+    assertThrows(IllegalStateException.class, () -> GlobalOpenTelemetry.getTracer("testTracer"));
   }
 
   @Test
@@ -137,11 +138,11 @@ class OpenTelemetryTest {
             SecondMeterProviderFactory.class);
     try {
       assertThat(
-              (OpenTelemetry.getGlobalMeterProvider() instanceof FirstMeterProviderFactory)
-                  || (OpenTelemetry.getGlobalMeterProvider() instanceof SecondMeterProviderFactory))
+              (GlobalOpenTelemetry.getMeterProvider() instanceof FirstMeterProviderFactory)
+                  || (GlobalOpenTelemetry.getMeterProvider() instanceof SecondMeterProviderFactory))
           .isTrue();
-      assertThat(OpenTelemetry.getGlobalMeterProvider())
-          .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
+      assertThat(GlobalOpenTelemetry.getMeterProvider())
+          .isEqualTo(GlobalOpenTelemetry.getMeterProvider());
     } finally {
       assertThat(serviceFile.delete()).isTrue();
     }
@@ -157,10 +158,10 @@ class OpenTelemetryTest {
     System.setProperty(
         MeterProviderFactory.class.getName(), SecondMeterProviderFactory.class.getName());
     try {
-      assertThat(OpenTelemetry.getGlobalMeterProvider())
+      assertThat(GlobalOpenTelemetry.getMeterProvider())
           .isInstanceOf(SecondMeterProviderFactory.class);
-      assertThat(OpenTelemetry.getGlobalMeterProvider())
-          .isEqualTo(OpenTelemetry.getGlobalMeterProvider());
+      assertThat(GlobalOpenTelemetry.getMeterProvider())
+          .isEqualTo(GlobalOpenTelemetry.getMeterProvider());
     } finally {
       assertThat(serviceFile.delete()).isTrue();
     }
@@ -169,17 +170,19 @@ class OpenTelemetryTest {
   @Test
   void testMeterNotFound() {
     System.setProperty(MeterProviderFactory.class.getName(), "io.does.not.exists");
-    assertThrows(IllegalStateException.class, OpenTelemetry::getGlobalMeterProvider);
+    assertThrows(IllegalStateException.class, GlobalOpenTelemetry::getMeterProvider);
   }
 
   @Test
+  @SuppressWarnings("deprecation") // tested deprecated code
   void testGlobalPropagatorsSet() {
     ContextPropagators propagators = ContextPropagators.noop();
-    OpenTelemetry.setGlobalPropagators(propagators);
-    assertThat(OpenTelemetry.getGlobalPropagators()).isEqualTo(propagators);
+    GlobalOpenTelemetry.setPropagators(propagators);
+    assertThat(GlobalOpenTelemetry.getPropagators()).isEqualTo(propagators);
   }
 
   @Test
+  @SuppressWarnings("deprecation") // tested deprecated code
   void testPropagatorsSet() {
     ContextPropagators propagators = ContextPropagators.noop();
     OpenTelemetry instance = DefaultOpenTelemetry.builder().build();
@@ -193,12 +196,12 @@ class OpenTelemetryTest {
     Tracer tracer1 = mock(Tracer.class);
     when(provider1.get("foo")).thenReturn(tracer1);
     when(provider1.get("foo", "1.0")).thenReturn(tracer1);
-    OpenTelemetry otel1 = OpenTelemetry.builder().setTracerProvider(provider1).build();
+    OpenTelemetry otel1 = DefaultOpenTelemetry.builder().setTracerProvider(provider1).build();
     TracerProvider provider2 = mock(TracerProvider.class);
     Tracer tracer2 = mock(Tracer.class);
     when(provider2.get("foo")).thenReturn(tracer2);
     when(provider2.get("foo", "1.0")).thenReturn(tracer2);
-    OpenTelemetry otel2 = OpenTelemetry.builder().setTracerProvider(provider2).build();
+    OpenTelemetry otel2 = DefaultOpenTelemetry.builder().setTracerProvider(provider2).build();
 
     assertThat(otel1.getTracer("foo")).isSameAs(tracer1);
     assertThat(otel1.getTracer("foo", "1.0")).isSameAs(tracer1);
@@ -212,12 +215,12 @@ class OpenTelemetryTest {
     Meter meter1 = mock(Meter.class);
     when(provider1.get("foo")).thenReturn(meter1);
     when(provider1.get("foo", "1.0")).thenReturn(meter1);
-    OpenTelemetry otel1 = OpenTelemetry.builder().setMeterProvider(provider1).build();
+    OpenTelemetry otel1 = DefaultOpenTelemetry.builder().setMeterProvider(provider1).build();
     MeterProvider provider2 = mock(MeterProvider.class);
     Meter meter2 = mock(Meter.class);
     when(provider2.get("foo")).thenReturn(meter2);
     when(provider2.get("foo", "1.0")).thenReturn(meter2);
-    OpenTelemetry otel2 = OpenTelemetry.builder().setMeterProvider(provider2).build();
+    OpenTelemetry otel2 = DefaultOpenTelemetry.builder().setMeterProvider(provider2).build();
 
     assertThat(otel1.getMeter("foo")).isSameAs(meter1);
     assertThat(otel1.getMeter("foo", "1.0")).isSameAs(meter1);
@@ -228,17 +231,18 @@ class OpenTelemetryTest {
   @Test
   void independentNonGlobalPropagators() {
     ContextPropagators propagators1 = mock(ContextPropagators.class);
-    OpenTelemetry otel1 = OpenTelemetry.builder().setPropagators(propagators1).build();
+    OpenTelemetry otel1 = DefaultOpenTelemetry.builder().setPropagators(propagators1).build();
     ContextPropagators propagators2 = mock(ContextPropagators.class);
-    OpenTelemetry otel2 = OpenTelemetry.builder().setPropagators(propagators2).build();
+    OpenTelemetry otel2 = DefaultOpenTelemetry.builder().setPropagators(propagators2).build();
 
     assertThat(otel1.getPropagators()).isSameAs(propagators1);
     assertThat(otel2.getPropagators()).isSameAs(propagators2);
   }
 
   @Test
+  @SuppressWarnings("deprecation") // tested deprecated code
   void testPropagatorsSetNull() {
-    assertThrows(NullPointerException.class, () -> OpenTelemetry.setGlobalPropagators(null));
+    assertThrows(NullPointerException.class, () -> GlobalOpenTelemetry.setPropagators(null));
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {

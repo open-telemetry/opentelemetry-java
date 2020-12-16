@@ -47,7 +47,7 @@ public final class LongLastValueAggregator extends AbstractAggregator {
     @Nullable Long currentValue = current.get();
     return currentValue == null
         ? null
-        : LongPoint.create(startEpochNanos, epochNanos, labels, current.get());
+        : LongPoint.create(startEpochNanos, epochNanos, labels, currentValue);
   }
 
   @Override

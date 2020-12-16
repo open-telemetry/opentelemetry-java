@@ -6,6 +6,6 @@
 /**
  * The OpenTelemetry SDK implementation of tracing.
  *
- * @see io.opentelemetry.sdk.trace.TracerSdkProvider
+ * @see io.opentelemetry.sdk.trace.SdkTracerProvider
  */
 package io.opentelemetry.sdk.trace;

@@ -5,31 +5,23 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.any;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
+import com.linecorp.armeria.common.AggregatedHttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
 import java.util.ServiceLoader;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class Ec2ResourceTest {
+class Ec2ResourceTest {
 
   // From https://docs.amazonaws.cn/en_us/AWSEC2/latest/UserGuide/instance-identity-documents.html
   private static final String IDENTITY_DOCUMENT =
@@ -51,23 +43,20 @@ public class Ec2ResourceTest {
           + "    \"region\" : \"us-west-2\"\n"
           + "}";
 
-  @ClassRule
-  public static WireMockClassRule server = new WireMockClassRule(wireMockConfig().dynamicPort());
+  @RegisterExtension public static MockWebServerExtension server = new MockWebServerExtension();
 
   private Ec2Resource populator;
 
-  @Before
+  @BeforeEach
   public void setUp() {
-    populator = new Ec2Resource("localhost:" + server.port());
+    populator = new Ec2Resource("localhost:" + server.httpPort());
   }
 
   @Test
-  public void imdsv2() {
-    stubFor(any(urlPathEqualTo("/latest/api/token")).willReturn(ok("token")));
-    stubFor(
-        any(urlPathEqualTo("/latest/dynamic/instance-identity/document"))
-            .willReturn(okJson(IDENTITY_DOCUMENT)));
-    stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
+  void imdsv2() {
+    server.enqueue(HttpResponse.of("token"));
+    server.enqueue(HttpResponse.of(MediaType.JSON_UTF_8, IDENTITY_DOCUMENT));
+    server.enqueue(HttpResponse.of("ec2-1-2-3-4"));
 
     Attributes attributes = populator.getAttributes();
     AttributesBuilder expectedAttrBuilders = Attributes.builder();
@@ -83,24 +72,24 @@ public class Ec2ResourceTest {
     expectedAttrBuilders.put(ResourceAttributes.HOST_NAME, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
-    verify(
-        putRequestedFor(urlEqualTo("/latest/api/token"))
-            .withHeader("X-aws-ec2-metadata-token-ttl-seconds", equalTo("60")));
-    verify(
-        getRequestedFor(urlEqualTo("/latest/dynamic/instance-identity/document"))
-            .withHeader("X-aws-ec2-metadata-token", equalTo("token")));
-    verify(
-        getRequestedFor(urlEqualTo("/latest/meta-data/hostname"))
-            .withHeader("X-aws-ec2-metadata-token", equalTo("token")));
+    AggregatedHttpRequest request1 = server.takeRequest().request();
+    assertThat(request1.path()).isEqualTo("/latest/api/token");
+    assertThat(request1.headers().get("X-aws-ec2-metadata-token-ttl-seconds")).isEqualTo("60");
+
+    AggregatedHttpRequest request2 = server.takeRequest().request();
+    assertThat(request2.path()).isEqualTo("/latest/dynamic/instance-identity/document");
+    assertThat(request2.headers().get("X-aws-ec2-metadata-token")).isEqualTo("token");
+
+    AggregatedHttpRequest request3 = server.takeRequest().request();
+    assertThat(request3.path()).isEqualTo("/latest/meta-data/hostname");
+    assertThat(request3.headers().get("X-aws-ec2-metadata-token")).isEqualTo("token");
   }
 
   @Test
-  public void imdsv1() {
-    stubFor(any(urlPathEqualTo("/latest/api/token")).willReturn(notFound()));
-    stubFor(
-        any(urlPathEqualTo("/latest/dynamic/instance-identity/document"))
-            .willReturn(okJson(IDENTITY_DOCUMENT)));
-    stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
+  void imdsv1() {
+    server.enqueue(HttpResponse.of(HttpStatus.NOT_FOUND));
+    server.enqueue(HttpResponse.of(MediaType.JSON_UTF_8, IDENTITY_DOCUMENT));
+    server.enqueue(HttpResponse.of("ec2-1-2-3-4"));
 
     Attributes attributes = populator.getAttributes();
 
@@ -117,34 +106,34 @@ public class Ec2ResourceTest {
             .put(ResourceAttributes.HOST_NAME, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
-    verify(
-        putRequestedFor(urlEqualTo("/latest/api/token"))
-            .withHeader("X-aws-ec2-metadata-token-ttl-seconds", equalTo("60")));
-    verify(
-        getRequestedFor(urlEqualTo("/latest/dynamic/instance-identity/document"))
-            .withoutHeader("X-aws-ec2-metadata-token"));
+    AggregatedHttpRequest request1 = server.takeRequest().request();
+    assertThat(request1.path()).isEqualTo("/latest/api/token");
+    assertThat(request1.headers().get("X-aws-ec2-metadata-token-ttl-seconds")).isEqualTo("60");
+
+    AggregatedHttpRequest request2 = server.takeRequest().request();
+    assertThat(request2.path()).isEqualTo("/latest/dynamic/instance-identity/document");
+    assertThat(request2.headers().get("X-aws-ec2-metadata-token")).isNull();
   }
 
   @Test
-  public void badJson() {
-    stubFor(any(urlPathEqualTo("/latest/api/token")).willReturn(notFound()));
-    stubFor(
-        any(urlPathEqualTo("/latest/dynamic/instance-identity/document"))
-            .willReturn(okJson("I'm not JSON")));
+  void badJson() {
+    server.enqueue(HttpResponse.of(HttpStatus.NOT_FOUND));
+    server.enqueue(HttpResponse.of(MediaType.JSON_UTF_8, "I'm not JSON"));
 
     Attributes attributes = populator.getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
 
-    verify(
-        putRequestedFor(urlEqualTo("/latest/api/token"))
-            .withHeader("X-aws-ec2-metadata-token-ttl-seconds", equalTo("60")));
-    verify(
-        getRequestedFor(urlEqualTo("/latest/dynamic/instance-identity/document"))
-            .withoutHeader("X-aws-ec2-metadata-token"));
+    AggregatedHttpRequest request1 = server.takeRequest().request();
+    assertThat(request1.path()).isEqualTo("/latest/api/token");
+    assertThat(request1.headers().get("X-aws-ec2-metadata-token-ttl-seconds")).isEqualTo("60");
+
+    AggregatedHttpRequest request2 = server.takeRequest().request();
+    assertThat(request2.path()).isEqualTo("/latest/dynamic/instance-identity/document");
+    assertThat(request2.headers().get("X-aws-ec2-metadata-token")).isNull();
   }
 
   @Test
-  public void inServiceLoader() {
+  void inServiceLoader() {
     // No practical way to test the attributes themselves so at least check the service loader picks
     // it up.
     assertThat(ServiceLoader.load(ResourceProvider.class)).anyMatch(Ec2Resource.class::isInstance);

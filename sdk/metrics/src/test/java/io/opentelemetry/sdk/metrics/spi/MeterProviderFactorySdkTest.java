@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.spi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +15,6 @@ import org.junit.jupiter.api.Test;
 class MeterProviderFactorySdkTest {
   @Test
   void testDefault() {
-    assertThat(OpenTelemetry.getGlobalMeterProvider()).isInstanceOf(MeterSdkProvider.class);
+    assertThat(GlobalMetricsProvider.get()).isInstanceOf(MeterSdkProvider.class);
   }
 }
