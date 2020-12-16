@@ -5,8 +5,8 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-description = 'OpenTelemetry Protocol Exporter'
-ext.moduleName = "io.opentelemetry.exporter.otlp"
+description = 'OpenTelemetry Protocol Metrics Exporter'
+ext.moduleName = "io.opentelemetry.exporter.otlp.metrics"
 
 dependencies {
     api project(':opentelemetry-sdk')
@@ -18,9 +18,7 @@ dependencies {
             libraries.protobuf,
             libraries.protobuf_util
 
-    testImplementation project(':opentelemetry-sdk-testing'),
-            'com.linecorp.armeria:armeria-grpc',
-            'com.linecorp.armeria:armeria-junit5'
+    testImplementation project(':opentelemetry-sdk-testing')
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
