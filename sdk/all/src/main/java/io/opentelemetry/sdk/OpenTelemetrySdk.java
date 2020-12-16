@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.DefaultOpenTelemetry;
-import io.opentelemetry.api.DefaultOpenTelemetryBuilder;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -24,11 +23,11 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
   /**
-   * Returns a new {@link Builder} for configuring an instance of {@linkplain OpenTelemetrySdk the
-   * OpenTelemetry SDK}.
+   * Returns a new {@link OpenTelemetrySdkBuilder} for configuring an instance of {@linkplain
+   * OpenTelemetrySdk the OpenTelemetry SDK}.
    */
-  public static Builder builder() {
-    return new Builder();
+  public static OpenTelemetrySdkBuilder builder() {
+    return new OpenTelemetrySdkBuilder();
   }
 
   /** Returns the global {@link OpenTelemetrySdk}. */
@@ -57,9 +56,9 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
     return (MeterSdkProvider) GlobalOpenTelemetry.get().getMeterProvider();
   }
 
-  private static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
+  static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
 
-  private OpenTelemetrySdk(
+  OpenTelemetrySdk(
       TracerProvider tracerProvider,
       MeterProvider meterProvider,
       ContextPropagators contextPropagators) {
@@ -69,78 +68,6 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   /** Returns the {@link SdkTracerManagement} for this {@link OpenTelemetrySdk}. */
   public SdkTracerManagement getTracerManagement() {
     return (SdkTracerProvider) ((ObfuscatedTracerProvider) getTracerProvider()).unobfuscate();
-  }
-
-  /** A builder for configuring an {@link OpenTelemetrySdk}. */
-  public static class Builder extends DefaultOpenTelemetryBuilder {
-    /**
-     * Sets the {@link SdkTracerProvider} to use. This can be used to configure tracing settings by
-     * returning the instance created by a {@link SdkTracerProvider.Builder}.
-     *
-     * <p>If you use this method, it is assumed that you are providing a fully configured
-     * TracerSdkProvider, and other settings will be ignored.
-     *
-     * <p>Note: the parameter passed in here must be a {@link SdkTracerProvider} instance.
-     *
-     * @param tracerProvider A {@link SdkTracerProvider} to use with this instance.
-     * @see SdkTracerProvider#builder()
-     */
-    @Override
-    public Builder setTracerProvider(TracerProvider tracerProvider) {
-      if (!(tracerProvider instanceof SdkTracerProvider)) {
-        throw new IllegalArgumentException(
-            "The OpenTelemetrySdk can only be configured with a TracerSdkProvider");
-      }
-      super.setTracerProvider(tracerProvider);
-      return this;
-    }
-
-    /**
-     * Sets the {@link MeterProvider} to use.. This can be used to configure tracing settings by
-     * returning the instance created by a {@link MeterSdkProvider.Builder}.
-     *
-     * @see MeterSdkProvider#builder()
-     */
-    @Override
-    @Deprecated
-    public Builder setMeterProvider(MeterProvider meterProvider) {
-      if (!(meterProvider instanceof MeterSdkProvider)) {
-        throw new IllegalArgumentException(
-            "The OpenTelemetrySdk can only be configured with a MeterSdkProvider");
-      }
-      super.setMeterProvider(meterProvider);
-      return this;
-    }
-
-    /** Sets the {@link ContextPropagators} to use. */
-    @Override
-    public Builder setPropagators(ContextPropagators propagators) {
-      super.setPropagators(propagators);
-      return this;
-    }
-
-    /**
-     * Returns a new {@link OpenTelemetrySdk} built with the configuration of this {@link Builder}.
-     */
-    @Override
-    public OpenTelemetrySdk build() {
-      if (meterProvider == null) {
-        meterProvider = MeterSdkProvider.builder().build();
-      }
-
-      if (tracerProvider == null) {
-        tracerProvider = SdkTracerProvider.builder().build();
-      }
-
-      OpenTelemetrySdk sdk =
-          new OpenTelemetrySdk(
-              new ObfuscatedTracerProvider(tracerProvider), meterProvider, super.propagators);
-      // Automatically initialize global OpenTelemetry with the first SDK we build.
-      if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
-        GlobalOpenTelemetry.set(sdk);
-      }
-      return sdk;
-    }
   }
 
   /**
@@ -156,7 +83,7 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
 
     private final TracerProvider delegate;
 
-    private ObfuscatedTracerProvider(TracerProvider delegate) {
+    ObfuscatedTracerProvider(TracerProvider delegate) {
       this.delegate = delegate;
     }
 
