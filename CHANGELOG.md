@@ -25,12 +25,22 @@ You can still access the `LabelsBuilder` functionality via the `Labels.builder()
 Enabling this mode will make sure that all `Scope`s that are created are closed, and generate log messages if they 
 are not closed before being garbage collected. This mode of operation is CPU intensive, so be careful before
 enabling it in high-throughput environments that do not need this strict verification. See the javadoc on the 
-`io.opentelemetry.context.Context` interface for details. 
+`io.opentelemetry.context.Context` interface for details.
+- Several of the methods on the `Span` interface have been given default implementations.
+- The Semantic Attributes constants have been updated to the version in the yaml spec as of Dec 14, 2020.
 
 #### Miscellaneous
 
+- The Metrics API has been deprecated in the `opentelemetry-api` module, in preparation for releasing a fully-stable 1.0
+version of that module. The Metrics API will be removed from the module in the next release.
 - The API has been broken into separate modules, in preparation for the 1.0 release of the tracing API.
 If you depend on the `opentelemetry-api` module, you should get the rest of the API modules as transitive dependencies.
+- The `OpenTelemetry.builder()` and the `OpenTelemetryBuilder` interface have been deprecated and will be removed in the next release.
+The builder functionality is now only present on individual implementations of OpenTelemetry. For instance, the
+`DefaultOpenTelemetry` class has a builder available.
+- The `OpenTelemetry.setPropagators()` has been deprecated and will be removed in the next release. You should instead create your
+`OpenTelemetry` implementations with the Propagators preset, via the various builder options. For example, use 
+`DefaultOpenTelemetry.builder().setPropagators(propagators).build()` to configure your no-sdk implementation.
 
 ### SDK
 
@@ -38,6 +48,21 @@ If you depend on the `opentelemetry-api` module, you should get the rest of the 
 
 - The `SpanData.Link.getContext()` method has been deprecated in favor of a new `SpanData.Link.getSpanContext()`. 
 The deprecated method will be removed in the next release of the SDK.
+- The internals of the (alpha) Metrics SDK have been significantly updated.
+
+#### Breaking Changes
+
+- The `ResourcesConfig.builder()` method has been made non-public.
+- The `TraceConfig.Builder` class has been moved to the top-level `TraceConfigBuilder` class.
+- The built-in exporter `Builder` classes have been moved to the top level, rather than inner classes. Access to the builders
+is still available via `builder()` methods on the exporter classes.
+- The built-in SpanProcessor `Builder` classes have been moved to the top level, rather than inner classes. Access to the builders
+is still available via `builder()` methods on the SpanProcessor implementation classes.
+- The built-in ParentBasedSampler `Builder` class has been moved to the top level, rather than inner classes. Access to the builder
+is still available via methods on the Sampler interface.
+- Many SDK classes have been renamed to be prefixed with `Sdk` rather than having `Sdk` being embedded in the middle of the name.
+For example, `TracerSdk` has been renamed to `SdkTracer` and `TracerSdkManagement` has been renamed to `SdkTracerManagement`.
+- The `DaemonThreadFactory` class has been moved to an internal module and should not be used outside of this repository.
 
 ### Extensions
 
