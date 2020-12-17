@@ -49,9 +49,8 @@ import javax.annotation.concurrent.Immutable;
  *   .extract(context, carrier, carrierGetter);
  * }</pre>
  *
- * This class is deprecated and will be removed in 0.14.0.
- * Users should migrate to the MultiTextMapPropagator in the api.
- *
+ * This class is deprecated and will be removed in 0.14.0. Users should migrate to the
+ * MultiTextMapPropagator in the api.
  */
 @Immutable
 @Deprecated
