@@ -61,7 +61,7 @@ Published releases are available on maven central.
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.13.0</version>
+      <version>0.13.1</version>
     </dependency>
   </dependencies>
 ```
@@ -70,7 +70,7 @@ Published releases are available on maven central.
 
 ```groovy
 dependencies {
-	implementation('io.opentelemetry:opentelemetry-api:0.13.0')
+	implementation('io.opentelemetry:opentelemetry-api:0.13.1')
 }
 ```
 
@@ -124,16 +124,16 @@ This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Tracing API                 | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
-| Tracing SDK                 | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
-| Metrics API                 | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
-| Metrics SDK                 | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter               | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
-| Prometheus Metrics Exporter | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
-| Context Propagation         | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
-| OpenTracing Bridge          | v<!--VERSION_STABLE-->0.13.0<!--/VERSION_STABLE-->  |
+| Tracing API                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Tracing SDK                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Metrics API                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Metrics SDK                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| OTLP Exporter               | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Prometheus Metrics Exporter | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Context Propagation         | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| OpenTracing Bridge          | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
 | OpenCensus Bridge           | N/A     |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
