@@ -56,7 +56,8 @@ tasks.named('jacocoTestReport', JacocoReport) {
                     !it.absolutePath.contains("io/opentelemetry/proto/") &&
                     !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
                     !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
-                    !it.absolutePath.contains("io/opentelemetry/api/trace/attributes/SemanticAttributes")
+                    !it.absolutePath.contains("io/opentelemetry/api/trace/attributes/SemanticAttributes") &&
+                    !it.absolutePath.contains("AutoValue_")
         })
     }
     additionalSourceDirs(sourcesPath.incoming.artifactView { lenient(true) }.files)
