@@ -1,1 +1,1 @@
-io.opentelemetry.sdk.metrics.spi.MeterProviderFactorySdk
+io.opentelemetry.sdk.metrics.spi.SdkMeterProviderFactory

@@ -11,8 +11,8 @@ import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link MeterProviderFactorySdk}. */
-class MeterProviderFactorySdkTest {
+/** Unit tests for {@link SdkMeterProviderFactory}. */
+class SdkMeterProviderFactoryTest {
   @Test
   void testDefault() {
     assertThat(GlobalMetricsProvider.get()).isInstanceOf(SdkMeterProvider.class);
