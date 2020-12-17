@@ -1,10 +1,13 @@
 # OpenTelemetry
-[![Gitter chat][gitter-image]][gitter-url]
 ![Continuous Build](https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg)
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
+[![Gitter chat][gitter-image]][gitter-url]
 
 We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
+
+We encourage using github's [discussions](https://github.com/open-telemetry/opentelemetry-java/discussions)
+  feature rather than using Gitter for support or general questions.
 
 ## Overview
 
