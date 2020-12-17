@@ -11,9 +11,14 @@ ext.moduleName = "io.opentelemetry.sdk.trace"
 ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/trace"
 
 dependencies {
-    api project(':opentelemetry-api'),
+    api project(':opentelemetry-api-trace'),
             project(':opentelemetry-sdk-common')
 
+    // We do allow enabling metrics for span processors if the user enables it, but we don't want
+    // the user to automatically have metrics on their compile classpath, so we use both
+    // compileOnly and implementation.
+    compileOnly project(':opentelemetry-api-metrics')
+    implementation project(':opentelemetry-api-metrics')
 
     annotationProcessor libraries.auto_value
 
