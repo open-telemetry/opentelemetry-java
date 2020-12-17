@@ -17,8 +17,6 @@ task fatJar(type: Jar) {
 }
 
 dependencies {
-    api project(':opentelemetry-api')
-
     implementation project(':opentelemetry-sdk'),
             project(':opentelemetry-extension-trace-propagators'),
             libraries.okhttp,

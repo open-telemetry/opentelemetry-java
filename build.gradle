@@ -18,10 +18,6 @@ if (!JavaVersion.current().isJava11Compatible()) {
             "JDK 11 installation.")
 }
 
-ext {
-    opentelemetryProjects = subprojects - project(":opentelemetry-bom")
-}
-
 // Nebula plugin will not configure if .git doesn't exist, let's allow building on it by stubbing it
 // out. This supports building from the zip archive downloaded from GitHub.
 def releaseTask
@@ -45,10 +41,385 @@ if (file('.git').exists()) {
 subprojects {
     group = "io.opentelemetry"
 
-    plugins.withId("maven-publish") {
+    plugins.withId("java") {
+        plugins.apply('checkstyle')
+        plugins.apply('eclipse')
+        plugins.apply('idea')
+        plugins.apply('jacoco')
+
+        plugins.apply('com.diffplug.spotless')
+        plugins.apply('net.ltgt.errorprone')
+
+        repositories {
+            mavenCentral()
+            jcenter()
+            mavenLocal()
+        }
+
+        java {
+            sourceCompatibility = JavaVersion.VERSION_1_8
+            targetCompatibility = JavaVersion.VERSION_1_8
+
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(11)
+            }
+
+            withJavadocJar()
+            withSourcesJar()
+        }
+
+        javadoc {
+            exclude 'io/opentelemetry/internal/**'
+        }
+
+        def testJava8 = tasks.register('testJava8', Test) {
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(8)
+            }
+
+            jacoco.enabled = false
+        }
+        if (rootProject.findProperty('testAdditionalJavaVersions') == 'true') {
+            tasks.named("check").configure {
+                dependsOn(testJava8)
+            }
+        }
+
+        tasks.withType(JavaCompile) {
+            it.options.release = 8
+
+            it.options.compilerArgs += [
+                    "-Xlint:all",
+                    // We suppress the "try" warning because it disallows managing an auto-closeable with
+                    // try-with-resources without referencing the auto-closeable within the try block.
+                    "-Xlint:-try",
+                    // We suppress the "processing" warning as suggested in
+                    // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
+                    "-Xlint:-processing",
+                    // We suppress the "options" warning because it prevents compilation on modern JDKs
+                    "-Xlint:-options",
+            ]
+            it.options.errorprone.disableWarningsInGeneratedCode = true
+            it.options.errorprone.allDisabledChecksAsWarnings = true
+
+            // Doesn't currently use Var annotations.
+            it.options.errorprone.disable("Var") // "-Xep:Var:OFF"
+
+            // ImmutableRefactoring suggests using com.google.errorprone.annotations.Immutable,
+            // but currently uses javax.annotation.concurrent.Immutable
+            it.options.errorprone.disable("ImmutableRefactoring") // "-Xep:ImmutableRefactoring:OFF"
+
+
+            // AutoValueImmutableFields suggests returning Guava types from API methods
+            it.options.errorprone.disable("AutoValueImmutableFields")
+            // "-Xep:AutoValueImmutableFields:OFF"
+
+            it.options.encoding = "UTF-8"
+
+            // Ignore warnings for protobuf and jmh generated files.
+            it.options.errorprone.excludedPaths = ".*generated.*"
+            // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
+
+            it.options.errorprone.disable("Java7ApiChecker")
+            it.options.errorprone.disable("AndroidJdkLibsChecker")
+            //apparently disabling android doesn't disable this
+            it.options.errorprone.disable("StaticOrDefaultInterfaceMethod")
+
+            //until we have everything converted, we need these
+            it.options.errorprone.disable("JdkObsolete")
+            it.options.errorprone.disable("UnnecessaryAnonymousClass")
+
+            it.options.compilerArgs += ["-Werror"]
+        }
+
+        compileTestJava {
+            // serialVersionUID is basically guaranteed to be useless in tests
+            options.compilerArgs += ["-Xlint:-serial"]
+        }
+
+        jar.manifest {
+            attributes('Implementation-Title': name,
+                    'Implementation-Version': version,
+                    'Built-By': System.getProperty('user.name'),
+                    'Built-JDK': System.getProperty('java.version'),
+                    'Source-Compatibility': sourceCompatibility,
+                    'Target-Compatibility': targetCompatibility)
+        }
+
+        ext {
+            armeriaVersion = '1.3.0'
+            autoValueVersion = '1.7.4'
+            errorProneVersion = '2.4.0'
+            errorProneJavacVersion = '9+181-r4173-1'
+            findBugsJsr305Version = '3.0.2'
+            grpcVersion = '1.33.1'
+            guavaVersion = '30.0-android'
+            jacksonVersion = '2.11.3'
+            jmhVersion = '1.26'
+            junitVersion = '5.7.0'
+            mockitoVersion = '3.6.0'
+            opencensusVersion = '0.28.2'
+            opentracingVersion = '0.33.0'
+            prometheusVersion = '0.9.0'
+            protobufVersion = '3.14.0'
+            protocVersion = '3.14.0'
+            zipkinReporterVersion = '2.12.2'
+            zipkinVersion = '2.18.3'
+
+            boms = [
+                    "com.linecorp.armeria:armeria-bom:${armeriaVersion}",
+                    "io.grpc:grpc-bom:${grpcVersion}",
+                    "com.google.guava:guava-bom:${guavaVersion}",
+                    "com.fasterxml.jackson:jackson-bom:2.11.3",
+                    "org.junit:junit-bom:${junitVersion}",
+                    "com.google.protobuf:protobuf-bom:${protobufVersion}",
+                    "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
+            ]
+
+            libraries = [
+                    auto_value                  : "com.google.auto.value:auto-value:${autoValueVersion}",
+                    auto_value_annotation       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
+                    disruptor                   : "com.lmax:disruptor:3.4.2",
+                    errorprone_annotation       : "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
+                    errorprone_core             : "com.google.errorprone:error_prone_core:${errorProneVersion}",
+                    errorprone_javac            : "com.google.errorprone:javac:${errorProneJavacVersion}",
+                    grpc_api                    : "io.grpc:grpc-api",
+                    grpc_context                : "io.grpc:grpc-context",
+                    grpc_protobuf               : "io.grpc:grpc-protobuf",
+                    grpc_stub                   : "io.grpc:grpc-stub",
+                    guava                       : "com.google.guava:guava",
+                    javax_annotations           : "javax.annotation:javax.annotation-api:1.3.2",
+                    jmh_core                    : "org.openjdk.jmh:jmh-core:${jmhVersion}",
+                    jmh_bytecode                : "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
+                    jsr305                      : "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
+                    prometheus_client           : "io.prometheus:simpleclient:${prometheusVersion}",
+                    prometheus_client_common    : "io.prometheus:simpleclient_common:${prometheusVersion}",
+                    protobuf                    : "com.google.protobuf:protobuf-java",
+                    protobuf_util               : "com.google.protobuf:protobuf-java-util",
+                    zipkin_reporter             : "io.zipkin.reporter2:zipkin-reporter",
+                    zipkin_okhttp               : "io.zipkin.reporter2:zipkin-sender-okhttp3",
+
+                    // Compatibility layer
+                    opencensus_api              : "io.opencensus:opencensus-api:${opencensusVersion}",
+                    opencensus_impl             : "io.opencensus:opencensus-impl:${opencensusVersion}",
+                    opencensus_impl_core        : "io.opencensus:opencensus-impl-core:${opencensusVersion}",
+                    opencensus_metric_exporter  : "io.opencensus:opencensus-exporter-metrics-util:${opencensusVersion}",
+                    opentracing                 : "io.opentracing:opentracing-api:${opentracingVersion}",
+
+                    // Test dependencies.
+                    assertj                     : "org.assertj:assertj-core:3.18.1",
+                    equals_verifier              : "nl.jqno.equalsverifier:equalsverifier:3.5",
+                    guava_testlib               : "com.google.guava:guava-testlib",
+                    junit                       : 'junit:junit:4.13.1',
+                    junit_pioneer               : 'org.junit-pioneer:junit-pioneer:1.0.0',
+                    junit_jupiter_api           : 'org.junit.jupiter:junit-jupiter-api',
+                    junit_jupiter_engine        : 'org.junit.jupiter:junit-jupiter-engine',
+                    junit_vintage_engine        : 'org.junit.vintage:junit-vintage-engine',
+                    mockito                     : "org.mockito:mockito-core:${mockitoVersion}",
+                    mockito_junit_jupiter       : "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
+                    okhttp                      : 'com.squareup.okhttp3:okhttp:3.14.9',
+                    system_rules                : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
+                    slf4jsimple                 : 'org.slf4j:slf4j-simple:1.7.30', // Compatibility layer
+                    awaitility                  : 'org.awaitility:awaitility:4.0.3',
+                    testcontainers              : 'org.testcontainers:junit-jupiter:1.15.0',
+                    rest_assured                : 'io.rest-assured:rest-assured:4.2.0',
+                    jaeger_client               : 'io.jaegertracing:jaeger-client:1.5.0', // Jaeger Client
+                    zipkin_junit                : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
+                    archunit                    : 'com.tngtech.archunit:archunit-junit4:0.14.1', //Architectural constraints
+                    jqf                         : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6', // fuzz testing
+
+                    // Tooling
+                    android_signature       : 'com.toasttab.android:gummy-bears-api-24:0.3.0:coreLib@signature'
+            ]
+        }
+
+        checkstyle {
+            configDirectory = file("$rootDir/buildscripts/")
+            toolVersion = "8.12"
+            ignoreFailures = false
+            configProperties["rootDir"] = rootDir
+        }
+
+        jacoco { toolVersion = "0.8.6" }
+
+        // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
+
+        // Do not generate reports for individual projects
+        tasks.named('jacocoTestReport') {
+            enabled = false
+        }
+
+        configurations {
+            transitiveSourceElements {
+                visible = false
+                canBeResolved = false
+                canBeConsumed = true
+                extendsFrom(configurations.implementation)
+                attributes {
+                    attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+                    attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
+                    attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'source-folders'))
+                }
+                sourceSets.main.java.srcDirs.forEach {
+                    outgoing.artifact(it)
+                }
+            }
+
+            coverageDataElements {
+                visible = false
+                canBeResolved = false
+                canBeConsumed = true
+                extendsFrom(configurations.implementation)
+                attributes {
+                    attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+                    attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
+                    attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'jacoco-coverage-data'))
+                }
+                // This will cause the test task to run if the coverage data is requested by the aggregation task
+                outgoing.artifact(tasks.named("test").map { task ->
+                    task.extensions.getByType(JacocoTaskExtension).destinationFile
+                })
+            }
+        }
+
+        spotless {
+            java {
+                googleJavaFormat("1.9")
+                licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
+            }
+        }
+
+        configurations {
+            compile {
+                // Detect Maven Enforcer's dependencyConvergence failures. We only
+                // care for artifacts used as libraries by others.
+                // TODO: Enable failOnVersionConflict()
+                resolutionStrategy.preferProjectModules()
+            }
+        }
+
+        dependencies {
+            configurations.all {
+                // Kotlin compiler classpaths don't support BOM nor need it.
+                if (it.name.endsWith('Classpath') && !it.name.startsWith('kotlin')) {
+                    boms.each {bom ->
+                        add(it.name, enforcedPlatform(bom))
+                    }
+                }
+            }
+
+            compileOnly libraries.auto_value_annotation,
+                    libraries.errorprone_annotation,
+                    libraries.jsr305
+
+            testCompileOnly libraries.auto_value_annotation,
+                    libraries.errorprone_annotation,
+                    libraries.jsr305
+
+            testImplementation libraries.junit_jupiter_api,
+                    libraries.equals_verifier,
+                    libraries.mockito,
+                    libraries.mockito_junit_jupiter,
+                    libraries.assertj,
+                    libraries.awaitility
+
+            testRuntimeOnly libraries.junit_jupiter_engine,
+                    libraries.junit_vintage_engine
+
+            // The ErrorProne plugin defaults to the latest, which would break our
+            // build if error prone releases a new version with a new check
+            errorprone libraries.errorprone_core
+
+            annotationProcessor "com.google.guava:guava-beta-checker:1.0"
+
+            // Workaround for @javax.annotation.Generated
+            // see: https://github.com/grpc/grpc-java/issues/3633
+            compileOnly libraries.javax_annotations
+        }
+
+        tasks.withType(Test) {
+            useJUnitPlatform()
+
+            // At a test failure, log the stack trace to the console so that we don't
+            // have to open the HTML in a browser.
+            testLogging {
+                exceptionFormat = 'full'
+                showExceptions = true
+                showCauses = true
+                showStackTraces = true
+            }
+            maxHeapSize = '1500m'
+        }
+
+        javadoc.options {
+            source = "8"
+            encoding = "UTF-8"
+            links 'https://docs.oracle.com/javase/8/docs/api/'
+            addBooleanOption('Xdoclint:all,-missing', true)
+        }
+
+        afterEvaluate {
+            jar {
+                inputs.property("moduleName", moduleName)
+
+                manifest {
+                    attributes('Automatic-Module-Name': moduleName)
+                }
+            }
+        }
+
+        plugins.withId("ru.vyarus.animalsniffer") {
+            animalsnifferTest {
+                enabled = false
+            }
+            // If JMH enabled ignore animalsniffer.
+            plugins.withId("me.champeau.gradle.jmh") {
+                animalsnifferJmh {
+                    enabled = false
+                }
+            }
+        }
+
+        plugins.withId("me.champeau.gradle.jmh") {
+            // Always include the jmhreport plugin and run it after jmh task.
+            plugins.apply "io.morethan.jmhreport"
+            dependencies {
+                jmh libraries.jmh_core,
+                        libraries.jmh_bytecode
+            }
+
+            // invoke jmh on a single benchmark class like so:
+            //   ./gradlew -PjmhIncludeSingleClass=StatsTraceContextBenchmark clean :grpc-core:jmh
+            jmh {
+                failOnError = true
+                resultFormat = 'JSON'
+                // Otherwise an error will happen:
+                // Could not expand ZIP 'byte-buddy-agent-1.9.7.jar'.
+                includeTests = false
+                profilers = ["gc"]
+                if (project.hasProperty('jmhIncludeSingleClass')) {
+                    include = [
+                            project.property('jmhIncludeSingleClass')
+                    ]
+                }
+            }
+
+            jmhReport {
+                jmhResultPath = project.file("${project.buildDir}/reports/jmh/results.json")
+                jmhReportOutput = project.file("${project.buildDir}/reports/jmh")
+            }
+
+            // Always run jmhReport after jmh task.
+            tasks.jmh.finalizedBy tasks.jmhReport
+        }
+    }
+
+   plugins.withId("maven-publish") {
+        plugins.apply('signing')
+
         // Always include the artifactory/bintray plugins to do the deployment.
-        pluginManager.apply "com.jfrog.artifactory"
-        pluginManager.apply "com.jfrog.bintray"
+        plugins.apply("com.jfrog.artifactory")
+        plugins.apply("com.jfrog.bintray")
 
         releaseTask.configure {
             if (version.toString().endsWith('-SNAPSHOT')) {
@@ -111,6 +482,10 @@ subprojects {
             }
         }
 
+        signing {
+            required false
+            sign configurations.archives
+        }
 
         // Snapshot publishing.
         artifactory {
@@ -167,388 +542,6 @@ subprojects {
                 }
             }
         }
-    }
-}
-
-configure(opentelemetryProjects) {
-    apply plugin: 'checkstyle'
-    apply plugin: 'eclipse'
-    apply plugin: 'java'
-    apply plugin: 'java-library'
-    apply plugin: 'idea'
-    apply plugin: 'signing'
-    apply plugin: 'jacoco'
-
-    apply plugin: 'com.diffplug.spotless'
-    apply plugin: 'net.ltgt.errorprone'
-
-    repositories {
-        mavenCentral()
-        jcenter()
-        mavenLocal()
-    }
-
-    java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(11)
-        }
-
-        withJavadocJar()
-        withSourcesJar()
-    }
-
-    javadoc {
-        exclude 'io/opentelemetry/internal/**'
-    }
-
-    tasks {
-        def testJava8 = register('testJava8', Test) {
-            javaLauncher = javaToolchains.launcherFor {
-                languageVersion = JavaLanguageVersion.of(8)
-            }
-
-            jacoco.enabled = false
-        }
-
-        if (rootProject.findProperty('testAdditionalJavaVersions') == 'true') {
-            check.dependsOn(testJava8)
-        }
-    }
-
-    tasks.withType(JavaCompile) {
-        it.options.release = 8
-
-        it.options.compilerArgs += [
-                "-Xlint:all",
-                // We suppress the "try" warning because it disallows managing an auto-closeable with
-                // try-with-resources without referencing the auto-closeable within the try block.
-                "-Xlint:-try",
-                // We suppress the "processing" warning as suggested in
-                // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
-                "-Xlint:-processing",
-                // We suppress the "options" warning because it prevents compilation on modern JDKs
-                "-Xlint:-options",
-        ]
-        it.options.errorprone.disableWarningsInGeneratedCode = true
-        it.options.errorprone.allDisabledChecksAsWarnings = true
-
-        // Doesn't currently use Var annotations.
-        it.options.errorprone.disable("Var") // "-Xep:Var:OFF"
-
-        // ImmutableRefactoring suggests using com.google.errorprone.annotations.Immutable,
-        // but currently uses javax.annotation.concurrent.Immutable
-        it.options.errorprone.disable("ImmutableRefactoring") // "-Xep:ImmutableRefactoring:OFF"
-
-
-        // AutoValueImmutableFields suggests returning Guava types from API methods
-        it.options.errorprone.disable("AutoValueImmutableFields")
-        // "-Xep:AutoValueImmutableFields:OFF"
-
-        it.options.encoding = "UTF-8"
-
-        // Ignore warnings for protobuf and jmh generated files.
-        it.options.errorprone.excludedPaths = ".*generated.*"
-        // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
-
-        it.options.errorprone.disable("Java7ApiChecker")
-        it.options.errorprone.disable("AndroidJdkLibsChecker")
-        //apparently disabling android doesn't disable this
-        it.options.errorprone.disable("StaticOrDefaultInterfaceMethod")
-
-        //until we have everything converted, we need these
-        it.options.errorprone.disable("JdkObsolete")
-        it.options.errorprone.disable("UnnecessaryAnonymousClass")
-
-        it.options.compilerArgs += ["-Werror"]
-    }
-
-    compileTestJava {
-        // serialVersionUID is basically guaranteed to be useless in tests
-        options.compilerArgs += ["-Xlint:-serial"]
-    }
-
-    jar.manifest {
-        attributes('Implementation-Title': name,
-                'Implementation-Version': version,
-                'Built-By': System.getProperty('user.name'),
-                'Built-JDK': System.getProperty('java.version'),
-                'Source-Compatibility': sourceCompatibility,
-                'Target-Compatibility': targetCompatibility)
-    }
-
-    ext {
-        armeriaVersion = '1.3.0'
-        autoValueVersion = '1.7.4'
-        errorProneVersion = '2.4.0'
-        errorProneJavacVersion = '9+181-r4173-1'
-        findBugsJsr305Version = '3.0.2'
-        grpcVersion = '1.33.1'
-        guavaVersion = '30.0-android'
-        jacksonVersion = '2.11.3'
-        jmhVersion = '1.26'
-        junitVersion = '5.7.0'
-        mockitoVersion = '3.6.0'
-        opencensusVersion = '0.28.2'
-        opentracingVersion = '0.33.0'
-        prometheusVersion = '0.9.0'
-        protobufVersion = '3.14.0'
-        protocVersion = '3.14.0'
-        zipkinReporterVersion = '2.12.2'
-        zipkinVersion = '2.18.3'
-
-        boms = [
-                "com.linecorp.armeria:armeria-bom:${armeriaVersion}",
-                "io.grpc:grpc-bom:${grpcVersion}",
-                "com.google.guava:guava-bom:${guavaVersion}",
-                "com.fasterxml.jackson:jackson-bom:2.11.3",
-                "org.junit:junit-bom:${junitVersion}",
-                "com.google.protobuf:protobuf-bom:${protobufVersion}",
-                "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
-        ]
-
-        libraries = [
-                auto_value                  : "com.google.auto.value:auto-value:${autoValueVersion}",
-                auto_value_annotation       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
-                disruptor                   : "com.lmax:disruptor:3.4.2",
-                errorprone_annotation       : "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
-                errorprone_core             : "com.google.errorprone:error_prone_core:${errorProneVersion}",
-                errorprone_javac            : "com.google.errorprone:javac:${errorProneJavacVersion}",
-                grpc_api                    : "io.grpc:grpc-api",
-                grpc_context                : "io.grpc:grpc-context",
-                grpc_protobuf               : "io.grpc:grpc-protobuf",
-                grpc_stub                   : "io.grpc:grpc-stub",
-                guava                       : "com.google.guava:guava",
-                javax_annotations           : "javax.annotation:javax.annotation-api:1.3.2",
-                jmh_core                    : "org.openjdk.jmh:jmh-core:${jmhVersion}",
-                jmh_bytecode                : "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
-                jsr305                      : "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
-                prometheus_client           : "io.prometheus:simpleclient:${prometheusVersion}",
-                prometheus_client_common    : "io.prometheus:simpleclient_common:${prometheusVersion}",
-                protobuf                    : "com.google.protobuf:protobuf-java",
-                protobuf_util               : "com.google.protobuf:protobuf-java-util",
-                zipkin_reporter             : "io.zipkin.reporter2:zipkin-reporter",
-                zipkin_okhttp               : "io.zipkin.reporter2:zipkin-sender-okhttp3",
-
-                // Compatibility layer
-                opencensus_api              : "io.opencensus:opencensus-api:${opencensusVersion}",
-                opencensus_impl             : "io.opencensus:opencensus-impl:${opencensusVersion}",
-                opencensus_impl_core        : "io.opencensus:opencensus-impl-core:${opencensusVersion}",
-                opencensus_metric_exporter  : "io.opencensus:opencensus-exporter-metrics-util:${opencensusVersion}",
-                opentracing                 : "io.opentracing:opentracing-api:${opentracingVersion}",
-
-                // Test dependencies.
-                assertj                     : "org.assertj:assertj-core:3.18.1",
-                equals_verifier              : "nl.jqno.equalsverifier:equalsverifier:3.5",
-                guava_testlib               : "com.google.guava:guava-testlib",
-                junit                       : 'junit:junit:4.13.1',
-                junit_pioneer               : 'org.junit-pioneer:junit-pioneer:1.0.0',
-                junit_jupiter_api           : 'org.junit.jupiter:junit-jupiter-api',
-                junit_jupiter_engine        : 'org.junit.jupiter:junit-jupiter-engine',
-                junit_vintage_engine        : 'org.junit.vintage:junit-vintage-engine',
-                mockito                     : "org.mockito:mockito-core:${mockitoVersion}",
-                mockito_junit_jupiter       : "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
-                okhttp                      : 'com.squareup.okhttp3:okhttp:3.14.9',
-                system_rules                : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
-                slf4jsimple                 : 'org.slf4j:slf4j-simple:1.7.30', // Compatibility layer
-                awaitility                  : 'org.awaitility:awaitility:4.0.3',
-                testcontainers              : 'org.testcontainers:junit-jupiter:1.15.0',
-                rest_assured                : 'io.rest-assured:rest-assured:4.2.0',
-                jaeger_client               : 'io.jaegertracing:jaeger-client:1.5.0', // Jaeger Client
-                zipkin_junit                : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
-                archunit                    : 'com.tngtech.archunit:archunit-junit4:0.14.1', //Architectural constraints
-                jqf                         : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6', // fuzz testing
-
-                // Tooling
-                android_signature       : 'com.toasttab.android:gummy-bears-api-24:0.3.0:coreLib@signature'
-        ]
-    }
-
-    checkstyle {
-        configDirectory = file("$rootDir/buildscripts/")
-        toolVersion = "8.12"
-        ignoreFailures = false
-        configProperties["rootDir"] = rootDir
-    }
-
-    jacoco { toolVersion = "0.8.6" }
-
-    // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
-
-    // Do not generate reports for individual projects
-    tasks.named("jacocoTestReport") {
-        enabled = false
-    }
-
-    configurations {
-        transitiveSourceElements {
-            visible = false
-            canBeResolved = false
-            canBeConsumed = true
-            extendsFrom(configurations.implementation)
-            attributes {
-                attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
-                attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
-                attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'source-folders'))
-            }
-            sourceSets.main.java.srcDirs.forEach {
-                outgoing.artifact(it)
-            }
-        }
-
-        coverageDataElements {
-            visible = false
-            canBeResolved = false
-            canBeConsumed = true
-            extendsFrom(configurations.implementation)
-            attributes {
-                attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
-                attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
-                attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'jacoco-coverage-data'))
-            }
-            // This will cause the test task to run if the coverage data is requested by the aggregation task
-            outgoing.artifact(tasks.named("test").map { task ->
-                task.extensions.getByType(JacocoTaskExtension).destinationFile
-            })
-        }
-    }
-
-    spotless {
-        java {
-            googleJavaFormat("1.9")
-            licenseHeaderFile rootProject.file('buildscripts/spotless.license.java'), '(package|import|class|// Includes work from:)'
-        }
-    }
-
-    configurations {
-        compile {
-            // Detect Maven Enforcer's dependencyConvergence failures. We only
-            // care for artifacts used as libraries by others.
-            // TODO: Enable failOnVersionConflict()
-            resolutionStrategy.preferProjectModules()
-        }
-    }
-
-    dependencies {
-        configurations.all {
-            // Kotlin compiler classpaths don't support BOM nor need it.
-            if (it.name.endsWith('Classpath') && !it.name.startsWith('kotlin')) {
-                boms.each {bom ->
-                    add(it.name, enforcedPlatform(bom))
-                }
-            }
-        }
-
-        compileOnly libraries.auto_value_annotation,
-                libraries.errorprone_annotation,
-                libraries.jsr305
-
-        testCompileOnly libraries.auto_value_annotation,
-                libraries.errorprone_annotation,
-                libraries.jsr305
-
-        testImplementation libraries.junit_jupiter_api,
-                libraries.equals_verifier,
-                libraries.mockito,
-                libraries.mockito_junit_jupiter,
-                libraries.assertj,
-                libraries.awaitility
-
-        testRuntimeOnly libraries.junit_jupiter_engine,
-                libraries.junit_vintage_engine
-
-        // The ErrorProne plugin defaults to the latest, which would break our
-        // build if error prone releases a new version with a new check
-        errorprone libraries.errorprone_core
-
-        annotationProcessor "com.google.guava:guava-beta-checker:1.0"
-
-        // Workaround for @javax.annotation.Generated
-        // see: https://github.com/grpc/grpc-java/issues/3633
-        compileOnly libraries.javax_annotations
-    }
-
-    tasks.withType(Test) {
-        useJUnitPlatform()
-
-        // At a test failure, log the stack trace to the console so that we don't
-        // have to open the HTML in a browser.
-        testLogging {
-            exceptionFormat = 'full'
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-        }
-        maxHeapSize = '1500m'
-    }
-
-    javadoc.options {
-        source = "8"
-        encoding = "UTF-8"
-        links 'https://docs.oracle.com/javase/8/docs/api/'
-        addBooleanOption('Xdoclint:all,-missing', true)
-    }
-
-    afterEvaluate {
-        jar {
-            inputs.property("moduleName", moduleName)
-
-            manifest {
-                attributes('Automatic-Module-Name': moduleName)
-            }
-        }
-    }
-
-    signing {
-        required false
-        sign configurations.archives
-    }
-
-    plugins.withId("ru.vyarus.animalsniffer") {
-        animalsnifferTest {
-            enabled = false
-        }
-        // If JMH enabled ignore animalsniffer.
-        plugins.withId("me.champeau.gradle.jmh") {
-            animalsnifferJmh {
-                enabled = false
-            }
-        }
-    }
-
-    plugins.withId("me.champeau.gradle.jmh") {
-        // Always include the jmhreport plugin and run it after jmh task.
-        pluginManager.apply "io.morethan.jmhreport"
-        dependencies {
-            jmh libraries.jmh_core,
-                    libraries.jmh_bytecode
-        }
-
-        // invoke jmh on a single benchmark class like so:
-        //   ./gradlew -PjmhIncludeSingleClass=StatsTraceContextBenchmark clean :grpc-core:jmh
-        jmh {
-            failOnError = true
-            resultFormat = 'JSON'
-            // Otherwise an error will happen:
-            // Could not expand ZIP 'byte-buddy-agent-1.9.7.jar'.
-            includeTests = false
-            profilers = ["gc"]
-            if (project.hasProperty('jmhIncludeSingleClass')) {
-                include = [
-                        project.property('jmhIncludeSingleClass')
-                ]
-            }
-        }
-
-        jmhReport {
-            jmhResultPath = project.file("${project.buildDir}/reports/jmh/results.json")
-            jmhReportOutput = project.file("${project.buildDir}/reports/jmh")
-        }
-
-        // Always run jmhReport after jmh task.
-        tasks.jmh.finalizedBy tasks.jmhReport
     }
 }
 
