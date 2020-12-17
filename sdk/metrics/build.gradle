@@ -6,10 +6,6 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-version = "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
-    "${major}.${minor}.${patch}-alpha"
-}
-
 description = 'OpenTelemetry SDK Metrics'
 ext.moduleName = "io.opentelemetry.sdk.metrics"
 ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/metrics"
