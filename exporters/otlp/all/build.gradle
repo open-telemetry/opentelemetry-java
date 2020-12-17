@@ -1,0 +1,14 @@
+plugins {
+    id "java-library"
+    id "maven-publish"
+
+    id "me.champeau.gradle.jmh"
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry Protocol Exporters'
+ext.moduleName = "io.opentelemetry.exporter.otlp"
+
+dependencies {
+    api project(':opentelemetry-exporter-otlp-trace')
+}
