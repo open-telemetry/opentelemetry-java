@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -31,7 +32,9 @@ public interface TracerProvider {
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
    * @return a tracer instance.
    */
-  Tracer get(String instrumentationName);
+  default Tracer get(String instrumentationName) {
+    return get(instrumentationName, null);
+  }
 
   /**
    * Gets or creates a named and versioned tracer instance.
@@ -41,5 +44,5 @@ public interface TracerProvider {
    * @param instrumentationVersion The version of the instrumentation library (e.g., "1.0.0").
    * @return a tracer instance.
    */
-  Tracer get(String instrumentationName, String instrumentationVersion);
+  Tracer get(String instrumentationName, @Nullable String instrumentationVersion);
 }

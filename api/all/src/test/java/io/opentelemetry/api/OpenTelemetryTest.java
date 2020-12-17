@@ -152,13 +152,8 @@ class OpenTelemetryTest {
   public static class SecondTracerProviderFactory extends FirstTracerProviderFactory {
 
     @Override
-    public Tracer get(String instrumentationName) {
+    public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
       return new SecondTracerProviderFactory();
-    }
-
-    @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return get(instrumentationName);
     }
 
     @Override
@@ -171,13 +166,8 @@ class OpenTelemetryTest {
       implements Tracer, TracerProvider, TracerProviderFactory {
 
     @Override
-    public Tracer get(String instrumentationName) {
+    public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
       return new FirstTracerProviderFactory();
-    }
-
-    @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return get(instrumentationName);
     }
 
     @Nullable

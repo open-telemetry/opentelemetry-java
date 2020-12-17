@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -31,7 +32,9 @@ public interface MeterProvider {
    *     instrument*ed* library.
    * @return a tracer instance.
    */
-  Meter get(String instrumentationName);
+  default Meter get(String instrumentationName) {
+    return get(instrumentationName, null);
+  }
 
   /**
    * Gets or creates a named and versioned meter instance.
@@ -41,5 +44,5 @@ public interface MeterProvider {
    * @param instrumentationVersion The version of the instrumentation library.
    * @return a tracer instance.
    */
-  Meter get(String instrumentationName, String instrumentationVersion);
+  Meter get(String instrumentationName, @Nullable String instrumentationVersion);
 }

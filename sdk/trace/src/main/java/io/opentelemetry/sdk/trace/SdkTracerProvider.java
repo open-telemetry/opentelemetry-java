@@ -48,11 +48,6 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
   }
 
   @Override
-  public Tracer get(String instrumentationName) {
-    return get(instrumentationName, null);
-  }
-
-  @Override
   public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
     // Per the spec, both null and empty are "invalid" and a "default" should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {

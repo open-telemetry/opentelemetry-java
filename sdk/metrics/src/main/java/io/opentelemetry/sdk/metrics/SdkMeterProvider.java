@@ -47,11 +47,6 @@ public final class SdkMeterProvider implements MeterProvider {
   }
 
   @Override
-  public SdkMeter get(String instrumentationName) {
-    return get(instrumentationName, null);
-  }
-
-  @Override
   public SdkMeter get(String instrumentationName, @Nullable String instrumentationVersion) {
     // Per the spec, both null and empty are "invalid" and a "default" should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {
