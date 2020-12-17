@@ -9,7 +9,6 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
-import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
@@ -19,9 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -38,7 +35,7 @@ public final class SdkMeterProvider implements MeterProvider {
   private final MetricProducer metricProducer;
   private final MeterProviderSharedState sharedState;
 
-  private SdkMeterProvider(Clock clock, Resource resource) {
+  SdkMeterProvider(Clock clock, Resource resource) {
     this.sharedState = MeterProviderSharedState.create(clock, resource);
     this.registry =
         new ComponentRegistry<>(
@@ -78,57 +75,12 @@ public final class SdkMeterProvider implements MeterProvider {
   }
 
   /**
-   * Returns a new {@link Builder} for {@link SdkMeterProvider}.
+   * Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
    *
-   * @return a new {@link Builder} for {@link SdkMeterProvider}.
+   * @return a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
    */
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /**
-   * Builder class for the {@link SdkMeterProvider}. Has fully functional default implementations of
-   * all three required interfaces.
-   */
-  public static final class Builder {
-
-    private Clock clock = SystemClock.getInstance();
-    private Resource resource = Resource.getDefault();
-
-    private Builder() {}
-
-    /**
-     * Assign a {@link Clock}.
-     *
-     * @param clock The clock to use for all temporal needs.
-     * @return this
-     */
-    public Builder setClock(@Nonnull Clock clock) {
-      Objects.requireNonNull(clock, "clock");
-      this.clock = clock;
-      return this;
-    }
-
-    /**
-     * Assign a {@link Resource} to be attached to all Spans created by Tracers.
-     *
-     * @param resource A Resource implementation.
-     * @return this
-     */
-    public Builder setResource(@Nonnull Resource resource) {
-      Objects.requireNonNull(resource, "resource");
-      this.resource = resource;
-      return this;
-    }
-
-    /**
-     * Create a new TracerSdkFactory instance.
-     *
-     * @return An initialized TracerSdkFactory.
-     */
-    public SdkMeterProvider build() {
-      return new SdkMeterProvider(clock, resource);
-    }
+  public static SdkMeterProviderBuilder builder() {
+    return new SdkMeterProviderBuilder();
   }
 
   /**
