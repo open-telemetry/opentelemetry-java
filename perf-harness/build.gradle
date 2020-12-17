@@ -6,11 +6,11 @@ description = 'Performance Testing Harness'
 ext.moduleName = "io.opentelemetry.perf-harness"
 
 dependencies {
-    compile project(':opentelemetry-api'),
-            project(":opentelemetry-sdk"),
-            project(":opentelemetry-sdk-testing"),
-            project(":opentelemetry-exporter-otlp-trace"),
-            project(":opentelemetry-exporter-logging")
+    compile project(':api:all'),
+            project(":sdk:all"),
+            project(":sdk:testing"),
+            project(":exporters:otlp:trace"),
+            project(":exporters:logging")
 
     compile("io.grpc:grpc-netty-shaded")
     compile("eu.rekawek.toxiproxy:toxiproxy-java:2.1.4")

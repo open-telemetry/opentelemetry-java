@@ -1,0 +1,5 @@
+subprojects {
+    plugins.withId("java") {
+        archivesBaseName = "opentelemetry-extension-${project.name}"
+    }
+}

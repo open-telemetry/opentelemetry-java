@@ -9,35 +9,36 @@ plugins {
 description = 'OpenTelemetry SDK'
 ext.moduleName = "io.opentelemetry.sdk"
 ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk"
+archivesBaseName = "opentelemetry-sdk"
 
 dependencies {
-    api project(':opentelemetry-api'),
-            project(':opentelemetry-sdk-common'),
-            project(':opentelemetry-sdk-metrics'),
-            project(':opentelemetry-sdk-trace')
+    api project(':api:all'),
+            project(':sdk:common'),
+            project(':sdk:metrics'),
+            project(':sdk:trace')
 
     annotationProcessor libraries.auto_value
 
     testAnnotationProcessor libraries.auto_value
     testCompileOnly libraries.auto_value_annotation
 
-    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation project(':sdk:testing')
     testImplementation libraries.junit_pioneer
 
-    jmh(project(':opentelemetry-sdk-testing')) {
+    jmh(project(':sdk:testing')) {
         // JMH doesn't handle dependencies that are duplicated between the main and jmh
         // configurations properly, but luckily here it's simple enough to just exclude transitive
         // dependencies.
         transitive = false
     }
-    jmh(project(':opentelemetry-exporter-otlp-trace')) {
+    jmh(project(':exporters:otlp:trace')) {
         // The opentelemetry-exporter-otlp-trace depends on this project itself. So don't pull in
         // the transitive dependencies.
         transitive = false
     }
     // explicitly adding the opentelemetry-exporter-otlp dependencies
-    jmh(project(':opentelemetry-sdk-extension-otproto')) { transitive = false }
-    jmh(project(':opentelemetry-proto'))
+    jmh(project(':sdk-extensions:otproto')) { transitive = false }
+    jmh(project(':proto'))
     jmh("io.grpc:grpc-api")
     jmh("io.grpc:grpc-netty-shaded")
     jmh("org.testcontainers:testcontainers:1.15.0") // testContainer for OTLP collector

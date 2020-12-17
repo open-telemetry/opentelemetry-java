@@ -9,16 +9,16 @@ description = 'OpenTelemetry - Jaeger Thrift Exporter'
 ext.moduleName = "io.opentelemetry.exporter.jaeger.thrift"
 
 dependencies {
-    api project(':opentelemetry-sdk')
+    api project(':sdk:all')
 
-    implementation project(':opentelemetry-sdk'),
+    implementation project(':sdk:all'),
             libraries.jaeger_client
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind',
             libraries.testcontainers,
             libraries.okhttp
 
-    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation project(':sdk:testing')
 
     signature libraries.android_signature
 }

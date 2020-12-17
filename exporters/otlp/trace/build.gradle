@@ -10,22 +10,22 @@ description = 'OpenTelemetry Protocol Trace Exporter'
 ext.moduleName = "io.opentelemetry.exporter.otlp.trace"
 
 dependencies {
-    api project(':opentelemetry-sdk')
+    api project(':sdk:all')
 
-    implementation project(':opentelemetry-sdk-extension-otproto'),
+    implementation project(':sdk-extensions:otproto'),
             libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub,
             libraries.protobuf
 
-    testImplementation project(':opentelemetry-sdk-testing'),
+    testImplementation project(':sdk:testing'),
             'com.linecorp.armeria:armeria-grpc',
             'com.linecorp.armeria:armeria-junit5',
             "io.grpc:grpc-testing:${grpcVersion}"
 
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
-    jmh project(':opentelemetry-sdk-testing')
+    jmh project(':sdk:testing')
 
     signature libraries.android_signature
 }

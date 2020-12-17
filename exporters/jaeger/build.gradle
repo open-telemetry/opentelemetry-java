@@ -10,11 +10,11 @@ description = 'OpenTelemetry - Jaeger Exporter'
 ext.moduleName = "io.opentelemetry.exporter.jaeger"
 
 dependencies {
-    api project(':opentelemetry-sdk'),
+    api project(':sdk:all'),
             libraries.grpc_api
 
-    implementation project(':opentelemetry-sdk-extension-otproto'),
-            project(':opentelemetry-sdk'),
+    implementation project(':sdk-extensions:otproto'),
+            project(':sdk:all'),
             libraries.grpc_protobuf,
             libraries.grpc_stub,
             libraries.protobuf,
@@ -25,7 +25,7 @@ dependencies {
             libraries.testcontainers,
             libraries.okhttp
 
-    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation project(':sdk:testing')
 
     // Protobuf plugin seems to erroneously use the non-classpath configurations for resolving
     // dependencies.

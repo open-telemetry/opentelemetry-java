@@ -8,13 +8,14 @@ plugins {
 
 description = 'OpenTelemetry API'
 ext.moduleName = "io.opentelemetry.api"
+archivesBaseName = "opentelemetry-api"
 
 dependencies {
-    api project(':opentelemetry-context'),
-            project(':opentelemetry-api-baggage'),
-            project(':opentelemetry-api-common'),
-            project(':opentelemetry-api-metrics'),
-            project(':opentelemetry-api-trace')
+    api project(':api:context'),
+            project(':api:baggage'),
+            project(':api:common'),
+            project(':api:metrics'),
+            project(':api:trace')
 
     annotationProcessor libraries.auto_value
 

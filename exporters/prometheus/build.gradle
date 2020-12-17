@@ -9,7 +9,7 @@ description = 'OpenTelemetry Prometheus Exporter'
 ext.moduleName = "io.opentelemetry.exporter.prometheus"
 
 dependencies {
-    api project(':opentelemetry-sdk')
+    api project(':sdk:all')
 
     implementation libraries.prometheus_client
 

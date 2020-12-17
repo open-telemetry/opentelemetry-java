@@ -10,8 +10,8 @@ description = 'OpenTelemetry - zPages'
 ext.moduleName = "io.opentelemetry.sdk.extension.zpages"
 
 dependencies {
-    implementation project(':opentelemetry-api'),
-            project(':opentelemetry-sdk')
+    implementation project(':api:all'),
+            project(':sdk:all')
 
     testImplementation libraries.guava
     

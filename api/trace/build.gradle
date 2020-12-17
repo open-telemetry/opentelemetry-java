@@ -10,8 +10,8 @@ description = 'OpenTelemetry API'
 ext.moduleName = "io.opentelemetry.api.trace"
 
 dependencies {
-    api project(':opentelemetry-context'),
-            project(':opentelemetry-api-common')
+    api project(':api:context'),
+            project(':api:common')
 
     annotationProcessor libraries.auto_value
 

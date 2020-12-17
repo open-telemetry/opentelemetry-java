@@ -6,8 +6,8 @@ description = 'OpenTelemetry SDK Extension JFR'
 ext.moduleName = 'io.opentelemetry.sdk.extension.jfr'
 
 dependencies {
-    implementation project(':opentelemetry-api'),
-            project(':opentelemetry-sdk')
+    implementation project(':api:all'),
+            project(':sdk:all')
 }
 
 tasks.withType(JavaCompile) {

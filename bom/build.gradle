@@ -6,15 +6,18 @@ plugins {
 description = 'OpenTelemetry Bill of Materials'
 group = "io.opentelemetry"
 
-dependencies {
-    constraints {
-        parent.childProjects.sort { "$it.value" }
-                .collect { it.value }
-                .findAll { it.name != project.name }
-                .findAll { !it.name.endsWith('-metrics') }
-                .each { project ->
-                    api project
-                    println project
-                }
+afterEvaluate {
+    dependencies {
+        constraints {
+            rootProject.subprojects.sort { "$it.archivesBaseName" }
+                    .collect { it }
+                    .findAll { it.name != project.name }
+                    .findAll { !it.name.endsWith('metrics') }
+                    .each { project ->
+                        project.plugins.withId("maven-publish") {
+                            api project
+                        }
+                    }
+        }
     }
 }

@@ -7,10 +7,10 @@ description = 'OpenTelemetry OpenTracing Bridge'
 ext.moduleName = "io.opentelemetry.opentracingshim"
 
 dependencies {
-    api project(':opentelemetry-api'),
+    api project(':api:all'),
             libraries.opentracing
 
-    testImplementation project(':opentelemetry-sdk-testing'),
+    testImplementation project(':sdk:testing'),
             libraries.junit,
             libraries.assertj,
             libraries.slf4jsimple
