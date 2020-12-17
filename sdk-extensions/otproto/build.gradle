@@ -1,5 +1,5 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "ru.vyarus.animalsniffer"
@@ -13,8 +13,9 @@ dependencies {
             project(':opentelemetry-proto'),
             project(':opentelemetry-sdk')
 
-    implementation libraries.protobuf,
-            libraries.protobuf_util
+    implementation libraries.protobuf
+
+    testImplementation project(':opentelemetry-sdk-testing')
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"

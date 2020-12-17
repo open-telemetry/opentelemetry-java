@@ -7,7 +7,7 @@ package io.opentelemetry.opentracingshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -33,8 +33,8 @@ class TracerShimTest {
     tracerShim =
         new TracerShim(
             new TelemetryInfo(
-                OpenTelemetry.getGlobalTracer("opentracingshim"),
-                OpenTelemetry.getGlobalPropagators()));
+                GlobalOpenTelemetry.getTracer("opentracingshim"),
+                GlobalOpenTelemetry.getPropagators()));
   }
 
   @Test

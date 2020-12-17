@@ -76,5 +76,7 @@ class FakeMetricExporter implements MetricExporter {
   }
 
   @Override
-  public void shutdown() {}
+  public CompletableResultCode shutdown() {
+    return CompletableResultCode.ofSuccess();
+  }
 }

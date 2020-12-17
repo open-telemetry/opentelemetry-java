@@ -27,7 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  *   // creating InMemoryMetricExporter
  *   private final InMemoryMetricExporter exporter = InMemoryMetricExporter.create();
- *   private final MeterSdkProvider meterSdkProvider = OpenTelemetrySdk.getGlobalMeterProvider();
+ *   private final MeterSdkProvider meterSdkProvider = OpenTelemetrySdk.getMeterProvider();
  *   private final Meter meter = meterSdkProvider.get("InMemoryMetricExporterExample");
  *   private IntervalMetricReader intervalMetricReader;
  *
@@ -52,7 +52,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * }
  * </code></pre>
  */
-public class InMemoryMetricExporter implements MetricExporter {
+public final class InMemoryMetricExporter implements MetricExporter {
 
   // using LinkedBlockingQueue to avoid manual locks for thread-safe operations
   private final Queue<MetricData> finishedMetricItems = new LinkedBlockingQueue<>();
@@ -119,8 +119,9 @@ public class InMemoryMetricExporter implements MetricExporter {
    * CompletableResultCode.ofFailure()}
    */
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     isStopped = true;
     finishedMetricItems.clear();
+    return CompletableResultCode.ofSuccess();
   }
 }

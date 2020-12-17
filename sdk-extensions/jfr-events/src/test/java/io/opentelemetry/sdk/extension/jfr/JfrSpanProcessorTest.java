@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.jfr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.ContextStorage;
@@ -34,7 +34,7 @@ class JfrSpanProcessorTest {
 
   /** Simple test to validate JFR events for Span and Scope. */
   public JfrSpanProcessorTest() {
-    tracer = OpenTelemetry.getGlobalTracer("JfrSpanProcessorTest");
+    tracer = GlobalOpenTelemetry.getTracer("JfrSpanProcessorTest");
   }
 
   /**

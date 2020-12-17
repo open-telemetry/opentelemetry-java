@@ -144,4 +144,9 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
     // todo
     return result.succeed();
   }
+
+  // Visible for testing
+  Process getProcess() {
+    return process;
+  }
 }

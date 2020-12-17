@@ -13,12 +13,13 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.extension.otproto.CommonProperties;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
-public class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpanExporterBuilder> {
+public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpanExporterBuilder> {
 
   private static final String KEY_TIMEOUT = "otel.exporter.otlp.span.timeout";
   private static final String KEY_ENDPOINT = "otel.exporter.otlp.span.endpoint";

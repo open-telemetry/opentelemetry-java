@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.testing.junit5;
 
 import static io.opentelemetry.sdk.testing.assertj.TracesAssert.assertThat;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -46,7 +47,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * >  }
  * }</pre>
  */
-public class OpenTelemetryExtension
+public final class OpenTelemetryExtension
     implements BeforeEachCallback, BeforeAllCallback, AfterAllCallback {
 
   /**
@@ -125,12 +126,12 @@ public class OpenTelemetryExtension
 
   @Override
   public void beforeAll(ExtensionContext context) {
-    previousGlobalOpenTelemetry = OpenTelemetry.get();
-    OpenTelemetry.set(openTelemetry);
+    previousGlobalOpenTelemetry = GlobalOpenTelemetry.get();
+    GlobalOpenTelemetry.set(openTelemetry);
   }
 
   @Override
   public void afterAll(ExtensionContext context) {
-    OpenTelemetry.set(previousGlobalOpenTelemetry);
+    GlobalOpenTelemetry.set(previousGlobalOpenTelemetry);
   }
 }

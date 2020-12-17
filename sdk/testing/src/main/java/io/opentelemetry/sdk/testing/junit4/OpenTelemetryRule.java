@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.testing.junit4;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -41,7 +42,7 @@ import org.junit.rules.ExternalResource;
  * >  }
  * }</pre>
  */
-public class OpenTelemetryRule extends ExternalResource {
+public final class OpenTelemetryRule extends ExternalResource {
 
   /**
    * Returns a {@link OpenTelemetryRule} with a default SDK initialized with an in-memory span
@@ -96,14 +97,14 @@ public class OpenTelemetryRule extends ExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
-    previousGlobalOpenTelemetry = OpenTelemetry.get();
-    OpenTelemetry.set(openTelemetry);
+  protected void before() {
+    previousGlobalOpenTelemetry = GlobalOpenTelemetry.get();
+    GlobalOpenTelemetry.set(openTelemetry);
     clearSpans();
   }
 
   @Override
   protected void after() {
-    OpenTelemetry.set(previousGlobalOpenTelemetry);
+    GlobalOpenTelemetry.set(previousGlobalOpenTelemetry);
   }
 }

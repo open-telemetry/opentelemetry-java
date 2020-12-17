@@ -22,7 +22,7 @@ import javax.annotation.concurrent.GuardedBy;
  * <p>The implementation of Export operations are often asynchronous in nature, hence the need to
  * convey a result at a later time. CompletableResultCode facilitates this.
  */
-public class CompletableResultCode {
+public final class CompletableResultCode {
   /** Returns a {@link CompletableResultCode} that has been completed successfully. */
   public static CompletableResultCode ofSuccess() {
     return SUCCESS;

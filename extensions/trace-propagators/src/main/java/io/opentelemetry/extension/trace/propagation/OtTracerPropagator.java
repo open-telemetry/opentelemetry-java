@@ -26,7 +26,7 @@ import javax.annotation.concurrent.Immutable;
  * TextMapPropagator</a>.
  */
 @Immutable
-public class OtTracerPropagator implements TextMapPropagator {
+public final class OtTracerPropagator implements TextMapPropagator {
 
   static final String TRACE_ID_HEADER = "ot-tracer-traceid";
   static final String SPAN_ID_HEADER = "ot-tracer-spanid";

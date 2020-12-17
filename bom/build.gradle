@@ -11,6 +11,7 @@ dependencies {
         parent.childProjects.sort { "$it.value" }
                 .collect { it.value }
                 .findAll { it.name != project.name }
+                .findAll { !it.name.endsWith('-metrics') }
                 .each { project ->
                     api project
                     println project

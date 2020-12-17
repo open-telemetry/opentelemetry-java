@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -26,7 +26,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class SpanAttributeTruncateBenchmark {
 
-  private final Tracer tracerSdk = OpenTelemetry.getGlobalTracer("benchmarkTracer");
+  private final Tracer tracerSdk = GlobalOpenTelemetry.getTracer("benchmarkTracer");
   private SdkSpanBuilder sdkSpanBuilder;
 
   public final String shortValue = "short";
