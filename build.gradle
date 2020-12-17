@@ -61,7 +61,9 @@ subprojects {
         publishing {
             publications {
                 mavenPublication(MavenPublication) {
-                    version version
+                    version project.name.endsWith('-metrics') ? "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
+                            "${major}.${minor}.${patch}-alpha"
+                        } : version
                     groupId group
 
                     plugins.withId("java-platform") {
