@@ -8,8 +8,8 @@ on:
         description: The version to tag the release with, e.g., 1.2.1, 1.2.2
         required: true
       commits:
-        description: Comma separated list of commit shas to cherrypick
-        required: true
+        description: Comma separated list of commit shas to cherrypick (leave blank if the release branch is already up to date).
+        required: false
 
 jobs:
   prepare-release-branch:
