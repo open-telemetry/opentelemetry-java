@@ -9,6 +9,15 @@ plugins {
 description = 'OpenTelemetry API'
 ext.moduleName = "io.opentelemetry.api"
 
+// Stop gap measure until api no longer depends on api-metrics
+configurations.all {
+    resolutionStrategy {
+        dependencySubstitution {
+            substitute project(':opentelemetry-api-metrics') with module('io.opentelemetry:opentelemetry-api-metrics:0.13.0-alpha')
+        }
+    }
+}
+
 dependencies {
     api project(':opentelemetry-context'),
             project(':opentelemetry-api-baggage'),
