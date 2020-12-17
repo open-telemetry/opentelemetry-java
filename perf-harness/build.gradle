@@ -9,7 +9,7 @@ dependencies {
     compile project(':opentelemetry-api'),
             project(":opentelemetry-sdk"),
             project(":opentelemetry-sdk-testing"),
-            project(":opentelemetry-exporter-otlp"),
+            project(":opentelemetry-exporter-otlp-trace"),
             project(":opentelemetry-exporter-logging")
 
     compile("io.grpc:grpc-netty-shaded")

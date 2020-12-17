@@ -40,6 +40,8 @@ include ":opentelemetry-all",
         ":opentelemetry-exporter-jaeger-thrift",
         ":opentelemetry-exporter-logging",
         ":opentelemetry-exporter-otlp",
+        ":opentelemetry-exporter-otlp-metrics",
+        ":opentelemetry-exporter-otlp-trace",
         ":opentelemetry-exporter-prometheus",
         ":opentelemetry-exporter-zipkin",
         ":opentelemetry-integration-tests",
@@ -68,6 +70,7 @@ rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name
             .replace("opentelemetry-api-", "api/")
             .replace("opentelemetry-integration-tests-", "integration-tests/")
+            .replace("opentelemetry-exporter-otlp-", "exporters/otlp/")
             .replace("opentelemetry-exporter-", "exporters/")
             .replace("opentelemetry-extension-", "extensions/")
             .replace("opentelemetry-sdk-extension-", "sdk-extensions/")
@@ -78,6 +81,7 @@ rootProject.children.each {
 
 project(":opentelemetry-api").projectDir = "$rootDir/api/all" as File
 project(":opentelemetry-context").projectDir = "$rootDir/api/context" as File
+project(":opentelemetry-exporter-otlp").projectDir = "$rootDir/exporters/otlp/all" as File
 project(":opentelemetry-sdk").projectDir = "$rootDir/sdk/all" as File
 
 def isCI = System.getenv("CI") != null
