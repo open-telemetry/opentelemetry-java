@@ -140,8 +140,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   /**
    * Sets the {@link MeterProvider} to use to record metrics related to processed spans. By default,
-   * this processor will not record metrics. Call this method with a configured {@link
-   * MeterProvider} to enable recording.
+   * the {@link BatchSpanProcessor} will not record metrics. Call this method with a configured
+   * {@link MeterProvider} to enable recording.
    */
   @AlphaApi
   public void setMeterProvider(MeterProvider meterProvider) {
