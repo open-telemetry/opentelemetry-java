@@ -6,10 +6,8 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,7 +18,6 @@ public final class OpenTelemetrySdkBuilder {
 
   private ContextPropagators propagators = ContextPropagators.noop();
   private SdkTracerProvider tracerProvider;
-  private SdkMeterProvider meterProvider;
 
   /**
    * Package protected to disallow direct initialization.
@@ -46,18 +43,6 @@ public final class OpenTelemetrySdkBuilder {
     return this;
   }
 
-  /**
-   * Sets the {@link MeterProvider} to use.. This can be used to configure tracing settings by
-   * returning the instance created by a {@link SdkMeterProvider.Builder}.
-   *
-   * @see SdkMeterProvider#builder()
-   */
-  @Deprecated
-  public OpenTelemetrySdkBuilder setMeterProvider(SdkMeterProvider meterProvider) {
-    this.meterProvider = meterProvider;
-    return this;
-  }
-
   /** Sets the {@link ContextPropagators} to use. */
   public OpenTelemetrySdkBuilder setPropagators(ContextPropagators propagators) {
     this.propagators = propagators;
@@ -69,17 +54,12 @@ public final class OpenTelemetrySdkBuilder {
    * OpenTelemetrySdkBuilder}.
    */
   public OpenTelemetrySdk build() {
-    if (meterProvider == null) {
-      meterProvider = SdkMeterProvider.builder().build();
-    }
-
     if (tracerProvider == null) {
       tracerProvider = SdkTracerProvider.builder().build();
     }
 
     OpenTelemetrySdk sdk =
-        new OpenTelemetrySdk(
-            new ObfuscatedTracerProvider(tracerProvider), meterProvider, propagators);
+        new OpenTelemetrySdk(new ObfuscatedTracerProvider(tracerProvider), propagators);
     // Automatically initialize global OpenTelemetry with the first SDK we build.
     if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
       GlobalOpenTelemetry.set(sdk);
