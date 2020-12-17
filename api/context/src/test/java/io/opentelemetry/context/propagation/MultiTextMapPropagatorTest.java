@@ -81,17 +81,6 @@ class MultiTextMapPropagatorTest {
   }
 
   @Test
-  void inject_noPropagators() {
-    TextMapPropagator prop = new MultiTextMapPropagator();
-    Map<String, String> carrier = new HashMap<>();
-
-    Context context = Context.current();
-    prop.inject(context, carrier, Map::put);
-    assertThat(carrier).isEmpty();
-    assertThat(prop).isSameAs(NoopTextMapPropagator.getInstance());
-  }
-
-  @Test
   void inject_allDelegated() {
     Map<String, String> carrier = new HashMap<>();
     Context context = mock(Context.class);
@@ -142,11 +131,5 @@ class MultiTextMapPropagatorTest {
     Context result = prop.extract(context, carrier, getter);
 
     assertThat(result).isSameAs(context);
-  }
-
-  @Test
-  void createWithOneDelegate() {
-    TextMapPropagator result = new MultiTextMapPropagator(propagator2);
-    assertThat(result).isSameAs(propagator2);
   }
 }
