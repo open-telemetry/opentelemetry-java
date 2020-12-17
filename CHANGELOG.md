@@ -2,6 +2,12 @@
 
 ## Unreleased:
 
+### General
+
+- Starting with 0.13.0, all unstable modules (the 2 metrics modules for now) will have a `-alpha` appended to their
+  base version numbers to make it clear they are not production ready, and will not be when we get to releasing 1.0. 
+  See our [Rationale](docs/rationale.md) document for details.
+
 ### API
 
 #### Breaking Changes
@@ -16,15 +22,16 @@ You can still access the `LabelsBuilder` functionality via the `Labels.builder()
     - The `TraceMultiPropagator` builder has been removed in favor of a simple factory method. 
     - The `value()` method on the `StatusCode` enum has been removed.
     - The Baggage `EntryMetadata` class has been removed in favor of the `BaggageEntryMetadata` interface.
-    - The `setCallback()` method on the asynchronous metric instruments has been removed. 
+    - The `setCallback()` method on the asynchronous metric instruments has been removed.
+- Several public classes have been made `final`.
 
 #### Enhancements
 
 - An `asMap` method has been added to the `Labels` interface, to expose them as a `java.util.Map`.
 - You can now enable strict Context verification via a system property (`-Dio.opentelemetry.context.enableStrictContext=true`)
-Enabling this mode will make sure that all `Scope`s that are created are closed, and generate log messages if they 
-are not closed before being garbage collected. This mode of operation is CPU intensive, so be careful before
-enabling it in high-throughput environments that do not need this strict verification. See the javadoc on the 
+  Enabling this mode will make sure that all `Scope`s that are created are closed, and generate log messages if they 
+  are not closed before being garbage collected. This mode of operation is CPU intensive, so be careful before
+  enabling it in high-throughput environments that do not need this strict verification. See the javadoc on the 
 `io.opentelemetry.context.Context` interface for details.
 - Several of the methods on the `Span` interface have been given default implementations.
 - The Semantic Attributes constants have been updated to the version in the yaml spec as of Dec 14, 2020.
@@ -32,45 +39,66 @@ enabling it in high-throughput environments that do not need this strict verific
 #### Miscellaneous
 
 - The Metrics API has been deprecated in the `opentelemetry-api` module, in preparation for releasing a fully-stable 1.0
-version of that module. The Metrics API will be removed from the module in the next release.
+  version of that module. The Metrics API will be removed from the module in the next release.
 - The API has been broken into separate modules, in preparation for the 1.0 release of the tracing API.
-If you depend on the `opentelemetry-api` module, you should get the rest of the API modules as transitive dependencies.
+  If you depend on the `opentelemetry-api` module, you should get the rest of the API modules as transitive dependencies.
 - The `OpenTelemetry.builder()` and the `OpenTelemetryBuilder` interface have been deprecated and will be removed in the next release.
-The builder functionality is now only present on individual implementations of OpenTelemetry. For instance, the
-`DefaultOpenTelemetry` class has a builder available.
+  The builder functionality is now only present on individual implementations of OpenTelemetry. For instance, the
+  `DefaultOpenTelemetry` class has a builder available.
 - The `OpenTelemetry.setPropagators()` has been deprecated and will be removed in the next release. You should instead create your
-`OpenTelemetry` implementations with the Propagators preset, via the various builder options. For example, use 
-`DefaultOpenTelemetry.builder().setPropagators(propagators).build()` to configure your no-sdk implementation.
+  `OpenTelemetry` implementations with the Propagators preset, via the various builder options. For example, use 
+  `DefaultOpenTelemetry.builder().setPropagators(propagators).build()` to configure your no-sdk implementation.
 
 ### SDK
 
 #### Miscellaneous
 
 - The `SpanData.Link.getContext()` method has been deprecated in favor of a new `SpanData.Link.getSpanContext()`. 
-The deprecated method will be removed in the next release of the SDK.
+  The deprecated method will be removed in the next release of the SDK.
 - The internals of the (alpha) Metrics SDK have been significantly updated.
+- OTLP adapter classes have been moved into the `opentelemetry-sdk-extension-otproto` module so they can be shared across OTLP usages.
+- The zipkin exporter has been updated to have its error code handling match the spec.
+- The logging exporter's format has changed to something slightly more human-readable.
 
 #### Breaking Changes
 
+- Many SDK classes have been renamed to be prefixed with `Sdk` rather than having `Sdk` being embedded in the middle of the name.
+  For example, `TracerSdk` has been renamed to `SdkTracer` and `TracerSdkManagement` has been renamed to `SdkTracerManagement`.
 - The `ResourcesConfig.builder()` method has been made non-public.
 - The `TraceConfig.Builder` class has been moved to the top-level `TraceConfigBuilder` class.
 - The built-in exporter `Builder` classes have been moved to the top level, rather than inner classes. Access to the builders
-is still available via `builder()` methods on the exporter classes.
+  is still available via `builder()` methods on the exporter classes.
 - The built-in SpanProcessor `Builder` classes have been moved to the top level, rather than inner classes. Access to the builders
-is still available via `builder()` methods on the SpanProcessor implementation classes.
+  is still available via `builder()` methods on the SpanProcessor implementation classes.
 - The built-in ParentBasedSampler `Builder` class has been moved to the top level, rather than inner classes. Access to the builder
-is still available via methods on the Sampler interface.
-- Many SDK classes have been renamed to be prefixed with `Sdk` rather than having `Sdk` being embedded in the middle of the name.
-For example, `TracerSdk` has been renamed to `SdkTracer` and `TracerSdkManagement` has been renamed to `SdkTracerManagement`.
+  is still available via methods on the Sampler interface.
 - The `DaemonThreadFactory` class has been moved to an internal module and should not be used outside of this repository.
+- The builder class for the `OpenTelemetrySdk` class has been slimmed down. The configurable details have been moved into 
+  the specific provider builders, where they apply more specifically and obviously.
+- Many public classes have been made `final`.
+- The MetricExporter interface's `shutdown()` method now returns `CompletableResultCode` rather than void.
+- The `OpenTelemetrySdk`'s builder class has been moved to the top level, rather than being an inner class. It has been renamed to 
+  `OpenTelemetrySdkBuilder` as a part of that change.
+- The OTLP exporters have been split into two separate modules, and the metrics exporter has been tagged with the `-alpha` version.
+  If you continue to depend on the `opentelemetry-exporters-otlp` module, you will only get the trace exporter as a transitive dependency.
 
 ### Extensions
+
+#### Bugfixes
+
+- The `opentelemetry-extension-annotations` module now includes the api module as an `api` dependency, rather than just `implementation`.
 
 #### Breaking Changes
 
 - The deprecated `opentelemetry-extension-runtime-metrics` module has been removed. The functionality is available in the 
-opentelemetry-java-instrumentation project under a different module name.
+  opentelemetry-java-instrumentation project under a different module name.
 - The deprecated `trace-utils` module has been removed.
+- Several public classes have been made `final`.
+
+#### Enhancements
+
+- Some common OTLP adapter utilities have been moved into the `opentelemetry-sdk-extension-otproto` module so they can 
+  be shared across OTLP exporters.
 
 -----
 
