@@ -3,9 +3,9 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../../"
 # freeze the spec version to make SemanticAttributes generation reproducible
-# this hash was obtained by calling `git rev-parse master` on 1st Dec 2020
+# this hash was obtained by calling `git rev-parse master` on 14th Dec 2020
 # we can't use a version tag here because otel-spec releases are very rare
-SPEC_VERSION=181a1afdb201f1334fb032960bb1672cf5a0272f
+SPEC_VERSION=7fb1f01e6a4d9a6b8b7f8780385809136179fd45
 
 cd ${SCRIPT_DIR}
 

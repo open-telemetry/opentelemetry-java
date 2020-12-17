@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
@@ -51,7 +51,7 @@ class TraceInteroperabilityTest {
 
   @Test
   void testParentChildRelationshipsAreExportedCorrectly() {
-    Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.test.scoped.span.1");
+    Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.test.scoped.span.1");
     Span span = tracer.spanBuilder("OpenTelemetrySpan").startSpan();
     try (Scope scope = Context.current().with(span).makeCurrent()) {
       span.addEvent("OpenTelemetry: Event 1");
@@ -179,7 +179,7 @@ class TraceInteroperabilityTest {
   }
 
   private static void createOpenTelemetryScopedSpan() {
-    Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.test.scoped.span.2");
+    Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.test.scoped.span.2");
     Span span = tracer.spanBuilder("OpenTelemetrySpan2").startSpan();
     try (Scope scope = Context.current().with(span).makeCurrent()) {
       span.addEvent("OpenTelemetry2: Event 1");

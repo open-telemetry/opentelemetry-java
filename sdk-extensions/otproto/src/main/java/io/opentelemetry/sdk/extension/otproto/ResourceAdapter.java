@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp;
+package io.opentelemetry.sdk.extension.otproto;
 
 import io.opentelemetry.proto.resource.v1.Resource;
 

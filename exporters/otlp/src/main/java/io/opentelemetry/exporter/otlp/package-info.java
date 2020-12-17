@@ -9,12 +9,12 @@
  * <h2>Contents</h2>
  *
  * <ul>
- *   <li>{@link io.opentelemetry.exporter.otlp.CommonAdapter}
- *   <li>{@link io.opentelemetry.exporter.otlp.MetricAdapter}
+ *   <li>{@link io.opentelemetry.sdk.extension.otproto.CommonAdapter}
+ *   <li>{@link io.opentelemetry.sdk.extension.otproto.MetricAdapter}
  *   <li>{@link io.opentelemetry.exporter.otlp.OtlpGrpcMetricExporter}
  *   <li>{@link io.opentelemetry.exporter.otlp.OtlpGrpcSpanExporter}
- *   <li>{@link io.opentelemetry.exporter.otlp.ResourceAdapter}
- *   <li>{@link io.opentelemetry.exporter.otlp.SpanAdapter}
+ *   <li>{@link io.opentelemetry.sdk.extension.otproto.ResourceAdapter}
+ *   <li>{@link io.opentelemetry.sdk.extension.otproto.SpanAdapter}
  * </ul>
  *
  * <p>Configuration options for {@link io.opentelemetry.exporter.otlp.OtlpGrpcMetricExporter} and

@@ -11,7 +11,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Span;
 import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from /templates/SemanticAttributes.java.j2
@@ -290,7 +289,10 @@ public final class SemanticAttributes {
   /**
    * Logical name of the service.
    *
-   * <p>Note: MUST be the same for all instances of horizontally scaled services.
+   * <p>Note: MUST be the same for all instances of horizontally scaled services. If the value was
+   * not specified, SDKs MUST fallback to `unknown_service:` concatenated with
+   * [`process.executable.name`](process.md#process), e.g. `unknown_service:bash`. If
+   * `process.executable.name` is not available, the value MUST be set to `unknown_service`.
    */
   public static final AttributeKey<String> SERVICE_NAME = stringKey("service.name");
 
@@ -420,6 +422,47 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> DB_CASSANDRA_KEYSPACE =
       stringKey("db.cassandra.keyspace");
+
+  /** The fetch size used for paging, i.e. how many rows will be returned at once. */
+  public static final AttributeKey<Long> DB_CASSANDRA_PAGE_SIZE = longKey("db.cassandra.page_size");
+
+  /**
+   * The consistency level of the query. Based on consistency values from
+   * [CQL](https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/dml/dmlConfigConsistency.html).
+   */
+  public static final AttributeKey<String> DB_CASSANDRA_CONSISTENCY_LEVEL =
+      stringKey("db.cassandra.consistency_level");
+
+  /**
+   * The name of the primary table that the operation is acting upon, including the schema name (if
+   * applicable).
+   *
+   * <p>Note: This mirrors the db.sql.table attribute but references cassandra rather than sql. It
+   * is not recommended to attempt any client-side parsing of `db.statement` just to get this
+   * property, but it should be set if it is provided by the library being instrumented. If the
+   * operation is acting upon an anonymous table, or more than one table, this value MUST NOT be
+   * set.
+   */
+  public static final AttributeKey<String> DB_CASSANDRA_TABLE = stringKey("db.cassandra.table");
+
+  /** Whether or not the query is idempotent. */
+  public static final AttributeKey<Boolean> DB_CASSANDRA_IDEMPOTENCE =
+      booleanKey("db.cassandra.idempotence");
+
+  /**
+   * The number of times a query was speculatively executed. Not set or `0` if the query was not
+   * executed speculatively.
+   */
+  public static final AttributeKey<Long> DB_CASSANDRA_SPECULATIVE_EXECUTION_COUNT =
+      longKey("db.cassandra.speculative_execution_count");
+
+  /** The ID of the coordinating node for a query. */
+  public static final AttributeKey<String> DB_CASSANDRA_COORDINATOR_ID =
+      stringKey("db.cassandra.coordinator.id");
+
+  /** The data center of the coordinating node for a query. */
+  public static final AttributeKey<String> DB_CASSANDRA_COORDINATOR_DC =
+      stringKey("db.cassandra.coordinator.dc");
 
   /**
    * The [HBase namespace](https://hbase.apache.org/book.html#_namespace) being accessed. To be used
@@ -1025,6 +1068,42 @@ public final class SemanticAttributes {
     }
   }
 
+  public enum DbCassandraConsistencyLevelValues {
+    /** ALL. */
+    ALL("ALL"),
+    /** EACH_QUORUM. */
+    EACH_QUORUM("EACH_QUORUM"),
+    /** QUORUM. */
+    QUORUM("QUORUM"),
+    /** LOCAL_QUORUM. */
+    LOCAL_QUORUM("LOCAL_QUORUM"),
+    /** ONE. */
+    ONE("ONE"),
+    /** TWO. */
+    TWO("TWO"),
+    /** THREE. */
+    THREE("THREE"),
+    /** LOCAL_ONE. */
+    LOCAL_ONE("LOCAL_ONE"),
+    /** ANY. */
+    ANY("ANY"),
+    /** SERIAL. */
+    SERIAL("SERIAL"),
+    /** LOCAL_SERIAL. */
+    LOCAL_SERIAL("LOCAL_SERIAL"),
+    ;
+
+    private final String value;
+
+    DbCassandraConsistencyLevelValues(String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+  }
+
   public enum FaasTriggerValues {
     /** A response to some data source operation such as a database or filesystem read/write. */
     DATASOURCE("datasource"),
@@ -1175,7 +1254,7 @@ public final class SemanticAttributes {
    * The name of an event describing an exception.
    *
    * <p>Typically an event with that name should not be manually created. Instead {@link
-   * Span#recordException(Throwable)} should be used.
+   * io.opentelemetry.api.trace.Span#recordException(Throwable)} should be used.
    */
   public static final String EXCEPTION_EVENT_NAME = "exception";
 

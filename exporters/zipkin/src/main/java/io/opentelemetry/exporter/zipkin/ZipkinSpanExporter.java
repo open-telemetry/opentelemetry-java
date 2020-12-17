@@ -128,16 +128,15 @@ public final class ZipkinSpanExporter implements SpanExporter {
     spanAttributes.forEach(
         (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
     SpanData.Status status = spanData.getStatus();
-    // include status code & description.
+
+    // include status code & error.
     if (!status.isUnset()) {
       spanBuilder.putTag(OTEL_STATUS_CODE, status.getStatusCode().toString());
-      if (status.getDescription() != null) {
-        spanBuilder.putTag(OTEL_STATUS_DESCRIPTION, status.getDescription());
+
+      // add the error tag, if it isn't already in the source span.
+      if (!status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
+        spanBuilder.putTag(STATUS_ERROR.getKey(), nullToEmpty(status.getDescription()));
       }
-    }
-    // add the error tag, if it isn't already in the source span.
-    if (!status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
-      spanBuilder.putTag(STATUS_ERROR.getKey(), status.getStatusCode().toString());
     }
 
     InstrumentationLibraryInfo instrumentationLibraryInfo =
@@ -156,6 +155,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
 
     return spanBuilder.build();
+  }
+
+  private static String nullToEmpty(String value) {
+    return value != null ? value : "";
   }
 
   private static Endpoint chooseEndpoint(SpanData spanData, Endpoint localEndpoint) {

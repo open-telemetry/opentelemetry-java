@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
  * A {@link ResourceProvider} which provides information about the current EC2 instance if running
  * on AWS EC2.
  */
-public class Ec2Resource extends ResourceProvider {
+public final class Ec2Resource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());
 

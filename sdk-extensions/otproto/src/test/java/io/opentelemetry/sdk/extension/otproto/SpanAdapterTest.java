@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp;
+package io.opentelemetry.sdk.extension.otproto;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
@@ -39,7 +39,6 @@ import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link SpanAdapter}. */
 class SpanAdapterTest {
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};

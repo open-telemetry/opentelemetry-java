@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 
 /** Builder utility for this exporter. */
-public class JaegerThriftSpanExporterBuilder
+public final class JaegerThriftSpanExporterBuilder
     extends ConfigBuilder<JaegerThriftSpanExporterBuilder> {
 
   private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";

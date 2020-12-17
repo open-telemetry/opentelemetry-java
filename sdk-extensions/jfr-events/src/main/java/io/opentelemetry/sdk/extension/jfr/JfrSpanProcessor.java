@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
  * other SpanProcessor which may affect timings. When possible, register it first before any other
  * processors to allow the most accurate measurements.
  */
-public class JfrSpanProcessor implements SpanProcessor {
+public final class JfrSpanProcessor implements SpanProcessor {
 
   private final WeakConcurrentMap<SpanContext, SpanEvent> spanEvents =
       new WeakConcurrentMap.WithInlinedExpunction<>();

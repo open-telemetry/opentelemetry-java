@@ -1,5 +1,5 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "com.google.protobuf"
@@ -17,8 +17,7 @@ dependencies {
             libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub,
-            libraries.protobuf,
-            libraries.protobuf_util
+            libraries.protobuf
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}",
             libraries.testcontainers

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp;
+package io.opentelemetry.sdk.extension.otproto;
 
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
@@ -33,9 +33,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-final class MetricAdapter {
+/** Converter from SDK {@link MetricData} to OTLP {@link ResourceMetrics}. */
+public final class MetricAdapter {
 
-  static List<ResourceMetrics> toProtoResourceMetrics(Collection<MetricData> metricData) {
+  /** Converts the provided {@link MetricData} to {@link ResourceMetrics}. */
+  public static List<ResourceMetrics> toProtoResourceMetrics(Collection<MetricData> metricData) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Metric>>> resourceAndLibraryMap =
         groupByResourceAndLibrary(metricData);
     List<ResourceMetrics> resourceMetrics = new ArrayList<>(resourceAndLibraryMap.size());

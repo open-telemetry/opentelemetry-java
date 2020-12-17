@@ -1,9 +1,13 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "me.champeau.gradle.jmh"
     id "ru.vyarus.animalsniffer"
+}
+
+version = "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
+    "${major}.${minor}.${patch}-alpha"
 }
 
 description = 'OpenTelemetry API'
