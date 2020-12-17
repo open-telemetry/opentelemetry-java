@@ -10,6 +10,15 @@ description = 'OpenTelemetry SDK'
 ext.moduleName = "io.opentelemetry.sdk"
 ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk"
 
+// Stop gap measure until sdk no longer depends on sdk-metrics
+configurations.all {
+    resolutionStrategy {
+        dependencySubstitution {
+            substitute project(':opentelemetry-sdk-metrics') with module('io.opentelemetry:opentelemetry-sdk-metrics:0.13.0-alpha')
+        }
+    }
+}
+
 dependencies {
     api project(':opentelemetry-api'),
             project(':opentelemetry-sdk-common'),
