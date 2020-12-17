@@ -19,16 +19,16 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link MeterSdkProvider}. */
-class MeterSdkRegistryTest {
+/** Unit tests for {@link SdkMeterProvider}. */
+class SdkMeterRegistryTest {
   private final TestClock testClock = TestClock.create();
-  private final MeterSdkProvider meterProvider =
-      MeterSdkProvider.builder().setClock(testClock).setResource(Resource.getEmpty()).build();
+  private final SdkMeterProvider meterProvider =
+      SdkMeterProvider.builder().setClock(testClock).setResource(Resource.getEmpty()).build();
 
   @Test
   void builder_HappyPath() {
     assertThat(
-            MeterSdkProvider.builder()
+            SdkMeterProvider.builder()
                 .setClock(mock(Clock.class))
                 .setResource(mock(Resource.class))
                 .build())
@@ -38,18 +38,18 @@ class MeterSdkRegistryTest {
   @Test
   void builder_NullClock() {
     assertThrows(
-        NullPointerException.class, () -> MeterSdkProvider.builder().setClock(null), "clock");
+        NullPointerException.class, () -> SdkMeterProvider.builder().setClock(null), "clock");
   }
 
   @Test
   void builder_NullResource() {
     assertThrows(
-        NullPointerException.class, () -> MeterSdkProvider.builder().setResource(null), "resource");
+        NullPointerException.class, () -> SdkMeterProvider.builder().setResource(null), "resource");
   }
 
   @Test
   void defaultGet() {
-    assertThat(meterProvider.get("test")).isInstanceOf(MeterSdk.class);
+    assertThat(meterProvider.get("test")).isInstanceOf(SdkMeter.class);
   }
 
   @Test
@@ -67,24 +67,24 @@ class MeterSdkRegistryTest {
   void propagatesInstrumentationLibraryInfoToMeter() {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("theName", "theVersion");
-    MeterSdk meter = meterProvider.get(expected.getName(), expected.getVersion());
+    SdkMeter meter = meterProvider.get(expected.getName(), expected.getVersion());
     assertThat(meter.getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 
   @Test
   void metricProducer_GetAllMetrics() {
-    MeterSdk meterSdk1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
-    LongCounterSdk longCounter1 = meterSdk1.longCounterBuilder("testLongCounter").build();
+    SdkMeter sdkMeter1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
+    LongCounterSdk longCounter1 = sdkMeter1.longCounterBuilder("testLongCounter").build();
     longCounter1.add(10, Labels.empty());
-    MeterSdk meterSdk2 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
-    LongCounterSdk longCounter2 = meterSdk2.longCounterBuilder("testLongCounter").build();
+    SdkMeter sdkMeter2 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
+    LongCounterSdk longCounter2 = sdkMeter2.longCounterBuilder("testLongCounter").build();
     longCounter2.add(10, Labels.empty());
 
     assertThat(meterProvider.getMetricProducer().collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 Resource.getEmpty(),
-                meterSdk1.getInstrumentationLibraryInfo(),
+                sdkMeter1.getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",
                 "1",
@@ -95,7 +95,7 @@ class MeterSdkRegistryTest {
                         LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))),
             MetricData.createLongSum(
                 Resource.getEmpty(),
-                meterSdk2.getInstrumentationLibraryInfo(),
+                sdkMeter2.getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",
                 "1",
@@ -108,23 +108,23 @@ class MeterSdkRegistryTest {
 
   @Test
   void suppliesDefaultMeterForNullName() {
-    MeterSdk meter = meterProvider.get(null);
+    SdkMeter meter = meterProvider.get(null);
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(MeterSdkProvider.DEFAULT_METER_NAME);
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
     meter = meterProvider.get(null, null);
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(MeterSdkProvider.DEFAULT_METER_NAME);
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }
 
   @Test
   void suppliesDefaultMeterForEmptyName() {
-    MeterSdk meter = meterProvider.get("");
+    SdkMeter meter = meterProvider.get("");
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(MeterSdkProvider.DEFAULT_METER_NAME);
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
     meter = meterProvider.get("", "");
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(MeterSdkProvider.DEFAULT_METER_NAME);
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }
 }

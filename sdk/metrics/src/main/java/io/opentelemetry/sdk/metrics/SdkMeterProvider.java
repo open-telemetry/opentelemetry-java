@@ -25,34 +25,34 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * {@code Meter} provider implementation for {@link MeterProvider}.
+ * {@code SdkMeterProvider} implementation for {@link MeterProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * OpenTelemetry}.
  */
-public final class MeterSdkProvider implements MeterProvider {
+public final class SdkMeterProvider implements MeterProvider {
 
-  private static final Logger LOGGER = Logger.getLogger(MeterSdkProvider.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(SdkMeterProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
-  private final ComponentRegistry<MeterSdk> registry;
+  private final ComponentRegistry<SdkMeter> registry;
   private final MetricProducer metricProducer;
   private final MeterProviderSharedState sharedState;
 
-  private MeterSdkProvider(Clock clock, Resource resource) {
+  private SdkMeterProvider(Clock clock, Resource resource) {
     this.sharedState = MeterProviderSharedState.create(clock, resource);
     this.registry =
         new ComponentRegistry<>(
-            instrumentationLibraryInfo -> new MeterSdk(sharedState, instrumentationLibraryInfo));
+            instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
     this.metricProducer = new MetricProducerSdk(this.registry);
   }
 
   @Override
-  public MeterSdk get(String instrumentationName) {
+  public SdkMeter get(String instrumentationName) {
     return get(instrumentationName, null);
   }
 
   @Override
-  public MeterSdk get(String instrumentationName, @Nullable String instrumentationVersion) {
+  public SdkMeter get(String instrumentationName, @Nullable String instrumentationVersion) {
     // Per the spec, both null and empty are "invalid" and a "default" should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
@@ -78,16 +78,16 @@ public final class MeterSdkProvider implements MeterProvider {
   }
 
   /**
-   * Returns a new {@link Builder} for {@link MeterSdkProvider}.
+   * Returns a new {@link Builder} for {@link SdkMeterProvider}.
    *
-   * @return a new {@link Builder} for {@link MeterSdkProvider}.
+   * @return a new {@link Builder} for {@link SdkMeterProvider}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Builder class for the {@link MeterSdkProvider}. Has fully functional default implementations of
+   * Builder class for the {@link SdkMeterProvider}. Has fully functional default implementations of
    * all three required interfaces.
    */
   public static final class Builder {
@@ -126,8 +126,8 @@ public final class MeterSdkProvider implements MeterProvider {
      *
      * @return An initialized TracerSdkFactory.
      */
-    public MeterSdkProvider build() {
-      return new MeterSdkProvider(clock, resource);
+    public SdkMeterProvider build() {
+      return new SdkMeterProvider(clock, resource);
     }
   }
 
@@ -160,17 +160,17 @@ public final class MeterSdkProvider implements MeterProvider {
   }
 
   private static final class MetricProducerSdk implements MetricProducer {
-    private final ComponentRegistry<MeterSdk> registry;
+    private final ComponentRegistry<SdkMeter> registry;
 
-    private MetricProducerSdk(ComponentRegistry<MeterSdk> registry) {
+    private MetricProducerSdk(ComponentRegistry<SdkMeter> registry) {
       this.registry = registry;
     }
 
     @Override
     public Collection<MetricData> collectAllMetrics() {
-      Collection<MeterSdk> meters = registry.getComponents();
+      Collection<SdkMeter> meters = registry.getComponents();
       List<MetricData> result = new ArrayList<>(meters.size());
-      for (MeterSdk meter : meters) {
+      for (SdkMeter meter : meters) {
         result.addAll(meter.collectAll());
       }
       return Collections.unmodifiableCollection(result);

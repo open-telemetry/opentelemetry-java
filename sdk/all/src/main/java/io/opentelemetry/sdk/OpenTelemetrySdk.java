@@ -12,7 +12,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,13 +47,13 @@ public final class OpenTelemetrySdk extends DefaultOpenTelemetry {
   }
 
   /**
-   * Returns the global {@link MeterSdkProvider}.
+   * Returns the global {@link SdkMeterProvider}.
    *
    * @deprecated this will be removed soon in preparation for the initial otel release.
    */
   @Deprecated
-  public static MeterSdkProvider getGlobalMeterProvider() {
-    return (MeterSdkProvider) GlobalOpenTelemetry.get().getMeterProvider();
+  public static SdkMeterProvider getGlobalMeterProvider() {
+    return (SdkMeterProvider) GlobalOpenTelemetry.get().getMeterProvider();
   }
 
   static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();

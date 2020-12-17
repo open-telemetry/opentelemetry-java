@@ -22,7 +22,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -38,7 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class OpenTelemetrySdkTest {
 
   @Mock private SdkTracerProvider tracerProvider;
-  @Mock private MeterSdkProvider meterProvider;
+  @Mock private SdkMeterProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
@@ -91,7 +91,7 @@ class OpenTelemetrySdkTest {
             obfuscatedTracerProvider ->
                 assertThat(obfuscatedTracerProvider.unobfuscate())
                     .isInstanceOf(SdkTracerProvider.class));
-    assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
+    assertThat(openTelemetry.getMeterProvider()).isInstanceOf(SdkMeterProvider.class);
   }
 
   @Test
@@ -123,7 +123,7 @@ class OpenTelemetrySdkTest {
                     .setTraceConfig(traceConfig)
                     .build())
             .setMeterProvider(
-                MeterSdkProvider.builder().setResource(resource).setClock(clock).build())
+                SdkMeterProvider.builder().setResource(resource).setClock(clock).build())
             .build();
     TracerProvider unobfuscatedTracerProvider =
         ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
@@ -138,7 +138,7 @@ class OpenTelemetrySdkTest {
         .hasFieldOrPropertyWithValue("idGenerator", idGenerator)
         .hasFieldOrPropertyWithValue("activeTraceConfig", traceConfig);
 
-    assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
+    assertThat(openTelemetry.getMeterProvider()).isInstanceOf(SdkMeterProvider.class);
     // Since MeterProvider is in a different package, the only alternative to this reflective
     // approach would be to make the fields public for testing which is worse than this.
     assertThat(openTelemetry.getMeterProvider())
@@ -194,7 +194,7 @@ class OpenTelemetrySdkTest {
                     .setTraceConfig(newConfig)
                     .build())
             .setMeterProvider(
-                MeterSdkProvider.builder()
+                SdkMeterProvider.builder()
                     .setClock(mock(Clock.class))
                     .setResource(mock(Resource.class))
                     .build());
