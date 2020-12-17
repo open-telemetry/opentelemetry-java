@@ -26,7 +26,7 @@ class AggregationChooserTest {
 
     AggregationChooser aggregationChooser = new AggregationChooser();
     aggregationChooser.addView(
-        InstrumentSelector.newBuilder().instrumentType(InstrumentType.COUNTER).build(),
+        InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
         configuration);
     assertThat(
             aggregationChooser.chooseAggregation(
@@ -51,7 +51,7 @@ class AggregationChooserTest {
 
     AggregationChooser aggregationChooser = new AggregationChooser();
     aggregationChooser.addView(
-        InstrumentSelector.newBuilder().instrumentNameRegex("overridden").build(), configuration);
+        InstrumentSelector.builder().setInstrumentNameRegex("overridden").build(), configuration);
     assertThat(
             aggregationChooser.chooseAggregation(
                 InstrumentDescriptor.create(
@@ -78,13 +78,13 @@ class AggregationChooserTest {
 
     AggregationChooser aggregationChooser = new AggregationChooser();
     aggregationChooser.addView(
-        InstrumentSelector.newBuilder()
-            .instrumentNameRegex("overridden")
-            .instrumentType(InstrumentType.COUNTER)
+        InstrumentSelector.builder()
+            .setInstrumentNameRegex("overridden")
+            .setInstrumentType(InstrumentType.COUNTER)
             .build(),
         configuration2);
     aggregationChooser.addView(
-        InstrumentSelector.newBuilder().instrumentType(InstrumentType.COUNTER).build(),
+        InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
         configuration1);
 
     assertThat(
@@ -107,9 +107,9 @@ class AggregationChooserTest {
 
     AggregationChooser aggregationChooser = new AggregationChooser();
     aggregationChooser.addView(
-        InstrumentSelector.newBuilder()
-            .instrumentNameRegex("overrid(es|den)")
-            .instrumentType(InstrumentType.COUNTER)
+        InstrumentSelector.builder()
+            .setInstrumentNameRegex("overrid(es|den)")
+            .setInstrumentType(InstrumentType.COUNTER)
             .build(),
         configuration1);
 
