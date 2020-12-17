@@ -2,6 +2,10 @@
 
 ## Unreleased:
 
+-----
+
+## Version 0.13.0 - 2020-12-17
+
 ### General
 
 - Starting with 0.13.0, all unstable modules (the 2 metrics modules for now) will have a `-alpha` appended to their
