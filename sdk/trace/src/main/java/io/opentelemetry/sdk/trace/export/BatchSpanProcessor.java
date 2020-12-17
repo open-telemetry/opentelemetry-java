@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.api.common.AlphaApi;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -140,8 +141,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   /**
    * Sets the {@link MeterProvider} to use to record metrics related to processed spans. By default,
-   * the {@link BatchSpanProcessor} will not record metrics. Call this method with a configured
-   * {@link MeterProvider} to enable recording.
+   * the {@link BatchSpanProcessor} will record metrics using the {@link GlobalMetricsProvider}.
+   * Call this method with a configured {@link MeterProvider} to enable recording metrics if the
+   * {@link GlobalMetricsProvider} is not configured..
    */
   @AlphaApi
   public void setMeterProvider(MeterProvider meterProvider) {
@@ -182,7 +184,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.queue = queue;
       this.batch = new ArrayList<>(this.maxExportBatchSize);
 
-      setMeterProvider(MeterProvider.getDefault());
+      setMeterProvider(GlobalMetricsProvider.get());
     }
 
     private void addSpan(ReadableSpan span) {
