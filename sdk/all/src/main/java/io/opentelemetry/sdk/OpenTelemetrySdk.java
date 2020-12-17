@@ -7,11 +7,9 @@ package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import javax.annotation.concurrent.ThreadSafe;
@@ -20,15 +18,10 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OpenTelemetrySdk implements OpenTelemetry {
   private final ObfuscatedTracerProvider tracerProvider;
-  private final SdkMeterProvider meterProvider;
   private volatile ContextPropagators propagators;
 
-  OpenTelemetrySdk(
-      ObfuscatedTracerProvider tracerProvider,
-      SdkMeterProvider meterProvider,
-      ContextPropagators propagators) {
+  OpenTelemetrySdk(ObfuscatedTracerProvider tracerProvider, ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;
-    this.meterProvider = meterProvider;
     this.propagators = propagators;
   }
 
@@ -56,31 +49,9 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
   }
 
-  /**
-   * Returns the global {@link SdkMeterProvider}.
-   *
-   * @deprecated this will be removed soon in preparation for the initial otel release.
-   */
-  @Deprecated
-  public static SdkMeterProvider getGlobalMeterProvider() {
-    return (SdkMeterProvider) GlobalOpenTelemetry.get().getMeterProvider();
-  }
-
-  @Override
-  @Deprecated
-  public void setPropagators(ContextPropagators propagators) {
-    this.propagators = propagators;
-  }
-
   @Override
   public TracerProvider getTracerProvider() {
     return tracerProvider;
-  }
-
-  @Override
-  @Deprecated
-  public MeterProvider getMeterProvider() {
-    return meterProvider;
   }
 
   @Override

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import javax.annotation.concurrent.ThreadSafe;
@@ -17,13 +16,10 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class DefaultOpenTelemetry implements OpenTelemetry {
   private final TracerProvider tracerProvider;
-  private final MeterProvider meterProvider;
-  private volatile ContextPropagators propagators;
+  private final ContextPropagators propagators;
 
-  DefaultOpenTelemetry(
-      TracerProvider tracerProvider, MeterProvider meterProvider, ContextPropagators propagators) {
+  DefaultOpenTelemetry(TracerProvider tracerProvider, ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;
-    this.meterProvider = meterProvider;
     this.propagators = propagators;
   }
 
@@ -37,20 +33,8 @@ public final class DefaultOpenTelemetry implements OpenTelemetry {
   }
 
   @Override
-  @Deprecated
-  public void setPropagators(ContextPropagators propagators) {
-    this.propagators = propagators;
-  }
-
-  @Override
   public TracerProvider getTracerProvider() {
     return tracerProvider;
-  }
-
-  @Override
-  @Deprecated
-  public MeterProvider getMeterProvider() {
-    return meterProvider;
   }
 
   @Override
