@@ -47,7 +47,7 @@ public class HelloWorldClientStream {
   // Export spans as log entries
   private static final LoggingSpanExporter exporter = new LoggingSpanExporter();
   // OTel API
-  private static final OpenTelemetry openTelemetry = initTracing(exporter);
+  private static final OpenTelemetry openTelemetry = initOpenTelemetry(exporter);
 
   private final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
@@ -162,7 +162,7 @@ public class HelloWorldClientStream {
     }
   }
 
-  private static OpenTelemetry initTracing(LoggingSpanExporter exporter) {
+  private static OpenTelemetry initOpenTelemetry(LoggingSpanExporter exporter) {
     // install the W3C Trace Context propagator
     // Get the tracer management instance
     SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();

@@ -31,7 +31,7 @@ public class HttpClient {
 
   // OTel API
   private static final LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
-  private static final OpenTelemetry openTelemetry = initTracing(loggingExporter);
+  private static final OpenTelemetry openTelemetry = initOpenTelemetry(loggingExporter);
   private static final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.http.HttpClient");
   // Export traces to log
@@ -39,7 +39,7 @@ public class HttpClient {
   private static final TextMapPropagator.Setter<HttpURLConnection> setter =
       URLConnection::setRequestProperty;
 
-  private static OpenTelemetry initTracing(LoggingSpanExporter loggingExporter) {
+  private static OpenTelemetry initOpenTelemetry(LoggingSpanExporter loggingExporter) {
     // install the W3C Trace Context propagator
     // Get the tracer management instance
     SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();

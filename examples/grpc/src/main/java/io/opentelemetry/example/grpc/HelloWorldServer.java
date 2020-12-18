@@ -36,7 +36,7 @@ public class HelloWorldServer {
 
   private static final int PORT = 50051;
   private static final LoggingSpanExporter exporter = new LoggingSpanExporter();
-  private static final OpenTelemetry openTelemetry = initTracing(exporter);
+  private static final OpenTelemetry openTelemetry = initOpenTelemetry(exporter);
 
   private Server server;
 
@@ -166,7 +166,7 @@ public class HelloWorldServer {
     }
   }
 
-  private static OpenTelemetry initTracing(LoggingSpanExporter exporter) {
+  private static OpenTelemetry initOpenTelemetry(LoggingSpanExporter exporter) {
     SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
     // Set to process the the spans by the LogExporter
     sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());

@@ -16,12 +16,12 @@ public class JaegerExample {
   private final Tracer tracer;
 
   public JaegerExample(String ip, int port) {
-    OpenTelemetrySdk sdk = setupTracing(ip, port);
+    OpenTelemetrySdk sdk = initOpenTelemetry(ip, port);
     this.sdkTracerManagement = sdk.getTracerManagement();
     tracer = sdk.getTracer("io.opentelemetry.example.JaegerExample");
   }
 
-  private OpenTelemetrySdk setupTracing(String ip, int port) {
+  private OpenTelemetrySdk initOpenTelemetry(String ip, int port) {
     // Create a channel towards Jaeger end point
     ManagedChannel jaegerChannel =
         ManagedChannelBuilder.forAddress(ip, port).usePlaintext().build();
@@ -78,7 +78,7 @@ public class JaegerExample {
 
     // Start the example
     JaegerExample example = new JaegerExample(ip, port);
-    example.setupTracing(ip, port);
+    example.initOpenTelemetry(ip, port);
     // generate a few sample spans
     for (int i = 0; i < 10; i++) {
       example.myWonderfulUseCase();

@@ -32,7 +32,7 @@ import java.util.Collections;
 public class OtlpExporterExample {
   private static SdkTracerManagement tracerManagement;
 
-  private static OpenTelemetry initTracing() {
+  private static OpenTelemetry initOpenTelemetry() {
     OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.getDefault();
     BatchSpanProcessor spanProcessor =
         BatchSpanProcessor.builder(spanExporter).setScheduleDelayMillis(100).build();
@@ -50,7 +50,7 @@ public class OtlpExporterExample {
     System.setProperty("otel.resource.attributes", "service.name=OtlpExporterExample");
 
     // set up the span exporter and wire it into the SDK
-    OpenTelemetry openTelemetry = initTracing();
+    OpenTelemetry openTelemetry = initOpenTelemetry();
     Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example");
 
     // set up the metric exporter and wire it into the SDK and a timed reader.

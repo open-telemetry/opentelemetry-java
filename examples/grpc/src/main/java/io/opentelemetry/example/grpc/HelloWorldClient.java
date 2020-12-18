@@ -40,7 +40,7 @@ public class HelloWorldClient {
   private final Integer serverPort;
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
-  private static final OpenTelemetry openTelemetry = initTracing();
+  private static final OpenTelemetry openTelemetry = initOpenTelemetry();
 
   // OTel API
   private Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
@@ -116,7 +116,7 @@ public class HelloWorldClient {
     }
   }
 
-  private static OpenTelemetry initTracing() {
+  private static OpenTelemetry initOpenTelemetry() {
     // install the W3C Trace Context propagator
     // Get the tracer management instance
     SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();

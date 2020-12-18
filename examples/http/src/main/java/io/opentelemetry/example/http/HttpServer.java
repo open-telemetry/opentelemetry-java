@@ -29,7 +29,7 @@ import java.nio.charset.Charset;
 
 public class HttpServer {
   // OTel API
-  private static final OpenTelemetry openTelemetry = initTracing(new LoggingSpanExporter());
+  private static final OpenTelemetry openTelemetry = initOpenTelemetry(new LoggingSpanExporter());
   private static final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.http.HttpServer");
 
@@ -65,7 +65,7 @@ public class HttpServer {
     System.out.println("Server ready on http://127.0.0.1:" + port);
   }
 
-  private static OpenTelemetry initTracing(LoggingSpanExporter loggingExporter) {
+  private static OpenTelemetry initOpenTelemetry(LoggingSpanExporter loggingExporter) {
     // install the W3C Trace Context propagator
     // Get the tracer management instance
     SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
