@@ -27,7 +27,7 @@ final class TracerSharedState {
   private volatile boolean isStopped = false;
 
   @GuardedBy("lock")
-  private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
+  private final List<SpanProcessor> registeredSpanProcessors;
 
   TracerSharedState(
       Clock clock,
@@ -39,7 +39,7 @@ final class TracerSharedState {
     this.idGenerator = idGenerator;
     this.resource = resource;
     this.activeTraceConfig = traceConfig;
-    spanProcessors.forEach(this::addSpanProcessor);
+    this.registeredSpanProcessors = new ArrayList<>(spanProcessors);
   }
 
   Clock getClock() {

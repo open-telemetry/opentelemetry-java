@@ -47,8 +47,6 @@ class SimpleSpanProcessorTest {
   @Mock private ReadableSpan readableSpan;
   @Mock private ReadWriteSpan readWriteSpan;
   @Mock private SpanExporter spanExporter;
-  private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
-  private final Tracer tracer = tracerSdkFactory.get("SimpleSpanProcessor");
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
           TraceId.getInvalid(),
@@ -129,30 +127,37 @@ class SimpleSpanProcessorTest {
   void tracerSdk_NotSampled_Span() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(waitingSpanExporter)
+                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                    .build())
+            .build();
 
-    tracerSdkFactory.addSpanProcessor(
-        BatchSpanProcessor.builder(waitingSpanExporter)
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .build());
+    try {
+      Tracer tracer = sdkTracerProvider.get(getClass().getName());
+      TestUtils.startSpanWithSampler(sdkTracerProvider, tracer, SPAN_NAME, Sampler.alwaysOff())
+          .startSpan()
+          .end();
+      TestUtils.startSpanWithSampler(sdkTracerProvider, tracer, SPAN_NAME, Sampler.alwaysOff())
+          .startSpan()
+          .end();
 
-    TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, SPAN_NAME, Sampler.alwaysOff())
-        .startSpan()
-        .end();
-    TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, SPAN_NAME, Sampler.alwaysOff())
-        .startSpan()
-        .end();
+      Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
+      span.end();
 
-    Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
-    span.end();
-
-    // Spans are recorded and exported in the same order as they are ended, we test that a non
-    // sampled span is not exported by creating and ending a sampled span after a non sampled span
-    // and checking that the first exported span is the sampled span (the non sampled did not get
-    // exported).
-    List<SpanData> exported = waitingSpanExporter.waitForExport();
-    // Need to check this because otherwise the variable span1 is unused, other option is to not
-    // have a span1 variable.
-    assertThat(exported).containsExactly(((ReadableSpan) span).toSpanData());
+      // Spans are recorded and exported in the same order as they are ended, we test that a non
+      // sampled span is not exported by creating and ending a sampled span after a non sampled span
+      // and checking that the first exported span is the sampled span (the non sampled did not get
+      // exported).
+      List<SpanData> exported = waitingSpanExporter.waitForExport();
+      // Need to check this because otherwise the variable span1 is unused, other option is to not
+      // have a span1 variable.
+      assertThat(exported).containsExactly(((ReadableSpan) span).toSpanData());
+    } finally {
+      sdkTracerProvider.shutdown();
+    }
   }
 
   @Test
