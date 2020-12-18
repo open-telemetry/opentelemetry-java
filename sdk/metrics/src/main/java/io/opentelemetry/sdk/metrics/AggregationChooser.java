@@ -6,16 +6,20 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 class AggregationChooser {
+  private static final LinkedHashMap<Pattern, AggregationConfiguration> EMPTY_CONFIG =
+      new LinkedHashMap<>();
   private static final AggregationConfiguration CUMULATIVE_SUM =
       AggregationConfiguration.create(
           Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE);
@@ -29,57 +33,32 @@ class AggregationChooser {
       AggregationConfiguration.create(
           Aggregations.lastValue(), MetricData.AggregationTemporality.DELTA);
 
-  private final Map<InstrumentSelector, AggregationConfiguration> configuration =
-      new ConcurrentHashMap<>();
+  private final ReentrantLock collectLock = new ReentrantLock();
+  private volatile EnumMap<InstrumentType, LinkedHashMap<Pattern, AggregationConfiguration>>
+      configuration;
+
+  AggregationChooser() {
+    this.configuration = new EnumMap<>(InstrumentType.class);
+
+    configuration.put(InstrumentType.COUNTER, EMPTY_CONFIG);
+    configuration.put(InstrumentType.UP_DOWN_COUNTER, EMPTY_CONFIG);
+    configuration.put(InstrumentType.VALUE_RECORDER, EMPTY_CONFIG);
+    configuration.put(InstrumentType.SUM_OBSERVER, EMPTY_CONFIG);
+    configuration.put(InstrumentType.UP_DOWN_SUM_OBSERVER, EMPTY_CONFIG);
+    configuration.put(InstrumentType.VALUE_OBSERVER, EMPTY_CONFIG);
+  }
 
   AggregationConfiguration chooseAggregation(InstrumentDescriptor descriptor) {
-    List<Map.Entry<InstrumentSelector, AggregationConfiguration>> possibleMatches =
-        new ArrayList<>();
-    for (Map.Entry<InstrumentSelector, AggregationConfiguration> entry : configuration.entrySet()) {
-      InstrumentSelector registeredSelector = entry.getKey();
+    LinkedHashMap<Pattern, AggregationConfiguration> configPerType =
+        configuration.get(descriptor.getType());
+    for (Map.Entry<Pattern, AggregationConfiguration> entry : configPerType.entrySet()) {
       // if it matches everything, return it right away...
-      if (matchesOnType(descriptor, registeredSelector)
-          && matchesOnName(descriptor, registeredSelector)) {
+      if (entry.getKey().matcher(descriptor.getName()).matches()) {
         return entry.getValue();
       }
-      // otherwise throw it into a bucket of possible matches if it matches one of the criteria
-      if (matchesOne(descriptor, registeredSelector)) {
-        possibleMatches.add(entry);
-      }
     }
 
-    if (possibleMatches.isEmpty()) {
-      return getDefaultSpecification(descriptor);
-    }
-
-    // If no exact matches found, pick the first one that matches something:
-    return possibleMatches.get(0).getValue();
-  }
-
-  private static boolean matchesOne(InstrumentDescriptor descriptor, InstrumentSelector selector) {
-    if (selector.getInstrumentNamePattern() != null && !matchesOnName(descriptor, selector)) {
-      return false;
-    }
-    if (selector.getInstrumentType() != null && !matchesOnType(descriptor, selector)) {
-      return false;
-    }
-    return true;
-  }
-
-  private static boolean matchesOnType(
-      InstrumentDescriptor descriptor, InstrumentSelector selector) {
-    if (selector.getInstrumentType() == null) {
-      return false;
-    }
-    return selector.getInstrumentType().equals(descriptor.getType());
-  }
-
-  private static boolean matchesOnName(
-      InstrumentDescriptor descriptor, InstrumentSelector registeredSelector) {
-    if (registeredSelector.getInstrumentNamePattern() == null) {
-      return false;
-    }
-    return registeredSelector.getInstrumentNamePattern().matcher(descriptor.getName()).matches();
+    return getDefaultSpecification(descriptor);
   }
 
   private static AggregationConfiguration getDefaultSpecification(InstrumentDescriptor descriptor) {
@@ -99,6 +78,29 @@ class AggregationChooser {
   }
 
   void addView(InstrumentSelector selector, AggregationConfiguration specification) {
-    configuration.put(selector, specification);
+    collectLock.lock();
+    try {
+      EnumMap<InstrumentType, LinkedHashMap<Pattern, AggregationConfiguration>> newConfiguration =
+          new EnumMap<>(configuration);
+      newConfiguration.put(
+          selector.getInstrumentType(),
+          newLinkedHashMap(
+              selector.getInstrumentNamePattern(),
+              specification,
+              newConfiguration.get(selector.getInstrumentType())));
+      configuration = newConfiguration;
+    } finally {
+      collectLock.unlock();
+    }
+  }
+
+  private static LinkedHashMap<Pattern, AggregationConfiguration> newLinkedHashMap(
+      Pattern pattern,
+      AggregationConfiguration aggregationConfiguration,
+      LinkedHashMap<Pattern, AggregationConfiguration> parentConfiguration) {
+    LinkedHashMap<Pattern, AggregationConfiguration> result = new LinkedHashMap<>();
+    result.put(pattern, aggregationConfiguration);
+    result.putAll(parentConfiguration);
+    return result;
   }
 }

@@ -26,7 +26,10 @@ class AggregationChooserTest {
 
     AggregationChooser aggregationChooser = new AggregationChooser();
     aggregationChooser.addView(
-        InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+        InstrumentSelector.builder()
+            .setInstrumentType(InstrumentType.COUNTER)
+            .setInstrumentNameRegex(".*")
+            .build(),
         configuration);
     assertThat(
             aggregationChooser.chooseAggregation(
@@ -51,7 +54,11 @@ class AggregationChooserTest {
 
     AggregationChooser aggregationChooser = new AggregationChooser();
     aggregationChooser.addView(
-        InstrumentSelector.builder().setInstrumentNameRegex("overridden").build(), configuration);
+        InstrumentSelector.builder()
+            .setInstrumentType(InstrumentType.COUNTER)
+            .setInstrumentNameRegex("overridden")
+            .build(),
+        configuration);
     assertThat(
             aggregationChooser.chooseAggregation(
                 InstrumentDescriptor.create(
@@ -61,14 +68,14 @@ class AggregationChooserTest {
     assertThat(
             aggregationChooser.chooseAggregation(
                 InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
+                    "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
                 Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE));
   }
 
   @Test
-  void selection_moreSpecificWins() {
+  void selection_LastAddedViewWins() {
     AggregationConfiguration configuration1 =
         AggregationConfiguration.create(
             Aggregations.sum(), MetricData.AggregationTemporality.DELTA);
@@ -79,13 +86,16 @@ class AggregationChooserTest {
     AggregationChooser aggregationChooser = new AggregationChooser();
     aggregationChooser.addView(
         InstrumentSelector.builder()
-            .setInstrumentNameRegex("overridden")
             .setInstrumentType(InstrumentType.COUNTER)
+            .setInstrumentNameRegex(".*")
+            .build(),
+        configuration1);
+    aggregationChooser.addView(
+        InstrumentSelector.builder()
+            .setInstrumentType(InstrumentType.COUNTER)
+            .setInstrumentNameRegex("overridden")
             .build(),
         configuration2);
-    aggregationChooser.addView(
-        InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
-        configuration1);
 
     assertThat(
             aggregationChooser.chooseAggregation(
