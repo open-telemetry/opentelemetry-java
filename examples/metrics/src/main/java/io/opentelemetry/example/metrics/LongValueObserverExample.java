@@ -6,9 +6,9 @@ import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
 
 /**
- * Example of using {@link LongValueObserver} to measure execution time of method. Setting {@link
- * LongValueObserver.Callback} a callback that gets executed every collection interval. Useful for
- * expensive measurements that would be wastefully to calculate each request.
+ * Example of using {@link LongValueObserver} to measure execution time of method. Setting the
+ * {@link LongValueObserver} updater sets a callback that gets executed every collection interval.
+ * Useful for expensive measurements that would be wastefully to calculate each request.
  */
 public class LongValueObserverExample {
 
@@ -19,7 +19,7 @@ public class LongValueObserverExample {
             .longValueObserverBuilder("jvm.memory.total")
             .setDescription("Reports JVM memory usage.")
             .setUnit("byte")
-            .setCallback(
+            .setUpdater(
                 result -> result.observe(Runtime.getRuntime().totalMemory(), Labels.empty()))
             .build();
   }

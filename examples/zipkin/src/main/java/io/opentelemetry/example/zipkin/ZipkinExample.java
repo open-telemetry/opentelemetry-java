@@ -1,6 +1,6 @@
 package io.opentelemetry.example.zipkin;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
@@ -20,8 +20,8 @@ public class ZipkinExample {
   // Name of the service
   private static final String SERVICE_NAME = "myExampleService";
 
-  private Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.example.ZipkinExample");
-  private ZipkinSpanExporter zipkinExporter;
+  private final Tracer tracer =
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.example.ZipkinExample");
 
   public ZipkinExample(String ip, int port) {
     this.ip = ip;
@@ -32,7 +32,7 @@ public class ZipkinExample {
   // TracerSdkProvider
   public void setupZipkinExporter() {
     String httpUrl = String.format("http://%s:%s", ip, port);
-    this.zipkinExporter =
+    ZipkinSpanExporter zipkinExporter =
         ZipkinSpanExporter.builder()
             .setEndpoint(httpUrl + ENDPOINT_V2_SPANS)
             .setServiceName(SERVICE_NAME)
@@ -60,6 +60,7 @@ public class ZipkinExample {
     try {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
+      // ignore in an example
     }
   }
 

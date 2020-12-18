@@ -17,7 +17,7 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -26,7 +26,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.Arrays;
 import java.util.List;
@@ -42,11 +42,11 @@ public class HelloWorldClientStream {
   private final GreeterGrpc.GreeterStub asyncStub;
 
   // OTel API
-  Tracer tracer = OpenTelemetry.getGlobalTracer("io.opentelemetry.example.HelloWorldClient");
+  Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text headers
-  TextMapPropagator textFormat = OpenTelemetry.getGlobalPropagators().getTextMapPropagator();
+  TextMapPropagator textFormat = GlobalOpenTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
   TextMapPropagator.Setter<Metadata> setter =
       (carrier, key, value) ->
@@ -71,7 +71,7 @@ public class HelloWorldClientStream {
 
   private void initTracer() {
     // Use the OpenTelemetry SDK
-    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
+    SdkTracerManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
     // Set to process the spans by the log exporter
     tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
   }

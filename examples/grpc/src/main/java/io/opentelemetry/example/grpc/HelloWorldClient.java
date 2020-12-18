@@ -16,6 +16,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
@@ -27,7 +28,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -40,7 +41,7 @@ public class HelloWorldClient {
   private final Integer serverPort;
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
-  OpenTelemetry openTelemetry = OpenTelemetry.get();
+  OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
   // OTel API
   Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
   // Share context via text headers
@@ -116,14 +117,20 @@ public class HelloWorldClient {
   }
 
   private static void initTracing() {
-    OpenTelemetry.setGlobalPropagators(
-        ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
-
-    // Use the OpenTelemetry SDK
+    // install the W3C Trace Context propagator
+    // Get the tracer management instance
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+    // Set to process the the spans by the LogExporter
     LoggingSpanExporter exporter = new LoggingSpanExporter();
-    TracerSdkManagement tracerProvider = OpenTelemetrySdk.getGlobalTracerManagement();
-    // Set to process the spans by the log exporter
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(sdkTracerProvider)
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .build();
+
+    GlobalOpenTelemetry.set(openTelemetrySdk);
   }
 
   /**
