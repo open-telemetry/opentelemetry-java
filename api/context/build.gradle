@@ -1,5 +1,5 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "me.champeau.gradle.jmh"
@@ -9,6 +9,7 @@ plugins {
 
 description = "OpenTelemetry Context (Incubator)"
 ext.moduleName = "io.opentelemetry.context"
+archivesBaseName = "opentelemetry-context"
 
 testSets {
     grpcInOtelTest

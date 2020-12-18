@@ -1,0 +1,30 @@
+plugins {
+    id "java-library"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry Protocol Metrics Exporter'
+ext.moduleName = "io.opentelemetry.exporter.otlp.metrics"
+
+version = "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
+    "${major}.${minor}.${patch}-alpha"
+}
+
+dependencies {
+    api project(':sdk:all')
+
+    implementation project(':sdk-extensions:otproto'),
+            libraries.grpc_api,
+            libraries.grpc_protobuf,
+            libraries.grpc_stub,
+            libraries.protobuf
+
+    testImplementation project(':sdk:testing')
+
+    testImplementation "io.grpc:grpc-testing:${grpcVersion}"
+    testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
+
+    signature libraries.android_signature
+}

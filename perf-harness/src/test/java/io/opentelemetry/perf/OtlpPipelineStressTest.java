@@ -16,9 +16,9 @@ import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporter.otlp.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -246,7 +246,7 @@ public class OtlpPipelineStressTest {
         .setMetricExporter(metricExporter)
         .setMetricProducers(
             Collections.singleton(
-                ((MeterSdkProvider) GlobalMetricsProvider.get()).getMetricProducer()))
+                ((SdkMeterProvider) GlobalMetricsProvider.get()).getMetricProducer()))
         .setExportIntervalMillis(1000)
         .build();
   }

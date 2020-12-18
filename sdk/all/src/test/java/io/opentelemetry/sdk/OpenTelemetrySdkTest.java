@@ -9,20 +9,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -34,11 +32,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("deprecation") // Testing deprecated code
 class OpenTelemetrySdkTest {
 
   @Mock private SdkTracerProvider tracerProvider;
-  @Mock private MeterSdkProvider meterProvider;
+  @Mock private SdkMeterProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
@@ -65,8 +62,6 @@ class OpenTelemetrySdkTest {
   void testGlobalDefault() {
     assertThat(((SdkTracerProvider) OpenTelemetrySdk.getGlobalTracerManagement()).get(""))
         .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""));
-    assertThat(OpenTelemetrySdk.getGlobalMeterProvider())
-        .isSameAs(GlobalOpenTelemetry.getMeterProvider());
     assertThat(OpenTelemetrySdk.getGlobalTracerManagement()).isNotNull();
   }
 
@@ -76,10 +71,6 @@ class OpenTelemetrySdkTest {
         .isEqualTo(GlobalOpenTelemetry.getTracerProvider().get("testTracer1"));
     assertThat(GlobalOpenTelemetry.getTracer("testTracer2", "testVersion"))
         .isEqualTo(GlobalOpenTelemetry.getTracerProvider().get("testTracer2", "testVersion"));
-    assertThat(GlobalOpenTelemetry.getMeter("testMeter1"))
-        .isEqualTo(GlobalOpenTelemetry.getMeterProvider().get("testMeter1"));
-    assertThat(GlobalOpenTelemetry.getMeter("testMeter2", "testVersion"))
-        .isEqualTo(GlobalOpenTelemetry.getMeterProvider().get("testMeter2", "testVersion"));
   }
 
   @Test
@@ -91,7 +82,6 @@ class OpenTelemetrySdkTest {
             obfuscatedTracerProvider ->
                 assertThat(obfuscatedTracerProvider.unobfuscate())
                     .isInstanceOf(SdkTracerProvider.class));
-    assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
   }
 
   @Test
@@ -99,12 +89,10 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
-            .setMeterProvider(meterProvider)
             .setPropagators(propagators)
             .build();
     assertThat(((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate())
         .isEqualTo(tracerProvider);
-    assertThat(openTelemetry.getMeterProvider()).isEqualTo(meterProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
   }
 
@@ -122,8 +110,6 @@ class OpenTelemetrySdkTest {
                     .setIdGenerator(idGenerator)
                     .setTraceConfig(traceConfig)
                     .build())
-            .setMeterProvider(
-                MeterSdkProvider.builder().setResource(resource).setClock(clock).build())
             .build();
     TracerProvider unobfuscatedTracerProvider =
         ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
@@ -137,14 +123,6 @@ class OpenTelemetrySdkTest {
         .hasFieldOrPropertyWithValue("resource", resource)
         .hasFieldOrPropertyWithValue("idGenerator", idGenerator)
         .hasFieldOrPropertyWithValue("activeTraceConfig", traceConfig);
-
-    assertThat(openTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
-    // Since MeterProvider is in a different package, the only alternative to this reflective
-    // approach would be to make the fields public for testing which is worse than this.
-    assertThat(openTelemetry.getMeterProvider())
-        .extracting("sharedState")
-        .hasFieldOrPropertyWithValue("clock", clock)
-        .hasFieldOrPropertyWithValue("resource", resource);
   }
 
   @Test
@@ -158,16 +136,6 @@ class OpenTelemetrySdkTest {
     assertThat(openTelemetry.getTracerManagement()).isNotNull();
   }
 
-  @Test
-  void onlySdkInstancesAllowed() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> OpenTelemetrySdk.builder().setMeterProvider(mock(MeterProvider.class)));
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> OpenTelemetrySdk.builder().setTracerProvider(mock(TracerProvider.class)));
-  }
-
   // This is just a demonstration of maximum that one can do with OpenTelemetry configuration.
   // Demonstrates how clear or confusing is SDK configuration
   @Test
@@ -179,7 +147,7 @@ class OpenTelemetrySdkTest {
             .setMaxLengthOfAttributeValues(128)
             .build();
 
-    OpenTelemetrySdk.Builder sdkBuilder =
+    OpenTelemetrySdkBuilder sdkBuilder =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
@@ -192,11 +160,6 @@ class OpenTelemetrySdkTest {
                     .setIdGenerator(mock(IdGenerator.class))
                     .setResource(mock(Resource.class))
                     .setTraceConfig(newConfig)
-                    .build())
-            .setMeterProvider(
-                MeterSdkProvider.builder()
-                    .setClock(mock(Clock.class))
-                    .setResource(mock(Resource.class))
                     .build());
 
     sdkBuilder.build();

@@ -22,9 +22,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -71,7 +73,7 @@ class IntervalMetricReaderTest {
   }
 
   @Test
-  void intervalExport() {
+  void intervalExport() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()
@@ -94,7 +96,7 @@ class IntervalMetricReaderTest {
 
   @Test
   @Timeout(2)
-  public void intervalExport_exporterThrowsException() {
+  public void intervalExport_exporterThrowsException() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()
@@ -112,7 +114,7 @@ class IntervalMetricReaderTest {
   }
 
   @Test
-  void oneLastExportAfterShutdown() {
+  void oneLastExportAfterShutdown() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()
@@ -133,12 +135,9 @@ class IntervalMetricReaderTest {
 
   private static class WaitingMetricExporter implements MetricExporter {
 
-    private final Object monitor = new Object();
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
     private final boolean shouldThrow;
-
-    @GuardedBy("monitor")
-    private List<List<MetricData>> exportedMetrics = new ArrayList<>();
+    private final BlockingQueue<List<MetricData>> queue = new LinkedBlockingQueue<>();
 
     private WaitingMetricExporter() {
       this(false);
@@ -150,10 +149,8 @@ class IntervalMetricReaderTest {
 
     @Override
     public CompletableResultCode export(Collection<MetricData> metricList) {
-      synchronized (monitor) {
-        this.exportedMetrics.add(new ArrayList<>(metricList));
-        monitor.notifyAll();
-      }
+      queue.offer(new ArrayList<>(metricList));
+
       if (shouldThrow) {
         throw new RuntimeException("Export Failed!");
       }
@@ -166,8 +163,9 @@ class IntervalMetricReaderTest {
     }
 
     @Override
-    public void shutdown() {
+    public CompletableResultCode shutdown() {
       hasShutdown.set(true);
+      return CompletableResultCode.ofSuccess();
     }
 
     /**
@@ -175,20 +173,12 @@ class IntervalMetricReaderTest {
      * metrics.
      */
     @Nullable
-    List<List<MetricData>> waitForNumberOfExports(int numberOfExports) {
-      List<List<MetricData>> result;
-      synchronized (monitor) {
-        while (exportedMetrics.size() < numberOfExports) {
-          try {
-            monitor.wait();
-          } catch (InterruptedException e) {
-            // Preserve the interruption status as per guidance.
-            Thread.currentThread().interrupt();
-            return null;
-          }
-        }
-        result = exportedMetrics;
-        exportedMetrics = new ArrayList<>();
+    List<List<MetricData>> waitForNumberOfExports(int numberOfExports) throws Exception {
+      List<List<MetricData>> result = new ArrayList<>();
+      while (result.size() < numberOfExports) {
+        List<MetricData> export = queue.poll(5, TimeUnit.SECONDS);
+        assertThat(export).isNotNull();
+        result.add(export);
       }
       return result;
     }

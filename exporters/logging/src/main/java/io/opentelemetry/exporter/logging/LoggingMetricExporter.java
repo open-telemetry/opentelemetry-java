@@ -44,8 +44,9 @@ public final class LoggingMetricExporter implements MetricExporter {
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     // no-op
     this.flush();
+    return CompletableResultCode.ofSuccess();
   }
 }

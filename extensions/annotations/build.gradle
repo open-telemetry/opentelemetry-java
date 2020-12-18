@@ -1,5 +1,5 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "ru.vyarus.animalsniffer"
@@ -9,6 +9,5 @@ description = 'OpenTelemetry Extension Annotations'
 ext.moduleName = "io.opentelemetry.extension.annotations"
 
 dependencies {
-    implementation project(':opentelemetry-api')
-
-    }
+    api project(':api:all')
+}

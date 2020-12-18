@@ -1,21 +1,17 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "me.champeau.gradle.jmh"
     id "ru.vyarus.animalsniffer"
 }
 
-version = "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
-    "${major}.${minor}.${patch}-alpha"
-}
-
 description = 'OpenTelemetry API'
 ext.moduleName = "io.opentelemetry.api.metrics"
 
 dependencies {
-    api project(':opentelemetry-context'),
-            project(':opentelemetry-api-common')
+    api project(':api:context'),
+            project(':api:common')
 
     annotationProcessor libraries.auto_value
 
