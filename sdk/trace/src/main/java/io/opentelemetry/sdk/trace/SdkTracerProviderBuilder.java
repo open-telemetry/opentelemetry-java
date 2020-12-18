@@ -100,8 +100,11 @@ public final class SdkTracerProviderBuilder {
    * @return An initialized TraceSdkProvider.
    */
   public SdkTracerProvider build() {
+    Resource resourceWithFallbacks =
+        Resource.create(
+            FALLBACK_MANDATORY_ATTRIBUTES.toBuilder().putAll(resource.getAttributes()).build());
     return new SdkTracerProvider(
-        clock, idsGenerator, resource, traceConfigSupplier, spanProcessors);
+        clock, idsGenerator, resourceWithFallbacks, traceConfigSupplier, spanProcessors);
   }
 
   SdkTracerProviderBuilder() {}

@@ -20,6 +20,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -98,7 +99,12 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testConfiguration_tracerSettings() {
-    Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
+    Resource resource =
+        Resource.create(
+            Attributes.builder()
+                .put(ResourceAttributes.SERVICE_NAME, "myGreatService")
+                .put("cat", "meow")
+                .build());
     IdGenerator idGenerator = mock(IdGenerator.class);
     TraceConfig traceConfig = mock(TraceConfig.class);
     OpenTelemetrySdk openTelemetry =
@@ -158,7 +164,7 @@ class OpenTelemetrySdkTest {
                     .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                     .setClock(mock(Clock.class))
                     .setIdGenerator(mock(IdGenerator.class))
-                    .setResource(mock(Resource.class))
+                    .setResource(Resource.getEmpty())
                     .setTraceConfig(newConfig)
                     .build());
 

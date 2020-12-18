@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -18,21 +19,24 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SdkMeterProvider}. */
 class SdkMeterRegistryTest {
   private final TestClock testClock = TestClock.create();
+  private final Resource resource =
+      Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "myGreatService"));
   private final SdkMeterProvider meterProvider =
-      SdkMeterProvider.builder().setClock(testClock).setResource(Resource.getEmpty()).build();
+      SdkMeterProvider.builder().setClock(testClock).setResource(resource).build();
 
   @Test
   void builder_HappyPath() {
     assertThat(
             SdkMeterProvider.builder()
                 .setClock(mock(Clock.class))
-                .setResource(mock(Resource.class))
+                .setResource(Resource.getEmpty())
                 .build())
         .isNotNull();
   }
@@ -87,7 +91,7 @@ class SdkMeterRegistryTest {
     assertThat(meterProvider.collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
-                Resource.getEmpty(),
+                resource,
                 sdkMeter1.getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",
@@ -99,7 +103,7 @@ class SdkMeterRegistryTest {
                         LongPointData.create(
                             testClock.now(), testClock.now(), Labels.empty(), 10)))),
             MetricData.createLongSum(
-                Resource.getEmpty(),
+                resource,
                 sdkMeter2.getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",

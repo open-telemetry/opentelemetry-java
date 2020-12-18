@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 
 /**
  * Provides constants for resource semantic conventions defined by the OpenTelemetry specification.
@@ -151,6 +152,9 @@ public final class ResourceAttributes {
   public static final AttributeKey<String> SDK_LANGUAGE = stringKey("telemetry.sdk.language");
   /** The version string of the telemetry SDK. */
   public static final AttributeKey<String> SDK_VERSION = stringKey("telemetry.sdk.version");
+
+  public static final Attributes FALLBACK_MANDATORY_ATTRIBUTES =
+      Attributes.of(SERVICE_NAME, "unknown_service:java");
 
   private ResourceAttributes() {}
 }

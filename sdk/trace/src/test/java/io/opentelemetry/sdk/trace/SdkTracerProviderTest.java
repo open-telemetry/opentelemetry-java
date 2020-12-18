@@ -10,12 +10,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,15 +44,44 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void builder_HappyPath() {
-    assertThat(
-            SdkTracerProvider.builder()
-                .setClock(mock(Clock.class))
-                .setResource(mock(Resource.class))
-                .setIdGenerator(mock(IdGenerator.class))
-                .setTraceConfig(mock(TraceConfig.class))
-                .build())
-        .isNotNull();
+  void builder_fallbackServiceName() {
+    Resource resource = mock(Resource.class);
+    when(resource.getAttributes()).thenReturn(Attributes.empty());
+
+    Resource resourceWithDefaults =
+        Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "unknown_service:java"));
+
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .setClock(mock(Clock.class))
+            .setResource(resource)
+            .setIdGenerator(mock(IdGenerator.class))
+            .setTraceConfig(mock(TraceConfig.class))
+            .build();
+
+    assertThat(tracerProvider).isNotNull();
+    assertThat(tracerProvider)
+        .extracting("sharedState")
+        .hasFieldOrPropertyWithValue("resource", resourceWithDefaults);
+  }
+
+  @Test
+  void builder_serviceNameProvided() {
+    Resource resource =
+        Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "mySpecialService"));
+
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .setClock(mock(Clock.class))
+            .setResource(resource)
+            .setIdGenerator(mock(IdGenerator.class))
+            .setTraceConfig(mock(TraceConfig.class))
+            .build();
+
+    assertThat(tracerProvider).isNotNull();
+    assertThat(tracerProvider)
+        .extracting("sharedState")
+        .hasFieldOrPropertyWithValue("resource", resource);
   }
 
   @Test
