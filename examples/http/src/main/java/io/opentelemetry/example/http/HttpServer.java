@@ -20,7 +20,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,6 +28,56 @@ import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
 public class HttpServer {
+  // OTel API
+  private static final OpenTelemetry openTelemetry = initTracing(new LoggingSpanExporter());
+  private static final Tracer tracer =
+      openTelemetry.getTracer("io.opentelemetry.example.http.HttpServer");
+
+
+  private static final int port = 8080;
+  private final com.sun.net.httpserver.HttpServer server;
+
+  // Extract the context from http headers
+  private static final TextMapPropagator.Getter<HttpExchange> getter =
+      new TextMapPropagator.Getter<>() {
+        @Override
+        public Iterable<String> keys(HttpExchange carrier) {
+          return carrier.getRequestHeaders().keySet();
+        }
+
+        @Override
+        public String get(HttpExchange carrier, String key) {
+          if (carrier.getRequestHeaders().containsKey(key)) {
+            return carrier.getRequestHeaders().get(key).get(0);
+          }
+          return "";
+        }
+      };
+
+  private HttpServer() throws IOException {
+    this(port);
+  }
+
+  private HttpServer(int port) throws IOException {
+    server = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(port), 0);
+    // Test urls
+    server.createContext("/", new HelloHandler());
+    server.start();
+    System.out.println("Server ready on http://127.0.0.1:" + port);
+  }
+
+  private static OpenTelemetry initTracing(LoggingSpanExporter loggingExporter) {
+    // install the W3C Trace Context propagator
+    // Get the tracer management instance
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+    // Set to process the the spans by the LogExporter
+    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(loggingExporter).build());
+
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(sdkTracerProvider)
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .build();
+  }
 
   private static class HelloHandler implements HttpHandler {
 
@@ -35,7 +85,7 @@ public class HttpServer {
     public void handle(HttpExchange exchange) throws IOException {
       // Extract the context from the HTTP request
       Context context =
-          OpenTelemetry.getGlobalPropagators()
+          openTelemetry.getPropagators()
               .getTextMapPropagator()
               .extract(Context.current(), exchange, getter);
 
@@ -82,56 +132,6 @@ public class HttpServer {
     }
   }
 
-  private final com.sun.net.httpserver.HttpServer server;
-  private static final int port = 8080;
-
-  // OTel API
-  private static final Tracer tracer =
-      OpenTelemetry.getGlobalTracer("io.opentelemetry.example.http.HttpServer");
-  // Export traces to log
-  private static final LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
-  // Extract the context from http headers
-  private static final TextMapPropagator.Getter<HttpExchange> getter =
-      new TextMapPropagator.Getter<>() {
-        @Override
-        public Iterable<String> keys(HttpExchange carrier) {
-          return carrier.getRequestHeaders().keySet();
-        }
-
-        @Override
-        public String get(HttpExchange carrier, String key) {
-          if (carrier.getRequestHeaders().containsKey(key)) {
-            return carrier.getRequestHeaders().get(key).get(0);
-          }
-          return "";
-        }
-      };
-
-  private HttpServer() throws IOException {
-    this(port);
-  }
-
-  private HttpServer(int port) throws IOException {
-    server = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(port), 0);
-    // Test urls
-    server.createContext("/", new HelloHandler());
-    server.start();
-    System.out.println("Server ready on http://127.0.0.1:" + port);
-  }
-
-  private static void initTracing() {
-    // install the W3C Trace Context propagator
-    OpenTelemetry.setGlobalPropagators(
-        ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
-
-    // Get the tracer
-    SdkTracerManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
-    // Show that multiple exporters can be used
-
-    // Set to export the traces also to a log file
-    tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(loggingExporter).build());
-  }
-
   private void stop() {
     server.stop(0);
   }
@@ -143,8 +143,6 @@ public class HttpServer {
    * @throws Exception Something might go wrong.
    */
   public static void main(String[] args) throws Exception {
-    initTracing();
-
     final HttpServer s = new HttpServer();
     // Gracefully close the server
     Runtime.getRuntime().addShutdownHook(new Thread(s::stop));
