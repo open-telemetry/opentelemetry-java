@@ -19,8 +19,6 @@ dependencies {
     testAnnotationProcessor libraries.auto_value
     testCompileOnly libraries.auto_value_annotation
 
-    testCompile project(path: ':sdk:common', configuration: 'testClasses')
-
     testImplementation libraries.guava
     testImplementation project(':sdk:testing')
     testImplementation libraries.junit_pioneer

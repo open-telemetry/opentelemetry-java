@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.TestUtils;
@@ -22,10 +21,8 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -81,7 +78,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     options.put("otel.bsp.schedule.delay.millis", "12");
     options.put("otel.bsp.max.queue.size", "34");
     options.put("otel.bsp.max.export.batch.size", "56");
@@ -89,7 +86,7 @@ class BatchSpanProcessorTest {
     options.put("otel.bsp.export.sampled", "false");
     BatchSpanProcessorBuilder config =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
-            .fromConfigMap(options, ConfigTester.getNamingDot());
+            .readProperties(options);
     assertThat(config.getScheduleDelayMillis()).isEqualTo(12);
     assertThat(config.getMaxQueueSize()).isEqualTo(34);
     assertThat(config.getMaxExportBatchSize()).isEqualTo(56);
@@ -101,7 +98,7 @@ class BatchSpanProcessorTest {
   void configTest_EmptyOptions() {
     BatchSpanProcessorBuilder config =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
-            .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
+            .readProperties(new Properties());
     assertThat(config.getScheduleDelayMillis())
         .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS);
     assertThat(config.getMaxQueueSize())

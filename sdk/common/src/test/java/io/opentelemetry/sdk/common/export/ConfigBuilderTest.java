@@ -217,7 +217,7 @@ public class ConfigBuilderTest {
     assertThat(ConfigBuilder.getStringProperty("no-key", map)).isNull();
   }
 
-  public static final class ConfigTester extends ConfigBuilder<Map<String, String>> {
+  private static final class ConfigTester extends ConfigBuilder<Map<String, String>> {
 
     public static NamingConvention getNamingDot() {
       return NamingConvention.DOT;
