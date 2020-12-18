@@ -1,6 +1,7 @@
 package io.opentelemetry.example.metrics;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.DefaultOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
@@ -20,11 +21,11 @@ import javax.swing.filechooser.FileSystemView;
  * extensions.
  */
 public class DoubleCounterExample {
-
+  private static final OpenTelemetry openTelemetry = DefaultOpenTelemetry.builder().build();
   private static final Tracer tracer =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.example.metrics", "0.5");
+      openTelemetry.getTracer("io.opentelemetry.example.metrics", "0.31.1");
   private static final Meter sampleMeter =
-      GlobalMetricsProvider.get().get("io.opentelemetry.example.metrics", "0.5");
+      GlobalMetricsProvider.get().get("io.opentelemetry.example.metrics", "0.13.1");
   private static final File directoryToCountIn =
       FileSystemView.getFileSystemView().getHomeDirectory();
   private static final DoubleCounter diskSpaceCounter =
