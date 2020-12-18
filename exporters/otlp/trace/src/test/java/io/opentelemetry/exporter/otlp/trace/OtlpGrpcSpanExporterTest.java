@@ -29,7 +29,6 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extension.otproto.SpanAdapter;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -37,9 +36,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,12 +45,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class OtlpGrpcSpanExporterTest {
-
-  private abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
-    public static NamingConvention getNaming() {
-      return NamingConvention.DOT;
-    }
-  }
 
   @RegisterExtension
   public static ServerExtension server =
@@ -98,7 +90,7 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     String endpoint = "localhost:" + server.httpPort();
     options.put("otel.exporter.otlp.span.timeout", "5124");
     options.put("otel.exporter.otlp.span.endpoint", endpoint);
@@ -106,10 +98,7 @@ class OtlpGrpcSpanExporterTest {
     options.put(
         "otel.exporter.otlp.span.headers",
         "key=value;key2=value2=;key3=val=ue3; key4 = value4 ;key5= ");
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.builder()
-            .fromConfigMap(options, OtlpGrpcSpanExporterTest.ConfigBuilderTest.getNaming())
-            .build();
+    OtlpGrpcSpanExporter exporter = OtlpGrpcSpanExporter.builder().readProperties(options).build();
 
     assertThat(exporter.getDeadlineMs()).isEqualTo(5124);
     assertThat(

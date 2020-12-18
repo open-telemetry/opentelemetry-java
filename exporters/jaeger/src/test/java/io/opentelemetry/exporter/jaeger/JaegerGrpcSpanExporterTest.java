@@ -27,7 +27,6 @@ import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -35,10 +34,9 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import java.net.InetAddress;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -258,23 +256,15 @@ class JaegerGrpcSpanExporterTest {
 
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     String serviceName = "myGreatService";
     String endpoint = "127.0.0.1:9090";
     options.put("otel.exporter.jaeger.service.name", serviceName);
     options.put("otel.exporter.jaeger.endpoint", endpoint);
     JaegerGrpcSpanExporter exporter =
-        JaegerGrpcSpanExporter.builder()
-            .fromConfigMap(options, ConfigBuilderTest.getNaming())
-            .build();
+        JaegerGrpcSpanExporter.builder().readProperties(options).build();
     assertThat(exporter.getProcessBuilder().getServiceName()).isEqualTo(serviceName);
     assertThat(exporter.getManagedChannel().authority()).isEqualTo(endpoint);
-  }
-
-  abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
-    public static NamingConvention getNaming() {
-      return NamingConvention.DOT;
-    }
   }
 
   static class MockCollectorService extends CollectorServiceGrpc.CollectorServiceImplBase {

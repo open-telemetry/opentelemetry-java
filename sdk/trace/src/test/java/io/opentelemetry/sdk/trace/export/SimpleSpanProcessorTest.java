@@ -20,7 +20,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -29,9 +28,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,19 +66,17 @@ class SimpleSpanProcessorTest {
 
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     options.put("otel.ssp.export.sampled", "false");
     SimpleSpanProcessorBuilder config =
-        SimpleSpanProcessor.builder(spanExporter)
-            .fromConfigMap(options, ConfigTester.getNamingDot());
+        SimpleSpanProcessor.builder(spanExporter).readProperties(options);
     assertThat(config.getExportOnlySampled()).isEqualTo(false);
   }
 
   @Test
   void configTest_EmptyOptions() {
     SimpleSpanProcessorBuilder config =
-        SimpleSpanProcessor.builder(spanExporter)
-            .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
+        SimpleSpanProcessor.builder(spanExporter).readProperties(new Properties());
     assertThat(config.getExportOnlySampled())
         .isEqualTo(SimpleSpanProcessorBuilder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }

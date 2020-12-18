@@ -29,7 +29,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -38,9 +37,8 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -404,22 +402,16 @@ class ZipkinSpanExporterTest {
         .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT");
   }
 
-  abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
-    public static NamingConvention getNaming() {
-      return NamingConvention.DOT;
-    }
-  }
-
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     String serviceName = "myGreatService";
     String endpoint = "http://127.0.0.1:9090";
     options.put("otel.exporter.zipkin.service.name", serviceName);
     options.put("otel.exporter.zipkin.endpoint", endpoint);
     ZipkinSpanExporterBuilder config = ZipkinSpanExporter.builder();
     ZipkinSpanExporterBuilder spy = Mockito.spy(config);
-    spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
+    spy.readProperties(options);
     Mockito.verify(spy).setServiceName(serviceName);
     Mockito.verify(spy).setEndpoint(endpoint);
   }

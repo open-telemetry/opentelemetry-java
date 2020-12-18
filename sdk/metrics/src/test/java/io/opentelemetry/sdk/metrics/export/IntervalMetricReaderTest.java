@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -19,9 +18,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -64,11 +62,11 @@ class IntervalMetricReaderTest {
 
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     options.put("otel.imr.export.interval", "12");
     IntervalMetricReader.Builder config = IntervalMetricReader.builder();
     IntervalMetricReader.Builder spy = Mockito.spy(config);
-    spy.fromConfigMap(options, ConfigTester.getNamingDot());
+    spy.readProperties(options);
     Mockito.verify(spy).setExportIntervalMillis(12);
   }
 
