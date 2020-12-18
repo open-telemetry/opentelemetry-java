@@ -17,8 +17,8 @@ task fatJar(type: Jar) {
 }
 
 dependencies {
-    implementation project(':opentelemetry-sdk'),
-            project(':opentelemetry-extension-trace-propagators'),
+    implementation project(':sdk:all'),
+            project(':extensions:trace-propagators'),
             libraries.okhttp,
             libraries.slf4jsimple,
             "com.sparkjava:spark-core:2.9.3",

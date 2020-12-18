@@ -10,8 +10,8 @@ description = 'OpenTelemetry SDK AWS Instrumentation Support'
 ext.moduleName = "io.opentelemetry.sdk.extension.trace.aws"
 
 dependencies {
-    api project(':opentelemetry-api'),
-            project(':opentelemetry-sdk')
+    api project(':api:all'),
+            project(':sdk:all')
 
     implementation 'com.fasterxml.jackson.core:jackson-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'

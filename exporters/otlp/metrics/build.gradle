@@ -13,15 +13,15 @@ version = "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, pa
 }
 
 dependencies {
-    api project(':opentelemetry-sdk')
+    api project(':sdk:all')
 
-    implementation project(':opentelemetry-sdk-extension-otproto'),
+    implementation project(':sdk-extensions:otproto'),
             libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub,
             libraries.protobuf
 
-    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation project(':sdk:testing')
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"

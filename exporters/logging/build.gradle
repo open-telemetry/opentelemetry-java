@@ -9,9 +9,9 @@ description = 'OpenTelemetry - Logging Exporter'
 ext.moduleName = "io.opentelemetry.exporter.logging"
 
 dependencies {
-    api project(':opentelemetry-sdk')
+    api project(':sdk:all')
 
-    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation project(':sdk:testing')
 
     signature libraries.android_signature
 }

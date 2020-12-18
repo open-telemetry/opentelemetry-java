@@ -9,5 +9,5 @@ description = 'OpenTelemetry Extension Annotations'
 ext.moduleName = "io.opentelemetry.extension.annotations"
 
 dependencies {
-    api project(':opentelemetry-api')
+    api project(':api:all')
 }

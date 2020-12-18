@@ -7,13 +7,13 @@ description = 'OpenTelemetry OpenCensus Shim'
 ext.moduleName = "io.opentelemetry.opencensusshim"
 
 dependencies {
-    api project(':opentelemetry-api'),
-            project(':opentelemetry-sdk'),
+    api project(':api:all'),
+            project(':sdk:all'),
             libraries.opencensus_api,
             libraries.opencensus_impl_core,
             libraries.opencensus_metric_exporter
 
-    testImplementation project(':opentelemetry-sdk'),
+    testImplementation project(':sdk:all'),
             libraries.junit,
             libraries.assertj,
             libraries.slf4jsimple,

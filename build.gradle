@@ -50,6 +50,8 @@ subprojects {
         plugins.apply('com.diffplug.spotless')
         plugins.apply('net.ltgt.errorprone')
 
+        archivesBaseName = "opentelemetry-${project.name}"
+
         repositories {
             mavenCentral()
             jcenter()
@@ -432,10 +434,13 @@ subprojects {
         publishing {
             publications {
                 mavenPublication(MavenPublication) {
-                    version project.name.endsWith('-metrics') ? "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
+                    version project.name.endsWith('metrics') ? "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
                             "${major}.${minor}.${patch}-alpha"
                         } : version
-                    groupId group
+                    groupId "io.opentelemetry"
+                    afterEvaluate {
+                        artifactId = archivesBaseName
+                    }
 
                     plugins.withId("java-platform") {
                         from(components["javaPlatform"])

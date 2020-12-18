@@ -9,7 +9,7 @@ description = 'OpenTelemetry SDK Resource Providers'
 ext.moduleName = "io.opentelemetry.sdk.extension.resources"
 
 dependencies {
-    api project(':opentelemetry-sdk-common')
+    api project(':sdk:common')
 
     testImplementation libraries.junit_pioneer
 

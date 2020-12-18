@@ -13,12 +13,12 @@ ext.moduleName = "io.opentelemetry.extension.kotlin"
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
-    api project(':opentelemetry-api')
+    api project(':api:all')
 
     api("org.jetbrains.kotlin:kotlin-stdlib-common")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
 
-    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation project(':sdk:testing')
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
     signature libraries.android_signature

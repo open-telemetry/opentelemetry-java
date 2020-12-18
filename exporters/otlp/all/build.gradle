@@ -8,7 +8,8 @@ plugins {
 
 description = 'OpenTelemetry Protocol Exporters'
 ext.moduleName = "io.opentelemetry.exporter.otlp"
+archivesBaseName = "opentelemetry-exporter-otlp"
 
 dependencies {
-    api project(':opentelemetry-exporter-otlp-trace')
+    api project(':exporters:otlp:trace')
 }

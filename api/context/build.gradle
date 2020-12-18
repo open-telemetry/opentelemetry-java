@@ -9,6 +9,7 @@ plugins {
 
 description = "OpenTelemetry Context (Incubator)"
 ext.moduleName = "io.opentelemetry.context"
+archivesBaseName = "opentelemetry-context"
 
 testSets {
     grpcInOtelTest

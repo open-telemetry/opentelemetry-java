@@ -14,8 +14,8 @@ task fatJar(type: Jar) {
 }
 
 dependencies {
-    implementation project(':opentelemetry-sdk'),
-            project(':opentelemetry-exporter-jaeger'),
+    implementation project(':sdk:all'),
+            project(':exporters:jaeger'),
             libraries.grpc_protobuf,
             libraries.protobuf,
             "io.grpc:grpc-netty-shaded:${grpcVersion}"

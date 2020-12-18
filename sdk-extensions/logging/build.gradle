@@ -9,7 +9,7 @@ description = 'OpenTelemetry Contrib Logging Support'
 ext.moduleName = "io.opentelemetry.sdk.extension.logging"
 
 dependencies {
-    api project(':opentelemetry-sdk')
+    api project(':sdk:all')
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
     testImplementation libraries.awaitility
 
