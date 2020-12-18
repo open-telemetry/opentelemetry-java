@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,6 +72,8 @@ class IntervalMetricReaderTest {
   }
 
   @Test
+  @Disabled
+  // TODO(anuraaga): Make not flaky https://github.com/open-telemetry/opentelemetry-java/issues/2340
   void intervalExport() {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     IntervalMetricReader intervalMetricReader =
