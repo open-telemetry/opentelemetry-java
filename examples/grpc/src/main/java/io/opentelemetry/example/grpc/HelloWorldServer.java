@@ -14,7 +14,6 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -34,12 +33,13 @@ import java.util.logging.Logger;
 /** Server that manages startup/shutdown of a {@code Greeter} server. */
 public class HelloWorldServer {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
+
   private static final int PORT = 50051;
   private static final LoggingSpanExporter exporter = new LoggingSpanExporter();
+  private static final OpenTelemetry openTelemetry = initTracing(exporter);
 
   private Server server;
 
-  private final OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
   private final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
   private final TextMapPropagator textFormat =
@@ -166,25 +166,20 @@ public class HelloWorldServer {
     }
   }
 
-  private static void initTracing() {
-    // install the W3C Trace Context propagator
-    // Get the tracer management instance
+  private static OpenTelemetry initTracing(LoggingSpanExporter exporter) {
     SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
     // Set to process the the spans by the LogExporter
     sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
 
-    OpenTelemetrySdk openTelemetrySdk =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(sdkTracerProvider)
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .build();
-
-    GlobalOpenTelemetry.set(openTelemetrySdk);
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(sdkTracerProvider)
+        // install the W3C Trace Context propagator
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .build();
   }
 
   /** Main launches the server from the command line. */
   public static void main(String[] args) throws IOException, InterruptedException {
-    initTracing();
     final HelloWorldServer server = new HelloWorldServer();
     server.start();
     server.blockUntilShutdown();

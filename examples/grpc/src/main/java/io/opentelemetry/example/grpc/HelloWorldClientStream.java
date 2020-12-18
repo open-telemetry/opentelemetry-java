@@ -17,16 +17,19 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.attributes.SemanticAttributes;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.Arrays;
 import java.util.List;
@@ -41,14 +44,18 @@ public class HelloWorldClientStream {
   private final Integer serverPort;
   private final GreeterGrpc.GreeterStub asyncStub;
 
+  // Export spans as log entries
+  private static final LoggingSpanExporter exporter = new LoggingSpanExporter();
   // OTel API
-  Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
-  // Export traces as log
-  LoggingSpanExporter exporter = new LoggingSpanExporter();
+  private static final OpenTelemetry openTelemetry = initTracing(exporter);
+
+  private final Tracer tracer = openTelemetry
+      .getTracer("io.opentelemetry.example.HelloWorldClient");
   // Share context via text headers
-  TextMapPropagator textFormat = GlobalOpenTelemetry.getPropagators().getTextMapPropagator();
+  private final TextMapPropagator textFormat = openTelemetry.getPropagators()
+      .getTextMapPropagator();
   // Inject context into the gRPC request metadata
-  TextMapPropagator.Setter<Metadata> setter =
+  private final TextMapPropagator.Setter<Metadata> setter =
       (carrier, key, value) ->
           carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
 
@@ -66,14 +73,6 @@ public class HelloWorldClientStream {
             .build();
     asyncStub = GreeterGrpc.newStub(channel);
     // Initialize the OTel tracer
-    initTracer();
-  }
-
-  private void initTracer() {
-    // Use the OpenTelemetry SDK
-    SdkTracerManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
-    // Set to process the spans by the log exporter
-    tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
   }
 
   public void shutdown() throws InterruptedException {
@@ -88,9 +87,9 @@ public class HelloWorldClientStream {
     Span span =
         tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(Span.Kind.CLIENT).startSpan();
     span.setAttribute("component", "grpc");
-    span.setAttribute("rpc.service", "Greeter");
-    span.setAttribute("net.peer.ip", this.serverHostname);
-    span.setAttribute("net.peer.port", this.serverPort);
+    span.setAttribute(SemanticAttributes.RPC_SERVICE, "Greeter");
+    span.setAttribute(SemanticAttributes.NET_HOST_IP, this.serverHostname);
+    span.setAttribute(SemanticAttributes.NET_PEER_PORT, this.serverPort);
 
     StreamObserver<HelloRequest> requestObserver;
 
@@ -161,6 +160,19 @@ public class HelloWorldClientStream {
         }
       };
     }
+  }
+
+  private static OpenTelemetry initTracing(LoggingSpanExporter exporter) {
+    // install the W3C Trace Context propagator
+    // Get the tracer management instance
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+    // Set to process the the spans by the LogExporter
+    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(sdkTracerProvider)
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .build();
   }
 
   /**
