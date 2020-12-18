@@ -85,7 +85,7 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, String... value) {
-    return put(stringArrayKey(key), Arrays.asList(value));
+    return put(stringArrayKey(key), value == null ? null : Arrays.asList(value));
   }
 
   /**
