@@ -9,7 +9,6 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
-import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
@@ -19,40 +18,38 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * {@code Meter} provider implementation for {@link MeterProvider}.
+ * {@code SdkMeterProvider} implementation for {@link MeterProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * OpenTelemetry}.
  */
-public final class MeterSdkProvider implements MeterProvider {
+public final class SdkMeterProvider implements MeterProvider {
 
-  private static final Logger LOGGER = Logger.getLogger(MeterSdkProvider.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(SdkMeterProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
-  private final ComponentRegistry<MeterSdk> registry;
+  private final ComponentRegistry<SdkMeter> registry;
   private final MetricProducer metricProducer;
   private final MeterProviderSharedState sharedState;
 
-  private MeterSdkProvider(Clock clock, Resource resource) {
+  SdkMeterProvider(Clock clock, Resource resource) {
     this.sharedState = MeterProviderSharedState.create(clock, resource);
     this.registry =
         new ComponentRegistry<>(
-            instrumentationLibraryInfo -> new MeterSdk(sharedState, instrumentationLibraryInfo));
+            instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
     this.metricProducer = new MetricProducerSdk(this.registry);
   }
 
   @Override
-  public MeterSdk get(String instrumentationName) {
+  public SdkMeter get(String instrumentationName) {
     return get(instrumentationName, null);
   }
 
   @Override
-  public MeterSdk get(String instrumentationName, @Nullable String instrumentationVersion) {
+  public SdkMeter get(String instrumentationName, @Nullable String instrumentationVersion) {
     // Per the spec, both null and empty are "invalid" and a "default" should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
@@ -78,57 +75,12 @@ public final class MeterSdkProvider implements MeterProvider {
   }
 
   /**
-   * Returns a new {@link Builder} for {@link MeterSdkProvider}.
+   * Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
    *
-   * @return a new {@link Builder} for {@link MeterSdkProvider}.
+   * @return a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
    */
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /**
-   * Builder class for the {@link MeterSdkProvider}. Has fully functional default implementations of
-   * all three required interfaces.
-   */
-  public static final class Builder {
-
-    private Clock clock = SystemClock.getInstance();
-    private Resource resource = Resource.getDefault();
-
-    private Builder() {}
-
-    /**
-     * Assign a {@link Clock}.
-     *
-     * @param clock The clock to use for all temporal needs.
-     * @return this
-     */
-    public Builder setClock(@Nonnull Clock clock) {
-      Objects.requireNonNull(clock, "clock");
-      this.clock = clock;
-      return this;
-    }
-
-    /**
-     * Assign a {@link Resource} to be attached to all Spans created by Tracers.
-     *
-     * @param resource A Resource implementation.
-     * @return this
-     */
-    public Builder setResource(@Nonnull Resource resource) {
-      Objects.requireNonNull(resource, "resource");
-      this.resource = resource;
-      return this;
-    }
-
-    /**
-     * Create a new TracerSdkFactory instance.
-     *
-     * @return An initialized TracerSdkFactory.
-     */
-    public MeterSdkProvider build() {
-      return new MeterSdkProvider(clock, resource);
-    }
+  public static SdkMeterProviderBuilder builder() {
+    return new SdkMeterProviderBuilder();
   }
 
   /**
@@ -141,8 +93,8 @@ public final class MeterSdkProvider implements MeterProvider {
    * MeterSdkProvider meterProvider = OpenTelemetrySdk.getMeterProvider();
    *
    * // create a selector to select which instruments to customize:
-   * InstrumentSelector instrumentSelector = InstrumentSelector.newBuilder()
-   *   .instrumentType(InstrumentType.COUNTER)
+   * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
+   *   .setInstrumentType(InstrumentType.COUNTER)
    *   .buildInstrument();
    *
    * // create a specification of how you want the metrics aggregated:
@@ -160,17 +112,17 @@ public final class MeterSdkProvider implements MeterProvider {
   }
 
   private static final class MetricProducerSdk implements MetricProducer {
-    private final ComponentRegistry<MeterSdk> registry;
+    private final ComponentRegistry<SdkMeter> registry;
 
-    private MetricProducerSdk(ComponentRegistry<MeterSdk> registry) {
+    private MetricProducerSdk(ComponentRegistry<SdkMeter> registry) {
       this.registry = registry;
     }
 
     @Override
     public Collection<MetricData> collectAllMetrics() {
-      Collection<MeterSdk> meters = registry.getComponents();
+      Collection<SdkMeter> meters = registry.getComponents();
       List<MetricData> result = new ArrayList<>(meters.size());
-      for (MeterSdk meter : meters) {
+      for (SdkMeter meter : meters) {
         result.addAll(meter.collectAll());
       }
       return Collections.unmodifiableCollection(result);

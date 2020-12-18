@@ -14,7 +14,6 @@ dependencies {
     api project(':api:context'),
             project(':api:baggage'),
             project(':api:common'),
-            project(':api:metrics'),
             project(':api:trace')
 
     annotationProcessor libraries.auto_value

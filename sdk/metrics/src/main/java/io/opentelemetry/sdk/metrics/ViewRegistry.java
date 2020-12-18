@@ -26,7 +26,7 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 
 /**
  * Central location for Views to be registered. Registration of a view should eventually be done via
- * the {@link io.opentelemetry.sdk.metrics.MeterSdkProvider}.
+ * the {@link SdkMeterProvider}.
  */
 class ViewRegistry {
 

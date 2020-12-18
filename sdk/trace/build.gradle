@@ -11,10 +11,11 @@ ext.moduleName = "io.opentelemetry.sdk.trace"
 ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/trace"
 
 dependencies {
-    api project(':api:all'),
+    api project(':api:trace'),
             project(':sdk:common')
 
-
+    implementation project(':opentelemetry-api-metrics')
+    
     annotationProcessor libraries.auto_value
 
     testAnnotationProcessor libraries.auto_value

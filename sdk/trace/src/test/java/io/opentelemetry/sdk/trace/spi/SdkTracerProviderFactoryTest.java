@@ -12,8 +12,8 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link TracerProviderFactorySdk}. */
-class TracerProviderFactorySdkTest {
+/** Unit tests for {@link SdkTracerProviderFactory}. */
+class SdkTracerProviderFactoryTest {
 
   @Test
   void testDefault() {

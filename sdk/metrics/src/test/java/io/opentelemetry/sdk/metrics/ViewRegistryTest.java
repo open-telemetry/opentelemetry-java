@@ -30,7 +30,7 @@ class ViewRegistryTest {
 
     ViewRegistry viewRegistry = new ViewRegistry(chooser);
     InstrumentSelector selector =
-        InstrumentSelector.newBuilder().instrumentType(InstrumentType.COUNTER).build();
+        InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build();
     AggregationConfiguration specification =
         AggregationConfiguration.create(
             Aggregations.count(), MetricData.AggregationTemporality.CUMULATIVE);

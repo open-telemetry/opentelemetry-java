@@ -42,6 +42,11 @@ jobs:
             org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }}
       - uses: codecov/codecov-action@v1
         if: ${{ matrix.coverage }}
+      - uses: actions/upload-artifact@v2
+        if: ${{ matrix.coverage }}
+        with:
+          name: coverage-report
+          path: all/build/reports/jacoco/test/html
   publish-snapshots:
     name: Publish snapshots to JFrog
     if: ${{ github.event_name == 'push' }}
