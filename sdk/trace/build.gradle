@@ -14,7 +14,7 @@ dependencies {
     api project(':api:trace'),
             project(':sdk:common')
 
-    implementation project(':opentelemetry-api-metrics')
+    implementation project(':api:metrics')
     
     annotationProcessor libraries.auto_value
 
