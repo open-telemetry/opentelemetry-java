@@ -3,7 +3,7 @@
 <!-- Re-generate TOC with `markdown-toc --no-first-h1 -i` -->
 
 <!-- toc -->
-
+- [Set up](#set-up)
 - [Tracing](#tracing)
   * [Create basic Span](#create-basic-span)
   * [Create nested Spans](#create-nested-spans)
@@ -31,6 +31,34 @@ configuration must be provided by **Applications** which should also depend on t
 libraries will obtain a real implementation only if the user application is configured for it. For
 more details, check out the [Library Guidelines].
 
+## Set up
+
+The first step is to get a handle to an instance of the `OpenTelemetry` interface. 
+
+If you are an application developer, you need to configure an instance of the `OpenTelemetrySdk` as
+early as possible in your application. This can be done using the `OpenTelemetrySdk.builder()` method.
+
+For example:
+
+```java
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+    sdkTracerProvider.addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build());
+    
+    OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+      .setTracerProvider(sdkTracerProvider)
+      .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+      .build();
+    
+    //optionally set this instance as the global instance:
+    GlobalOpenTelemetry.set(openTelemetry);
+```
+
+As an aside, if you are writing library instrumentation, it is strongly recommended that you provide your users
+the ability to inject an instance of `OpenTelemetry` into your instrumentation code. If this is
+not possible for some reason, you can fall back to using an instance from the `GlobalOpenTelemetry`
+class. Note that you can't force end-users to configure the global, so this is the most brittle
+option for library instrumentation.
+
 ## Tracing
 
 In the following, we present how to trace code using the OpenTelemetry API. **Note:** Methods of the
@@ -43,14 +71,18 @@ monitored. More information is available in the specification chapter [Obtaining
 
 ```java
 Tracer tracer =
-    OpenTelemetry.getGlobalTracer("instrumentation-library-name", "1.0.0");
+    openTelemetry.getTracer("instrumentation-library-name", "1.0.0");
 ```
+
+Important: the "name" and optional version of the tracer are purely informational. 
+All `Tracer`s that are created by a single `OpenTelemetry` instance will interoperate, regardless of name.
 
 ### Create basic Span
 To create a basic span, you only need to specify the name of the span.
 The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
 Span span = tracer.spanBuilder("my span").startSpan();
+// put the span into the current Context
 try (Scope scope = span.makeCurrent()) {
 	// your use case
 	...
@@ -195,7 +227,7 @@ try (Scope scope = outGoing.makeCurrent()) {
   outGoing.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
   HttpURLConnection transportLayer = (HttpURLConnection) url.openConnection();
   // Inject the request with the *current*  Context, which contains our current Span.
-  OpenTelemetry.getGlobalPropagators().getTextMapPropagator().inject(Context.current(), transportLayer, setter);
+  openTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), transportLayer, setter);
   // Make outgoing call
 } finally {
   outGoing.end();
@@ -226,7 +258,7 @@ TextMapPropagator.Getter<HttpExchange> getter =
 ...
 public void handle(HttpExchange httpExchange) {
   // Extract the SpanContext and other elements from the request.
-  Context extractedContext = OpenTelemetry.getGlobalPropagators().getTextMapPropagator()
+  Context extractedContext = openTelemetry.getPropagators().getTextMapPropagator()
         .extract(Context.current(), httpExchange, getter);
   try (Scope scope = extractedContext.makeCurrent()) {
     // Automatically use the extracted SpanContext as parent.
@@ -248,21 +280,28 @@ public void handle(HttpExchange httpExchange) {
 }
 ```
 
-## Metrics
+## Metrics (alpha only!)
 
 Spans are a great way to get detailed information about what your application is doing, but
 what about a more aggregated perspective? OpenTelemetry provides supports for metrics, a time series
 of numbers that might express things such as CPU utilization, request count for an HTTP server, or a
 business metric such as transactions.
 
+In order to access the alpha metrics library, you will need to explicitly depend on the `opentelemetry-api-metrics`
+and `opentelemetry-sdk-metrics` modules, which are not included in the opentelemetry-bom until they are 
+stable and ready for long-term-support.
+
 All metrics can be annotated with labels: additional qualifiers that help describe what
 subdivision of the measurements the metric represents.
+
+First, you'll need to get access to a `MeterProvider`. Note the APIs for this are in flux, so no
+example code is provided here for that.
 
 The following is an example of counter usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = OpenTelemetry.getGlobalMeter("instrumentation-library-name", "1.0.0");
+Meter meter = meterProvider.getMeter("instrumentation-library-name", "1.0.0");
 
 // Build counter e.g. LongCounter 
 LongCounter counter = meter
@@ -315,18 +354,12 @@ mechanisms.
 The application has to install a span processor with an exporter and may customize the behavior of
 the OpenTelemetry SDK.
 
-For example, a basic configuration instantiates the SDK tracer registry and sets to export the
+For example, a basic configuration instantiates the SDK tracer provider and sets to export the
 traces to a logging stream.
 
 ```java
-// Get the tracer management interface
-TracerSdkManagement tracerSdkManagement = OpenTelemetrySdk.getGlobalTracerManagement();
-
-// Set to export the traces to a logging stream
-tracerSdkManagement.addSpanProcessor(
-    SimpleSpanProcessor.builder(
-        new LoggingSpanExporter()
-    ).build());
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build());
 ```
 
 ### Sampler
@@ -368,16 +401,13 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 `MultiSpanProcessor`.
 
 ```java
-tracerSdkManagement.addSpanProcessor(
-    SimpleSpanProcessor.builder(new LoggingSpanExporter()).build()
-);
-tracerSdkManagement.addSpanProcessor(
-    BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
-);
-tracerSdkManagement.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
-            SimpleSpanProcessor.builder(new LoggingSpanExporter()).build(),
-            BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
-)));
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    tracerProvider.addSpanProcessor(
+      MultiSpanProcessor.create(Arrays.asList(
+        SimpleSpanProcessor.builder(new LoggingSpanExporter()).build(),
+        BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
+      ))
+    );
 ```
 
 ### Exporter
@@ -393,19 +423,14 @@ a particular backend. OpenTelemetry offers five exporters out of the box:
 Other exporters can be found in the [OpenTelemetry Registry].
 
 ```java
-tracerSdkManagement.addSpanProcessor(
-    SimpleSpanProcessor.builder(InMemorySpanExporter.create()).build());
-tracerSdkManagement.addSpanProcessor(
-    SimpleSpanProcessor.builder(new LoggingSpanExporter()).build());
-
 ManagedChannel jaegerChannel =
     ManagedChannelBuilder.forAddress([ip:String], [port:int]).usePlaintext().build();
-JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
-    .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
-    .build();
-tracerSdkManagement.addSpanProcessor(BatchSpanProcessor.builder(
-    jaegerExporter
-).build());
+    JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
+      .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
+      .build()
+
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(jaegerExporter).build()));
 ```
 
 ### TraceConfig
@@ -414,23 +439,20 @@ The `TraceConfig` associated with a Tracer SDK can be updated via system propert
 environment variables and builder `set*` methods.  
 
 ```java
-// Get TraceConfig associated with TracerSdk 
-TracerConfig traceConfig = OpenTelemetrySdk.getGlobalTracerManagement().getActiveTraceConfig();
-
-// Get TraceConfig Builder
-Builder builder = traceConfig.toBuilder();
-
-// Read configuration options from system properties
-builder.readSystemProperties();
-
-// Read configuration options from environment variables
-builder.readEnvironmentVariables()
-
-// Set options via builder.set* methods, e.g.
-builder.setMaxNumberOfLinks(10);
-
-// Update the resulting TraceConfig instance
-OpenTelemetrySdk.getGlobalTracerManagement().updateActiveTraceConfig(builder.build());
+  // Get TraceConfig Builder
+  TraceConfigBuilder builder = TraceConfig.builder();
+  
+  // Read configuration options from system properties
+  builder.readSystemProperties();
+  
+  // Read configuration options from environment variables
+  builder.readEnvironmentVariables()
+  
+  // Set options via builder.set* methods, e.g.
+  builder.setMaxNumberOfLinks(10);
+  
+  // Use the resulting TraceConfig instance
+  SdkTracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
 ```
 
 Supported system properties and environment variables:
