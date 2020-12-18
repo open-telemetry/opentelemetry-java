@@ -11,7 +11,8 @@ ext.moduleName = "io.opentelemetry.exporters.otprotocol"
 dependencies {
     api project(':api:all'),
             project(':proto'),
-            project(':sdk:all')
+            project(':sdk:all'),
+            project(':sdk:metrics')
 
     implementation libraries.protobuf
 
