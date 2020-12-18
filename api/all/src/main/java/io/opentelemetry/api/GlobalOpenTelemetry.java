@@ -5,15 +5,10 @@
 
 package io.opentelemetry.api;
 
-import static java.util.Objects.requireNonNull;
-
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.spi.OpenTelemetryFactory;
-import io.opentelemetry.spi.metrics.MeterProviderFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
 import javax.annotation.Nullable;
 
@@ -23,8 +18,8 @@ import javax.annotation.Nullable;
  *
  * <p>The global singleton can be retrieved by {@link #get()}. The default for the returned {@link
  * OpenTelemetry}, if none has been set via {@link #set(OpenTelemetry)}, will be created with any
- * {@link OpenTelemetryFactory}, {@link TracerProviderFactory} or {@link MeterProviderFactory} found
- * on the classpath, or otherwise will be default, with no-op behavior.
+ * {@link OpenTelemetryFactory}, or {@link TracerProviderFactory} found on the classpath, or
+ * otherwise will be default, with no-op behavior.
  *
  * <p>If using the OpenTelemetry SDK, you may want to instantiate the {@link OpenTelemetry} to
  * provide configuration, for example of {@code Resource} or {@code Sampler}. See {@code
@@ -32,7 +27,6 @@ import javax.annotation.Nullable;
  * SDK {@link OpenTelemetry}.
  *
  * @see TracerProvider
- * @see MeterProvider
  * @see ContextPropagators
  */
 public final class GlobalOpenTelemetry {
@@ -44,8 +38,8 @@ public final class GlobalOpenTelemetry {
   /**
    * Returns the registered global {@link OpenTelemetry}. If no call to {@link #set(OpenTelemetry)}
    * has been made so far, a default {@link OpenTelemetry} composed of functionality any {@link
-   * OpenTelemetryFactory}, {@link TracerProviderFactory} or{@link MeterProviderFactory}, found on
-   * the classpath, or otherwise will be default, with no-op behavior.
+   * OpenTelemetryFactory}, or {@link TracerProviderFactory} found on the classpath, or otherwise
+   * will be default, with no-op behavior.
    *
    * @throws IllegalStateException if a provider has been specified by system property using the
    *     interface FQCN but the specified provider cannot be found.
@@ -116,63 +110,9 @@ public final class GlobalOpenTelemetry {
   }
 
   /**
-   * Returns the globally registered {@link MeterProvider}.
-   *
-   * @deprecated this will be removed soon in preparation for the initial otel release.
-   */
-  @Deprecated
-  public static MeterProvider getMeterProvider() {
-    return get().getMeterProvider();
-  }
-
-  /**
-   * Gets or creates a named meter instance from the globally registered {@link MeterProvider}.
-   *
-   * <p>This is a shortcut method for {@code getMeterProvider().get(instrumentationName)}
-   *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
-   * @return a tracer instance.
-   * @deprecated this will be removed soon in preparation for the initial otel release.
-   */
-  @Deprecated
-  public static Meter getMeter(String instrumentationName) {
-    return get().getMeter(instrumentationName);
-  }
-
-  /**
-   * Gets or creates a named and versioned meter instance from the globally registered {@link
-   * MeterProvider}.
-   *
-   * <p>This is a shortcut method for {@code getMeterProvider().get(instrumentationName,
-   * instrumentationVersion)}
-   *
-   * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
-   * @param instrumentationVersion The version of the instrumentation library.
-   * @return a tracer instance.
-   * @deprecated this will be removed soon in preparation for the initial otel release.
-   */
-  @Deprecated
-  public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
-    return get().getMeter(instrumentationName, instrumentationVersion);
-  }
-
-  /**
    * Returns the globally registered {@link ContextPropagators} for remote propagation of a context.
    */
   public static ContextPropagators getPropagators() {
     return get().getPropagators();
-  }
-
-  /**
-   * Sets the globally registered {@link ContextPropagators} for remote propagation of a context.
-   *
-   * @deprecated this will be removed soon, create a new instance if necessary.
-   */
-  @Deprecated
-  public static void setPropagators(ContextPropagators propagators) {
-    requireNonNull(propagators, "propagators");
-    get().setPropagators(propagators);
   }
 }

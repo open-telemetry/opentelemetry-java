@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.resources.ResourceProvider;
 import javax.annotation.Nullable;
 
 /** {@link ResourceProvider} which provides information about the current operating system. */
-public class OsResource extends ResourceProvider {
+public final class OsResource extends ResourceProvider {
 
   @Override
   protected Attributes getAttributes() {

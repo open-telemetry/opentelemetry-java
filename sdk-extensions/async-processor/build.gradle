@@ -1,5 +1,5 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "ru.vyarus.animalsniffer"
@@ -9,8 +9,8 @@ description = 'OpenTelemetry SDK Extension: Async SpanProcessor'
 ext.moduleName = "io.opentelemetry.sdk.extension.trace.export"
 
 dependencies {
-    api project(':opentelemetry-api'),
-            project(':opentelemetry-sdk')
+    api project(':api:all'),
+            project(':sdk:all')
 
     implementation libraries.guava,
             libraries.disruptor

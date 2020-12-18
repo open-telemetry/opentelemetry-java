@@ -27,7 +27,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-public class Aggregations {
+public final class Aggregations {
 
   /**
    * Returns an {@code Aggregation} that calculates sum of recorded measurements.

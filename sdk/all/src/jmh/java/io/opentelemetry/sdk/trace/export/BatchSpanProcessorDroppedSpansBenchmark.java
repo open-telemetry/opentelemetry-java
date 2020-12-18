@@ -9,7 +9,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -56,7 +56,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
   @State(Scope.Benchmark)
   public static class BenchmarkState {
     private final MetricProducer metricProducer =
-        ((MeterSdkProvider) GlobalMetricsProvider.get()).getMetricProducer();
+        ((SdkMeterProvider) GlobalMetricsProvider.get()).getMetricProducer();
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private Collection<MetricData> allMetrics;

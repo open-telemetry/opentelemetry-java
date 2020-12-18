@@ -1,5 +1,5 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "ru.vyarus.animalsniffer"
@@ -10,14 +10,14 @@ ext.moduleName = "io.opentelemetry.sdk.common"
 ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/common"
 
 dependencies {
-    api project(':opentelemetry-api')
+    api project(':api:all')
 
     annotationProcessor libraries.auto_value
 
     testAnnotationProcessor libraries.auto_value
     testCompileOnly libraries.auto_value_annotation
 
-    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation project(':sdk:testing')
     testImplementation libraries.junit_pioneer,
             libraries.guava_testlib
 

@@ -1,5 +1,5 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "me.champeau.gradle.jmh"
@@ -11,18 +11,18 @@ ext.moduleName = "io.opentelemetry.sdk.metrics"
 ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/metrics"
 
 dependencies {
-    api project(':opentelemetry-api'),
-            project(':opentelemetry-sdk-common')
+    api project(':api:metrics'),
+            project(':sdk:common')
 
     annotationProcessor libraries.auto_value
 
     testAnnotationProcessor libraries.auto_value
     testCompileOnly libraries.auto_value_annotation
 
-    testCompile project(path: ':opentelemetry-sdk-common', configuration: 'testClasses')
+    testCompile project(path: ':sdk:common', configuration: 'testClasses')
 
     testImplementation libraries.guava
-    testImplementation project(':opentelemetry-sdk-testing')
+    testImplementation project(':sdk:testing')
     testImplementation libraries.junit_pioneer
 
     signature libraries.android_signature

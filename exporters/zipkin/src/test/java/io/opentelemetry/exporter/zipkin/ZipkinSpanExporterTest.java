@@ -239,7 +239,7 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
-  void generateSpan_WithRpcErrorStatus() {
+  void generateSpan_WithRpcTimeoutErrorStatus_WithTimeoutErrorDescription() {
     Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
 
     String errorMessage = "timeout";
@@ -253,10 +253,28 @@ class ZipkinSpanExporterTest {
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
             buildZipkinSpan(Span.Kind.SERVER).toBuilder()
-                .putTag(ZipkinSpanExporter.OTEL_STATUS_DESCRIPTION, errorMessage)
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "ERROR")
-                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "ERROR")
+                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), errorMessage)
+                .build());
+  }
+
+  @Test
+  void generateSpan_WithRpcErrorStatus_WithNullErrorDescription() {
+    Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
+
+    SpanData data =
+        buildStandardSpan()
+            .setStatus(SpanData.Status.create(StatusCode.ERROR, null))
+            .setAttributes(attributeMap)
+            .build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(
+            buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+                .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "ERROR")
+                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "")
                 .build());
   }
 

@@ -45,7 +45,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 class JaegerGrpcSpanExporterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
@@ -264,11 +263,12 @@ class JaegerGrpcSpanExporterTest {
     String endpoint = "127.0.0.1:9090";
     options.put("otel.exporter.jaeger.service.name", serviceName);
     options.put("otel.exporter.jaeger.endpoint", endpoint);
-    JaegerGrpcSpanExporterBuilder config = JaegerGrpcSpanExporter.builder();
-    JaegerGrpcSpanExporterBuilder spy = Mockito.spy(config);
-    spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
-    Mockito.verify(spy).setServiceName(serviceName);
-    Mockito.verify(spy).setEndpoint(endpoint);
+    JaegerGrpcSpanExporter exporter =
+        JaegerGrpcSpanExporter.builder()
+            .fromConfigMap(options, ConfigBuilderTest.getNaming())
+            .build();
+    assertThat(exporter.getProcessBuilder().getServiceName()).isEqualTo(serviceName);
+    assertThat(exporter.getManagedChannel().authority()).isEqualTo(endpoint);
   }
 
   abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {

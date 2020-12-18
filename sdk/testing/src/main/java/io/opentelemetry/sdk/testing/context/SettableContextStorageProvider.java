@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 /** A {@link ContextStorageProvider} which can have it's {@link ContextStorage} set at any time. */
-public class SettableContextStorageProvider implements ContextStorageProvider {
+public final class SettableContextStorageProvider implements ContextStorageProvider {
   @Override
   public ContextStorage get() {
     return SettableContextStorage.INSTANCE;

@@ -38,8 +38,8 @@ JaegerGrpcSpanExporter exporter =
 ```
 
 The Jaeger gRPC span exporter will look for the following environment variables / system properties:
-* `OTEL_JAEGER_SERVICE_NAME` / `otel.jaeger.service.name`
-* `OTEL_JAEGER_ENDPOINT` / `otel.jaeger.endpoint`
+* `OTEL_EXPORTER_JAEGER_SERVICE_NAME` / `otel.exporter.jaeger.service.name`
+* `OTEL_EXPORTER_JAEGER_ENDPOINT` / `otel.exporter.jaeger.endpoint`
 
 ## Compatibility
 

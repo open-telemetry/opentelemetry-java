@@ -26,59 +26,44 @@ plugins {
 }
 
 rootProject.name = "opentelemetry-java"
-include ":opentelemetry-all",
-        ":opentelemetry-api",
-        ":opentelemetry-api-baggage",
-        ":opentelemetry-api-common",
-        ":opentelemetry-api-trace",
-        ":opentelemetry-api-metrics",
-        ":opentelemetry-context",
-        ":opentelemetry-extension-annotations",
-        ":opentelemetry-extension-kotlin",
-        ":opentelemetry-extension-trace-propagators",
-        ":opentelemetry-exporter-jaeger",
-        ":opentelemetry-exporter-jaeger-thrift",
-        ":opentelemetry-exporter-logging",
-        ":opentelemetry-exporter-otlp",
-        ":opentelemetry-exporter-prometheus",
-        ":opentelemetry-exporter-zipkin",
-        ":opentelemetry-integration-tests",
-        ":opentelemetry-integration-tests-tracecontext",
-        ":opentelemetry-opencensus-shim",
-        ":opentelemetry-opentracing-shim",
-        ":opentelemetry-proto",
-        ":opentelemetry-sdk-common",
-        ":opentelemetry-sdk-metrics",
-        ":opentelemetry-sdk-trace",
-        ":opentelemetry-sdk",
-        ":opentelemetry-sdk-extension-async-processor",
-        ":opentelemetry-sdk-extension-aws",
-        ":opentelemetry-sdk-extension-logging",
-        ":opentelemetry-sdk-extension-otproto",
-        ":opentelemetry-sdk-extension-resources",
-        ":opentelemetry-sdk-extension-tracing-incubator",
-        ":opentelemetry-sdk-extension-jaeger-remote-sampler",
-        ":opentelemetry-sdk-extension-jfr-events",
-        ":opentelemetry-sdk-extension-zpages",
-        ":opentelemetry-sdk-testing",
-        ":opentelemetry-bom",
-        ":opentelemetry-perf-harness"
-
-rootProject.children.each {
-    it.projectDir = "$rootDir/" + it.name
-            .replace("opentelemetry-api-", "api/")
-            .replace("opentelemetry-integration-tests-", "integration-tests/")
-            .replace("opentelemetry-exporter-", "exporters/")
-            .replace("opentelemetry-extension-", "extensions/")
-            .replace("opentelemetry-sdk-extension-", "sdk-extensions/")
-            .replace("opentelemetry-sdk-", "sdk/")
-            .replace("logging-", "logging/")
-            .replace("opentelemetry-", "") as File
-}
-
-project(":opentelemetry-api").projectDir = "$rootDir/api/all" as File
-project(":opentelemetry-context").projectDir = "$rootDir/api/context" as File
-project(":opentelemetry-sdk").projectDir = "$rootDir/sdk/all" as File
+include ":api:all",
+        ":api:context",
+        ":api:baggage",
+        ":api:common",
+        ":api:trace",
+        ":api:metrics",
+        ":bom",
+        ":extensions:annotations",
+        ":extensions:kotlin",
+        ":extensions:trace-propagators",
+        ":exporters:jaeger",
+        ":exporters:jaeger-thrift",
+        ":exporters:logging",
+        ":exporters:otlp:all",
+        ":exporters:otlp:metrics",
+        ":exporters:otlp:trace",
+        ":exporters:prometheus",
+        ":exporters:zipkin",
+        ":integration-tests",
+        ":integration-tests:tracecontext",
+        ":opencensus-shim",
+        ":opentracing-shim",
+        ":perf-harness",
+        ":proto",
+        ":sdk:all",
+        ":sdk:common",
+        ":sdk:metrics",
+        ":sdk:testing",
+        ":sdk:trace",
+        ":sdk-extensions:async-processor",
+        ":sdk-extensions:aws",
+        ":sdk-extensions:logging",
+        ":sdk-extensions:otproto",
+        ":sdk-extensions:resources",
+        ":sdk-extensions:tracing-incubator",
+        ":sdk-extensions:jaeger-remote-sampler",
+        ":sdk-extensions:jfr-events",
+        ":sdk-extensions:zpages"
 
 def isCI = System.getenv("CI") != null
 gradleEnterprise {
