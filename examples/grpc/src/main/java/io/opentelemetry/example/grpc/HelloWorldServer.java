@@ -14,6 +14,7 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -24,7 +25,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -38,7 +39,7 @@ public class HelloWorldServer {
 
   private Server server;
 
-  private final OpenTelemetry openTelemetry = OpenTelemetry.get();
+  private final OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
   private final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
   private final TextMapPropagator textFormat =
@@ -167,12 +168,18 @@ public class HelloWorldServer {
 
   private static void initTracing() {
     // install the W3C Trace Context propagator
-    OpenTelemetry.setGlobalPropagators(
-        ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
     // Get the tracer management instance
-    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
     // Set to process the the spans by the LogExporter
-    tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(sdkTracerProvider)
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .build();
+
+    GlobalOpenTelemetry.set(openTelemetrySdk);
   }
 
   /** Main launches the server from the command line. */

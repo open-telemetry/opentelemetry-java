@@ -20,7 +20,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -125,7 +125,7 @@ public class HttpServer {
         ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
 
     // Get the tracer
-    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
+    SdkTracerManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
     // Show that multiple exporters can be used
 
     // Set to export the traces also to a log file

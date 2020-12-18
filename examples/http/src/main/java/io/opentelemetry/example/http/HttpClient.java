@@ -5,6 +5,7 @@
 
 package io.opentelemetry.example.http;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
@@ -16,7 +17,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,15 +40,18 @@ public class HttpClient {
 
   private static void initTracing() {
     // install the W3C Trace Context propagator
-    OpenTelemetry.setGlobalPropagators(
-        ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
+    // Get the tracer management instance
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+    // Set to process the the spans by the LogExporter
+    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(loggingExporter).build());
 
-    // Get the tracer management instance.
-    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
-    // Show that multiple exporters can be used
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(sdkTracerProvider)
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .build();
 
-    // Set to export the traces also to a log file
-    tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(loggingExporter).build());
+    GlobalOpenTelemetry.set(openTelemetrySdk);
   }
 
   private void makeRequest() throws IOException {
@@ -75,7 +79,7 @@ public class HttpClient {
       span.setAttribute("http.url", url.toString());
 
       // Inject the request with the current Context/Span.
-      OpenTelemetry.getGlobalPropagators()
+      GlobalOpenTelemetry.getPropagators()
           .getTextMapPropagator()
           .inject(Context.current(), con, setter);
 
