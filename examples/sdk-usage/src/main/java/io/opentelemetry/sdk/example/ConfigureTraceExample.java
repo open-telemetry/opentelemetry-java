@@ -25,8 +25,8 @@ class ConfigureTraceExample {
 
   // Configure a tracer for these examples
   private static final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().build();
-  private static final SdkTracerManagement tracerManagement = ((OpenTelemetrySdk) openTelemetry)
-      .getTracerManagement();
+  private static final SdkTracerManagement tracerManagement =
+      ((OpenTelemetrySdk) openTelemetry).getTracerManagement();
   private static final Tracer tracer = openTelemetry.getTracer("ConfigureTraceExample");
 
   static {

@@ -56,16 +56,14 @@ public class OtlpExporterExample {
     // set up the metric exporter and wire it into the SDK and a timed reader.
     OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.getDefault();
 
-    //note: currently metrics is alpha and the configuration story is still unfolding. This will
+    // note: currently metrics is alpha and the configuration story is still unfolding. This will
     // definitely change in the future.
     MeterProvider meterProvider = GlobalMetricsProvider.get();
     SdkMeterProvider sdkMeterProvider = (SdkMeterProvider) meterProvider;
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()
             .setMetricExporter(metricExporter)
-            .setMetricProducers(
-                Collections.singleton(
-                    sdkMeterProvider.getMetricProducer()))
+            .setMetricProducers(Collections.singleton(sdkMeterProvider.getMetricProducer()))
             .setExportIntervalMillis(500)
             .build();
 

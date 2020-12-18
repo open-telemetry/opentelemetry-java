@@ -36,7 +36,8 @@ public class JaegerExample {
 
     // Set to process the spans by the Jaeger Exporter
     OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
-    openTelemetry.getTracerManagement()
+    openTelemetry
+        .getTracerManagement()
         .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
     return openTelemetry;
   }
@@ -61,7 +62,8 @@ public class JaegerExample {
 
   // graceful shutdown
   public void shutdown() {
-    //note: this doesn't wait for everything to get cleaned up. We need an SDK update to enable that.
+    // note: this doesn't wait for everything to get cleaned up. We need an SDK update to enable
+    // that.
     sdkTracerManagement.shutdown();
   }
 

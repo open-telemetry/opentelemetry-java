@@ -49,11 +49,11 @@ public class HelloWorldClientStream {
   // OTel API
   private static final OpenTelemetry openTelemetry = initTracing(exporter);
 
-  private final Tracer tracer = openTelemetry
-      .getTracer("io.opentelemetry.example.HelloWorldClient");
+  private final Tracer tracer =
+      openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
   // Share context via text headers
-  private final TextMapPropagator textFormat = openTelemetry.getPropagators()
-      .getTextMapPropagator();
+  private final TextMapPropagator textFormat =
+      openTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
   private final TextMapPropagator.Setter<Metadata> setter =
       (carrier, key, value) ->

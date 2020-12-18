@@ -76,9 +76,7 @@ public class HttpClient {
       span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
 
       // Inject the request with the current Context/Span.
-      openTelemetry.getPropagators()
-          .getTextMapPropagator()
-          .inject(Context.current(), con, setter);
+      openTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), con, setter);
 
       try {
         // Process the request

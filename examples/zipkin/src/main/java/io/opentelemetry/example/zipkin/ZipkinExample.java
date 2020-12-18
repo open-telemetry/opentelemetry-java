@@ -19,10 +19,10 @@ public class ZipkinExample {
   // Name of the service
   private static final String SERVICE_NAME = "myExampleService";
 
-  //SDK Tracer Management interface
+  // SDK Tracer Management interface
   private SdkTracerManagement sdkTracerManagement;
 
-  //The Tracer we'll use for the example
+  // The Tracer we'll use for the example
   private Tracer tracer;
 
   public ZipkinExample(String ip, int port) {

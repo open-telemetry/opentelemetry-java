@@ -33,7 +33,6 @@ public class HttpServer {
   private static final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.http.HttpServer");
 
-
   private static final int port = 8080;
   private final com.sun.net.httpserver.HttpServer server;
 
@@ -85,7 +84,8 @@ public class HttpServer {
     public void handle(HttpExchange exchange) throws IOException {
       // Extract the context from the HTTP request
       Context context =
-          openTelemetry.getPropagators()
+          openTelemetry
+              .getPropagators()
               .getTextMapPropagator()
               .extract(Context.current(), exchange, getter);
 
