@@ -5,11 +5,11 @@
 
 package io.opentelemetry.example.http;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -30,28 +30,26 @@ import java.nio.charset.Charset;
 public class HttpClient {
 
   // OTel API
-  private static final Tracer tracer =
-      OpenTelemetry.getGlobalTracer("io.opentelemetry.example.http.HttpClient");
-  // Export traces to log
   private static final LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
+  private static final OpenTelemetry openTelemetry = initOpenTelemetry(loggingExporter);
+  private static final Tracer tracer =
+      openTelemetry.getTracer("io.opentelemetry.example.http.HttpClient");
+  // Export traces to log
   // Inject the span context into the request
   private static final TextMapPropagator.Setter<HttpURLConnection> setter =
       URLConnection::setRequestProperty;
 
-  private static void initTracing() {
+  private static OpenTelemetry initOpenTelemetry(LoggingSpanExporter loggingExporter) {
     // install the W3C Trace Context propagator
     // Get the tracer management instance
     SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
     // Set to process the the spans by the LogExporter
     sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(loggingExporter).build());
 
-    OpenTelemetrySdk openTelemetrySdk =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(sdkTracerProvider)
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .build();
-
-    GlobalOpenTelemetry.set(openTelemetrySdk);
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(sdkTracerProvider)
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .build();
   }
 
   private void makeRequest() throws IOException {
@@ -66,9 +64,8 @@ public class HttpClient {
     // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
     Span span = tracer.spanBuilder("/").setSpanKind(Span.Kind.CLIENT).startSpan();
     try (Scope scope = span.makeCurrent()) {
-      // TODO provide semantic convention attributes to Span.Builder
+      span.setAttribute(SemanticAttributes.HTTP_METHOD, "GET");
       span.setAttribute("component", "http");
-      span.setAttribute("http.method", "GET");
       /*
        Only one of the following is required:
          - http.url
@@ -76,12 +73,10 @@ public class HttpClient {
          - http.scheme, peer.hostname, peer.port, http.target
          - http.scheme, peer.ip, peer.port, http.target
       */
-      span.setAttribute("http.url", url.toString());
+      span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
 
       // Inject the request with the current Context/Span.
-      GlobalOpenTelemetry.getPropagators()
-          .getTextMapPropagator()
-          .inject(Context.current(), con, setter);
+      openTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), con, setter);
 
       try {
         // Process the request
@@ -113,7 +108,6 @@ public class HttpClient {
    * @param args It is not required.
    */
   public static void main(String[] args) {
-    initTracing();
     HttpClient httpClient = new HttpClient();
 
     // Perform request every 5s
