@@ -10,7 +10,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.spi.OpenTelemetryFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
-import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A global singleton for the entrypoint to telemetry functionality for tracing, metrics and
@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
  */
 public final class GlobalOpenTelemetry {
   private static final Object mutex = new Object();
-  @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
+  private static final AtomicReference<OpenTelemetry> globalOpenTelemetry = new AtomicReference<>();
 
   private GlobalOpenTelemetry() {}
 
@@ -45,9 +45,10 @@ public final class GlobalOpenTelemetry {
    *     interface FQCN but the specified provider cannot be found.
    */
   public static OpenTelemetry get() {
-    if (globalOpenTelemetry == null) {
+    OpenTelemetry current = globalOpenTelemetry.get();
+    if (current == null) {
       synchronized (mutex) {
-        if (globalOpenTelemetry == null) {
+        if (globalOpenTelemetry.get() == null) {
           OpenTelemetryFactory openTelemetryFactory = Utils.loadSpi(OpenTelemetryFactory.class);
           if (openTelemetryFactory != null) {
             set(openTelemetryFactory.create());
@@ -57,7 +58,7 @@ public final class GlobalOpenTelemetry {
         }
       }
     }
-    return globalOpenTelemetry;
+    return current;
   }
 
   /**
@@ -67,12 +68,14 @@ public final class GlobalOpenTelemetry {
    * your main class.
    */
   public static void set(OpenTelemetry openTelemetry) {
-    globalOpenTelemetry = openTelemetry;
+    if (!globalOpenTelemetry.compareAndSet(null, openTelemetry)) {
+      throw new IllegalStateException("Global variable already in use");
+    }
   }
 
   // for testing
   static void reset() {
-    globalOpenTelemetry = null;
+    globalOpenTelemetry.set(null);
   }
 
   /** Returns the globally registered {@link TracerProvider}. */
