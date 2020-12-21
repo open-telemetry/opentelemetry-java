@@ -38,8 +38,7 @@ class KotlinCoroutinesTest {
     @Test
     fun runWithSpan() {
         val span = GlobalOpenTelemetry.getTracer("test").spanBuilder("test").startSpan()
-        assertThat(Span.current()).isEqualTo(
-            Span.getInvalid())
+        assertThat(Span.current()).isEqualTo(Span.getInvalid())
         runBlocking(Dispatchers.Default + span.asContextElement()) {
             assertThat(Span.current()).isEqualTo(span)
         }
