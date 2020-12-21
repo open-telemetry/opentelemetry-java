@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link W3CTraceContextPropagator}. */
@@ -450,8 +449,8 @@ class W3CTraceContextPropagatorTest {
 
   @Test
   void headerNames() {
-    Assertions.assertThat(W3CTraceContextPropagator.TRACE_PARENT).isEqualTo("traceparent");
-    Assertions.assertThat(W3CTraceContextPropagator.TRACE_STATE).isEqualTo("tracestate");
+    assertThat(W3CTraceContextPropagator.TRACE_PARENT).isEqualTo("traceparent");
+    assertThat(W3CTraceContextPropagator.TRACE_STATE).isEqualTo("tracestate");
   }
 
   @Test
