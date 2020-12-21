@@ -159,6 +159,11 @@ public final class IntervalMetricReader {
       }
       return this;
     }
+
+    // Visible for testing
+    long getExportIntervalMillis() {
+      return optionsBuilder.build().getExportIntervalMillis();
+    }
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")

@@ -200,6 +200,16 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
       }
       return setWaitingStrategy(new SleepingWaitStrategy(retries, sleepingNs));
     }
+
+    // Visible for testing
+    boolean getBlocking() {
+      return blocking;
+    }
+
+    // Visible for testing
+    int getBufferSize() {
+      return bufferSize;
+    }
   }
 
   private DisruptorAsyncSpanProcessor(

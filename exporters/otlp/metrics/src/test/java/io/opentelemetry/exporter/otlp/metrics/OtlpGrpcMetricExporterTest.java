@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.otlp.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
@@ -37,7 +36,6 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class OtlpGrpcMetricExporterTest {
 
@@ -70,11 +68,9 @@ class OtlpGrpcMetricExporterTest {
     Properties options = new Properties();
     options.put("otel.exporter.otlp.metric.timeout", "12");
     options.put("otel.exporter.otlp.insecure", "true");
-    OtlpGrpcMetricExporterBuilder config = OtlpGrpcMetricExporter.builder();
-    OtlpGrpcMetricExporterBuilder spy = Mockito.spy(config);
-    spy.readProperties(options);
-    verify(spy).setDeadlineMs(12);
-    verify(spy).setUseTls(false);
+    OtlpGrpcMetricExporterBuilder config = OtlpGrpcMetricExporter.builder().readProperties(options);
+    assertThat(config.getUseTls()).isFalse();
+    assertThat(config.getDeadlineMs()).isEqualTo(12);
   }
 
   @Test
