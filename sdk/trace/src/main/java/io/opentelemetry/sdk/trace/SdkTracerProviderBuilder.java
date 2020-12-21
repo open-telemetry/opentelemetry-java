@@ -5,13 +5,14 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /** Builder of {@link SdkTracerProvider}. */
 public final class SdkTracerProviderBuilder {
@@ -29,7 +30,7 @@ public final class SdkTracerProviderBuilder {
    * @return this
    */
   public SdkTracerProviderBuilder setClock(Clock clock) {
-    Objects.requireNonNull(clock, "clock");
+    requireNonNull(clock, "clock");
     this.clock = clock;
     return this;
   }
@@ -42,7 +43,7 @@ public final class SdkTracerProviderBuilder {
    * @return this
    */
   public SdkTracerProviderBuilder setIdGenerator(IdGenerator idGenerator) {
-    Objects.requireNonNull(idGenerator, "idGenerator");
+    requireNonNull(idGenerator, "idGenerator");
     this.idsGenerator = idGenerator;
     return this;
   }
@@ -54,7 +55,7 @@ public final class SdkTracerProviderBuilder {
    * @return this
    */
   public SdkTracerProviderBuilder setResource(Resource resource) {
-    Objects.requireNonNull(resource, "resource");
+    requireNonNull(resource, "resource");
     this.resource = resource;
     return this;
   }
@@ -65,8 +66,8 @@ public final class SdkTracerProviderBuilder {
    * @return this
    */
   public SdkTracerProviderBuilder setTraceConfig(TraceConfig traceConfig) {
+    requireNonNull(traceConfig, "traceConfig");
     this.traceConfig = traceConfig;
-    Objects.requireNonNull(traceConfig);
     return this;
   }
 

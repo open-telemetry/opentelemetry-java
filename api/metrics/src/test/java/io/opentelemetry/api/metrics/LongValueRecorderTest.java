@@ -7,7 +7,7 @@ package io.opentelemetry.api.metrics;
 
 import static io.opentelemetry.api.metrics.DefaultMeter.ERROR_MESSAGE_INVALID_NAME;
 import static java.util.Arrays.fill;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongValueRecorder.BoundLongValueRecorder;
@@ -23,23 +23,23 @@ public final class LongValueRecorderTest {
 
   @Test
   void preventNull_Name() {
-    assertThrows(NullPointerException.class, () -> meter.longValueRecorderBuilder(null), "name");
+    assertThatThrownBy(() -> meter.longValueRecorderBuilder(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("name");
   }
 
   @Test
   void preventEmpty_Name() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.longValueRecorderBuilder("").build(),
-        ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.longValueRecorderBuilder("").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNonPrintableMeasureName() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.longValueRecorderBuilder("\2").build(),
-        ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.longValueRecorderBuilder("\2").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
@@ -47,34 +47,30 @@ public final class LongValueRecorderTest {
     char[] chars = new char[256];
     fill(chars, 'a');
     String longName = String.valueOf(chars);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.longValueRecorderBuilder(longName).build(),
-        ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.longValueRecorderBuilder(longName).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNull_Description() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longValueRecorderBuilder("metric").setDescription(null).build(),
-        "description");
+    assertThatThrownBy(() -> meter.longValueRecorderBuilder("metric").setDescription(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("description");
   }
 
   @Test
   void preventNull_Unit() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longValueRecorderBuilder("metric").setUnit(null).build(),
-        "unit");
+    assertThatThrownBy(() -> meter.longValueRecorderBuilder("metric").setUnit(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
   }
 
   @Test
   void record_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longValueRecorderBuilder("metric").build().record(1, null),
-        "labels");
+    assertThatThrownBy(() -> meter.longValueRecorderBuilder("metric").build().record(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -89,10 +85,9 @@ public final class LongValueRecorderTest {
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longValueRecorderBuilder("metric").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> meter.longValueRecorderBuilder("metric").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test

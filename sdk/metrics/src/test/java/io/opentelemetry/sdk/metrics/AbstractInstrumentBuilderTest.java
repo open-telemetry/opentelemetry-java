@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.ERROR_MESSAGE_INVALID_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -28,12 +28,16 @@ class AbstractInstrumentBuilderTest {
 
   @Test
   void preventNull_Name() {
-    assertThrows(NullPointerException.class, () -> new TestInstrumentBuilder(null).build(), "name");
+    assertThatThrownBy(() -> new TestInstrumentBuilder(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("name");
   }
 
   @Test
   void preventEmpty_Name() {
-    assertThrows(IllegalArgumentException.class, () -> new TestInstrumentBuilder(""), "Name");
+    assertThatThrownBy(() -> new TestInstrumentBuilder(""))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Name");
   }
 
   @Test
@@ -42,15 +46,15 @@ class AbstractInstrumentBuilderTest {
     new TestInstrumentBuilder("METRIC_name");
     new TestInstrumentBuilder("metric.name_01");
     new TestInstrumentBuilder("metric_name.01");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> new TestInstrumentBuilder("01.metric_name_01"),
-        "Name");
+    assertThatThrownBy(() -> new TestInstrumentBuilder("01.metric_name_01"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Name");
   }
 
   @Test
   void preventNonPrintableName() {
-    assertThrows(IllegalArgumentException.class, () -> new TestInstrumentBuilder("\2").build());
+    assertThatThrownBy(() -> new TestInstrumentBuilder("\2").build())
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -58,26 +62,23 @@ class AbstractInstrumentBuilderTest {
     char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> new TestInstrumentBuilder(longName).build(),
-        ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> new TestInstrumentBuilder(longName).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNull_Description() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new TestInstrumentBuilder(NAME).setDescription(null).build(),
-        "description");
+    assertThatThrownBy(() -> new TestInstrumentBuilder(NAME).setDescription(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("description");
   }
 
   @Test
   void preventNull_Unit() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new TestInstrumentBuilder(NAME).setUnit(null).build(),
-        "unit");
+    assertThatThrownBy(() -> new TestInstrumentBuilder(NAME).setUnit(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
   }
 
   @Test

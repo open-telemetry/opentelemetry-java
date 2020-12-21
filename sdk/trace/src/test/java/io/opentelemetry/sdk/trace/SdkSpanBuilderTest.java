@@ -15,7 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -72,14 +72,14 @@ class SdkSpanBuilderTest {
 
   @Test
   void setSpanKind_null() {
-    assertThrows(
-        NullPointerException.class, () -> sdkTracer.spanBuilder(SPAN_NAME).setSpanKind(null));
+    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).setSpanKind(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void setParent_null() {
-    assertThrows(
-        NullPointerException.class, () -> sdkTracer.spanBuilder(SPAN_NAME).setParent(null));
+    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).setParent(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -175,21 +175,22 @@ class SdkSpanBuilderTest {
 
   @Test
   void addLinkSpanContext_null() {
-    assertThrows(NullPointerException.class, () -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null));
+    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void addLinkSpanContextAttributes_nullContext() {
-    assertThrows(
-        NullPointerException.class,
-        () -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()));
+    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void addLinkSpanContextAttributes_nullAttributes() {
-    assertThrows(
-        NullPointerException.class,
-        () -> sdkTracer.spanBuilder(SPAN_NAME).addLink(Span.getInvalid().getSpanContext(), null));
+    assertThatThrownBy(
+            () ->
+                sdkTracer.spanBuilder(SPAN_NAME).addLink(Span.getInvalid().getSpanContext(), null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -825,10 +826,10 @@ class SdkSpanBuilderTest {
 
   @Test
   void startTimestamp_null() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> sdkTracer.spanBuilder(SPAN_NAME).setStartTimestamp(-1, TimeUnit.NANOSECONDS),
-        "Negative startTimestamp");
+    assertThatThrownBy(
+            () -> sdkTracer.spanBuilder(SPAN_NAME).setStartTimestamp(-1, TimeUnit.NANOSECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Negative startTimestamp");
   }
 
   @Test

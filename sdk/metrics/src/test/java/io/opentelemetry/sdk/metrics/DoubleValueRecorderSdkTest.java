@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
@@ -42,18 +42,17 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void record_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.doubleValueRecorderBuilder("testRecorder").build().record(1.0, null),
-        "labels");
+    assertThatThrownBy(
+            () -> testSdk.doubleValueRecorderBuilder("testRecorder").build().record(1.0, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.doubleValueRecorderBuilder("testRecorder").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> testSdk.doubleValueRecorderBuilder("testRecorder").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
