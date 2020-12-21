@@ -7,11 +7,11 @@ package io.opentelemetry;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 
 public class SendTraceToJaeger {
@@ -19,15 +19,12 @@ public class SendTraceToJaeger {
   private final String ip; // = "jaeger";
   private final int port; // = 14250;
 
-  // OTel API
-  private final Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.SendTraceToJaeger");
-
   public SendTraceToJaeger(String ip, int port) {
     this.ip = ip;
     this.port = port;
   }
 
-  private void setupJaegerExporter() {
+  private OpenTelemetry initOpenTelemetry() {
     // Create a channel towards Jaeger end point
     ManagedChannel jaegerChannel =
         ManagedChannelBuilder.forAddress(ip, port).usePlaintext().build();
@@ -40,13 +37,21 @@ public class SendTraceToJaeger {
             .build();
 
     // Set to process the spans by the Jaeger Exporter
-    OpenTelemetrySdk.getGlobalTracerManagement()
-        .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build())
+                .build())
+        .build();
   }
 
-  private void myWonderfulUseCase() {
+  private static void myWonderfulUseCase(OpenTelemetry openTelemetry) {
     // Generate a span
-    Span span = this.tracer.spanBuilder("Start my wonderful use case").startSpan();
+    Span span =
+        openTelemetry
+            .getTracer("io.opentelemetry.SendTraceToJaeger")
+            .spanBuilder("Start my wonderful use case")
+            .startSpan();
     span.addEvent("Event 0");
     // execute my use case - here we simulate a wait
     doWait();
@@ -78,8 +83,8 @@ public class SendTraceToJaeger {
 
     // Start the example
     SendTraceToJaeger example = new SendTraceToJaeger(ip, port);
-    example.setupJaegerExporter();
-    example.myWonderfulUseCase();
+    OpenTelemetry openTelemetry = example.initOpenTelemetry();
+    SendTraceToJaeger.myWonderfulUseCase(openTelemetry);
     // wait some seconds
     doWait();
     System.out.println("Bye");

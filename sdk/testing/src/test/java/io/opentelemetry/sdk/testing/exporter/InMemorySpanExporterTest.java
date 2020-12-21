@@ -23,13 +23,17 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link InMemorySpanExporter}. */
 class InMemorySpanExporterTest {
-  private final SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-  private final Tracer tracer = sdkTracerProvider.get("InMemorySpanExporterTest");
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
+
+  private Tracer tracer;
 
   @BeforeEach
   void setup() {
-    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+    tracer =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.builder(exporter).build())
+            .build()
+            .get("InMemorySpanExporterTest");
   }
 
   @Test
