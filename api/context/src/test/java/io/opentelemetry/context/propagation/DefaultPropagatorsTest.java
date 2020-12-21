@@ -6,7 +6,7 @@
 package io.opentelemetry.context.propagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
@@ -21,7 +21,8 @@ class DefaultPropagatorsTest {
 
   @Test
   void addTextMapPropagatorNull() {
-    assertThrows(NullPointerException.class, () -> ContextPropagators.create(null));
+    assertThatThrownBy(() -> ContextPropagators.create(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

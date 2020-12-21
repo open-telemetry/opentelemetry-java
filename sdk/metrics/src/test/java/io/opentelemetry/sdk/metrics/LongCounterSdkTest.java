@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
@@ -39,18 +39,16 @@ class LongCounterSdkTest {
 
   @Test
   void add_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.longCounterBuilder("testCounter").build().add(1, null),
-        "labels");
+    assertThatThrownBy(() -> testSdk.longCounterBuilder("testCounter").build().add(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.longCounterBuilder("testCounter").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> testSdk.longCounterBuilder("testCounter").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -172,14 +170,16 @@ class LongCounterSdkTest {
   void longCounterAdd_MonotonicityCheck() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
-    assertThrows(IllegalArgumentException.class, () -> longCounter.add(-45, Labels.empty()));
+    assertThatThrownBy(() -> longCounter.add(-45, Labels.empty()))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void boundLongCounterAdd_MonotonicityCheck() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
-    assertThrows(IllegalArgumentException.class, () -> longCounter.bind(Labels.empty()).add(-9));
+    assertThatThrownBy(() -> longCounter.bind(Labels.empty()).add(-9))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

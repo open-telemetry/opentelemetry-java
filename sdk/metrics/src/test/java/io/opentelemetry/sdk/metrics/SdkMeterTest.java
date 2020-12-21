@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
@@ -56,14 +56,12 @@ class SdkMeterTest {
                 .build())
         .isSameAs(longCounter);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longCounterBuilder("testLongCounter").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longCounterBuilder("testLongCounter".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.longCounterBuilder("testLongCounter").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.longCounterBuilder("testLongCounter".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -84,14 +82,13 @@ class SdkMeterTest {
                 .build())
         .isSameAs(longUpDownCounter);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longUpDownCounterBuilder("testLongUpDownCounter".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () -> testSdk.longUpDownCounterBuilder("testLongUpDownCounter".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -112,14 +109,13 @@ class SdkMeterTest {
                 .build())
         .isSameAs(longValueRecorder);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longValueRecorderBuilder("testLongValueRecorder").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longValueRecorderBuilder("testLongValueRecorder".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.longValueRecorderBuilder("testLongValueRecorder").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () -> testSdk.longValueRecorderBuilder("testLongValueRecorder".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -140,14 +136,13 @@ class SdkMeterTest {
                 .build())
         .isSameAs(longValueObserver);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longValueObserverBuilder("longValueObserver").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longValueObserverBuilder("longValueObserver".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.longValueObserverBuilder("longValueObserver").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () -> testSdk.longValueObserverBuilder("longValueObserver".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -168,15 +163,14 @@ class SdkMeterTest {
                 .build())
         .isSameAs(longObserver);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longSumObserverBuilder("testLongSumObserver").build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.longSumObserverBuilder("testLongSumObserver").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longSumObserverBuilder("testLongSumObserver".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () -> testSdk.longSumObserverBuilder("testLongSumObserver".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -197,16 +191,18 @@ class SdkMeterTest {
                 .build())
         .isSameAs(longObserver);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.longUpDownSumObserverBuilder("testLongUpDownSumObserver").build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () -> testSdk.longUpDownSumObserverBuilder("testLongUpDownSumObserver").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            testSdk.longUpDownSumObserverBuilder("testLongUpDownSumObserver".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () ->
+                testSdk
+                    .longUpDownSumObserverBuilder("testLongUpDownSumObserver".toUpperCase())
+                    .build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -227,14 +223,13 @@ class SdkMeterTest {
                 .build())
         .isSameAs(doubleCounter);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleCounterBuilder("testDoubleCounter").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleCounterBuilder("testDoubleCounter".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.doubleCounterBuilder("testDoubleCounter").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () -> testSdk.doubleCounterBuilder("testDoubleCounter".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -255,14 +250,14 @@ class SdkMeterTest {
                 .build())
         .isSameAs(doubleUpDownCounter);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () ->
+                testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -283,14 +278,14 @@ class SdkMeterTest {
                 .build())
         .isSameAs(doubleValueRecorder);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () ->
+                testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -311,14 +306,13 @@ class SdkMeterTest {
                 .build())
         .isSameAs(doubleObserver);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleSumObserverBuilder("testDoubleSumObserver").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleSumObserverBuilder("testDoubleSumObserver".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.doubleSumObserverBuilder("testDoubleSumObserver").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () -> testSdk.doubleSumObserverBuilder("testDoubleSumObserver".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -339,17 +333,17 @@ class SdkMeterTest {
                 .build())
         .isSameAs(doubleObserver);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            testSdk
-                .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver".toUpperCase())
-                .build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () -> testSdk.doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () ->
+                testSdk
+                    .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver".toUpperCase())
+                    .build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -370,14 +364,13 @@ class SdkMeterTest {
                 .build())
         .isSameAs(doubleValueObserver);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleValueObserverBuilder("doubleValueObserver").build(),
-        "Instrument with same name and different descriptor already created.");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.doubleValueObserverBuilder("doubleValueObserver".toUpperCase()).build(),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(() -> testSdk.doubleValueObserverBuilder("doubleValueObserver").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () -> testSdk.doubleValueObserverBuilder("doubleValueObserver".toUpperCase()).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test

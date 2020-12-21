@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.testing.trace;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
@@ -44,16 +44,17 @@ class TestSpanDataTest {
   void unmodifiableLinks() {
     SpanData spanData = createSpanDataWithMutableCollections();
 
-    assertThrows(UnsupportedOperationException.class, () -> spanData.getLinks().add(emptyLink()));
+    assertThatThrownBy(() -> spanData.getLinks().add(emptyLink()))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   void unmodifiableTimedEvents() {
     SpanData spanData = createSpanDataWithMutableCollections();
 
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> spanData.getEvents().add(Event.create(1234, "foo", Attributes.empty())));
+    assertThatThrownBy(
+            () -> spanData.getEvents().add(Event.create(1234, "foo", Attributes.empty())))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test

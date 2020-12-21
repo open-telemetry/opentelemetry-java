@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -14,61 +14,58 @@ class BatchRecorderTest {
 
   @Test
   void testNewBatchRecorder_WrongNumberOfLabels() {
-    assertThrows(IllegalArgumentException.class, () -> meter.newBatchRecorder("key"), "key/value");
+    assertThatThrownBy(() -> meter.newBatchRecorder("key"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("key/value");
   }
 
   @Test
   void testNewBatchRecorder_NullLabelKey() {
-    assertThrows(
-        NullPointerException.class, () -> meter.newBatchRecorder(null, "value"), "null keys");
+    assertThatThrownBy(() -> meter.newBatchRecorder(null, "value"))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("null keys");
   }
 
   @Test
   void preventNull_MeasureLong() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.newBatchRecorder().put((LongValueRecorder) null, 5L).record(),
-        "valueRecorder");
+    assertThatThrownBy(() -> meter.newBatchRecorder().put((LongValueRecorder) null, 5L).record())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("valueRecorder");
   }
 
   @Test
   void preventNull_MeasureDouble() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.newBatchRecorder().put((DoubleValueRecorder) null, 5L).record(),
-        "valueRecorder");
+    assertThatThrownBy(() -> meter.newBatchRecorder().put((DoubleValueRecorder) null, 5L).record())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("valueRecorder");
   }
 
   @Test
   void preventNull_LongCounter() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.newBatchRecorder().put((LongCounter) null, 5L).record(),
-        "counter");
+    assertThatThrownBy(() -> meter.newBatchRecorder().put((LongCounter) null, 5L).record())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("counter");
   }
 
   @Test
   void preventNull_DoubleCounter() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.newBatchRecorder().put((DoubleCounter) null, 5L).record(),
-        "counter");
+    assertThatThrownBy(() -> meter.newBatchRecorder().put((DoubleCounter) null, 5L).record())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("counter");
   }
 
   @Test
   void preventNull_LongUpDownCounter() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.newBatchRecorder().put((LongUpDownCounter) null, 5L).record(),
-        "upDownCounter");
+    assertThatThrownBy(() -> meter.newBatchRecorder().put((LongUpDownCounter) null, 5L).record())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("upDownCounter");
   }
 
   @Test
   void preventNull_DoubleUpDownCounter() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.newBatchRecorder().put((DoubleUpDownCounter) null, 5L).record(),
-        "upDownCounter");
+    assertThatThrownBy(() -> meter.newBatchRecorder().put((DoubleUpDownCounter) null, 5L).record())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("upDownCounter");
   }
 
   @Test
@@ -89,18 +86,18 @@ class BatchRecorderTest {
   @Test
   void negativeValue_DoubleCounter() {
     BatchRecorder batchRecorder = meter.newBatchRecorder();
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> batchRecorder.put(meter.doubleCounterBuilder("doubleCounter").build(), -77.556d),
-        "Counters can only increase");
+    assertThatThrownBy(
+            () -> batchRecorder.put(meter.doubleCounterBuilder("doubleCounter").build(), -77.556d))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Counters can only increase");
   }
 
   @Test
   void negativeValue_LongCounter() {
     BatchRecorder batchRecorder = meter.newBatchRecorder();
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> batchRecorder.put(meter.longCounterBuilder("longCounter").build(), -44L),
-        "Counters can only increase");
+    assertThatThrownBy(
+            () -> batchRecorder.put(meter.longCounterBuilder("longCounter").build(), -44L))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Counters can only increase");
   }
 }

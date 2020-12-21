@@ -7,7 +7,7 @@ package io.opentelemetry.api.trace;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
@@ -42,15 +42,14 @@ class SpanBuilderTest {
   @Test
   void setParent_NullContext() {
     SpanBuilder spanBuilder = tracer.spanBuilder("MySpanName");
-    assertThrows(NullPointerException.class, () -> spanBuilder.setParent(null));
+    assertThatThrownBy(() -> spanBuilder.setParent(null)).isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void setStartTimestamp_Negative() {
     SpanBuilder spanBuilder = tracer.spanBuilder("MySpanName");
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> spanBuilder.setStartTimestamp(-1, TimeUnit.NANOSECONDS),
-        "Negative startTimestamp");
+    assertThatThrownBy(() -> spanBuilder.setStartTimestamp(-1, TimeUnit.NANOSECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Negative startTimestamp");
   }
 }

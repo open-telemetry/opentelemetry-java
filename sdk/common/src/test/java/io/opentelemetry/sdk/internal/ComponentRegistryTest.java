@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,9 @@ class ComponentRegistryTest {
 
   @Test
   void libraryName_MustNotBeNull() {
-    assertThrows(NullPointerException.class, () -> registry.get(null, "version"), "name");
+    assertThatThrownBy(() -> registry.get(null, "version"))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("name");
   }
 
   @Test

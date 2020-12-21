@@ -5,8 +5,8 @@
 
 package io.opentelemetry.opencensusshim;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
@@ -57,7 +57,9 @@ class OpenTelemetryBinaryFormatImplTest {
 
   @Test
   void toBinaryValue_NullSpanContext() {
-    assertThrows(NullPointerException.class, () -> binaryFormat.toByteArray(null), "spanContext");
+    assertThatThrownBy(() -> binaryFormat.toByteArray(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("spanContext");
   }
 
   @Test
@@ -76,56 +78,59 @@ class OpenTelemetryBinaryFormatImplTest {
 
   @Test
   void fromBinaryValue_NullInput() {
-    assertThrows(NullPointerException.class, () -> binaryFormat.toByteArray(null), "spanContext");
+    assertThatThrownBy(() -> binaryFormat.toByteArray(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("spanContext");
   }
 
   @Test
   void fromBinaryValue_EmptyInput() {
-    assertThrows(
-        SpanContextParseException.class,
-        () -> binaryFormat.fromByteArray(new byte[0]),
-        "Unsupported version.");
+    assertThatThrownBy(() -> binaryFormat.fromByteArray(new byte[0]))
+        .isInstanceOf(SpanContextParseException.class)
+        .hasMessage("Unsupported version.");
   }
 
   @Test
   void fromBinaryValue_UnsupportedVersionId() {
-    assertThrows(
-        SpanContextParseException.class,
-        () ->
-            binaryFormat.fromByteArray(
-                new byte[] {
-                  66, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 97, 98, 99,
-                  100, 101, 102, 103, 104, 1
-                }),
-        "Unsupported version.");
+    assertThatThrownBy(
+            () ->
+                binaryFormat.fromByteArray(
+                    new byte[] {
+                      66, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 97, 98,
+                      99, 100, 101, 102, 103, 104, 1
+                    }))
+        .isInstanceOf(SpanContextParseException.class)
+        .hasMessage("Unsupported version.");
   }
 
   @Test
   void fromBinaryValue_UnsupportedFieldIdFirst() {
-    assertThrows(
-        SpanContextParseException.class,
-        () ->
-            binaryFormat.fromByteArray(
-                new byte[] {
-                  0, 4, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 1, 97, 98,
-                  99, 100, 101, 102, 103, 104, 2, 1
-                }),
-        "Invalid input: expected trace ID at offset "
-            + OpenTelemetryBinaryFormatImpl.TRACE_ID_FIELD_ID_OFFSET);
+    assertThatThrownBy(
+            () ->
+                binaryFormat.fromByteArray(
+                    new byte[] {
+                      0, 4, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 1, 97,
+                      98, 99, 100, 101, 102, 103, 104, 2, 1
+                    }))
+        .isInstanceOf(SpanContextParseException.class)
+        .hasMessage(
+            "Invalid input: expected trace ID at offset "
+                + OpenTelemetryBinaryFormatImpl.TRACE_ID_FIELD_ID_OFFSET);
   }
 
   @Test
   void fromBinaryValue_UnsupportedFieldIdSecond() {
-    assertThrows(
-        SpanContextParseException.class,
-        () ->
-            binaryFormat.fromByteArray(
-                new byte[] {
-                  0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 3, 97, 98,
-                  99, 100, 101, 102, 103, 104, 2, 1
-                }),
-        "Invalid input: expected span ID at offset "
-            + OpenTelemetryBinaryFormatImpl.SPAN_ID_FIELD_ID_OFFSET);
+    assertThatThrownBy(
+            () ->
+                binaryFormat.fromByteArray(
+                    new byte[] {
+                      0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 3, 97,
+                      98, 99, 100, 101, 102, 103, 104, 2, 1
+                    }))
+        .isInstanceOf(SpanContextParseException.class)
+        .hasMessage(
+            "Invalid input: expected span ID at offset "
+                + OpenTelemetryBinaryFormatImpl.SPAN_ID_FIELD_ID_OFFSET);
   }
 
   @Test
@@ -143,33 +148,33 @@ class OpenTelemetryBinaryFormatImplTest {
 
   @Test
   void fromBinaryValue_ShorterTraceId() {
-    assertThrows(
-        SpanContextParseException.class,
-        () ->
-            binaryFormat.fromByteArray(
-                new byte[] {0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76}),
-        "Invalid input: truncated");
+    assertThatThrownBy(
+            () ->
+                binaryFormat.fromByteArray(
+                    new byte[] {0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76}))
+        .isInstanceOf(SpanContextParseException.class)
+        .hasMessage("Invalid input: truncated");
   }
 
   @Test
   void fromBinaryValue_ShorterSpanId() {
-    assertThrows(
-        SpanContextParseException.class,
-        () -> binaryFormat.fromByteArray(new byte[] {0, 1, 97, 98, 99, 100, 101, 102, 103}),
-        "Invalid input: truncated");
+    assertThatThrownBy(
+            () -> binaryFormat.fromByteArray(new byte[] {0, 1, 97, 98, 99, 100, 101, 102, 103}))
+        .isInstanceOf(SpanContextParseException.class)
+        .hasMessage("Invalid input: truncated");
   }
 
   @Test
   void fromBinaryValue_ShorterTraceOptions() {
-    assertThrows(
-        SpanContextParseException.class,
-        () ->
-            binaryFormat.fromByteArray(
-                new byte[] {
-                  0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 1, 97, 98,
-                  99, 100, 101, 102, 103, 104, 2
-                }),
-        "Invalid input: truncated");
+    assertThatThrownBy(
+            () ->
+                binaryFormat.fromByteArray(
+                    new byte[] {
+                      0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 1, 97,
+                      98, 99, 100, 101, 102, 103, 104, 2
+                    }))
+        .isInstanceOf(SpanContextParseException.class)
+        .hasMessage("Invalid input: truncated");
   }
 
   @Test
