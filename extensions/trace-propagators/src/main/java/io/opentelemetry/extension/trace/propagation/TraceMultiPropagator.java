@@ -51,6 +51,7 @@ import javax.annotation.concurrent.Immutable;
  *
  * This class is @deprecated and will be removed in 0.14.0. Users should migrate to the
  * MultiTextMapPropagator in the api.
+ * @deprecated Migrate to the MultiTextPropagator in the API.
  */
 @Immutable
 @Deprecated
