@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
 import java.util.Collections;
@@ -267,6 +268,10 @@ public class OtlpPipelineStressTest {
             //            .setMaxExportBatchSize(1024)
             //            .setScheduleDelayMillis(1000)
             .build();
-    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
+
+    GlobalOpenTelemetry.set(
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
+            .build());
   }
 }

@@ -72,8 +72,10 @@ public class SpanPipelineBenchmark {
           TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
 
       SdkTracerProvider tracerProvider =
-          SdkTracerProvider.builder().setTraceConfig(alwaysOn).build();
-      tracerProvider.addSpanProcessor(getSpanProcessor(address));
+          SdkTracerProvider.builder()
+              .setTraceConfig(alwaysOn)
+              .addSpanProcessor(getSpanProcessor(address))
+              .build();
 
       Tracer tracerSdk = tracerProvider.get("PipelineBenchmarkTracer");
       sdkSpanBuilder = (SdkSpanBuilder) tracerSdk.spanBuilder("PipelineBenchmarkSpan");

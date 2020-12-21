@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -38,17 +37,12 @@ class TracezZPageHandlerTest {
   private static final String LATENCY_SPAN = "LatencySpan";
   private static final String ERROR_SPAN = "ErrorSpan";
   private final TestClock testClock = TestClock.create();
-  private final SdkTracerProvider sdkTracerProvider =
-      SdkTracerProvider.builder().setClock(testClock).build();
-  private final Tracer tracer = sdkTracerProvider.get("TracezZPageHandlerTest");
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
+  private final SdkTracerProvider sdkTracerProvider =
+      SdkTracerProvider.builder().setClock(testClock).addSpanProcessor(spanProcessor).build();
+  private final Tracer tracer = sdkTracerProvider.get("TracezZPageHandlerTest");
   private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
   private final Map<String, String> emptyQueryMap = ImmutableMap.of();
-
-  @BeforeEach
-  void setup() {
-    sdkTracerProvider.addSpanProcessor(spanProcessor);
-  }
 
   @Test
   void summaryTable_emitRowForEachSpan() {
