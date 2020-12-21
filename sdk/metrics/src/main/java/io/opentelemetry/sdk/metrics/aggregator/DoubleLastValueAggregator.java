@@ -35,7 +35,7 @@ public final class DoubleLastValueAggregator extends AbstractAggregator {
   }
 
   @Override
-  Accumulation doToAccumulationThenReset() {
+  Accumulation doAccumulateThenReset() {
     return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
   }
 

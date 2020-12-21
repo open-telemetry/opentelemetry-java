@@ -31,32 +31,32 @@ class DoubleMinMaxSumCountAggregatorTest {
     Aggregator aggregator = DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
 
     aggregator.recordDouble(100);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
 
     aggregator.recordDouble(200);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 200, 200, 200));
 
     aggregator.recordDouble(-75);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, -75, -75, -75));
   }
 
   @Test
   void toAccumulationAndReset() {
     Aggregator aggregator = DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isNull();
 
     aggregator.recordDouble(100);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isNull();
 
     aggregator.recordDouble(100);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 
   @Test
@@ -82,7 +82,7 @@ class DoubleMinMaxSumCountAggregatorTest {
                 for (int j = 0; j < numberOfUpdates; j++) {
                   aggregator.recordDouble(update);
                   if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                    summarizer.process(aggregator.toAccumulationThenReset());
+                    summarizer.process(aggregator.accumulateThenReset());
                   }
                 }
               });
@@ -97,7 +97,7 @@ class DoubleMinMaxSumCountAggregatorTest {
       worker.join();
     }
     // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregator.toAccumulationThenReset());
+    summarizer.process(aggregator.accumulateThenReset());
 
     assertThat(summarizer.accumulation)
         .isEqualTo(

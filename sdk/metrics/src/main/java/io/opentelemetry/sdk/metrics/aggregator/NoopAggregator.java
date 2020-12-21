@@ -18,7 +18,7 @@ public final class NoopAggregator implements Aggregator {
 
   @Nullable
   @Override
-  public Accumulation toAccumulationThenReset() {
+  public Accumulation accumulateThenReset() {
     return null;
   }
 

@@ -17,16 +17,16 @@ abstract class AbstractAggregator implements Aggregator {
 
   @Override
   @Nullable
-  public Accumulation toAccumulationThenReset() {
+  public Accumulation accumulateThenReset() {
     if (!hasRecordings) {
       return null;
     }
     hasRecordings = false;
-    return doToAccumulationThenReset();
+    return doAccumulateThenReset();
   }
 
-  /** Implementation of the {@code toAccumulationThenReset}. */
-  abstract Accumulation doToAccumulationThenReset();
+  /** Implementation of the {@code accumulateThenReset}. */
+  abstract Accumulation doAccumulateThenReset();
 
   @Override
   public final void recordLong(long value) {

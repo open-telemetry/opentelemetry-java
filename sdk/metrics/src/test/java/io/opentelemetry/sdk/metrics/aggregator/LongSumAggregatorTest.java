@@ -26,8 +26,8 @@ class LongSumAggregatorTest {
     aggregator.recordLong(12);
     aggregator.recordLong(12);
     aggregator.recordLong(12);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(LongAccumulation.create(12 * 5));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(12 * 5));
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 
   @Test
@@ -39,8 +39,8 @@ class LongSumAggregatorTest {
     aggregator.recordLong(12);
     aggregator.recordLong(12);
     aggregator.recordLong(-11);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(LongAccumulation.create(14));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(14));
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 
   @Test
@@ -48,11 +48,11 @@ class LongSumAggregatorTest {
     Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
     aggregator.recordLong(13);
     aggregator.recordLong(12);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(LongAccumulation.create(25));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(25));
+    assertThat(aggregator.accumulateThenReset()).isNull();
     aggregator.recordLong(12);
     aggregator.recordLong(-25);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(LongAccumulation.create(-13));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(-13));
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 }

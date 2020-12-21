@@ -18,7 +18,7 @@ public interface Aggregator {
    * {@code Aggregator}.
    */
   @Nullable
-  Accumulation toAccumulationThenReset();
+  Accumulation accumulateThenReset();
 
   /**
    * Updates the current aggregator with a newly recorded {@code long} value.

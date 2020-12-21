@@ -25,7 +25,7 @@ public final class DoubleSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  Accumulation doToAccumulationThenReset() {
+  Accumulation doAccumulateThenReset() {
     return DoubleAccumulation.create(this.current.sumThenReset());
   }
 

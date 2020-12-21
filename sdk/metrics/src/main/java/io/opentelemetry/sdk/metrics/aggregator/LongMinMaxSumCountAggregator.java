@@ -30,7 +30,7 @@ public final class LongMinMaxSumCountAggregator extends AbstractAggregator {
   }
 
   @Override
-  Accumulation doToAccumulationThenReset() {
+  Accumulation doAccumulateThenReset() {
     lock.writeLock().lock();
     try {
       Accumulation toReturn =

@@ -40,7 +40,7 @@ class LastValueAggregationTest {
                 "unit",
                 InstrumentType.VALUE_OBSERVER,
                 InstrumentValueType.LONG),
-            Collections.singletonMap(Labels.empty(), aggregator.toAccumulationThenReset()),
+            Collections.singletonMap(Labels.empty(), aggregator.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();

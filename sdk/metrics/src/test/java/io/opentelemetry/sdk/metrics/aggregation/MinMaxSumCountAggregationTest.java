@@ -39,7 +39,7 @@ class MinMaxSumCountAggregationTest {
                 "unit",
                 InstrumentType.VALUE_RECORDER,
                 InstrumentValueType.LONG),
-            Collections.singletonMap(Labels.empty(), aggregator.toAccumulationThenReset()),
+            Collections.singletonMap(Labels.empty(), aggregator.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();

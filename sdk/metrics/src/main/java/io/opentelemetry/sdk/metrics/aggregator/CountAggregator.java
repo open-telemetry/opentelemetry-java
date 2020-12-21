@@ -38,7 +38,7 @@ public final class CountAggregator extends AbstractAggregator {
   }
 
   @Override
-  Accumulation doToAccumulationThenReset() {
+  Accumulation doAccumulateThenReset() {
     return LongAccumulation.create(current.sumThenReset());
   }
 }

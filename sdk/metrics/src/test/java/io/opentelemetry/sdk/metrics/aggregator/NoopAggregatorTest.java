@@ -22,6 +22,6 @@ class NoopAggregatorTest {
     Aggregator aggregator = NoopAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     aggregator.recordDouble(12.1);
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 }

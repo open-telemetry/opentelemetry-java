@@ -30,30 +30,30 @@ class LongMinMaxSumCountAggregatorTest {
   void testRecordings() {
     Aggregator aggregator = LongMinMaxSumCountAggregator.getFactory().getAggregator();
     aggregator.recordLong(100);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
     aggregator.recordLong(200);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 200, 200, 200));
     aggregator.recordLong(-75);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, -75, -75, -75));
   }
 
   @Test
   void toAccumulationAndReset() {
     Aggregator aggregator = LongMinMaxSumCountAggregator.getFactory().getAggregator();
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isNull();
 
     aggregator.recordLong(100);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isNull();
 
     aggregator.recordLong(100);
-    assertThat(aggregator.toAccumulationThenReset())
+    assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 
   @Test
@@ -79,7 +79,7 @@ class LongMinMaxSumCountAggregatorTest {
                 for (int j = 0; j < numberOfUpdates; j++) {
                   aggregator.recordLong(update);
                   if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                    summarizer.process(aggregator.toAccumulationThenReset());
+                    summarizer.process(aggregator.accumulateThenReset());
                   }
                 }
               });
@@ -94,7 +94,7 @@ class LongMinMaxSumCountAggregatorTest {
       worker.join();
     }
     // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregator.toAccumulationThenReset());
+    summarizer.process(aggregator.accumulateThenReset());
 
     assertThat(summarizer.accumulation)
         .isEqualTo(

@@ -21,7 +21,7 @@ class DoubleSumAggregatorTest {
   @Test
   void toPoint() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 
   @Test
@@ -32,7 +32,7 @@ class DoubleSumAggregatorTest {
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(DoubleAccumulation.create(12.1 * 5));
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(12.1 * 5));
   }
 
   @Test
@@ -44,7 +44,7 @@ class DoubleSumAggregatorTest {
     aggregator.recordDouble(12);
     aggregator.recordDouble(12);
     aggregator.recordDouble(-11);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(DoubleAccumulation.create(14));
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(14));
   }
 
   @Test
@@ -52,11 +52,11 @@ class DoubleSumAggregatorTest {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(13);
     aggregator.recordDouble(12);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(DoubleAccumulation.create(25));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(25));
+    assertThat(aggregator.accumulateThenReset()).isNull();
     aggregator.recordDouble(12);
     aggregator.recordDouble(-25);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(DoubleAccumulation.create(-13));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(-13));
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 }

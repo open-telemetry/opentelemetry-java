@@ -35,7 +35,7 @@ public final class LongLastValueAggregator extends AbstractAggregator {
   }
 
   @Override
-  Accumulation doToAccumulationThenReset() {
+  Accumulation doAccumulateThenReset() {
     return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
   }
 

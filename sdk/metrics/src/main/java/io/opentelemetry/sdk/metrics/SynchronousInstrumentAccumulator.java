@@ -70,7 +70,7 @@ final class SynchronousInstrumentAccumulator<B extends AbstractBoundInstrument> 
           // acquire but because we requested a specific value only one will succeed.
           boundLabels.remove(entry.getKey(), entry.getValue());
         }
-        Accumulation accumulation = entry.getValue().getAggregator().toAccumulationThenReset();
+        Accumulation accumulation = entry.getValue().getAggregator().accumulateThenReset();
         if (accumulation == null) {
           continue;
         }

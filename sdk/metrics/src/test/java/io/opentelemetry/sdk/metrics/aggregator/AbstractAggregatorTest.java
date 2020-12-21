@@ -22,7 +22,7 @@ public class AbstractAggregatorTest {
     assertThat(testAggregator.recordedLong.get()).isEqualTo(22);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
 
-    testAggregator.toAccumulationThenReset();
+    testAggregator.accumulateThenReset();
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
 
@@ -30,7 +30,7 @@ public class AbstractAggregatorTest {
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(33.55);
 
-    testAggregator.toAccumulationThenReset();
+    testAggregator.accumulateThenReset();
     assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
   }
@@ -41,7 +41,7 @@ public class AbstractAggregatorTest {
 
     @Nullable
     @Override
-    Accumulation doToAccumulationThenReset() {
+    Accumulation doAccumulateThenReset() {
       recordedLong.set(0);
       recordedDouble.set(0);
       return null;

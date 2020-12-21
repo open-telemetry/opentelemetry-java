@@ -21,27 +21,27 @@ class DoubleLastValueAggregatorTest {
   @Test
   void toPoint() {
     Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 
   @Test
   void multipleRecords() {
     Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.1);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
     aggregator.recordDouble(13.1);
     aggregator.recordDouble(14.1);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(DoubleAccumulation.create(14.1));
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(14.1));
   }
 
   @Test
   void toAccumulationAndReset() {
     Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.recordDouble(13.1);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(DoubleAccumulation.create(13.1));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(13.1));
+    assertThat(aggregator.accumulateThenReset()).isNull();
     aggregator.recordDouble(12.1);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
-    assertThat(aggregator.toAccumulationThenReset()).isNull();
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
+    assertThat(aggregator.accumulateThenReset()).isNull();
   }
 }

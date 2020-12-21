@@ -23,7 +23,7 @@ class CountAggregatorTest {
     Aggregator aggregator = CountAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     aggregator.recordLong(12);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(LongAccumulation.create(2));
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));
   }
 
   @Test
@@ -31,6 +31,6 @@ class CountAggregatorTest {
     Aggregator aggregator = CountAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.3);
     aggregator.recordDouble(12.3);
-    assertThat(aggregator.toAccumulationThenReset()).isEqualTo(LongAccumulation.create(2));
+    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));
   }
 }
