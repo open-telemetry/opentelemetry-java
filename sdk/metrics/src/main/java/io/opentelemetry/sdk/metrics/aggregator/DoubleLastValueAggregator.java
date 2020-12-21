@@ -5,9 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
@@ -36,18 +35,8 @@ public final class DoubleLastValueAggregator extends AbstractAggregator {
   }
 
   @Override
-  void doMergeAndReset(Aggregator aggregator) {
-    DoubleLastValueAggregator other = (DoubleLastValueAggregator) aggregator;
-    other.current.set(this.current.getAndSet(DEFAULT_VALUE));
-  }
-
-  @Override
-  @Nullable
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
-    @Nullable Double currentValue = current.get();
-    return currentValue == null
-        ? null
-        : DoublePoint.create(startEpochNanos, epochNanos, labels, currentValue);
+  Accumulation doToAccumulationThenReset() {
+    return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
   }
 
   @Override

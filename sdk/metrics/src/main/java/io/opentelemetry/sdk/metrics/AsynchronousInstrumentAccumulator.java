@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.AsynchronousInstrument;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
+import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -26,11 +27,7 @@ final class AsynchronousInstrumentAccumulator {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
     AsynchronousInstrument.DoubleResult result =
-        (value, labels) -> {
-          Aggregator aggregator = instrumentProcessor.getAggregator();
-          aggregator.recordDouble(value);
-          instrumentProcessor.batch(labels, aggregator, /* mappedAggregator= */ false);
-        };
+        (value, labels) -> instrumentProcessor.batch(labels, DoubleAccumulation.create(value));
 
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
@@ -45,11 +42,7 @@ final class AsynchronousInstrumentAccumulator {
     }
 
     AsynchronousInstrument.LongResult result =
-        (value, labels) -> {
-          Aggregator aggregator = instrumentProcessor.getAggregator();
-          aggregator.recordLong(value);
-          instrumentProcessor.batch(labels, aggregator, /* mappedAggregator= */ false);
-        };
+        (value, labels) -> instrumentProcessor.batch(labels, LongAccumulation.create(value));
 
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));

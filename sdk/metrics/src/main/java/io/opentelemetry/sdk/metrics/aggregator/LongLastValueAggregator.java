@@ -5,9 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
@@ -36,18 +35,8 @@ public final class LongLastValueAggregator extends AbstractAggregator {
   }
 
   @Override
-  void doMergeAndReset(Aggregator aggregator) {
-    LongLastValueAggregator other = (LongLastValueAggregator) aggregator;
-    other.current.set(this.current.getAndSet(DEFAULT_VALUE));
-  }
-
-  @Override
-  @Nullable
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
-    @Nullable Long currentValue = current.get();
-    return currentValue == null
-        ? null
-        : LongPoint.create(startEpochNanos, epochNanos, labels, currentValue);
+  Accumulation doToAccumulationThenReset() {
+    return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
   }
 
   @Override

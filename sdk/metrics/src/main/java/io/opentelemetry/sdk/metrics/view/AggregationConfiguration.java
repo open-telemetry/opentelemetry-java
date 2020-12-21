@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.metrics.aggregation.Aggregation;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import javax.annotation.concurrent.Immutable;
 

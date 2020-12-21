@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import javax.annotation.Nullable;
+
 abstract class AbstractAggregator implements Aggregator {
   // Note: This is not 100% thread-safe. There is a race condition where recordings can
   // be made in the moment between the reset and the setting of this field's value. In those
@@ -13,24 +16,17 @@ abstract class AbstractAggregator implements Aggregator {
   private volatile boolean hasRecordings = false;
 
   @Override
-  public void mergeToAndReset(Aggregator other) {
-    if (!this.getClass().isInstance(other)) {
-      return;
+  @Nullable
+  public Accumulation toAccumulationThenReset() {
+    if (!hasRecordings) {
+      return null;
     }
-    doMergeAndReset(other);
     hasRecordings = false;
+    return doToAccumulationThenReset();
   }
 
-  /**
-   * Merges the current value into the given {@code aggregator} and resets the current value in this
-   * {@code Aggregator}.
-   *
-   * <p>If this method is called, you can assume that the passed in aggregator can be cast to your
-   * self-type.
-   *
-   * @param aggregator The aggregator to merge with.
-   */
-  abstract void doMergeAndReset(Aggregator aggregator);
+  /** Implementation of the {@code toAccumulationThenReset}. */
+  abstract Accumulation doToAccumulationThenReset();
 
   @Override
   public final void recordLong(long value) {
@@ -60,10 +56,5 @@ abstract class AbstractAggregator implements Aggregator {
   protected void doRecordDouble(double value) {
     throw new UnsupportedOperationException(
         "This aggregator does not support recording double values.");
-  }
-
-  @Override
-  public boolean hasRecordings() {
-    return hasRecordings;
   }
 }
