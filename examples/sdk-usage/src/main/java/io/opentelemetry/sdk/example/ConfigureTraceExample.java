@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -24,8 +24,10 @@ import java.util.List;
 class ConfigureTraceExample {
 
   // Configure a tracer for these examples
-  static TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
-  static Tracer tracer = OpenTelemetry.getGlobalTracer("ConfigureTraceExample");
+  private static final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().build();
+  private static final SdkTracerManagement tracerManagement =
+      ((OpenTelemetrySdk) openTelemetry).getTracerManagement();
+  private static final Tracer tracer = openTelemetry.getTracer("ConfigureTraceExample");
 
   static {
     tracerManagement.addSpanProcessor(
@@ -33,8 +35,7 @@ class ConfigureTraceExample {
   }
 
   public static void main(String[] args) {
-
-    // TraceConfig handles the global tracing configuration
+    // TraceConfig handles the tracing configuration
     printTraceConfig();
 
     // OpenTelemetry has a maximum of 32 Attributes by default for Spans, Links, and Events.

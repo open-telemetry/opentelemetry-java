@@ -23,7 +23,6 @@ import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extension.otproto.MetricAdapter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -31,9 +30,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -47,12 +45,6 @@ class OtlpGrpcMetricExporterTest {
   private final String serverName = InProcessServerBuilder.generateName();
   private final ManagedChannel inProcessChannel =
       InProcessChannelBuilder.forName(serverName).directExecutor().build();
-
-  private abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
-    public static NamingConvention getNaming() {
-      return NamingConvention.DOT;
-    }
-  }
 
   private final Closer closer = Closer.create();
 
@@ -75,12 +67,12 @@ class OtlpGrpcMetricExporterTest {
 
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     options.put("otel.exporter.otlp.metric.timeout", "12");
     options.put("otel.exporter.otlp.insecure", "true");
     OtlpGrpcMetricExporterBuilder config = OtlpGrpcMetricExporter.builder();
     OtlpGrpcMetricExporterBuilder spy = Mockito.spy(config);
-    spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
+    spy.readProperties(options);
     verify(spy).setDeadlineMs(12);
     verify(spy).setUseTls(false);
   }

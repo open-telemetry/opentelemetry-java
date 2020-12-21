@@ -21,7 +21,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface AsynchronousInstrument extends Instrument {
   /** Builder class for {@link AsynchronousInstrument}. */
-  interface Builder<R extends Result> extends Instrument.Builder {
+  interface Builder<R> extends Instrument.Builder {
     /**
      * Sets a consumer that gets executed every collection interval.
      *
@@ -36,15 +36,13 @@ public interface AsynchronousInstrument extends Instrument {
     AsynchronousInstrument build();
   }
 
-  interface Result {}
-
   /** The result pass to the updater. */
-  interface LongResult extends Result {
+  interface LongResult {
     void observe(long value, Labels labels);
   }
 
   /** The result pass to the updater. */
-  interface DoubleResult extends Result {
+  interface DoubleResult {
     void observe(double value, Labels labels);
   }
 }

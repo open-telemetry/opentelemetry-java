@@ -21,7 +21,6 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -30,9 +29,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -232,20 +230,11 @@ class JaegerThriftSpanExporterTest {
 
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     String serviceName = "myGreatService";
     options.put("otel.exporter.jaeger.service.name", serviceName);
     JaegerThriftSpanExporter exporter =
-        JaegerThriftSpanExporter.builder()
-            .fromConfigMap(options, ConfigBuilderTest.getNaming())
-            .build();
+        JaegerThriftSpanExporter.builder().readProperties(options).build();
     assertThat(exporter.getProcess().getServiceName()).isEqualTo(serviceName);
-  }
-
-  abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
-
-    public static NamingConvention getNaming() {
-      return NamingConvention.DOT;
-    }
   }
 }

@@ -27,7 +27,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -40,13 +40,14 @@ public class HelloWorldClient {
   private final Integer serverPort;
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
-  OpenTelemetry openTelemetry = OpenTelemetry.get();
+  private static final OpenTelemetry openTelemetry = initOpenTelemetry();
+
   // OTel API
-  Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
+  private Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
   // Share context via text headers
-  TextMapPropagator textFormat = openTelemetry.getPropagators().getTextMapPropagator();
+  private TextMapPropagator textFormat = openTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
-  TextMapPropagator.Setter<Metadata> setter =
+  private TextMapPropagator.Setter<Metadata> setter =
       (carrier, key, value) ->
           carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
 
@@ -115,15 +116,18 @@ public class HelloWorldClient {
     }
   }
 
-  private static void initTracing() {
-    OpenTelemetry.setGlobalPropagators(
-        ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
-
-    // Use the OpenTelemetry SDK
+  private static OpenTelemetry initOpenTelemetry() {
+    // install the W3C Trace Context propagator
+    // Get the tracer management instance
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
+    // Set to process the the spans by the LogExporter
     LoggingSpanExporter exporter = new LoggingSpanExporter();
-    TracerSdkManagement tracerProvider = OpenTelemetrySdk.getGlobalTracerManagement();
-    // Set to process the spans by the log exporter
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(sdkTracerProvider)
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .build();
   }
 
   /**
@@ -131,7 +135,6 @@ public class HelloWorldClient {
    * greeting.
    */
   public static void main(String[] args) throws Exception {
-    initTracing();
     // Access a service running on the local machine on port 50051
     HelloWorldClient client = new HelloWorldClient("localhost", 50051);
     try {

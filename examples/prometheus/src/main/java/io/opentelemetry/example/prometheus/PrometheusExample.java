@@ -1,11 +1,12 @@
 package io.opentelemetry.example.prometheus;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
@@ -15,28 +16,27 @@ import java.util.concurrent.ThreadLocalRandom;
  * expose these to a Prometheus instance via a {@link HTTPServer} exporter.
  *
  * <p>A {@link LongValueObserver} is used to periodically measure how many incoming messages are
- * awaiting processing. The {@link LongValueObserver.Callback} gets executed every collection
+ * awaiting processing. The {@link LongValueObserver} Updater gets executed every collection
  * interval.
  */
 public class PrometheusExample {
 
-  private final MeterSdkProvider meterSdkProvider = OpenTelemetrySdk.getGlobalMeterProvider();
-  private final Meter meter = meterSdkProvider.get("PrometheusExample", "0.7");
+  private final MeterProvider meterSdkProvider = GlobalMetricsProvider.get();
+  private final Meter meter = meterSdkProvider.get("PrometheusExample", "0.13.1");
   private final HTTPServer server;
   private long incomingMessageCount;
 
   public PrometheusExample(int port) throws IOException {
-
     LongValueObserver observer =
         meter
             .longValueObserverBuilder("incoming.messages")
             .setDescription("No of incoming messages awaiting processing")
             .setUnit("message")
-            .setCallback(result -> result.observe(incomingMessageCount, Labels.empty()))
+            .setUpdater(result -> result.observe(incomingMessageCount, Labels.empty()))
             .build();
 
     PrometheusCollector.builder()
-        .setMetricProducer(meterSdkProvider.getMetricProducer())
+        .setMetricProducer(((SdkMeterProvider) meterSdkProvider).getMetricProducer())
         .buildAndRegister();
 
     server = new HTTPServer(port);

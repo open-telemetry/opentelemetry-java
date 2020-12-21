@@ -9,6 +9,7 @@ ext.moduleName = 'io.opentelemetry.sdk.testing'
 dependencies {
     api project(':api:all')
     api project(':sdk:all')
+    api project(':sdk:metrics')
 
     compileOnly libraries.assertj
     compileOnly libraries.junit

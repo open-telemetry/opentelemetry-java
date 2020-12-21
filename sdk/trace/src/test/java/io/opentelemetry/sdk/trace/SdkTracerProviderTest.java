@@ -32,13 +32,13 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SdkTracerProviderTest {
   @Mock private SpanProcessor spanProcessor;
-  private final SdkTracerProvider tracerFactory = SdkTracerProvider.builder().build();
+  private SdkTracerProvider tracerFactory;
 
   @BeforeEach
   void setUp() {
+    tracerFactory = SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     when(spanProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    tracerFactory.addSpanProcessor(spanProcessor);
   }
 
   @Test
