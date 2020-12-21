@@ -131,6 +131,9 @@ subprojects {
             it.options.errorprone.disable("JdkObsolete")
             it.options.errorprone.disable("UnnecessaryAnonymousClass")
 
+            // Limits APIs
+            it.options.errorprone.disable("NoFunctionalReturnType")
+
             it.options.compilerArgs += ["-Werror"]
         }
 

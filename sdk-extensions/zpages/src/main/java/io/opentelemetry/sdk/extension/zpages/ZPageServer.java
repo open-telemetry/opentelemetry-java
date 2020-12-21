@@ -8,10 +8,12 @@ package io.opentelemetry.sdk.extension.zpages;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
@@ -53,6 +55,8 @@ public final class ZPageServer {
   // Tracez SpanProcessor and DataAggregator for constructing TracezZPageHandler
   private static final TracezSpanProcessor tracezSpanProcessor =
       TracezSpanProcessor.builder().build();
+  private static final TracezTraceConfigSupplier tracezTraceConfigSupplier =
+      new TracezTraceConfigSupplier();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
   private static final SdkTracerManagement TRACER_SDK_MANAGEMENT =
@@ -62,7 +66,7 @@ public final class ZPageServer {
       new TracezZPageHandler(tracezDataAggregator);
   // Handler for /traceconfigz page
   private static final ZPageHandler traceConfigzZPageHandler =
-      new TraceConfigzZPageHandler(TRACER_SDK_MANAGEMENT);
+      new TraceConfigzZPageHandler(tracezTraceConfigSupplier);
   // Handler for index page, **please include all available ZPageHandlers in the constructor**
   private static final ZPageHandler indexZPageHandler =
       new IndexZPageHandler(Arrays.asList(tracezZPageHandler, traceConfigzZPageHandler));
@@ -73,6 +77,13 @@ public final class ZPageServer {
   @GuardedBy("mutex")
   @Nullable
   private static HttpServer server;
+
+  /**
+   * Returns a supplier of {@link TraceConfig} which can be reconfigured using zpages.
+   */
+  public static Supplier<TraceConfig> getTracezTraceConfigSupplier() {
+    return tracezTraceConfigSupplier;
+  }
 
   /** Function that adds the {@link TracezSpanProcessor} to the {@link SdkTracerManagement}. */
   private static void addTracezSpanProcessor() {

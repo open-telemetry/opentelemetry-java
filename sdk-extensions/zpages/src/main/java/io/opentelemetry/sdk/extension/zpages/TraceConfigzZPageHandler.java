@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -35,10 +34,10 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
   // Background color used for zebra striping rows in table
   private static final String ZEBRA_STRIPE_COLOR = "#e6e6e6";
   private static final Logger logger = Logger.getLogger(TraceConfigzZPageHandler.class.getName());
-  private final SdkTracerManagement sdkTracerManagement;
+  private final TracezTraceConfigSupplier configSupplier;
 
-  TraceConfigzZPageHandler(SdkTracerManagement sdkTracerManagement) {
-    this.sdkTracerManagement = sdkTracerManagement;
+  TraceConfigzZPageHandler(TracezTraceConfigSupplier configSupplier) {
+    this.configSupplier = configSupplier;
   }
 
   @Override
@@ -211,45 +210,42 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "Sampler",
-        /* paramValue=*/ this.sdkTracerManagement
-            .getActiveTraceConfig()
-            .getSampler()
-            .getDescription(),
+        /* paramValue=*/ configSupplier.getActiveTraceConfig().getSampler().getDescription(),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributes",
         /* paramValue=*/ Integer.toString(
-            this.sdkTracerManagement.getActiveTraceConfig().getMaxNumberOfAttributes()),
+            configSupplier.getActiveTraceConfig().getMaxNumberOfAttributes()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfEvents",
         /* paramValue=*/ Integer.toString(
-            this.sdkTracerManagement.getActiveTraceConfig().getMaxNumberOfEvents()),
+            configSupplier.getActiveTraceConfig().getMaxNumberOfEvents()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfLinks",
         /* paramValue=*/ Integer.toString(
-            this.sdkTracerManagement.getActiveTraceConfig().getMaxNumberOfLinks()),
+            configSupplier.getActiveTraceConfig().getMaxNumberOfLinks()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerEvent",
         /* paramValue=*/ Integer.toString(
-            this.sdkTracerManagement.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent()),
+            configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerLink",
         /* paramValue=*/ Integer.toString(
-            this.sdkTracerManagement.getActiveTraceConfig().getMaxNumberOfAttributesPerLink()),
+            configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerLink()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe=*/ true);
     out.print("</table>");
@@ -369,8 +365,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       return;
     }
     if (action.equals(QUERY_STRING_ACTION_CHANGE)) {
-      TraceConfigBuilder newConfigBuilder =
-          this.sdkTracerManagement.getActiveTraceConfig().toBuilder();
+      TraceConfigBuilder newConfigBuilder = configSupplier.getActiveTraceConfig().toBuilder();
       String samplingProbabilityStr = queryMap.get(QUERY_STRING_SAMPLING_PROBABILITY);
       if (samplingProbabilityStr != null) {
         try {
@@ -435,10 +430,10 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
               "MaxNumOfAttributesPerLink must be of the type integer", e);
         }
       }
-      this.sdkTracerManagement.updateActiveTraceConfig(newConfigBuilder.build());
+      configSupplier.setActiveTraceConfig(newConfigBuilder.build());
     } else if (action.equals(QUERY_STRING_ACTION_DEFAULT)) {
       TraceConfig defaultConfig = TraceConfig.getDefault().toBuilder().build();
-      this.sdkTracerManagement.updateActiveTraceConfig(defaultConfig);
+      configSupplier.setActiveTraceConfig(defaultConfig);
     }
   }
 }
