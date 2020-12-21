@@ -30,11 +30,16 @@ final class TracerSharedState {
   private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
 
   TracerSharedState(
-      Clock clock, IdGenerator idGenerator, Resource resource, TraceConfig traceConfig) {
+      Clock clock,
+      IdGenerator idGenerator,
+      Resource resource,
+      TraceConfig traceConfig,
+      List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.resource = resource;
     this.activeTraceConfig = traceConfig;
+    spanProcessors.forEach(this::addSpanProcessor);
   }
 
   Clock getClock() {

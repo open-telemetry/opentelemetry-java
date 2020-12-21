@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,7 @@ class OpenTelemetrySdkTest {
   @Mock private SdkMeterProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
+  @Mock private SpanProcessor spanProcessor;
 
   @Test
   void testGetGlobal() {

@@ -9,6 +9,7 @@ ext.moduleName = "io.opentelemetry.opencensusshim"
 dependencies {
     api project(':api:all'),
             project(':sdk:all'),
+            project(':sdk:metrics'),
             libraries.opencensus_api,
             libraries.opencensus_impl_core,
             libraries.opencensus_metric_exporter

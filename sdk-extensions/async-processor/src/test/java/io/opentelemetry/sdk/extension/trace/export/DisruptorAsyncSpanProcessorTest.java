@@ -9,13 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
@@ -261,15 +259,9 @@ class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
-  abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
-    public static NamingConvention getNaming() {
-      return NamingConvention.DOT;
-    }
-  }
-
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     options.put("otel.disruptor.blocking", "false");
     options.put("otel.disruptor.buffer.size", "1234");
     options.put("otel.disruptor.num.retries", "56");
@@ -278,7 +270,7 @@ class DisruptorAsyncSpanProcessorTest {
     DisruptorAsyncSpanProcessor.Builder config =
         DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor);
     DisruptorAsyncSpanProcessor.Builder spy = Mockito.spy(config);
-    spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
+    spy.readProperties(options);
     Mockito.verify(spy).setBlocking(false);
     Mockito.verify(spy).setBufferSize(1234);
   }

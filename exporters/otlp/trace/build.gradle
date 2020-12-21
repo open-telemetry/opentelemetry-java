@@ -10,7 +10,7 @@ description = 'OpenTelemetry Protocol Trace Exporter'
 ext.moduleName = "io.opentelemetry.exporter.otlp.trace"
 
 dependencies {
-    api project(':sdk:all')
+    api project(':sdk:trace')
 
     implementation project(':sdk-extensions:otproto'),
             libraries.grpc_api,

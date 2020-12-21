@@ -2,29 +2,26 @@ package io.opentelemetry.example.jaeger;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 
 public class JaegerExample {
 
-  // Jaeger Endpoint URL and PORT
-  private final String ip; // = "jaeger";
-  private final int port; // = 14250;
-
   // OTel API
-  private final Tracer tracer =
-      OpenTelemetry.getGlobalTracer("io.opentelemetry.example.JaegerExample");
+  private final SdkTracerManagement sdkTracerManagement;
+  private final Tracer tracer;
 
   public JaegerExample(String ip, int port) {
-    this.ip = ip;
-    this.port = port;
+    OpenTelemetrySdk sdk = initOpenTelemetry(ip, port);
+    this.sdkTracerManagement = sdk.getTracerManagement();
+    tracer = sdk.getTracer("io.opentelemetry.example.JaegerExample");
   }
 
-  private void setupJaegerExporter() {
+  private OpenTelemetrySdk initOpenTelemetry(String ip, int port) {
     // Create a channel towards Jaeger end point
     ManagedChannel jaegerChannel =
         ManagedChannelBuilder.forAddress(ip, port).usePlaintext().build();
@@ -38,8 +35,11 @@ public class JaegerExample {
             .build();
 
     // Set to process the spans by the Jaeger Exporter
-    OpenTelemetrySdk.getGlobalTracerManagement()
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    openTelemetry
+        .getTracerManagement()
         .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
+    return openTelemetry;
   }
 
   private void myWonderfulUseCase() {
@@ -62,7 +62,9 @@ public class JaegerExample {
 
   // graceful shutdown
   public void shutdown() {
-    OpenTelemetrySdk.getGlobalTracerManagement().shutdown();
+    // note: this doesn't wait for everything to get cleaned up. We need an SDK update to enable
+    // that.
+    sdkTracerManagement.shutdown();
   }
 
   public static void main(String[] args) {
@@ -76,7 +78,7 @@ public class JaegerExample {
 
     // Start the example
     JaegerExample example = new JaegerExample(ip, port);
-    example.setupJaegerExporter();
+    example.initOpenTelemetry(ip, port);
     // generate a few sample spans
     for (int i = 0; i < 10; i++) {
       example.myWonderfulUseCase();

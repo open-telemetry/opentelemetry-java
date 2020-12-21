@@ -1,7 +1,9 @@
 package io.opentelemetry.example.metrics;
 
+import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -18,11 +20,12 @@ import javax.swing.filechooser.FileSystemView;
  * directories.
  */
 public class LongCounterExample {
-
+  private static final OpenTelemetry openTelemetry = DefaultOpenTelemetry.builder().build();
   private static final Tracer tracer =
-      OpenTelemetry.getGlobalTracer("io.opentelemetry.example.metrics", "0.5");
+      openTelemetry.getTracer("io.opentelemetry.example.metrics", "0.13.1");
+
   private static final Meter sampleMeter =
-      OpenTelemetry.getGlobalMeterProvider().get("io.opentelemetry.example.metrics", "0.5");
+      GlobalMetricsProvider.getMeter("io.opentelemetry.example.metrics", "0.13.1");
   private static final LongCounter directoryCounter =
       sampleMeter
           .longCounterBuilder("directories_search_count")

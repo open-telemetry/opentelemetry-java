@@ -13,7 +13,7 @@ version = "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, pa
 }
 
 dependencies {
-    api project(':sdk:all')
+    api project(':sdk:metrics')
 
     implementation project(':sdk-extensions:otproto'),
             libraries.grpc_api,

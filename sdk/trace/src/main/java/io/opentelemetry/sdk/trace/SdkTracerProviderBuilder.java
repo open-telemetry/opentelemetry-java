@@ -9,10 +9,13 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /** Builder of {@link SdkTracerProvider}. */
 public final class SdkTracerProviderBuilder {
+  private final List<SpanProcessor> spanProcessors = new ArrayList<>();
 
   private Clock clock = SystemClock.getInstance();
   private IdGenerator idsGenerator = IdGenerator.random();
@@ -68,12 +71,22 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Add a SpanProcessor to the span pipeline that will be built.
+   *
+   * @return this
+   */
+  public SdkTracerProviderBuilder addSpanProcessor(SpanProcessor spanProcessor) {
+    spanProcessors.add(spanProcessor);
+    return this;
+  }
+
+  /**
    * Create a new TraceSdkProvider instance.
    *
    * @return An initialized TraceSdkProvider.
    */
   public SdkTracerProvider build() {
-    return new SdkTracerProvider(clock, idsGenerator, resource, traceConfig);
+    return new SdkTracerProvider(clock, idsGenerator, resource, traceConfig, spanProcessors);
   }
 
   SdkTracerProviderBuilder() {}

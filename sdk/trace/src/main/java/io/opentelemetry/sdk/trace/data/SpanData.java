@@ -66,19 +66,6 @@ public interface SpanData {
   }
 
   /**
-   * Returns {@code true} if the parent is on a different process. {@code false} if this is a root
-   * span.
-   *
-   * @return {@code true} if the parent is on a different process. {@code false} if this is a root
-   *     span.
-   * @deprecated Use {@link #getParentSpanContext()}
-   */
-  @Deprecated
-  default boolean hasRemoteParent() {
-    return getParentSpanContext().isRemote();
-  }
-
-  /**
    * Returns the resource of this {@code Span}.
    *
    * @return the resource of this {@code Span}.
@@ -227,17 +214,6 @@ public interface SpanData {
 
     /** Returns the {@code SpanContext} of the span this {@link Link} refers to. */
     SpanContext getSpanContext();
-
-    /**
-     * Returns the {@code SpanContext}.
-     *
-     * @return the {@code SpanContext}.
-     * @deprecated Use {@link #getSpanContext()}
-     */
-    @Deprecated
-    default SpanContext getContext() {
-      return getSpanContext();
-    }
 
     /**
      * Returns the set of attributes.
