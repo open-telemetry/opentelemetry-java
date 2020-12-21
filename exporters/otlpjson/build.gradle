@@ -5,11 +5,12 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-description = 'OpenTelemetry Protocol (JSON) Trace Exporter'
-ext.moduleName = "io.opentelemetry.exporter.otlpjson.trace"
+description = 'OpenTelemetry Protocol JSON Exporters'
+ext.moduleName = "io.opentelemetry.exporter.otlpjson"
 
 dependencies {
-    api project(':sdk:trace')
+    compileOnly project(':sdk:trace')
+    compileOnly project(':sdk:metrics')
 
     implementation project(':sdk-extensions:otproto'),
             'org.curioswitch.curiostack:protobuf-jackson:1.1.0'
