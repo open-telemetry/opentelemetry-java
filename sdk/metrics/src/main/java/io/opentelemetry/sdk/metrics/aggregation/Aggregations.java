@@ -3,19 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics.aggregation;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregator.CountAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCount;
+import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
+import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -75,8 +74,19 @@ public final class Aggregations {
     @Override
     public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
       return instrumentValueType == InstrumentValueType.LONG
-          ? LongMinMaxSumCount.getFactory()
-          : DoubleMinMaxSumCount.getFactory();
+          ? LongMinMaxSumCountAggregator.getFactory()
+          : DoubleMinMaxSumCountAggregator.getFactory();
+    }
+
+    @Override
+    public Accumulation merge(Accumulation a1, Accumulation a2) {
+      MinMaxSumCountAccumulation minMaxSumCountAccumulation1 = (MinMaxSumCountAccumulation) a1;
+      MinMaxSumCountAccumulation minMaxSumCountAccumulation2 = (MinMaxSumCountAccumulation) a2;
+      return MinMaxSumCountAccumulation.create(
+          minMaxSumCountAccumulation1.getCount() + minMaxSumCountAccumulation2.getCount(),
+          minMaxSumCountAccumulation1.getSum() + minMaxSumCountAccumulation2.getSum(),
+          Math.min(minMaxSumCountAccumulation1.getMin(), minMaxSumCountAccumulation2.getMin()),
+          Math.max(minMaxSumCountAccumulation1.getMax(), minMaxSumCountAccumulation2.getMax()));
     }
 
     @Override
@@ -84,13 +94,13 @@ public final class Aggregations {
         Resource resource,
         InstrumentationLibraryInfo instrumentationLibraryInfo,
         InstrumentDescriptor descriptor,
-        Map<Labels, Aggregator> aggregatorMap,
+        Map<Labels, Accumulation> accumulationMap,
         long startEpochNanos,
         long epochNanos) {
-      if (aggregatorMap.isEmpty()) {
+      if (accumulationMap.isEmpty()) {
         return null;
       }
-      List<MetricData.Point> points = getPointList(aggregatorMap, startEpochNanos, epochNanos);
+      List<MetricData.Point> points = getPointList(accumulationMap, startEpochNanos, epochNanos);
       return MetricData.createDoubleSummary(
           resource,
           instrumentationLibraryInfo,
@@ -118,14 +128,27 @@ public final class Aggregations {
     }
 
     @Override
+    public Accumulation merge(Accumulation a1, Accumulation a2) {
+      // TODO: Fix this by splitting the Aggregation per instrument value type.
+      if (a1 instanceof LongAccumulation) {
+        LongAccumulation longAccumulation1 = (LongAccumulation) a1;
+        LongAccumulation longAccumulation2 = (LongAccumulation) a2;
+        return LongAccumulation.create(longAccumulation1.getValue() + longAccumulation2.getValue());
+      }
+      DoubleAccumulation longAccumulation1 = (DoubleAccumulation) a1;
+      DoubleAccumulation longAccumulation2 = (DoubleAccumulation) a2;
+      return DoubleAccumulation.create(longAccumulation1.getValue() + longAccumulation2.getValue());
+    }
+
+    @Override
     public MetricData toMetricData(
         Resource resource,
         InstrumentationLibraryInfo instrumentationLibraryInfo,
         InstrumentDescriptor descriptor,
-        Map<Labels, Aggregator> aggregatorMap,
+        Map<Labels, Accumulation> accumulationMap,
         long startEpochNanos,
         long epochNanos) {
-      List<MetricData.Point> points = getPointList(aggregatorMap, startEpochNanos, epochNanos);
+      List<MetricData.Point> points = getPointList(accumulationMap, startEpochNanos, epochNanos);
       boolean isMonotonic =
           descriptor.getType() == InstrumentType.COUNTER
               || descriptor.getType() == InstrumentType.SUM_OBSERVER;
@@ -145,8 +168,14 @@ public final class Aggregations {
 
     @Override
     public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
-      // TODO: Implement count aggregator and use it here.
-      return NoopAggregator.getFactory();
+      return CountAggregator.getFactory();
+    }
+
+    @Override
+    public Accumulation merge(Accumulation a1, Accumulation a2) {
+      LongAccumulation longAccumulation1 = (LongAccumulation) a1;
+      LongAccumulation longAccumulation2 = (LongAccumulation) a2;
+      return LongAccumulation.create(longAccumulation1.getValue() + longAccumulation2.getValue());
     }
 
     @Override
@@ -154,10 +183,10 @@ public final class Aggregations {
         Resource resource,
         InstrumentationLibraryInfo instrumentationLibraryInfo,
         InstrumentDescriptor descriptor,
-        Map<Labels, Aggregator> aggregatorMap,
+        Map<Labels, Accumulation> accumulationMap,
         long startEpochNanos,
         long epochNanos) {
-      List<MetricData.Point> points = getPointList(aggregatorMap, startEpochNanos, epochNanos);
+      List<MetricData.Point> points = getPointList(accumulationMap, startEpochNanos, epochNanos);
 
       return MetricData.createLongSum(
           resource,
@@ -187,14 +216,20 @@ public final class Aggregations {
     }
 
     @Override
+    public Accumulation merge(Accumulation a1, Accumulation a2) {
+      // TODO: Define the order between accumulation.
+      return a2;
+    }
+
+    @Override
     public MetricData toMetricData(
         Resource resource,
         InstrumentationLibraryInfo instrumentationLibraryInfo,
         InstrumentDescriptor descriptor,
-        Map<Labels, Aggregator> aggregatorMap,
+        Map<Labels, Accumulation> accumulationMap,
         long startEpochNanos,
         long epochNanos) {
-      List<MetricData.Point> points = getPointList(aggregatorMap, startEpochNanos, epochNanos);
+      List<MetricData.Point> points = getPointList(accumulationMap, startEpochNanos, epochNanos);
 
       switch (descriptor.getType()) {
         case SUM_OBSERVER:
@@ -276,9 +311,9 @@ public final class Aggregations {
   }
 
   private static List<MetricData.Point> getPointList(
-      Map<Labels, Aggregator> aggregatorMap, long startEpochNanos, long epochNanos) {
-    List<MetricData.Point> points = new ArrayList<>(aggregatorMap.size());
-    aggregatorMap.forEach(
+      Map<Labels, Accumulation> accumulationMap, long startEpochNanos, long epochNanos) {
+    List<MetricData.Point> points = new ArrayList<>(accumulationMap.size());
+    accumulationMap.forEach(
         (labels, aggregator) -> {
           MetricData.Point point = aggregator.toPoint(startEpochNanos, epochNanos, labels);
           if (point == null) {

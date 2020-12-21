@@ -5,9 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
 import java.util.concurrent.atomic.DoubleAdder;
 
 public final class DoubleSumAggregator extends AbstractAggregator {
@@ -26,14 +25,8 @@ public final class DoubleSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  void doMergeAndReset(Aggregator aggregator) {
-    DoubleSumAggregator other = (DoubleSumAggregator) aggregator;
-    other.current.add(this.current.sumThenReset());
-  }
-
-  @Override
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
-    return DoublePoint.create(startEpochNanos, epochNanos, labels, current.sum());
+  Accumulation doAccumulateThenReset() {
+    return DoubleAccumulation.create(this.current.sumThenReset());
   }
 
   @Override

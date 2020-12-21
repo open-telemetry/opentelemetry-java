@@ -5,9 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
 
 public final class LongSumAggregator extends AbstractAggregator {
@@ -26,14 +25,8 @@ public final class LongSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  void doMergeAndReset(Aggregator aggregator) {
-    LongSumAggregator other = (LongSumAggregator) aggregator;
-    other.current.add(this.current.sumThenReset());
-  }
-
-  @Override
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
-    return LongPoint.create(startEpochNanos, epochNanos, labels, current.sum());
+  Accumulation doAccumulateThenReset() {
+    return LongAccumulation.create(this.current.sumThenReset());
   }
 
   @Override

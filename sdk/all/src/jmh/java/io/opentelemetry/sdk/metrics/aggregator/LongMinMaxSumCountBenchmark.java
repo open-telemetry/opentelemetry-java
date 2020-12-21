@@ -24,7 +24,7 @@ public class LongMinMaxSumCountBenchmark {
 
   @Setup(Level.Trial)
   public final void setup() {
-    aggregator = LongMinMaxSumCount.getFactory().getAggregator();
+    aggregator = LongMinMaxSumCountAggregator.getFactory().getAggregator();
   }
 
   @Benchmark

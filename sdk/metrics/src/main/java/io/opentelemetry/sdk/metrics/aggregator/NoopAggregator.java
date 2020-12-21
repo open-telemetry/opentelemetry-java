@@ -5,8 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import javax.annotation.Nullable;
 
 public final class NoopAggregator implements Aggregator {
@@ -17,14 +16,9 @@ public final class NoopAggregator implements Aggregator {
     return AGGREGATOR_FACTORY;
   }
 
-  @Override
-  public void mergeToAndReset(Aggregator aggregator) {
-    // Noop
-  }
-
   @Nullable
   @Override
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
+  public Accumulation accumulateThenReset() {
     return null;
   }
 
@@ -36,11 +30,6 @@ public final class NoopAggregator implements Aggregator {
   @Override
   public void recordDouble(double value) {
     // Noop
-  }
-
-  @Override
-  public boolean hasRecordings() {
-    return false;
   }
 
   private NoopAggregator() {}

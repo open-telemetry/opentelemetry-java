@@ -24,7 +24,7 @@ public class DoubleMinMaxSumCountBenchmark {
 
   @Setup(Level.Trial)
   public final void setup() {
-    aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
+    aggregator = DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
   }
 
   @Benchmark
