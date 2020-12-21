@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
  * used to keep the state of mapping ('1' is used for unmapped and '0' is for mapped) and the rest
  * of the bits are used for reference (usage) counting.
  */
-public abstract class Aggregator {
+public abstract class Aggregator<T extends Accumulation> {
   // Atomically counts the number of references (usages) while also keeping a state of
   // mapped/unmapped into a registry map.
   private final AtomicLong refCountMapped;
@@ -70,7 +70,7 @@ public abstract class Aggregator {
    * {@code Aggregator}.
    */
   @Nullable
-  public final Accumulation accumulateThenReset() {
+  public final T accumulateThenReset() {
     if (!hasRecordings) {
       return null;
     }
@@ -79,7 +79,7 @@ public abstract class Aggregator {
   }
 
   /** Implementation of the {@code accumulateThenReset}. */
-  protected abstract Accumulation doAccumulateThenReset();
+  protected abstract T doAccumulateThenReset();
 
   /**
    * Updates the current aggregator with a newly recorded {@code long} value.

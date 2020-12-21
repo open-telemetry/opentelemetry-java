@@ -14,19 +14,21 @@ import org.junit.jupiter.api.Test;
 class DoubleLastValueAggregatorTest {
   @Test
   void factoryAggregation() {
-    AggregatorFactory factory = DoubleLastValueAggregator.getFactory();
+    AggregatorFactory<DoubleAccumulation> factory = DoubleLastValueAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(DoubleLastValueAggregator.class);
   }
 
   @Test
   void toPoint() {
-    Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
+    Aggregator<DoubleAccumulation> aggregator =
+        DoubleLastValueAggregator.getFactory().getAggregator();
     assertThat(aggregator.accumulateThenReset()).isNull();
   }
 
   @Test
   void multipleRecords() {
-    Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
+    Aggregator<DoubleAccumulation> aggregator =
+        DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.1);
     assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
     aggregator.recordDouble(13.1);
@@ -36,7 +38,8 @@ class DoubleLastValueAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
+    Aggregator<DoubleAccumulation> aggregator =
+        DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.recordDouble(13.1);
     assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(13.1));
     assertThat(aggregator.accumulateThenReset()).isNull();

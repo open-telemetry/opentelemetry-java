@@ -91,7 +91,7 @@ public class AggregatorTest {
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
   }
 
-  private static class TestAggregator extends Aggregator {
+  private static class TestAggregator extends Aggregator<Accumulation> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
 

@@ -21,7 +21,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
 
   @Override
   public void add(long increment, Labels labels) {
-    Aggregator aggregator = acquireHandle(labels);
+    Aggregator<?> aggregator = acquireHandle(labels);
     try {
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
@@ -43,9 +43,9 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
   }
 
   static final class BoundInstrument implements LongCounter.BoundLongCounter {
-    private final Aggregator aggregator;
+    private final Aggregator<?> aggregator;
 
-    BoundInstrument(Aggregator aggregator) {
+    BoundInstrument(Aggregator<?> aggregator) {
       this.aggregator = aggregator;
     }
 

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
@@ -18,10 +17,11 @@ import javax.annotation.Nullable;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-public final class DoubleLastValueAggregator extends Aggregator {
+public final class DoubleLastValueAggregator extends Aggregator<DoubleAccumulation> {
 
   @Nullable private static final Double DEFAULT_VALUE = null;
-  private static final AggregatorFactory AGGREGATOR_FACTORY = DoubleLastValueAggregator::new;
+  private static final AggregatorFactory<DoubleAccumulation> AGGREGATOR_FACTORY =
+      DoubleLastValueAggregator::new;
 
   private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
@@ -30,12 +30,12 @@ public final class DoubleLastValueAggregator extends Aggregator {
    *
    * @return an {@link AggregatorFactory} that produces {@link DoubleLastValueAggregator} instances.
    */
-  public static AggregatorFactory getFactory() {
+  public static AggregatorFactory<DoubleAccumulation> getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
   @Override
-  protected Accumulation doAccumulateThenReset() {
+  protected DoubleAccumulation doAccumulateThenReset() {
     return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
   }
 

@@ -24,14 +24,14 @@ final class MinMaxSumCountAggregation implements Aggregation {
   static final MinMaxSumCountAggregation DOUBLE_INSTANCE =
       new MinMaxSumCountAggregation(DoubleMinMaxSumCountAggregator.getFactory());
 
-  private final AggregatorFactory aggregatorFactory;
+  private final AggregatorFactory<?> aggregatorFactory;
 
-  private MinMaxSumCountAggregation(AggregatorFactory aggregatorFactory) {
+  private MinMaxSumCountAggregation(AggregatorFactory<?> aggregatorFactory) {
     this.aggregatorFactory = aggregatorFactory;
   }
 
   @Override
-  public AggregatorFactory getAggregatorFactory() {
+  public AggregatorFactory<?> getAggregatorFactory() {
     return aggregatorFactory;
   }
 

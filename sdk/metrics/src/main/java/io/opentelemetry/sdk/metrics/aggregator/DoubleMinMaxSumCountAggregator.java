@@ -6,15 +6,15 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
-import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregation.MinMaxSumCountAccumulation;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-public final class DoubleMinMaxSumCountAggregator extends Aggregator {
+public final class DoubleMinMaxSumCountAggregator extends Aggregator<MinMaxSumCountAccumulation> {
 
-  private static final AggregatorFactory AGGREGATOR_FACTORY = DoubleMinMaxSumCountAggregator::new;
+  private static final AggregatorFactory<MinMaxSumCountAccumulation> AGGREGATOR_FACTORY =
+      DoubleMinMaxSumCountAggregator::new;
 
   private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -23,17 +23,17 @@ public final class DoubleMinMaxSumCountAggregator extends Aggregator {
   @GuardedBy("lock")
   private final DoubleState current = new DoubleState();
 
-  public static AggregatorFactory getFactory() {
+  public static AggregatorFactory<MinMaxSumCountAccumulation> getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
   private DoubleMinMaxSumCountAggregator() {}
 
   @Override
-  protected Accumulation doAccumulateThenReset() {
+  protected MinMaxSumCountAccumulation doAccumulateThenReset() {
     lock.writeLock().lock();
     try {
-      Accumulation toReturn =
+      MinMaxSumCountAccumulation toReturn =
           MinMaxSumCountAccumulation.create(current.count, current.sum, current.min, current.max);
       current.reset();
       return toReturn;

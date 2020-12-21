@@ -19,12 +19,11 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link AggregationFactory#count()}. */
 class CountAggregationTest {
   @Test
   void toMetricData() {
     Aggregation count = AggregationFactory.count().create(InstrumentValueType.LONG);
-    Aggregator aggregator = count.getAggregatorFactory().getAggregator();
+    Aggregator<?> aggregator = count.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =

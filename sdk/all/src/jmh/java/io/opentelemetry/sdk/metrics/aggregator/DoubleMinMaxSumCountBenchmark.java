@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.sdk.metrics.aggregation.MinMaxSumCountAccumulation;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -20,7 +21,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class DoubleMinMaxSumCountBenchmark {
 
-  private Aggregator aggregator;
+  private Aggregator<MinMaxSumCountAccumulation> aggregator;
 
   @Setup(Level.Trial)
   public final void setup() {

@@ -36,7 +36,7 @@ final class InstrumentProcessor {
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final Clock clock;
-  private final AggregatorFactory aggregatorFactory;
+  private final AggregatorFactory<?> aggregatorFactory;
   private Map<Labels, Accumulation> accumulationMap;
   private long startEpochNanos;
   private final boolean delta;
@@ -102,7 +102,7 @@ final class InstrumentProcessor {
    *
    * @return the {@link Aggregator} used to aggregate individual events.
    */
-  Aggregator getAggregator() {
+  Aggregator<?> getAggregator() {
     return aggregatorFactory.getAggregator();
   }
 

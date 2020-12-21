@@ -5,13 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
 import java.util.concurrent.atomic.DoubleAdder;
 
-public final class DoubleSumAggregator extends Aggregator {
+public final class DoubleSumAggregator extends Aggregator<DoubleAccumulation> {
 
-  private static final AggregatorFactory AGGREGATOR_FACTORY = DoubleSumAggregator::new;
+  private static final AggregatorFactory<DoubleAccumulation> AGGREGATOR_FACTORY =
+      DoubleSumAggregator::new;
 
   private final DoubleAdder current = new DoubleAdder();
 
@@ -20,12 +20,12 @@ public final class DoubleSumAggregator extends Aggregator {
    *
    * @return an {@link AggregatorFactory} that produces {@link DoubleSumAggregator} instances.
    */
-  public static AggregatorFactory getFactory() {
+  public static AggregatorFactory<DoubleAccumulation> getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
   @Override
-  protected Accumulation doAccumulateThenReset() {
+  protected DoubleAccumulation doAccumulateThenReset() {
     return DoubleAccumulation.create(this.current.sumThenReset());
   }
 
