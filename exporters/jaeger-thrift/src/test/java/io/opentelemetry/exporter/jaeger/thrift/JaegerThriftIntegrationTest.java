@@ -63,7 +63,7 @@ class JaegerThriftIntegrationTest {
             .setEndpoint(JAEGER_URL + ":" + mappedPort + "/api/traces")
             .build();
     OpenTelemetrySdk.getGlobalTracerManagement()
-        .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
+        .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter));
   }
 
   private void imitateWork() {

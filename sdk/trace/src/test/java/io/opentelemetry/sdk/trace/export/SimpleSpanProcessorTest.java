@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
@@ -41,6 +42,8 @@ import org.mockito.quality.Strictness;
 /** Unit tests for {@link SimpleSpanProcessor}. */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+// TODO(anuraaga): Remove after builder() is removed.
+@SuppressWarnings("deprecation")
 class SimpleSpanProcessorTest {
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private static final String SPAN_NAME = "MySpanName";
@@ -55,11 +58,11 @@ class SimpleSpanProcessorTest {
           TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
 
-  private SimpleSpanProcessor simpleSampledSpansProcessor;
+  private SpanProcessor simpleSampledSpansProcessor;
 
   @BeforeEach
   void setUp() {
-    simpleSampledSpansProcessor = SimpleSpanProcessor.builder(spanExporter).build();
+    simpleSampledSpansProcessor = SimpleSpanProcessor.create(spanExporter);
   }
 
   @Test
@@ -107,7 +110,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
+    SpanProcessor simpleSpanProcessor = SimpleSpanProcessor.create(spanExporter);
     simpleSpanProcessor.onEnd(readableSpan);
     verifyNoInteractions(spanExporter);
   }
@@ -118,7 +121,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
+    SpanProcessor simpleSpanProcessor = SimpleSpanProcessor.create(spanExporter);
     simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(TestUtils.makeBasicSpan()));
   }

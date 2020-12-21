@@ -58,7 +58,7 @@ public final class OpenTelemetryExtension
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
     SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(spanExporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(spanExporter));
 
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()

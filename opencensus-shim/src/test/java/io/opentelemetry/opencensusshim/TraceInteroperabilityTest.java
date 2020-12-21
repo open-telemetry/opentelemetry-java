@@ -63,7 +63,7 @@ class TraceInteroperabilityTest {
   @BeforeEach
   public void init() {
     when(spanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
-    SpanProcessor spanProcessor = SimpleSpanProcessor.builder(spanExporter).build();
+    SpanProcessor spanProcessor = SimpleSpanProcessor.create(spanExporter);
     OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
   }
 

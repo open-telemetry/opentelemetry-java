@@ -52,7 +52,7 @@ public final class OpenTelemetryRule extends ExternalResource {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
     SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(spanExporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpanProcessor.create(spanExporter));
 
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()

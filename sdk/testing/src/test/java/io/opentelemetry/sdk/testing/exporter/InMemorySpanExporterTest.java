@@ -29,7 +29,7 @@ class InMemorySpanExporterTest {
 
   @BeforeEach
   void setup() {
-    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.create(exporter));
   }
 
   @Test
