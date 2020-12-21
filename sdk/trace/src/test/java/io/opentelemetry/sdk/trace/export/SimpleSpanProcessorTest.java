@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -63,6 +64,13 @@ class SimpleSpanProcessorTest {
   @BeforeEach
   void setUp() {
     simpleSampledSpansProcessor = SimpleSpanProcessor.create(spanExporter);
+  }
+
+  @Test
+  void createNull() {
+    assertThatThrownBy(() -> SimpleSpanProcessor.create(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("exporter");
   }
 
   @Test
