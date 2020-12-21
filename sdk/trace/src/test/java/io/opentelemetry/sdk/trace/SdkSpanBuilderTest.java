@@ -58,12 +58,14 @@ class SdkSpanBuilderTest {
           TraceState.getDefault());
   private final SpanProcessor mockedSpanProcessor = Mockito.mock(SpanProcessor.class);
 
-  private final SdkTracerProvider tracerSdkFactory =
-      SdkTracerProvider.builder().addSpanProcessor(mockedSpanProcessor).build();
-  private final SdkTracer sdkTracer = (SdkTracer) tracerSdkFactory.get("SpanBuilderSdkTest");
+  private SdkTracerProvider tracerSdkFactory;
+  private SdkTracer sdkTracer;
 
   @BeforeEach
   public void setUp() {
+    tracerSdkFactory = SdkTracerProvider.builder().addSpanProcessor(mockedSpanProcessor).build();
+    sdkTracer = (SdkTracer) tracerSdkFactory.get("SpanBuilderSdkTest");
+
     Mockito.when(mockedSpanProcessor.isStartRequired()).thenReturn(true);
     Mockito.when(mockedSpanProcessor.isEndRequired()).thenReturn(true);
   }

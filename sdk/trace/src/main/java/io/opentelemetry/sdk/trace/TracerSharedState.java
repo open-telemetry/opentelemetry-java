@@ -40,6 +40,7 @@ final class TracerSharedState {
     this.resource = resource;
     this.activeTraceConfig = traceConfig;
     this.registeredSpanProcessors = new ArrayList<>(spanProcessors);
+    activeSpanProcessor = SpanProcessor.composite(registeredSpanProcessors);
   }
 
   Clock getClock() {
