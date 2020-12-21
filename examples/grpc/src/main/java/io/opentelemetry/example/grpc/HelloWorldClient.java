@@ -16,7 +16,6 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
@@ -41,13 +40,14 @@ public class HelloWorldClient {
   private final Integer serverPort;
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
-  OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
+  private static final OpenTelemetry openTelemetry = initOpenTelemetry();
+
   // OTel API
-  Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
+  private Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
   // Share context via text headers
-  TextMapPropagator textFormat = openTelemetry.getPropagators().getTextMapPropagator();
+  private TextMapPropagator textFormat = openTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
-  TextMapPropagator.Setter<Metadata> setter =
+  private TextMapPropagator.Setter<Metadata> setter =
       (carrier, key, value) ->
           carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
 
@@ -116,7 +116,7 @@ public class HelloWorldClient {
     }
   }
 
-  private static void initTracing() {
+  private static OpenTelemetry initOpenTelemetry() {
     // install the W3C Trace Context propagator
     // Get the tracer management instance
     SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
@@ -124,13 +124,10 @@ public class HelloWorldClient {
     LoggingSpanExporter exporter = new LoggingSpanExporter();
     sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
 
-    OpenTelemetrySdk openTelemetrySdk =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(sdkTracerProvider)
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .build();
-
-    GlobalOpenTelemetry.set(openTelemetrySdk);
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(sdkTracerProvider)
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .build();
   }
 
   /**
@@ -138,7 +135,6 @@ public class HelloWorldClient {
    * greeting.
    */
   public static void main(String[] args) throws Exception {
-    initTracing();
     // Access a service running on the local machine on port 50051
     HelloWorldClient client = new HelloWorldClient("localhost", 50051);
     try {

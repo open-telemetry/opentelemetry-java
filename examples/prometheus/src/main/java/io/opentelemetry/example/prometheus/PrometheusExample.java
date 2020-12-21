@@ -22,12 +22,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public class PrometheusExample {
 
   private final MeterProvider meterSdkProvider = GlobalMetricsProvider.get();
-  private final Meter meter = meterSdkProvider.get("PrometheusExample", "0.7");
+  private final Meter meter = meterSdkProvider.get("PrometheusExample", "0.13.1");
   private final HTTPServer server;
   private long incomingMessageCount;
 
   public PrometheusExample(int port) throws IOException {
-
     LongValueObserver observer =
         meter
             .longValueObserverBuilder("incoming.messages")
