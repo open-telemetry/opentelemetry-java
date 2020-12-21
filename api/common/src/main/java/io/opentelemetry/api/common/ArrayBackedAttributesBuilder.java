@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 
 class ArrayBackedAttributesBuilder implements AttributesBuilder {
   private final List<Object> data;
@@ -50,9 +51,10 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     return this;
   }
 
-  static List<Double> toList(double... values) {
+  @Nullable
+  static List<Double> toList(@Nullable double... values) {
     if (values == null) {
-      return Collections.emptyList();
+      return null;
     }
     Double[] boxed = new Double[values.length];
     for (int i = 0; i < values.length; i++) {
@@ -61,7 +63,8 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     return Arrays.asList(boxed);
   }
 
-  static List<Long> toList(long... values) {
+  @Nullable
+  static List<Long> toList(@Nullable long... values) {
     if (values == null) {
       return Collections.emptyList();
     }
@@ -72,9 +75,10 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     return Arrays.asList(boxed);
   }
 
-  static List<Boolean> toList(boolean... values) {
+  @Nullable
+  static List<Boolean> toList(@Nullable boolean... values) {
     if (values == null) {
-      return Collections.emptyList();
+      return null;
     }
     Boolean[] boxed = new Boolean[values.length];
     for (int i = 0; i < values.length; i++) {
