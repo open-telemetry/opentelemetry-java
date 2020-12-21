@@ -7,7 +7,6 @@ package io.opentelemetry.api.common;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -66,7 +65,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   @Nullable
   static List<Long> toList(@Nullable long... values) {
     if (values == null) {
-      return Collections.emptyList();
+      return null;
     }
     Long[] boxed = new Long[values.length];
     for (int i = 0; i < values.length; i++) {
