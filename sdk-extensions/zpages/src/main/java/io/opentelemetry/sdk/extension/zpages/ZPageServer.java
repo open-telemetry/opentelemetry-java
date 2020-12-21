@@ -8,23 +8,31 @@ package io.opentelemetry.sdk.extension.zpages;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A collection of HTML pages to display stats and trace data and allow library configuration
- * control.
+ * control. To use, add {@linkplain ZPageServer#getSpanProcessor() the z-pages span processor} to a
+ * {@link io.opentelemetry.sdk.trace.SdkTracerProviderBuilder}. Currently all tracers can only be
+ * made visible to a singleton {@link ZPageServer}.
  *
  * <p>Example usage with private {@link HttpServer}
  *
  * <pre>{@code
  * public class Main {
  *   public static void main(String[] args) throws Exception {
+ *     OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+ *         .setTracerProvider(SdkTracerProvider.builder()
+ *             .addSpanProcessor(ZPageServer.getSpanProcessor())
+ *             .build();
+ *         .build();
+ *
  *     ZPageServer.startHttpServerAndRegisterAllPages(8000);
  *     ... // do work
  *   }
@@ -36,6 +44,12 @@ import javax.annotation.concurrent.ThreadSafe;
  * <pre>{@code
  * public class Main {
  *   public static void main(String[] args) throws Exception {
+ *     OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+ *         .setTracerProvider(SdkTracerProvider.builder()
+ *             .addSpanProcessor(ZPageServer.getSpanProcessor())
+ *             .build();
+ *         .build();
+ *
  *     HttpServer server = HttpServer.create(new InetSocketAddress(8000), 10);
  *     ZPageServer.registerAllPagesToHttpServer(server);
  *     server.start();
@@ -68,17 +82,16 @@ public final class ZPageServer {
       new IndexZPageHandler(Arrays.asList(tracezZPageHandler, traceConfigzZPageHandler));
 
   private static final Object mutex = new Object();
-  private static final AtomicBoolean isTracezSpanProcesserAdded = new AtomicBoolean(false);
 
   @GuardedBy("mutex")
   @Nullable
   private static HttpServer server;
 
-  /** Function that adds the {@link TracezSpanProcessor} to the {@link SdkTracerManagement}. */
-  private static void addTracezSpanProcessor() {
-    if (isTracezSpanProcesserAdded.compareAndSet(/* expectedValue=*/ false, /* newValue=*/ true)) {
-      TRACER_SDK_MANAGEMENT.addSpanProcessor(tracezSpanProcessor);
-    }
+  /**
+   * Returns a {@link SpanProcessor} which will allow processing of spans by {@link ZPageServer}.
+   */
+  public static SpanProcessor getSpanProcessor() {
+    return tracezSpanProcessor;
   }
 
   /**
@@ -107,7 +120,6 @@ public final class ZPageServer {
    * @param server the {@link HttpServer} for the page to register to.
    */
   static void registerTracezZPageHandler(HttpServer server) {
-    addTracezSpanProcessor();
     server.createContext(tracezZPageHandler.getUrlPath(), new ZPageHttpHandler(tracezZPageHandler));
   }
 
@@ -179,16 +191,6 @@ public final class ZPageServer {
                 ZPageServer.stop();
               }
             });
-  }
-
-  /**
-   * Returns the boolean indicating if TracezSpanProcessor is added. For testing purpose only.
-   *
-   * @return the boolean indicating if TracezSpanProcessor is added.
-   */
-  // Visible for testing
-  static boolean getIsTracezSpanProcesserAdded() {
-    return isTracezSpanProcesserAdded.get();
   }
 
   private ZPageServer() {}
