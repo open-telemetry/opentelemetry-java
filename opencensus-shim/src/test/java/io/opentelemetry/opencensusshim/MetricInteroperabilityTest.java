@@ -12,6 +12,7 @@ import io.opencensus.common.Duration;
 import io.opencensus.common.Scope;
 import io.opencensus.stats.Aggregation;
 import io.opencensus.stats.BucketBoundaries;
+import io.opencensus.stats.Measure.MeasureDouble;
 import io.opencensus.stats.Measure.MeasureLong;
 import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
@@ -26,6 +27,7 @@ import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.List;
@@ -41,6 +43,8 @@ public class MetricInteroperabilityTest {
     Tagger tagger = Tags.getTagger();
     MeasureLong latency =
         MeasureLong.create("task_latency", "The task latency in milliseconds", "ms");
+    MeasureDouble latency2 =
+        MeasureDouble.create("task_latency_2", "The task latency in milliseconds 2", "ms");
     StatsRecorder statsRecorder = Stats.getStatsRecorder();
     TagKey tagKey = TagKey.create("tagKey");
     TagValue tagValue = TagValue.create("tagValue");
@@ -51,10 +55,18 @@ public class MetricInteroperabilityTest {
             latency,
             Aggregation.Sum.create(),
             ImmutableList.of(tagKey));
+    View view2 =
+        View.create(
+            Name.create("task_latency_sum_2"),
+            "The sum of the task latencies 2.",
+            latency2,
+            Aggregation.LastValue.create(),
+            ImmutableList.of());
     ViewManager viewManager = Stats.getViewManager();
     viewManager.registerView(view);
+    viewManager.registerView(view2);
     FakeMetricExporter metricExporter = new FakeMetricExporter();
-    OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 500));
+    OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 5000));
 
     TagContext tagContext =
         tagger
@@ -63,9 +75,11 @@ public class MetricInteroperabilityTest {
             .build();
     try (Scope ss = tagger.withTagContext(tagContext)) {
       statsRecorder.newMeasureMap().put(latency, 50).record();
+      statsRecorder.newMeasureMap().put(latency2, 60).record();
     }
-    List<MetricData> metricData = metricExporter.waitForNumberOfExports(1).get(0);
-    assertThat(metricData.size()).isEqualTo(1);
+    List<MetricData> metricData = metricExporter.waitForNumberOfExports(3).get(2);
+    assertThat(metricData.size()).isEqualTo(2);
+
     MetricData metric = metricData.get(0);
     assertThat(metric.getName()).isEqualTo("task_latency_sum");
     assertThat(metric.getDescription()).isEqualTo("The sum of the task latencies.");
@@ -76,6 +90,16 @@ public class MetricInteroperabilityTest {
     assertThat(((LongPoint) point).getValue()).isEqualTo(50);
     assertThat(point.getLabels().size()).isEqualTo(1);
     assertThat(point.getLabels().get(tagKey.getName())).isEqualTo(tagValue.asString());
+
+    MetricData metric2 = metricData.get(1);
+    assertThat(metric2.getName()).isEqualTo("task_latency_sum_2");
+    assertThat(metric2.getDescription()).isEqualTo("The sum of the task latencies 2.");
+    assertThat(metric2.getUnit()).isEqualTo("ms");
+    assertThat(metric2.getType()).isEqualTo(MetricData.Type.DOUBLE_GAUGE);
+    assertThat(metric2.getPoints().size()).isEqualTo(1);
+    Point point2 = metric2.getPoints().iterator().next();
+    assertThat(((DoublePoint) point2).getValue()).isEqualTo(60);
+    assertThat(point2.getLabels().size()).isEqualTo(0);
   }
 
   @Test
