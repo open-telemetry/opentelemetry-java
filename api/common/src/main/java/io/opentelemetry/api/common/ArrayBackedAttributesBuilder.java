@@ -7,8 +7,8 @@ package io.opentelemetry.api.common;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
 
 class ArrayBackedAttributesBuilder implements AttributesBuilder {
   private final List<Object> data;
@@ -50,10 +50,9 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     return this;
   }
 
-  @Nullable
   static List<Double> toList(double... values) {
     if (values == null) {
-      return null;
+      return Collections.emptyList();
     }
     Double[] boxed = new Double[values.length];
     for (int i = 0; i < values.length; i++) {
@@ -62,10 +61,9 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     return Arrays.asList(boxed);
   }
 
-  @Nullable
   static List<Long> toList(long... values) {
     if (values == null) {
-      return null;
+      return Collections.emptyList();
     }
     Long[] boxed = new Long[values.length];
     for (int i = 0; i < values.length; i++) {
@@ -74,10 +72,9 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     return Arrays.asList(boxed);
   }
 
-  @Nullable
   static List<Boolean> toList(boolean... values) {
     if (values == null) {
-      return null;
+      return Collections.emptyList();
     }
     Boolean[] boxed = new Boolean[values.length];
     for (int i = 0; i < values.length; i++) {
