@@ -60,7 +60,6 @@ public final class Ec2Resource extends ResourceProvider {
   }
 
   // Generic HTTP fetch function for IMDS.
-  // TODO(anuraaga): Migrate to JdkHttpClient
   private static String fetchString(String httpMethod, URL url, String token, boolean includeTtl) {
     JdkHttpClient client = new JdkHttpClient();
     Map<String, String> headers = new HashMap<>();
