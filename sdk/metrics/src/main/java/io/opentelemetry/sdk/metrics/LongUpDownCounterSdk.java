@@ -7,26 +7,27 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
-import io.opentelemetry.sdk.metrics.LongUpDownCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
-final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
+final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
     implements LongUpDownCounter {
 
   private LongUpDownCounterSdk(
-      InstrumentDescriptor descriptor,
-      SynchronousInstrumentAccumulator<BoundInstrument> accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
     super(descriptor, accumulator);
   }
 
   @Override
   public void add(long increment, Labels labels) {
-    BoundInstrument boundInstrument = bind(labels);
-    boundInstrument.add(increment);
-    boundInstrument.unbind();
+    Aggregator aggregator = acquireHandle(labels);
+    try {
+      aggregator.recordLong(increment);
+    } finally {
+      aggregator.release();
+    }
   }
 
   @Override
@@ -34,16 +35,26 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInst
     add(increment, Labels.empty());
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument
-      implements BoundLongUpDownCounter {
+  @Override
+  public BoundLongUpDownCounter bind(Labels labels) {
+    return new BoundInstrument(acquireHandle(labels));
+  }
+
+  static final class BoundInstrument implements BoundLongUpDownCounter {
+    private final Aggregator aggregator;
 
     BoundInstrument(Aggregator aggregator) {
-      super(aggregator);
+      this.aggregator = aggregator;
     }
 
     @Override
     public void add(long increment) {
-      recordLong(increment);
+      aggregator.recordLong(increment);
+    }
+
+    @Override
+    public void unbind() {
+      aggregator.release();
     }
   }
 
@@ -70,7 +81,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInst
 
     @Override
     public LongUpDownCounterSdk build() {
-      return buildInstrument(BoundInstrument::new, LongUpDownCounterSdk::new);
+      return buildInstrument(LongUpDownCounterSdk::new);
     }
   }
 }

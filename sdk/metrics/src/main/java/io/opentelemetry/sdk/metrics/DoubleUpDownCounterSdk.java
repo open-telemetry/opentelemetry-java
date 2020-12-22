@@ -7,26 +7,27 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
-import io.opentelemetry.sdk.metrics.DoubleUpDownCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
-final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
+final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
     implements DoubleUpDownCounter {
 
   private DoubleUpDownCounterSdk(
-      InstrumentDescriptor descriptor,
-      SynchronousInstrumentAccumulator<BoundInstrument> accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
     super(descriptor, accumulator);
   }
 
   @Override
   public void add(double increment, Labels labels) {
-    BoundInstrument boundInstrument = bind(labels);
-    boundInstrument.add(increment);
-    boundInstrument.unbind();
+    Aggregator aggregator = acquireHandle(labels);
+    try {
+      aggregator.recordDouble(increment);
+    } finally {
+      aggregator.release();
+    }
   }
 
   @Override
@@ -34,16 +35,26 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     add(increment, Labels.empty());
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument
-      implements BoundDoubleUpDownCounter {
+  @Override
+  public BoundDoubleUpDownCounter bind(Labels labels) {
+    return new BoundInstrument(acquireHandle(labels));
+  }
+
+  static final class BoundInstrument implements BoundDoubleUpDownCounter {
+    private final Aggregator aggregator;
 
     BoundInstrument(Aggregator aggregator) {
-      super(aggregator);
+      this.aggregator = aggregator;
     }
 
     @Override
     public void add(double increment) {
-      recordDouble(increment);
+      aggregator.recordDouble(increment);
+    }
+
+    @Override
+    public void unbind() {
+      aggregator.release();
     }
   }
 
@@ -70,7 +81,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
 
     @Override
     public DoubleUpDownCounterSdk build() {
-      return buildInstrument(BoundInstrument::new, DoubleUpDownCounterSdk::new);
+      return buildInstrument(DoubleUpDownCounterSdk::new);
     }
   }
 }

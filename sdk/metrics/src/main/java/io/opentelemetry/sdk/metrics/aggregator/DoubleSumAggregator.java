@@ -9,7 +9,7 @@ import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
 import java.util.concurrent.atomic.DoubleAdder;
 
-public final class DoubleSumAggregator extends AbstractAggregator {
+public final class DoubleSumAggregator extends Aggregator {
 
   private static final AggregatorFactory AGGREGATOR_FACTORY = DoubleSumAggregator::new;
 
@@ -25,12 +25,12 @@ public final class DoubleSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  Accumulation doAccumulateThenReset() {
+  protected Accumulation doAccumulateThenReset() {
     return DoubleAccumulation.create(this.current.sumThenReset());
   }
 
   @Override
-  public void doRecordDouble(double value) {
+  protected void doRecordDouble(double value) {
     current.add(value);
   }
 }

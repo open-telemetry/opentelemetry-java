@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-public final class DoubleLastValueAggregator extends AbstractAggregator {
+public final class DoubleLastValueAggregator extends Aggregator {
 
   @Nullable private static final Double DEFAULT_VALUE = null;
   private static final AggregatorFactory AGGREGATOR_FACTORY = DoubleLastValueAggregator::new;
@@ -35,12 +35,12 @@ public final class DoubleLastValueAggregator extends AbstractAggregator {
   }
 
   @Override
-  Accumulation doAccumulateThenReset() {
+  protected Accumulation doAccumulateThenReset() {
     return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
   }
 
   @Override
-  public void doRecordDouble(double value) {
+  protected void doRecordDouble(double value) {
     current.set(value);
   }
 }
