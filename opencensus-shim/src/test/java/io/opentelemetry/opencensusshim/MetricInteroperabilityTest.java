@@ -39,6 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class MetricInteroperabilityTest {
 
   @Test
+  @SuppressWarnings("deprecation") // Summary is deprecated in census
   public void testSupportedMetricsExportedCorrectly() {
     Tagger tagger = Tags.getTagger();
     MeasureLong latency =
@@ -48,23 +49,39 @@ public class MetricInteroperabilityTest {
     StatsRecorder statsRecorder = Stats.getStatsRecorder();
     TagKey tagKey = TagKey.create("tagKey");
     TagValue tagValue = TagValue.create("tagValue");
-    View view =
+    View longSumView =
         View.create(
-            Name.create("task_latency_sum"),
-            "The sum of the task latencies.",
+            Name.create("long_sum"),
+            "long sum",
             latency,
             Aggregation.Sum.create(),
             ImmutableList.of(tagKey));
-    View view2 =
+    View longGaugeView =
         View.create(
-            Name.create("task_latency_sum_2"),
-            "The sum of the task latencies 2.",
+            Name.create("long_gauge"),
+            "long gauge",
+            latency,
+            Aggregation.LastValue.create(),
+            ImmutableList.of(tagKey));
+    View doubleSumView =
+        View.create(
+            Name.create("double_sum"),
+            "double sum",
+            latency2,
+            Aggregation.Sum.create(),
+            ImmutableList.of());
+    View doubleGaugeView =
+        View.create(
+            Name.create("double_gauge"),
+            "double gauge",
             latency2,
             Aggregation.LastValue.create(),
             ImmutableList.of());
     ViewManager viewManager = Stats.getViewManager();
-    viewManager.registerView(view);
-    viewManager.registerView(view2);
+    viewManager.registerView(longSumView);
+    viewManager.registerView(longGaugeView);
+    viewManager.registerView(doubleSumView);
+    viewManager.registerView(doubleGaugeView);
     FakeMetricExporter metricExporter = new FakeMetricExporter();
     OpenTelemetryMetricsExporter.createAndRegister(metricExporter, Duration.create(0, 5000));
 
@@ -77,12 +94,13 @@ public class MetricInteroperabilityTest {
       statsRecorder.newMeasureMap().put(latency, 50).record();
       statsRecorder.newMeasureMap().put(latency2, 60).record();
     }
-    List<MetricData> metricData = metricExporter.waitForNumberOfExports(3).get(2);
-    assertThat(metricData.size()).isEqualTo(2);
+    List<List<MetricData>> exported = metricExporter.waitForNumberOfExports(3);
+    List<MetricData> metricData = exported.get(2);
+    assertThat(metricData.size()).isEqualTo(4);
 
     MetricData metric = metricData.get(0);
-    assertThat(metric.getName()).isEqualTo("task_latency_sum");
-    assertThat(metric.getDescription()).isEqualTo("The sum of the task latencies.");
+    assertThat(metric.getName()).isEqualTo("long_sum");
+    assertThat(metric.getDescription()).isEqualTo("long sum");
     assertThat(metric.getUnit()).isEqualTo("ms");
     assertThat(metric.getType()).isEqualTo(MetricData.Type.LONG_SUM);
     assertThat(metric.getLongSumData().getPoints().size()).isEqualTo(1);
@@ -91,15 +109,32 @@ public class MetricInteroperabilityTest {
     assertThat(point.getLabels().size()).isEqualTo(1);
     assertThat(point.getLabels().get(tagKey.getName())).isEqualTo(tagValue.asString());
 
-    MetricData metric2 = metricData.get(1);
-    assertThat(metric2.getName()).isEqualTo("task_latency_sum_2");
-    assertThat(metric2.getDescription()).isEqualTo("The sum of the task latencies 2.");
-    assertThat(metric2.getUnit()).isEqualTo("ms");
-    assertThat(metric2.getType()).isEqualTo(MetricData.Type.DOUBLE_GAUGE);
-    assertThat(metric2.getPoints().size()).isEqualTo(1);
-    Point point2 = metric2.getPoints().iterator().next();
-    assertThat(((DoublePoint) point2).getValue()).isEqualTo(60);
-    assertThat(point2.getLabels().size()).isEqualTo(0);
+    metric = metricData.get(1);
+    assertThat(metric.getName()).isEqualTo("long_gauge");
+    assertThat(metric.getDescription()).isEqualTo("long gauge");
+    assertThat(metric.getUnit()).isEqualTo("ms");
+    assertThat(metric.getType()).isEqualTo(MetricData.Type.LONG_GAUGE);
+    assertThat(metric.getLongGaugeData().getPoints().size()).isEqualTo(1);
+
+    metric = metricData.get(2);
+    assertThat(metric.getName()).isEqualTo("double_sum");
+    assertThat(metric.getDescription()).isEqualTo("double sum");
+    assertThat(metric.getUnit()).isEqualTo("ms");
+    assertThat(metric.getType()).isEqualTo(MetricData.Type.DOUBLE_SUM);
+    assertThat(metric.getPoints().size()).isEqualTo(1);
+    point = metric.getPoints().iterator().next();
+    assertThat(((DoublePoint) point).getValue()).isEqualTo(60);
+    assertThat(point.getLabels().size()).isEqualTo(0);
+
+    metric = metricData.get(3);
+    assertThat(metric.getName()).isEqualTo("double_gauge");
+    assertThat(metric.getDescription()).isEqualTo("double gauge");
+    assertThat(metric.getUnit()).isEqualTo("ms");
+    assertThat(metric.getType()).isEqualTo(MetricData.Type.DOUBLE_GAUGE);
+    assertThat(metric.getPoints().size()).isEqualTo(1);
+    point = metric.getPoints().iterator().next();
+    assertThat(((DoublePoint) point).getValue()).isEqualTo(60);
+    assertThat(point.getLabels().size()).isEqualTo(0);
   }
 
   @Test
