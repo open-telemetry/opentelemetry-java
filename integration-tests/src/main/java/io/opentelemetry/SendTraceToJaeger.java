@@ -84,7 +84,7 @@ public class SendTraceToJaeger {
     // Start the example
     SendTraceToJaeger example = new SendTraceToJaeger(ip, port);
     OpenTelemetry openTelemetry = example.initOpenTelemetry();
-    SendTraceToJaeger.myWonderfulUseCase(openTelemetry);
+    myWonderfulUseCase(openTelemetry);
     // wait some seconds
     doWait();
     System.out.println("Bye");
