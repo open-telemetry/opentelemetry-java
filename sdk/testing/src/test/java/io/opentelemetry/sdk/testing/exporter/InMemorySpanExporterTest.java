@@ -18,18 +18,29 @@ import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.Collections;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link InMemorySpanExporter}. */
 class InMemorySpanExporterTest {
-  private final SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-  private final Tracer tracer = sdkTracerProvider.get("InMemorySpanExporterTest");
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
+
+  private SdkTracerProvider tracerProvider;
+  private Tracer tracer;
 
   @BeforeEach
   void setup() {
-    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+    tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.builder(exporter).build())
+            .build();
+    tracer = tracerProvider.get("InMemorySpanExporterTest");
+  }
+
+  @AfterEach
+  void tearDown() {
+    tracerProvider.shutdown();
   }
 
   @Test
