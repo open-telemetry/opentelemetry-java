@@ -268,7 +268,7 @@ class DisruptorAsyncSpanProcessorTest {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor.Builder config =
         DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).readProperties(options);
-    assertThat(config.getBlocking()).isFalse();
-    assertThat(config.getBufferSize()).isEqualTo(1234);
+    assertThat(config).extracting("blocking").isEqualTo(false);
+    assertThat(config).extracting("bufferSize").isEqualTo(1234);
   }
 }

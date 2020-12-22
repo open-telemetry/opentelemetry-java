@@ -409,7 +409,7 @@ class ZipkinSpanExporterTest {
     options.put("otel.exporter.zipkin.service.name", serviceName);
     options.put("otel.exporter.zipkin.endpoint", endpoint);
     ZipkinSpanExporterBuilder config = ZipkinSpanExporter.builder().readProperties(options);
-    assertThat(config.getServiceName()).isEqualTo(serviceName);
-    assertThat(config.getEndpoint()).isEqualTo(endpoint);
+    assertThat(config).extracting("serviceName").isEqualTo(serviceName);
+    assertThat(config).extracting("endpoint").isEqualTo(endpoint);
   }
 }

@@ -70,7 +70,10 @@ class IntervalMetricReaderTest {
             .readProperties(options)
             .setMetricProducers(Arrays.asList(metricProducer))
             .setMetricExporter(metricExporter);
-    assertThat(config.getExportIntervalMillis()).isEqualTo(12);
+    assertThat(config)
+        .extracting("optionsBuilder")
+        .extracting("exportIntervalMillis")
+        .isEqualTo(12L);
   }
 
   @Test

@@ -118,14 +118,4 @@ public final class ZipkinSpanExporterBuilder extends ConfigBuilder<ZipkinSpanExp
     }
     return new ZipkinSpanExporter(this.encoder, this.sender, this.serviceName);
   }
-
-  // Visible for testing
-  String getServiceName() {
-    return serviceName;
-  }
-
-  // Visible for testing
-  String getEndpoint() {
-    return endpoint;
-  }
 }

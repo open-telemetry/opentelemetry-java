@@ -69,8 +69,8 @@ class OtlpGrpcMetricExporterTest {
     options.put("otel.exporter.otlp.metric.timeout", "12");
     options.put("otel.exporter.otlp.insecure", "true");
     OtlpGrpcMetricExporterBuilder config = OtlpGrpcMetricExporter.builder().readProperties(options);
-    assertThat(config.getUseTls()).isFalse();
-    assertThat(config.getDeadlineMs()).isEqualTo(12);
+    assertThat(config).extracting("useTls").isEqualTo(false);
+    assertThat(config).extracting("deadlineMs").isEqualTo(12L);
   }
 
   @Test

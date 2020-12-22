@@ -173,14 +173,4 @@ public final class OtlpGrpcMetricExporterBuilder
 
     return this;
   }
-
-  // Visible for testing
-  long getDeadlineMs() {
-    return deadlineMs;
-  }
-
-  // Visible for testing
-  boolean getUseTls() {
-    return useTls;
-  }
 }
