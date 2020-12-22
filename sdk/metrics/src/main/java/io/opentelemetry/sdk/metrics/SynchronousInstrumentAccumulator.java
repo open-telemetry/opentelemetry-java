@@ -37,15 +37,15 @@ final class SynchronousInstrumentAccumulator {
     // Missing entry or no longer mapped, try to add a new entry.
     aggregator = instrumentProcessor.getAggregator();
     while (true) {
-      Aggregator oldBound = aggregatorLabels.putIfAbsent(labels, aggregator);
-      if (oldBound != null) {
-        if (oldBound.acquire()) {
+      Aggregator boundAggregator = aggregatorLabels.putIfAbsent(labels, aggregator);
+      if (boundAggregator != null) {
+        if (boundAggregator.acquire()) {
           // At this moment it is guaranteed that the Bound is in the map and will not be removed.
-          return oldBound;
+          return boundAggregator;
         }
-        // Try to remove the oldBound. This will race with the collect method, but only one will
-        // succeed.
-        aggregatorLabels.remove(labels, oldBound);
+        // Try to remove the boundAggregator. This will race with the collect method, but only one
+        // will succeed.
+        aggregatorLabels.remove(labels, boundAggregator);
         continue;
       }
       return aggregator;

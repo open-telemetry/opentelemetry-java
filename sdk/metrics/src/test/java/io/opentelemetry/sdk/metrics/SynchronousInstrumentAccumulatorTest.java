@@ -40,13 +40,17 @@ public class SynchronousInstrumentAccumulatorTest {
       accumulator.collectAll();
       Aggregator anotherDuplicateAggregator = accumulator.bind(Labels.of("K", "V"));
       try {
-        assertThat(anotherDuplicateAggregator).isEqualTo(aggregator);
+        assertThat(anotherDuplicateAggregator).isSameAs(aggregator);
       } finally {
         anotherDuplicateAggregator.release();
       }
     } finally {
-      aggregator.release();
+      duplicateAggregator.release();
       aggregator.release();
     }
+
+    // At this point we should be able to unmap because all references are gone. Because this is an
+    // internal detail we cannot call collectAll after this anymore.
+    assertThat(aggregator.tryUnmap()).isTrue();
   }
 }
