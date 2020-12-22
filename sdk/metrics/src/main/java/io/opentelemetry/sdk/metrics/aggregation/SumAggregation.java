@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -20,14 +19,20 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-enum SumAggregation implements Aggregation {
-  INSTANCE;
+final class SumAggregation implements Aggregation {
+  static final SumAggregation LONG_INSTANCE = new SumAggregation(LongSumAggregator.getFactory());
+  static final SumAggregation DOUBLE_INSTANCE =
+      new SumAggregation(DoubleSumAggregator.getFactory());
+
+  private final AggregatorFactory aggregatorFactory;
+
+  private SumAggregation(AggregatorFactory aggregatorFactory) {
+    this.aggregatorFactory = aggregatorFactory;
+  }
 
   @Override
-  public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
-    return instrumentValueType == InstrumentValueType.LONG
-        ? LongSumAggregator.getFactory()
-        : DoubleSumAggregator.getFactory();
+  public AggregatorFactory getAggregatorFactory() {
+    return aggregatorFactory;
   }
 
   @Override

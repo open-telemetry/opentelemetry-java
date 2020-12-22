@@ -91,7 +91,7 @@ final class InstrumentProcessor {
     this.resource = resource;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.clock = clock;
-    this.aggregatorFactory = aggregation.getAggregatorFactory(descriptor.getValueType());
+    this.aggregatorFactory = aggregation.getAggregatorFactory();
     this.delta = delta;
     this.accumulationMap = new HashMap<>();
     startEpochNanos = clock.now();

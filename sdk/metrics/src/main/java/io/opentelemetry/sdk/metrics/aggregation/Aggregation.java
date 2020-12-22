@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
@@ -28,10 +27,9 @@ public interface Aggregation {
    * io.opentelemetry.sdk.metrics.aggregator.Aggregator} that needs to be used to aggregate all the
    * values to produce this {@code Aggregation}.
    *
-   * @param instrumentValueType the type of recorded values for the {@code Instrument}.
    * @return the {@code AggregationFactory}.
    */
-  AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType);
+  AggregatorFactory getAggregatorFactory();
 
   /**
    * Returns the result of the merge of the given {@link Accumulation}s.

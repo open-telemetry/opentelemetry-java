@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.aggregation.Aggregation;
-import io.opentelemetry.sdk.metrics.aggregation.Aggregations;
+import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -40,16 +40,16 @@ final class ViewRegistry {
       new LinkedHashMap<>();
   private static final AggregationConfiguration CUMULATIVE_SUM =
       AggregationConfiguration.create(
-          Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE);
+          AggregationFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_SUMMARY =
       AggregationConfiguration.create(
-          Aggregations.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
+          AggregationFactory.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
   private static final AggregationConfiguration CUMULATIVE_LAST_VALUE =
       AggregationConfiguration.create(
-          Aggregations.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
+          AggregationFactory.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_LAST_VALUE =
       AggregationConfiguration.create(
-          Aggregations.lastValue(), MetricData.AggregationTemporality.DELTA);
+          AggregationFactory.lastValue(), MetricData.AggregationTemporality.DELTA);
 
   private final ReentrantLock collectLock = new ReentrantLock();
   private volatile EnumMap<InstrumentType, LinkedHashMap<Pattern, AggregationConfiguration>>
@@ -91,16 +91,17 @@ final class ViewRegistry {
 
     AggregationConfiguration specification = chooseAggregation(descriptor);
 
-    Aggregation aggregation = specification.aggregation();
+    Aggregation aggregation =
+        specification.getAggregationFactory().create(descriptor.getValueType());
 
-    if (MetricData.AggregationTemporality.CUMULATIVE == specification.temporality()) {
+    if (MetricData.AggregationTemporality.CUMULATIVE == specification.getTemporality()) {
       return InstrumentProcessor.getCumulativeAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
-    } else if (MetricData.AggregationTemporality.DELTA == specification.temporality()) {
+    } else if (MetricData.AggregationTemporality.DELTA == specification.getTemporality()) {
       return InstrumentProcessor.getDeltaAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);
     }
-    throw new IllegalStateException("unsupported Temporality: " + specification.temporality());
+    throw new IllegalStateException("unsupported Temporality: " + specification.getTemporality());
   }
 
   // Visible for tests.

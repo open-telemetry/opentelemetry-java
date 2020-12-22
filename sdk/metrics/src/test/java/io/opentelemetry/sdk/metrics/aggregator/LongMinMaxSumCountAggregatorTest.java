@@ -9,8 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
-import io.opentelemetry.sdk.metrics.aggregation.Aggregations;
+import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
 import io.opentelemetry.sdk.metrics.aggregation.MinMaxSumCountAccumulation;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -117,7 +118,10 @@ class LongMinMaxSumCountAggregatorTest {
           accumulation = other;
           return;
         }
-        accumulation = Aggregations.minMaxSumCount().merge(accumulation, other);
+        accumulation =
+            AggregationFactory.minMaxSumCount()
+                .create(InstrumentValueType.LONG)
+                .merge(accumulation, other);
       } finally {
         lock.writeLock().unlock();
       }

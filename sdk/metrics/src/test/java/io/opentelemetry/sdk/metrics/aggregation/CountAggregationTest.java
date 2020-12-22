@@ -19,12 +19,12 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link Aggregations#count()}. */
+/** Unit tests for {@link AggregationFactory#count()}. */
 class CountAggregationTest {
   @Test
   void toMetricData() {
-    Aggregation count = Aggregations.count();
-    Aggregator aggregator = count.getAggregatorFactory(InstrumentValueType.LONG).getAggregator();
+    Aggregation count = AggregationFactory.count().create(InstrumentValueType.LONG);
+    Aggregator aggregator = count.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =
@@ -47,10 +47,10 @@ class CountAggregationTest {
 
   @Test
   void getAggregatorFactory() {
-    Aggregation count = Aggregations.count();
-    assertThat(count.getAggregatorFactory(InstrumentValueType.LONG))
+    AggregationFactory count = AggregationFactory.count();
+    assertThat(count.create(InstrumentValueType.LONG).getAggregatorFactory())
         .isInstanceOf(CountAggregator.getFactory().getClass());
-    assertThat(count.getAggregatorFactory(InstrumentValueType.DOUBLE))
+    assertThat(count.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
         .isInstanceOf(CountAggregator.getFactory().getClass());
   }
 }

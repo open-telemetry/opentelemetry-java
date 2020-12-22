@@ -20,13 +20,14 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
+/** Unit tests for {@link AggregationFactory#minMaxSumCount()}. */
 class MinMaxSumCountAggregationTest {
 
   @Test
   void toMetricData() {
-    Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
-    Aggregator aggregator =
-        minMaxSumCount.getAggregatorFactory(InstrumentValueType.LONG).getAggregator();
+    Aggregation minMaxSumCount =
+        AggregationFactory.minMaxSumCount().create(InstrumentValueType.LONG);
+    Aggregator aggregator = minMaxSumCount.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =
@@ -48,10 +49,10 @@ class MinMaxSumCountAggregationTest {
 
   @Test
   void getAggregatorFactory() {
-    Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
-    assertThat(minMaxSumCount.getAggregatorFactory(InstrumentValueType.LONG))
+    AggregationFactory minMaxSumCount = AggregationFactory.minMaxSumCount();
+    assertThat(minMaxSumCount.create(InstrumentValueType.LONG).getAggregatorFactory())
         .isInstanceOf(LongMinMaxSumCountAggregator.getFactory().getClass());
-    assertThat(minMaxSumCount.getAggregatorFactory(InstrumentValueType.DOUBLE))
+    assertThat(minMaxSumCount.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
         .isInstanceOf(DoubleMinMaxSumCountAggregator.getFactory().getClass());
   }
 }
