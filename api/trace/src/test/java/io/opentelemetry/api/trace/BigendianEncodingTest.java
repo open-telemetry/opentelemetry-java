@@ -12,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.nio.CharBuffer;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link BigendianEncoding}. */
 class BigendianEncodingTest {
 
   private static final long FIRST_LONG = 0x1213141516171819L;
@@ -186,6 +185,7 @@ class BigendianEncodingTest {
   }
 
   @Test
+  @SuppressWarnings("checkstyle:AvoidEscapedUnicodeCharacters")
   void invalidBytes() {
     assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("gf", 0))
         .isInstanceOf(IllegalArgumentException.class)

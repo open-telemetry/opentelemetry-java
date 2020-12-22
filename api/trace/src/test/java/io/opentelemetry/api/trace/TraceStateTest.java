@@ -213,6 +213,7 @@ class TraceStateTest {
   }
 
   @Test
+  @SuppressWarnings("checkstyle:AvoidEscapedUnicodeCharacters")
   void notAllowedValueCharacters() {
     assertThat(TraceState.builder().set("foo", "bar,").build()).isEqualTo(EMPTY);
     assertThat(TraceState.builder().set("foo", "bar=").build()).isEqualTo(EMPTY);
