@@ -22,6 +22,11 @@ import org.junit.jupiter.api.Test;
 class PropagatedSpanTest {
 
   @Test
+  void notRecording() {
+    assertThat(Span.getInvalid().isRecording()).isFalse();
+  }
+
+  @Test
   void hasInvalidContextAndDefaultSpanOptions() {
     SpanContext context = Span.getInvalid().getSpanContext();
     assertThat(context.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
@@ -37,6 +42,9 @@ class PropagatedSpanTest {
     span.setAttribute(longKey("MyLongAttributeKey"), 123);
     span.setAttribute("NullString", null);
     span.setAttribute("EmptyString", "");
+    span.setAttribute("long", 1);
+    span.setAttribute("double", 1.0);
+    span.setAttribute("boolean", true);
     span.setAttribute(stringArrayKey("NullArrayString"), null);
     span.setAttribute(booleanArrayKey("NullArrayBoolean"), null);
     span.setAttribute(longArrayKey("NullArrayLong"), null);
@@ -52,6 +60,7 @@ class PropagatedSpanTest {
     span.setStatus(StatusCode.OK, "null");
     span.recordException(new IllegalStateException());
     span.recordException(new IllegalStateException(), Attributes.empty());
+    span.updateName("name");
     span.end();
     span.end(0, TimeUnit.NANOSECONDS);
     span.end(Instant.EPOCH);
