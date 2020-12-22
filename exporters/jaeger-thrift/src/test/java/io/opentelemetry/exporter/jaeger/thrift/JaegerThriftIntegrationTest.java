@@ -66,7 +66,7 @@ class JaegerThriftIntegrationTest {
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build())
                 .build())
-        .buildAndRegisterGlobal();
+        .buildWithoutRegisteringGlobal();
   }
 
   private void imitateWork(OpenTelemetry openTelemetry) {
