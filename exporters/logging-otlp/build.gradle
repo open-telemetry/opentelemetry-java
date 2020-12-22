@@ -5,8 +5,8 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-description = 'OpenTelemetry Protocol JSON Exporters'
-ext.moduleName = "io.opentelemetry.exporter.otlpjson"
+description = 'OpenTelemetry Protocol JSON Logging Exporters'
+ext.moduleName = "io.opentelemetry.exporter.logging.otlp"
 
 dependencies {
     compileOnly project(':sdk:trace')

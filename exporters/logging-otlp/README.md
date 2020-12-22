@@ -1,4 +1,4 @@
-# OpenTelemetry - OTLP JSON Exporters
+# OpenTelemetry - OTLP JSON Logging Exporter
 
 [![Javadocs][javadoc-image]][javadoc-url]
 

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlpjson;
+package io.opentelemetry.exporter.logging.otlp;
 
-import static io.opentelemetry.exporter.otlpjson.HexEncodingStringJsonGenerator.JSON_FACTORY;
+import static io.opentelemetry.exporter.logging.otlp.HexEncodingStringJsonGenerator.JSON_FACTORY;
 
 import com.fasterxml.jackson.core.Base64Variant;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -30,7 +30,10 @@ import org.curioswitch.common.protobuf.json.MessageMarshaller;
 public class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   private static final MessageMarshaller marshaller =
-      MessageMarshaller.builder().register(ResourceMetrics.class).build();
+      MessageMarshaller.builder()
+          .register(ResourceMetrics.class)
+          .omittingInsignificantWhitespace(true)
+          .build();
 
   // Visible for testing
   static final Logger logger = Logger.getLogger(OtlpJsonLoggingMetricExporter.class.getName());

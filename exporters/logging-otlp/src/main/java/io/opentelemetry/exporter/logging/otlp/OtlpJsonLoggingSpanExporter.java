@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlpjson;
+package io.opentelemetry.exporter.logging.otlp;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
@@ -26,7 +26,10 @@ import org.curioswitch.common.protobuf.json.MessageMarshaller;
 public class OtlpJsonLoggingSpanExporter implements SpanExporter {
 
   private static final MessageMarshaller marshaller =
-      MessageMarshaller.builder().register(ResourceSpans.class).build();
+      MessageMarshaller.builder()
+          .register(ResourceSpans.class)
+          .omittingInsignificantWhitespace(true)
+          .build();
 
   // Visible for testing
   static final Logger logger = Logger.getLogger(OtlpJsonLoggingSpanExporter.class.getName());
