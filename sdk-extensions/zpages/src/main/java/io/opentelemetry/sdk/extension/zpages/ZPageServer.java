@@ -6,8 +6,6 @@
 package io.opentelemetry.sdk.extension.zpages;
 
 import com.sun.net.httpserver.HttpServer;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.io.IOException;
@@ -76,8 +74,6 @@ public final class ZPageServer {
       new TracezTraceConfigSupplier();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
-  private static final SdkTracerManagement TRACER_SDK_MANAGEMENT =
-      OpenTelemetrySdk.getGlobalTracerManagement();
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
       new TracezZPageHandler(tracezDataAggregator);
