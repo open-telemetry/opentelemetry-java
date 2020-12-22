@@ -10,6 +10,8 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.spi.OpenTelemetryFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -30,6 +32,8 @@ import javax.annotation.Nullable;
  * @see ContextPropagators
  */
 public final class GlobalOpenTelemetry {
+  private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
+
   private static final Object mutex = new Object();
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
 
@@ -48,6 +52,8 @@ public final class GlobalOpenTelemetry {
     if (globalOpenTelemetry == null) {
       synchronized (mutex) {
         if (globalOpenTelemetry == null) {
+          SdkChecker.logIfSdkFound();
+
           OpenTelemetryFactory openTelemetryFactory = Utils.loadSpi(OpenTelemetryFactory.class);
           if (openTelemetryFactory != null) {
             set(openTelemetryFactory.create());
@@ -114,5 +120,32 @@ public final class GlobalOpenTelemetry {
    */
   public static ContextPropagators getPropagators() {
     return get().getPropagators();
+  }
+
+  // Use an inner class that checks and logs in its static initializer to have log-once behavior
+  // using initial classloader lock and no further runtime locks or atomics.
+  private static class SdkChecker {
+    static {
+      boolean hasSdk = false;
+      try {
+        Class.forName("io.opentelemetry.sdk.OpenTelemetrySdk");
+        hasSdk = true;
+      } catch (Throwable t) {
+        // Ignore
+      }
+
+      if (hasSdk) {
+        logger.log(
+            Level.SEVERE,
+            "Attempt to access GlobalOpenTelemetry.get before OpenTelemetrySdk has been "
+                + "initialized. This generally means telemetry will not be recorded for parts of "
+                + "your application. Make sure to initialize OpenTelemetrySdk, using "
+                + "OpenTelemetrySdk.builder(), as early as possible in your application.",
+            new Throwable());
+        throw new IllegalStateException("No SDK yet!");
+      }
+    }
+
+    static void logIfSdkFound() {}
   }
 }
