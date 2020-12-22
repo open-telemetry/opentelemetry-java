@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -19,6 +19,7 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
@@ -30,15 +31,20 @@ public class TracezDataAggregatorBenchmark {
   private static final String runningSpan = "RUNNING_SPAN";
   private static final String latencySpan = "LATENCY_SPAN";
   private static final String errorSpan = "ERROR_SPAN";
-  private final Tracer tracer = GlobalOpenTelemetry.getTracer("TracezDataAggregatorBenchmark");
-  private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
-  private final TracezDataAggregator dataAggregator = new TracezDataAggregator(spanProcessor);
+
+  private SdkTracerProvider tracerProvider;
+  private TracezDataAggregator dataAggregator;
 
   @Param({"1", "10", "1000", "1000000"})
   private int numberOfSpans;
 
   @Setup(Level.Trial)
   public final void setup() {
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
+    tracerProvider = SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
+    dataAggregator = new TracezDataAggregator(spanProcessor);
+    Tracer tracer = tracerProvider.get("TracezDataAggregatorBenchmark");
+
     for (int i = 0; i < numberOfSpans; i++) {
       tracer.spanBuilder(runningSpan).startSpan();
       tracer.spanBuilder(latencySpan).startSpan().end();
@@ -46,6 +52,11 @@ public class TracezDataAggregatorBenchmark {
       error.setStatus(StatusCode.ERROR);
       error.end();
     }
+  }
+
+  @TearDown(Level.Trial)
+  public final void tearDown() {
+    tracerProvider.shutdown();
   }
 
   /** Get span counts with 1 thread. */

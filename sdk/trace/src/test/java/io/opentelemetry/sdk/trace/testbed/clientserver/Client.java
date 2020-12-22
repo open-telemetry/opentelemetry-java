@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.trace.testbed.clientserver;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -30,9 +30,7 @@ final class Client {
     span.setAttribute("component", "example-client");
 
     try (Scope ignored = span.makeCurrent()) {
-      GlobalOpenTelemetry.getPropagators()
-          .getTextMapPropagator()
-          .inject(Context.current(), message, Message::put);
+      W3CTraceContextPropagator.getInstance().inject(Context.current(), message, Message::put);
       queue.put(message);
     } finally {
       span.end();
