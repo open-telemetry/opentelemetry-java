@@ -20,9 +20,21 @@ import javax.annotation.Nullable;
 public final class LongLastValueAggregator extends Aggregator<LongAccumulation> {
   @Nullable private static final Long DEFAULT_VALUE = null;
   private static final AggregatorFactory<LongAccumulation> AGGREGATOR_FACTORY =
-      LongLastValueAggregator::new;
+      new AggregatorFactory<LongAccumulation>() {
+        @Override
+        public Aggregator<LongAccumulation> getAggregator() {
+          return new LongLastValueAggregator();
+        }
+
+        @Override
+        public LongAccumulation accumulateLong(long value) {
+          return LongAccumulation.create(value);
+        }
+      };
 
   private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
+
+  private LongLastValueAggregator() {}
 
   /**
    * Returns an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.

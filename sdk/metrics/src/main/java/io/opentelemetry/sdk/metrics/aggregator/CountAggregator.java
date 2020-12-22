@@ -10,11 +10,26 @@ import java.util.concurrent.atomic.LongAdder;
 
 public final class CountAggregator extends Aggregator<LongAccumulation> {
   private static final AggregatorFactory<LongAccumulation> AGGREGATOR_FACTORY =
-      CountAggregator::new;
+      new AggregatorFactory<LongAccumulation>() {
+        @Override
+        public Aggregator<LongAccumulation> getAggregator() {
+          return new CountAggregator();
+        }
+
+        @Override
+        public LongAccumulation accumulateDouble(double value) {
+          return LongAccumulation.create(1);
+        }
+
+        @Override
+        public LongAccumulation accumulateLong(long value) {
+          return LongAccumulation.create(1);
+        }
+      };
 
   private final LongAdder current;
 
-  public CountAggregator() {
+  private CountAggregator() {
     this.current = new LongAdder();
   }
 
