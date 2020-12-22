@@ -24,7 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("deprecation")
+@SuppressWarnings("deprecation") // we're testing deprecated stuff in here.
 class MultiTextMapPropagatorTest {
 
   @Mock private TextMapPropagator propagator1;
