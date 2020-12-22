@@ -210,42 +210,37 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "Sampler",
-        /* paramValue=*/ configSupplier.getActiveTraceConfig().getSampler().getDescription(),
+        /* paramValue=*/ configSupplier.get().getSampler().getDescription(),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributes",
-        /* paramValue=*/ Integer.toString(
-            configSupplier.getActiveTraceConfig().getMaxNumberOfAttributes()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfAttributes()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfEvents",
-        /* paramValue=*/ Integer.toString(
-            configSupplier.getActiveTraceConfig().getMaxNumberOfEvents()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfEvents()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfLinks",
-        /* paramValue=*/ Integer.toString(
-            configSupplier.getActiveTraceConfig().getMaxNumberOfLinks()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfLinks()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerEvent",
-        /* paramValue=*/ Integer.toString(
-            configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerEvent()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerLink",
-        /* paramValue=*/ Integer.toString(
-            configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerLink()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerLink()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe=*/ true);
     out.print("</table>");
@@ -365,7 +360,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       return;
     }
     if (action.equals(QUERY_STRING_ACTION_CHANGE)) {
-      TraceConfigBuilder newConfigBuilder = configSupplier.getActiveTraceConfig().toBuilder();
+      TraceConfigBuilder newConfigBuilder = configSupplier.get().toBuilder();
       String samplingProbabilityStr = queryMap.get(QUERY_STRING_SAMPLING_PROBABILITY);
       if (samplingProbabilityStr != null) {
         try {

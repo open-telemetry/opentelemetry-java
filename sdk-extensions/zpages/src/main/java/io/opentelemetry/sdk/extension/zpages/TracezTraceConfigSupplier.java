@@ -21,10 +21,6 @@ final class TracezTraceConfigSupplier implements Supplier<TraceConfig> {
     return activeTraceConfig;
   }
 
-  TraceConfig getActiveTraceConfig() {
-    return activeTraceConfig;
-  }
-
   void setActiveTraceConfig(TraceConfig traceConfig) {
     activeTraceConfig = traceConfig;
   }

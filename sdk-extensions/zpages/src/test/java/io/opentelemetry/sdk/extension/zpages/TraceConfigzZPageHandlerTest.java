@@ -83,39 +83,24 @@ class TraceConfigzZPageHandlerTest {
 
     assertThat(output.toString()).contains("Sampler");
     assertThat(output.toString())
-        .contains(">" + configSupplier.getActiveTraceConfig().getSampler().getDescription() + "<");
+        .contains(">" + configSupplier.get().getSampler().getDescription() + "<");
     assertThat(output.toString()).contains("MaxNumberOfAttributes");
     assertThat(output.toString())
-        .contains(
-            ">"
-                + Integer.toString(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributes())
-                + "<");
+        .contains(">" + Integer.toString(configSupplier.get().getMaxNumberOfAttributes()) + "<");
     assertThat(output.toString()).contains("MaxNumberOfEvents");
     assertThat(output.toString())
-        .contains(
-            ">"
-                + Integer.toString(configSupplier.getActiveTraceConfig().getMaxNumberOfEvents())
-                + "<");
+        .contains(">" + Integer.toString(configSupplier.get().getMaxNumberOfEvents()) + "<");
     assertThat(output.toString()).contains("MaxNumberOfLinks");
     assertThat(output.toString())
-        .contains(
-            ">"
-                + Integer.toString(configSupplier.getActiveTraceConfig().getMaxNumberOfLinks())
-                + "<");
+        .contains(">" + Integer.toString(configSupplier.get().getMaxNumberOfLinks()) + "<");
     assertThat(output.toString()).contains("MaxNumberOfAttributesPerEvent");
     assertThat(output.toString())
         .contains(
-            ">"
-                + Integer.toString(
-                    configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent())
-                + "<");
+            ">" + Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerEvent()) + "<");
     assertThat(output.toString()).contains("MaxNumberOfAttributesPerLink");
     assertThat(output.toString())
         .contains(
-            ">"
-                + Integer.toString(
-                    configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
-                + "<");
+            ">" + Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerLink()) + "<");
   }
 
   @Test
@@ -150,18 +135,18 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.getActiveTraceConfig().getSampler().getDescription())
+    assertThat(configSupplier.get().getSampler().getDescription())
         .isEqualTo(
             Sampler.traceIdRatioBased(Double.parseDouble(newSamplingProbability)).getDescription());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributes())
+    assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributes));
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfEvents())
+    assertThat(configSupplier.get().getMaxNumberOfEvents())
         .isEqualTo(Integer.parseInt(newMaxNumOfEvents));
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfLinks())
+    assertThat(configSupplier.get().getMaxNumberOfLinks())
         .isEqualTo(Integer.parseInt(newMaxNumOfLinks));
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerEvent())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributesPerEvent));
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerLink())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributesPerLink));
   }
 
@@ -176,17 +161,17 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.getActiveTraceConfig().getSampler().getDescription())
+    assertThat(configSupplier.get().getSampler().getDescription())
         .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributes())
+    assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfEvents())
+    assertThat(configSupplier.get().getMaxNumberOfEvents())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfEvents());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfLinks())
+    assertThat(configSupplier.get().getMaxNumberOfLinks())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfLinks());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerEvent())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerLink())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerLink());
   }
 
@@ -201,17 +186,17 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.getActiveTraceConfig().getSampler().getDescription())
+    assertThat(configSupplier.get().getSampler().getDescription())
         .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributes())
+    assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfEvents())
+    assertThat(configSupplier.get().getMaxNumberOfEvents())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfEvents());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfLinks())
+    assertThat(configSupplier.get().getMaxNumberOfLinks())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfLinks());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerEvent())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerLink())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerLink());
   }
 
@@ -335,35 +320,35 @@ class TraceConfigzZPageHandlerTest {
     // GET request, Should not apply changes
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.getActiveTraceConfig().getSampler().getDescription())
+    assertThat(configSupplier.get().getSampler().getDescription())
         .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributes())
+    assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfEvents())
+    assertThat(configSupplier.get().getMaxNumberOfEvents())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfEvents());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfLinks())
+    assertThat(configSupplier.get().getMaxNumberOfLinks())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfLinks());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerEvent())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerLink())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributesPerLink());
 
     // POST request, Should apply changes
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.getActiveTraceConfig().getSampler().getDescription())
+    assertThat(configSupplier.get().getSampler().getDescription())
         .isEqualTo(
             Sampler.traceIdRatioBased(Double.parseDouble(newSamplingProbability)).getDescription());
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributes())
+    assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributes));
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfEvents())
+    assertThat(configSupplier.get().getMaxNumberOfEvents())
         .isEqualTo(Integer.parseInt(newMaxNumOfEvents));
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfLinks())
+    assertThat(configSupplier.get().getMaxNumberOfLinks())
         .isEqualTo(Integer.parseInt(newMaxNumOfLinks));
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerEvent())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerEvent())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributesPerEvent));
-    assertThat(configSupplier.getActiveTraceConfig().getMaxNumberOfAttributesPerLink())
+    assertThat(configSupplier.get().getMaxNumberOfAttributesPerLink())
         .isEqualTo(Integer.parseInt(newMaxNumOfAttributesPerLink));
   }
 }
