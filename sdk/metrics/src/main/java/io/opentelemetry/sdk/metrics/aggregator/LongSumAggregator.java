@@ -9,7 +9,7 @@ import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
 
-public final class LongSumAggregator extends AbstractAggregator {
+public final class LongSumAggregator extends Aggregator {
 
   private static final AggregatorFactory AGGREGATOR_FACTORY = LongSumAggregator::new;
 
@@ -25,7 +25,7 @@ public final class LongSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  Accumulation doAccumulateThenReset() {
+  protected Accumulation doAccumulateThenReset() {
     return LongAccumulation.create(this.current.sumThenReset());
   }
 

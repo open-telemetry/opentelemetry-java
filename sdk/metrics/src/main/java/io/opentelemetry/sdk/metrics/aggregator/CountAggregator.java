@@ -9,7 +9,7 @@ import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
 
-public final class CountAggregator extends AbstractAggregator {
+public final class CountAggregator extends Aggregator {
   private static final AggregatorFactory AGGREGATOR_FACTORY = CountAggregator::new;
 
   private final LongAdder current;
@@ -28,17 +28,17 @@ public final class CountAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void doRecordLong(long value) {
+  protected void doRecordLong(long value) {
     current.add(1);
   }
 
   @Override
-  public void doRecordDouble(double value) {
+  protected void doRecordDouble(double value) {
     current.add(1);
   }
 
   @Override
-  Accumulation doAccumulateThenReset() {
+  protected Accumulation doAccumulateThenReset() {
     return LongAccumulation.create(current.sumThenReset());
   }
 }

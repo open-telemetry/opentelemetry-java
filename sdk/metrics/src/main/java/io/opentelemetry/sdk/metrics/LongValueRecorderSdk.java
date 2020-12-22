@@ -7,26 +7,27 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongValueRecorder;
-import io.opentelemetry.sdk.metrics.LongValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
-final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInstrument>
+final class LongValueRecorderSdk extends AbstractSynchronousInstrument
     implements LongValueRecorder {
 
   private LongValueRecorderSdk(
-      InstrumentDescriptor descriptor,
-      SynchronousInstrumentAccumulator<BoundInstrument> accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
     super(descriptor, accumulator);
   }
 
   @Override
   public void record(long value, Labels labels) {
-    BoundInstrument boundInstrument = bind(labels);
-    boundInstrument.record(value);
-    boundInstrument.unbind();
+    Aggregator aggregator = acquireHandle(labels);
+    try {
+      aggregator.recordLong(value);
+    } finally {
+      aggregator.release();
+    }
   }
 
   @Override
@@ -34,16 +35,26 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
     record(value, Labels.empty());
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument
-      implements BoundLongValueRecorder {
+  @Override
+  public BoundLongValueRecorder bind(Labels labels) {
+    return new BoundInstrument(acquireHandle(labels));
+  }
+
+  static final class BoundInstrument implements BoundLongValueRecorder {
+    private final Aggregator aggregator;
 
     BoundInstrument(Aggregator aggregator) {
-      super(aggregator);
+      this.aggregator = aggregator;
     }
 
     @Override
     public void record(long value) {
-      recordLong(value);
+      aggregator.recordLong(value);
+    }
+
+    @Override
+    public void unbind() {
+      aggregator.release();
     }
   }
 
@@ -70,7 +81,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
 
     @Override
     public LongValueRecorderSdk build() {
-      return buildInstrument(BoundInstrument::new, LongValueRecorderSdk::new);
+      return buildInstrument(LongValueRecorderSdk::new);
     }
   }
 }

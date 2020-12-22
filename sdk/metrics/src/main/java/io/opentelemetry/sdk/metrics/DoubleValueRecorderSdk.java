@@ -7,26 +7,27 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleValueRecorder;
-import io.opentelemetry.sdk.metrics.DoubleValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
-final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundInstrument>
+final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
     implements DoubleValueRecorder {
 
   private DoubleValueRecorderSdk(
-      InstrumentDescriptor descriptor,
-      SynchronousInstrumentAccumulator<BoundInstrument> accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
     super(descriptor, accumulator);
   }
 
   @Override
   public void record(double value, Labels labels) {
-    BoundInstrument boundInstrument = bind(labels);
-    boundInstrument.record(value);
-    boundInstrument.unbind();
+    Aggregator aggregator = acquireHandle(labels);
+    try {
+      aggregator.recordDouble(value);
+    } finally {
+      aggregator.release();
+    }
   }
 
   @Override
@@ -34,16 +35,26 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     record(value, Labels.empty());
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument
-      implements BoundDoubleValueRecorder {
+  @Override
+  public BoundDoubleValueRecorder bind(Labels labels) {
+    return new BoundInstrument(acquireHandle(labels));
+  }
+
+  static final class BoundInstrument implements BoundDoubleValueRecorder {
+    private final Aggregator aggregator;
 
     BoundInstrument(Aggregator aggregator) {
-      super(aggregator);
+      this.aggregator = aggregator;
     }
 
     @Override
     public void record(double value) {
-      recordDouble(value);
+      aggregator.recordDouble(value);
+    }
+
+    @Override
+    public void unbind() {
+      aggregator.release();
     }
   }
 
@@ -70,7 +81,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
 
     @Override
     public DoubleValueRecorderSdk build() {
-      return buildInstrument(BoundInstrument::new, DoubleValueRecorderSdk::new);
+      return buildInstrument(DoubleValueRecorderSdk::new);
     }
   }
 }

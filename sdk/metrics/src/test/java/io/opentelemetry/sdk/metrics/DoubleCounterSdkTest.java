@@ -146,36 +146,6 @@ class DoubleCounterSdkTest {
   }
 
   @Test
-  void sameBound_ForSameLabelSet() {
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
-    BoundDoubleCounter boundCounter = doubleCounter.bind(Labels.of("K", "V"));
-    BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-    } finally {
-      boundCounter.unbind();
-      duplicateBoundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
-    BoundDoubleCounter boundCounter = doubleCounter.bind(Labels.of("K", "V"));
-    try {
-      doubleCounter.collectAll();
-      BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-      } finally {
-        duplicateBoundCounter.unbind();
-      }
-    } finally {
-      boundCounter.unbind();
-    }
-  }
-
-  @Test
   void doubleCounterAdd_Monotonicity() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 

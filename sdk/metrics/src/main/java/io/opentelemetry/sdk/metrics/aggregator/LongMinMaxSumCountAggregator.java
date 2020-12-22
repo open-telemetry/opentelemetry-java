@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-public final class LongMinMaxSumCountAggregator extends AbstractAggregator {
+public final class LongMinMaxSumCountAggregator extends Aggregator {
 
   private static final AggregatorFactory AGGREGATOR_FACTORY = LongMinMaxSumCountAggregator::new;
 
@@ -30,7 +30,7 @@ public final class LongMinMaxSumCountAggregator extends AbstractAggregator {
   }
 
   @Override
-  Accumulation doAccumulateThenReset() {
+  protected Accumulation doAccumulateThenReset() {
     lock.writeLock().lock();
     try {
       Accumulation toReturn =
@@ -43,7 +43,7 @@ public final class LongMinMaxSumCountAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void doRecordLong(long value) {
+  protected void doRecordLong(long value) {
     lock.writeLock().lock();
     try {
       current.record(value);
