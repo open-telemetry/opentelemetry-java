@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 final class SynchronousInstrumentAccumulator {
-  private final ConcurrentHashMap<Labels, Aggregator> aggregatorLabels;
+  private final ConcurrentHashMap<Labels, Aggregator<?>> aggregatorLabels;
   private final ReentrantLock collectLock;
   private final InstrumentProcessor instrumentProcessor;
 
@@ -26,9 +26,9 @@ final class SynchronousInstrumentAccumulator {
     this.instrumentProcessor = instrumentProcessor;
   }
 
-  Aggregator bind(Labels labels) {
+  Aggregator<?> bind(Labels labels) {
     Objects.requireNonNull(labels, "labels");
-    Aggregator aggregator = aggregatorLabels.get(labels);
+    Aggregator<?> aggregator = aggregatorLabels.get(labels);
     if (aggregator != null && aggregator.acquire()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
       return aggregator;
@@ -37,7 +37,7 @@ final class SynchronousInstrumentAccumulator {
     // Missing entry or no longer mapped, try to add a new entry.
     aggregator = instrumentProcessor.getAggregator();
     while (true) {
-      Aggregator boundAggregator = aggregatorLabels.putIfAbsent(labels, aggregator);
+      Aggregator<?> boundAggregator = aggregatorLabels.putIfAbsent(labels, aggregator);
       if (boundAggregator != null) {
         if (boundAggregator.acquire()) {
           // At this moment it is guaranteed that the Bound is in the map and will not be removed.
@@ -59,7 +59,7 @@ final class SynchronousInstrumentAccumulator {
   public final List<MetricData> collectAll() {
     collectLock.lock();
     try {
-      for (Map.Entry<Labels, Aggregator> entry : aggregatorLabels.entrySet()) {
+      for (Map.Entry<Labels, Aggregator<?>> entry : aggregatorLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {
           // If able to unmap then remove the record from the current Map. This can race with the

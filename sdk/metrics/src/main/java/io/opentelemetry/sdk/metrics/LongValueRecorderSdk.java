@@ -22,7 +22,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument
 
   @Override
   public void record(long value, Labels labels) {
-    Aggregator aggregator = acquireHandle(labels);
+    Aggregator<?> aggregator = acquireHandle(labels);
     try {
       aggregator.recordLong(value);
     } finally {
@@ -41,9 +41,9 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument
   }
 
   static final class BoundInstrument implements BoundLongValueRecorder {
-    private final Aggregator aggregator;
+    private final Aggregator<?> aggregator;
 
-    BoundInstrument(Aggregator aggregator) {
+    BoundInstrument(Aggregator<?> aggregator) {
       this.aggregator = aggregator;
     }
 

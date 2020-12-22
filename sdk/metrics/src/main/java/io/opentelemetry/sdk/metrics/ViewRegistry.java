@@ -90,7 +90,6 @@ final class ViewRegistry {
       InstrumentDescriptor descriptor) {
 
     AggregationConfiguration specification = chooseAggregation(descriptor);
-
     Aggregation aggregation =
         specification.getAggregationFactory().create(descriptor.getValueType());
 

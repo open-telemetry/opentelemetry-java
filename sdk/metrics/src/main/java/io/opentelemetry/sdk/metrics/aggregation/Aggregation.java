@@ -29,7 +29,7 @@ public interface Aggregation {
    *
    * @return the {@code AggregationFactory}.
    */
-  AggregatorFactory getAggregatorFactory();
+  AggregatorFactory<?> getAggregatorFactory();
 
   /**
    * Returns the result of the merge of the given {@link Accumulation}s.

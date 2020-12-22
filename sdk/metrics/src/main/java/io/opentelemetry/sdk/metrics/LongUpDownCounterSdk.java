@@ -22,7 +22,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
 
   @Override
   public void add(long increment, Labels labels) {
-    Aggregator aggregator = acquireHandle(labels);
+    Aggregator<?> aggregator = acquireHandle(labels);
     try {
       aggregator.recordLong(increment);
     } finally {
@@ -41,9 +41,9 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
   }
 
   static final class BoundInstrument implements BoundLongUpDownCounter {
-    private final Aggregator aggregator;
+    private final Aggregator<?> aggregator;
 
-    BoundInstrument(Aggregator aggregator) {
+    BoundInstrument(Aggregator<?> aggregator) {
       this.aggregator = aggregator;
     }
 

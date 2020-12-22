@@ -20,13 +20,12 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link AggregationFactory#lastValue()}. */
 class LastValueAggregationTest {
 
   @Test
   void toMetricData() {
     Aggregation lastValue = AggregationFactory.lastValue().create(InstrumentValueType.LONG);
-    Aggregator aggregator = lastValue.getAggregatorFactory().getAggregator();
+    Aggregator<?> aggregator = lastValue.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =

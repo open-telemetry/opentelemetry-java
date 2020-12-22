@@ -23,7 +23,7 @@ final class CountAggregation implements Aggregation {
   private CountAggregation() {}
 
   @Override
-  public AggregatorFactory getAggregatorFactory() {
+  public AggregatorFactory<?> getAggregatorFactory() {
     return CountAggregator.getFactory();
   }
 

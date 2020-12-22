@@ -21,7 +21,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
 
   @Override
   public void add(double increment, Labels labels) {
-    Aggregator aggregator = acquireHandle(labels);
+    Aggregator<?> aggregator = acquireHandle(labels);
     try {
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
@@ -43,9 +43,9 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
   }
 
   static final class BoundInstrument implements DoubleCounter.BoundDoubleCounter {
-    private final Aggregator aggregator;
+    private final Aggregator<?> aggregator;
 
-    BoundInstrument(Aggregator aggregator) {
+    BoundInstrument(Aggregator<?> aggregator) {
       this.aggregator = aggregator;
     }
 

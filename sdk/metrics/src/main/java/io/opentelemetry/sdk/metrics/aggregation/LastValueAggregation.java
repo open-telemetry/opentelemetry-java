@@ -24,14 +24,14 @@ final class LastValueAggregation implements Aggregation {
   static final LastValueAggregation DOUBLE_INSTANCE =
       new LastValueAggregation(DoubleLastValueAggregator.getFactory());
 
-  private final AggregatorFactory aggregatorFactory;
+  private final AggregatorFactory<?> aggregatorFactory;
 
-  private LastValueAggregation(AggregatorFactory aggregatorFactory) {
+  private LastValueAggregation(AggregatorFactory<?> aggregatorFactory) {
     this.aggregatorFactory = aggregatorFactory;
   }
 
   @Override
-  public AggregatorFactory getAggregatorFactory() {
+  public AggregatorFactory<?> getAggregatorFactory() {
     return aggregatorFactory;
   }
 

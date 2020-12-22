@@ -24,14 +24,14 @@ final class SumAggregation implements Aggregation {
   static final SumAggregation DOUBLE_INSTANCE =
       new SumAggregation(DoubleSumAggregator.getFactory());
 
-  private final AggregatorFactory aggregatorFactory;
+  private final AggregatorFactory<?> aggregatorFactory;
 
-  private SumAggregation(AggregatorFactory aggregatorFactory) {
+  private SumAggregation(AggregatorFactory<?> aggregatorFactory) {
     this.aggregatorFactory = aggregatorFactory;
   }
 
   @Override
-  public AggregatorFactory getAggregatorFactory() {
+  public AggregatorFactory<?> getAggregatorFactory() {
     return aggregatorFactory;
   }
 

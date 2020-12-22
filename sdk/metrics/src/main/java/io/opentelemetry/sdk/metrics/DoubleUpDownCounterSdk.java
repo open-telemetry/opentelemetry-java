@@ -22,7 +22,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
 
   @Override
   public void add(double increment, Labels labels) {
-    Aggregator aggregator = acquireHandle(labels);
+    Aggregator<?> aggregator = acquireHandle(labels);
     try {
       aggregator.recordDouble(increment);
     } finally {
@@ -41,9 +41,9 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
   }
 
   static final class BoundInstrument implements BoundDoubleUpDownCounter {
-    private final Aggregator aggregator;
+    private final Aggregator<?> aggregator;
 
-    BoundInstrument(Aggregator aggregator) {
+    BoundInstrument(Aggregator<?> aggregator) {
       this.aggregator = aggregator;
     }
 

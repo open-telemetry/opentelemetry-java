@@ -14,13 +14,13 @@ import org.junit.jupiter.api.Test;
 class CountAggregatorTest {
   @Test
   void factoryAggregation() {
-    AggregatorFactory factory = CountAggregator.getFactory();
+    AggregatorFactory<LongAccumulation> factory = CountAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(CountAggregator.class);
   }
 
   @Test
   void recordLongOperations() {
-    Aggregator aggregator = CountAggregator.getFactory().getAggregator();
+    Aggregator<LongAccumulation> aggregator = CountAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     aggregator.recordLong(12);
     assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));
@@ -28,7 +28,7 @@ class CountAggregatorTest {
 
   @Test
   void recordDoubleOperations() {
-    Aggregator aggregator = CountAggregator.getFactory().getAggregator();
+    Aggregator<LongAccumulation> aggregator = CountAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.3);
     aggregator.recordDouble(12.3);
     assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));

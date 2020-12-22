@@ -26,7 +26,7 @@ class SumAggregationTest {
   @Test
   void toMetricData() {
     Aggregation sum = AggregationFactory.sum().create(InstrumentValueType.LONG);
-    Aggregator aggregator = sum.getAggregatorFactory().getAggregator();
+    Aggregator<?> aggregator = sum.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =

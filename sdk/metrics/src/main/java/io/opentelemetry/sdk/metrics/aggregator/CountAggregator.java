@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
 
-public final class CountAggregator extends Aggregator {
-  private static final AggregatorFactory AGGREGATOR_FACTORY = CountAggregator::new;
+public final class CountAggregator extends Aggregator<LongAccumulation> {
+  private static final AggregatorFactory<LongAccumulation> AGGREGATOR_FACTORY =
+      CountAggregator::new;
 
   private final LongAdder current;
 
@@ -23,7 +23,7 @@ public final class CountAggregator extends Aggregator {
    *
    * @return an {@link AggregatorFactory} that produces {@link CountAggregator} instances.
    */
-  public static AggregatorFactory getFactory() {
+  public static AggregatorFactory<LongAccumulation> getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
@@ -38,7 +38,7 @@ public final class CountAggregator extends Aggregator {
   }
 
   @Override
-  protected Accumulation doAccumulateThenReset() {
+  protected LongAccumulation doAccumulateThenReset() {
     return LongAccumulation.create(current.sumThenReset());
   }
 }
