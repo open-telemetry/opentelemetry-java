@@ -23,6 +23,13 @@
 - The deprecated `SpanData.Link.getContext()` method has been removed in favor of `SpanData.Link.getSpanContext()`.
 - The `TracerProviderFactorySdk` SPI class has been renamed to `SdkTracerProviderFactory`.
 
+### SDK Extensions
+
+#### Breaking Changes
+
+- The ZPages extension now exposes its SpanProcessor implementation. To use it, you will need to add it to your
+SDK implementation directly, rather than it adding itself to the global SDK instance.
+
 ### Metrics (alpha)
 
 #### SDK:
