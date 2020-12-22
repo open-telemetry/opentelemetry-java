@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.internal.StringUtils;
 import java.util.Arrays;
@@ -20,24 +20,23 @@ class LongUpDownSumObserverTest {
 
   @Test
   void preventNull_Name() {
-    assertThrows(
-        NullPointerException.class, () -> meter.longUpDownSumObserverBuilder(null), "name");
+    assertThatThrownBy(() -> meter.longUpDownSumObserverBuilder(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("name");
   }
 
   @Test
   void preventEmpty_Name() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.longUpDownSumObserverBuilder("").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.longUpDownSumObserverBuilder("").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNonPrintableName() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.longUpDownSumObserverBuilder("\2").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.longUpDownSumObserverBuilder("\2").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
@@ -45,34 +44,31 @@ class LongUpDownSumObserverTest {
     char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.longUpDownSumObserverBuilder(longName).build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.longUpDownSumObserverBuilder(longName).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNull_Description() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longUpDownSumObserverBuilder("metric").setDescription(null).build(),
-        "description");
+    assertThatThrownBy(
+            () -> meter.longUpDownSumObserverBuilder("metric").setDescription(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("description");
   }
 
   @Test
   void preventNull_Unit() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longUpDownSumObserverBuilder("metric").setUnit(null).build(),
-        "unit");
+    assertThatThrownBy(() -> meter.longUpDownSumObserverBuilder("metric").setUnit(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
   }
 
   @Test
   void preventNull_Callback() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longUpDownSumObserverBuilder("metric").setUpdater(null).build(),
-        "callback");
+    assertThatThrownBy(() -> meter.longUpDownSumObserverBuilder("metric").setUpdater(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("callback");
   }
 
   @Test

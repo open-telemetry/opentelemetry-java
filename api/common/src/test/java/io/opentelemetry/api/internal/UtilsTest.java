@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.internal;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,9 +15,8 @@ class UtilsTest {
   @Test
   void checkArgument() {
     Utils.checkArgument(true, TEST_MESSAGE);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> Utils.checkArgument(false, TEST_MESSAGE),
-        TEST_MESSAGE);
+    assertThatThrownBy(() -> Utils.checkArgument(false, TEST_MESSAGE))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(TEST_MESSAGE);
   }
 }

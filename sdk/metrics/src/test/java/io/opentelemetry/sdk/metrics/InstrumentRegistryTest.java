@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -50,13 +50,13 @@ class InstrumentRegistryTest {
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            meterSharedState
-                .getInstrumentRegistry()
-                .register(new TestInstrument(OTHER_INSTRUMENT_DESCRIPTOR)),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () ->
+                meterSharedState
+                    .getInstrumentRegistry()
+                    .register(new TestInstrument(OTHER_INSTRUMENT_DESCRIPTOR)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   @Test
@@ -67,13 +67,13 @@ class InstrumentRegistryTest {
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            meterSharedState
-                .getInstrumentRegistry()
-                .register(new OtherTestInstrument(INSTRUMENT_DESCRIPTOR)),
-        "Instrument with same name and different descriptor already created.");
+    assertThatThrownBy(
+            () ->
+                meterSharedState
+                    .getInstrumentRegistry()
+                    .register(new OtherTestInstrument(INSTRUMENT_DESCRIPTOR)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Instrument with same name and different descriptor already created.");
   }
 
   private static final class TestInstrument extends AbstractInstrument {

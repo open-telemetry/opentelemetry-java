@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
@@ -69,7 +70,11 @@ final class SynchronousInstrumentAccumulator<B extends AbstractBoundInstrument> 
           // acquire but because we requested a specific value only one will succeed.
           boundLabels.remove(entry.getKey(), entry.getValue());
         }
-        instrumentProcessor.batch(entry.getKey(), entry.getValue().getAggregator(), !unmappedEntry);
+        Accumulation accumulation = entry.getValue().getAggregator().accumulateThenReset();
+        if (accumulation == null) {
+          continue;
+        }
+        instrumentProcessor.batch(entry.getKey(), accumulation);
       }
       return instrumentProcessor.completeCollectionCycle();
     } finally {

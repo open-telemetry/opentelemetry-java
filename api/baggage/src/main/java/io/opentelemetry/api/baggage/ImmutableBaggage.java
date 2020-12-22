@@ -112,11 +112,6 @@ class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry> impl
     }
 
     @Override
-    public BaggageBuilder put(String key, String value) {
-      return put(key, value, BaggageEntryMetadata.empty());
-    }
-
-    @Override
     public BaggageBuilder remove(String key) {
       if (key == null) {
         return this;

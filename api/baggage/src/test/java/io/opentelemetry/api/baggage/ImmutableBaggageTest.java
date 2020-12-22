@@ -6,8 +6,8 @@
 package io.opentelemetry.api.baggage;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.context.Context;
@@ -127,7 +127,8 @@ class ImmutableBaggageTest {
 
   @Test
   void setParent_nullContext() {
-    assertThrows(NullPointerException.class, () -> Baggage.builder().setParent(null));
+    assertThatThrownBy(() -> Baggage.builder().setParent(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

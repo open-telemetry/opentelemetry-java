@@ -2,6 +2,37 @@
 
 ## Unreleased:
 
+### API
+
+#### Breaking Changes
+
+- Code that was deprecated in `0.13.0` has been removed from the project.
+    - Metrics interfaces are no longer available as a part of the `opentelemetry-pom` or from the `opentelemetry-api` modules. 
+      To access the alpha metrics APIs, you will need to explicitly add them as a dependency.
+    - `OpenTelemetry.setPropagators()` has been removed.  You should instead create your
+      `OpenTelemetry` implementations with the Propagators preset, via the various builder options. For example, use
+      `DefaultOpenTelemetry.builder().setPropagators(propagators).build()` to configure your no-sdk implementation.
+    - The `OpenTelemetry.builder()` and the `OpenTelemetryBuilder` interface have been removed.
+      The builder functionality is now only present on individual implementations of OpenTelemetry. For instance, the
+      `DefaultOpenTelemetry` class has a builder available.
+      
+### SDK
+
+#### Breaking Changes
+
+- The deprecated `SpanData.Link.getContext()` method has been removed in favor of `SpanData.Link.getSpanContext()`.
+- The `TracerProviderFactorySdk` SPI class has been renamed to `SdkTracerProviderFactory`.
+
+### Metrics (alpha)
+
+#### SDK:
+
+- The `InstrumentSelector.newBuilder()` method has been renamed to `InstrumentSelector.builder()` and
+the methods on the Builder have changed to use the same naming patterns as the rest of the project.
+- The `MeterProviderFactorySdk` class has been renamed to `SdkMeterProviderFactory`.
+- The `SdkMeterProvicer.Builder` has been moved to the top level `SdkMeterProviderBuilder`.
+- The `InstrumentSelector` now requires an instrument type to be provided, and defaults the name regex to `.*`.
+
 -----
 
 ## Version 0.13.0 - 2020-12-17

@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.aggregation.Aggregation;
+import io.opentelemetry.sdk.metrics.aggregation.Aggregations;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;

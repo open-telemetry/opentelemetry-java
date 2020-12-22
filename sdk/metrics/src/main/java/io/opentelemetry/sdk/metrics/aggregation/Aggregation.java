@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics.aggregation;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -35,13 +34,20 @@ public interface Aggregation {
   AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType);
 
   /**
+   * Returns the result of the merge of the given {@link Accumulation}s.
+   *
+   * @return the result of the merge of the given {@link Accumulation}s.
+   */
+  Accumulation merge(Accumulation a1, Accumulation a2);
+
+  /**
    * Returns the {@link MetricData} that this {@code Aggregation} will produce.
    *
    * @param resource the Resource associated with the {@code Instrument}.
    * @param instrumentationLibraryInfo the InstrumentationLibraryInfo associated with the {@code
    *     Instrument}.
    * @param descriptor the InstrumentDescriptor of the {@code Instrument}.
-   * @param aggregatorMap the map of Labels to Aggregators.
+   * @param accumulationMap the map of Labels to Accumulation.
    * @param startEpochNanos the startEpochNanos for the {@code Point}.
    * @param epochNanos the epochNanos for the {@code Point}.
    * @return the {@link MetricData.Type} that this {@code Aggregation} will produce.
@@ -51,7 +57,7 @@ public interface Aggregation {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, Aggregator> aggregatorMap,
+      Map<Labels, Accumulation> accumulationMap,
       long startEpochNanos,
       long epochNanos);
 }
