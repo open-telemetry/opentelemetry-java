@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.aggregator.CountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -18,11 +17,13 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-enum CountAggregation implements Aggregation {
-  INSTANCE;
+final class CountAggregation implements Aggregation {
+  static final CountAggregation INSTANCE = new CountAggregation();
+
+  private CountAggregation() {}
 
   @Override
-  public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
+  public AggregatorFactory getAggregatorFactory() {
     return CountAggregator.getFactory();
   }
 

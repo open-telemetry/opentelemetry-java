@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import javax.annotation.concurrent.Immutable;
+
 /** Factory class for {@link Aggregator}. */
+@Immutable
 public interface AggregatorFactory {
 
   /**

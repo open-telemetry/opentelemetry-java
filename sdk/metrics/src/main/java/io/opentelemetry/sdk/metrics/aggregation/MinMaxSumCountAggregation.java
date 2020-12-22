@@ -11,20 +11,28 @@ import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.concurrent.Immutable;
 
-enum MinMaxSumCountAggregation implements Aggregation {
-  INSTANCE;
+@Immutable
+final class MinMaxSumCountAggregation implements Aggregation {
+  static final MinMaxSumCountAggregation LONG_INSTANCE =
+      new MinMaxSumCountAggregation(LongMinMaxSumCountAggregator.getFactory());
+  static final MinMaxSumCountAggregation DOUBLE_INSTANCE =
+      new MinMaxSumCountAggregation(DoubleMinMaxSumCountAggregator.getFactory());
+
+  private final AggregatorFactory aggregatorFactory;
+
+  private MinMaxSumCountAggregation(AggregatorFactory aggregatorFactory) {
+    this.aggregatorFactory = aggregatorFactory;
+  }
 
   @Override
-  public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
-    return instrumentValueType == InstrumentValueType.LONG
-        ? LongMinMaxSumCountAggregator.getFactory()
-        : DoubleMinMaxSumCountAggregator.getFactory();
+  public AggregatorFactory getAggregatorFactory() {
+    return aggregatorFactory;
   }
 
   @Override

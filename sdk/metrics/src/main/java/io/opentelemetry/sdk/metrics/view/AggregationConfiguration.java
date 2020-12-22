@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.view;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.aggregation.Aggregation;
+import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import javax.annotation.concurrent.Immutable;
 
@@ -23,16 +24,17 @@ public abstract class AggregationConfiguration {
 
   /** Returns a new configuration with the provided options. */
   public static AggregationConfiguration create(
-      Aggregation aggregation, MetricData.AggregationTemporality aggregationTemporality) {
-    return new AutoValue_AggregationConfiguration(aggregation, aggregationTemporality);
+      AggregationFactory aggregationFactory,
+      MetricData.AggregationTemporality aggregationTemporality) {
+    return new AutoValue_AggregationConfiguration(aggregationFactory, aggregationTemporality);
   }
 
   /** Returns the {@link Aggregation} that should be used for this View. */
-  public abstract Aggregation aggregation();
+  public abstract AggregationFactory getAggregationFactory();
 
   /**
    * Returns the {@link MetricData.AggregationTemporality} that should be used for this View (delta
    * vs. cumulative).
    */
-  public abstract MetricData.AggregationTemporality temporality();
+  public abstract MetricData.AggregationTemporality getTemporality();
 }
