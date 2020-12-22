@@ -42,7 +42,6 @@ import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zipkin2.Call;
 import zipkin2.Callback;
@@ -409,10 +408,8 @@ class ZipkinSpanExporterTest {
     String endpoint = "http://127.0.0.1:9090";
     options.put("otel.exporter.zipkin.service.name", serviceName);
     options.put("otel.exporter.zipkin.endpoint", endpoint);
-    ZipkinSpanExporterBuilder config = ZipkinSpanExporter.builder();
-    ZipkinSpanExporterBuilder spy = Mockito.spy(config);
-    spy.readProperties(options);
-    Mockito.verify(spy).setServiceName(serviceName);
-    Mockito.verify(spy).setEndpoint(endpoint);
+    ZipkinSpanExporterBuilder config = ZipkinSpanExporter.builder().readProperties(options);
+    assertThat(config).extracting("serviceName").isEqualTo(serviceName);
+    assertThat(config).extracting("endpoint").isEqualTo(endpoint);
   }
 }
