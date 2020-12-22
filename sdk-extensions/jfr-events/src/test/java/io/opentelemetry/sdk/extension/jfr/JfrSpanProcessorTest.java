@@ -34,7 +34,7 @@ class JfrSpanProcessorTest {
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder().addSpanProcessor(new JfrSpanProcessor()).build())
-            .build());
+            .buildAndRegisterGlobal());
   }
 
   /** Simple test to validate JFR events for Span and Scope. */

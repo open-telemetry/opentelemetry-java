@@ -60,7 +60,7 @@ public final class OpenTelemetryRule extends ExternalResource {
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .setTracerProvider(tracerProvider)
-            .build();
+            .buildWithoutRegisteringGlobal();
 
     return new OpenTelemetryRule(openTelemetry, spanExporter);
   }

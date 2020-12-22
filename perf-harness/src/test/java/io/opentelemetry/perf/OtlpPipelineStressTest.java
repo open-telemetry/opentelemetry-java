@@ -272,6 +272,6 @@ public class OtlpPipelineStressTest {
     GlobalOpenTelemetry.set(
         OpenTelemetrySdk.builder()
             .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
-            .build());
+            .buildAndRegisterGlobal());
   }
 }

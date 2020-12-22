@@ -13,22 +13,20 @@ import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -38,35 +36,33 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class OpenTelemetrySdkTest {
 
   @Mock private SdkTracerProvider tracerProvider;
-  @Mock private SdkMeterProvider meterProvider;
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
-  @Mock private SpanProcessor spanProcessor;
+
+  @BeforeEach
+  void setUp() {
+    // Have all tests start with an API-only OpenTelemetry in global to check registration logic.
+    GlobalOpenTelemetry.set(DefaultOpenTelemetry.builder().build());
+  }
 
   @Test
-  void testGetGlobal() {
-    assertThat(OpenTelemetrySdk.get()).isSameAs(GlobalOpenTelemetry.get());
+  void testRegisterGlobal() {
+    OpenTelemetrySdk sdk = OpenTelemetrySdk.builder().buildAndRegisterGlobal();
+    assertThat(sdk).isSameAs(GlobalOpenTelemetry.get());
+    assertThat(OpenTelemetrySdk.get()).isSameAs(sdk);
+    assertThat(((SdkTracerProvider) OpenTelemetrySdk.getGlobalTracerManagement()).get(""))
+        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""));
+    assertThat(OpenTelemetrySdk.getGlobalTracerManagement()).isNotNull();
   }
 
   @Test
   void testGetTracerManagementWhenNotTracerSdk() {
-    OpenTelemetry previous = GlobalOpenTelemetry.get();
+    OpenTelemetrySdk.builder().buildAndRegisterGlobal();
     assertThatCode(OpenTelemetrySdk::getGlobalTracerManagement).doesNotThrowAnyException();
-    try {
-      GlobalOpenTelemetry.set(
-          DefaultOpenTelemetry.builder().setTracerProvider(tracerProvider).build());
-      assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement)
-          .isInstanceOf(IllegalStateException.class);
-    } finally {
-      GlobalOpenTelemetry.set(previous);
-    }
-  }
-
-  @Test
-  void testGlobalDefault() {
-    assertThat(((SdkTracerProvider) OpenTelemetrySdk.getGlobalTracerManagement()).get(""))
-        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""));
-    assertThat(OpenTelemetrySdk.getGlobalTracerManagement()).isNotNull();
+    GlobalOpenTelemetry.set(
+        DefaultOpenTelemetry.builder().setTracerProvider(tracerProvider).build());
+    assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement)
+        .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -79,7 +75,7 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testBuilderDefaults() {
-    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().buildWithoutRegisteringGlobal();
     assertThat(openTelemetry.getTracerProvider())
         .isInstanceOfSatisfying(
             ObfuscatedTracerProvider.class,
@@ -94,7 +90,7 @@ class OpenTelemetrySdkTest {
         OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
             .setPropagators(propagators)
-            .build();
+            .buildWithoutRegisteringGlobal();
     assertThat(((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate())
         .isEqualTo(tracerProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
@@ -114,7 +110,7 @@ class OpenTelemetrySdkTest {
                     .setIdGenerator(idGenerator)
                     .setTraceConfig(traceConfig)
                     .build())
-            .build();
+            .buildWithoutRegisteringGlobal();
     TracerProvider unobfuscatedTracerProvider =
         ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
 
@@ -132,7 +128,9 @@ class OpenTelemetrySdkTest {
   @Test
   void testTracerProviderAccess() {
     OpenTelemetrySdk openTelemetry =
-        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .buildWithoutRegisteringGlobal();
     assertThat(openTelemetry.getTracerProvider())
         .asInstanceOf(type(ObfuscatedTracerProvider.class))
         .isNotNull()
@@ -163,7 +161,7 @@ class OpenTelemetrySdkTest {
                     .setTraceConfig(newConfig)
                     .build());
 
-    sdkBuilder.build();
+    sdkBuilder.buildWithoutRegisteringGlobal();
   }
 
   // This is just a demonstration of the bare minimal required configuration in order to get useful
@@ -177,7 +175,7 @@ class OpenTelemetrySdkTest {
                 .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
-        .build();
+        .buildWithoutRegisteringGlobal();
   }
 
   // This is just a demonstration of two small but not trivial configurations.
@@ -192,7 +190,7 @@ class OpenTelemetrySdkTest {
                     TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
-        .build();
+        .buildWithoutRegisteringGlobal();
 
     OpenTelemetrySdk.builder()
         .setTracerProvider(
@@ -203,6 +201,6 @@ class OpenTelemetrySdkTest {
                 .setIdGenerator(mock(IdGenerator.class))
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
-        .build();
+        .buildWithoutRegisteringGlobal();
   }
 }

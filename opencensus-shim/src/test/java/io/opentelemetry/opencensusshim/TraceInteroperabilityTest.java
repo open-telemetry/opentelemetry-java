@@ -71,7 +71,7 @@ class TraceInteroperabilityTest {
     openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
-            .build();
+            .buildAndRegisterGlobal();
     GlobalOpenTelemetry.set(openTelemetry);
   }
 
