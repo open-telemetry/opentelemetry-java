@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
@@ -39,18 +39,17 @@ class LongUpDownCounterSdkTest {
 
   @Test
   void add_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.longUpDownCounterBuilder("testCounter").build().add(1, null),
-        "labels");
+    assertThatThrownBy(() -> testSdk.longUpDownCounterBuilder("testCounter").build().add(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.longUpDownCounterBuilder("testUpDownCounter").build().bind(null),
-        "labels");
+    assertThatThrownBy(
+            () -> testSdk.longUpDownCounterBuilder("testUpDownCounter").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -135,38 +134,6 @@ class LongUpDownCounterSdkTest {
           .containsExactly(
               LongPoint.create(startTime, secondCollect, Labels.of("K", "V"), 777),
               LongPoint.create(startTime, secondCollect, Labels.empty(), 44));
-    } finally {
-      boundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet() {
-    LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
-    BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-    } finally {
-      boundCounter.unbind();
-      duplicateBoundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
-    try {
-      longUpDownCounter.collectAll();
-      BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-      } finally {
-        duplicateBoundCounter.unbind();
-      }
     } finally {
       boundCounter.unbind();
     }

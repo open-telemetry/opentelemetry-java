@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
@@ -37,10 +37,9 @@ class BatchRecorderSdkTest {
 
   @Test
   void batchRecorder_badLabelSet() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> testSdk.newBatchRecorder("key").record(),
-        "key/value");
+    assertThatThrownBy(() -> testSdk.newBatchRecorder("key").record())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("key/value");
   }
 
   @Test

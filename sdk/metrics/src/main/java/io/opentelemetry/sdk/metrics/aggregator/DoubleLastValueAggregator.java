@@ -5,9 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
@@ -19,39 +17,41 @@ import javax.annotation.Nullable;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-public final class DoubleLastValueAggregator extends AbstractAggregator {
-
+public final class DoubleLastValueAggregator extends Aggregator<DoubleAccumulation> {
   @Nullable private static final Double DEFAULT_VALUE = null;
-  private static final AggregatorFactory AGGREGATOR_FACTORY = DoubleLastValueAggregator::new;
+  private static final AggregatorFactory<DoubleAccumulation> AGGREGATOR_FACTORY =
+      new AggregatorFactory<DoubleAccumulation>() {
+        @Override
+        public Aggregator<DoubleAccumulation> getAggregator() {
+          return new DoubleLastValueAggregator();
+        }
+
+        @Override
+        public DoubleAccumulation accumulateDouble(double value) {
+          return DoubleAccumulation.create(value);
+        }
+      };
 
   private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
+
+  private DoubleLastValueAggregator() {}
 
   /**
    * Returns an {@link AggregatorFactory} that produces {@link DoubleLastValueAggregator} instances.
    *
    * @return an {@link AggregatorFactory} that produces {@link DoubleLastValueAggregator} instances.
    */
-  public static AggregatorFactory getFactory() {
+  public static AggregatorFactory<DoubleAccumulation> getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
   @Override
-  void doMergeAndReset(Aggregator aggregator) {
-    DoubleLastValueAggregator other = (DoubleLastValueAggregator) aggregator;
-    other.current.set(this.current.getAndSet(DEFAULT_VALUE));
+  protected DoubleAccumulation doAccumulateThenReset() {
+    return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
   }
 
   @Override
-  @Nullable
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
-    @Nullable Double currentValue = current.get();
-    return currentValue == null
-        ? null
-        : DoublePoint.create(startEpochNanos, epochNanos, labels, currentValue);
-  }
-
-  @Override
-  public void doRecordDouble(double value) {
+  protected void doRecordDouble(double value) {
     current.set(value);
   }
 }

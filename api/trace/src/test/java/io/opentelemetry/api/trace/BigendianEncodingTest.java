@@ -7,12 +7,11 @@ package io.opentelemetry.api.trace;
 
 import static java.nio.CharBuffer.wrap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.CharBuffer;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link BigendianEncoding}. */
 class BigendianEncodingTest {
 
   private static final long FIRST_LONG = 0x1213141516171819L;
@@ -56,10 +55,10 @@ class BigendianEncodingTest {
   @Test
   void longToByteArray_Fails() {
     // These contain bytes not in the decoding.
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> BigendianEncoding.longToByteArray(123, new byte[BigendianEncoding.LONG_BYTES], 1),
-        "array too small");
+    assertThatThrownBy(
+            () -> BigendianEncoding.longToByteArray(123, new byte[BigendianEncoding.LONG_BYTES], 1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("array too small");
   }
 
   @Test
@@ -81,10 +80,10 @@ class BigendianEncodingTest {
   @Test
   void longFromByteArray_ArrayToSmall() {
     // These contain bytes not in the decoding.
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> BigendianEncoding.longFromByteArray(new byte[BigendianEncoding.LONG_BYTES], 1),
-        "array too small");
+    assertThatThrownBy(
+            () -> BigendianEncoding.longFromByteArray(new byte[BigendianEncoding.LONG_BYTES], 1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("array too small");
   }
 
   @Test
@@ -127,21 +126,20 @@ class BigendianEncodingTest {
   @Test
   void longFromBase16String_InputTooSmall() {
     // Valid base16 strings always have an even length.
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            BigendianEncoding.longFromBase16String(
-                wrap(new char[BigendianEncoding.LONG_BASE16]), 1),
-        "chars too small");
+    assertThatThrownBy(
+            () ->
+                BigendianEncoding.longFromBase16String(
+                    wrap(new char[BigendianEncoding.LONG_BASE16]), 1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("chars too small");
   }
 
   @Test
   void longFromBase16String_UnrecognizedCharacters() {
     // These contain bytes not in the decoding.
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> BigendianEncoding.longFromBase16String("0123456789gbcdef", 0),
-        "invalid character g");
+    assertThatThrownBy(() -> BigendianEncoding.longFromBase16String("0123456789gbcdef", 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid character g");
   }
 
   @Test
@@ -149,6 +147,7 @@ class BigendianEncodingTest {
     assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890")).isTrue();
     assertThat(BigendianEncoding.isValidBase16String("abcdefg1234567890")).isFalse();
     assertThat(BigendianEncoding.isValidBase16String("<abcdef1234567890")).isFalse();
+    assertThat(BigendianEncoding.isValidBase16String("(abcdef1234567890")).isFalse();
     assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890B")).isFalse();
   }
 
@@ -176,6 +175,30 @@ class BigendianEncodingTest {
     toFromBase16StringValidate(0);
     toFromBase16StringValidate(1);
     toFromBase16StringValidate(0x7FFFFFFFFFFFFFFFL);
+  }
+
+  @Test
+  void invalidOffset() {
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("fff", 2))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("chars too small");
+  }
+
+  @Test
+  @SuppressWarnings("checkstyle:AvoidEscapedUnicodeCharacters")
+  void invalidBytes() {
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("gf", 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid character g");
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("\u0129f", 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid character \u0129");
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("fg", 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid character g");
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("f\u0129", 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid character \u0129");
   }
 
   private static void toFromByteArrayValidate(long value) {

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
@@ -21,23 +21,23 @@ class DoubleValueRecorderTest {
 
   @Test
   void preventNull_Name() {
-    assertThrows(NullPointerException.class, () -> meter.doubleValueRecorderBuilder(null), "name");
+    assertThatThrownBy(() -> meter.doubleValueRecorderBuilder(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("name");
   }
 
   @Test
   void preventEmpty_Name() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.doubleValueRecorderBuilder("").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.doubleValueRecorderBuilder("").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNonPrintableName() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.doubleValueRecorderBuilder("\2").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.doubleValueRecorderBuilder("\2").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
@@ -45,34 +45,31 @@ class DoubleValueRecorderTest {
     char[] chars = new char[256];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.doubleValueRecorderBuilder(longName).build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.doubleValueRecorderBuilder(longName).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNull_Description() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleValueRecorderBuilder("metric").setDescription(null).build(),
-        "description");
+    assertThatThrownBy(
+            () -> meter.doubleValueRecorderBuilder("metric").setDescription(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("description");
   }
 
   @Test
   void preventNull_Unit() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleValueRecorderBuilder("metric").setUnit(null).build(),
-        "unit");
+    assertThatThrownBy(() -> meter.doubleValueRecorderBuilder("metric").setUnit(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
   }
 
   @Test
   void record_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleValueRecorderBuilder("metric").build().record(1.0, null),
-        "labels");
+    assertThatThrownBy(() -> meter.doubleValueRecorderBuilder("metric").build().record(1.0, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -87,10 +84,9 @@ class DoubleValueRecorderTest {
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleValueRecorderBuilder("metric").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> meter.doubleValueRecorderBuilder("metric").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test

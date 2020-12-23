@@ -33,6 +33,7 @@ class TraceStateTest {
     assertThat(secondTraceState.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
     assertThat(multiValueTraceState.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
     assertThat(multiValueTraceState.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
+    assertThat(firstTraceState.get("dog")).isNull();
   }
 
   @Test
@@ -78,6 +79,11 @@ class TraceStateTest {
   @Test
   void disallowsNullKey() {
     assertThat(EMPTY.toBuilder().set(null, FIRST_VALUE).build()).isEqualTo(EMPTY);
+  }
+
+  @Test
+  void disallowsEmptyKey() {
+    assertThat(EMPTY.toBuilder().set("", FIRST_VALUE).build()).isEqualTo(EMPTY);
   }
 
   @Test
@@ -204,6 +210,15 @@ class TraceStateTest {
     String allowedValue = stringBuilder.toString();
     assertThat(EMPTY.toBuilder().set(FIRST_KEY, allowedValue).build().get(FIRST_KEY))
         .isEqualTo(allowedValue);
+  }
+
+  @Test
+  @SuppressWarnings("checkstyle:AvoidEscapedUnicodeCharacters")
+  void notAllowedValueCharacters() {
+    assertThat(TraceState.builder().set("foo", "bar,").build()).isEqualTo(EMPTY);
+    assertThat(TraceState.builder().set("foo", "bar=").build()).isEqualTo(EMPTY);
+    assertThat(TraceState.builder().set("foo", "bar\u0019").build()).isEqualTo(EMPTY);
+    assertThat(TraceState.builder().set("foo", "bar\u007F").build()).isEqualTo(EMPTY);
   }
 
   @Test

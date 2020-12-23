@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics.aggregation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCountAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -20,17 +20,17 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link Aggregations#sum()}. */
-class SumAggregationTest {
+class MinMaxSumCountAggregationTest {
 
   @Test
   void toMetricData() {
-    Aggregation sum = Aggregations.sum();
-    Aggregator aggregator = sum.getAggregatorFactory(InstrumentValueType.LONG).getAggregator();
+    Aggregation minMaxSumCount =
+        AggregationFactory.minMaxSumCount().create(InstrumentValueType.LONG);
+    Aggregator<?> aggregator = minMaxSumCount.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =
-        sum.toMetricData(
+        minMaxSumCount.toMetricData(
             Resource.getDefault(),
             InstrumentationLibraryInfo.getEmpty(),
             InstrumentDescriptor.create(
@@ -39,20 +39,19 @@ class SumAggregationTest {
                 "unit",
                 InstrumentType.VALUE_RECORDER,
                 InstrumentValueType.LONG),
-            Collections.singletonMap(Labels.empty(), aggregator),
+            Collections.singletonMap(Labels.empty(), aggregator.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_SUM);
-    assertThat(metricData.getLongSumData().getPoints()).hasSize(1);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.SUMMARY);
   }
 
   @Test
   void getAggregatorFactory() {
-    Aggregation sum = Aggregations.sum();
-    assertThat(sum.getAggregatorFactory(InstrumentValueType.LONG))
-        .isInstanceOf(LongSumAggregator.getFactory().getClass());
-    assertThat(sum.getAggregatorFactory(InstrumentValueType.DOUBLE))
-        .isInstanceOf(DoubleSumAggregator.getFactory().getClass());
+    AggregationFactory minMaxSumCount = AggregationFactory.minMaxSumCount();
+    assertThat(minMaxSumCount.create(InstrumentValueType.LONG).getAggregatorFactory())
+        .isInstanceOf(LongMinMaxSumCountAggregator.getFactory().getClass());
+    assertThat(minMaxSumCount.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
+        .isInstanceOf(DoubleMinMaxSumCountAggregator.getFactory().getClass());
   }
 }

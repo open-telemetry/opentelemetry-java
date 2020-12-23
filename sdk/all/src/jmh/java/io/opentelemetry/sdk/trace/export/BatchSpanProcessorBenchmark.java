@@ -6,11 +6,11 @@
 package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collection;
 import java.util.List;
@@ -79,7 +79,7 @@ public class BatchSpanProcessorBenchmark {
     processor = BatchSpanProcessor.builder(exporter).build();
 
     ImmutableList.Builder<Span> spans = ImmutableList.builderWithExpectedSize(spanCount);
-    Tracer tracer = GlobalOpenTelemetry.getTracerProvider().get("benchmarkTracer");
+    Tracer tracer = SdkTracerProvider.builder().build().get("benchmarkTracer");
     for (int i = 0; i < spanCount; i++) {
       spans.add(tracer.spanBuilder("span").startSpan());
     }

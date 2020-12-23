@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics.aggregation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -20,39 +20,39 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link Aggregations#sum()}. */
-class LastValueAggregationTest {
+/** Unit tests for {@link AggregationFactory#sum()}. */
+class SumAggregationTest {
 
   @Test
   void toMetricData() {
-    Aggregation lastValue = Aggregations.lastValue();
-    Aggregator aggregator =
-        lastValue.getAggregatorFactory(InstrumentValueType.LONG).getAggregator();
+    Aggregation sum = AggregationFactory.sum().create(InstrumentValueType.LONG);
+    Aggregator<?> aggregator = sum.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =
-        lastValue.toMetricData(
+        sum.toMetricData(
             Resource.getDefault(),
             InstrumentationLibraryInfo.getEmpty(),
             InstrumentDescriptor.create(
                 "name",
                 "description",
                 "unit",
-                InstrumentType.VALUE_OBSERVER,
+                InstrumentType.VALUE_RECORDER,
                 InstrumentValueType.LONG),
-            Collections.singletonMap(Labels.empty(), aggregator),
+            Collections.singletonMap(Labels.empty(), aggregator.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_GAUGE);
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_SUM);
+    assertThat(metricData.getLongSumData().getPoints()).hasSize(1);
   }
 
   @Test
   void getAggregatorFactory() {
-    Aggregation lastValue = Aggregations.lastValue();
-    assertThat(lastValue.getAggregatorFactory(InstrumentValueType.LONG))
-        .isInstanceOf(LongLastValueAggregator.getFactory().getClass());
-    assertThat(lastValue.getAggregatorFactory(InstrumentValueType.DOUBLE))
-        .isInstanceOf(DoubleLastValueAggregator.getFactory().getClass());
+    AggregationFactory sum = AggregationFactory.sum();
+    assertThat(sum.create(InstrumentValueType.LONG).getAggregatorFactory())
+        .isInstanceOf(LongSumAggregator.getFactory().getClass());
+    assertThat(sum.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
+        .isInstanceOf(DoubleSumAggregator.getFactory().getClass());
   }
 }

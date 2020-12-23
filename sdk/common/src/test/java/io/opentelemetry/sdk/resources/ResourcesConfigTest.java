@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.resources;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Test;
@@ -21,9 +21,10 @@ class ResourcesConfigTest {
 
   @Test
   void updateResourcesConfig_NullDisabledResourceProviders() {
-    assertThrows(
-        NullPointerException.class,
-        () -> ResourcesConfig.getDefault().toBuilder().setDisabledResourceProviders(null).build());
+    assertThatThrownBy(
+            () ->
+                ResourcesConfig.getDefault().toBuilder().setDisabledResourceProviders(null).build())
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

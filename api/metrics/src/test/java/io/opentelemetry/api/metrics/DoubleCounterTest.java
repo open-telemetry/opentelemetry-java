@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.StringUtils;
@@ -22,23 +22,23 @@ class DoubleCounterTest {
 
   @Test
   void preventNull_Name() {
-    assertThrows(NullPointerException.class, () -> meter.doubleCounterBuilder(null), "name");
+    assertThatThrownBy(() -> meter.doubleCounterBuilder(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("name");
   }
 
   @Test
   void preventEmpty_Name() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.doubleCounterBuilder("").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.doubleCounterBuilder("").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNonPrintableName() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.doubleCounterBuilder("\2").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.doubleCounterBuilder("\2").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
@@ -46,34 +46,30 @@ class DoubleCounterTest {
     char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.doubleCounterBuilder(longName).build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.doubleCounterBuilder(longName).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNull_Description() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleCounterBuilder("metric").setDescription(null).build(),
-        "description");
+    assertThatThrownBy(() -> meter.doubleCounterBuilder("metric").setDescription(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("description");
   }
 
   @Test
   void preventNull_Unit() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleCounterBuilder("metric").setUnit(null).build(),
-        "unit");
+    assertThatThrownBy(() -> meter.doubleCounterBuilder("metric").setUnit(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
   }
 
   @Test
   void add_preventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleCounterBuilder("metric").build().add(1.0, null),
-        "labels");
+    assertThatThrownBy(() -> meter.doubleCounterBuilder("metric").build().add(1.0, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -88,18 +84,16 @@ class DoubleCounterTest {
   void add_PreventNegativeValue() {
     DoubleCounter doubleCounter =
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> doubleCounter.add(-1.0, Labels.empty()),
-        "Counters can only increase");
+    assertThatThrownBy(() -> doubleCounter.add(-1.0, Labels.empty()))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Counters can only increase");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleCounterBuilder("metric").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> meter.doubleCounterBuilder("metric").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -117,8 +111,9 @@ class DoubleCounterTest {
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     BoundDoubleCounter bound = doubleCounter.bind(Labels.empty());
     try {
-      assertThrows(
-          IllegalArgumentException.class, () -> bound.add(-1.0), "Counters can only increase");
+      assertThatThrownBy(() -> bound.add(-1.0))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("Counters can only increase");
     } finally {
       bound.unbind();
     }

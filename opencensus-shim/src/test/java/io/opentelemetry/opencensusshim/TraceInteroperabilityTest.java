@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,6 +27,7 @@ import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -34,6 +37,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -45,7 +49,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -56,20 +59,32 @@ class TraceInteroperabilityTest {
 
   private static final String NULL_SPAN_ID = "0000000000000000";
 
+  // Initialize OpenTelemetry statically because OpenCensus is.
+  private static final SpanExporter spanExporter;
+  private static final OpenTelemetry openTelemetry;
+
+  static {
+    spanExporter = spy(SpanExporter.class);
+    when(spanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
+
+    SpanProcessor spanProcessor = SimpleSpanProcessor.create(spanExporter);
+    openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
+            .build();
+    GlobalOpenTelemetry.set(openTelemetry);
+  }
+
   @Captor private ArgumentCaptor<Collection<SpanData>> spanDataCaptor;
 
-  @Spy private SpanExporter spanExporter;
-
   @BeforeEach
-  public void init() {
-    when(spanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
-    SpanProcessor spanProcessor = SimpleSpanProcessor.create(spanExporter);
-    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
+  void resetMocks() {
+    reset(spanExporter);
   }
 
   @Test
   void testParentChildRelationshipsAreExportedCorrectly() {
-    Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.test.scoped.span.1");
+    Tracer tracer = openTelemetry.getTracer("io.opentelemetry.test.scoped.span.1");
     Span span = tracer.spanBuilder("OpenTelemetrySpan").startSpan();
     try (Scope scope = Context.current().with(span).makeCurrent()) {
       span.addEvent("OpenTelemetry: Event 1");
@@ -357,7 +372,7 @@ class TraceInteroperabilityTest {
   }
 
   private static void createOpenTelemetryScopedSpan() {
-    Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.test.scoped.span.2");
+    Tracer tracer = openTelemetry.getTracer("io.opentelemetry.test.scoped.span.2");
     Span span = tracer.spanBuilder("OpenTelemetrySpan2").startSpan();
     try (Scope scope = Context.current().with(span).makeCurrent()) {
       span.addEvent("OpenTelemetry2: Event 1");

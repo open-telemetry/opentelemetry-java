@@ -5,6 +5,18 @@
 
 package io.opentelemetry.api.common;
 
+import static io.opentelemetry.api.common.ArrayBackedAttributesBuilder.toList;
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
+import java.util.Arrays;
+
 /** A builder of {@link Attributes} supporting an arbitrary number of key-value pairs. */
 public interface AttributesBuilder {
   /** Create the {@link Attributes} from this. */
@@ -24,7 +36,9 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  AttributesBuilder put(String key, String value);
+  default AttributesBuilder put(String key, String value) {
+    return put(stringKey(key), value);
+  }
 
   /**
    * Puts a long attribute into this.
@@ -34,7 +48,9 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  AttributesBuilder put(String key, long value);
+  default AttributesBuilder put(String key, long value) {
+    return put(longKey(key), value);
+  }
 
   /**
    * Puts a double attribute into this.
@@ -44,7 +60,9 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  AttributesBuilder put(String key, double value);
+  default AttributesBuilder put(String key, double value) {
+    return put(doubleKey(key), value);
+  }
 
   /**
    * Puts a boolean attribute into this.
@@ -54,7 +72,9 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  AttributesBuilder put(String key, boolean value);
+  default AttributesBuilder put(String key, boolean value) {
+    return put(booleanKey(key), value);
+  }
 
   /**
    * Puts a String array attribute into this.
@@ -64,7 +84,9 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  AttributesBuilder put(String key, String... value);
+  default AttributesBuilder put(String key, String... value) {
+    return put(stringArrayKey(key), value == null ? null : Arrays.asList(value));
+  }
 
   /**
    * Puts a Long array attribute into this.
@@ -74,7 +96,9 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  AttributesBuilder put(String key, long... value);
+  default AttributesBuilder put(String key, long... value) {
+    return put(longArrayKey(key), toList(value));
+  }
 
   /**
    * Puts a Double array attribute into this.
@@ -84,7 +108,9 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  AttributesBuilder put(String key, double... value);
+  default AttributesBuilder put(String key, double... value) {
+    return put(doubleArrayKey(key), toList(value));
+  }
 
   /**
    * Puts a Boolean array attribute into this.
@@ -94,7 +120,9 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  AttributesBuilder put(String key, boolean... value);
+  default AttributesBuilder put(String key, boolean... value) {
+    return put(booleanArrayKey(key), toList(value));
+  }
 
   /**
    * Puts all the provided attributes into this Builder.

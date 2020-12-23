@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.StringUtils;
@@ -22,23 +22,23 @@ class DoubleUpDownCounterTest {
 
   @Test
   void preventNull_Name() {
-    assertThrows(NullPointerException.class, () -> meter.doubleUpDownCounterBuilder(null), "name");
+    assertThatThrownBy(() -> meter.doubleUpDownCounterBuilder(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("name");
   }
 
   @Test
   void preventEmpty_Name() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.doubleUpDownCounterBuilder("").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.doubleUpDownCounterBuilder("").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNonPrintableName() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.doubleUpDownCounterBuilder("\2").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.doubleUpDownCounterBuilder("\2").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
@@ -46,34 +46,31 @@ class DoubleUpDownCounterTest {
     char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.doubleUpDownCounterBuilder(longName).build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.doubleUpDownCounterBuilder(longName).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNull_Description() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleUpDownCounterBuilder("metric").setDescription(null).build(),
-        "description");
+    assertThatThrownBy(
+            () -> meter.doubleUpDownCounterBuilder("metric").setDescription(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("description");
   }
 
   @Test
   void preventNull_Unit() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleUpDownCounterBuilder("metric").setUnit(null).build(),
-        "unit");
+    assertThatThrownBy(() -> meter.doubleUpDownCounterBuilder("metric").setUnit(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
   }
 
   @Test
   void add_preventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleUpDownCounterBuilder("metric").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> meter.doubleUpDownCounterBuilder("metric").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -88,10 +85,9 @@ class DoubleUpDownCounterTest {
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.doubleUpDownCounterBuilder("metric").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> meter.doubleUpDownCounterBuilder("metric").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test

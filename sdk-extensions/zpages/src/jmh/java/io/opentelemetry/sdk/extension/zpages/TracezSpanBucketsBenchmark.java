@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -32,7 +32,7 @@ public class TracezSpanBucketsBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     bucket = new TracezSpanBuckets();
-    Tracer tracer = GlobalOpenTelemetry.getTracer("TracezZPageBenchmark");
+    Tracer tracer = SdkTracerProvider.builder().build().get("TracezZPageBenchmark");
     Span span = tracer.spanBuilder(spanName).startSpan();
     span.end();
     readableSpan = (ReadableSpan) span;

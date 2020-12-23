@@ -6,7 +6,7 @@
 package io.opentelemetry.extension.trace.propagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,8 @@ class StringUtilsTest {
 
   @Test
   void padLeft_throws_for_null_value() {
-    assertThrows(NullPointerException.class, () -> StringUtils.padLeft(null, 10));
+    assertThatThrownBy(() -> StringUtils.padLeft(null, 10))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

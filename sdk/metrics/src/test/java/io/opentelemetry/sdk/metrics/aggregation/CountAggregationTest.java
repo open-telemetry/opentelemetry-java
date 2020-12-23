@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.view;
+package io.opentelemetry.sdk.metrics.aggregation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.CountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -19,12 +19,11 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link Aggregations#count()}. */
 class CountAggregationTest {
   @Test
   void toMetricData() {
-    Aggregation count = Aggregations.count();
-    Aggregator aggregator = count.getAggregatorFactory(InstrumentValueType.LONG).getAggregator();
+    Aggregation count = AggregationFactory.count().create(InstrumentValueType.LONG);
+    Aggregator<?> aggregator = count.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =
@@ -37,7 +36,7 @@ class CountAggregationTest {
                 "unit",
                 InstrumentType.VALUE_RECORDER,
                 InstrumentValueType.LONG),
-            Collections.singletonMap(Labels.empty(), aggregator),
+            Collections.singletonMap(Labels.empty(), aggregator.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();
@@ -47,11 +46,10 @@ class CountAggregationTest {
 
   @Test
   void getAggregatorFactory() {
-    // TODO: Change this to CountAggregator when available.
-    Aggregation count = Aggregations.count();
-    assertThat(count.getAggregatorFactory(InstrumentValueType.LONG))
-        .isInstanceOf(NoopAggregator.getFactory().getClass());
-    assertThat(count.getAggregatorFactory(InstrumentValueType.DOUBLE))
-        .isInstanceOf(NoopAggregator.getFactory().getClass());
+    AggregationFactory count = AggregationFactory.count();
+    assertThat(count.create(InstrumentValueType.LONG).getAggregatorFactory())
+        .isInstanceOf(CountAggregator.getFactory().getClass());
+    assertThat(count.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
+        .isInstanceOf(CountAggregator.getFactory().getClass());
   }
 }
