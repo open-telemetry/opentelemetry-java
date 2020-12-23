@@ -142,7 +142,6 @@ public final class GlobalOpenTelemetry {
                 + "your application. Make sure to initialize OpenTelemetrySdk, using "
                 + "OpenTelemetrySdk.builder(), as early as possible in your application.",
             new Throwable());
-        throw new IllegalStateException("No SDK yet!");
       }
     }
 
