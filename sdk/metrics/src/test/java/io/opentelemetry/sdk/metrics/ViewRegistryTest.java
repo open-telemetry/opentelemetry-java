@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.aggregation.Aggregations;
+import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -34,7 +34,7 @@ class ViewRegistryTest {
 
     AggregationConfiguration specification =
         AggregationConfiguration.create(
-            Aggregations.count(), MetricData.AggregationTemporality.CUMULATIVE);
+            AggregationFactory.count(), MetricData.AggregationTemporality.CUMULATIVE);
     viewRegistry.registerView(
         InstrumentSelector.builder()
             .setInstrumentType(InstrumentType.COUNTER)
@@ -44,7 +44,10 @@ class ViewRegistryTest {
 
     InstrumentProcessor expectedInstrumentProcessor =
         InstrumentProcessor.getCumulativeAllLabels(
-            descriptor, providerSharedState, meterSharedState, Aggregations.count());
+            descriptor,
+            providerSharedState,
+            meterSharedState,
+            AggregationFactory.count().create(descriptor.getValueType()));
 
     InstrumentProcessor result =
         viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
@@ -69,7 +72,7 @@ class ViewRegistryTest {
 
     AggregationConfiguration specification =
         AggregationConfiguration.create(
-            Aggregations.count(), MetricData.AggregationTemporality.DELTA);
+            AggregationFactory.count(), MetricData.AggregationTemporality.DELTA);
     viewRegistry.registerView(
         InstrumentSelector.builder()
             .setInstrumentType(InstrumentType.COUNTER)
@@ -79,7 +82,10 @@ class ViewRegistryTest {
 
     InstrumentProcessor expectedInstrumentProcessor =
         InstrumentProcessor.getDeltaAllLabels(
-            descriptor, providerSharedState, meterSharedState, Aggregations.count());
+            descriptor,
+            providerSharedState,
+            meterSharedState,
+            AggregationFactory.count().create(descriptor.getValueType()));
 
     InstrumentProcessor result =
         viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
@@ -94,7 +100,7 @@ class ViewRegistryTest {
   void selection_onType() {
     AggregationConfiguration configuration =
         AggregationConfiguration.create(
-            Aggregations.sum(), MetricData.AggregationTemporality.DELTA);
+            AggregationFactory.sum(), MetricData.AggregationTemporality.DELTA);
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -115,14 +121,14 @@ class ViewRegistryTest {
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
-                Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE));
+                AggregationFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE));
   }
 
   @Test
   void selection_onName() {
     AggregationConfiguration configuration =
         AggregationConfiguration.create(
-            Aggregations.sum(), MetricData.AggregationTemporality.DELTA);
+            AggregationFactory.sum(), MetricData.AggregationTemporality.DELTA);
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -143,17 +149,17 @@ class ViewRegistryTest {
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
-                Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE));
+                AggregationFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE));
   }
 
   @Test
   void selection_LastAddedViewWins() {
     AggregationConfiguration configuration1 =
         AggregationConfiguration.create(
-            Aggregations.sum(), MetricData.AggregationTemporality.DELTA);
+            AggregationFactory.sum(), MetricData.AggregationTemporality.DELTA);
     AggregationConfiguration configuration2 =
         AggregationConfiguration.create(
-            Aggregations.count(), MetricData.AggregationTemporality.DELTA);
+            AggregationFactory.count(), MetricData.AggregationTemporality.DELTA);
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -185,7 +191,7 @@ class ViewRegistryTest {
   void selection_regex() {
     AggregationConfiguration configuration1 =
         AggregationConfiguration.create(
-            Aggregations.sum(), MetricData.AggregationTemporality.DELTA);
+            AggregationFactory.sum(), MetricData.AggregationTemporality.DELTA);
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -212,7 +218,7 @@ class ViewRegistryTest {
                     "default", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
-                Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE));
+                AggregationFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE));
   }
 
   @Test
@@ -224,41 +230,41 @@ class ViewRegistryTest {
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
-                Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE));
+                AggregationFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE));
     assertThat(
             viewRegistry.chooseAggregation(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
-                Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE));
+                AggregationFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE));
     assertThat(
             viewRegistry.chooseAggregation(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
-                Aggregations.minMaxSumCount(), MetricData.AggregationTemporality.DELTA));
+                AggregationFactory.minMaxSumCount(), MetricData.AggregationTemporality.DELTA));
     assertThat(
             viewRegistry.chooseAggregation(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.SUM_OBSERVER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
-                Aggregations.lastValue(), MetricData.AggregationTemporality.CUMULATIVE));
+                AggregationFactory.lastValue(), MetricData.AggregationTemporality.CUMULATIVE));
     assertThat(
             viewRegistry.chooseAggregation(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
-                Aggregations.lastValue(), MetricData.AggregationTemporality.DELTA));
+                AggregationFactory.lastValue(), MetricData.AggregationTemporality.DELTA));
     assertThat(
             viewRegistry.chooseAggregation(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG)))
         .isEqualTo(
             AggregationConfiguration.create(
-                Aggregations.lastValue(), MetricData.AggregationTemporality.CUMULATIVE));
+                AggregationFactory.lastValue(), MetricData.AggregationTemporality.CUMULATIVE));
   }
 }

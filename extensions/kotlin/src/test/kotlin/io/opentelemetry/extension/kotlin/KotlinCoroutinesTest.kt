@@ -1,17 +1,22 @@
 package io.opentelemetry.extension.kotlin
 
-import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.ContextKey
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
 import kotlinx.coroutines.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 class KotlinCoroutinesTest {
 
     companion object {
         private val ANIMAL: ContextKey<String> = ContextKey.named("animal")
+
+        @JvmField
+        @RegisterExtension
+        val otelTesting = OpenTelemetryExtension.create()
     }
 
     @Test
@@ -37,7 +42,8 @@ class KotlinCoroutinesTest {
 
     @Test
     fun runWithSpan() {
-        val span = GlobalOpenTelemetry.getTracer("test").spanBuilder("test").startSpan()
+        val span = otelTesting.openTelemetry.getTracer("test").spanBuilder("test")
+                .startSpan()
         assertThat(Span.current()).isEqualTo(Span.getInvalid())
         runBlocking(Dispatchers.Default + span.asContextElement()) {
             assertThat(Span.current()).isEqualTo(span)

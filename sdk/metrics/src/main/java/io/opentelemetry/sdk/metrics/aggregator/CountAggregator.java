@@ -5,16 +5,31 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
 
-public final class CountAggregator extends AbstractAggregator {
-  private static final AggregatorFactory AGGREGATOR_FACTORY = CountAggregator::new;
+public final class CountAggregator extends Aggregator<LongAccumulation> {
+  private static final AggregatorFactory<LongAccumulation> AGGREGATOR_FACTORY =
+      new AggregatorFactory<LongAccumulation>() {
+        @Override
+        public Aggregator<LongAccumulation> getAggregator() {
+          return new CountAggregator();
+        }
+
+        @Override
+        public LongAccumulation accumulateDouble(double value) {
+          return LongAccumulation.create(1);
+        }
+
+        @Override
+        public LongAccumulation accumulateLong(long value) {
+          return LongAccumulation.create(1);
+        }
+      };
 
   private final LongAdder current;
 
-  public CountAggregator() {
+  private CountAggregator() {
     this.current = new LongAdder();
   }
 
@@ -23,22 +38,22 @@ public final class CountAggregator extends AbstractAggregator {
    *
    * @return an {@link AggregatorFactory} that produces {@link CountAggregator} instances.
    */
-  public static AggregatorFactory getFactory() {
+  public static AggregatorFactory<LongAccumulation> getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
   @Override
-  public void doRecordLong(long value) {
+  protected void doRecordLong(long value) {
     current.add(1);
   }
 
   @Override
-  public void doRecordDouble(double value) {
+  protected void doRecordDouble(double value) {
     current.add(1);
   }
 
   @Override
-  Accumulation doAccumulateThenReset() {
+  protected LongAccumulation doAccumulateThenReset() {
     return LongAccumulation.create(current.sumThenReset());
   }
 }

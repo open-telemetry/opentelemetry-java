@@ -20,13 +20,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link Aggregations#sum()}. */
+/** Unit tests for {@link AggregationFactory#sum()}. */
 class SumAggregationTest {
 
   @Test
   void toMetricData() {
-    Aggregation sum = Aggregations.sum();
-    Aggregator aggregator = sum.getAggregatorFactory(InstrumentValueType.LONG).getAggregator();
+    Aggregation sum = AggregationFactory.sum().create(InstrumentValueType.LONG);
+    Aggregator<?> aggregator = sum.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =
@@ -49,10 +49,10 @@ class SumAggregationTest {
 
   @Test
   void getAggregatorFactory() {
-    Aggregation sum = Aggregations.sum();
-    assertThat(sum.getAggregatorFactory(InstrumentValueType.LONG))
+    AggregationFactory sum = AggregationFactory.sum();
+    assertThat(sum.create(InstrumentValueType.LONG).getAggregatorFactory())
         .isInstanceOf(LongSumAggregator.getFactory().getClass());
-    assertThat(sum.getAggregatorFactory(InstrumentValueType.DOUBLE))
+    assertThat(sum.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
         .isInstanceOf(DoubleSumAggregator.getFactory().getClass());
   }
 }

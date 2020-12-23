@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /** Unit tests for {@link DisruptorAsyncSpanProcessor}. */
@@ -268,10 +267,8 @@ class DisruptorAsyncSpanProcessorTest {
     options.put("otel.disruptor.sleeping.time", "78");
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
     DisruptorAsyncSpanProcessor.Builder config =
-        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor);
-    DisruptorAsyncSpanProcessor.Builder spy = Mockito.spy(config);
-    spy.readProperties(options);
-    Mockito.verify(spy).setBlocking(false);
-    Mockito.verify(spy).setBufferSize(1234);
+        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).readProperties(options);
+    assertThat(config).extracting("blocking").isEqualTo(false);
+    assertThat(config).extracting("bufferSize").isEqualTo(1234);
   }
 }

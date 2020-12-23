@@ -144,39 +144,6 @@ class DoubleUpDownCounterSdkTest {
   }
 
   @Test
-  void sameBound_ForSameLabelSet() {
-    DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
-    BoundDoubleUpDownCounter duplicateBoundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-    } finally {
-      boundCounter.unbind();
-      duplicateBoundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
-    try {
-      doubleUpDownCounter.collectAll();
-      BoundDoubleUpDownCounter duplicateBoundCounter =
-          doubleUpDownCounter.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-      } finally {
-        duplicateBoundCounter.unbind();
-      }
-    } finally {
-      boundCounter.unbind();
-    }
-  }
-
-  @Test
   void stressTest() {
     final DoubleUpDownCounterSdk doubleUpDownCounter =
         testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();

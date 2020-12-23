@@ -61,4 +61,9 @@ class SpanIdTest {
       assertThat(SpanId.asLong(SpanId.fromLong(id))).isEqualTo(id);
     }
   }
+
+  @Test
+  void size() {
+    assertThat(SpanId.getSize()).isEqualTo(8);
+  }
 }

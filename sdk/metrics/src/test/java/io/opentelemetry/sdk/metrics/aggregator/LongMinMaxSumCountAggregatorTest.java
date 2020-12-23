@@ -9,8 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
-import io.opentelemetry.sdk.metrics.aggregation.Aggregations;
+import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
 import io.opentelemetry.sdk.metrics.aggregation.MinMaxSumCountAccumulation;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -22,13 +23,15 @@ import org.junit.jupiter.api.Test;
 class LongMinMaxSumCountAggregatorTest {
   @Test
   void factoryAggregation() {
-    AggregatorFactory factory = LongMinMaxSumCountAggregator.getFactory();
+    AggregatorFactory<MinMaxSumCountAccumulation> factory =
+        LongMinMaxSumCountAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(LongMinMaxSumCountAggregator.class);
   }
 
   @Test
   void testRecordings() {
-    Aggregator aggregator = LongMinMaxSumCountAggregator.getFactory().getAggregator();
+    Aggregator<MinMaxSumCountAccumulation> aggregator =
+        LongMinMaxSumCountAggregator.getFactory().getAggregator();
     aggregator.recordLong(100);
     assertThat(aggregator.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
@@ -42,7 +45,8 @@ class LongMinMaxSumCountAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator aggregator = LongMinMaxSumCountAggregator.getFactory().getAggregator();
+    Aggregator<MinMaxSumCountAccumulation> aggregator =
+        LongMinMaxSumCountAggregator.getFactory().getAggregator();
     assertThat(aggregator.accumulateThenReset()).isNull();
 
     aggregator.recordLong(100);
@@ -58,7 +62,8 @@ class LongMinMaxSumCountAggregatorTest {
 
   @Test
   void testMultithreadedUpdates() throws Exception {
-    final Aggregator aggregator = LongMinMaxSumCountAggregator.getFactory().getAggregator();
+    final Aggregator<MinMaxSumCountAccumulation> aggregator =
+        LongMinMaxSumCountAggregator.getFactory().getAggregator();
     final Summary summarizer = new Summary();
     int numberOfThreads = 10;
     final long[] updates = new long[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
@@ -117,7 +122,10 @@ class LongMinMaxSumCountAggregatorTest {
           accumulation = other;
           return;
         }
-        accumulation = Aggregations.minMaxSumCount().merge(accumulation, other);
+        accumulation =
+            AggregationFactory.minMaxSumCount()
+                .create(InstrumentValueType.LONG)
+                .merge(accumulation, other);
       } finally {
         lock.writeLock().unlock();
       }

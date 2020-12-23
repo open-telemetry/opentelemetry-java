@@ -15,7 +15,6 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -59,7 +58,7 @@ class LongCounterSdkTest {
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
-    BoundInstrument bound = longCounter.bind(Labels.of("foo", "bar"));
+    BoundLongCounter bound = longCounter.bind(Labels.of("foo", "bar"));
     assertThat(longCounter.collectAll()).isEmpty();
 
     bound.unbind();
@@ -131,36 +130,6 @@ class LongCounterSdkTest {
           .containsExactly(
               LongPoint.create(startTime, secondCollect, Labels.of("K", "V"), 777),
               LongPoint.create(startTime, secondCollect, Labels.empty(), 44));
-    } finally {
-      boundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
-    BoundLongCounter duplicateBoundCounter = longCounter.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-    } finally {
-      boundCounter.unbind();
-      duplicateBoundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
-    try {
-      longCounter.collectAll();
-      BoundLongCounter duplicateBoundCounter = longCounter.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-      } finally {
-        duplicateBoundCounter.unbind();
-      }
     } finally {
       boundCounter.unbind();
     }

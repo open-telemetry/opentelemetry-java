@@ -5,12 +5,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 abstract class AbstractSynchronousInstrumentBuilder<
         B extends AbstractSynchronousInstrumentBuilder<?>>
@@ -29,23 +27,19 @@ abstract class AbstractSynchronousInstrumentBuilder<
     this.meterSharedState = meterSharedState;
   }
 
-  final <I extends AbstractInstrument, BoundT extends AbstractBoundInstrument> I buildInstrument(
-      Function<Aggregator, BoundT> boundFactory,
-      BiFunction<InstrumentDescriptor, SynchronousInstrumentAccumulator<BoundT>, I>
-          instrumentFactory) {
+  final <I extends AbstractInstrument> I buildInstrument(
+      BiFunction<InstrumentDescriptor, SynchronousInstrumentAccumulator, I> instrumentFactory) {
     InstrumentDescriptor descriptor = buildDescriptor();
     return meterSharedState
         .getInstrumentRegistry()
-        .register(instrumentFactory.apply(descriptor, buildAccumulator(descriptor, boundFactory)));
+        .register(instrumentFactory.apply(descriptor, buildAccumulator(descriptor)));
   }
 
-  private <BoundT extends AbstractBoundInstrument>
-      SynchronousInstrumentAccumulator<BoundT> buildAccumulator(
-          InstrumentDescriptor descriptor, Function<Aggregator, BoundT> boundFactory) {
+  private SynchronousInstrumentAccumulator buildAccumulator(InstrumentDescriptor descriptor) {
     InstrumentProcessor processor =
         meterProviderSharedState
             .getViewRegistry()
             .createBatcher(meterProviderSharedState, meterSharedState, descriptor);
-    return new SynchronousInstrumentAccumulator<>(processor, boundFactory);
+    return new SynchronousInstrumentAccumulator(processor);
   }
 }
