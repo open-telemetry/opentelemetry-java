@@ -3,6 +3,7 @@ plugins {
     id "maven-publish"
 
     id "me.champeau.gradle.jmh"
+    id "org.unbroken-dome.test-sets"
     id "ru.vyarus.animalsniffer"
 }
 
@@ -10,11 +11,19 @@ description = 'OpenTelemetry API'
 ext.moduleName = "io.opentelemetry.api"
 archivesBaseName = "opentelemetry-api"
 
+testSets {
+    testLogsIfSdkFound
+    testDoesNotLogIfSdkFoundAndSuppressed
+}
+
 dependencies {
     api project(':api:context'),
             project(':api:baggage'),
             project(':api:common'),
             project(':api:trace')
+
+    testLogsIfSdkFoundImplementation project(':sdk:all')
+    testDoesNotLogIfSdkFoundAndSuppressedImplementation project(':sdk:all')
 
     annotationProcessor libraries.auto_value
 
@@ -22,4 +31,8 @@ dependencies {
 
     testImplementation libraries.jqf,
             libraries.guava_testlib
+}
+
+testDoesNotLogIfSdkFoundAndSuppressed {
+    jvmArgs "-Dotel.sdk.suppress-sdk-initialized-warning=true"
 }

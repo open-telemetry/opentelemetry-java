@@ -32,7 +32,11 @@ import javax.annotation.Nullable;
  * @see ContextPropagators
  */
 public final class GlobalOpenTelemetry {
-  private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
+  // Visible for testing
+  static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
+
+  private static final boolean suppressSdkCheck =
+      Boolean.getBoolean("otel.sdk.suppress-sdk-initialized-warning");
 
   private static final Object mutex = new Object();
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
@@ -54,7 +58,9 @@ public final class GlobalOpenTelemetry {
       synchronized (mutex) {
         current = globalOpenTelemetry;
         if (current == null) {
-          SdkChecker.logIfSdkFound();
+          if (!suppressSdkCheck) {
+            SdkChecker.logIfSdkFound();
+          }
 
           OpenTelemetryFactory openTelemetryFactory = Utils.loadSpi(OpenTelemetryFactory.class);
           if (openTelemetryFactory != null) {
@@ -139,12 +145,17 @@ public final class GlobalOpenTelemetry {
       }
 
       if (hasSdk) {
+        // TODO(anuraaga): Play https://www.youtube.com/watch?v=tBA-1ENblN4 if JavaFX detected on
+        // classpath.
         logger.log(
             Level.SEVERE,
             "Attempt to access GlobalOpenTelemetry.get before OpenTelemetrySdk has been "
                 + "initialized. This generally means telemetry will not be recorded for parts of "
                 + "your application. Make sure to initialize OpenTelemetrySdk, using "
-                + "OpenTelemetrySdk.builder(), as early as possible in your application.",
+                + "OpenTelemetrySdk.builder(), as early as possible in your application. "
+                + "If you do not need to use the OpenTelemetry SDK, either exclude it from your "
+                + "classpath or set the 'otel.sdk.suppress-sdk-initialized-warning' system "
+                + "property to true.",
             new Throwable());
       }
     }
